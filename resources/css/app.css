@@ -1,0 +1,299 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+@import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../../resources/views/**/*.blade.php';
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    
+    --color-gray-50: #fafafa;
+    --color-gray-100: #f5f5f5;
+    --color-gray-200: #e5e5e5;
+    --color-gray-300: #d4d4d4;
+    --color-gray-400: #a3a3a3;
+    --color-gray-500: #737373;
+    --color-gray-600: #525252;
+    --color-gray-700: #404040;
+    --color-gray-800: #262626;
+    --color-gray-900: #171717;
+
+    /* Semantic Primary Palette */
+    --color-primary-50: var(--primary-50, #f8fafc);
+    --color-primary-100: var(--primary-100, #f1f5f9);
+    --color-primary-200: var(--primary-200, #e2e8f0);
+    --color-primary-300: var(--primary-300, #cbd5e1);
+    --color-primary-400: var(--primary-400, #94a3b8);
+    --color-primary-500: var(--primary-500, #64748b);
+    --color-primary-600: var(--primary-600, #475569);
+    --color-primary-700: var(--primary-700, #334155);
+    --color-primary-800: var(--primary-800, #1e293b);
+    --color-primary-900: var(--primary-900, #0f172a);
+    --color-primary-950: var(--primary-950, #020617);
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Hide spinner in number fields */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+/* Kelas untuk efek transisi fade-up saat navigasi antar halaman via Swup */
+.transition-fade {
+    transition: all var(--dur-fast) var(--ease-out);
+    will-change: transform, opacity;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+html.is-animating .transition-fade {
+    opacity: 0;
+    transform: translateY(12px);
+}
+
+/*
+ * TOKEN MOTION — CSS CUSTOM PROPERTIES
+ * Semua nilai durasi & easing didefinisikan DI SINI, bukan
+ * di-hardcode berulang. Konsistensi dijaga dari titik tunggal.
+ *  */
+:root {
+    /* Durasi */
+    --dur-micro: 120ms;
+    /* Hover ikon, toggle kecil          */
+    --dur-fast: 200ms;
+    /* Focus input, border error          */
+    --dur-medium: 350ms;
+    /* Entrance elemen individual          */
+
+    /* Easing */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    /* Entrance (elemen ke layar)    */
+    --ease-ui: cubic-bezier(0.4, 0, 0.2, 1);
+    /* State-change hover/focus      */
+}
+
+/*
+ * REDUCED MOTION FALLBACK
+ * User dengan prefers-reduced-motion: reduce mendapat
+ * transisi instan — tidak ada gerakan besar.
+ *  */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --dur-micro: 0ms;
+        --dur-fast: 0ms;
+        --dur-medium: 0ms;
+    }
+
+    * {
+        transition-duration: 0ms !important;
+        animation-duration: 0ms !important;
+    }
+}
+
+/*
+ * INPUT FOCUS TRANSITIONS
+ * Pakai token --dur-fast & --ease-ui agar konsisten.
+ *  */
+.form-input {
+    transition:
+        border-color var(--dur-fast) var(--ease-ui),
+        box-shadow var(--dur-fast) var(--ease-ui),
+        background-color var(--dur-fast) var(--ease-ui);
+}
+
+/*
+ * ERROR BORDER — transisi HALUS ke merah, bukan mendadak
+ *  */
+.input-error {
+    border-color: #fda4af !important;
+    /* rose-300 */
+    box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.15) !important;
+    transition:
+        border-color var(--dur-fast) var(--ease-ui),
+        box-shadow var(--dur-fast) var(--ease-ui);
+}
+
+.label-error {
+    color: #e11d48;
+    /* rose-600 */
+    transition: color var(--dur-fast) var(--ease-ui);
+}
+
+/*
+ * TOGGLE PASSWORD — container relatif untuk cross-fade ikon
+ *  */
+.eye-icon-wrapper {
+    position: relative;
+    width: 20px;
+    height: 20px;
+}
+
+.eye-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 20px;
+    transition:
+        opacity var(--dur-micro) var(--ease-ui),
+        transform var(--dur-micro) var(--ease-ui);
+    will-change: opacity, transform;
+}
+
+.eye-icon.visible {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.eye-icon.hidden {
+    opacity: 0;
+    transform: scale(0.75);
+    pointer-events: none;
+}
+
+/*
+ * TOMBOL SUBMIT — hover / active pakai token
+ *  */
+.btn-submit {
+    transition:
+        background-color var(--dur-fast) var(--ease-ui),
+        transform var(--dur-micro) var(--ease-ui),
+        box-shadow var(--dur-fast) var(--ease-ui);
+    will-change: transform, background-color;
+}
+
+.btn-submit:hover {
+    background-color: #171717;
+}
+
+/* neutral-900 */
+.btn-submit:active {
+    transform: scale(0.98);
+}
+
+/* Loading state — tombol saat sedang submit */
+.btn-submit.is-loading {
+    cursor: not-allowed;
+    opacity: 0.85;
+}
+
+.btn-submit.is-loading:hover {
+    background-color: #000;
+}
+
+.btn-submit.is-loading:active {
+    transform: none;
+}
+
+/* Spinner — rotasi linear (pengecualian yang dibolehkan) */
+@keyframes spin-linear {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin-linear 0.75s linear infinite;
+    flex-shrink: 0;
+}
+
+/*
+ * ERROR ALERT — slide-down + shake keyframes
+ *  */
+@keyframes slide-down-fade {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Shake — 2-3 osilasi kecil, total ≤ 280ms, amplitudo kecil */
+@keyframes shake-subtle {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    18% {
+        transform: translateX(-5px);
+    }
+
+    36% {
+        transform: translateX(4px);
+    }
+
+    54% {
+        transform: translateX(-3px);
+    }
+
+    72% {
+        transform: translateX(2px);
+    }
+
+    90% {
+        transform: translateX(-1px);
+    }
+}
+
+.error-alert {
+    /* Slide-down dulu (350ms expo-out), lalu shake (280ms) */
+    animation:
+        slide-down-fade 350ms cubic-bezier(0.16, 1, 0.3, 1) both,
+        shake-subtle 280ms cubic-bezier(0.4, 0, 0.2, 1) 380ms both;
+}
+
+/*
+ * ELEMEN GSAP — semua di-set opacity:0 via inline style
+ * dari JS untuk menghindari FOUC. CSS hanya memberi petunjuk
+ * will-change agar GPU bisa bersiap.
+ *  */
+.js-anim {
+    will-change: transform, opacity;
+}
+
+/*
+ * SOCIAL BUTTON — DISABLED STYLING
+ * Tidak ada hover transform / shadow — supaya tidak menipu
+ * user seolah tombol aktif (sesuai spek: tombol non-aktif).
+ *  */
+.btn-social {
+    transition: background-color var(--dur-fast) var(--ease-ui);
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/*
+ * GLOBAL OPTION FIX
+ * Cegah teks 'nyaru' (tak terbaca) pada dropdown native saat dark mode
+ */
+html.dark option {
+    background-color: #171717 !important;
+    color: #f5f5f5 !important;
+}
+option {
+    background-color: #ffffff;
+    color: #171717;
+}
