@@ -8,30 +8,40 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 use Exception;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * UserService adalah otak pemrosesan di balik layar yang berkaitan erat
+ * dengan akun staf pengguna (Penyaringan dan Keamanan).
+ */
 class UserService
 {
-    public function getFilteredQuery($request)
+    /**
+     * Meracik Kueri tabel Users. Memuat relasi peran (Eager Loading target 'role')
+     * serta filter grup pencarian Nama dan Email.
+     */
+    public function getFilteredQuery(\Illuminate\Http\Request $request): \Illuminate\Database\Eloquent\Builder
     {
-        $query = User::with('role')->latest();
+        $query = \App\Models\User::query()->with('role')->latest();
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%")
-                  ->orWhere('phone_number', 'like', "%{$search}%");
+                  ->orWhere('email', 'like', "%{$search}%");
             });
         }
         return $query;
     }
 
-    public function exportCsv($request): StreamedResponse
+    /**
+     * Mencetak daftar Akun secara format CSV dan melempar respon Streamed.
+     */
+    public function exportCsv(\Illuminate\Http\Request $request): StreamedResponse
     {
         $query = $this->getFilteredQuery($request);
         $fileName = 'users_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
 
         return response()->streamDownload(function () use ($query) {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['ID', 'Name', 'Email', 'Phone Number', 'Role', 'Status', 'Joined Date']);
+            fputcsv($handle, ['ID', 'Name', 'Email', 'Role', 'Joined Date']);
 
             $query->chunk(100, function ($users) use ($handle) {
                 foreach ($users as $user) {
@@ -39,9 +49,7 @@ class UserService
                         $user->id,
                         $user->name,
                         $user->email,
-                        $user->phone_number,
                         $user->role ? $user->role->name : 'Unassigned',
-                        $user->is_active ? 'Active' : 'Inactive',
                         $user->created_at ? $user->created_at->format('Y-m-d H:i') : ''
                     ]);
                 }
@@ -54,24 +62,21 @@ class UserService
     }
 
     /**
-     * Store a new user.
+     * Mendaftarkan Pengguna baru.
      */
     public function store(array $data): User
     {
         return DB::transaction(function () use ($data) {
-            $data['is_active'] = isset($data['is_active']) ? (bool) $data['is_active'] : false;
             return User::create($data);
         });
     }
 
     /**
-     * Update an existing user.
+     * Mengatur ulang rincian spesifik dari Pengguna.
      */
     public function update(User $user, array $data): User
     {
         return DB::transaction(function () use ($user, $data) {
-            $data['is_active'] = isset($data['is_active']) ? (bool) $data['is_active'] : false;
-
             if (empty($data['password'])) {
                 unset($data['password']);
             }
@@ -83,12 +88,12 @@ class UserService
     }
 
     /**
-     * Delete a user.
+     * Coret pengguna. Pengguna ditolak menghapus profilnya sendiri!
      */
     public function delete(User $user): bool
     {
         if ($user->id === Auth::id()) {
-            throw new Exception('You cannot delete yourself.');
+            throw new Exception('Anda tidak dapat menghapus akun sendiri.');
         }
 
         return DB::transaction(function () use ($user) {

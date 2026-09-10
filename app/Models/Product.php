@@ -3,17 +3,24 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * Model Product untuk memetakan rekaman setiap komoditas atau
+ * barang dagangan yang diperjualbelikan pada antarmuka sistem.
+ */
 class Product extends Model
 {
-    use SoftDeletes;
-
+    /**
+     * Atribut yang diizinkan untuk diisi massal oleh aplikasi.
+     */
     protected $fillable = [
-        'category_id', 'name', 'photo', 'price', 'stock',
-        'sku', 'barcode', 'description', 'cost_price', 'is_active'
+        'category_id', 'product_name', 'product_photo', 'product_price',
+        'product_description', 'stock', 'is_active'
     ];
 
+    /**
+     * Konversi boolean di ranah aplikasi meskipun tersimpan dalam format TinyInt database.
+     */
     protected function casts(): array
     {
         return [
@@ -21,12 +28,18 @@ class Product extends Model
         ];
     }
 
-    public function category()
+    /**
+     * Relasi (BelongsTo): Setiap Entitas Produk harus masuk ke dalam suatu entitas kategori tertentu.
+     */
+    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    public function orderDetails()
+    /**
+     * Relasi (HasMany): Produk terkait sering dilampirkan dalam ragam deretan bon rincian pesanan.
+     */
+    public function orderDetails(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(OrderDetail::class);
     }

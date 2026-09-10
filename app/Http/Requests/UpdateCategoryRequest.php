@@ -4,24 +4,20 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Form Request untuk mengawal integritas pengeditan (Update) pada spesifik kategori.
+ */
 class UpdateCategoryRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     */
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255|unique:categories,name,' . $this->category->id,
-            'description' => 'nullable|string',
+            'category_name' => 'required|string|max:255|unique:categories,category_name,' . $this->category->id,
         ];
     }
 }

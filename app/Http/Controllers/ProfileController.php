@@ -9,10 +9,14 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
 
+/**
+ * ProfileController adalah pusat pengatur tampilan maupun pemrosesan
+ * pembaruan riwayat sandi atau nama Profil bagi User yang sedang Login.
+ */
 class ProfileController extends Controller
 {
     /**
-     * Display the user's profile form.
+     * Menampilkan antarmuka Halaman Profil milik Pengguna.
      */
     public function edit(Request $request): View
     {
@@ -22,7 +26,8 @@ class ProfileController extends Controller
     }
 
     /**
-     * Update the user's profile information.
+     * Menyimpan perubahan atribut personal dari Pengguna (Nama/Sandi).
+     * Jika terjadi pergeseran alamat Email, status verifikasinya akan otomatis di-reset.
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
@@ -38,7 +43,7 @@ class ProfileController extends Controller
     }
 
     /**
-     * Delete the user's account.
+     * Melenyapkan (Hapus permanen) akun ini berdasarkan persetujuan final Pengguna yang bersangkutan.
      */
     public function destroy(Request $request): RedirectResponse
     {

@@ -90,13 +90,14 @@
                     @if(request()->routeIs('dashboard'))
                         <span class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-primary-600 rounded-r-full" :class="expanded ? 'opacity-100' : 'opacity-0'"></span>
                     @endif
-                    <i class="bi bi-grid-1x2 text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''"></i>
+                    <span class="material-symbols-rounded text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''">space_dashboard</span>
                     <span :class="expanded ? 'opacity-100 w-auto ml-3' : 'opacity-0 w-0 ml-0'"
                           class="transition-all duration-200 overflow-hidden whitespace-nowrap">Dashboard</span>
                 </a>
             </li>
 
-            {{-- Catalog (Collapsible Group) --}}
+            {{-- Catalog (Collapsible Group) - Only for Administrator --}}
+            @if(auth()->check() && auth()->user()->role?->name === 'Administrator')
             <li x-data="{ subOpen: {{ request()->routeIs('products.*') || request()->routeIs('categories.*') ? 'true' : 'false' }} }">
                 <button @click="subOpen = !subOpen; if(!expanded) expanded = true;"
                         class="group w-full flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 overflow-hidden whitespace-nowrap
@@ -106,7 +107,7 @@
                         :class="expanded ? 'px-3 py-2.5 justify-between' : 'px-0 py-2.5 justify-center'"
                         title="Catalog">
                     <div class="flex items-center">
-                        <i class="bi bi-box-seam text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''"></i>
+                        <span class="material-symbols-rounded text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''">inventory_2</span>
                         <span :class="expanded ? 'opacity-100 w-auto ml-3' : 'opacity-0 w-0 ml-0'"
                               class="transition-all duration-200 overflow-hidden whitespace-nowrap">Catalog</span>
                     </div>
@@ -136,8 +137,10 @@
                     </li>
                 </ul>
             </li>
+            @endif
 
-            {{-- Access (Collapsible Group) --}}
+            {{-- Access (Collapsible Group) - Only for Administrator --}}
+            @if(auth()->check() && auth()->user()->role?->name === 'Administrator')
             <li x-data="{ subOpen: {{ request()->routeIs('users.*') || request()->routeIs('roles.*') ? 'true' : 'false' }} }">
                 <button @click="subOpen = !subOpen; if(!expanded) expanded = true;"
                         class="group w-full flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 overflow-hidden whitespace-nowrap
@@ -147,7 +150,7 @@
                         :class="expanded ? 'px-3 py-2.5 justify-between' : 'px-0 py-2.5 justify-center'"
                         title="Access Control">
                     <div class="flex items-center">
-                        <i class="bi bi-shield-lock text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''"></i>
+                        <span class="material-symbols-rounded text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''">admin_panel_settings</span>
                         <span :class="expanded ? 'opacity-100 w-auto ml-3' : 'opacity-0 w-0 ml-0'"
                               class="transition-all duration-200 overflow-hidden whitespace-nowrap">Access</span>
                     </div>
@@ -177,6 +180,7 @@
                     </li>
                 </ul>
             </li>
+            @endif
         </ul>
     </nav>
 

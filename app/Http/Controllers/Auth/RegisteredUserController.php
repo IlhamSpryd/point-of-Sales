@@ -16,7 +16,7 @@ use Illuminate\View\View;
 class RegisteredUserController extends Controller
 {
     /**
-     * Display the registration view.
+     * Merender tampilan antarmuka form pendaftaran pengguna (Register).
      */
     public function create(): View
     {
@@ -24,7 +24,7 @@ class RegisteredUserController extends Controller
     }
 
     /**
-     * Handle an incoming registration request.
+     * Memproses permintaan pembuatan akun baru dan merekamnya ke database.
      *
      * @throws ValidationException
      */

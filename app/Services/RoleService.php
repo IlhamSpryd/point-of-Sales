@@ -7,11 +7,19 @@ use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Exception;
 
+/**
+ * RoleService bertindak memisahkan keseluruhan kerumitan logika sistem
+ * terkait pemrosesan data Role murni (Ekspor, Penjaringan/Filter).
+ */
 class RoleService
 {
-    public function getFilteredQuery($request)
+    /**
+     * Menyusun cetak biru kueri Eloquent dengan menempelkan agregat (withCount)
+     * dan injeksi klausul pencarian jika requested.
+     */
+    public function getFilteredQuery(\Illuminate\Http\Request $request): \Illuminate\Database\Eloquent\Builder
     {
-        $query = Role::withCount('users')->latest();
+        $query = \App\Models\Role::query()->withCount('users')->latest();
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where('name', 'like', "%{$search}%");
@@ -19,22 +27,24 @@ class RoleService
         return $query;
     }
 
-    public function exportCsv($request): StreamedResponse
+    /**
+     * Menyiapkan file unduhan mentah .CSV.
+     */
+    public function exportCsv(\Illuminate\Http\Request $request): StreamedResponse
     {
         $query = $this->getFilteredQuery($request);
         $fileName = 'roles_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
 
         return response()->streamDownload(function () use ($query) {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['ID', 'Name', 'Description', 'Assigned Users']);
+            fputcsv($handle, ['ID', 'Name', 'Assigned Users']);
 
             $query->chunk(100, function ($roles) use ($handle) {
                 foreach ($roles as $role) {
                     fputcsv($handle, [
                         $role->id,
                         $role->name,
-                        $role->description,
-                        $role->users_count, // Works because we injected withCount('users') in getFilteredQuery
+                        $role->users_count,
                     ]);
                 }
             });
@@ -46,7 +56,7 @@ class RoleService
     }
 
     /**
-     * Store a new role.
+     * Mengamankan proses simpan data Peran baru.
      */
     public function store(array $data): Role
     {
@@ -56,7 +66,7 @@ class RoleService
     }
 
     /**
-     * Update an existing role.
+     * Modifikasi rincian satu spesifik entitas Peran yang sudah ada.
      */
     public function update(Role $role, array $data): Role
     {
@@ -67,13 +77,13 @@ class RoleService
     }
 
     /**
-     * Delete a role.
+     * Menghapus jabatan/peran. Ditolak jika masih ada akun staf yang menempati jabatan ini.
      */
     public function delete(Role $role): bool
     {
         return DB::transaction(function () use ($role) {
             if ($role->users()->count() > 0) {
-                throw new Exception('Cannot delete role "' . $role->name . '" because ' . $role->users()->count() . ' user(s) are still assigned to it. Reassign them first.');
+                throw new Exception('Tidak dapat menghapus role "' . $role->name . '" karena ' . $role->users()->count() . ' pengguna masih menggunakan role ini.');
             }
 
             return $role->delete();

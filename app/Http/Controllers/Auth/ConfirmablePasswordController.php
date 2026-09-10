@@ -12,7 +12,7 @@ use Illuminate\View\View;
 class ConfirmablePasswordController extends Controller
 {
     /**
-     * Show the confirm password view.
+     * Merender antarmuka konfirmasi sandi demi keamanan transaksi kritis.
      */
     public function show(): View
     {
@@ -20,7 +20,7 @@ class ConfirmablePasswordController extends Controller
     }
 
     /**
-     * Confirm the user's password.
+     * Mencocokkan konfirmasi sandi dengan akun sebelum izin akses sementara diberikan.
      */
     public function store(Request $request): RedirectResponse
     {

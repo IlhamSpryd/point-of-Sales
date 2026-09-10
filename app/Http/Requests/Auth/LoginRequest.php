@@ -10,10 +10,13 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
+/**
+ * Sentral otentikasi request: Penengah dari proses Rate-Limiting dan verifikasi kredensial login.
+ */
 class LoginRequest extends FormRequest
 {
     /**
-     * Determine if the user is authorized to make this request.
+     * Tentukan apakah guest (tamu anonim) diperkenankan mengirimkan formulasi request Login ini.
      */
     public function authorize(): bool
     {
@@ -21,7 +24,7 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Get the validation rules that apply to the request.
+     * Daftar aturan validasi dari kerangka isian pendaftaran Login (Email terformat string dan ada Sandi).
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
@@ -34,7 +37,7 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Attempt to authenticate the request's credentials.
+     * Percobaan pembandingan kredensial yang masuk dalam form dengan nilai terenkripsi di Database (Attempt).
      *
      * @throws ValidationException
      */
@@ -54,7 +57,7 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Ensure the login request is not rate limited.
+     * Memastikan request pengajuan masuknya sandi tidak melanggar batas cegah percobaan peretasan Brute-Force (Rate Limiting).
      *
      * @throws ValidationException
      */
@@ -77,7 +80,7 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Get the rate limiting throttle key for the request.
+     * Menghasilkan pelacak unik dari IP Klien dan Email untuk keperluan pembekuan sementara (Throttle Key).
      */
     public function throttleKey(): string
     {

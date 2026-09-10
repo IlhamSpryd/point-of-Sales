@@ -4,24 +4,20 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+/**
+ * Form Validator: Pengecekan pendaftaran Peran (Role) baru dalam arsitektur hak akses.
+ */
 class StoreRoleRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     */
     public function rules(): array
     {
         return [
             'name' => 'required|string|max:255|unique:roles,name',
-            'description' => 'nullable|string',
         ];
     }
 }

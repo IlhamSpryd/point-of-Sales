@@ -9,7 +9,10 @@
 
     <link rel="icon" href="{{ asset('spark-admin-1.0.0/assets/images/favicon.ico') }}">
 
-    <!-- Bootstrap Icons for Spark Components -->
+    <!-- Google Material Symbols (Rounded) -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+
+    <!-- Bootstrap Icons (Temporary fallback) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
     <!-- Plus Jakarta Sans Font -->
@@ -35,6 +38,14 @@
         /* Custom scrollbar for sidebar — ultra-thin, only on hover */
         .scrollbar-none::-webkit-scrollbar { width: 0; }
         .scrollbar-none { scrollbar-width: none; }
+
+        /* Material Symbols Consistency */
+        .material-symbols-rounded {
+            font-size: 1.25em; /* 20px relative scaling */
+            line-height: 1;
+            vertical-align: middle;
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
 
         @keyframes fadeIn {
             from { opacity: 0; }

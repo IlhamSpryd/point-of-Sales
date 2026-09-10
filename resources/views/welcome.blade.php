@@ -139,18 +139,18 @@
         <div class="dropdown ms-2">
           <button class="btn-quick-action dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false"
             id="quick-actions-dropdown">
-            <i class="bi bi-plus-lg"></i>
+            <span class="material-symbols-rounded">add</span>
             <span>Create</span>
           </button>
           <ul class="dropdown-menu dropdown-menu-quick-action" aria-labelledby="quick-actions-dropdown">
             <li class="dropdown-header">Quick Action Shortcuts</li>
             <li><a class="dropdown-item" href="#"><i class="bi bi-file-earmark-plus"></i> New Invoice</a></li>
             <li><a class="dropdown-item" href="#"><i class="bi bi-person-plus"></i> New User</a></li>
-            <li><a class="dropdown-item" href="#"><i class="bi bi-box-seam"></i> New Product</a></li>
+            <li><a class="dropdown-item" href="#"><span class="material-symbols-rounded">inventory_2</span> New Product</a></li>
             <li>
               <hr class="dropdown-divider">
             </li>
-            <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> System Settings</a></li>
+            <li><a class="dropdown-item" href="#"><span class="material-symbols-rounded">settings</span> System Settings</a></li>
           </ul>
         </div>
       </div>
@@ -159,7 +159,7 @@
       <div class="navbar-search-wrapper">
         <input type="text" class="navbar-search-input" placeholder="Search anything in Spark..." id="main-search">
         <button class="navbar-search-btn" aria-label="Search">
-          <i class="bi bi-search"></i>
+          <span class="material-symbols-rounded">search</span>
         </button>
       </div>
 
@@ -185,7 +185,7 @@
               <!-- Sale Notification -->
               <a href="#" class="notification-item">
                 <div class="notification-icon bg-success text-white">
-                  <i class="bi bi-wallet2"></i>
+                  <span class="material-symbols-rounded">account_balance_wallet</span>
                 </div>
                 <div class="notification-content">
                   <p class="notification-text">New sale received: <strong>$150.00</strong></p>
@@ -196,7 +196,7 @@
               <!-- User Registration Notification -->
               <a href="#" class="notification-item">
                 <div class="notification-icon bg-primary text-white">
-                  <i class="bi bi-person-plus-fill"></i>
+                  <span class="material-symbols-rounded">person_add</span>
                 </div>
                 <div class="notification-content">
                   <p class="notification-text">New user registered: <strong>John Doe</strong></p>
@@ -207,7 +207,7 @@
               <!-- Low Stock Notification -->
               <a href="#" class="notification-item">
                 <div class="notification-icon bg-warning text-dark">
-                  <i class="bi bi-box-seam-fill"></i>
+                  <span class="material-symbols-rounded">inventory</span>
                 </div>
                 <div class="notification-content">
                   <p class="notification-text">Stock running low: <strong>Hoodie</strong></p>
@@ -225,12 +225,12 @@
             aria-expanded="false" id="profile-dropdown">
             <img src="{{ asset('spark-admin-1.0.0/assets/images/avatar.png') }}" alt="Profile Image" class="navbar-profile-img">
             <span class="navbar-profile-name d-none d-md-inline">Administrator</span>
-            <i class="bi bi-chevron-down navbar-profile-caret"></i>
+            <span class="material-symbols-rounded navbar-profile-caret">keyboard_arrow_down</span>
           </button>
           <ul class="dropdown-menu dropdown-menu-end dropdown-menu-profile" aria-labelledby="profile-dropdown">
             <li class="dropdown-header">Welcome !</li>
-            <li><a class="dropdown-item" href="#"><i class="bi bi-person"></i> My Account</a></li>
-            <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Settings</a></li>
+            <li><a class="dropdown-item" href="#"><span class="material-symbols-rounded">person</span> My Account</a></li>
+            <li><a class="dropdown-item" href="#"><span class="material-symbols-rounded">settings</span> Settings</a></li>
             <li><a class="dropdown-item" href="#"><i class="bi bi-lock"></i> Lock Screen</a></li>
             <li>
               <hr class="dropdown-divider">
@@ -252,7 +252,7 @@
       <button class="btn-date-picker" type="button" id="date-picker-trigger">
         <i class="bi bi-calendar4-event"></i>
         <span id="selected-date-range">January 12, 2026 - January 23, 2026</span>
-        <i class="bi bi-chevron-down ms-1"></i>
+        <span class="material-symbols-rounded ms-1">keyboard_arrow_down</span>
       </button>
     </div>
     <!-- END: Dashboard Header Banner -->
@@ -469,8 +469,8 @@
                     <i class="bi bi-three-dots"></i>
                   </button>
                   <ul class="dropdown-menu dropdown-menu-end dropdown-menu-custom">
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-plus-lg"></i> Add Product</a></li>
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Manage</a></li>
+                    <li><a class="dropdown-item" href="#"><span class="material-symbols-rounded">add</span> Add Product</a></li>
+                    <li><a class="dropdown-item" href="#"><span class="material-symbols-rounded">settings</span> Manage</a></li>
                   </ul>
                 </div>
               </div>

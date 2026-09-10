@@ -15,11 +15,13 @@ Route::get('/', function () {
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
-    // Core Entity Resources
-    Route::resource('roles', RoleController::class)->except(['show']);
-    Route::resource('users', UserController::class)->except(['show']);
-    Route::resource('categories', CategoryController::class)->except(['show']);
-    Route::resource('products', ProductController::class)->except(['show']);
+    // Core Entity Resources (Administrator only)
+    Route::middleware(['role:Administrator'])->group(function () {
+        Route::resource('roles', RoleController::class)->except(['show']);
+        Route::resource('users', UserController::class)->except(['show']);
+        Route::resource('categories', CategoryController::class)->except(['show']);
+        Route::resource('products', ProductController::class)->except(['show']);
+    });
 
     // Profile
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

@@ -11,45 +11,61 @@ use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
 use Exception;
 
+/**
+ * ProductController: Pengatur alur pertukaran formulir entitas Produk seraya mendelegasikan
+ * kerumitan transaksi (termasuk penyimpanan gambar) sepenuhnya kepada ProductService.
+ */
 class ProductController extends Controller
 {
+    /**
+     * Dependency Injection untuk ProductService.
+     * Logika bisnis dipisah ke Service Pattern agar Controller tetap tipis (Thin Controller).
+     */
     public function __construct(
         protected ProductService $productService
     ) {}
 
     /**
-     * Display a listing of the resource.
+     * Menampilkan daftar semua kueri produk.
      */
-    public function index(\Illuminate\Http\Request $request)
+    public function index(\Illuminate\Http\Request $request): \Illuminate\View\View|\Symfony\Component\HttpFoundation\StreamedResponse
     {
+        // Cek request untuk ekspor CSV, lalu delegasikan ke Service.
         if ($request->has('export') && $request->export === 'csv') {
             return $this->productService->exportCsv($request);
         }
 
+        // Mengambil data produk dengan filter dari Service berserta paginasinya
         $products = $this->productService->getFilteredQuery($request)->paginate(10)->withQueryString();
+        // Mengembalikan View dengan membawa data produk
         return view('products.index', compact('products'));
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Menampilkan form untuk membuat resource baru.
      */
     public function create(): View
     {
+        // Mengambil semua data kategori untuk kebutuhan dropdown pilihan
         $categories = Category::all();
         return view('products.create', compact('categories'));
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Menyimpan data resource baru ke database.
      */
     public function store(StoreProductRequest $request): RedirectResponse
     {
-        $this->productService->store($request->validated(), $request->file('photo'));
+        // Parameter Request telah divalidasi oleh Form Request (StoreProductRequest). 
+        // Lakukan pemanggilan logika penyimpanan utama yang berada di dalam ProductService.
+        $this->productService->store($request->validated(), $request->file('product_photo'));
+        
+        // Redirect kembali ke halaman list produk beserta pesan sukses. 
         return redirect()->route('products.index')->with('success', 'Product created successfully.');
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Menampilkan form untuk menyunting resource yang dipilih.
      */
     public function edit(Product $product): View
     {
@@ -58,23 +74,28 @@ class ProductController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Memperbarui resource tertentu pada database.
      */
     public function update(UpdateProductRequest $request, Product $product): RedirectResponse
     {
-        $this->productService->update($product, $request->validated(), $request->file('photo'));
+        // Parameter input masuk melalui Form Request yang memegang aturan validasi.
+        // Data yang tervalidasi kemudian diteruskan ke ProductService.
+        $this->productService->update($product, $request->validated(), $request->file('product_photo'));
+        
         return redirect()->route('products.index')->with('success', 'Product updated successfully.');
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Menghapus resource dari database.
      */
     public function destroy(Product $product): RedirectResponse
     {
         try {
+            // Meneruskan model untuk dihapus oleh ProductService.
             $this->productService->delete($product);
             return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
         } catch (Exception $e) {
+            // Menangkap semua pengecualian yang dilemparkan oleh Service
             return redirect()->route('products.index')->with('error', $e->getMessage());
         }
     }

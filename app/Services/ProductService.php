@@ -8,41 +8,44 @@ use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Exception;
 
+/**
+ * ProductService memberikan penanganan manipulasi Barang Dagang,
+ * termasuk manajemen file Foto/Gambar fisiknya.
+ */
 class ProductService
 {
-    public function getFilteredQuery($request)
+    /**
+     * Menyusun urutan Kueri (Product Builder) sembari meramu join ringan "Category".
+     */
+    public function getFilteredQuery(\Illuminate\Http\Request $request): \Illuminate\Database\Eloquent\Builder
     {
-        $query = Product::with('category')->latest();
+        $query = \App\Models\Product::query()->with('category')->latest();
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%")
-                  ->orWhere('barcode', 'like', "%{$search}%");
-            });
+            $query->where('product_name', 'like', "%{$search}%");
         }
         return $query;
     }
 
-    public function exportCsv($request): StreamedResponse
+    /**
+     * Mendownload spreadsheet format Comma Separated Value seluruh inventori katalog.
+     */
+    public function exportCsv(\Illuminate\Http\Request $request): StreamedResponse
     {
         $query = $this->getFilteredQuery($request);
         $fileName = 'products_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
 
         return response()->streamDownload(function () use ($query) {
             $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['ID', 'Name', 'SKU', 'Barcode', 'Category', 'Price', 'Cost Price', 'Stock', 'Status']);
+            fputcsv($handle, ['ID', 'Product Name', 'Category', 'Price', 'Stock', 'Status']);
 
             $query->chunk(100, function ($products) use ($handle) {
                 foreach ($products as $product) {
                     fputcsv($handle, [
                         $product->id,
-                        $product->name,
-                        $product->sku,
-                        $product->barcode,
-                        $product->category ? $product->category->name : '-',
-                        $product->price,
-                        $product->cost_price ?? 0,
+                        $product->product_name,
+                        $product->category ? $product->category->category_name : '-',
+                        $product->product_price,
                         $product->stock,
                         $product->is_active ? 'Active' : 'Inactive'
                     ]);
@@ -56,22 +59,15 @@ class ProductService
     }
 
     /**
-     * Store a new product.
+     * Insersi data item komersial. Mengendalikan operasi unggah gambar (Storage Publik) otomatis jika terlampir.
      */
     public function store(array $data, $file = null): Product
     {
         return DB::transaction(function () use ($data, $file) {
             $data['is_active'] = isset($data['is_active']) ? (bool) $data['is_active'] : false;
-            $data['cost_price'] = $data['cost_price'] ?? 0;
-
-            if (empty($data['sku'])) {
-                $lastProduct = Product::latest('id')->first();
-                $nextId = $lastProduct ? $lastProduct->id + 1 : 1;
-                $data['sku'] = 'PRD-' . str_pad($nextId, 5, '0', STR_PAD_LEFT);
-            }
 
             if ($file) {
-                $data['photo'] = $file->store('products', 'public');
+                $data['product_photo'] = $file->store('products', 'public');
             }
 
             return Product::create($data);
@@ -79,23 +75,18 @@ class ProductService
     }
 
     /**
-     * Update an existing product.
+     * Perbarui entitas lama. Termasuk mengamati file lama untuk dihapus jika digantikan foto yang lebih baru.
      */
     public function update(Product $product, array $data, $file = null): Product
     {
         return DB::transaction(function () use ($product, $data, $file) {
             $data['is_active'] = isset($data['is_active']) ? (bool) $data['is_active'] : false;
-            $data['cost_price'] = $data['cost_price'] ?? 0;
-
-            if (empty($data['sku'])) {
-                $data['sku'] = 'PRD-' . str_pad($product->id, 5, '0', STR_PAD_LEFT);
-            }
 
             if ($file) {
-                if ($product->photo && Storage::disk('public')->exists($product->photo)) {
-                    Storage::disk('public')->delete($product->photo);
+                if ($product->product_photo && Storage::disk('public')->exists($product->product_photo)) {
+                    Storage::disk('public')->delete($product->product_photo);
                 }
-                $data['photo'] = $file->store('products', 'public');
+                $data['product_photo'] = $file->store('products', 'public');
             }
 
             $product->update($data);
@@ -105,19 +96,19 @@ class ProductService
     }
 
     /**
-     * Delete a product.
+     * Destruksi spesifik produk komoditas seutuhnya termasuk meratakan aset gambar.
      */
     public function delete(Product $product): bool
     {
         return DB::transaction(function () use ($product) {
             if ($product->orderDetails()->exists()) {
-                throw new Exception('Cannot delete product "' . $product->name . '" because it is referenced in ' . $product->orderDetails()->count() . ' order(s). Archive it instead.');
+                throw new Exception('Tidak dapat menghapus produk "' . $product->product_name . '" karena terdapat dalam ' . $product->orderDetails()->count() . ' pesanan.');
             }
 
-            if ($product->photo && Storage::disk('public')->exists($product->photo)) {
-                Storage::disk('public')->delete($product->photo);
+            if ($product->product_photo && Storage::disk('public')->exists($product->product_photo)) {
+                Storage::disk('public')->delete($product->product_photo);
             }
-            
+
             return $product->delete();
         });
     }

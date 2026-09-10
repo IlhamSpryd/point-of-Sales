@@ -147,3 +147,49 @@ Sebagai penyempurnaan akhir (final touch) pada antarmuka dan pengalaman pengguna
 *   **SPA-Like Navigation & State Persistence:** Implementasi navigasi yang mulus menyerupai *Single Page Application* (SPA) menggunakan Alpine.js dan `localStorage`. Pendekatan ini memastikan persistensi *state* (seperti status *sidebar* terbuka/tertutup) antar halaman tanpa efek *flicker* saat memuat ulang.
 *   **Premium Monochromatic Palette:** Transisi total desain ke palet warna monokromatik minimalis premium (menggunakan paduan *Slate/Zinc*). Pendekatan ini memberikan kesan elegan, bersih, dan memfokuskan atensi pengguna pada data operasional.
 *   **Gemini-Inspired Micro-Interactions:** Penambahan *micro-interaction* bertenaga CSS murni (`group-hover`) pada logo *sidebar* dan tombol *expand*. Interaksi ini memicu transisi ikon seketika yang sangat responsif layaknya *Google Gemini*, meniadakan *scripting* DOM berlebih demi performa UI yang absolut.
+
+---
+
+## Struktur Folder Proyek
+Sebagai aplikasi berbasis framework Laravel terskalabilitas (*Enterprise-grade*) yang telah mengimplementasikan pola modern (termasuk *Service Pattern* dan *Form Request*), berikut adalah susunan dan pemetaan hierarki direktori utamanya:
+
+*   **`app/`** – Jantung core dari sistem backend (Backend Logic).
+    *   **`Console/`** – Berisi peruntukan _commands_ kustom pada terminal tipe Artisan.
+    *   **`Http/`** 
+        *   **`Controllers/`** – Pusat pertukaran lalu-lintas _request_ dan _response_. Pada arsitektur POS ini, Controller dijaga seminimal mungkin (*Thin Controller* Paradigm).
+        *   **`Requests/`** – Kumpulan kelas *Form Request Validation*. Lapisan penjagaan otoritas (*guard layer*) yang memfilter semua parameter injeksi asing memastikannya valid.
+    *   **`Models/`** – Cetak biru interaksi Data (Eloquent ORM). Mendefinisikan tabel mutlak dan relasi *(HasMany/BelongsTo)*, beserta properti `SoftDeletes` pengaman data historikal riwayat penghapusan.
+    *   **`Providers/`** – Pusat Injeksi (Binding) dependensi global (`AppServiceProvider.php`). Eksekutor awalan *bootstrapping* aplikasi.
+    *   **`Services/`** – Eksekutor tunggal algoritma mutasi data berat (Seperti Logika Generate Nomor SKU, Mutasi Upload Image, filter, hingga *Query CSV Export*). *Layer* Service disuntikkan secara aman ke Controllers untuk mengkarantina kode rumit.
+*   **`bootstrap/`** – Script *caching* & proses pembangunan *instance* rangka Laravel tepat sebelum HTTP Kernel dimulai.
+*   **`config/`** – Sekumpulan deklarasi pengaturan konstan sistem POS (Sesi, Cache, Databse, JWT, dll).
+*   **`database/`** – Ruang operasional arsitektural manajemen rupa Skema DDL.
+    *   **`migrations/`** – Sejarah runutan jejak evolusi tabel *(Schema Build)* dalam format objek perintah PHP.
+    *   **`factories/` & `seeders/`** – Fasilitator pembuatan data palsu (Mock Data) masal untuk menggenjot uji coba performa aplikasi.
+*   **`public/`** – Gerbang masuk satu-satu (satu gerbang depan) aplikasi (`index.php`). Aset gambar publik (*Symbolic Link Storage*), SVG _Sprites_, hingga *favicon* diletakkan pada lingkungan akses terluar bebas-autentikasi ini.
+*   **`resources/`** – Pabrik Perakitan _Assets_ Mentah & Kerangka Tampilan User Interface.
+    *   **`css/` & `js/`** – File-file injeksi logika UI murni (file inisiasi Alpine.js & direktiva @tailwind class basis murni) untuk dikompresi Vite.
+    *   **`views/`** – Habitat dari representasi antarmuka (`.blade.php`). Digolongkan ke dalam subdirektori modul (`/users`, `/products`) serta dipisahkan hierarkinya menuju komponen interaktif independen (`components/`).
+*   **`routes/`** – Pemusatan manajemen rute (URL). Melalui `web.php`, lalu lintas HTTP digembok dibelakang rantai *Middleware Auth* agar sesi *Guest* tak dapat meretas form POS krusial.
+*   **`storage/`** – Isolasi keamanan di luar jangkauan browser awam (Secure Local Directory) bagi data statis aplikasi. Menampung Cache kompiler *Blade*, Catatan penelusuran (Crash Logs/Errors log), dan pendaratan utama (*file destination*) fisik dari Foto Katalog dan Produk yang diunggah Staf admin.
+*   **`tests/`** – Eksekutor rutinitas skrip tes otomatis (PHPUnit).
+*   **`vendor/`** – Kantong modul hitam raksasa binar _dependencies library_ (Tendered by Composer) yang menghidupkan ekosistem PHP dan sekutu *third-party* POS ini.
+
+---
+
+## Fase 4: Sinkronisasi UjiKom & Standarisasi UI Global
+
+Fase krusial terakhir adalah pelurusan arsitektur agar selaras dengan tuntutan teknis spesifik dari sertifikasi (UjiKom), tanpa memutus integritas *enterprise* yang telah tertanam, disempurnakan dengan pemolesan ikon industri global:
+
+### 1. Kepatuhan Mutlak Basis Data
+*   **Database Synchronization:** Skema tabel direkayasa balik (reverse-engineered) agar patuh 100% pada *Entity Relationship Diagram (ERD)* standar yang diwajibkan UjiKom.
+*   **Kolom yang Didrop:** Variabel surplus khas korporat *(phone_number, sku, barcode, cost_price, is_active)* secara sadar dibuang (diturunkan versinya) agar tak membebani pengujian tingkat _Junior_. Tabel inti (*users, roles, products, categories, orders*) kini identik secara penamaan dan tipe relasi dengan cetak biru soal.
+*   **Role-Based Access Control (RBAC):** Menanamkan middleware `RoleMiddleware` dan *RoleSeeder* berisi ekosistem autentikasi murni 3 kasta (Administrator, Kasir, Pimpinan), dimana navigasi inventaris eksklusif hanya untuk mata Administrator.
+
+### 2. Standarisasi Tampilan Form Lebar Penuh (Full-Width Forms)
+Demi menyingkirkan nuansa form kikuk (*awkward white spaces*) dan memaksimalkan *screen real-estate*, limitasi kaku desain bawaan *max-w-3xl* dihapus total. Form Create, Edit, serta Profile kini ekspansif melebar utuh, menghidangkan antarmuka input data level dasbor operasi perusahaan yang megah dan kohesif *(w-full)*.
+
+### 3. Migrasi Ikonografi Global (Google Material Symbols)
+*   Sistem menceraikan ekosistem *Bootstrap Icons (bi-bi)* yang dinilai kuno/kurang *seamless* secara organik.
+*   Digantikan serentak pada seluruh titik buta navigasi, metrik, tombol aksi, serta penanda status kosong menggunakan **Google Material Symbols (Rounded)**. Intervensi gaya membulat, seragam *size* relatif 20px ini sukses mereplikatif ekosistem antarmuka bertaraf korporat *Google Workspace/Gemini*, menuntaskan kesan kemewahan dan fungsionalitas UI POS.
+

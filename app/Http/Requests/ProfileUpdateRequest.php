@@ -7,10 +7,13 @@ use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
+/**
+ * Request khusus bawaan Laravel Breeze untuk perombakan data profil otentikasi akun itu sendiri (Current User).
+ */
 class ProfileUpdateRequest extends FormRequest
 {
     /**
-     * Get the validation rules that apply to the request.
+     * Mengambil daftar hukum validasi bagi pembaruan profil yang telah diadopsi.
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
