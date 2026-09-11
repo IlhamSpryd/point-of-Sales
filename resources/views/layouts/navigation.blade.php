@@ -96,8 +96,48 @@
                 </a>
             </li>
 
-            {{-- Catalog (Collapsible Group) - Only for Administrator --}}
-            @if(auth()->check() && auth()->user()->role?->name === 'Administrator')
+            {{-- Transaksi (Hanya Kasir) --}}
+            @if(auth()->check() && auth()->user()->role?->name === 'Kasir')
+            <li>
+                <a href="{{ route('transaction.create') }}"
+                   class="group flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 relative overflow-hidden whitespace-nowrap
+                          {{ request()->routeIs('transaction.*')
+                              ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
+                              : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/70 dark:hover:bg-gray-800/60' }}"
+                   :class="expanded ? 'px-3 py-2.5' : 'px-0 py-2.5 justify-center'"
+                   title="Point of Sales">
+                    @if(request()->routeIs('transaction.*'))
+                        <span class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-primary-600 rounded-r-full" :class="expanded ? 'opacity-100' : 'opacity-0'"></span>
+                    @endif
+                    <span class="material-symbols-rounded text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''">point_of_sale</span>
+                    <span :class="expanded ? 'opacity-100 w-auto ml-3' : 'opacity-0 w-0 ml-0'"
+                          class="transition-all duration-200 overflow-hidden whitespace-nowrap">Point of Sales</span>
+                </a>
+            </li>
+            @endif
+
+            {{-- Laporan Penjualan (Hanya Pimpinan) --}}
+            @if(auth()->check() && auth()->user()->role?->name === 'Pimpinan')
+            <li>
+                <a href="{{ route('reports.sales') }}"
+                   class="group flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 relative overflow-hidden whitespace-nowrap
+                          {{ request()->routeIs('reports.*')
+                              ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
+                              : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/70 dark:hover:bg-gray-800/60' }}"
+                   :class="expanded ? 'px-3 py-2.5' : 'px-0 py-2.5 justify-center'"
+                   title="Laporan Penjualan">
+                    @if(request()->routeIs('reports.*'))
+                        <span class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-primary-600 rounded-r-full" :class="expanded ? 'opacity-100' : 'opacity-0'"></span>
+                    @endif
+                    <span class="material-symbols-rounded text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''">analytics</span>
+                    <span :class="expanded ? 'opacity-100 w-auto ml-3' : 'opacity-0 w-0 ml-0'"
+                          class="transition-all duration-200 overflow-hidden whitespace-nowrap">Laporan</span>
+                </a>
+            </li>
+            @endif
+
+            {{-- Catalog (Collapsible Group) - For Admin, Kasir, Pimpinan --}}
+            @if(auth()->check() && in_array(auth()->user()->role?->name, ['Administrator', 'Kasir', 'Pimpinan']))
             <li x-data="{ subOpen: {{ request()->routeIs('products.*') || request()->routeIs('categories.*') ? 'true' : 'false' }} }">
                 <button @click="subOpen = !subOpen; if(!expanded) expanded = true;"
                         class="group w-full flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 overflow-hidden whitespace-nowrap

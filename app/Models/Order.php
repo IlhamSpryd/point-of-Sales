@@ -13,7 +13,19 @@ class Order extends Model
     /**
      * Data isian order yang diizinkan untuk disisipkan ke dalam basis data secara bersamaan.
      */
-    protected $fillable = ['user_id', 'order_code', 'order_date', 'order_amount', 'order_change', 'order_status'];
+    protected $fillable = [
+        'user_id',
+        'order_code',
+        'order_date',
+        'subtotal_amount',
+        'tax_amount',
+        'order_amount',
+        'order_change',
+        'order_status',
+        'payment_method',
+        'snap_token',
+        'cash_received',
+    ];
 
     /**
      * Konversi tipe data otomatis.

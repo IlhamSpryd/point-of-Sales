@@ -193,3 +193,26 @@ Demi menyingkirkan nuansa form kikuk (*awkward white spaces*) dan memaksimalkan 
 *   Sistem menceraikan ekosistem *Bootstrap Icons (bi-bi)* yang dinilai kuno/kurang *seamless* secara organik.
 *   Digantikan serentak pada seluruh titik buta navigasi, metrik, tombol aksi, serta penanda status kosong menggunakan **Google Material Symbols (Rounded)**. Intervensi gaya membulat, seragam *size* relatif 20px ini sukses mereplikatif ekosistem antarmuka bertaraf korporat *Google Workspace/Gemini*, menuntaskan kesan kemewahan dan fungsionalitas UI POS.
 
+---
+
+## Fase 5: Integrasi Pembayaran Lanjutan & Penyelarasan Alur POS (Midtrans Core)
+
+Fase ini menandai modernisasi sistem kasir dalam menangani jenis pembayaran (*Cash/Cashless*), merapikan celah kegagalan di dalam logika Order, dan menghadirkan alur konfirmasi transaksi yang solid sesuai *best-practice* industri ritel.
+
+### 1. Perombakan Model & Integritas Penyimpanan Transaksi
+*   **Fix Eloquent Fillable**: Menyuntikkan secara eksplisit field `payment_method`, `snap_token`, `subtotal_amount`, `tax_amount`, dan `cash_received` ke dalam proteksi `$fillable` di model `Order.php`. Kegagalan masif pada fase pencatatan metode bayar dan token pembayaran karena *mass-assignment shield* Laravel telah diselesaikan seketika.
+*   **Database Expansion (Migration)**: Mengekspansi *Schema* tabel `orders` agar menyimpan rekam jejak hitungan subtotal, pajak PPN 10%, dan uang tunai secara riil menggunakan tipe kolom presisi `Decimal`. Kehadiran fitur ini melepaskan program dari *ketergantungan kalkulasi ulang (re-calculation overhead)* di setiap pemuatan ulang halaman.
+
+### 2. Standarisasi Service Pembayaran (Midtrans Snap)
+Logika eksekusi pesanan kompleks dipusatkan di dalam komponen sentral `TransactionService.php`. Hal ini memfasilitasi integrasi cerdas API *Midtrans Snap* secara langsung:
+*   **Intelligent Gateway Mapping**: Mengawinkan secara dinamis properti variabel API tipe Midtrans `enabled_payments` langsung berdasarkan metode bayar (misal: *e-wallet* untuk GoPay/ShopeePay, QRIS) sehingga popup pembayaran *(Snap JS)* selalu menyoroti metode yang tepat di lingkungan kasir tanpa menampilkan dompet virtual abal-abal yang *irrelevant*.
+*   **Transaction Lock via DB::transaction**: Memastikan bahwa pesanan (order) tidak akan tercetak dalam sistem bila API Midtrans menolak penerbitan *Token*, menghindarkan basis data dari inkonsistensi transaksi yang bocor stok inventarisnya (Phantom Orders).
+
+### 3. Perutean Terminal & Halaman Finalisasi UI
+Meniadakan skenario *dead-end* di mana kasir menemui tombol *blank* setelah popup Midtrans lenyap, POS UI/UX merombak kerangka kerja peruteannya dari nol dengan menghadirkan:
+*   **Halaman Payment Success**: Semua pesanan valid akan otomatis me-_redirect_ antarmuka sistem menuju `/payment/success`. Terinspirasi secara mutlak dari navigasi e-commerce tingkat lanjut, *Interface* layar penuh ini memandu pengguna pada konfirmasi sukses instan serta pintasan besar guna mencetak struk secara termal *(Thermal Prints)*.
+*   **Fasilitas Cetak Struk WebUSB**: Menghadirkan halaman render terpisah yang berdiri independen berbasis HTML/CSS native (`transaction.receipt`) khusus demi optimalisasi perangkat eksternal (*Receipt Printers* 80/58mm). Renderan membuat paksa cetakan *window.print()* seketika dengan format struk minimalis yang bersih.
+*   **API Localhost Synchronization**: Menyediakan rute internal pelacak API terselubung *(`/api/orders/{id}/sync-status`)*. Sistem bertindak sangat adaptif mem-bypass limitasi jaringan statis (Tanpa koneksi Webhook Live / di environment sandbox localhost) dengan meminta pembacaan pro-aktif dari API `Transaction::status()` Midtrans demi menyeleksi pembayaran lunas secara *synchronous* layaknya mesin webhook asli.
+
+Ini mengukuhkan *Point of Sales* ini tak cuma sebatas form input CRUD biasa, melainkan jembatan komersil transaksional absolut layaknya sistem retail masa depan.
+
