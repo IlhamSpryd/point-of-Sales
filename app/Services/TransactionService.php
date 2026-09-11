@@ -8,6 +8,7 @@ use App\Models\Product;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use App\Enums\OrderStatus;
 use Midtrans\Config;
 use Midtrans\Snap;
 
@@ -66,9 +67,17 @@ class TransactionService
             }
 
             // Pajak 10%
-            $taxRate = 0.10;
+            // Dipindahkan ke config/pos.php agar tarif pajak & aturan pembulatan tidak
+            // terduplikasi dan berisiko tidak sinkron antara Controller dan Service.
+            $taxRate = config('pos.tax_rate', 0.10);
             $taxAmount = (int) round($subtotalAmount * $taxRate);
             $totalAmount = (int) ($subtotalAmount + $taxAmount);
+
+            // Pembulatan WAJIB dilakukan di backend, bukan hanya di Alpine.js,
+            // agar order_amount yang tersimpan sama persis dengan nominal yang
+            // disepakati kasir & pelanggan di layar (single source of truth).
+            $roundingValue = config('pos.rounding_value', 100);
+            $totalAmount = (int) (round($totalAmount / $roundingValue) * $roundingValue);
 
             $paymentMethod = $data['payment_method'] ?? 'cash';
             $cashReceived = $data['cash_received'] ?? null;
@@ -79,12 +88,22 @@ class TransactionService
             }
 
             // Status awal: cash = paid, non-cash = pending (menunggu konfirmasi Midtrans)
-            $initialStatus = $paymentMethod === 'cash' ? 'paid' : 'pending';
+            $initialStatus = $paymentMethod === 'cash' ? OrderStatus::Paid->value : OrderStatus::Pending->value;
 
             // Generate order code unik
             do {
                 $orderCode = 'POS-' . strtoupper(Str::random(6)) . '-' . rand(100, 999);
             } while (Order::where('order_code', $orderCode)->exists());
+
+            // Validasi keamanan sisi server: pastikan uang tunai cukup untuk total tagihan.
+            // Pengecekan di frontend (Alpine.js, pos-script.blade.php) bisa dilewati
+            // dengan mengirim request langsung ke endpoint transaction.store, sehingga
+            // validasi ini WAJIB diulang di sini sebagai sumber kebenaran terakhir.
+            if ($paymentMethod === 'cash' && (int) $cashReceived < $totalAmount) {
+                throw ValidationException::withMessages([
+                    'cash_received' => 'Uang tunai yang diterima tidak mencukupi total tagihan.',
+                ]);
+            }
 
             // Buat record Order dengan semua field lengkap
             $order = Order::create([
@@ -151,9 +170,10 @@ class TransactionService
                 $enabledPayments = match ($paymentMethod) {
                     'qris' => ['other_qris', 'gopay'],
                     'ewallet' => ['gopay', 'shopeepay'],
-                    'bank_transfer' => ['bca_va', 'bni_va', 'bri_va', 'permata_va', 'other_va', 'echannel'],
-                    'credit_card' => ['credit_card'],
-                    'cstore' => ['indomaret', 'alfamart'],
+                    // Opsi metode pembayaran ini dihapus karena tidak pernah diaktifkan lewat
+                    // $activePaymentMethods (TransactionController::create()) — menyederhanakan
+                    // kode agar sesuai cakupan kebutuhan UjiKom.
+                    // TODO: aktifkan setelah $activePaymentMethods mendukung.
                     default => []
                 };
 

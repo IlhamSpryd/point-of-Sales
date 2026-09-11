@@ -129,8 +129,10 @@
                                     <p class="text-[13px] font-semibold text-zinc-500 mt-0.5">{{ $order->created_at?->format('F d, Y • h:i A') ?? now()->format('F d, Y') }}</p>
                                 </div>
                             </div>
-                            <span class="text-[15px] font-extrabold {{ $order->order_status == 'completed' ? 'text-emerald-500' : 'text-amber-500' }}">
-                                {{ $order->order_status == 'completed' ? '+' : '' }}Rp {{ number_format($order->order_amount, 0, ',', '.') }}
+                            {{-- PERBAIKAN: sebelumnya membandingkan status 'completed' yang tidak pernah ada di sistem --}}
+                            {{-- (TransactionService hanya set 'paid'/'pending'), sehingga Net Income selalu Rp 0. --}}
+                            <span class="text-[15px] font-extrabold {{ $order->order_status == 'paid' ? 'text-emerald-500' : 'text-amber-500' }}">
+                                {{ $order->order_status == 'paid' ? '+' : '' }}Rp {{ number_format($order->order_amount, 0, ',', '.') }}
                             </span>
                         </div>
                         @empty

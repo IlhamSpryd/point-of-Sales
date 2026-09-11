@@ -17,12 +17,8 @@
             uangDibayarFormatted: '',
             paymentMethod: initialData.paymentMethod || 'cash',
 
-            // --- Discount State ---
-            canApplyDiscount: initialData.canApplyDiscount || false,
-            showDiscountPanel: false,
-            discountType: 'none',         // 'none' | 'fixed' | 'percentage'
-            discountValueFormatted: '',   // Formatted input string
-            discountValueRaw: 0,          // Raw numeric value
+            // Fitur diskon dihapus (dead code) karena backend tidak mengimplementasikannya,
+            // untuk mencegah selisih hitungan frontend vs backend.
 
             init() {
                 // Pre-compute lowercase names to optimize search performance
@@ -75,32 +71,13 @@
                 return this.cart.reduce((sum, item) => sum + (item.harga * item.qty), 0);
             },
 
-            // --- Computed: Discount Amount (Pre-Tax) ---
-            get discountAmount() {
-                if (this.discountType === 'none' || this.discountValueRaw <= 0) return 0;
-
-                let amount = 0;
-                if (this.discountType === 'percentage') {
-                    let pct = Math.min(this.discountValueRaw, 100); // Hard-cap 100%
-                    amount = Math.round(this.cartSubtotal * pct / 100);
-                } else if (this.discountType === 'fixed') {
-                    amount = Math.min(this.discountValueRaw, this.cartSubtotal); // Hard-cap di subtotal
-                }
-
-                // Final hard-cap: never exceed subtotal
-                return Math.min(amount, this.cartSubtotal);
-            },
-
-            // --- Computed: Tax (Pre-Tax Discount Standard) ---
-            // Pajak dihitung dari (subtotal - diskon), bukan subtotal penuh
+            // --- Computed: Tax ---
             get taxAmount() {
-                let discountedSubtotal = this.cartSubtotal - this.discountAmount;
-                return discountedSubtotal * this.taxRate;
+                return this.cartSubtotal * this.taxRate;
             },
 
             get totalAmount() {
-                let discountedSubtotal = this.cartSubtotal - this.discountAmount;
-                let rawTotal = discountedSubtotal + this.taxAmount;
+                let rawTotal = this.cartSubtotal + this.taxAmount;
                 let finalTotal = rawTotal;
                 
                 if (this.roundingBehavior === 'ROUND_NEAREST') {
@@ -114,52 +91,6 @@
                 }
                 
                 return finalTotal;
-            },
-
-            // --- Discount Input Handlers ---
-            formatInputDiskon(e) {
-                if (this.discountType === 'fixed') {
-                    let val = this.discountValueFormatted.toString().replace(/[^0-9]/g, '');
-                    this.discountValueRaw = parseInt(val) || 0;
-                    this.discountValueFormatted = val ? this.formatRupiah(val) : '';
-                } else if (this.discountType === 'percentage') {
-                    // Allow decimals for percentage
-                    let val = this.discountValueFormatted.toString().replace(/[^0-9.,]/g, '').replace(',', '.');
-                    this.discountValueRaw = parseFloat(val) || 0;
-                    // Don't format percentage — keep as plain number
-                }
-                this.calculateChange();
-            },
-
-            toggleDiscountPanel() {
-                this.showDiscountPanel = !this.showDiscountPanel;
-                if (!this.showDiscountPanel) {
-                    this.clearDiscount();
-                }
-            },
-
-            setDiscountType(type) {
-                // Reset value when switching type to prevent confusion
-                this.discountValueFormatted = '';
-                this.discountValueRaw = 0;
-                this.discountType = type;
-                this.calculateChange();
-            },
-
-            clearDiscount() {
-                this.discountType = 'none';
-                this.discountValueFormatted = '';
-                this.discountValueRaw = 0;
-                this.showDiscountPanel = false;
-                this.calculateChange();
-            },
-
-            // --- Discount Display Helpers ---
-            get discountLabel() {
-                if (this.discountType === 'percentage' && this.discountValueRaw > 0) {
-                    return `Diskon (${Math.min(this.discountValueRaw, 100)}%)`;
-                }
-                return 'Diskon';
             },
 
             addToCart(product) {
@@ -201,8 +132,6 @@
                 this.cart = [];
                 this.uangDibayarFormatted = '';
                 this.orderChange = 0;
-                // Reset diskon saat keranjang dikosongkan
-                this.clearDiscount();
             },
             calculateChange() {
                 let total = this.totalAmount;
@@ -236,12 +165,6 @@
                         payment_method: this.paymentMethod,
                         cash_received: this.uangDibayar
                     };
-
-                    // Sertakan data diskon hanya jika ada dan pengguna diizinkan
-                    if (this.canApplyDiscount && this.discountType !== 'none' && this.discountValueRaw > 0) {
-                        payload.discount_type = this.discountType;
-                        payload.discount_value = this.discountValueRaw;
-                    }
 
                     let response = await fetch(initialData.storeRoute, {
                         method: 'POST',
@@ -279,7 +202,7 @@
                                 onSuccess: (result) => {
                                     this.emptyCart();
                                     this.submitting = false;
-                                    window.location.href = `{{ route('payment.success') }}?order_id=${responseData.order_number}`;
+                                    this.showSuccessPopup(responseData.order_number, false);
                                 },
                                 onPending: (result) => {
                                     alert('Menunggu pembayaran diselesaikan.');
@@ -302,15 +225,15 @@
                                     
                                     this.emptyCart();
                                     this.submitting = false;
-                                    // Redirect ke halaman sukses agar bisa cetak struk
-                                    window.location.href = `{{ route('payment.success') }}?order_id=${responseData.order_number}`;
+                                    // Karena tutup paksa (onClose) bisa berarti belum bayar atau sudah bayar tapi telat callback
+                                    this.showSuccessPopup(responseData.order_number, true);
                                 }
                             });
                     } else {
-                        // Transaksi Tunai berhasil — redirect ke halaman sukses
+                        // Transaksi Tunai berhasil
                         this.emptyCart();
                         this.submitting = false;
-                        window.location.href = `{{ route('payment.success') }}?order_id=${responseData.order_number}`;
+                        this.showSuccessPopup(responseData.order_number, false);
                     }
                 } catch (error) {
                     console.error('Error saat menghubungi server:', error);
@@ -318,145 +241,43 @@
                     this.submitting = false;
                 }
             },
-            async printReceiptWebUSB(orderNumber) {
-                try {
-                    let isDev = "{{ config('app.env') }}" === 'local';
-                    
-                    if (!navigator.usb) {
-                        if (isDev) {
-                            window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'warning', text: 'Print Bypassed: WebUSB not supported (Dev Mode)' } }));
-                            return;
-                        }
-                        throw new Error('WebUSB tidak didukung browser ini.');
+            showSuccessPopup(orderNumber, isPending = false) {
+                let title = isPending ? 'Menunggu Pembayaran' : 'Pembayaran Sukses!';
+                let text = isPending 
+                    ? `Order <b>#${orderNumber}</b> telah di-generate. Silakan selesaikan instruksi pembayaran.`
+                    : `Transaksi <b>#${orderNumber}</b> telah sukses dikonfirmasi oleh sistem.`;
+                let icon = isPending ? 'info' : 'success';
+                
+                Swal.fire({
+                    width: 420,
+                    padding: '2rem 1.5rem',
+                    title: `<div class="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">${title}</div>`,
+                    html: `<p class="text-[14px] font-medium text-gray-500 dark:text-gray-400 leading-relaxed mt-3 px-2">${text}</p>`,
+                    icon: icon,
+                    showCancelButton: true,
+                    confirmButtonText: 'Cetak Struk',
+                    cancelButtonText: 'Tutup',
+                    reverseButtons: true,
+                    allowOutsideClick: false,
+                    buttonsStyling: false,
+                    customClass: {
+                        popup: 'rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xl',
+                        title: 'p-0',
+                        htmlContainer: 'p-0 m-0',
+                        actions: 'mt-8 flex gap-3 w-full px-6 box-border justify-center',
+                        confirmButton: 'flex-1 py-3.5 bg-gray-900 dark:bg-zinc-100 text-white dark:text-gray-900 rounded-[14px] font-bold text-[14px] hover:bg-gray-800 dark:hover:bg-white transition-colors shadow-md whitespace-nowrap',
+                        cancelButton: 'flex-1 py-3.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-[14px] font-bold text-[14px] hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors whitespace-nowrap'
                     }
-            
-                    const devices = await navigator.usb.getDevices();
-                    let device = devices.length > 0 ? devices[0] : null;
-                    
-                    if (!device) {
-                        if (isDev) {
-                            window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'warning', text: 'Print Bypassed: Hardware not connected (Dev Mode)' } }));
-                            return;
-                        }
-                        // In production, try to request device. Note: this requires user gesture, 
-                        // which might fail if not called directly from a click event.
-                        device = await navigator.usb.requestDevice({ filters: [] }).catch(e => null);
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.open(`/transaction/${orderNumber}/receipt`, '_blank');
                     }
-            
-                    if (!device) throw new Error('Printer USB tidak dipilih.');
-            
-                    await device.open();
-                    
-                    if (device.configuration === null) {
-                        await device.selectConfiguration(1);
-                    }
-                    
-                    await device.claimInterface(0);
-            
-                    let response = await fetch(`/api/orders/${orderNumber}/receipt-raw`);
-                    let rawData = await response.text(); 
-                    
-                    const encoder = new TextEncoder();
-                    const data = encoder.encode(rawData);
-            
-                    let endpointNumber = 1;
-                    for (const iface of device.configuration.interfaces) {
-                        for (const alt of iface.alternates) {
-                            for (const ep of alt.endpoints) {
-                                if (ep.direction === 'out') {
-                                    endpointNumber = ep.endpointNumber;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-            
-                    await device.transferOut(endpointNumber, data);
-                    await device.close();
-            
-                    await device.transferOut(endpointNumber, data);
-                    await device.close();
-            
-                } catch (e) {
-                    console.warn('WebUSB Print Failed, attempting iframe fallback:', e);
-                    try {
-                        this.printIframe(orderNumber);
-                    } catch (fallbackError) {
-                        console.error('Iframe fallback print also failed:', fallbackError);
-                    }
-                }
+                });
             },
-            async triggerCashDrawer() {
-                try {
-                    let isDev = "{{ config('app.env') }}" === 'local';
-                    if (!navigator.usb) {
-                         if (isDev) console.log('Drawer Bypassed: No WebUSB');
-                         return;
-                    }
-            
-                    const devices = await navigator.usb.getDevices();
-                    let device = devices.length > 0 ? devices[0] : null;
-                    if (!device) {
-                        if (isDev) console.log('Drawer Bypassed: Hardware not connected');
-                        return; // Do not prompt, it should be silent or pre-configured
-                    }
-            
-                    await device.open();
-                    
-                    if (device.configuration === null) {
-                        await device.selectConfiguration(1);
-                    }
-                    
-                    await device.claimInterface(0);
-            
-                    let response = await fetch(`/api/orders/open-drawer`);
-                    let rawData = await response.text(); 
-                    
-                    const encoder = new TextEncoder();
-                    const data = encoder.encode(rawData);
-            
-                    let endpointNumber = 1;
-                    for (const iface of device.configuration.interfaces) {
-                        for (const alt of iface.alternates) {
-                            for (const ep of alt.endpoints) {
-                                if (ep.direction === 'out') {
-                                    endpointNumber = ep.endpointNumber;
-                                    break;
-                                }
-                            }
-                        }
-                    }
-            
-                    await device.transferOut(endpointNumber, data);
-                    await device.close();
-            
-                } catch (e) {
-                    console.error('WebUSB Drawer Error:', e);
-                }
-            },
-            printIframe(orderNumber) {
-                try {
-                    const iframe = document.createElement('iframe');
-                    iframe.style.display = 'none';
-                    iframe.src = `/order/${orderNumber}/receipt`;
-                    document.body.appendChild(iframe);
-                    
-                    iframe.onload = () => {
-                        try {
-                            iframe.contentWindow.print();
-                        } catch (e) {
-                            console.error('Iframe contentWindow print error', e);
-                        }
-                        setTimeout(() => {
-                            if(document.body.contains(iframe)) {
-                                document.body.removeChild(iframe);
-                            }
-                        }, 10000);
-                    };
-                } catch (e) {
-                    console.error('Print Iframe creation error:', e);
-                }
-            },
+            // Fungsi cetak via WebUSB & cash drawer dihapus karena tidak pernah
+            // dipanggil dari elemen UI manapun (dead code) dan di luar cakupan
+            // kebutuhan UjiKom — cetak struk sudah ditangani cukup oleh halaman
+            // transaction.receipt (window.print() bawaan browser).
             formatRupiah(angka) {
                 return new Intl.NumberFormat('id-ID').format(Math.round(angka));
             }

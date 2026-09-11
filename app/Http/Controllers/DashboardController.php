@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\Product;
+use App\Enums\OrderStatus;
 use Illuminate\Http\Request;
 
 /**
@@ -18,7 +19,9 @@ class DashboardController extends Controller
      */
     public function index(): \Illuminate\View\View
     {
-        $totalEarnings = Order::where('order_status', 'completed')->sum('order_amount');
+        // PERBAIKAN: sebelumnya memfilter status 'completed' yang tidak pernah ada di sistem
+        // (TransactionService hanya set 'paid'/'pending'), sehingga Net Income selalu Rp 0.
+        $totalEarnings = Order::where('order_status', OrderStatus::Paid->value)->sum('order_amount');
         $totalOrders = Order::count();
         $newCustomers = User::count();
         $productsCount = Product::count();

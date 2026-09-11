@@ -30,7 +30,6 @@
     'roundingValue' => $roundingValue,
     'activePaymentMethods' => $activePaymentMethods,
     'hardwareAutoDrawer' => $hardwareAutoDrawer,
-    'canApplyDiscount' => $canApplyDiscount,
     'orderChange' => old('order_change', 0),
     'storeRoute' => route('transaction.store')
 ]) }})"
@@ -305,10 +304,6 @@
                                 <span class="text-[12px] text-gray-500 dark:text-gray-400 font-medium">{{ __('Subtotal') }}</span>
                                 <span class="text-[12px] font-medium text-gray-600 dark:text-gray-400 tabular-nums" x-text="'Rp ' + formatRupiah(cartSubtotal)"></span>
                             </div>
-                            <div class="flex justify-between items-center" x-show="discountAmount > 0" x-transition>
-                                <span class="text-[12px] text-gray-500 dark:text-gray-400 font-medium" x-text="discountLabel"></span>
-                                <span class="text-[12px] font-medium text-rose-600 tabular-nums" x-text="'- Rp ' + formatRupiah(discountAmount)"></span>
-                            </div>
                             <div class="flex justify-between items-center">
                                 <span class="text-[12px] text-gray-500 dark:text-gray-400 font-medium">{{ __('Pajak') }} ({{ $taxRatePercent }}%)</span>
                                 <span class="text-[12px] font-medium text-gray-600 dark:text-gray-400 tabular-nums" x-text="'Rp ' + formatRupiah(taxAmount)"></span>
@@ -335,9 +330,10 @@
                                     <option value="cash">{{ __('Tunai di Kasir') }}</option>
                                     <option value="qris" x-show="activePaymentMethods.qris">QRIS</option>
                                     <option value="ewallet" x-show="activePaymentMethods.ewallet">E-Wallet</option>
-                                    <option value="bank_transfer" x-show="activePaymentMethods.bank_transfer">{{ __('Bank Transfer (VA)') }}</option>
-                                    <option value="credit_card" x-show="activePaymentMethods.credit_card">{{ __('Kartu Kredit') }}</option>
-                                    <option value="cstore" x-show="activePaymentMethods.cstore">{{ __('Gerai Retail') }}</option>
+                                    <!-- Opsi metode pembayaran ini dihapus karena tidak pernah diaktifkan lewat
+                                         $activePaymentMethods (TransactionController::create()) — menyederhanakan
+                                         kode agar sesuai cakupan kebutuhan UjiKom. 
+                                         TODO: aktifkan setelah $activePaymentMethods mendukung. -->
                                 </select>
                                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500 dark:text-gray-400">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path></svg>
@@ -361,78 +357,10 @@
                             </div>
                         </div>
 
-                        <!-- Panel Diskon (RBAC-gated: hanya muncul jika canApplyDiscount === true) -->
-                        <template x-if="canApplyDiscount">
-                            <div>
-                                <!-- Toggle Button -->
-                                <button type="button" @click="toggleDiscountPanel()"
-                                        :class="showDiscountPanel || discountAmount > 0 ? 'bg-rose-50 text-rose-700 border-rose-200' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100'"
-                                        class="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl border text-[12px] font-bold transition-all duration-200">
-                                    <span class="flex items-center gap-2">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
-                                        </svg>
-                                        <span x-text="discountAmount > 0 ? discountLabel + ' (-Rp ' + formatRupiah(discountAmount) + ')' : '{{ __('Tambah Diskon') }}'"></span>
-                                    </span>
-                                    <svg :class="showDiscountPanel ? 'rotate-180' : ''" class="w-4 h-4 transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
-                                    </svg>
-                                </button>
-
-                                <!-- Collapsible Panel -->
-                                <div x-show="showDiscountPanel" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-1" class="mt-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 space-y-3" style="display: none;">
-                                    
-                                    <!-- Segmented Control: Nominal | Persen -->
-                                    <div class="flex bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-700 p-0.5">
-                                        <button type="button" @click="setDiscountType('fixed')"
-                                                :class="discountType === 'fixed' ? 'bg-primary-900 text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
-                                                class="flex-1 text-[11px] font-bold py-2 rounded-md transition-all duration-200 flex items-center justify-center gap-1.5">
-                                            <span>Rp</span>
-                                            <span>{{ __('Nominal') }}</span>
-                                        </button>
-                                        <button type="button" @click="setDiscountType('percentage')"
-                                                :class="discountType === 'percentage' ? 'bg-primary-900 text-white shadow-sm' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'"
-                                                class="flex-1 text-[11px] font-bold py-2 rounded-md transition-all duration-200 flex items-center justify-center gap-1.5">
-                                            <span>%</span>
-                                            <span>{{ __('Persen') }}</span>
-                                        </button>
-                                    </div>
-
-                                    <!-- Input Diskon -->
-                                    <div x-show="discountType !== 'none'" x-transition class="relative w-full">
-                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 text-[13px] font-bold" x-text="discountType === 'fixed' ? 'Rp' : '%'"></span>
-                                        <input type="text" x-model="discountValueFormatted" @input="formatInputDiskon($event)"
-                                               :placeholder="discountType === 'fixed' ? '{{ __('Masukkan nominal diskon') }}' : '{{ __('Masukkan persen diskon (maks. 100)') }}'"
-                                               class="w-full h-10 pl-10 pr-10 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg focus:border-gray-900 focus:ring-1 focus:ring-gray-900 outline-none text-[14px] font-bold text-gray-900 dark:text-gray-100 shadow-sm"
-                                               :class="discountType === 'fixed' ? 'text-right' : 'text-left'" />
-                                        
-                                        <!-- Clear Button (inside input) -->
-                                        <button type="button" x-show="discountValueRaw > 0" @click="clearDiscount()" style="display: none;"
-                                                class="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-rose-100 text-gray-400 hover:text-rose-500 flex items-center justify-center transition-colors">
-                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
-                                            </svg>
-                                        </button>
-                                    </div>
-
-                                    <!-- Quick Discount Buttons (Fixed) -->
-                                    <div x-show="discountType === 'fixed'" class="flex gap-1.5" style="display: none;">
-                                        <button type="button" @click="discountValueRaw = 5000; discountValueFormatted = formatRupiah(5000); calculateChange()" class="flex-1 text-[11px] font-bold py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition-colors shadow-sm">5K</button>
-                                        <button type="button" @click="discountValueRaw = 10000; discountValueFormatted = formatRupiah(10000); calculateChange()" class="flex-1 text-[11px] font-bold py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition-colors shadow-sm">10K</button>
-                                        <button type="button" @click="discountValueRaw = 25000; discountValueFormatted = formatRupiah(25000); calculateChange()" class="flex-1 text-[11px] font-bold py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition-colors shadow-sm">25K</button>
-                                        <button type="button" @click="discountValueRaw = 50000; discountValueFormatted = formatRupiah(50000); calculateChange()" class="flex-1 text-[11px] font-bold py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition-colors shadow-sm">50K</button>
-                                    </div>
-
-                                    <!-- Quick Discount Buttons (Percentage) -->
-                                    <div x-show="discountType === 'percentage'" class="flex gap-1.5" style="display: none;">
-                                        <button type="button" @click="discountValueRaw = 5; discountValueFormatted = '5'; calculateChange()" class="flex-1 text-[11px] font-bold py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition-colors shadow-sm">5%</button>
-                                        <button type="button" @click="discountValueRaw = 10; discountValueFormatted = '10'; calculateChange()" class="flex-1 text-[11px] font-bold py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition-colors shadow-sm">10%</button>
-                                        <button type="button" @click="discountValueRaw = 15; discountValueFormatted = '15'; calculateChange()" class="flex-1 text-[11px] font-bold py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition-colors shadow-sm">15%</button>
-                                        <button type="button" @click="discountValueRaw = 25; discountValueFormatted = '25'; calculateChange()" class="flex-1 text-[11px] font-bold py-1.5 rounded-lg bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-rose-50 hover:text-rose-700 hover:border-rose-200 transition-colors shadow-sm">25%</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
+                        <!-- Fitur diskon dihapus karena backend (TransactionService) tidak pernah
+                             mengimplementasikannya — kode di frontend sebelumnya adalah fitur mati (dead
+                             code) yang berisiko menyebabkan selisih pembayaran jika diaktifkan tanpa
+                             perubahan backend yang sepadan. -->
 
                         <button type="submit" :disabled="submitting || cart.length === 0" :class="submitting || cart.length === 0 ? 'bg-gray-200 cursor-not-allowed text-gray-400' : 'bg-primary-900 hover:bg-primary-950 text-white hover:-translate-y-0.5'" class="w-full h-12 mt-1 shrink-0 rounded-xl font-black text-[13px] transition-all duration-200 shadow-sm flex items-center justify-center gap-2">
                             <span x-text="submitting ? '{{ __('Memproses...') }}' : paymentMethodText"></span>

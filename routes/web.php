@@ -37,7 +37,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::middleware(['role:Kasir'])->group(function () {
         Route::get('/transaction/order', [TransactionController::class, 'create'])->name('transaction.create');
         Route::post('/transaction/order', [TransactionController::class, 'store'])->name('transaction.store');
-        Route::get('/payment/success', [TransactionController::class, 'paymentSuccess'])->name('payment.success');
         Route::get('/transaction/{order_number}/receipt', [TransactionController::class, 'receipt'])->name('transaction.receipt');
         Route::post('/api/orders/{order_number}/sync-status', [TransactionController::class, 'syncMidtrans'])->name('api.order.sync-status');
     });
