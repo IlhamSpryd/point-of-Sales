@@ -158,34 +158,34 @@
                                 <span class="text-[13px] font-extrabold text-zinc-900 dark:text-white">{{ $productsCount }}</span>
                             </div>
                             <div class="w-full h-1.5 bg-zinc-50/50 dark:bg-zinc-800 rounded-full overflow-hidden">
-                                <div class="h-full bg-gray-50 rounded-full" style="width: 85%"></div>
+                                <div class="h-full bg-gray-50 rounded-full" style="width: {{ $productsCount > 0 ? 100 : 0 }}%"></div>
                             </div>
                         </div>
                         <div>
                             <div class="flex justify-between items-center mb-1.5">
                                 <span class="text-[13px] font-bold text-zinc-500 dark:text-zinc-400">Low Stock Warning</span>
-                                <span class="text-[13px] font-extrabold text-zinc-900 dark:text-white">12</span>
+                                <span class="text-[13px] font-extrabold text-amber-500 dark:text-amber-400">{{ $lowStockCount }}</span>
                             </div>
                             <div class="w-full h-1.5 bg-zinc-50/50 dark:bg-zinc-800 rounded-full overflow-hidden">
-                                <div class="h-full bg-gray-50 opacity-50 rounded-full" style="width: 25%"></div>
+                                <div class="h-full bg-amber-500 opacity-80 rounded-full" style="width: {{ $lowStockPercent }}%"></div>
                             </div>
                         </div>
                         <div>
                             <div class="flex justify-between items-center mb-1.5">
                                 <span class="text-[13px] font-bold text-zinc-500 dark:text-zinc-400">Sold This Month</span>
-                                <span class="text-[13px] font-extrabold text-zinc-900 dark:text-white">482</span>
+                                <span class="text-[13px] font-extrabold text-emerald-500 dark:text-emerald-400">{{ number_format($soldThisMonth) }}</span>
                             </div>
                             <div class="w-full h-1.5 bg-zinc-50/50 dark:bg-zinc-800 rounded-full overflow-hidden">
-                                <div class="h-full bg-gray-50 rounded-full" style="width: 65%"></div>
+                                <div class="h-full bg-emerald-500 opacity-80 rounded-full" style="width: 100%"></div>
                             </div>
                         </div>
                         <div>
                             <div class="flex justify-between items-center mb-1.5">
                                 <span class="text-[13px] font-bold text-zinc-500 dark:text-zinc-400">Product Returned</span>
-                                <span class="text-[13px] font-extrabold text-zinc-900 dark:text-white">8</span>
+                                <span class="text-[13px] font-extrabold text-zinc-900 dark:text-white">{{ $returnedProducts }}</span>
                             </div>
                             <div class="w-full h-1.5 bg-zinc-50/50 dark:bg-zinc-800 rounded-full overflow-hidden">
-                                <div class="h-full bg-[#FF6A3D] rounded-full" style="width: 5%"></div>
+                                <div class="h-full bg-[#FF6A3D] rounded-full" style="width: 0%"></div>
                             </div>
                         </div>
                     </div>
@@ -197,7 +197,7 @@
         <div class="lg:col-span-4 flex flex-col gap-6">
             <!-- Total View/Orders Chart -->
             <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-zinc-100 dark:border-zinc-800 p-6 flex flex-col flex-1">
-                <h2 class="text-[18px] font-bold text-zinc-900 dark:text-white mb-2">Total View Performance</h2>
+                <h2 class="text-[18px] font-bold text-zinc-900 dark:text-white mb-2">Payment Methods Overview</h2>
                 
                 <div class="flex-1 flex items-center justify-center my-4 min-h-55">
                     <div id="performance-chart" class="w-full max-h-60 flex justify-center"></div>
@@ -206,15 +206,15 @@
                 <div class="flex justify-between items-center gap-2 mt-auto">
                     <div class="flex items-center gap-2.5">
                         <span class="w-2.5 h-2.5 rounded-full bg-[#94a3b8]"></span>
-                        <span class="text-xs font-bold text-zinc-500">View Count</span>
+                        <span class="text-xs font-bold text-zinc-500">Cash</span>
                     </div>
                     <div class="flex items-center gap-2.5">
                         <span class="w-2.5 h-2.5 rounded-full bg-[#0f172a]"></span>
-                        <span class="text-xs font-bold text-zinc-500">Percentage</span>
+                        <span class="text-xs font-bold text-zinc-500">QRIS</span>
                     </div>
                     <div class="flex items-center gap-2.5">
                         <span class="w-2.5 h-2.5 rounded-full bg-[#f97316]"></span>
-                        <span class="text-xs font-bold text-zinc-500">Sales</span>
+                        <span class="text-xs font-bold text-zinc-500">E-Wallet</span>
                     </div>
                 </div>
             </div>
@@ -246,9 +246,9 @@
     <!-- Scripts for ApexCharts inside Tailwind Dashboard -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 1. Sparkline: Net Income
+            // 1. Sparkline: Net Income (7 Days Volume)
             var incomeSparklineOptions = {
-                series: [{ data: [15, 25, 20, 35, 28, 48, 45, 60] }],
+                series: [{ data: @json(array_slice($revenueData, -8, 8)) }],
                 chart: { type: 'area', height: 60, sparkline: { enabled: true } },
                 stroke: { curve: 'smooth', width: 2 },
                 fill: {
@@ -260,9 +260,9 @@
             };
             new ApexCharts(document.querySelector("#income-sparkline"), incomeSparklineOptions).render();
 
-            // 2. Sparkline: Total Return
+            // 2. Sparkline: Total Orders (7 Days Volume)
             var returnSparklineOptions = {
-                series: [{ data: [65, 50, 45, 30, 35, 20, 15, 5] }],
+                series: [{ data: @json(array_slice($ordersData, -8, 8)) }],
                 chart: { type: 'area', height: 60, sparkline: { enabled: true } },
                 stroke: { curve: 'smooth', width: 2 },
                 fill: {
@@ -274,14 +274,14 @@
             };
             new ApexCharts(document.querySelector("#return-sparkline"), returnSparklineOptions).render();
 
-            // 3. Main Area Chart: Revenue vs Expenses
+            // 3. Main Area Chart: Revenue vs Orders
             var revenueOptions = {
                 series: [{
                     name: "Income",
-                    data: [85, 110, 95, 140, 130, 200, 185]
+                    data: @json($revenueData)
                 }, {
-                    name: "Expenses",
-                    data: [45, 60, 50, 80, 75, 120, 110]
+                    name: "Orders Count",
+                    data: @json($ordersData)
                 }],
                 chart: {
                     height: 280,
@@ -294,7 +294,7 @@
                 dataLabels: { enabled: false },
                 stroke: { curve: 'smooth', width: 3 },
                 xaxis: {
-                    categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
+                    categories: @json($chartDates),
                     axisBorder: { show: false },
                     axisTicks: { show: false },
                     labels: { style: { colors: '#94a3b8', fontSize: '13px', fontWeight: 600 } }
@@ -321,10 +321,10 @@
             };
             new ApexCharts(document.querySelector("#revenue-chart"), revenueOptions).render();
 
-            // 4. Donut Chart: Total View Performance
+            // 4. Donut Chart: Payment Methods
             var performanceOptions = {
-                series: [55, 30, 15],
-                labels: ['View Count', 'Percentage', 'Sales'],
+                series: @json($paymentStats),
+                labels: ['Cash', 'QRIS', 'E-Wallet'],
                 chart: {
                     type: 'donut',
                     height: 260,
@@ -338,8 +338,8 @@
                             labels: {
                                 show: true,
                                 name: { show: true, fontSize: '12px', fontWeight: 600, color: '#64748b', offsetY: -5 },
-                                value: { show: true, fontSize: '28px', fontWeight: 800, color: '#0f172a', offsetY: 5, formatter: function (val) { return val + "K" } },
-                                total: { show: true, showAlways: true, label: 'Total Count', fontSize: '12px', fontWeight: 600, color: '#64748b', formatter: function (w) { return "565K" } }
+                                value: { show: true, fontSize: '28px', fontWeight: 800, color: '#0f172a', offsetY: 5, formatter: function (val) { return val } },
+                                total: { show: true, showAlways: true, label: 'Total Paid', fontSize: '12px', fontWeight: 600, color: '#64748b', formatter: function (w) { return "{{ $totalPaidOrders }}" } }
                             }
                         },
                         customScale: 0.8,

@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\User;
 use App\Models\Product;
+use App\Models\OrderDetail;
 use App\Enums\OrderStatus;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 /**
- * DashboardController: Mengumpulkan ringkasan data statistik sistem (Total Pendapatan,
- * Pesanan, Pelanggan, Produk) untuk dirender pada Beranda Admin (Dashboard).
+ * DashboardController: Mengumpulkan ringkasan data statistik sistem 
+ * untuk dirender pada Beranda Admin (Dashboard) secara real-time.
  */
 class DashboardController extends Controller
 {
@@ -19,24 +21,68 @@ class DashboardController extends Controller
      */
     public function index(): \Illuminate\View\View
     {
-        // PERBAIKAN: sebelumnya memfilter status 'completed' yang tidak pernah ada di sistem
-        // (TransactionService hanya set 'paid'/'pending'), sehingga Net Income selalu Rp 0.
+        // 1. Core KPIs
         $totalEarnings = Order::where('order_status', OrderStatus::Paid->value)->sum('order_amount');
-        $totalOrders = Order::count();
-        $newCustomers = User::count();
+        $totalOrders = Order::where('order_status', OrderStatus::Paid->value)->count();
         $productsCount = Product::count();
+        
+        // 2. Real-time Progress Card Data
+        $lowStockCount = Product::where('stock', '<=', 10)->count();
+        $lowStockPercent = $productsCount > 0 ? min(100, round(($lowStockCount / $productsCount) * 100)) : 0;
 
-        $recentOrders = Order::with('user')->orderBy('created_at', 'desc')->take(5)->get();
+        $soldThisMonth = OrderDetail::whereHas('order', function ($query) {
+            $query->where('order_status', OrderStatus::Paid->value)
+                  ->whereMonth('created_at', Carbon::now()->month)
+                  ->whereYear('created_at', Carbon::now()->year);
+        })->sum('qty');
+        
+        $returnedProducts = 0; // Karena fitur retur belum diaktifkan (selalu 0)
 
-        $topProducts = Product::with('category')->orderBy('stock', 'desc')->take(4)->get();
+        // 3. Recent Transactions
+        $recentOrders = Order::with('user')->orderBy('created_at', 'desc')->take(4)->get();
+
+        // 4. Revenue Big Chart (7 Hari Terakhir)
+        $chartDates = collect(range(6, 0))->map(function($days) {
+            return Carbon::now()->subDays($days)->format('M d');
+        })->toArray();
+
+        $revenueData = [];
+        $ordersData = [];
+
+        foreach (range(6, 0) as $days) {
+            $date = Carbon::now()->subDays($days)->format('Y-m-d');
+            
+            $revenueData[] = Order::where('order_status', OrderStatus::Paid->value)
+                                  ->whereDate('created_at', $date)
+                                  ->sum('order_amount');
+                                  
+            $ordersData[] = Order::where('order_status', OrderStatus::Paid->value)
+                                 ->whereDate('created_at', $date)
+                                 ->count();
+        }
+
+        // 5. Payment Methods Donut Chart
+        $cashOrders = Order::where('order_status', OrderStatus::Paid->value)->where('payment_method', 'cash')->count();
+        $qrisOrders = Order::where('order_status', OrderStatus::Paid->value)->where('payment_method', 'qris')->count();
+        $ewalletOrders = Order::where('order_status', OrderStatus::Paid->value)->where('payment_method', 'ewallet')->count();
+        
+        $totalPaidOrders = $cashOrders + $qrisOrders + $ewalletOrders;
+        $paymentStats = $totalPaidOrders > 0 ? [$cashOrders, $qrisOrders, $ewalletOrders] : [0, 0, 0];
 
         return view('dashboard', compact(
             'totalEarnings',
             'totalOrders',
-            'newCustomers',
             'productsCount',
+            'lowStockCount',
+            'lowStockPercent',
+            'soldThisMonth',
+            'returnedProducts',
             'recentOrders',
-            'topProducts'
+            'chartDates',
+            'revenueData',
+            'ordersData',
+            'paymentStats',
+            'totalPaidOrders'
         ));
     }
 }
