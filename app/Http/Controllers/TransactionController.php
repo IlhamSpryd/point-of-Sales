@@ -25,7 +25,10 @@ class TransactionController extends Controller
     {
         $title = 'Buat Pesanan';
         
-        $products = Product::with('category')->get();
+        // Hanya produk berstatus aktif yang boleh muncul dan dijual di layar kasir.
+        // Produk non-aktif (misal: sedang retur ke supplier, musiman yang sudah lewat)
+        // sengaja disembunyikan total dari sini agar kasir tidak bisa menjualnya sama sekali.
+        $products = Product::where('is_active', true)->with('category')->get();
         $categories = Category::all();
 
         $today = Carbon::today();
@@ -67,7 +70,11 @@ class TransactionController extends Controller
     {
         $validated = $request->validated();
 
-        $userId = Auth::id() ?? 1;
+        // Route ini sudah dilindungi middleware 'auth' dan 'role:Kasir' (lihat routes/web.php),
+        // sehingga Auth::id() dijamin tidak pernah null di titik ini. Kita SENGAJA tidak memberi
+        // fallback angka statis (misal "?? 1") karena itu akan menyembunyikan bug autentikasi
+        // dan mencatat transaksi atas nama user yang salah tanpa disadari (buruk untuk audit trail kasir).
+        $userId = Auth::id();
 
         try {
             $order = $this->transactionService->createTransaction($validated, $userId);

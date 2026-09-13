@@ -28,17 +28,11 @@
     </div>
 
     @if(session('success'))
-        <div class="mb-6 p-4 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-sm font-medium flex items-center justify-between" x-data="{ show: true }" x-show="show">
-            <span><span class="material-symbols-rounded mr-2">check_circle</span> {{ session('success') }}</span>
-            <button @click="show = false" class="text-emerald-500 hover:text-emerald-700"><span class="material-symbols-rounded">close</span></button>
-        </div>
+        <x-alert type="success">{{ session('success') }}</x-alert>
     @endif
     
     @if(session('error'))
-        <div class="mb-6 p-4 rounded-lg bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-700 dark:text-rose-400 text-sm font-medium flex items-center justify-between" x-data="{ show: true }" x-show="show">
-            <span><span class="material-symbols-rounded mr-2">warning</span> {{ session('error') }}</span>
-            <button @click="show = false" class="text-rose-500 hover:text-rose-700"><span class="material-symbols-rounded">close</span></button>
-        </div>
+        <x-alert type="error">{{ session('error') }}</x-alert>
     @endif
 
     <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-zinc-100 dark:border-zinc-800 overflow-hidden">
@@ -67,9 +61,7 @@
                             <td class="px-6 py-4 text-sm text-zinc-500">{{ $user->email }}</td>
                             <td class="px-6 py-4">
                                 @if($user->role)
-                                    <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-purple-50 text-purple-600 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20">
-                                        {{ $user->role->name }}
-                                    </span>
+                                    <x-badge type="info">{{ $user->role->name }}</x-badge>
                                 @else
                                     <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-zinc-50/50 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 border border-zinc-100 dark:border-zinc-700">
                                         Unassigned
@@ -106,24 +98,4 @@
             {{ $users->links() }}
         </div>
     </div>
-    {{-- Script untuk menampilkan konfirmasi hapus bergaya SweetAlert2 (bukan confirm() bawaan browser)
-         agar tampilan tetap konsisten dengan popup sukses transaksi POS. --}}
-    <script>
-    function confirmDelete(formId, itemName) {
-        Swal.fire({
-            title: 'Hapus data ini?',
-            html: `Anda yakin ingin menghapus <b>${itemName}</b>? Tindakan ini tidak bisa dibatalkan.`,
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonText: 'Ya, Hapus',
-            cancelButtonText: 'Batal',
-            confirmButtonColor: '#e11d48',
-            reverseButtons: true
-        }).then((result) => {
-            if (result.isConfirmed) {
-                document.getElementById(formId).submit();
-            }
-        });
-    }
-    </script>
 </x-app-layout>

@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Order;
+use App\Services\ReportService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
-use Illuminate\Support\Facades\DB;
 
 class ReportController extends Controller
 {
+    public function __construct(protected ReportService $reportService) {}
+
     /**
      * Menampilkan antarmuka Laporan Penjualan (Harian, Mingguan, Bulanan)
      */
@@ -22,28 +23,21 @@ class ReportController extends Controller
         $startOfMonth = Carbon::now()->startOfMonth();
 
         // Rekapitulasi Data
-        $dailySales = Order::whereDate('order_date', $today)
-            ->where('order_status', 'paid')
-            ->selectRaw('COALESCE(SUM(order_amount), 0) as total, COUNT(*) as count')
-            ->first();
+        $dailySales = $this->reportService->getSalesSummary($today->copy()->startOfDay(), $today->copy()->endOfDay());
+        $weeklySales = $this->reportService->getSalesSummary($startOfWeek, $today);
+        $monthlySales = $this->reportService->getSalesSummary($startOfMonth, $today);
+        $recentOrders = $this->reportService->getRecentPaidOrders($startOfMonth, $today);
 
-        $weeklySales = Order::whereBetween('order_date', [$startOfWeek, $today])
-            ->where('order_status', 'paid')
-            ->selectRaw('COALESCE(SUM(order_amount), 0) as total, COUNT(*) as count')
-            ->first();
-
-        $monthlySales = Order::whereBetween('order_date', [$startOfMonth, $today])
-            ->where('order_status', 'paid')
-            ->selectRaw('COALESCE(SUM(order_amount), 0) as total, COUNT(*) as count')
-            ->first();
-
-        // Ambil Data Penjualan Terbaru untuk Ditampilkan di Tabel
-        // Filter by tanggal jika diperlukan? Untuk skrg tampilin bulan ini
-        $recentOrders = Order::with('user')
-            ->whereBetween('order_date', [$startOfMonth, $today])
-            ->where('order_status', 'paid')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        // Titik ekstensi custom date range —
+        // jika asesor minta filter tanggal bebas, tinggal tambahkan input form di view yang mengirim
+        // ?start=YYYY-MM-DD&end=YYYY-MM-DD, tidak perlu ubah ReportService sama sekali.
+        if ($request->filled('start') && $request->filled('end')) {
+            $customStart = Carbon::parse($request->start)->startOfDay();
+            $customEnd = Carbon::parse($request->end)->endOfDay();
+            
+            $monthlySales = $this->reportService->getSalesSummary($customStart, $customEnd);
+            $recentOrders = $this->reportService->getRecentPaidOrders($customStart, $customEnd);
+        }
 
         return view('reports.sales', compact(
             'title', 'dailySales', 'weeklySales', 'monthlySales', 'recentOrders'

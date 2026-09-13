@@ -47,6 +47,17 @@ class TransactionService
                     ]);
                 }
 
+                // GUARD TERAKHIR: Baris produk ini sudah di-lock (lockForUpdate) di atas,
+                // jadi ini titik paling aman untuk mengecek status aktif. Pengecekan ini
+                // menutup celah race condition — kasus di mana Admin menonaktifkan produk
+                // PERSIS saat kasir sedang menekan tombol bayar (setelah lolos validasi
+                // Form Request, tapi sebelum stok benar-benar dipotong).
+                if (!$product->is_active) {
+                    throw ValidationException::withMessages([
+                        'items' => 'Produk "' . $product->product_name . '" sudah dinonaktifkan dan tidak dapat dijual.',
+                    ]);
+                }
+
                 if ($product->stock < $item['quantity']) {
                     throw ValidationException::withMessages([
                         'items' => 'Stok produk "' . $product->product_name . '" tidak mencukupi. (Sisa: ' . $product->stock . ')',
@@ -66,18 +77,7 @@ class TransactionService
                 $product->decrement('stock', $item['quantity']);
             }
 
-            // Pajak 10%
-            // Dipindahkan ke config/pos.php agar tarif pajak & aturan pembulatan tidak
-            // terduplikasi dan berisiko tidak sinkron antara Controller dan Service.
-            $taxRate = config('pos.tax_rate', 0.10);
-            $taxAmount = (int) round($subtotalAmount * $taxRate);
-            $totalAmount = (int) ($subtotalAmount + $taxAmount);
-
-            // Pembulatan WAJIB dilakukan di backend, bukan hanya di Alpine.js,
-            // agar order_amount yang tersimpan sama persis dengan nominal yang
-            // disepakati kasir & pelanggan di layar (single source of truth).
-            $roundingValue = config('pos.rounding_value', 100);
-            $totalAmount = (int) (round($totalAmount / $roundingValue) * $roundingValue);
+            ['tax_amount' => $taxAmount, 'total_amount' => $totalAmount] = $this->calculateOrderTotals($subtotalAmount);
 
             $paymentMethod = $data['payment_method'] ?? 'cash';
             $cashReceived = $data['cash_received'] ?? null;
@@ -191,5 +191,33 @@ class TransactionService
 
             return $order;
         });
+    }
+
+    /**
+     * Method ini adalah SATU-SATUNYA tempat menghitung total transaksi.
+     *
+     * // TODO (Titik Ekstensi Ujian): Jika asesor meminta fitur diskon,
+     * // tambahkan parameter float $discountPercent = 0 di sini, kurangi
+     * // $subtotalAmount SEBELUM menghitung pajak, lalu update pemanggilnya.
+     */
+    private function calculateOrderTotals(int $subtotalAmount): array
+    {
+        // Pajak 10%
+        // Dipindahkan ke config/pos.php agar tarif pajak & aturan pembulatan tidak
+        // terduplikasi dan berisiko tidak sinkron antara Controller dan Service.
+        $taxRate = config('pos.tax_rate', 0.10);
+        $taxAmount = (int) round($subtotalAmount * $taxRate);
+        $totalAmount = (int) ($subtotalAmount + $taxAmount);
+
+        // Pembulatan WAJIB dilakukan di backend, bukan hanya di Alpine.js,
+        // agar order_amount yang tersimpan sama persis dengan nominal yang
+        // disepakati kasir & pelanggan di layar (single source of truth).
+        $roundingValue = config('pos.rounding_value', 100);
+        $totalAmount = (int) (round($totalAmount / $roundingValue) * $roundingValue);
+
+        return [
+            'tax_amount' => $taxAmount,
+            'total_amount' => $totalAmount,
+        ];
     }
 }

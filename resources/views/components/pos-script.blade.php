@@ -84,6 +84,11 @@
                 return this.cartSubtotal * this.taxRate;
             },
 
+            // PENTING: Formula di sini HANYA untuk preview visual kasir.
+            // Sumber kebenaran (source of truth) tetap TransactionService::calculateOrderTotals()
+            // di backend. Jika logika backend berubah (misal: ditambah diskon),
+            // formula di sini WAJIB disamakan urutannya, atau total yang tampil
+            // di layar kasir akan berbeda dengan yang tersimpan di database.
             get totalAmount() {
                 let rawTotal = this.cartSubtotal + this.taxAmount;
                 let finalTotal = rawTotal;

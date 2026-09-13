@@ -97,5 +97,7 @@
             </main>
         </div>
     </div>
+
+    @include('partials.sweetalert-confirm-delete')
 </body>
 </html>
