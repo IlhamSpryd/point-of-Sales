@@ -64,10 +64,11 @@
                             <td class="px-6 py-4 text-sm text-zinc-500">{{ $role->created_at?->format('M d, Y') ?? '—' }}</td>
                             <td class="px-6 py-4 text-right space-x-2">
                                 <a href="{{ route('roles.edit', $role->id) }}" class="p-1.5 text-zinc-400 hover:text-blue-600 transition-colors inline-block"><span class="material-symbols-rounded">edit</span></a>
-                                <form action="{{ route('roles.destroy', $role->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this role?');">
+                                <form id="delete-form-{{ $role->id }}" action="{{ route('roles.destroy', $role->id) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="p-1.5 text-zinc-400 hover:text-rose-600 transition-colors"><span class="material-symbols-rounded">delete</span></button>
+                                    {{-- Menggunakan type="button" dan onclick untuk memanggil Swal.fire (tidak menggunakan confirm() bawaan) --}}
+                                    <button type="button" onclick="confirmDelete('delete-form-{{ $role->id }}', '{{ addslashes($role->name) }}')" class="p-1.5 text-zinc-400 hover:text-rose-600 transition-colors"><span class="material-symbols-rounded">delete</span></button>
                                 </form>
                             </td>
                         </tr>
@@ -88,4 +89,24 @@
             {{ $roles->links() }}
         </div>
     </div>
+    {{-- Script untuk menampilkan konfirmasi hapus bergaya SweetAlert2 (bukan confirm() bawaan browser)
+         agar tampilan tetap konsisten dengan popup sukses transaksi POS. --}}
+    <script>
+    function confirmDelete(formId, itemName) {
+        Swal.fire({
+            title: 'Hapus data ini?',
+            html: `Anda yakin ingin menghapus <b>${itemName}</b>? Tindakan ini tidak bisa dibatalkan.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#e11d48',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById(formId).submit();
+            }
+        });
+    }
+    </script>
 </x-app-layout>

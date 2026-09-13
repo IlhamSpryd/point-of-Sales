@@ -18,11 +18,14 @@
                     </x-button>
                 </a>
                 
-                <a href="{{ route('products.create') }}" class="flex-1 sm:flex-none">
-                    <x-button variant="primary" type="button" class="w-full h-10">
-                        <span class="material-symbols-rounded">add</span> Add Product
-                    </x-button>
-                </a>
+                {{-- Tombol tambah/edit/hapus hanya untuk Administrator. Kasir & Pimpinan hanya boleh MELIHAT data (read-only), sesuai role:Administrator,Kasir,Pimpinan pada route ini — jika tombol tetap tampil, klik akan berujung error 403. --}}
+                @if(auth()->user()->role?->name === 'Administrator')
+                    <a href="{{ route('products.create') }}" class="flex-1 sm:flex-none">
+                        <x-button variant="primary" type="button" class="w-full h-10">
+                            <span class="material-symbols-rounded">add</span> Add Product
+                        </x-button>
+                    </a>
+                @endif
             </div>
         </div>
     </div>
@@ -51,7 +54,9 @@
                         <th class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Price</th>
                         <th class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Stock</th>
                         <th class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider text-right">Actions</th>
+                        @if(auth()->user()->role?->name === 'Administrator')
+                            <th class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider text-right">Actions</th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -81,18 +86,21 @@
                                     <x-badge type="secondary">Inactive</x-badge>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-right space-x-2">
-                                <a href="{{ route('products.edit', $product->id) }}" class="p-1.5 text-zinc-400 hover:text-blue-600 transition-colors inline-block"><span class="material-symbols-rounded">edit</span></a>
-                                <form action="{{ route('products.destroy', $product->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to delete this product?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="p-1.5 text-zinc-400 hover:text-rose-600 transition-colors"><span class="material-symbols-rounded">delete</span></button>
-                                </form>
-                            </td>
+                            @if(auth()->user()->role?->name === 'Administrator')
+                                <td class="px-6 py-4 text-right space-x-2">
+                                    <a href="{{ route('products.edit', $product->id) }}" class="p-1.5 text-zinc-400 hover:text-blue-600 transition-colors inline-block"><span class="material-symbols-rounded">edit</span></a>
+                                    <form id="delete-form-{{ $product->id }}" action="{{ route('products.destroy', $product->id) }}" method="POST" class="inline-block">
+                                        @csrf
+                                        @method('DELETE')
+                                        {{-- Menggunakan type="button" dan onclick untuk memanggil Swal.fire (tidak menggunakan confirm() bawaan) --}}
+                                        <button type="button" onclick="confirmDelete('delete-form-{{ $product->id }}', '{{ addslashes($product->product_name) }}')" class="p-1.5 text-zinc-400 hover:text-rose-600 transition-colors"><span class="material-symbols-rounded">delete</span></button>
+                                    </form>
+                                </td>
+                            @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-8 text-center text-zinc-500 text-sm">
+                            <td colspan="{{ auth()->user()->role?->name === 'Administrator' ? 6 : 5 }}" class="px-6 py-8 text-center text-zinc-500 text-sm">
                                 <div class="flex flex-col items-center justify-center">
                                     <span class="material-symbols-rounded text-4xl mb-3 text-zinc-400">inventory_2</span>
                                     <p>No products found.</p>
@@ -107,4 +115,24 @@
             {{ $products->links() }}
         </div>
     </div>
+    {{-- Script untuk menampilkan konfirmasi hapus bergaya SweetAlert2 (bukan confirm() bawaan browser)
+         agar tampilan tetap konsisten dengan popup sukses transaksi POS. --}}
+    <script>
+    function confirmDelete(formId, itemName) {
+        Swal.fire({
+            title: 'Hapus data ini?',
+            html: `Anda yakin ingin menghapus <b>${itemName}</b>? Tindakan ini tidak bisa dibatalkan.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Ya, Hapus',
+            cancelButtonText: 'Batal',
+            confirmButtonColor: '#e11d48',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById(formId).submit();
+            }
+        });
+    }
+    </script>
 </x-app-layout>

@@ -1,9 +1,9 @@
-<x-app-layout>
+<x-app-layout :noPadding="true">
 
 <!-- Wrapper POS fullscreen-ish inside layout padding -->
 {{-- x-data="posApp()" mengaktifkan Alpine.js: semua logic interaktif (keranjang, kalkulasi,
      filter produk, dll) didefinisikan dalam fungsi posApp() di bagian <script> paling bawah --}}
-<div class="bg-white dark:bg-gray-900 flex flex-col h-full overflow-hidden min-h-0" x-data="posApp({{ \Illuminate\Support\Js::from([
+<div class="bg-white dark:bg-gray-900 flex flex-col flex-1 overflow-hidden min-h-0" x-data="posApp({{ \Illuminate\Support\Js::from([
     'paymentMethod' => 'cash',
     'products' => $products->map(function($p) {
         return [
@@ -362,7 +362,7 @@
                              code) yang berisiko menyebabkan selisih pembayaran jika diaktifkan tanpa
                              perubahan backend yang sepadan. -->
 
-                        <button type="submit" :disabled="submitting || cart.length === 0" :class="submitting || cart.length === 0 ? 'bg-gray-200 cursor-not-allowed text-gray-400' : 'bg-primary-900 hover:bg-primary-950 text-white hover:-translate-y-0.5'" class="w-full h-12 mt-1 shrink-0 rounded-xl font-black text-[13px] transition-all duration-200 shadow-sm flex items-center justify-center gap-2">
+                        <button type="submit" :disabled="isPayDisabled" :class="isPayDisabled ? 'bg-gray-200 cursor-not-allowed text-gray-400' : 'bg-primary-900 hover:bg-primary-950 text-white hover:-translate-y-0.5'" class="w-full h-12 mt-1 shrink-0 rounded-xl font-black text-[13px] transition-all duration-200 shadow-sm flex items-center justify-center gap-2">
                             <span x-text="submitting ? '{{ __('Memproses...') }}' : paymentMethodText"></span>
                         </button>
                     </div>

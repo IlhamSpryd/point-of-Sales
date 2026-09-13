@@ -32,6 +32,14 @@
                 }
             },
 
+            get isPayDisabled() {
+                // isPayDisabled mencegah kasir menekan tombol Bayar sebelum data benar-benar valid,
+                // daripada membiarkan klik lalu menampilkan error yang mungkin tidak pernah muncul.
+                if (this.submitting || this.cart.length === 0) return true;
+                if (this.paymentMethod === 'cash' && this.uangDibayar < this.totalAmount) return true;
+                return false;
+            },
+
             get uangDibayar() {
                 if (!this.uangDibayarFormatted) return 0;
                 return parseFloat(this.uangDibayarFormatted.toString().replace(/\./g, '')) || 0;
@@ -143,13 +151,29 @@
                 this.submitting = true;
                 if (this.cart.length === 0) {
                     this.submitting = false;
-                    window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', text: 'Keranjang belanja kosong!' } }));
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'error',
+                        title: 'Keranjang belanja kosong!',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
                     return;
                 }
                 
                 if (this.paymentMethod === 'cash' && this.uangDibayar < this.totalAmount) {
                     this.submitting = false;
-                    window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', text: 'Masukan uang pembayaran! Nominal uang tunai yang dibayarkan kurang dari total pembayaran.' } }));
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'error',
+                        title: 'Masukan uang pembayaran! Nominal uang tunai yang dibayarkan kurang dari total pembayaran.',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
                     return;
                 }
                 
@@ -184,7 +208,15 @@
                     if (!response.ok) {
                         let errorData = await response.json();
                         let errorMsg = 'Gagal: ' + (errorData.message || 'Terjadi kesalahan sistem');
-                        alert(errorMsg);
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'error',
+                            title: errorMsg,
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true
+                        });
                         this.submitting = false;
                         return;
                     }
@@ -193,7 +225,15 @@
 
                     if (responseData.snap_token) {
                         if (typeof window.snap === 'undefined') {
-                            alert('Midtrans Snap tidak tersedia. Pastikan server sudah di-restart.');
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'error',
+                                title: 'Midtrans Snap tidak tersedia. Pastikan server sudah di-restart.',
+                                showConfirmButton: false,
+                                timer: 3000,
+                                timerProgressBar: true
+                            });
                             this.submitting = false;
                             return;
                         }
@@ -205,10 +245,26 @@
                                     this.showSuccessPopup(responseData.order_number, false);
                                 },
                                 onPending: (result) => {
-                                    alert('Menunggu pembayaran diselesaikan.');
+                                    Swal.fire({
+                                        toast: true,
+                                        position: 'top-end',
+                                        icon: 'warning',
+                                        title: 'Menunggu pembayaran diselesaikan.',
+                                        showConfirmButton: false,
+                                        timer: 3000,
+                                        timerProgressBar: true
+                                    });
                                 },
                                 onError: (result) => {
-                                    alert('Pembayaran gagal, silakan coba lagi.');
+                                    Swal.fire({
+                                        toast: true,
+                                        position: 'top-end',
+                                        icon: 'error',
+                                        title: 'Pembayaran gagal, silakan coba lagi.',
+                                        showConfirmButton: false,
+                                        timer: 3000,
+                                        timerProgressBar: true
+                                    });
                                     this.submitting = false;
                                 },
                                 onClose: async () => {
@@ -237,7 +293,15 @@
                     }
                 } catch (error) {
                     console.error('Error saat menghubungi server:', error);
-                    window.dispatchEvent(new CustomEvent('toast', { detail: { type: 'error', text: 'Terjadi kesalahan jaringan.' } }));
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'error',
+                        title: 'Terjadi kesalahan jaringan.',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
                     this.submitting = false;
                 }
             },

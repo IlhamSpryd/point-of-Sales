@@ -44,6 +44,7 @@
 
         /* Material Symbols Consistency */
         .material-symbols-rounded {
+            font-family: 'Material Symbols Rounded', sans-serif !important;
             font-size: 1.25em; /* 20px relative scaling */
             line-height: 1;
             vertical-align: middle;
@@ -59,7 +60,7 @@
         }
     </style>
 </head>
-<body class="antialiased bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex h-screen overflow-hidden">
+<body class="antialiased bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 flex h-screen overflow-hidden">
     
     <div x-data="{ sidebarMobileOpen: false, expanded: localStorage.getItem('sidebarExpanded') !== 'false' }" 
          x-init="$watch('expanded', val => localStorage.setItem('sidebarExpanded', val))" 
@@ -83,10 +84,10 @@
             </header>
 
             <!-- Main Scrollable Area -->
-            <main class="flex-1 overflow-y-auto w-full p-4 sm:p-6 lg:p-8 animate-fade-in" id="main-content">
+            <main class="flex-1 overflow-y-auto w-full {{ $noPadding ? '' : 'p-4 sm:p-6 lg:p-8' }} animate-fade-in flex flex-col" id="main-content">
                 <!-- Page Heading -->
                 @isset($header)
-                    <div class="mb-6">
+                    <div class="mb-6 shrink-0">
                         {{ $header }}
                     </div>
                 @endisset

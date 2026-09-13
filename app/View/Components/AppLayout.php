@@ -11,6 +11,13 @@ use Illuminate\View\View;
  */
 class AppLayout extends Component
 {
+    public $noPadding;
+
+    public function __construct($noPadding = false)
+    {
+        $this->noPadding = $noPadding;
+    }
+
     /**
      * Memanggil sumber cetak biru (Blueprint) balok tampilan HTML Blade.
      */

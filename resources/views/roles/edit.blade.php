@@ -10,23 +10,29 @@
     </div>
 
     <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-zinc-100 dark:border-zinc-800 overflow-hidden w-full">
-        <form action="{{ route('roles.update', $role->id) }}" method="POST" class="p-6 md:p-8 space-y-6">
+        <form action="{{ route('roles.update', $role->id) }}" method="POST" x-data="{ submitting: false }" @submit="submitting = true" class="p-6 md:p-8 space-y-6">
             @csrf
             @method('PUT')
 
             <div>
                 <x-form-label for="name">Role Name</x-form-label>
-                <input type="text" id="name" name="name" value="{{ old('name', $role->name) }}" 
-                       class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-100 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-1000/20 focus:border-zinc-1000 transition-all @error('name') input-error @enderror" 
-                       placeholder="Enter role name" required>
+                {{-- Menggunakan <x-form-input> alih-alih <input> manual, supaya style Create & Edit selalu seragam dan mudah dirawat dari satu sumber (komponen). --}}
+                <x-form-input type="text" id="name" name="name" 
+                       value="{{ old('name', $role->name) }}" 
+                       placeholder="Enter role name" required 
+                       class="@error('name') input-error @enderror" />
                 @error('name')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
                 @enderror
             </div>
 
             <div class="pt-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-end">
-                <x-button type="submit" variant="primary">
-                    <span class="material-symbols-rounded">save</span> Update Role
+                {{-- submitting mencegah user klik tombol dua kali saat form sedang diproses server, supaya tidak ada data duplikat --}}
+                <x-button type="submit" variant="primary" :disabled="false" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''">
+                    <span x-show="!submitting">
+                        <span class="material-symbols-rounded">save</span> Update Role
+                    </span>
+                    <span x-show="submitting" x-cloak>Menyimpan...</span>
                 </x-button>
             </div>
         </form>

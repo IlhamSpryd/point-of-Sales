@@ -10,7 +10,7 @@
     </div>
 
     <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-zinc-100 dark:border-zinc-800 overflow-hidden w-full">
-        <form action="{{ route('users.store') }}" method="POST" class="p-6 md:p-8 space-y-6">
+        <form action="{{ route('users.store') }}" method="POST" x-data="{ submitting: false }" @submit="submitting = true" class="p-6 md:p-8 space-y-6">
             @csrf
 
             <!-- Personal Info Row -->
@@ -79,8 +79,12 @@
             </div>
 
             <div class="pt-6 border-t border-zinc-100 dark:border-zinc-800 flex justify-end">
-                <x-button type="submit" variant="primary">
-                    <span class="material-symbols-rounded">save</span> Save User
+                {{-- submitting mencegah user klik tombol dua kali saat form sedang diproses server, supaya tidak ada data duplikat --}}
+                <x-button type="submit" variant="primary" :disabled="false" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''">
+                    <span x-show="!submitting">
+                        <span class="material-symbols-rounded">save</span> Save User
+                    </span>
+                    <span x-show="submitting" x-cloak>Menyimpan...</span>
                 </x-button>
             </div>
         </form>

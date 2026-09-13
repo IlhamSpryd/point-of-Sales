@@ -10,7 +10,7 @@
     </div>
 
     <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-zinc-100 dark:border-zinc-800 overflow-hidden w-full">
-        <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data" class="p-6 md:p-8 space-y-6">
+        <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data" x-data="{ submitting: false }" @submit="submitting = true" class="p-6 md:p-8 space-y-6">
             @csrf
 
             <!-- Name & Category Row -->
@@ -121,8 +121,12 @@
             </div>
 
             <div class="pt-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-end">
-                <x-button type="submit" variant="primary">
-                    <span class="material-symbols-rounded">save</span> Save Product
+                {{-- submitting mencegah user klik tombol dua kali saat form sedang diproses server, supaya tidak ada data duplikat --}}
+                <x-button type="submit" variant="primary" :disabled="false" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''">
+                    <span x-show="!submitting">
+                        <span class="material-symbols-rounded">save</span> Save Product
+                    </span>
+                    <span x-show="submitting" x-cloak>Menyimpan...</span>
                 </x-button>
             </div>
         </form>
