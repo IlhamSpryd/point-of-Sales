@@ -10,7 +10,7 @@
                 @if ($errors->any())
                     <div class="mb-6 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl relative text-sm error-alert"
                         role="alert" aria-live="assertive">
-                        <strong class="font-medium mb-1 block">{{ __('Authentication Failed') }}</strong>
+                        <strong class="font-medium mb-1 block">{{ __('Autentikasi Gagal') }}</strong> <!-- Standarisasi bahasa UjiKom -->
                         <span class="block">{{ __('Periksa kembali email dan kata sandi Anda.') }}</span>
                     </div>
                 @endif
@@ -180,15 +180,15 @@
             <div class="relative z-10 mt-auto">
                 <div class="mb-8 js-anim min-h-40" id="anim-testimonial">
                     <p class="text-2xl font-medium tracking-tight text-white/90 leading-snug mb-5 max-w-lg">
-                        "The new Spark Admin dashboard delivers extreme performance with stunning visuals."
+                        "Dashboard Spark Admin baru memberikan kinerja ekstrem dengan visual memukau." <!-- Standarisasi bahasa UjiKom -->
                     </p>
                     <div class="flex items-center gap-3">
                         <div class="h-10 w-10 rounded-full bg-white/10 dark:bg-zinc-900/10 flex items-center justify-center border border-white/20 overflow-hidden backdrop-blur-sm">
                             <span class="text-white font-medium">A</span>
                         </div>
                         <div>
-                            <p class="text-sm font-semibold text-white">Admin User</p>
-                            <p class="text-xs text-white/60 mt-0.5">System Administrator</p>
+                            <p class="text-sm font-semibold text-white">Pengguna Admin</p> <!-- Standarisasi bahasa UjiKom -->
+                            <p class="text-xs text-white/60 mt-0.5">Administrator Sistem</p> <!-- Standarisasi bahasa UjiKom -->
                         </div>
                     </div>
                 </div>

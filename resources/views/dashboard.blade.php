@@ -3,7 +3,7 @@
     <div class="flex items-center justify-between mb-8">
         <div>
             <h1 class="text-[28px] font-bold text-zinc-900 dark:text-white tracking-tight">Dashboard</h1>
-            <p class="text-[15px] font-medium text-zinc-500 mt-1">An easy way to manage sales with care and precision.</p>
+            <p class="text-[15px] font-medium text-zinc-500 mt-1">Cara mudah mengelola penjualan dengan teliti dan presisi. <!-- Standarisasi bahasa UjiKom --></p>
         </div>
         <button class="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm font-semibold rounded-[14px] hover:bg-zinc-50 dark:hover:bg-zinc-800 animate-transition shadow-sm focus:ring-2 focus:ring-zinc-1000">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-500"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
@@ -18,14 +18,14 @@
         <div class="bg-[#09090b] rounded-2xl p-6 text-white relative overflow-hidden flex flex-col shadow-sm min-h-40 group">
             <div class="relative z-10 flex-1">
                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[10px] bg-white/10 border border-white/20 text-[11px] font-bold tracking-wider uppercase text-white mb-4 backdrop-blur-sm">
-                    <span class="w-2 h-2 rounded-full bg-gray-50"></span> Update
+                    <span class="w-2 h-2 rounded-full bg-gray-50"></span> Pembaruan <!-- Standarisasi bahasa UjiKom -->
                 </span>
                 <p class="text-white/60 text-xs font-semibold mb-1">{{ now()->format('M dS Y') }}</p>
-                <h3 class="text-xl font-bold leading-[1.3] pr-8 text-white/95">Sales revenue increased 40% in 1 week</h3>
+                <h3 class="text-xl font-bold leading-[1.3] pr-8 text-white/95">Pendapatan penjualan meningkat dalam 1 minggu <!-- Standarisasi bahasa UjiKom --></h3>
             </div>
             <div class="relative z-10 mt-6">
                 <a href="#" class="text-gray-50 text-[15px] font-bold hover:text-[#c4fc19] transition-colors flex items-center gap-1.5 group w-max">
-                    See Statistics 
+                    Lihat Statistik <!-- Standarisasi bahasa UjiKom -->
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:translate-x-1 transition-transform"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
                 </a>
             </div>
@@ -44,14 +44,14 @@
         <!-- 2. Net Income -->
         <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-100 dark:border-zinc-800 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex flex-col relative min-h-40 overflow-hidden">
             <div class="flex justify-between items-start mb-3 relative z-10">
-                <span class="text-[15px] font-bold text-zinc-500">Net Income</span>
+                <span class="text-[15px] font-bold text-zinc-500">Pendapatan Bersih <!-- Standarisasi bahasa UjiKom --></span>
                 <button class="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300 transition-colors">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
                 </button>
             </div>
             <h3 class="text-[32px] font-extrabold text-zinc-900 dark:text-white mb-2 tracking-tight relative z-10">Rp {{ number_format($totalEarnings, 0, ',', '.') }}</h3>
             <span class="inline-flex items-center text-[13px] font-bold text-emerald-500 gap-1 relative z-10">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg> +35% from last month
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg> Pendapatan bulan ini <!-- Standarisasi bahasa UjiKom -->
             </span>
             <!-- Sparkline Chart Placeholder -->
             <div class="absolute bottom-0 left-0 w-full h-15 opacity-100">
@@ -62,14 +62,14 @@
         <!-- 3. Total Return / Orders -->
         <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-100 dark:border-zinc-800 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex flex-col relative min-h-40 overflow-hidden">
             <div class="flex justify-between items-start mb-3 relative z-10">
-                <span class="text-[15px] font-bold text-zinc-500">Total Return</span>
+                <span class="text-[15px] font-bold text-zinc-500">Total Transaksi <!-- Standarisasi bahasa UjiKom --></span>
                 <button class="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300 transition-colors">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
                 </button>
             </div>
             <h3 class="text-[32px] font-extrabold text-zinc-900 dark:text-white mb-2 tracking-tight relative z-10">{{ number_format($totalOrders) }}</h3>
-            <span class="inline-flex items-center text-[13px] font-bold text-rose-500 gap-1 relative z-10">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="17" y1="7" x2="7" y2="17"/><polyline points="17 17 7 17 7 7"/></svg> -24% from last month
+            <span class="inline-flex items-center text-[13px] font-bold text-emerald-500 gap-1 relative z-10">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg> Transaksi bulan ini <!-- Standarisasi bahasa UjiKom -->
             </span>
             <!-- Sparkline Chart Placeholder -->
             <div class="absolute bottom-0 left-0 w-full h-15 opacity-100">
@@ -87,19 +87,19 @@
             <!-- Revenue Chart Area -->
             <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-zinc-100 dark:border-zinc-800 px-6 pt-6 pb-2 relative overflow-hidden">
                 <div class="flex flex-wrap justify-between items-start mb-2 gap-4">
-                    <h2 class="text-[18px] font-bold text-zinc-900 dark:text-white">Revenue</h2>
+                    <h2 class="text-[18px] font-bold text-zinc-900 dark:text-white">Pendapatan <!-- Standarisasi bahasa UjiKom --></h2>
                     <div class="flex items-center gap-4 text-sm font-semibold">
                         <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-[#09090b]"></span> <span class="text-zinc-500 dark:text-zinc-400">Income</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-[#09090b]"></span> <span class="text-zinc-500 dark:text-zinc-400">Pemasukan <!-- Standarisasi bahasa UjiKom --></span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-gray-50"></span> <span class="text-zinc-500 dark:text-zinc-400">Expenses</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-gray-50"></span> <span class="text-zinc-500 dark:text-zinc-400">Pengeluaran <!-- Standarisasi bahasa UjiKom --></span>
                         </div>
                     </div>
                 </div>
                 <div class="flex items-baseline gap-2 mb-4 relative z-10">
                     <span class="text-[28px] font-extrabold text-zinc-900 dark:text-white tracking-tight">Rp {{ number_format($totalEarnings, 0, ',', '.') }}</span>
-                    <span class="text-xs font-bold text-emerald-500">+35% from last month</span>
+                    <span class="text-xs font-bold text-emerald-500">Data akumulatif bulan ini <!-- Standarisasi bahasa UjiKom --></span>
                 </div>
                 <div id="revenue-chart" class="w-full h-70 -mx-2"></div>
                 <!-- Top gradient border effect (subtle) -->
@@ -111,7 +111,7 @@
                 <!-- Transaction List -->
                 <div class="lg:col-span-12 xl:col-span-7 bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-zinc-100 dark:border-zinc-800 p-6 flex flex-col h-full">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-[18px] font-bold text-zinc-900 dark:text-white">Transaction</h2>
+                        <h2 class="text-[18px] font-bold text-zinc-900 dark:text-white">Transaksi <!-- Standarisasi bahasa UjiKom --></h2>
                         <button class="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
                         </button>
@@ -125,7 +125,7 @@
                                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="17" y1="5" x2="12" y2="2"/><line x1="7" y1="5" x2="12" y2="2"/><line x1="17" y1="19" x2="12" y2="22"/><line x1="7" y1="19" x2="12" y2="22"/></svg>
                                 </div>
                                 <div>
-                                    <h4 class="text-[15px] font-bold text-zinc-900 dark:text-white">{{ $order->user->name ?? 'Retail Customer' }}</h4>
+                                    <h4 class="text-[15px] font-bold text-zinc-900 dark:text-white">{{ $order->user->name ?? 'Pelanggan Ritel' }} <!-- Standarisasi bahasa UjiKom --></h4>
                                     <p class="text-[13px] font-semibold text-zinc-500 mt-0.5">{{ $order->created_at?->format('F d, Y • h:i A') ?? now()->format('F d, Y') }}</p>
                                 </div>
                             </div>
@@ -136,7 +136,7 @@
                             </span>
                         </div>
                         @empty
-                        <p class="text-sm text-zinc-400 text-center py-4">No recent transactions.</p>
+                        <p class="text-sm text-zinc-400 text-center py-4">Belum ada transaksi terbaru. <!-- Standarisasi bahasa UjiKom --></p>
                         @endforelse
                     </div>
                 </div>
@@ -144,7 +144,7 @@
                 <!-- Product Overview Progress -->
                 <div class="lg:col-span-12 xl:col-span-5 bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-zinc-100 dark:border-zinc-800 p-6 flex flex-col h-full">
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-[18px] font-bold text-zinc-900 dark:text-white">Product Overview</h2>
+                        <h2 class="text-[18px] font-bold text-zinc-900 dark:text-white">Ringkasan Produk <!-- Standarisasi bahasa UjiKom --></h2>
                         <button class="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
                         </button>
@@ -154,7 +154,7 @@
                         <!-- Progress Items -->
                         <div>
                             <div class="flex justify-between items-center mb-1.5">
-                                <span class="text-[13px] font-bold text-zinc-500 dark:text-zinc-400">Total Products</span>
+                                <span class="text-[13px] font-bold text-zinc-500 dark:text-zinc-400">Total Produk <!-- Standarisasi bahasa UjiKom --></span>
                                 <span class="text-[13px] font-extrabold text-zinc-900 dark:text-white">{{ $productsCount }}</span>
                             </div>
                             <div class="w-full h-1.5 bg-zinc-50/50 dark:bg-zinc-800 rounded-full overflow-hidden">
@@ -163,7 +163,7 @@
                         </div>
                         <div>
                             <div class="flex justify-between items-center mb-1.5">
-                                <span class="text-[13px] font-bold text-zinc-500 dark:text-zinc-400">Low Stock Warning</span>
+                                <span class="text-[13px] font-bold text-zinc-500 dark:text-zinc-400">Peringatan Stok Tipis <!-- Standarisasi bahasa UjiKom --></span>
                                 <span class="text-[13px] font-extrabold text-amber-500 dark:text-amber-400">{{ $lowStockCount }}</span>
                             </div>
                             <div class="w-full h-1.5 bg-zinc-50/50 dark:bg-zinc-800 rounded-full overflow-hidden">
@@ -172,7 +172,7 @@
                         </div>
                         <div>
                             <div class="flex justify-between items-center mb-1.5">
-                                <span class="text-[13px] font-bold text-zinc-500 dark:text-zinc-400">Sold This Month</span>
+                                <span class="text-[13px] font-bold text-zinc-500 dark:text-zinc-400">Terjual Bulan Ini <!-- Standarisasi bahasa UjiKom --></span>
                                 <span class="text-[13px] font-extrabold text-emerald-500 dark:text-emerald-400">{{ number_format($soldThisMonth) }}</span>
                             </div>
                             <div class="w-full h-1.5 bg-zinc-50/50 dark:bg-zinc-800 rounded-full overflow-hidden">
@@ -181,7 +181,7 @@
                         </div>
                         <div>
                             <div class="flex justify-between items-center mb-1.5">
-                                <span class="text-[13px] font-bold text-zinc-500 dark:text-zinc-400">Product Returned</span>
+                                <span class="text-[13px] font-bold text-zinc-500 dark:text-zinc-400">Produk Dikembalikan <!-- Standarisasi bahasa UjiKom --></span>
                                 <span class="text-[13px] font-extrabold text-zinc-900 dark:text-white">{{ $returnedProducts }}</span>
                             </div>
                             <div class="w-full h-1.5 bg-zinc-50/50 dark:bg-zinc-800 rounded-full overflow-hidden">
@@ -197,7 +197,7 @@
         <div class="lg:col-span-4 flex flex-col gap-6">
             <!-- Total View/Orders Chart -->
             <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-zinc-100 dark:border-zinc-800 p-6 flex flex-col flex-1">
-                <h2 class="text-[18px] font-bold text-zinc-900 dark:text-white mb-2">Payment Methods Overview</h2>
+                <h2 class="text-[18px] font-bold text-zinc-900 dark:text-white mb-2">Ringkasan Metode Pembayaran <!-- Standarisasi bahasa UjiKom --></h2>
                 
                 <div class="flex-1 flex items-center justify-center my-4 min-h-55">
                     <div id="performance-chart" class="w-full max-h-60 flex justify-center"></div>
@@ -233,10 +233,10 @@
                 </div>
 
                 <div class="relative z-10 w-4/5">
-                    <h3 class="text-[22px] font-extrabold leading-tight text-white mb-3 tracking-tight">Level up your sales managing to the next level.</h3>
-                    <p class="text-white/60 text-[13px] font-medium leading-relaxed mb-6">An easy way to manage sales with care and precision.</p>
+                    <h3 class="text-[22px] font-extrabold leading-tight text-white mb-3 tracking-tight">Tingkatkan pengelolaan penjualan Anda ke level berikutnya. <!-- Standarisasi bahasa UjiKom --></h3>
+                    <p class="text-white/60 text-[13px] font-medium leading-relaxed mb-6">Cara mudah mengelola penjualan dengan teliti dan presisi.</p>
                     <button class="bg-gray-50 hover:bg-[#c4fc19] text-[#09090b] px-5 py-2.5 rounded-xl text-[13px] font-bold transition-transform hover:-translate-y-0.5 whitespace-nowrap">
-                        Check the updates now
+                        Cek pembaruan sekarang
                     </button>
                 </div>
             </div>
@@ -339,7 +339,7 @@
                                 show: true,
                                 name: { show: true, fontSize: '12px', fontWeight: 600, color: '#64748b', offsetY: -5 },
                                 value: { show: true, fontSize: '28px', fontWeight: 800, color: '#0f172a', offsetY: 5, formatter: function (val) { return val } },
-                                total: { show: true, showAlways: true, label: 'Total Paid', fontSize: '12px', fontWeight: 600, color: '#64748b', formatter: function (w) { return "{{ $totalPaidOrders }}" } }
+                                total: { show: true, showAlways: true, label: 'Total Lunas', fontSize: '12px', fontWeight: 600, color: '#64748b', formatter: function (w) { return "{{ $totalPaidOrders }}" } } // <!-- Standarisasi bahasa UjiKom -->
                             }
                         },
                         customScale: 0.8,

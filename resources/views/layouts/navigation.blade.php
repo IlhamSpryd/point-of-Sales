@@ -52,7 +52,7 @@
                 </div>
                 
                 <span :class="expanded ? 'opacity-100 w-auto inline' : 'opacity-0 w-0 hidden'" class="transition-all duration-200 overflow-hidden font-semibold">
-                    SparkAdmin
+                    {{ config('app.name') }}
                 </span>
             </div>
         </a>
@@ -79,6 +79,7 @@
             </li>
 
             {{-- Dashboard --}}
+            @if(auth()->check() && auth()->user()->role?->name === 'Administrator')
             <li>
                 <a href="{{ route('dashboard') }}"
                    class="group flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 relative overflow-hidden whitespace-nowrap
@@ -95,6 +96,7 @@
                           class="transition-all duration-200 overflow-hidden whitespace-nowrap">Dashboard</span>
                 </a>
             </li>
+            @endif
 
             {{-- Transaksi (Hanya Kasir) --}}
             @if(auth()->check() && auth()->user()->role?->name === 'Kasir')
@@ -149,7 +151,7 @@
                     <div class="flex items-center">
                         <span class="material-symbols-rounded text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''">inventory_2</span>
                         <span :class="expanded ? 'opacity-100 w-auto ml-3' : 'opacity-0 w-0 ml-0'"
-                              class="transition-all duration-200 overflow-hidden whitespace-nowrap">Catalog</span>
+                              class="transition-all duration-200 overflow-hidden whitespace-nowrap">Katalog</span> <!-- Standarisasi bahasa UjiKom -->
                     </div>
                     <svg :class="[expanded ? 'opacity-100 w-3.5 ml-2' : 'opacity-0 w-0 ml-0', subOpen ? 'rotate-180' : '']"
                          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -163,7 +165,7 @@
                                   {{ request()->routeIs('categories.*')
                                       ? 'text-primary-600 dark:text-primary-400 bg-primary-50/60 dark:bg-primary-900/15 font-medium'
                                       : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-gray-800/40' }}">
-                            Categories
+                            Kategori <!-- Standarisasi bahasa UjiKom -->
                         </a>
                     </li>
                     <li>
@@ -172,7 +174,7 @@
                                   {{ request()->routeIs('products.*')
                                       ? 'text-primary-600 dark:text-primary-400 bg-primary-50/60 dark:bg-primary-900/15 font-medium'
                                       : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-gray-800/40' }}">
-                            Products
+                            Produk <!-- Standarisasi bahasa UjiKom -->
                         </a>
                     </li>
                 </ul>
@@ -192,7 +194,7 @@
                     <div class="flex items-center">
                         <span class="material-symbols-rounded text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''">admin_panel_settings</span>
                         <span :class="expanded ? 'opacity-100 w-auto ml-3' : 'opacity-0 w-0 ml-0'"
-                              class="transition-all duration-200 overflow-hidden whitespace-nowrap">Access</span>
+                              class="transition-all duration-200 overflow-hidden whitespace-nowrap">Akses</span> <!-- Standarisasi bahasa UjiKom -->
                     </div>
                     <svg :class="[expanded ? 'opacity-100 w-3.5 ml-2' : 'opacity-0 w-0 ml-0', subOpen ? 'rotate-180' : '']"
                          viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -206,7 +208,7 @@
                                   {{ request()->routeIs('roles.*')
                                       ? 'text-primary-600 dark:text-primary-400 bg-primary-50/60 dark:bg-primary-900/15 font-medium'
                                       : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-gray-800/40' }}">
-                            Roles
+                            Peran <!-- Standarisasi bahasa UjiKom -->
                         </a>
                     </li>
                     <li>
@@ -215,7 +217,7 @@
                                   {{ request()->routeIs('users.*')
                                       ? 'text-primary-600 dark:text-primary-400 bg-primary-50/60 dark:bg-primary-900/15 font-medium'
                                       : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100/50 dark:hover:bg-gray-800/40' }}">
-                            Users
+                            Pengguna <!-- Standarisasi bahasa UjiKom -->
                         </a>
                     </li>
                 </ul>
@@ -283,7 +285,7 @@
                 <a href="{{ route('profile.edit') }}"
                    class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-all duration-150 font-medium">
                     <svg class="w-4 h-4 shrink-0 text-center" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    <span>My Profile</span>
+                    <span>Profil Saya</span> <!-- Standarisasi bahasa UjiKom -->
                 </a>
 
                 <div class="my-1.5 border-t border-gray-100 dark:border-gray-800"></div>
@@ -293,7 +295,7 @@
                     <button type="submit"
                             class="flex w-full items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/15 transition-all duration-150 font-medium">
                         <svg class="w-4 h-4 shrink-0 text-center" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                        <span>Log Out</span>
+                        <span>Keluar</span> <!-- Standarisasi bahasa UjiKom -->
                     </button>
                 </form>
             </div>

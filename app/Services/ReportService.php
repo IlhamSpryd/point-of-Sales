@@ -18,7 +18,7 @@ class ReportService
     public function getSalesSummary(Carbon $start, Carbon $end): object
     {
         return Order::whereBetween('order_date', [$start, $end])
-            ->where('order_status', 'paid')
+            ->where('order_status', \App\Enums\OrderStatus::Paid->value)
             ->selectRaw('COALESCE(SUM(order_amount), 0) as total, COUNT(*) as count')
             ->first();
     }
@@ -35,7 +35,7 @@ class ReportService
     {
         return Order::with('user')
             ->whereBetween('order_date', [$start, $end])
-            ->where('order_status', 'paid')
+            ->where('order_status', \App\Enums\OrderStatus::Paid->value)
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }

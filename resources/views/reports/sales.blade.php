@@ -19,7 +19,7 @@
             <!-- Export button -->
             <a href="{{ route('reports.sales', ['export' => 'csv'] + request()->except('export')) }}" class="flex-1 sm:flex-none">
                 <x-button variant="secondary" type="button" class="w-full h-10">
-                    <span class="material-symbols-rounded">download</span> Export
+                    <span class="material-symbols-rounded">download</span> Ekspor <!-- Standarisasi bahasa UjiKom -->
                 </x-button>
             </a>
         </div>

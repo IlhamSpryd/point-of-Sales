@@ -31,14 +31,9 @@ class TransactionController extends Controller
         $products = Product::where('is_active', true)->with('category')->get();
         $categories = Category::all();
 
-        $today = Carbon::today();
-        $metricsQuery = Order::whereDate('order_date', $today)
-            ->where('order_status', 'paid')
-            ->selectRaw('COALESCE(SUM(order_amount), 0) as omzet, COUNT(*) as jumlah')
-            ->first();
-
-        $todayOmzet = (float) $metricsQuery->omzet;
-        $todayCount = (int) $metricsQuery->jumlah;
+        $metrics = $this->transactionService->getTodayMetrics();
+        $todayOmzet = $metrics['omzet'];
+        $todayCount = $metrics['jumlah'];
 
         // Dipindahkan ke config/pos.php agar tarif pajak & aturan pembulatan tidak
         // terduplikasi dan berisiko tidak sinkron antara Controller dan Service.
@@ -86,7 +81,7 @@ class TransactionController extends Controller
                 'snap_token' => $order->snap_token ?? null,
                 'order_number' => $order->order_code,
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::error('Transaction Error: ' . $e->getMessage() . ' ' . $e->getTraceAsString());
             if ($request->wantsJson()) {
                 return response()->json([
@@ -120,7 +115,7 @@ class TransactionController extends Controller
     {
         $order = Order::where('order_code', $orderNumber)->first();
 
-        if ($order && $order->order_status === 'pending' && $order->payment_method !== 'cash') {
+        if ($order && $order->order_status === \App\Enums\OrderStatus::Pending->value && $order->payment_method !== 'cash') {
             Config::$serverKey = config('services.midtrans.server_key');
             Config::$isProduction = config('services.midtrans.is_production');
             Config::$curlOptions = [
@@ -137,8 +132,8 @@ class TransactionController extends Controller
                 $status = (object) Transaction::status($orderNumber);
 
                 if (isset($status->transaction_status) && in_array($status->transaction_status, ['capture', 'settlement'])) {
-                    if ($order->order_status !== 'paid') {
-                        $order->update(['order_status' => 'paid']);
+                    if ($order->order_status !== \App\Enums\OrderStatus::Paid->value) {
+                        $order->update(['order_status' => \App\Enums\OrderStatus::Paid->value]);
                     }
                 }
             } catch (\Exception $e) {

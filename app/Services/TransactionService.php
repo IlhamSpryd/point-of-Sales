@@ -212,12 +212,40 @@ class TransactionService
         // Pembulatan WAJIB dilakukan di backend, bukan hanya di Alpine.js,
         // agar order_amount yang tersimpan sama persis dengan nominal yang
         // disepakati kasir & pelanggan di layar (single source of truth).
+        // PERHATIAN: Desinkronisasi pengaturan pembulatan di sini bisa membuat 
+        // kembalian yang diucapkan kasir ke pelanggan berbeda dari nominal di struk cetak.
         $roundingValue = config('pos.rounding_value', 100);
-        $totalAmount = (int) (round($totalAmount / $roundingValue) * $roundingValue);
+        $roundingBehavior = config('pos.rounding_behavior', 'ROUND_NEAREST');
+
+        $totalAmount = (int) match ($roundingBehavior) {
+            'ROUND_NEAREST' => round($totalAmount / $roundingValue) * $roundingValue,
+            'ROUND_UP' => ceil($totalAmount / $roundingValue) * $roundingValue,
+            'ROUND_DOWN' => floor($totalAmount / $roundingValue) * $roundingValue,
+            default => round($totalAmount),
+        };
 
         return [
             'tax_amount' => $taxAmount,
             'total_amount' => $totalAmount,
+        ];
+    }
+
+    /**
+     * Mengambil metrik transaksi hari ini (omzet finansial & total order).
+     * Memindahkan query dari Controller untuk mengembalikan konsistensi arsitektur
+     * (Thin Controller) sesuai standar yang sudah diterapkan pada modul lain.
+     */
+    public function getTodayMetrics(): array
+    {
+        $today = \Carbon\Carbon::today();
+        $metricsQuery = Order::whereDate('order_date', $today)
+            ->where('order_status', OrderStatus::Paid->value)
+            ->selectRaw('COALESCE(SUM(order_amount), 0) as omzet, COUNT(*) as jumlah')
+            ->first();
+
+        return [
+            'omzet' => (float) $metricsQuery->omzet,
+            'jumlah' => (int) $metricsQuery->jumlah,
         ];
     }
 }

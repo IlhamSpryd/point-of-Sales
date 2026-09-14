@@ -125,7 +125,18 @@
             },
             increaseQty(index) {
                 let item = this.cart[index];
-                if (item.qty < item.stock) item.qty++;
+                if (item.qty < item.stock) {
+                    item.qty++;
+                } else {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'warning',
+                        title: 'Stok maksimum tercapai (' + item.stock + ')',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                }
                 this.calculateChange();
             },
             decreaseQty(index) {

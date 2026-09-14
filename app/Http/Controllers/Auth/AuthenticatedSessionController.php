@@ -28,7 +28,14 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        // Arahkan sesuai role — Kasir TIDAK PERNAH menyentuh dashboard finansial,
+        // Pimpinan langsung ke laporan, Administrator ke dashboard.
+        $user = $request->user();
+        return match ($user->role?->name) {
+            'Kasir'     => redirect()->intended(route('transaction.create', absolute: false)),
+            'Pimpinan'  => redirect()->intended(route('reports.sales', absolute: false)),
+            default     => redirect()->intended(route('dashboard', absolute: false)),
+        };
     }
 
     /**

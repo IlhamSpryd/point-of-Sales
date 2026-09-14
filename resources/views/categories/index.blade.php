@@ -1,20 +1,20 @@
 <x-app-layout>
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-            <h4 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Categories</h4>
-            <p class="text-sm font-medium text-zinc-500 mt-1">Manage product categories</p>
+            <h4 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Kategori <!-- Standarisasi bahasa UjiKom --></h4>
+            <p class="text-sm font-medium text-zinc-500 mt-1">Kelola kategori produk <!-- Standarisasi bahasa UjiKom --></p>
         </div>
         
         <div class="flex flex-col lg:flex-row gap-3 items-center w-full sm:w-auto">
             <form action="{{ route('categories.index') }}" method="GET" class="w-full sm:w-72 relative">
                 <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">search</span>
-                <x-form-input type="search" name="search" value="{{ request('search') }}" placeholder="Search categories..." class="pl-10 h-10 w-full" />
+                <x-form-input type="search" name="search" value="{{ request('search') }}" placeholder="Cari kategori..." class="pl-10 h-10 w-full" /> <!-- Standarisasi bahasa UjiKom -->
             </form>
             
             <div class="flex gap-2 w-full sm:w-auto">
                 <a href="{{ request()->fullUrlWithQuery(['export' => 'csv']) }}" class="flex-1 sm:flex-none">
                     <x-button variant="secondary" type="button" class="w-full h-10">
-                        <span class="material-symbols-rounded">download</span> Export
+                        <span class="material-symbols-rounded">download</span> Ekspor <!-- Standarisasi bahasa UjiKom -->
                     </x-button>
                 </a>
                 
@@ -22,7 +22,7 @@
                 @if(auth()->user()->role?->name === 'Administrator')
                     <a href="{{ route('categories.create') }}" class="flex-1 sm:flex-none">
                         <x-button variant="primary" type="button" class="w-full h-10">
-                            <span class="material-symbols-rounded">add</span> Add Category
+                            <span class="material-symbols-rounded">add</span> Tambah Kategori <!-- Standarisasi bahasa UjiKom -->
                         </x-button>
                     </a>
                 @endif
@@ -44,10 +44,10 @@
                 <thead>
                     <tr class="bg-zinc-50/50 dark:bg-zinc-800/50">
                         <th class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">ID</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Category Name</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Created At</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Nama Kategori <!-- Standarisasi bahasa UjiKom --></th>
+                        <th class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Dibuat Pada <!-- Standarisasi bahasa UjiKom --></th>
                         @if(auth()->user()->role?->name === 'Administrator')
-                            <th class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider text-right">Actions</th>
+                            <th class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider text-right">Aksi <!-- Standarisasi bahasa UjiKom --></th>
                         @endif
                     </tr>
                 </thead>
@@ -76,7 +76,7 @@
                             <td colspan="{{ auth()->user()->role?->name === 'Administrator' ? 4 : 3 }}" class="px-6 py-8 text-center text-zinc-500 text-sm">
                                 <div class="flex flex-col items-center justify-center">
                                     <span class="material-symbols-rounded text-4xl mb-3 text-zinc-400">category</span>
-                                    <p>No categories found.</p>
+                                    <p>Kategori tidak ditemukan. <!-- Standarisasi bahasa UjiKom --></p>
                                 </div>
                             </td>
                         </tr>

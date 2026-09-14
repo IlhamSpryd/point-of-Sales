@@ -281,7 +281,10 @@
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4" /></svg>
                                             </button>
                                             <span class="text-[13px] font-bold text-gray-900 dark:text-gray-100 w-5 text-center leading-none" x-text="item.qty"></span>
-                                            <button type="button" @click="increaseQty(index)" class="w-6 h-6 rounded-full flex items-center justify-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 transition-colors shadow-sm">
+                                            <button type="button" @click="increaseQty(index)"
+                                                :disabled="item.qty >= item.stock"
+                                                :class="item.qty >= item.stock ? 'opacity-30 cursor-not-allowed' : ''"
+                                                class="w-6 h-6 rounded-full flex items-center justify-center bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-100 transition-colors shadow-sm">
                                                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
                                             </button>
                                         </div>

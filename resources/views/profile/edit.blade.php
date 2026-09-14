@@ -1,8 +1,8 @@
 <x-app-layout>
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h4 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Profile</h4>
-            <p class="text-sm font-medium text-zinc-500 mt-1">Manage your account settings and preferences</p>
+            <h4 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Profil</h4> <!-- Standarisasi bahasa UjiKom -->
+            <p class="text-sm font-medium text-zinc-500 mt-1">Kelola pengaturan dan preferensi akun Anda</p> <!-- Standarisasi bahasa UjiKom -->
         </div>
     </div>
 

@@ -1,11 +1,11 @@
 <x-app-layout>
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h4 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Create Category</h4>
-            <p class="text-sm font-medium text-zinc-500 mt-1">Add a new product category</p>
+            <h4 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Tambah Kategori <!-- Standarisasi bahasa UjiKom --></h4>
+            <p class="text-sm font-medium text-zinc-500 mt-1">Tambah kategori produk baru <!-- Standarisasi bahasa UjiKom --></p>
         </div>
         <a href="{{ route('categories.index') }}" class="flex items-center gap-2 px-4 py-2 bg-zinc-50/50 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-sm font-medium rounded-lg transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-            <span class="material-symbols-rounded">arrow_back</span> Back
+            <span class="material-symbols-rounded">arrow_back</span> Kembali <!-- Standarisasi bahasa UjiKom -->
         </a>
     </div>
 
@@ -14,10 +14,10 @@
             @csrf
 
             <div>
-                <x-form-label for="category_name">Category Name</x-form-label>
+                <x-form-label for="category_name">Nama Kategori <!-- Standarisasi bahasa UjiKom --></x-form-label>
                 <x-form-input type="text" id="category_name" name="category_name" value="{{ old('category_name') }}" 
                         
-                       placeholder="Enter category name" required class="@error('category_name') input-error @enderror" />
+                       placeholder="Masukkan nama kategori" required class="@error('category_name') input-error @enderror" /> <!-- Standarisasi bahasa UjiKom -->
                 @error('category_name')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
                 @enderror
@@ -27,7 +27,7 @@
                 {{-- submitting mencegah user klik tombol dua kali saat form sedang diproses server, supaya tidak ada data duplikat --}}
                 <x-button type="submit" variant="primary" :disabled="false" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''">
                     <span x-show="!submitting">
-                        <span class="material-symbols-rounded">save</span> Save Category
+                        <span class="material-symbols-rounded">save</span> Simpan Kategori <!-- Standarisasi bahasa UjiKom -->
                     </span>
                     <span x-show="submitting" x-cloak>Menyimpan...</span>
                 </x-button>

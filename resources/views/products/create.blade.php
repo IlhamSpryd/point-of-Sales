@@ -1,11 +1,11 @@
 <x-app-layout>
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h4 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Create Product</h4>
-            <p class="text-sm font-medium text-zinc-500 mt-1">Add a new product to your inventory</p>
+            <h4 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Tambah Produk <!-- Standarisasi bahasa UjiKom --></h4>
+            <p class="text-sm font-medium text-zinc-500 mt-1">Tambahkan produk baru ke dalam inventaris <!-- Standarisasi bahasa UjiKom --></p>
         </div>
         <a href="{{ route('products.index') }}" class="flex items-center gap-2 px-4 py-2 bg-zinc-50/50 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-sm font-medium rounded-lg transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-            <span class="material-symbols-rounded">arrow_back</span> Back
+            <span class="material-symbols-rounded">arrow_back</span> Kembali <!-- Standarisasi bahasa UjiKom -->
         </a>
     </div>
 
@@ -16,21 +16,21 @@
             <!-- Name & Category Row -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <x-form-label for="product_name">Product Name</x-form-label>
+                    <x-form-label for="product_name">Nama Produk <!-- Standarisasi bahasa UjiKom --></x-form-label>
                     <x-form-input type="text" id="product_name" name="product_name" value="{{ old('product_name') }}" 
                             
-                           placeholder="Enter product name" required class="@error('product_name') input-error @enderror" />
+                           placeholder="Masukkan nama produk" required class="@error('product_name') input-error @enderror" /> <!-- Standarisasi bahasa UjiKom -->
                     @error('product_name')
                         <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
                     @enderror
                 </div>
 
                 <div>
-                    <x-form-label for="category_id">Category</x-form-label>
+                    <x-form-label for="category_id">Kategori <!-- Standarisasi bahasa UjiKom --></x-form-label>
                     <div class="relative">
                         <select id="category_id" name="category_id" 
                                 class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-100 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 appearance-none focus:outline-none focus:ring-2 focus:ring-zinc-1000/20 focus:border-zinc-1000 transition-all @error('category_id') input-error @enderror" required>
-                            <option value="">Select Category</option>
+                            <option value="">Pilih Kategori <!-- Standarisasi bahasa UjiKom --></option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
                                     {{ $category->category_name }}
@@ -50,7 +50,7 @@
             <!-- Price & Stock Row -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <x-form-label for="product_price">Price (Rp)</x-form-label>
+                    <x-form-label for="product_price">Harga (Rp) <!-- Standarisasi bahasa UjiKom --></x-form-label>
                     <x-form-input type="number" id="product_price" name="product_price" value="{{ old('product_price') }}" min="0" step="1"
                             
                            placeholder="0" required class="@error('product_price') input-error @enderror" />
@@ -60,7 +60,7 @@
                 </div>
 
                 <div>
-                    <x-form-label for="stock">Stock Quantity</x-form-label>
+                    <x-form-label for="stock">Kuantitas Stok <!-- Standarisasi bahasa UjiKom --></x-form-label>
                     <x-form-input type="number" id="stock" name="stock" value="{{ old('stock') }}" min="0" step="1"
                             
                            placeholder="0" required class="@error('stock') input-error @enderror" />
@@ -83,17 +83,17 @@
                         input:checked ~ .dot { transform: translateX(100%); }
                     </style>
                     <div class="ml-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                        Active Product
+                        Produk Aktif <!-- Standarisasi bahasa UjiKom -->
                     </div>
                 </label>
             </div>
             
             <!-- Description -->
             <div>
-                <x-form-label for="product_description">Description</x-form-label>
+                <x-form-label for="product_description">Deskripsi <!-- Standarisasi bahasa UjiKom --></x-form-label>
                 <textarea id="product_description" name="product_description" rows="3"
                           class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-100 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-1000/20 focus:border-zinc-1000 transition-all @error('product_description') input-error @enderror" 
-                          placeholder="Enter product description (optional)">{{ old('product_description') }}</textarea>
+                          placeholder="Masukkan deskripsi produk (opsional)">{{ old('product_description') }}</textarea> <!-- Standarisasi bahasa UjiKom -->
                 @error('product_description')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
                 @enderror
@@ -101,18 +101,18 @@
 
             <!-- Photo Upload -->
             <div>
-                <x-form-label for="product_photo">Product Photo (Optional)</x-form-label>
+                <x-form-label for="product_photo">Foto Produk (Opsional) <!-- Standarisasi bahasa UjiKom --></x-form-label>
                 <div class="mt-1 flex items-center justify-center px-6 pt-5 pb-6 border-2 border-zinc-200 dark:border-zinc-700 border-dashed rounded-xl form-input transition-colors hover:border-zinc-1000 dark:hover:border-zinc-1000 bg-zinc-50/50 dark:bg-zinc-800/50">
                     <div class="space-y-1 text-center">
                         <span class="material-symbols-rounded text-3xl text-zinc-400">image</span>
                         <div class="flex flex-col sm:flex-row text-sm text-zinc-500 dark:text-zinc-400 justify-center gap-1 mt-3">
                             <label for="product_photo" class="relative cursor-pointer bg-white dark:bg-zinc-900 rounded-md font-medium text-zinc-900 hover:text-zinc-900 focus-within:outline-none px-2 py-0.5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-zinc-100 dark:border-zinc-700 transition-colors">
-                                <span>Upload a file</span>
+                                <span>Unggah file <!-- Standarisasi bahasa UjiKom --></span>
                                 <input id="product_photo" name="product_photo" type="file" class="sr-only" accept="image/jpeg,image/png,image/jpg" onchange="document.getElementById('file-name').textContent = this.files[0].name">
                             </label>
-                            <p class="pl-1 shrink-0 pt-0.5">or drag and drop</p>
+                            <p class="pl-1 shrink-0 pt-0.5">atau seret dan lepas <!-- Standarisasi bahasa UjiKom --></p>
                         </div>
-                        <p class="text-xs text-zinc-500 mt-2" id="file-name">PNG, JPG up to 2MB</p>
+                        <p class="text-xs text-zinc-500 mt-2" id="file-name">PNG, JPG hingga 2MB <!-- Standarisasi bahasa UjiKom --></p>
                     </div>
                 </div>
                 @error('product_photo')
@@ -124,7 +124,7 @@
                 {{-- submitting mencegah user klik tombol dua kali saat form sedang diproses server, supaya tidak ada data duplikat --}}
                 <x-button type="submit" variant="primary" :disabled="false" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''">
                     <span x-show="!submitting">
-                        <span class="material-symbols-rounded">save</span> Save Product
+                        <span class="material-symbols-rounded">save</span> Simpan Produk <!-- Standarisasi bahasa UjiKom -->
                     </span>
                     <span x-show="submitting" x-cloak>Menyimpan...</span>
                 </x-button>
