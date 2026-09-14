@@ -23,6 +23,7 @@ class UpdateProductRequest extends FormRequest
             'stock'               => 'required|integer|min:0',
             'product_photo'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'product_description' => 'nullable|string',
+            'is_active'           => 'nullable|boolean',
         ];
     }
 }

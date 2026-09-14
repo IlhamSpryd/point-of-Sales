@@ -29,28 +29,12 @@ class CategoryService
     /**
      * Eksekusi blok bongkahan data per 100 row kategori dalam mencetak CSV.
      */
-    public function exportCsv(\Illuminate\Http\Request $request): StreamedResponse
+    public function exportCsv(\Illuminate\Http\Request $request)
     {
         $query = $this->getFilteredQuery($request);
-        $fileName = 'categories_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        $fileName = 'categories_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
 
-        return response()->streamDownload(function () use ($query) {
-            $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['ID', 'Category Name']);
-
-            $query->chunk(100, function ($categories) use ($handle) {
-                foreach ($categories as $category) {
-                    fputcsv($handle, [
-                        $category->id,
-                        $category->category_name,
-                    ]);
-                }
-            });
-            fclose($handle);
-        }, $fileName, [
-            'Content-Type' => 'text/csv',
-            'Cache-Control' => 'no-cache, must-revalidate',
-        ]);
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\CategoriesExport($query), $fileName);
     }
 
     /**

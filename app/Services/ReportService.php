@@ -39,4 +39,17 @@ class ReportService
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
     }
+
+    /**
+     * Mengekspor laporan penjualan ke dalam format Excel (.xlsx) rapi.
+     *
+     * @param Carbon $start
+     * @param Carbon $end
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function exportCsv(Carbon $start, Carbon $end)
+    {
+        $filename = 'Laporan_Penjualan_' . $start->format('Ymd') . '-' . $end->format('Ymd') . '.xlsx';
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\SalesExport($start, $end), $filename);
+    }
 }

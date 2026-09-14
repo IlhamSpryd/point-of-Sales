@@ -130,6 +130,10 @@ class TransactionController extends Controller
             ];
 
             try {
+                // Beri waktu 2 detik agar status midtrans di Sandbox benar-benar berubah menjadi settlement,
+                // sebelum kita melakukan pengecekan ke server mereka.
+                sleep(2);
+                
                 $status = (object) Transaction::status($orderNumber);
 
                 if (isset($status->transaction_status) && in_array($status->transaction_status, ['capture', 'settlement'])) {

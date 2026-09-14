@@ -27,7 +27,7 @@ class CategoryController extends Controller
     /**
      * Menampilkan list daftar indeks dari resource kategori.
      */
-    public function index(\Illuminate\Http\Request $request): \Illuminate\View\View|\Symfony\Component\HttpFoundation\StreamedResponse
+    public function index(\Illuminate\Http\Request $request): \Illuminate\View\View|\Symfony\Component\HttpFoundation\BinaryFileResponse
     {
         // Bila diinstruksikan oleh parameter url untuk ekspor csv, alihkan kontrol ke Service
         if ($request->has('export') && $request->export === 'csv') {

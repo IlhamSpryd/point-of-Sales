@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
-    <title>@yield('title', 'Login - ' . config('app.name', 'Laravel'))</title>
+    <title>@yield('title', config('app.name', 'SparkAdmin POS'))</title>
     <link rel="icon" href="{{ asset('spark-admin-1.0.0/assets/images/favicon.ico') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 

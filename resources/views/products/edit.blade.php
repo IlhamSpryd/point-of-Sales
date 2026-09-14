@@ -81,7 +81,7 @@
             <div class="flex items-center">
                 <label class="flex items-center cursor-pointer">
                     <div class="relative">
-                        <input type="checkbox" name="is_active" class="sr-only" {{ old('is_active', $product->is_active) ? 'checked' : '' }}>
+                        <input type="checkbox" name="is_active" value="1" class="sr-only" {{ old('is_active', $product->is_active) ? 'checked' : '' }}>
                         <div class="block bg-zinc-200 dark:bg-zinc-700 w-10 h-6 rounded-full transition-colors duration-300 peer-checked:bg-zinc-1000"></div>
                         <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 peer-checked:translate-x-full"></div>
                     </div>

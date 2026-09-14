@@ -28,7 +28,7 @@ class ProductController extends Controller
     /**
      * Menampilkan daftar semua kueri produk.
      */
-    public function index(\Illuminate\Http\Request $request): \Illuminate\View\View|\Symfony\Component\HttpFoundation\StreamedResponse
+    public function index(\Illuminate\Http\Request $request): \Illuminate\View\View|\Symfony\Component\HttpFoundation\BinaryFileResponse
     {
         // Cek request untuk ekspor CSV, lalu delegasikan ke Service.
         if ($request->has('export') && $request->export === 'csv') {

@@ -28,34 +28,14 @@ class ProductService
     }
 
     /**
-     * Mendownload spreadsheet format Comma Separated Value seluruh inventori katalog.
+     * Mendownload spreadsheet format Excel profesional.
      */
-    public function exportCsv(\Illuminate\Http\Request $request): StreamedResponse
+    public function exportCsv(\Illuminate\Http\Request $request)
     {
         $query = $this->getFilteredQuery($request);
-        $fileName = 'products_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
-
-        return response()->streamDownload(function () use ($query) {
-            $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['ID', 'Product Name', 'Category', 'Price', 'Stock', 'Status']);
-
-            $query->chunk(100, function ($products) use ($handle) {
-                foreach ($products as $product) {
-                    fputcsv($handle, [
-                        $product->id,
-                        $product->product_name,
-                        $product->category ? $product->category->category_name : '-',
-                        $product->product_price,
-                        $product->stock,
-                        $product->is_active ? 'Active' : 'Inactive'
-                    ]);
-                }
-            });
-            fclose($handle);
-        }, $fileName, [
-            'Content-Type' => 'text/csv',
-            'Cache-Control' => 'no-cache, must-revalidate',
-        ]);
+        $fileName = 'products_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\ProductsExport($query), $fileName);
     }
 
     /**

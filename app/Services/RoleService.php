@@ -30,29 +30,12 @@ class RoleService
     /**
      * Menyiapkan file unduhan mentah .CSV.
      */
-    public function exportCsv(\Illuminate\Http\Request $request): StreamedResponse
+    public function exportCsv(\Illuminate\Http\Request $request)
     {
         $query = $this->getFilteredQuery($request);
-        $fileName = 'roles_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        $fileName = 'roles_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
 
-        return response()->streamDownload(function () use ($query) {
-            $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['ID', 'Name', 'Assigned Users']);
-
-            $query->chunk(100, function ($roles) use ($handle) {
-                foreach ($roles as $role) {
-                    fputcsv($handle, [
-                        $role->id,
-                        $role->name,
-                        $role->users_count,
-                    ]);
-                }
-            });
-            fclose($handle);
-        }, $fileName, [
-            'Content-Type' => 'text/csv',
-            'Cache-Control' => 'no-cache, must-revalidate',
-        ]);
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\RolesExport($query), $fileName);
     }
 
     /**

@@ -27,7 +27,7 @@ class RoleController extends Controller
     /**
      * Menampilkan daftar indeks Roles.
      */
-    public function index(\Illuminate\Http\Request $request): \Illuminate\View\View|\Symfony\Component\HttpFoundation\StreamedResponse
+    public function index(\Illuminate\Http\Request $request): \Illuminate\View\View|\Symfony\Component\HttpFoundation\BinaryFileResponse
     {
         // Alihkan pengembalian menjadi file unduh (StreamResponse CSV) bila request adalah ekspor.
         if ($request->has('export') && $request->export === 'csv') {

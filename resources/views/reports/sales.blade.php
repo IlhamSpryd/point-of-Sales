@@ -7,10 +7,21 @@
 <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
 
     <!-- Page header -->
-    <div class="sm:flex sm:justify-between sm:items-center mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <!-- Left: Title -->
-        <div class="mb-4 sm:mb-0">
-            <h1 class="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">{{ $title }}</h1>
+        <div>
+            <h4 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">{{ $title }}</h4>
+            <p class="text-sm font-medium text-zinc-500 mt-1">Ringkasan transaksi dan pendapatan</p>
+        </div>
+        
+        <!-- Right: Actions -->
+        <div class="flex gap-2 w-full sm:w-auto">
+            <!-- Export button -->
+            <a href="{{ route('reports.sales', ['export' => 'csv'] + request()->except('export')) }}" class="flex-1 sm:flex-none">
+                <x-button variant="secondary" type="button" class="w-full h-10">
+                    <span class="material-symbols-rounded">download</span> Export
+                </x-button>
+            </a>
         </div>
     </div>
 

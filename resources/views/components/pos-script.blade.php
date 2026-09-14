@@ -244,7 +244,18 @@
                         }
                         
                         window.snap.pay(responseData.snap_token, {
-                                onSuccess: (result) => {
+                                onSuccess: async (result) => {
+                                    // Sync status pembayaran ke Midtrans (untuk localhost tanpa webhook)
+                                    try {
+                                        await fetch(`/api/orders/${responseData.order_number}/sync-status`, {
+                                            method: 'POST',
+                                            headers: {
+                                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                                'Accept': 'application/json'
+                                            }
+                                        });
+                                    } catch(e) {}
+
                                     this.emptyCart();
                                     this.submitting = false;
                                     this.showSuccessPopup(responseData.order_number, false);

@@ -13,8 +13,9 @@ class ReportController extends Controller
 
     /**
      * Menampilkan antarmuka Laporan Penjualan (Harian, Mingguan, Bulanan)
+     * atau mengekspor laporan jika ada query string export=csv
      */
-    public function index(Request $request): View
+    public function index(Request $request)
     {
         $title = 'Laporan Penjualan';
 
@@ -37,6 +38,14 @@ class ReportController extends Controller
             
             $monthlySales = $this->reportService->getSalesSummary($customStart, $customEnd);
             $recentOrders = $this->reportService->getRecentPaidOrders($customStart, $customEnd);
+        }
+
+        if ($request->has('export') && $request->export === 'csv') {
+            // Gunakan rentang custom jika ada, jika tidak gunakan fallback bulan ini
+            $exportStart = ($request->filled('start')) ? Carbon::parse($request->start)->startOfDay() : $startOfMonth;
+            $exportEnd = ($request->filled('end')) ? Carbon::parse($request->end)->endOfDay() : $today;
+            
+            return $this->reportService->exportCsv($exportStart, $exportEnd);
         }
 
         return view('reports.sales', compact(

@@ -32,33 +32,14 @@ class UserService
     }
 
     /**
-     * Mencetak daftar Akun secara format CSV dan melempar respon Streamed.
+     * Mencetak daftar Akun secara format Excel.
      */
-    public function exportCsv(\Illuminate\Http\Request $request): StreamedResponse
+    public function exportCsv(\Illuminate\Http\Request $request)
     {
         $query = $this->getFilteredQuery($request);
-        $fileName = 'users_export_' . now()->format('Y-m-d_H-i-s') . '.csv';
+        $fileName = 'users_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
 
-        return response()->streamDownload(function () use ($query) {
-            $handle = fopen('php://output', 'w');
-            fputcsv($handle, ['ID', 'Name', 'Email', 'Role', 'Joined Date']);
-
-            $query->chunk(100, function ($users) use ($handle) {
-                foreach ($users as $user) {
-                    fputcsv($handle, [
-                        $user->id,
-                        $user->name,
-                        $user->email,
-                        $user->role ? $user->role->name : 'Unassigned',
-                        $user->created_at ? $user->created_at->format('Y-m-d H:i') : ''
-                    ]);
-                }
-            });
-            fclose($handle);
-        }, $fileName, [
-            'Content-Type' => 'text/csv',
-            'Cache-Control' => 'no-cache, must-revalidate',
-        ]);
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\UsersExport($query), $fileName);
     }
 
     /**
