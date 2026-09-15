@@ -38,32 +38,52 @@
     })">
 
     <!-- Bagian Header: Menampilkan informasi singkat dan tombol kosongkan keranjang -->
-    <header class="bg-white dark:bg-gray-900 flex justify-between items-center px-6 h-[72px] border-b border-gray-200 dark:border-gray-700 shrink-0 sticky top-0 z-30">
-        <div class="flex items-center gap-4">
-            <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 leading-none">{{ __('Buat Pesanan') }}</h1>
-            <div class="h-6 w-px bg-gray-200"></div>
-            {{-- Badge kecil menampilkan ringkasan transaksi & omzet HARI INI,
-                 datanya dikirim dari OrderController@create --}}
-            <span class="text-sm font-medium text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-900 py-1.5 px-3 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm flex items-center gap-2">
-                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse border border-white"></span>
-                <span>{{ $todayCount }} {{ __('Transaksi (Rp') }} {{ number_format($todayOmzet, 0, ',', '.') }})</span>
-            </span>
+    <header class="bg-white dark:bg-gray-900 flex h-[72px] border-b border-gray-200 dark:border-gray-700 shrink-0 sticky top-0 z-40">
+        
+        <!-- Bagian seukuran Panel Kiri -->
+        <div class="flex-1 flex justify-between items-center pl-4 lg:pl-6 pr-0 min-w-0">
+            <!-- 1. Kiri: Judul & Badge Info -->
+            <div class="flex items-center gap-4 shrink-0">
+                <h1 class="text-xl font-bold text-gray-900 dark:text-gray-100 leading-none">{{ __('Buat Pesanan') }}</h1>
+                <div class="h-6 w-px bg-gray-200 hidden xl:block"></div>
+                {{-- Badge kecil menampilkan ringkasan transaksi HARI INI --}}
+                <span class="text-sm font-medium text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-900 py-1.5 px-3 rounded-full border border-gray-200 dark:border-gray-700 shadow-sm items-center gap-2 hidden xl:flex">
+                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse border border-white shrink-0"></span>
+                    <span class="whitespace-nowrap">{{ $todayCount }} {{ __('Transaksi (Rp') }} {{ number_format($todayOmzet, 0, ',', '.') }})</span>
+                </span>
+            </div>
+
+            <!-- 2. Kanan Panel Kiri: Search Bar (Diposisikan rata kanan menempel garis batas cart) -->
+            <div class="w-full max-w-md hidden md:block shrink-0 pl-6">
+                <div class="flex items-center w-full bg-gray-50/50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl focus-within:border-gray-900 focus-within:ring-1 focus-within:ring-gray-900 focus-within:bg-white dark:bg-gray-900 transition-colors overflow-hidden h-11">
+                    <div class="pl-3 pr-2 text-gray-400 flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    </div>
+                    <input type="text"
+                           x-ref="searchInput"
+                           x-model="searchQuery"
+                           @keydown.enter.prevent="if (filteredProducts.length === 1 && filteredProducts[0].stock > 0) { addToCart(filteredProducts[0]); searchQuery = ''; $nextTick(() => $refs.searchInput.focus()); }"
+                           aria-label="{{ __('Cari produk atau scan barcode') }}"
+                           class="flex-1 w-full h-full pr-3 bg-transparent outline-none text-gray-900 dark:text-gray-100 text-[14px] font-medium placeholder:text-gray-400 placeholder:font-normal"
+                           placeholder="{{ __('Cari hidangan atau scan barcode... (F2)') }}" />
+                </div>
+            </div>
         </div>
-        <div class="flex items-center gap-4">
-            {{-- Menampilkan tanggal hari ini, disembunyikan di layar kecil (hidden sm:inline-block) --}}
-            <span class="text-sm font-medium text-gray-800 dark:text-gray-200 hidden sm:inline-block">
+
+        <!-- Bagian seukuran Panel Kanan (Cart) -->
+        <div class="w-full lg:w-96 xl:w-[400px] flex items-center justify-between px-4 lg:px-5 shrink-0 hidden lg:flex">
+            {{-- Menampilkan tanggal hari ini... --}}
+            <span class="text-sm font-medium text-gray-800 dark:text-gray-200">
                 {{ \Carbon\Carbon::now()->format('d M Y') }}
             </span>
-            {{-- Tombol kosongkan keranjang. Ditambah konfirmasi supaya sentuhan/klik tidak sengaja
-                 tidak menghapus seluruh pesanan yang sedang disusun kasir, dan dinonaktifkan kalau
-                 keranjang memang sudah kosong --}}
+            {{-- Tombol kosongkan keranjang --}}
             <button type="button"
                     @click="if (cart.length && confirm('{{ __('Kosongkan semua item di keranjang?') }}')) emptyCart()"
                     :disabled="cart.length === 0"
                     :class="cart.length === 0 ? 'opacity-40 cursor-not-allowed' : 'hover:bg-white dark:hover:bg-gray-900 hover:text-rose-600 hover:border-rose-200'"
-                    class="text-sm font-semibold text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg px-4 h-11 transition-colors flex items-center gap-2 shadow-sm">
+                    class="text-[13px] font-semibold text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 transition-colors flex items-center gap-2 shadow-sm shrink-0">
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                {{ __('Kosongkan Keranjang') }}
+                <span>{{ __('Kosongkan') }}</span>
             </button>
         </div>
     </header>
@@ -75,33 +95,22 @@
         <section class="flex-1 min-w-0 min-h-0 flex flex-col bg-white dark:bg-gray-900 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-700 overflow-y-auto">
             <!-- Navigasi Bar Lengket (Sticky) untuk Cari & Filter -->
             <div class="sticky top-0 p-4 lg:p-6 bg-white dark:bg-gray-900 shrink-0 border-b border-gray-200 dark:border-gray-700 z-20 shadow-[var(--shadow-surface)]">
-                <div class="flex flex-col xl:flex-row-reverse xl:items-center gap-4 xl:gap-6">
+                <div class="flex flex-col gap-4">
 
-                    <!-- Search Bar -->
-                    {{-- x-model="searchQuery" menghubungkan input ini langsung ke variabel
-                         searchQuery di Alpine.js, jadi setiap ketikan otomatis memfilter produk --}}
-                    <div class="shrink-0 w-full xl:w-72">
-                        <div class="flex items-center w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl focus-within:border-gray-900 focus-within:ring-1 focus-within:ring-gray-900 focus-within:bg-white dark:bg-gray-900 transition-colors overflow-hidden h-11">
-                            <div class="pl-3 pr-2 text-gray-400 flex items-center justify-center">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                            </div>
-                            {{-- x-ref dipakai supaya F2 (shortcut global di atas) bisa memindahkan fokus ke sini.
-                                 @keydown.enter menangani pola scanner barcode: alat scan biasanya mengetik kode
-                                 lalu otomatis menekan Enter, jadi kalau hasil filter tinggal 1 produk & stoknya ada,
-                                 produk itu langsung masuk keranjang dan kolom pencarian dikosongkan untuk scan berikutnya --}}
-                            <input type="text"
-                                   x-ref="searchInput"
-                                   x-model="searchQuery"
-                                   @keydown.enter.prevent="if (filteredProducts.length === 1 && filteredProducts[0].stock > 0) { addToCart(filteredProducts[0]); searchQuery = ''; $nextTick(() => $refs.searchInput.focus()); }"
-                                   aria-label="{{ __('Cari produk atau scan barcode') }}"
-                                   class="flex-1 w-full h-full pr-3 bg-transparent outline-none text-gray-900 dark:text-gray-100 text-[14px] font-medium placeholder:text-gray-400 placeholder:font-normal"
-                                   placeholder="{{ __('Cari atau scan barcode... (F2)') }}" />
-                        </div>
-                    </div>
-
-                    <!-- Filter Categories (Seamless Google Chip Style) -->
-                    <div class="flex-1 overflow-hidden">
-                        <div class="flex gap-2 overflow-x-auto pb-2 pt-1 px-1 scrollbar-hide items-center relative">
+                    <!-- Filter Categories (Seamless Smooth Scroll Style) -->
+                    <div class="flex-1 overflow-hidden relative group" x-data="{
+                        init() {
+                            // Menerjemahkan scroll vertikal (roda mouse biasa) menjadi scroll horizontal
+                            const slider = this.$refs.slider;
+                            slider.addEventListener('wheel', (evt) => {
+                                if (evt.deltaY !== 0) {
+                                    evt.preventDefault();
+                                    slider.scrollLeft += evt.deltaY;
+                                }
+                            }, { passive: false });
+                        }
+                    }">
+                        <div x-ref="slider" class="flex gap-2 overflow-x-auto pb-2 pt-1 px-1 scrollbar-hide items-center relative">
                             
                             <!-- Tombol "Semua" -->
                             <button type="button" @click="activeCategory = 'all'"

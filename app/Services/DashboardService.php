@@ -20,6 +20,35 @@ class DashboardService
         $totalOrders = Order::where('order_status', OrderStatus::Paid->value)->count();
         $productsCount = Product::count();
         
+        // Menghitung delta (perubahan persentase) dibandingkan bulan lalu
+        $thisMonthEarnings = Order::where('order_status', OrderStatus::Paid->value)
+            ->whereMonth('created_at', Carbon::now()->month)
+            ->whereYear('created_at', Carbon::now()->year)
+            ->sum('order_amount');
+
+        $lastMonthEarnings = Order::where('order_status', OrderStatus::Paid->value)
+            ->whereMonth('created_at', Carbon::now()->subMonth()->month)
+            ->whereYear('created_at', Carbon::now()->subMonth()->year)
+            ->sum('order_amount');
+
+        $earningsDeltaPercent = $lastMonthEarnings > 0
+            ? round((($thisMonthEarnings - $lastMonthEarnings) / $lastMonthEarnings) * 100, 1)
+            : null;
+
+        $thisMonthOrders = Order::where('order_status', OrderStatus::Paid->value)
+            ->whereMonth('created_at', Carbon::now()->month)
+            ->whereYear('created_at', Carbon::now()->year)
+            ->count();
+
+        $lastMonthOrders = Order::where('order_status', OrderStatus::Paid->value)
+            ->whereMonth('created_at', Carbon::now()->subMonth()->month)
+            ->whereYear('created_at', Carbon::now()->subMonth()->year)
+            ->count();
+
+        $ordersDeltaPercent = $lastMonthOrders > 0
+            ? round((($thisMonthOrders - $lastMonthOrders) / $lastMonthOrders) * 100, 1)
+            : null;
+        
         // 2. Real-time Progress Card Data
         $lowStockCount = Product::where('stock', '<=', 10)->count();
         $lowStockPercent = $productsCount > 0 ? min(100, round(($lowStockCount / $productsCount) * 100)) : 0;
@@ -89,7 +118,9 @@ class DashboardService
             'revenueData',
             'ordersData',
             'paymentStats',
-            'totalPaidOrders'
+            'totalPaidOrders',
+            'earningsDeltaPercent',
+            'ordersDeltaPercent'
         );
     }
 }

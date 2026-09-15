@@ -9,7 +9,6 @@ use App\Http\Requests\UpdateUserRequest;
 use App\Services\UserService;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
-use Exception;
 
 /**
  * UserController: Bertanggung jawab penuh menjembatani lalu lintas data UI 
@@ -94,7 +93,9 @@ class UserController extends Controller
             // Mendelegasikan operasi penghapusan ke Service.
             $this->userService->delete($user);
             return redirect()->route('users.index')->with('success', 'User deleted successfully.');
-        } catch (Exception $e) {
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()->route('users.index')->with('error', 'Data ini masih terhubung dengan data lain dan tidak dapat dihapus.');
+        } catch (\Throwable $e) {
             // Menangkap potensi Error Exception bila penghapusan gagal. 
             return redirect()->route('users.index')->with('error', $e->getMessage());
         }

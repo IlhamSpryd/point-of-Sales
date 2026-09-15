@@ -9,7 +9,6 @@ use App\Http\Requests\UpdateProductRequest;
 use App\Services\ProductService;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
-use Exception;
 
 /**
  * ProductController: Pengatur alur pertukaran formulir entitas Produk seraya mendelegasikan
@@ -94,7 +93,9 @@ class ProductController extends Controller
             // Meneruskan model untuk dihapus oleh ProductService.
             $this->productService->delete($product);
             return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
-        } catch (Exception $e) {
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()->route('products.index')->with('error', 'Data ini masih terhubung dengan data lain dan tidak dapat dihapus.');
+        } catch (\Throwable $e) {
             // Menangkap semua pengecualian yang dilemparkan oleh Service
             return redirect()->route('products.index')->with('error', $e->getMessage());
         }

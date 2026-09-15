@@ -8,7 +8,6 @@ use App\Http\Requests\UpdateRoleRequest;
 use App\Services\RoleService;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
-use Exception;
 
 /**
  * RoleController: Penghubung delegasi antarmuka permohonan manajemen Peran 
@@ -88,7 +87,9 @@ class RoleController extends Controller
             // Berikan model sasaran langsung ke dalam modul Service untuk dihapus nilainya.
             $this->roleService->delete($role);
             return redirect()->route('roles.index')->with('success', 'Role deleted successfully.');
-        } catch (Exception $e) {
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()->route('roles.index')->with('error', 'Data ini masih terhubung dengan data lain dan tidak dapat dihapus.');
+        } catch (\Throwable $e) {
             // Atasi lemparan kegagalan Exception bila terjadi dan beritahukan sebab kegagalannya. 
             return redirect()->route('roles.index')->with('error', $e->getMessage());
         }

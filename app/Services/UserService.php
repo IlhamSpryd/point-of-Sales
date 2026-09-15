@@ -77,6 +77,10 @@ class UserService
             throw new Exception('Anda tidak dapat menghapus akun sendiri.');
         }
 
+        if ($user->orders()->exists()) {
+            throw new Exception('Data ini masih terhubung dengan data lain dan tidak dapat dihapus.');
+        }
+
         return DB::transaction(function () use ($user) {
             return $user->delete();
         });

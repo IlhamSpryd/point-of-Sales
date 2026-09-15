@@ -8,7 +8,6 @@ use App\Http\Requests\UpdateCategoryRequest;
 use App\Services\CategoryService;
 use Illuminate\View\View;
 use Illuminate\Http\RedirectResponse;
-use Exception;
 
 /**
  * CategoryController: Kontroler minimalis pemantau Kategori tanpa beban logika tinggi.
@@ -87,7 +86,9 @@ class CategoryController extends Controller
             // Meneruskan data spesifik (Model) agar terhapus ke dalam Service. 
             $this->categoryService->delete($category);
             return redirect()->route('categories.index')->with('success', 'Category deleted successfully.');
-        } catch (Exception $e) {
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()->route('categories.index')->with('error', 'Data ini masih terhubung dengan data lain dan tidak dapat dihapus.');
+        } catch (\Throwable $e) {
             // Jika eksekusi Exception memunculkan galat (ex. kendala asing, Foreign Key) kembalikan galat.
             return redirect()->route('categories.index')->with('error', $e->getMessage());
         }

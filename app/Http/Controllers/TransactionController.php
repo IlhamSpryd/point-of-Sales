@@ -37,7 +37,7 @@ class TransactionController extends Controller
 
         // Dipindahkan ke config/pos.php agar tarif pajak & aturan pembulatan tidak
         // terduplikasi dan berisiko tidak sinkron antara Controller dan Service.
-        $taxRate = config('pos.tax_rate', 0.10);
+        $taxRate = config('pos.tax_rate', 0.11);
         $taxRatePercent = $taxRate * 100;
         
         $activePaymentMethods = config('pos.active_payment_methods', [
@@ -104,7 +104,11 @@ class TransactionController extends Controller
             ->where('order_code', $orderNumber)
             ->firstOrFail();
 
-        return view('transaction.receipt', compact('order'));
+        $taxRatePercent = $order->subtotal_amount > 0
+            ? round($order->tax_amount / $order->subtotal_amount * 100, 1)
+            : 0;
+
+        return view('transaction.receipt', compact('order', 'taxRatePercent'));
     }
 
     /**
@@ -117,12 +121,14 @@ class TransactionController extends Controller
 
         if ($order && $order->order_status === \App\Enums\OrderStatus::Pending->value && $order->payment_method !== 'cash') {
             Config::$serverKey = config('services.midtrans.server_key');
-            Config::$isProduction = config('services.midtrans.is_production');
-            Config::$curlOptions = [
-                CURLOPT_SSL_VERIFYHOST => 0,
-                CURLOPT_SSL_VERIFYPEER => false,
-                CURLOPT_HTTPHEADER => [],
-            ];
+            Config::$isProduction = config('services.midtrans.is_production', false);
+            if (!Config::$isProduction) {
+                Config::$curlOptions = [
+                    CURLOPT_SSL_VERIFYHOST => 0,
+                    CURLOPT_SSL_VERIFYPEER => false,
+                    CURLOPT_HTTPHEADER => [],
+                ];
+            }
 
             try {
                 // Beri waktu 2 detik agar status midtrans di Sandbox benar-benar berubah menjadi settlement,
@@ -137,6 +143,7 @@ class TransactionController extends Controller
                     }
                 }
             } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('syncMidtrans Error: ' . $e->getMessage());
                 // Biarkan hening, akan di-retry manual
             }
         }

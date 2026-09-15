@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ __('Struk Pesanan') }} - {{ $order->order_code }}</title>
+    <link rel="icon" href="{{ asset('spark-admin-1.0.0/assets/images/favicon.ico') }}">
     <style>
         /* CSS Reset & Base Settings */
         * {
@@ -209,7 +210,7 @@
             </div>
             @if($order->tax_amount > 0)
             <div class="total-row">
-                <span>{{ __('Pajak (10%)') }}</span>
+                <span>{{ __('Pajak') }} ({{ rtrim(rtrim(number_format($taxRatePercent, 1), '0'), '.') }}%)</span>
                 <span>{{ number_format($order->tax_amount, 0, ',', '.') }}</span>
             </div>
             @endif

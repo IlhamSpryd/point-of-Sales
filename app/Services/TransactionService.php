@@ -131,12 +131,14 @@ class TransactionService
                 Config::$isSanitized = config('services.midtrans.is_sanitized', true);
                 Config::$is3ds = config('services.midtrans.is_3ds', true);
 
-                // Fix SSL + PHP 8 bug pada Midtrans SDK
-                Config::$curlOptions = [
-                    CURLOPT_SSL_VERIFYHOST => 0,
-                    CURLOPT_SSL_VERIFYPEER => false,
-                    CURLOPT_HTTPHEADER => [],
-                ];
+                // Fix SSL + PHP 8 bug pada Midtrans SDK (hanya untuk sandbox)
+                if (!config('services.midtrans.is_production', false)) {
+                    Config::$curlOptions = [
+                        CURLOPT_SSL_VERIFYHOST => 0,
+                        CURLOPT_SSL_VERIFYPEER => false,
+                        CURLOPT_HTTPHEADER => [],
+                    ];
+                }
 
                 $params = [
                     'transaction_details' => [
@@ -154,7 +156,7 @@ class TransactionService
                             'id' => 'TAX-PPN',
                             'price' => (int) $taxAmount,
                             'quantity' => 1,
-                            'name' => 'Pajak (10%)',
+                            'name' => 'Pajak',
                         ],
                     ],
                     'customer_details' => [
@@ -205,7 +207,7 @@ class TransactionService
         // Pajak 10%
         // Dipindahkan ke config/pos.php agar tarif pajak & aturan pembulatan tidak
         // terduplikasi dan berisiko tidak sinkron antara Controller dan Service.
-        $taxRate = config('pos.tax_rate', 0.10);
+        $taxRate = config('pos.tax_rate', 0.11);
         $taxAmount = (int) round($subtotalAmount * $taxRate);
         $totalAmount = (int) ($subtotalAmount + $taxAmount);
 
