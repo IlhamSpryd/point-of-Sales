@@ -107,13 +107,13 @@
                               ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
                               : 'text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100/70 dark:hover:bg-gray-800/60' }}"
                    :class="expanded ? 'px-3 py-2.5' : 'px-0 py-2.5 justify-center'"
-                   title="Point of Sales">
+                   title="Order"
                     @if(request()->routeIs('transaction.*'))
                         <span class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-primary-600 rounded-r-full" :class="expanded ? 'opacity-100' : 'opacity-0'"></span>
                     @endif
                     <span class="material-symbols-rounded text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''">point_of_sale</span>
                     <span :class="expanded ? 'opacity-100 w-auto ml-3' : 'opacity-0 w-0 ml-0'"
-                          class="transition-all duration-200 overflow-hidden whitespace-nowrap">Point of Sales</span>
+                          class="transition-all duration-200 overflow-hidden whitespace-nowrap">Orders</span>
                 </a>
             </li>
             @endif
