@@ -5,7 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * AppServiceProvider merupakan pusat pengaturan awal aplikasi 
+ * AppServiceProvider merupakan pusat pengaturan awal aplikasi
  * untuk menghubungkan Service pembantu dan injeksi Dependensi sistem.
  */
 class AppServiceProvider extends ServiceProvider

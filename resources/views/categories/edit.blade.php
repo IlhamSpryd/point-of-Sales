@@ -20,7 +20,7 @@
                 <x-form-input type="text" id="category_name" name="category_name" 
                        value="{{ old('category_name', $category->category_name) }}" 
                        placeholder="Masukkan nama kategori" required 
-                       class="@error('category_name') input-error @enderror" />
+                       class="{{ $errors->has('category_name') ? 'input-error' : '' }}" />
                 @error('category_name')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
                 @enderror

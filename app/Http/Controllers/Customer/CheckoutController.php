@@ -1,0 +1,134 @@
+<?php
+
+namespace App\Http\Controllers\Customer;
+
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Customer\StoreCheckoutRequest;
+use App\Models\Modifier;
+use App\Models\Order;
+use App\Models\User;
+use App\Services\CartService;
+use App\Services\TransactionService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Str;
+use Illuminate\View\View;
+
+/**
+ * CheckoutController: Jembatan antara keranjang session pelanggan (CartService)
+ * dan pencatatan Order permanen di database (TransactionService).
+ * Thin Controller — tidak ada logika kalkulasi harga/pajak di sini sama sekali,
+ * semua didelegasikan ke Service yang sudah ada.
+ */
+class CheckoutController extends Controller
+{
+    public function __construct(
+        protected CartService $cartService,
+        protected TransactionService $transactionService,
+    ) {}
+
+    /**
+     * Menampilkan form checkout (isi nomor meja + pilih metode bayar).
+     */
+    public function create(): View|RedirectResponse
+    {
+        // Guard baru: pastikan pelanggan benar-benar sudah scan QR meja
+        // sebelum boleh melihat halaman checkout sama sekali.
+        if (! session('current_table_id')) {
+            return redirect()->route('customer.menu.index')
+                ->with('error', 'Silakan scan ulang QR Code di meja Anda.');
+        }
+
+        $items = $this->cartService->getItems();
+
+        if (empty($items)) {
+            return redirect()->route('customer.cart.index')->with('error', 'Keranjang Anda masih kosong.');
+        }
+
+        $subtotal = $this->cartService->getSubtotal();
+
+        // Generate idempotency key untuk form ini
+        $idempotencyKey = Str::uuid()->toString();
+        session(['checkout_idempotency_key' => $idempotencyKey]);
+
+        return view('customer.checkout.create', compact('items', 'subtotal', 'idempotencyKey'));
+    }
+
+    public function store(StoreCheckoutRequest $request): RedirectResponse
+    {
+        $tableId = session('current_table_id');
+
+        if (! $tableId) {
+            return redirect()->route('customer.menu.index')->with('error', 'Sesi meja tidak ditemukan, silakan scan ulang QR Code.');
+        }
+
+        // === IDEMPOTENCY GUARD ===
+        // Gunakan token unik per sesi checkout. Jika token sudah dipakai,
+        // berarti form ini sudah pernah di-submit → tolak duplikasi.
+        $idempotencyKey = $request->session()->pull('checkout_idempotency_key');
+        if (! $idempotencyKey || $idempotencyKey !== $request->input('_idempotency_key')) {
+            return redirect()->route('customer.cart.index')
+                ->with('error', 'Pesanan sudah diproses. Jangan klik tombol bayar lebih dari sekali.');
+        }
+
+        $items = $this->cartService->getItems();
+
+        if (empty($items)) {
+            return redirect()->route('customer.cart.index')->with('error', 'Keranjang Anda masih kosong.');
+        }
+
+        $transactionItems = array_map(function (array $item) {
+            // SECURITY: Hitung ulang extra_price dari database, jangan percaya
+            // nilai yang sudah dihitung di session (bisa dimanipulasi via devtools).
+            $modifierIds = collect($item['options'] ?? [])->pluck('modifier_id')->all();
+            $serverExtraPrice = Modifier::whereIn('id', $modifierIds)->sum('extra_price');
+
+            return [
+                'product_id' => $item['product_id'],
+                'quantity' => $item['qty'],
+                'extra_price' => (float) $serverExtraPrice,
+                'options' => $item['options'],
+            ];
+        }, $items);
+
+        $systemUserId = User::where('email', config('pos.self_order_system_email'))->value('id');
+
+        try {
+            $order = $this->transactionService->createTransaction([
+                'items' => $transactionItems,
+                'payment_method' => $request->validated('payment_method'),
+                'cash_received' => null,
+                'table_id' => $tableId, // BARU: masukkan ke dalam payload
+            ], $systemUserId);
+        } catch (\Throwable $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        $this->cartService->clear();
+
+        return redirect()->route('customer.checkout.success', $order->order_code);
+    }
+
+    /**
+     * Halaman konfirmasi setelah checkout — memuat Snap Token Midtrans jika
+     * metode pembayaran digital (yang menghasilkan snap_token).
+     */
+    public function success(string $orderCode): View
+    {
+        $tableId = session('current_table_id');
+
+        $query = Order::where('order_code', $orderCode);
+
+        // Jika ada sesi meja aktif, paksa hanya tampilkan order milik meja itu.
+        // Tanpa ini, siapapun bisa menebak order_code dan melihat snap_token orang lain.
+        if ($tableId) {
+            $query->where('table_id', $tableId);
+        }
+
+        $order = $query->firstOrFail();
+
+        // Eager-load relasi table agar view bisa akses $order->table->table_number
+        $order->load('table');
+
+        return view('customer.checkout.success', compact('order'));
+    }
+}

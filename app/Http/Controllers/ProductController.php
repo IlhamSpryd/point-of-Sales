@@ -2,13 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Product;
-use App\Models\Category;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
+use App\Models\Category;
+use App\Models\Product;
 use App\Services\ProductService;
-use Illuminate\View\View;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * ProductController: Pengatur alur pertukaran formulir entitas Produk seraya mendelegasikan
@@ -27,7 +30,7 @@ class ProductController extends Controller
     /**
      * Menampilkan daftar semua kueri produk.
      */
-    public function index(\Illuminate\Http\Request $request): \Illuminate\View\View|\Symfony\Component\HttpFoundation\BinaryFileResponse
+    public function index(Request $request): View|BinaryFileResponse
     {
         // Cek request untuk ekspor CSV, lalu delegasikan ke Service.
         if ($request->has('export') && $request->export === 'csv') {
@@ -36,6 +39,7 @@ class ProductController extends Controller
 
         // Mengambil data produk dengan filter dari Service berserta paginasinya
         $products = $this->productService->getFilteredQuery($request)->paginate(10)->withQueryString();
+
         // Mengembalikan View dengan membawa data produk
         return view('products.index', compact('products'));
     }
@@ -47,6 +51,7 @@ class ProductController extends Controller
     {
         // Mengambil semua data kategori untuk kebutuhan dropdown pilihan
         $categories = Category::all();
+
         return view('products.create', compact('categories'));
     }
 
@@ -55,11 +60,11 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request): RedirectResponse
     {
-        // Parameter Request telah divalidasi oleh Form Request (StoreProductRequest). 
+        // Parameter Request telah divalidasi oleh Form Request (StoreProductRequest).
         // Lakukan pemanggilan logika penyimpanan utama yang berada di dalam ProductService.
         $this->productService->store($request->validated(), $request->file('product_photo'));
-        
-        // Redirect kembali ke halaman list produk beserta pesan sukses. 
+
+        // Redirect kembali ke halaman list produk beserta pesan sukses.
         return redirect()->route('products.index')->with('success', 'Product created successfully.');
     }
 
@@ -69,6 +74,7 @@ class ProductController extends Controller
     public function edit(Product $product): View
     {
         $categories = Category::all();
+
         return view('products.edit', compact('product', 'categories'));
     }
 
@@ -80,7 +86,7 @@ class ProductController extends Controller
         // Parameter input masuk melalui Form Request yang memegang aturan validasi.
         // Data yang tervalidasi kemudian diteruskan ke ProductService.
         $this->productService->update($product, $request->validated(), $request->file('product_photo'));
-        
+
         return redirect()->route('products.index')->with('success', 'Product updated successfully.');
     }
 
@@ -92,8 +98,9 @@ class ProductController extends Controller
         try {
             // Meneruskan model untuk dihapus oleh ProductService.
             $this->productService->delete($product);
+
             return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             return redirect()->route('products.index')->with('error', 'Data ini masih terhubung dengan data lain dan tidak dapat dihapus.');
         } catch (\Throwable $e) {
             // Menangkap semua pengecualian yang dilemparkan oleh Service

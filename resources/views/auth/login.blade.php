@@ -79,7 +79,7 @@
                         <label for="email" class="block text-sm font-medium mb-1.5 transition-colors"
                             :class="hasError ? 'label-error' : 'text-zinc-700 dark:text-zinc-300'">{{ __('Email') }}</label>
                         <input type="email" name="email" id="email" required value="{{ old('email') }}" autocomplete="email"
-                            class="form-input block w-full px-3 py-2.5 border rounded-xl leading-5 bg-zinc-50 dark:bg-zinc-800 placeholder-zinc-500 focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900 text-[15px] @error('email') input-error @enderror"
+                            class="form-input block w-full px-3 py-2.5 border rounded-xl leading-5 bg-zinc-50 dark:bg-zinc-800 placeholder-zinc-500 focus:bg-white dark:focus:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:border-zinc-900 text-[15px] {{ $errors->has('email') ? 'input-error' : '' }}"
                             :class="hasError ? 'input-error' : 'border-zinc-100 dark:border-zinc-700'" placeholder="{{ __('Masukkan email anda') }}">
                     </div>
 

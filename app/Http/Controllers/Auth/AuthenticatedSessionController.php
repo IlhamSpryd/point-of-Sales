@@ -31,10 +31,11 @@ class AuthenticatedSessionController extends Controller
         // Arahkan sesuai role — Kasir TIDAK PERNAH menyentuh dashboard finansial,
         // Pimpinan langsung ke laporan, Administrator ke dashboard.
         $user = $request->user();
+
         return match ($user->role?->name) {
-            'Kasir'     => redirect()->intended(route('transaction.create', absolute: false)),
-            'Pimpinan'  => redirect()->intended(route('reports.sales', absolute: false)),
-            default     => redirect()->intended(route('dashboard', absolute: false)),
+            'Kasir' => redirect()->route('transaction.create'),
+            'Pimpinan' => redirect()->route('reports.sales'),
+            default => redirect()->intended(route('dashboard', absolute: false)),
         };
     }
 

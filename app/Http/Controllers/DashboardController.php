@@ -6,7 +6,7 @@ use App\Services\DashboardService;
 use Illuminate\View\View;
 
 /**
- * DashboardController: Mengumpulkan ringkasan data statistik sistem 
+ * DashboardController: Mengumpulkan ringkasan data statistik sistem
  * untuk dirender pada Beranda Admin (Dashboard) secara real-time.
  */
 class DashboardController extends Controller
@@ -19,6 +19,7 @@ class DashboardController extends Controller
     public function index(): View
     {
         $metrics = $this->dashboardService->getDashboardMetrics();
+
         return view('dashboard', $metrics);
     }
 }

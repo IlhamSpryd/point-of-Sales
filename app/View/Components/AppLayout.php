@@ -6,7 +6,7 @@ use Illuminate\View\Component;
 use Illuminate\View\View;
 
 /**
- * Komponen View: Menghubungkan layout utama aplikasi (App) 
+ * Komponen View: Menghubungkan layout utama aplikasi (App)
  * kepada layar halaman administrator setelah sukses login.
  */
 class AppLayout extends Component

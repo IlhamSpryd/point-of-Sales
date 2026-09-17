@@ -2,13 +2,17 @@
 
 namespace App\Services;
 
+use App\Enums\OrderStatus;
+use App\Enums\OrderType;
+use App\Models\Modifier;
 use App\Models\Order;
-use App\Models\OrderDetail;
+use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Table;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use App\Enums\OrderStatus;
 use Midtrans\Config;
 use Midtrans\Snap;
 
@@ -26,11 +30,26 @@ class TransactionService
             $items = $data['items'] ?? [];
 
             // Merge items yang sama agar stok tidak double-decrement
+            // PERUBAHAN: Grouping SEBELUMNYA hanya berdasarkan product_id, sehingga
+            // "Kopi Susu - Ice" dan "Kopi Susu - Hot" akan salah digabung jadi satu baris
+            // dan kehilangan harga tambahan dari modifier (extra_price). Sekarang kita
+            // gabungkan HANYA jika product_id DAN kombinasi varian (options) sama persis.
+            // Item dari Kasir (yang tidak pernah mengirim 'options') tetap berperilaku
+            // SAMA seperti sebelumnya — 100% backward compatible, tidak ada regresi.
             $mergedItems = collect($items)
-                ->groupBy('product_id')
+                ->groupBy(function ($item) {
+                    $optionsSignature = ! empty($item['options']) ? json_encode($item['options']) : '';
+
+                    return $item['product_id'].'|'.$optionsSignature;
+                })
                 ->map(fn ($group) => [
                     'product_id' => $group->first()['product_id'],
                     'quantity' => $group->sum('quantity'),
+                    // extra_price = total tambahan harga dari modifier (misal Oat Milk +5000).
+                    // Selalu 0 untuk item dari Kasir yang tidak mengenal konsep modifier.
+                    'extra_price' => $group->first()['extra_price'] ?? 0,
+                    // options = data mentah varian untuk "dibekukan" ke order_details nanti.
+                    'options' => $group->first()['options'] ?? null,
                 ])
                 ->values()
                 ->all();
@@ -41,7 +60,7 @@ class TransactionService
             foreach ($mergedItems as $item) {
                 $product = $products->find($item['product_id']);
 
-                if (!$product) {
+                if (! $product) {
                     throw ValidationException::withMessages([
                         'items' => 'Salah satu produk yang dipilih sudah tidak tersedia.',
                     ]);
@@ -52,26 +71,31 @@ class TransactionService
                 // menutup celah race condition — kasus di mana Admin menonaktifkan produk
                 // PERSIS saat kasir sedang menekan tombol bayar (setelah lolos validasi
                 // Form Request, tapi sebelum stok benar-benar dipotong).
-                if (!$product->is_active) {
+                if (! $product->is_active) {
                     throw ValidationException::withMessages([
-                        'items' => 'Produk "' . $product->product_name . '" sudah dinonaktifkan dan tidak dapat dijual.',
+                        'items' => 'Produk "'.$product->product_name.'" sudah dinonaktifkan dan tidak dapat dijual.',
                     ]);
                 }
 
                 if ($product->stock < $item['quantity']) {
                     throw ValidationException::withMessages([
-                        'items' => 'Stok produk "' . $product->product_name . '" tidak mencukupi. (Sisa: ' . $product->stock . ')',
+                        'items' => 'Stok produk "'.$product->product_name.'" tidak mencukupi. (Sisa: '.$product->stock.')',
                     ]);
                 }
 
-                $itemSubtotal = $product->product_price * $item['quantity'];
+                // PERUBAHAN: harga satuan sekarang memperhitungkan extra_price dari modifier.
+                // Untuk item Kasir, extra_price selalu 0 sehingga hasilnya identik dengan
+                // perhitungan lama (product_price saja) — tidak ada perubahan perilaku.
+                $unitPrice = $product->product_price + $item['extra_price'];
+                $itemSubtotal = $unitPrice * $item['quantity'];
                 $subtotalAmount += $itemSubtotal;
 
                 $lines[] = [
-                    'order_price' => $product->product_price,
+                    'order_price' => $unitPrice,
                     'qty' => $item['quantity'],
                     'order_subtotal' => $itemSubtotal,
                     'product_id' => $product->id,
+                    'options' => $item['options'], // dibekukan apa adanya ke order_details
                 ];
 
                 $product->decrement('stock', $item['quantity']);
@@ -92,7 +116,7 @@ class TransactionService
 
             // Generate order code unik
             do {
-                $orderCode = 'POS-' . strtoupper(Str::random(6)) . '-' . rand(100, 999);
+                $orderCode = 'POS-'.strtoupper(Str::random(6)).'-'.rand(100, 999);
             } while (Order::where('order_code', $orderCode)->exists());
 
             // Validasi keamanan sisi server: pastikan uang tunai cukup untuk total tagihan.
@@ -117,11 +141,12 @@ class TransactionService
                 'order_change' => $orderChange,
                 'order_status' => $initialStatus,
                 'payment_method' => $paymentMethod,
+                'table_id' => $data['table_id'] ?? null,
             ]);
 
             // Buat order details
             foreach ($lines as $line) {
-                OrderDetail::create(array_merge($line, ['order_id' => $order->id]));
+                OrderItem::create(array_merge($line, ['order_id' => $order->id]));
             }
 
             // Jika pembayaran non-tunai, generate Snap Token Midtrans
@@ -132,7 +157,7 @@ class TransactionService
                 Config::$is3ds = config('services.midtrans.is_3ds', true);
 
                 // Fix SSL + PHP 8 bug pada Midtrans SDK (hanya untuk sandbox)
-                if (!config('services.midtrans.is_production', false)) {
+                if (! config('services.midtrans.is_production', false)) {
                     Config::$curlOptions = [
                         CURLOPT_SSL_VERIFYHOST => 0,
                         CURLOPT_SSL_VERIFYPEER => false,
@@ -147,7 +172,7 @@ class TransactionService
                     ],
                     'item_details' => [
                         [
-                            'id' => 'ORDER-' . $order->id,
+                            'id' => 'ORDER-'.$order->id,
                             'price' => (int) $subtotalAmount,
                             'quantity' => 1,
                             'name' => 'Pesanan POS',
@@ -179,7 +204,7 @@ class TransactionService
                     default => []
                 };
 
-                if (!empty($enabledPayments)) {
+                if (! empty($enabledPayments)) {
                     $params['enabled_payments'] = $enabledPayments;
                 }
 
@@ -187,7 +212,7 @@ class TransactionService
                     $snapToken = Snap::getSnapToken($params);
                     $order->update(['snap_token' => $snapToken]);
                 } catch (\Exception $e) {
-                    throw new \Exception("Gagal mendapatkan Snap Token Midtrans: " . $e->getMessage());
+                    throw new \Exception('Gagal mendapatkan Snap Token Midtrans: '.$e->getMessage());
                 }
             }
 
@@ -214,7 +239,7 @@ class TransactionService
         // Pembulatan WAJIB dilakukan di backend, bukan hanya di Alpine.js,
         // agar order_amount yang tersimpan sama persis dengan nominal yang
         // disepakati kasir & pelanggan di layar (single source of truth).
-        // PERHATIAN: Desinkronisasi pengaturan pembulatan di sini bisa membuat 
+        // PERHATIAN: Desinkronisasi pengaturan pembulatan di sini bisa membuat
         // kembalian yang diucapkan kasir ke pelanggan berbeda dari nominal di struk cetak.
         $roundingValue = config('pos.rounding_value', 100);
         $roundingBehavior = config('pos.rounding_behavior', 'ROUND_NEAREST');
@@ -239,7 +264,7 @@ class TransactionService
      */
     public function getTodayMetrics(): array
     {
-        $today = \Carbon\Carbon::today();
+        $today = Carbon::today();
         $metricsQuery = Order::whereDate('order_date', $today)
             ->where('order_status', OrderStatus::Paid->value)
             ->selectRaw('COALESCE(SUM(order_amount), 0) as omzet, COUNT(*) as jumlah')
@@ -249,5 +274,155 @@ class TransactionService
             'omzet' => (float) $metricsQuery->omzet,
             'jumlah' => (int) $metricsQuery->jumlah,
         ];
+    }
+
+    /**
+     * Memproses pesanan dari Self-Order QR (Publik).
+     * Fokus pada validasi server-side modifier.
+     */
+    public function createSelfOrder(Table $table, array $itemsPayload): Order
+    {
+        return DB::transaction(function () use ($table, $itemsPayload) {
+            [$orderItemsData, $subtotalAmount] = $this->buildOrderItemsWithStockLock($itemsPayload);
+
+            ['tax_amount' => $taxAmount, 'total_amount' => $totalAmount] = $this->calculateOrderTotals($subtotalAmount);
+
+            do {
+                $orderCode = 'POS-'.strtoupper(Str::random(6)).'-'.rand(100, 999);
+            } while (Order::where('order_code', $orderCode)->exists());
+
+            $order = Order::create([
+                'table_id' => $table->id,
+                'order_type' => 'dine_in',
+                'order_code' => $orderCode,
+                'order_date' => now()->toDateString(),
+                'subtotal_amount' => $subtotalAmount,
+                'tax_amount' => $taxAmount,
+                'order_amount' => $totalAmount,
+                'order_status' => OrderStatus::Pending->value,
+                'payment_method' => null,
+                'user_id' => null,
+            ]);
+
+            $order->orderItems()->createMany($orderItemsData);
+
+            return $order;
+        });
+    }
+
+    // PUBLIC -- dipanggil dari createSelfOrder, createWalkInOrder, DAN dari
+    // Livewire computed property untuk preview (read-only, aman dipanggil
+    // berkali-kali per render, tidak menyentuh stok).
+    public function resolveOrderItemLine(Product $product, array $modifierIds, int $qty, ?string $notes): array
+    {
+        $requiredGroupIds = $product->modifierGroups()
+            ->where('is_required', true)->pluck('modifier_groups.id');
+
+        $selectedModifiers = Modifier::whereIn('id', $modifierIds)->with('modifierGroup')->get();
+        $selectedGroupIds = $selectedModifiers->pluck('modifierGroup.id')->unique();
+
+        foreach ($requiredGroupIds as $groupId) {
+            if (! $selectedGroupIds->contains($groupId)) {
+                throw ValidationException::withMessages([
+                    'items' => "Pilihan wajib untuk {$product->product_name} belum lengkap.",
+                ]);
+            }
+        }
+
+        // --- VALIDASI SELECTION TYPE SINGLE ---
+        // Karena form array bisa saja meloloskan 2 modifier pada grup single
+        $productGroups = $product->modifierGroups;
+        foreach ($productGroups as $group) {
+            $selectedForGroup = $selectedModifiers->where('modifier_group_id', $group->id)->count();
+            if ($group->selection_type === 'single' && $selectedForGroup > 1) {
+                throw ValidationException::withMessages(['items' => "Varian {$group->name} hanya boleh dipilih satu untuk {$product->product_name}."]);
+            }
+        }
+
+        $extraPrice = $selectedModifiers->sum('extra_price');
+        $unitPrice = $product->product_price + $extraPrice;
+        $lineSubtotal = $unitPrice * $qty;
+
+        return [
+            'product_id' => $product->id,
+            'product_name' => $product->product_name, // untuk tampilan cart saja
+            'qty' => $qty,
+            'order_price' => $unitPrice,
+            'order_subtotal' => $lineSubtotal,
+            'notes' => $notes,
+            'preparation_status' => 'pending',
+            'options' => $selectedModifiers->map(fn ($m) => [
+                'modifier_id' => $m->id, 'name' => $m->name, 'extra_price' => $m->extra_price,
+            ])->values()->toArray(),
+        ];
+    }
+
+    public function createWalkInOrder(
+        array $itemsPayload,
+        OrderType $orderType,
+        ?int $tableId,
+        string $paymentMethod,
+        int $cashReceived,
+    ): Order {
+        return DB::transaction(function () use ($itemsPayload, $orderType, $tableId, $paymentMethod, $cashReceived) {
+            [$orderItemsData, $subtotal] = $this->buildOrderItemsWithStockLock($itemsPayload);
+
+            ['tax_amount' => $taxAmount, 'total_amount' => $totalAmount] = $this->calculateOrderTotals($subtotal);
+
+            if ($paymentMethod === 'cash' && $cashReceived < $totalAmount) {
+                throw ValidationException::withMessages([
+                    'cashReceived' => 'Uang tunai yang diterima kurang dari total belanja.',
+                ]);
+            }
+
+            do {
+                $orderCode = 'POS-'.strtoupper(Str::random(6)).'-'.rand(100, 999);
+            } while (Order::where('order_code', $orderCode)->exists());
+
+            $order = Order::create([
+                'table_id' => $tableId, // null aman untuk takeaway (kolom sudah nullable)
+                'order_code' => $orderCode,
+                'order_date' => now()->toDateString(),
+                'order_type' => $orderType,
+                'order_status' => OrderStatus::Paid->value, // kasir = bayar di tempat, langsung Paid
+                'subtotal_amount' => $subtotal,
+                'tax_amount' => $taxAmount,
+                'order_amount' => $totalAmount,
+                'payment_method' => $paymentMethod,
+                'cash_received' => $cashReceived,
+                'order_change' => max(0, $cashReceived - $totalAmount),
+            ]);
+
+            $order->orderItems()->createMany($orderItemsData);
+
+            return $order->load('orderItems.product');
+        });
+    }
+
+    // Helper privat yang dipakai ULANG oleh createSelfOrder & createWalkInOrder
+    private function buildOrderItemsWithStockLock(array $itemsPayload): array
+    {
+        $orderItemsData = [];
+        $subtotal = 0;
+
+        foreach ($itemsPayload as $itemInput) {
+            $product = Product::availableForOrder()->lockForUpdate()->findOrFail($itemInput['product_id']);
+            if ($product->stock < $itemInput['qty']) {
+                throw ValidationException::withMessages([
+                    'items' => "Stok {$product->product_name} tidak cukup.",
+                ]);
+            }
+            $product->decrement('stock', $itemInput['qty']);
+
+            $line = $this->resolveOrderItemLine($product, $itemInput['modifier_ids'] ?? [], $itemInput['qty'], $itemInput['notes'] ?? null);
+
+            // Hapus atribut view-only sebelum simpan DB
+            unset($line['product_name']);
+
+            $subtotal += $line['order_subtotal'];
+            $orderItemsData[] = [...$line, 'created_at' => now(), 'updated_at' => now()];
+        }
+
+        return [$orderItemsData, $subtotal];
     }
 }

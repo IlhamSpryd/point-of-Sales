@@ -19,17 +19,17 @@
                     <x-form-label for="product_name">Nama Produk <!-- Standarisasi bahasa UjiKom --></x-form-label>
                     <x-form-input type="text" id="product_name" name="product_name" value="{{ old('product_name') }}" 
                             
-                           placeholder="Masukkan nama produk" required class="@error('product_name') input-error @enderror" /> <!-- Standarisasi bahasa UjiKom -->
+                           placeholder="Masukkan nama produk" required class="{{ $errors->has('product_name') ? 'input-error' : '' }}" /> <!-- Standarisasi bahasa UjiKom -->
                     @error('product_name')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
-                    @enderror
+                    <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
+                @enderror
                 </div>
 
                 <div>
                     <x-form-label for="category_id">Kategori <!-- Standarisasi bahasa UjiKom --></x-form-label>
                     <div class="relative">
                         <select id="category_id" name="category_id" 
-                                class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-100 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 appearance-none focus:outline-none focus:ring-2 focus:ring-zinc-1000/20 focus:border-zinc-1000 transition-all @error('category_id') input-error @enderror" required>
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-100 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 appearance-none focus:outline-none focus:ring-2 focus:ring-zinc-1000/20 focus:border-zinc-1000 transition-all {{ $errors->has('category_id') ? 'input-error' : '' }}" required>
                             <option value="">Pilih Kategori <!-- Standarisasi bahasa UjiKom --></option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
@@ -42,8 +42,8 @@
                         </div>
                     </div>
                     @error('category_id')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
-                    @enderror
+                    <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
+                @enderror
                 </div>
             </div>
 
@@ -53,20 +53,20 @@
                     <x-form-label for="product_price">Harga (Rp) <!-- Standarisasi bahasa UjiKom --></x-form-label>
                     <x-form-input type="number" id="product_price" name="product_price" value="{{ old('product_price') }}" min="0" step="1"
                             
-                           placeholder="0" required class="@error('product_price') input-error @enderror" />
+                           placeholder="0" required class="{{ $errors->has('product_price') ? 'input-error' : '' }}" />
                     @error('product_price')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
-                    @enderror
+                    <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
+                @enderror
                 </div>
 
                 <div>
                     <x-form-label for="stock">Kuantitas Stok <!-- Standarisasi bahasa UjiKom --></x-form-label>
                     <x-form-input type="number" id="stock" name="stock" value="{{ old('stock') }}" min="0" step="1"
                             
-                           placeholder="0" required class="@error('stock') input-error @enderror" />
+                           placeholder="0" required class="{{ $errors->has('stock') ? 'input-error' : '' }}" />
                     @error('stock')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
-                    @enderror
+                    <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
+                @enderror
                 </div>
             </div>
 
@@ -92,7 +92,7 @@
             <div>
                 <x-form-label for="product_description">Deskripsi <!-- Standarisasi bahasa UjiKom --></x-form-label>
                 <textarea id="product_description" name="product_description" rows="3"
-                          class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-100 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-1000/20 focus:border-zinc-1000 transition-all @error('product_description') input-error @enderror" 
+                          class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-100 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-zinc-1000/20 focus:border-zinc-1000 transition-all {{ $errors->has('product_description') ? 'input-error' : '' }}" 
                           placeholder="Masukkan deskripsi produk (opsional)">{{ old('product_description') }}</textarea> <!-- Standarisasi bahasa UjiKom -->
                 @error('product_description')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>

@@ -2,10 +2,13 @@
 
 namespace App\Services;
 
+use App\Exports\RolesExport;
 use App\Models\Role;
-use Illuminate\Support\Facades\DB;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 use Exception;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
 
 /**
  * RoleService bertindak memisahkan keseluruhan kerumitan logika sistem
@@ -17,25 +20,26 @@ class RoleService
      * Menyusun cetak biru kueri Eloquent dengan menempelkan agregat (withCount)
      * dan injeksi klausul pencarian jika requested.
      */
-    public function getFilteredQuery(\Illuminate\Http\Request $request): \Illuminate\Database\Eloquent\Builder
+    public function getFilteredQuery(Request $request): Builder
     {
-        $query = \App\Models\Role::query()->withCount('users')->latest();
+        $query = Role::query()->withCount('users')->latest();
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where('name', 'like', "%{$search}%");
         }
+
         return $query;
     }
 
     /**
      * Menyiapkan file unduhan mentah .CSV.
      */
-    public function exportCsv(\Illuminate\Http\Request $request)
+    public function exportCsv(Request $request)
     {
         $query = $this->getFilteredQuery($request);
-        $fileName = 'roles_export_' . now()->format('Y-m-d_H-i-s') . '.xlsx';
+        $fileName = 'roles_export_'.now()->format('Y-m-d_H-i-s').'.xlsx';
 
-        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\RolesExport($query), $fileName);
+        return Excel::download(new RolesExport($query), $fileName);
     }
 
     /**
@@ -55,6 +59,7 @@ class RoleService
     {
         return DB::transaction(function () use ($role, $data) {
             $role->update($data);
+
             return $role;
         });
     }
@@ -66,7 +71,7 @@ class RoleService
     {
         return DB::transaction(function () use ($role) {
             if ($role->users()->count() > 0) {
-                throw new Exception('Tidak dapat menghapus role "' . $role->name . '" karena ' . $role->users()->count() . ' pengguna masih menggunakan role ini.');
+                throw new Exception('Tidak dapat menghapus role "'.$role->name.'" karena '.$role->users()->count().' pengguna masih menggunakan role ini.');
             }
 
             return $role->delete();

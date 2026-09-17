@@ -21,16 +21,16 @@
             <x-form-label for="name">{{ __('Nama') }}</x-form-label> <!-- Standarisasi bahasa UjiKom -->
             <x-form-input id="name" name="name" type="text" class="mt-1 block w-full md:w-2/3" :value="old('name', $user->name)" required autofocus autocomplete="name" />
             @error('name')
-                <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
-            @enderror
+                    <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
+                @enderror
         </div>
 
         <div>
             <x-form-label for="email">{{ __('Alamat Email') }}</x-form-label> <!-- Standarisasi bahasa UjiKom -->
             <x-form-input id="email" name="email" type="email" class="mt-1 block w-full md:w-2/3" :value="old('email', $user->email)" required autocomplete="username" />
             @error('email')
-                <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
-            @enderror
+                    <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
+                @enderror
 
             @if ($user instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! $user->hasVerifiedEmail())
                 <div class="mt-2">

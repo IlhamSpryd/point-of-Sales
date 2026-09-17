@@ -17,7 +17,7 @@
                 <x-form-label for="name">Nama Peran <!-- Standarisasi bahasa UjiKom --></x-form-label>
                 <x-form-input type="text" id="name" name="name" value="{{ old('name') }}" 
                         
-                       placeholder="Masukkan nama peran (misal Administrator)" required class="@error('name') input-error @enderror" /> <!-- Standarisasi bahasa UjiKom -->
+                       placeholder="Masukkan nama peran (misal Administrator)" required class="{{ $errors->has('name') ? 'input-error' : '' }}" /> <!-- Standarisasi bahasa UjiKom -->
                 @error('name')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
                 @enderror

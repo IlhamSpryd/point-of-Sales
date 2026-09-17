@@ -9,4 +9,6 @@ return [
         'qris' => env('POS_PAYMENT_QRIS', true),
         'ewallet' => env('POS_PAYMENT_EWALLET', true),
     ],
+    'self_order_system_email' => 'selforder@system.local',
+    'receipt_width_mm' => env('POS_RECEIPT_WIDTH_MM', 58),
 ];

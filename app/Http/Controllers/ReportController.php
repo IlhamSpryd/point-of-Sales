@@ -35,7 +35,7 @@ class ReportController extends Controller
         if ($request->filled('start') && $request->filled('end')) {
             $customStart = Carbon::parse($request->start)->startOfDay();
             $customEnd = Carbon::parse($request->end)->endOfDay();
-            
+
             $monthlySales = $this->reportService->getSalesSummary($customStart, $customEnd);
             $recentOrders = $this->reportService->getRecentPaidOrders($customStart, $customEnd);
         }
@@ -44,7 +44,7 @@ class ReportController extends Controller
             // Gunakan rentang custom jika ada, jika tidak gunakan fallback bulan ini
             $exportStart = ($request->filled('start')) ? Carbon::parse($request->start)->startOfDay() : $startOfMonth;
             $exportEnd = ($request->filled('end')) ? Carbon::parse($request->end)->endOfDay() : $today;
-            
+
             return $this->reportService->exportCsv($exportStart, $exportEnd);
         }
 

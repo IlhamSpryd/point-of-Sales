@@ -20,7 +20,7 @@
                 <x-form-input type="text" id="name" name="name" 
                        value="{{ old('name', $role->name) }}" 
                        placeholder="Masukkan nama peran" required 
-                       class="@error('name') input-error @enderror" />
+                       class="{{ $errors->has('name') ? 'input-error' : '' }}" />
                 @error('name')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
                 @enderror

@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\OrderStatus;
+use App\Http\Requests\StoreTransactionRequest;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\TransactionService;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use App\Http\Requests\StoreTransactionRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Midtrans\Config;
 use Midtrans\Transaction;
@@ -23,43 +23,42 @@ class TransactionController extends Controller
      */
     public function create(): View
     {
-        $title = 'Buat Pesanan';
-        
-        // Hanya produk berstatus aktif yang boleh muncul dan dijual di layar kasir.
-        // Produk non-aktif (misal: sedang retur ke supplier, musiman yang sudah lewat)
-        // sengaja disembunyikan total dari sini agar kasir tidak bisa menjualnya sama sekali.
         $products = Product::where('is_active', true)->with('category')->get();
         $categories = Category::all();
+
+        $taxRate = config('pos.tax_rate', 0.11);
+        $taxRatePercent = $taxRate * 100;
+        $roundingBehavior = config('pos.rounding_behavior', 'ROUND_NEAREST');
+        $roundingValue = config('pos.rounding_value', 100);
+        $activePaymentMethods = config('pos.active_payment_methods', [
+            'cash' => true,
+            'qris' => false,
+            'ewallet' => false,
+        ]);
+
+        // As per TransactionService implementation
+        $hardwareAutoDrawer = false;
 
         $metrics = $this->transactionService->getTodayMetrics();
         $todayOmzet = $metrics['omzet'];
         $todayCount = $metrics['jumlah'];
 
-        // Dipindahkan ke config/pos.php agar tarif pajak & aturan pembulatan tidak
-        // terduplikasi dan berisiko tidak sinkron antara Controller dan Service.
-        $taxRate = config('pos.tax_rate', 0.11);
-        $taxRatePercent = $taxRate * 100;
-        
-        $activePaymentMethods = config('pos.active_payment_methods', [
-            'cash' => true,
-            'qris' => true,
-            'ewallet' => true,
-        ]);
-        
-        $hardwareAutoDrawer = false;
-        $canApplyDiscount = false;
-        $roundingBehavior = config('pos.rounding_behavior', 'ROUND_NEAREST');
-        $roundingValue = config('pos.rounding_value', 100);
-
         return view('transaction.create', compact(
-            'title', 'products', 'categories', 'todayOmzet', 'todayCount',
-            'taxRate', 'taxRatePercent', 'roundingBehavior', 'roundingValue', 
-            'activePaymentMethods', 'hardwareAutoDrawer', 'canApplyDiscount'
+            'products',
+            'categories',
+            'taxRate',
+            'taxRatePercent',
+            'roundingBehavior',
+            'roundingValue',
+            'activePaymentMethods',
+            'hardwareAutoDrawer',
+            'todayOmzet',
+            'todayCount'
         ));
     }
 
     /**
-     * Memproses pesanan dari UI Kasir 
+     * Memproses pesanan dari UI Kasir
      */
     public function store(StoreTransactionRequest $request)
     {
@@ -82,17 +81,17 @@ class TransactionController extends Controller
                 'order_number' => $order->order_code,
             ]);
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Transaction Error: ' . $e->getMessage() . ' ' . $e->getTraceAsString());
+            Log::error('Transaction Error: '.$e->getMessage().' '.$e->getTraceAsString());
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => $e->getMessage()
+                    'message' => $e->getMessage(),
                 ], 400);
             }
+
             return back()->with('error', $e->getMessage());
         }
     }
-
 
     /**
      * Cetak struk pesanan — halaman thermal printer.
@@ -100,7 +99,7 @@ class TransactionController extends Controller
      */
     public function receipt(string $orderNumber): View
     {
-        $order = Order::with(['orderDetails.product', 'user'])
+        $order = Order::with(['orderItems.product', 'user', 'table'])
             ->where('order_code', $orderNumber)
             ->firstOrFail();
 
@@ -119,10 +118,10 @@ class TransactionController extends Controller
     {
         $order = Order::where('order_code', $orderNumber)->first();
 
-        if ($order && $order->order_status === \App\Enums\OrderStatus::Pending->value && $order->payment_method !== 'cash') {
+        if ($order && $order->order_status === OrderStatus::Pending->value && $order->payment_method !== 'cash') {
             Config::$serverKey = config('services.midtrans.server_key');
             Config::$isProduction = config('services.midtrans.is_production', false);
-            if (!Config::$isProduction) {
+            if (! Config::$isProduction) {
                 Config::$curlOptions = [
                     CURLOPT_SSL_VERIFYHOST => 0,
                     CURLOPT_SSL_VERIFYPEER => false,
@@ -134,16 +133,16 @@ class TransactionController extends Controller
                 // Beri waktu 2 detik agar status midtrans di Sandbox benar-benar berubah menjadi settlement,
                 // sebelum kita melakukan pengecekan ke server mereka.
                 sleep(2);
-                
+
                 $status = (object) Transaction::status($orderNumber);
 
                 if (isset($status->transaction_status) && in_array($status->transaction_status, ['capture', 'settlement'])) {
-                    if ($order->order_status !== \App\Enums\OrderStatus::Paid->value) {
-                        $order->update(['order_status' => \App\Enums\OrderStatus::Paid->value]);
+                    if ($order->order_status !== OrderStatus::Paid->value) {
+                        $order->update(['order_status' => OrderStatus::Paid->value]);
                     }
                 }
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('syncMidtrans Error: ' . $e->getMessage());
+                Log::error('syncMidtrans Error: '.$e->getMessage());
                 // Biarkan hening, akan di-retry manual
             }
         }

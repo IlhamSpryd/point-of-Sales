@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Middleware\EnsureTableSession;
+use App\Http\Middleware\ResolveTableFromToken;
+use App\Http\Middleware\RoleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -12,9 +15,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Percayakan semua proxy (seperti Ngrok) agar Vite memuat CSS menggunakan HTTPS
+        $middleware->trustProxies(at: '*');
+
         // Daftarkan alias middleware 'role' untuk RoleMiddleware RBAC UjiKom
         $middleware->alias([
-            'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'role' => RoleMiddleware::class,
+            'table.token' => ResolveTableFromToken::class,
+            'table.session' => EnsureTableSession::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

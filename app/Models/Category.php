@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Model Category berguna untuk menyimpan klasifikasi tipe
@@ -10,6 +12,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Category extends Model
 {
+    use SoftDeletes;
+
     /**
      * Komponen isian kolom database kategori.
      */
@@ -18,7 +22,7 @@ class Category extends Model
     /**
      * Relasi (HasMany): Sebuah kategori lazimnya memayungi banyak daftar produk.
      */
-    public function products(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function products(): HasMany
     {
         return $this->hasMany(Product::class);
     }

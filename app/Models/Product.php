@@ -3,6 +3,10 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Model Product untuk memetakan rekaman setiap komoditas atau
@@ -10,12 +14,14 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Product extends Model
 {
+    use SoftDeletes;
+
     /**
      * Atribut yang diizinkan untuk diisi massal oleh aplikasi.
      */
     protected $fillable = [
         'category_id', 'product_name', 'product_photo', 'product_price',
-        'product_description', 'stock', 'is_active'
+        'product_description', 'stock', 'is_active',
     ];
 
     /**
@@ -31,7 +37,7 @@ class Product extends Model
     /**
      * Relasi (BelongsTo): Setiap Entitas Produk harus masuk ke dalam suatu entitas kategori tertentu.
      */
-    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
@@ -39,8 +45,26 @@ class Product extends Model
     /**
      * Relasi (HasMany): Produk terkait sering dilampirkan dalam ragam deretan bon rincian pesanan.
      */
-    public function orderDetails(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function orderItems(): HasMany
     {
-        return $this->hasMany(OrderDetail::class);
+        return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Relasi (BelongsToMany): Produk ini memakai grup varian apa saja.
+     * Contoh: Produk "Kopi Susu Gula Aren" memakai grup "Pilihan Suhu" dan "Tingkat Gula".
+     */
+    public function modifierGroups(): BelongsToMany
+    {
+        return $this->belongsToMany(ModifierGroup::class, 'modifier_group_product');
+    }
+
+    /**
+     * KUNCI INTEGRASI: menu self-order & kasir HANYA boleh menampilkan produk
+     * yang benar-benar bisa dijual -- aktif, tidak di-soft-delete, stok ada.
+     */
+    public function scopeAvailableForOrder($query)
+    {
+        return $query->where('is_active', true)->where('stock', '>', 0);
     }
 }

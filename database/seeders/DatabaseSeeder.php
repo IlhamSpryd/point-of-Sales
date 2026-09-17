@@ -2,10 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -20,7 +22,7 @@ class DatabaseSeeder extends Seeder
         $this->call(RoleSeeder::class);
 
         // 2. Buat akun default Administrator
-        $adminRole = \App\Models\Role::where('name', 'Administrator')->first();
+        $adminRole = Role::where('name', 'Administrator')->first();
 
         User::updateOrCreate(
             ['email' => 'admin@pos.test'],
@@ -32,7 +34,7 @@ class DatabaseSeeder extends Seeder
         );
 
         // 3. Buat akun Kasir untuk demo
-        $kasirRole = \App\Models\Role::where('name', 'Kasir')->first();
+        $kasirRole = Role::where('name', 'Kasir')->first();
 
         User::updateOrCreate(
             ['email' => 'kasir@pos.test'],
@@ -44,7 +46,7 @@ class DatabaseSeeder extends Seeder
         );
 
         // 4. Buat akun Pimpinan untuk demo
-        $pimpinanRole = \App\Models\Role::where('name', 'Pimpinan')->first();
+        $pimpinanRole = Role::where('name', 'Pimpinan')->first();
 
         User::updateOrCreate(
             ['email' => 'pimpinan@pos.test'],
@@ -54,5 +56,20 @@ class DatabaseSeeder extends Seeder
                 'role_id' => $pimpinanRole->id,
             ]
         );
+
+        // 5. Akun sistem khusus atribusi transaksi self-order pelanggan (BUKAN untuk login manual).
+        // Dipakai sebagai "kasir virtual" agar user_id di tabel orders tidak pernah null,
+        // menjaga konsistensi audit trail sesuai aturan proyek ini.
+        User::updateOrCreate(
+            ['email' => config('pos.self_order_system_email', 'selforder@system.local')],
+            [
+                'name' => 'Self-Order Kiosk',
+                'password' => Hash::make(Str::random(40)), // password acak, tidak pernah dipakai login
+                'role_id' => $kasirRole->id,
+            ]
+        );
+
+        // 6. Seed data Modifiers untuk self-order
+        $this->call(ModifierSeeder::class);
     }
 }

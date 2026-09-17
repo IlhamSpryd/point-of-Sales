@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Role;
+use Illuminate\Database\Seeder;
 
 /**
  * RoleSeeder: Mengisi 3 role standar yang dipersyaratkan oleh ERD.

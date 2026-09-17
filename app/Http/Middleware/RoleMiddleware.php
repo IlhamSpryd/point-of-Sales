@@ -26,12 +26,12 @@ class RoleMiddleware
         $user = $request->user();
 
         // Tolak akses jika belum login atau belum punya role
-        if (!$user || !$user->role) {
+        if (! $user || ! $user->role) {
             abort(403, 'Anda tidak memiliki hak akses untuk halaman ini.');
         }
 
         // Periksa apakah role user cocok dengan salah satu role yang diizinkan
-        if (!in_array($user->role->name, $roles)) {
+        if (! in_array($user->role->name, $roles)) {
             abort(403, 'Anda tidak memiliki hak akses untuk halaman ini.');
         }
 

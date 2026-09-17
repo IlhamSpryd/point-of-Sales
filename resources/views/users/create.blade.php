@@ -19,20 +19,20 @@
                     <x-form-label for="name">Nama Lengkap <!-- Standarisasi bahasa UjiKom --></x-form-label>
                     <x-form-input type="text" id="name" name="name" value="{{ old('name') }}" 
                             
-                           placeholder="Masukkan nama lengkap" required autocomplete="name" class="@error('name') input-error @enderror" /> <!-- Standarisasi bahasa UjiKom -->
+                           placeholder="Masukkan nama lengkap" required autocomplete="name" class="{{ $errors->has('name') ? 'input-error' : '' }}" /> <!-- Standarisasi bahasa UjiKom -->
                     @error('name')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
-                    @enderror
+                    <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
+                @enderror
                 </div>
 
                 <div>
                     <x-form-label for="email">Alamat Email <!-- Standarisasi bahasa UjiKom --></x-form-label>
                     <x-form-input type="email" id="email" name="email" value="{{ old('email') }}" 
                             
-                           placeholder="example@domain.com" required autocomplete="username" class="@error('email') input-error @enderror" />
+                           placeholder="example@domain.com" required autocomplete="username" class="{{ $errors->has('email') ? 'input-error' : '' }}" />
                     @error('email')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
-                    @enderror
+                    <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
+                @enderror
                 </div>
             </div>
 
@@ -41,7 +41,7 @@
                 <x-form-label for="role_id">Pilih Peran <!-- Standarisasi bahasa UjiKom --></x-form-label>
                 <div class="relative">
                     <select id="role_id" name="role_id" 
-                            class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-100 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 appearance-none focus:outline-none focus:ring-2 focus:ring-zinc-1000/20 focus:border-zinc-1000 transition-all @error('role_id') input-error @enderror" required>
+                            class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-100 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 appearance-none focus:outline-none focus:ring-2 focus:ring-zinc-1000/20 focus:border-zinc-1000 transition-all {{ $errors->has('role_id') ? 'input-error' : '' }}" required>
                         <option value="">Pilih Peran <!-- Standarisasi bahasa UjiKom --></option>
                         @foreach($roles as $role)
                             <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
@@ -64,10 +64,10 @@
                     <x-form-label for="password">Kata Sandi <!-- Standarisasi bahasa UjiKom --></x-form-label>
                     <x-form-input type="password" id="password" name="password" 
                             
-                           placeholder="••••••••" required autocomplete="new-password" class="@error('password') input-error @enderror" />
+                           placeholder="••••••••" required autocomplete="new-password" class="{{ $errors->has('password') ? 'input-error' : '' }}" />
                     @error('password')
-                        <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
-                    @enderror
+                    <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
+                @enderror
                 </div>
 
                 <div>

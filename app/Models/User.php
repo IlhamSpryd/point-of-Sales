@@ -5,6 +5,9 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -15,7 +18,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, SoftDeletes;
 
     /**
      * Kolom-kolom yang diperbolehkan untuk diisi secara massal (Mass-assignment).
@@ -30,7 +33,7 @@ class User extends Authenticatable
     /**
      * Relasi (BelongsTo): Setiap pengguna memiliki satu hak akses atau peran (Role).
      */
-    public function role(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
     }
@@ -38,7 +41,7 @@ class User extends Authenticatable
     /**
      * Relasi (HasMany): Seorang pengguna (kasir) dapat melayani atau mencatat banyak transaksi (Orders).
      */
-    public function orders(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }

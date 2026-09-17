@@ -9,13 +9,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('orders', function (Blueprint $table) {
-            if (!Schema::hasColumn('orders', 'subtotal_amount')) {
+            if (! Schema::hasColumn('orders', 'subtotal_amount')) {
                 $table->decimal('subtotal_amount', 15, 2)->default(0)->after('order_date');
             }
-            if (!Schema::hasColumn('orders', 'tax_amount')) {
+            if (! Schema::hasColumn('orders', 'tax_amount')) {
                 $table->decimal('tax_amount', 15, 2)->default(0)->after('subtotal_amount');
             }
-            if (!Schema::hasColumn('orders', 'cash_received')) {
+            if (! Schema::hasColumn('orders', 'cash_received')) {
                 $table->decimal('cash_received', 15, 2)->nullable()->after('order_change');
             }
         });

@@ -2,15 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Role;
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
+use App\Models\Role;
 use App\Services\RoleService;
-use Illuminate\View\View;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
- * RoleController: Penghubung delegasi antarmuka permohonan manajemen Peran 
+ * RoleController: Penghubung delegasi antarmuka permohonan manajemen Peran
  * yang hanya bertugas melayangkan data bersih ke RoleService.
  */
 class RoleController extends Controller
@@ -26,7 +29,7 @@ class RoleController extends Controller
     /**
      * Menampilkan daftar indeks Roles.
      */
-    public function index(\Illuminate\Http\Request $request): \Illuminate\View\View|\Symfony\Component\HttpFoundation\BinaryFileResponse
+    public function index(Request $request): View|BinaryFileResponse
     {
         // Alihkan pengembalian menjadi file unduh (StreamResponse CSV) bila request adalah ekspor.
         if ($request->has('export') && $request->export === 'csv') {
@@ -35,7 +38,8 @@ class RoleController extends Controller
 
         // Ambil Roles berdasarkan parameter query request lalu susun per halaman (Pagination).
         $roles = $this->roleService->getFilteredQuery($request)->paginate(10)->withQueryString();
-        // Berikan variabel data kepada tampilan dan sampaikan ke peramban 
+
+        // Berikan variabel data kepada tampilan dan sampaikan ke peramban
         return view('roles.index', compact('roles'));
     }
 
@@ -53,8 +57,9 @@ class RoleController extends Controller
     public function store(StoreRoleRequest $request): RedirectResponse
     {
         // Validasi input parameter oleh file Form Request.
-        // Apabila telah tervalidasi benar, oper array-nya menuju Service. 
+        // Apabila telah tervalidasi benar, oper array-nya menuju Service.
         $this->roleService->store($request->validated());
+
         // Mengalihkan URL kembali ke index yang melampirkan sesi session message.
         return redirect()->route('roles.index')->with('success', 'Role created successfully.');
     }
@@ -72,9 +77,10 @@ class RoleController extends Controller
      */
     public function update(UpdateRoleRequest $request, Role $role): RedirectResponse
     {
-        // Form request menjaga pengikatan data lalu divalidasi. 
+        // Form request menjaga pengikatan data lalu divalidasi.
         // Lanjutkan perubahan properties role menuju Service Pattern.
         $this->roleService->update($role, $request->validated());
+
         return redirect()->route('roles.index')->with('success', 'Role updated successfully.');
     }
 
@@ -86,11 +92,12 @@ class RoleController extends Controller
         try {
             // Berikan model sasaran langsung ke dalam modul Service untuk dihapus nilainya.
             $this->roleService->delete($role);
+
             return redirect()->route('roles.index')->with('success', 'Role deleted successfully.');
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             return redirect()->route('roles.index')->with('error', 'Data ini masih terhubung dengan data lain dan tidak dapat dihapus.');
         } catch (\Throwable $e) {
-            // Atasi lemparan kegagalan Exception bila terjadi dan beritahukan sebab kegagalannya. 
+            // Atasi lemparan kegagalan Exception bila terjadi dan beritahukan sebab kegagalannya.
             return redirect()->route('roles.index')->with('error', $e->getMessage());
         }
     }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Model Role digunakan untuk menyimpan hak akses level akun
@@ -18,7 +19,7 @@ class Role extends Model
     /**
      * Relasi (HasMany): Sebuah Role dapat menempel pada banyak akun Pengguna (User).
      */
-    public function users(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function users(): HasMany
     {
         return $this->hasMany(User::class);
     }

@@ -17,7 +17,7 @@
                 <x-form-label for="category_name">Nama Kategori <!-- Standarisasi bahasa UjiKom --></x-form-label>
                 <x-form-input type="text" id="category_name" name="category_name" value="{{ old('category_name') }}" 
                         
-                       placeholder="Masukkan nama kategori" required class="@error('category_name') input-error @enderror" /> <!-- Standarisasi bahasa UjiKom -->
+                       placeholder="Masukkan nama kategori" required class="{{ $errors->has('category_name') ? 'input-error' : '' }}" /> <!-- Standarisasi bahasa UjiKom -->
                 @error('category_name')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
                 @enderror
