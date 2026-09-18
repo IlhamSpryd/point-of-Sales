@@ -47,3 +47,12 @@ Route::middleware(['throttle:5,1', 'table.session'])  // Hanya 5 request per men
         Route::post('/', [CheckoutController::class, 'store'])->name('store');
         Route::get('/{orderCode}/success', [CheckoutController::class, 'success'])->name('success');
     });
+
+// Polling status pesanan, dipisah agar tidak kena limit 5/menit dari checkout.
+// 60 per menit = 1 request per detik (cukup untuk polling 3 detik sekali).
+Route::middleware(['throttle:60,1', 'table.session'])
+    ->prefix('checkout')
+    ->name('customer.checkout.')
+    ->group(function () {
+        Route::get('/{orderCode}/status', [CheckoutController::class, 'status'])->name('status');
+    });

@@ -131,4 +131,26 @@ class CheckoutController extends Controller
 
         return view('customer.checkout.success', compact('order'));
     }
+
+    /**
+     * Polling endpoint untuk melihat status pesanan terbaru dari KDS/Midtrans.
+     */
+    public function status(string $orderCode)
+    {
+        $tableId = session('current_table_id');
+
+        $query = Order::where('order_code', $orderCode);
+
+        if ($tableId) {
+            $query->where('table_id', $tableId);
+        }
+
+        $order = $query->firstOrFail();
+
+        return response()->json([
+            'order_status' => $order->order_status,
+            'is_paid' => \App\Enums\OrderStatus::tryFrom($order->order_status) === \App\Enums\OrderStatus::Paid,
+            'is_final' => \App\Enums\OrderStatus::tryFrom($order->order_status)?->isFinal() ?? false,
+        ]);
+    }
 }

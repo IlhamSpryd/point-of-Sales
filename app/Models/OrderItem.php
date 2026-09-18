@@ -52,4 +52,32 @@ class OrderItem extends Model
     {
         return $this->belongsTo(User::class, 'processed_by');
     }
+
+    /**
+     * Menghitung berapa menit berlalu sejak pesanan dibuat.
+     */
+    public function slaMinutesElapsed(): int
+    {
+        return (int) $this->created_at->diffInMinutes(now());
+    }
+
+    /**
+     * Menentukan level SLA (ok, warning, critical) berdasarkan waktu tunggu.
+     */
+    public function slaLevel(): string
+    {
+        $elapsed = $this->slaMinutesElapsed();
+        $warning = config('pos.kds_sla_warning_minutes', 8);
+        $critical = config('pos.kds_sla_critical_minutes', 15);
+
+        if ($elapsed >= $critical) {
+            return 'critical';
+        }
+        
+        if ($elapsed >= $warning) {
+            return 'warning';
+        }
+
+        return 'ok';
+    }
 }

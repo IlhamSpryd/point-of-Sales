@@ -30,8 +30,9 @@
         <header
             class="bg-white p-5 sticky top-0 z-10 border-b border-[#E9E9E7] backdrop-blur-md bg-white/80 flex justify-between items-center">
             <div>
-                <h1 class="text-2xl font-bold tracking-tight text-[#37352F]"
-                    style="font-family: 'Playfair Display', serif;">Yovel Coffee & Cafe</h1>
+                <h1 class="text-2xl font-bold tracking-tight text-[#37352F] font-brand">
+                    Yovel Coffee<span class="font-normal text-[#787774]"> & Cafe</span>
+                </h1>
                 <p class="text-xs text-[#787774] mt-0.5">Meja {{ $table->table_number }}</p>
             </div>
         </header>

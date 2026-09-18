@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="light">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="utf-8">
@@ -48,7 +48,7 @@
     </style>
 </head>
 
-<body class="antialiased bg-[#F7F7F5] text-[#37352F] flex h-screen overflow-hidden">
+<body class="antialiased bg-[#F7F7F5] text-[#37352F] flex h-screen overflow-hidden" style="font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;">
 
     <div x-data="{ sidebarMobileOpen: false, expanded: localStorage.getItem('sidebarExpanded') !== 'false' }" x-init="$watch('expanded', val => localStorage.setItem('sidebarExpanded', val))" class="flex w-full h-full">
         <!-- Sidebar Navigation -->
@@ -61,8 +61,8 @@
             <header
                 class="bg-white/80 backdrop-blur-xl border-b border-[#E9E9E7] h-14 flex items-center justify-between px-4 sm:px-6 shrink-0 lg:hidden">
                 <div class="flex items-center ml-10">
-                    <span class="text-lg font-bold text-[#37352F] tracking-tight whitespace-nowrap">
-                        Yovel<span class="font-normal text-[#787774]"> Coffee</span>
+                    <span class="text-lg tracking-tight whitespace-nowrap font-brand">
+                        <span class="font-bold text-[#37352F]">Yovel</span><span class="font-normal text-[#787774] ml-1">Coffee</span>
                     </span>
                 </div>
             </header>

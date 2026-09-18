@@ -425,4 +425,40 @@ class TransactionService
 
         return [$orderItemsData, $subtotal];
     }
+
+    /**
+     * Memperbarui status Order berdasarkan notifikasi webhook Midtrans
+     * (dipanggil oleh MidtransNotificationController setelah signature
+     * terverifikasi). Dipakai untuk SEMUA pembayaran non-tunai, baik dari
+     * Self-Order pelanggan maupun Kasir POS.
+     */
+    public function updateStatusFromMidtransNotification(string $orderCode, string $transactionStatus, ?string $fraudStatus): Order
+    {
+        return DB::transaction(function () use ($orderCode, $transactionStatus, $fraudStatus) {
+            $order = Order::where('order_code', $orderCode)->lockForUpdate()->firstOrFail();
+
+            // Idempotency guard: status final TIDAK PERNAH ditimpa ulang.
+            if (OrderStatus::from($order->order_status)->isFinal()) {
+                return $order;
+            }
+
+            $newStatus = match (true) {
+                in_array($transactionStatus, ['capture', 'settlement'], true) && $fraudStatus !== 'challenge' => OrderStatus::Paid,
+                $transactionStatus === 'deny' => OrderStatus::Failed,
+                $transactionStatus === 'cancel' => OrderStatus::Cancelled,
+                $transactionStatus === 'expire' => OrderStatus::Expired,
+                default => null, // 'pending', 'authorize', dll -- notifikasi Midtrans yang BELUM final.
+                                  // TANPA arm ini, match() melempar UnhandledMatchError untuk setiap
+                                  // notifikasi 'pending' -- padahal itu JUSTRU notifikasi PALING SERING
+                                  // dikirim Midtrans (dikirim pertama kali begitu customer membuka
+                                  // popup Snap, sebelum pembayaran selesai).
+            };
+
+            if ($newStatus !== null) {
+                $order->update(['order_status' => $newStatus->value]);
+            }
+
+            return $order;
+        });
+    }
 }

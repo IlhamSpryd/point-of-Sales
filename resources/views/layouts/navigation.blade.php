@@ -34,8 +34,8 @@
             
             <div class="font-bold tracking-tight whitespace-nowrap flex items-center transition-all duration-200 text-xl" :class="expanded ? 'w-auto' : 'justify-center w-full'">
                 
-                {{-- Gemini-Style Wrapper (No Background by default, circular hover) --}}
-                <div class="flex items-center justify-center shrink-0 p-2 rounded-full hover:bg-[#F1F1EF] transition-colors relative" :class="expanded ? 'mr-3' : ''">
+                {{-- Gemini-Style Wrapper --}}
+                <div class="flex items-center justify-center shrink-0 p-2 rounded-full hover:bg-[#F7F7F5] transition-colors relative" :class="expanded ? 'mr-3' : ''">
                     
                     {{-- 1. Sparkle Logo (Visible normally, hidden on hover ONLY when collapsed) --}}
                     <svg :class="!expanded ? 'block group-hover:hidden' : 'block'" width="18" height="18" viewBox="0 0 16 16" fill="currentColor" class="text-[#37352F] transition-transform duration-600 ease-in-out group-hover:rotate-180">
@@ -51,8 +51,8 @@
 
                 </div>
                 
-                <span :class="expanded ? 'opacity-100 w-auto inline' : 'opacity-0 w-0 hidden'" class="transition-all duration-200 overflow-hidden font-semibold">
-                    Yovel Coffee
+                <span :class="expanded ? 'opacity-100 w-auto inline' : 'opacity-0 w-0 hidden'" class="transition-all duration-200 overflow-hidden font-brand">
+                    <span class="font-bold">Yovel</span><span class="font-normal text-[#787774] ml-0.5">Coffee</span>
                 </span>
             </div>
         </a>
@@ -61,7 +61,7 @@
         <button @click="expanded = !expanded"
                 x-show="expanded"
                 x-cloak
-                class="hidden lg:flex p-1.5 rounded-lg text-[#9B9A97] hover:text-[#37352F] hover:bg-[#F1F1EF] transition-all duration-200"
+                class="hidden lg:flex p-1.5 rounded-lg text-[#9B9A97] hover:text-[#37352F] hover:bg-[#F7F7F5] transition-all duration-200"
                 title="Collapse sidebar">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
         </button>
@@ -110,6 +110,26 @@
                    title="Manajemen Meja">
                     <span class="material-symbols-rounded text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''">table_restaurant</span>
                     <span :class="expanded ? 'opacity-100 w-auto ml-3' : 'opacity-0 w-0 ml-0'" class="transition-all duration-200 overflow-hidden whitespace-nowrap">Meja</span>
+                </a>
+            </li>
+            @endif
+
+            {{-- Kitchen (KDS) --}}
+            @if(auth()->check() && in_array(auth()->user()->role?->name, ['Administrator', 'Kasir']))
+            <li>
+                <a href="{{ route('kds.index') }}"
+                   class="group flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 relative overflow-hidden whitespace-nowrap
+                          {{ request()->routeIs('kds.*')
+                              ? 'bg-[#F1F1EF] text-[#37352F]'
+                              : 'text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5]' }}"
+                   :class="expanded ? 'px-3 py-2.5' : 'px-0 py-2.5 justify-center'"
+                   title="Dapur (KDS)">
+                    @if(request()->routeIs('kds.*'))
+                        <span class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-[#37352F] rounded-r-full" :class="expanded ? 'opacity-100' : 'opacity-0'"></span>
+                    @endif
+                    <span class="material-symbols-rounded text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''">restaurant_menu</span>
+                    <span :class="expanded ? 'opacity-100 w-auto ml-3' : 'opacity-0 w-0 ml-0'"
+                          class="transition-all duration-200 overflow-hidden whitespace-nowrap">Dapur</span>
                 </a>
             </li>
             @endif

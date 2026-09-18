@@ -2,190 +2,177 @@
     <!-- PAGE HEADER -->
     <div class="flex items-center justify-between mb-8">
         <div>
-            <h1 class="text-[28px] font-bold text-zinc-900 dark:text-white tracking-tight">Dashboard</h1>
-            <p class="text-[15px] font-medium text-zinc-500 mt-1">Cara mudah mengelola penjualan dengan teliti dan presisi. <!-- Standarisasi bahasa UjiKom --></p>
+            <h1 class="text-2xl font-bold text-[#37352F] tracking-tight">Dashboard</h1>
+            <p class="text-sm font-medium text-[#787774] mt-1">Cara mudah mengelola penjualan dengan teliti dan presisi.</p>
         </div>
-        <button class="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-zinc-900 border border-zinc-100 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 text-sm font-semibold rounded-[14px] hover:bg-zinc-50 dark:hover:bg-zinc-800 animate-transition shadow-sm focus:ring-2 focus:ring-zinc-1000">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-500"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            <span class="px-1">{{ now()->subDays(11)->format('F d, Y') }} - {{ now()->format('F d, Y') }}</span>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-zinc-400"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
+        <div class="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-white border border-[#E9E9E7] text-[#787774] text-sm font-medium rounded-xl shadow-sm">
+            <span class="material-symbols-rounded text-[18px]">calendar_today</span>
+            <span>{{ now()->subDays(11)->format('F d, Y') }} — {{ now()->format('F d, Y') }}</span>
+        </div>
     </div>
 
-    <!-- STAT CARDS ROW (3 Columns) -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <!-- STAT CARDS ROW -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
         <!-- 1. Promo Card -->
-        <div class="bg-[#09090b] rounded-2xl p-6 text-white relative overflow-hidden flex flex-col shadow-sm min-h-40 group">
+        <div class="bg-[#37352F] rounded-2xl p-6 text-white relative overflow-hidden flex flex-col shadow-md min-h-40 group">
             <div class="relative z-10 flex-1">
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[10px] bg-white/10 border border-white/20 text-[11px] font-bold tracking-wider uppercase text-white mb-4 backdrop-blur-sm">
-                    <span class="w-2 h-2 rounded-full bg-gray-50"></span> Pembaruan <!-- Standarisasi bahasa UjiKom -->
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 border border-white/20 text-[11px] font-bold tracking-wider uppercase text-white/90 mb-4 backdrop-blur-sm">
+                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> Pembaruan
                 </span>
-                <p class="text-white/60 text-xs font-semibold mb-1">{{ now()->format('M dS Y') }}</p>
-                <h3 class="text-xl font-bold leading-[1.3] pr-8 text-white/95">Pendapatan penjualan meningkat dalam 1 minggu <!-- Standarisasi bahasa UjiKom --></h3>
+                <p class="text-white/50 text-xs font-medium mb-1">{{ now()->format('M dS Y') }}</p>
+                <h3 class="text-xl font-bold leading-snug pr-8 text-white/95">Pendapatan penjualan meningkat dalam 1 minggu</h3>
             </div>
             <div class="relative z-10 mt-6">
-                <a href="#" class="text-gray-50 text-[15px] font-bold hover:text-[#c4fc19] transition-colors flex items-center gap-1.5 group w-max">
-                    Lihat Statistik <!-- Standarisasi bahasa UjiKom -->
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="group-hover:translate-x-1 transition-transform"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                <a href="#" class="text-white/80 text-sm font-bold hover:text-white transition-colors flex items-center gap-1.5 group w-max">
+                    Lihat Statistik
+                    <span class="material-symbols-rounded text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
                 </a>
             </div>
             <!-- Geometric Decoration -->
-            <div class="absolute -right-2 -bottom-2 opacity-90 translate-x-6.25 translate-y-6.25">
-                <svg class="transition-transform duration-2000 ease-in-out group-hover:rotate-180" width="130" height="130" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <g transform="translate(50,50)">
-                        <rect x="-6" y="-45" width="12" height="90" rx="6" ry="6" fill="#fafafa" />
-                        <rect x="-6" y="-45" width="12" height="90" rx="6" ry="6" fill="#fafafa" transform="rotate(60)" />
-                        <rect x="-6" y="-45" width="12" height="90" rx="6" ry="6" fill="#fafafa" transform="rotate(120)" />
-                    </g>
-                </svg>
+            <div class="absolute -right-4 -bottom-4 opacity-[0.08]">
+                <span class="material-symbols-rounded text-[140px] text-white group-hover:rotate-12 transition-transform duration-700">coffee</span>
             </div>
         </div>
 
         <!-- 2. Net Income -->
-        <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-100 dark:border-zinc-800 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex flex-col relative min-h-40 overflow-hidden">
+        <div class="card-surface p-6 flex flex-col relative min-h-40 overflow-hidden">
             <div class="flex justify-between items-start mb-3 relative z-10">
-                <span class="text-[15px] font-bold text-zinc-500">Pendapatan Bersih <!-- Standarisasi bahasa UjiKom --></span>
-                <button class="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300 transition-colors">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                </button>
+                <span class="text-sm font-semibold text-[#787774]">Pendapatan Bersih</span>
+                <span class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+                    <span class="material-symbols-rounded text-[18px] text-emerald-600">trending_up</span>
+                </span>
             </div>
-            <h3 class="text-[32px] font-extrabold text-zinc-900 dark:text-white mb-2 tracking-tight relative z-10">Rp {{ number_format($totalEarnings, 0, ',', '.') }}</h3>
-            <span class="inline-flex items-center text-[13px] font-bold text-emerald-500 gap-1 relative z-10">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg> Pendapatan bulan ini <!-- Standarisasi bahasa UjiKom -->
+            <h3 class="text-[28px] font-extrabold text-[#37352F] mb-2 tracking-tight relative z-10">Rp {{ number_format($totalEarnings, 0, ',', '.') }}</h3>
+            <span class="inline-flex items-center text-xs font-bold text-emerald-600 gap-1 relative z-10">
+                <span class="material-symbols-rounded text-[14px]">north_east</span> Pendapatan bulan ini
             </span>
-            <!-- Sparkline Chart Placeholder -->
             <div class="absolute bottom-0 left-0 w-full h-15 opacity-100">
                 <div id="income-sparkline"></div>
             </div>
         </div>
 
-        <!-- 3. Total Return / Orders -->
-        <div class="bg-white dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-100 dark:border-zinc-800 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] flex flex-col relative min-h-40 overflow-hidden">
+        <!-- 3. Total Orders -->
+        <div class="card-surface p-6 flex flex-col relative min-h-40 overflow-hidden">
             <div class="flex justify-between items-start mb-3 relative z-10">
-                <span class="text-[15px] font-bold text-zinc-500">Total Transaksi <!-- Standarisasi bahasa UjiKom --></span>
-                <button class="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300 transition-colors">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                </button>
+                <span class="text-sm font-semibold text-[#787774]">Total Transaksi</span>
+                <span class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
+                    <span class="material-symbols-rounded text-[18px] text-blue-600">receipt_long</span>
+                </span>
             </div>
-            <h3 class="text-[32px] font-extrabold text-zinc-900 dark:text-white mb-2 tracking-tight relative z-10">{{ number_format($totalOrders) }}</h3>
-            <span class="inline-flex items-center text-[13px] font-bold text-emerald-500 gap-1 relative z-10">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg> Transaksi bulan ini <!-- Standarisasi bahasa UjiKom -->
+            <h3 class="text-[28px] font-extrabold text-[#37352F] mb-2 tracking-tight relative z-10">{{ number_format($totalOrders) }}</h3>
+            <span class="inline-flex items-center text-xs font-bold text-emerald-600 gap-1 relative z-10">
+                <span class="material-symbols-rounded text-[14px]">north_east</span> Transaksi bulan ini
             </span>
-            <!-- Sparkline Chart Placeholder -->
             <div class="absolute bottom-0 left-0 w-full h-15 opacity-100">
                 <div id="return-sparkline"></div>
             </div>
         </div>
     </div>
 
-    <!-- MAIN GRID (8 + 4 columns) -->
+    <!-- MAIN GRID -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
         
-        <!-- LEFT AREA (col-span-8) -->
+        <!-- LEFT AREA -->
         <div class="lg:col-span-8 flex flex-col gap-6">
             
             <!-- Revenue Chart Area -->
-            <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-zinc-100 dark:border-zinc-800 px-6 pt-6 pb-2 relative overflow-hidden">
+            <div class="card-surface px-6 pt-6 pb-2 relative overflow-hidden">
                 <div class="flex flex-wrap justify-between items-start mb-2 gap-4">
-                    <h2 class="text-[18px] font-bold text-zinc-900 dark:text-white">Pendapatan <!-- Standarisasi bahasa UjiKom --></h2>
-                    <div class="flex items-center gap-4 text-sm font-semibold">
+                    <h2 class="text-lg font-bold text-[#37352F]">Pendapatan</h2>
+                    <div class="flex items-center gap-4 text-sm font-medium">
                         <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-[#09090b]"></span> <span class="text-zinc-500 dark:text-zinc-400">Pemasukan <!-- Standarisasi bahasa UjiKom --></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-[#37352F]"></span> <span class="text-[#787774]">Pemasukan</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-gray-50"></span> <span class="text-zinc-500 dark:text-zinc-400">Pengeluaran <!-- Standarisasi bahasa UjiKom --></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-[#E9E9E7]"></span> <span class="text-[#787774]">Pengeluaran</span>
                         </div>
                     </div>
                 </div>
                 <div class="flex items-baseline gap-2 mb-4 relative z-10">
-                    <span class="text-[28px] font-extrabold text-zinc-900 dark:text-white tracking-tight">Rp {{ number_format($totalEarnings, 0, ',', '.') }}</span>
-                    <span class="text-xs font-bold text-emerald-500">Data akumulatif bulan ini <!-- Standarisasi bahasa UjiKom --></span>
+                    <span class="text-[28px] font-extrabold text-[#37352F] tracking-tight">Rp {{ number_format($totalEarnings, 0, ',', '.') }}</span>
+                    <span class="text-xs font-bold text-emerald-600">Data akumulatif bulan ini</span>
                 </div>
                 <div id="revenue-chart" class="w-full h-70 -mx-2"></div>
-                <!-- Top gradient border effect (subtle) -->
-                <div class="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-transparent via-zinc-100 dark:via-zinc-800 to-transparent"></div>
             </div>
 
-            <!-- Lower Left Split Grid (Transaction & Progress) -->
+            <!-- Lower Left Split Grid -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 <!-- Transaction List -->
-                <div class="lg:col-span-12 xl:col-span-7 bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-zinc-100 dark:border-zinc-800 p-6 flex flex-col h-full">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-[18px] font-bold text-zinc-900 dark:text-white">Transaksi <!-- Standarisasi bahasa UjiKom --></h2>
-                        <button class="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                        </button>
+                <div class="lg:col-span-12 xl:col-span-7 card-surface p-6 flex flex-col h-full">
+                    <div class="flex justify-between items-center mb-5">
+                        <h2 class="text-lg font-bold text-[#37352F]">Transaksi</h2>
                     </div>
                     
-                    <div class="flex-1 flex flex-col gap-5">
+                    <div class="flex-1 flex flex-col gap-4">
                         @forelse($recentOrders->take(4) as $order)
-                        <div class="flex items-center justify-between group">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10.5 h-10.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 text-[#09090b] dark:text-emerald-400 flex items-center justify-center shrink-0">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="22"/><line x1="17" y1="5" x2="12" y2="2"/><line x1="7" y1="5" x2="12" y2="2"/><line x1="17" y1="19" x2="12" y2="22"/><line x1="7" y1="19" x2="12" y2="22"/></svg>
+                        <div class="flex items-center justify-between group p-3 rounded-xl hover:bg-[#F7F7F5] transition-all duration-200">
+                            <div class="flex items-center gap-3.5">
+                                <div class="w-10 h-10 rounded-xl {{ $order->order_status == 'paid' ? 'bg-emerald-50' : 'bg-amber-50' }} flex items-center justify-center shrink-0">
+                                    <span class="material-symbols-rounded text-[18px] {{ $order->order_status == 'paid' ? 'text-emerald-600' : 'text-amber-600' }}">
+                                        {{ $order->order_status == 'paid' ? 'check_circle' : 'schedule' }}
+                                    </span>
                                 </div>
                                 <div>
-                                    <h4 class="text-[15px] font-bold text-zinc-900 dark:text-white">{{ $order->user->name ?? 'Pelanggan Ritel' }} <!-- Standarisasi bahasa UjiKom --></h4>
-                                    <p class="text-[13px] font-semibold text-zinc-500 mt-0.5">{{ $order->created_at?->format('F d, Y • h:i A') ?? now()->format('F d, Y') }}</p>
+                                    <h4 class="text-sm font-bold text-[#37352F]">{{ $order->user->name ?? 'Pelanggan Ritel' }}</h4>
+                                    <p class="text-xs font-medium text-[#9B9A97] mt-0.5">{{ $order->created_at?->format('F d, Y • h:i A') ?? now()->format('F d, Y') }}</p>
                                 </div>
                             </div>
-                            {{-- PERBAIKAN: sebelumnya membandingkan status 'completed' yang tidak pernah ada di sistem --}}
-                            {{-- (TransactionService hanya set 'paid'/'pending'), sehingga Net Income selalu Rp 0. --}}
-                            <span class="text-[15px] font-extrabold {{ $order->order_status == 'paid' ? 'text-emerald-500' : 'text-amber-500' }}">
+                            <span class="text-sm font-extrabold {{ $order->order_status == 'paid' ? 'text-emerald-600' : 'text-amber-600' }}">
                                 {{ $order->order_status == 'paid' ? '+' : '' }}Rp {{ number_format($order->order_amount, 0, ',', '.') }}
                             </span>
                         </div>
                         @empty
-                        <p class="text-sm text-zinc-400 text-center py-4">Belum ada transaksi terbaru. <!-- Standarisasi bahasa UjiKom --></p>
+                        <div class="flex flex-col items-center justify-center py-8">
+                            <div class="w-14 h-14 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
+                                <span class="material-symbols-rounded text-[28px] text-[#C4C3C0]">receipt_long</span>
+                            </div>
+                            <p class="text-sm text-[#9B9A97] font-medium">Belum ada transaksi terbaru.</p>
+                        </div>
                         @endforelse
                     </div>
                 </div>
 
                 <!-- Product Overview Progress -->
-                <div class="lg:col-span-12 xl:col-span-5 bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-zinc-100 dark:border-zinc-800 p-6 flex flex-col h-full">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-[18px] font-bold text-zinc-900 dark:text-white">Ringkasan Produk <!-- Standarisasi bahasa UjiKom --></h2>
-                        <button class="text-zinc-400 hover:text-zinc-500 dark:hover:text-zinc-300">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-                        </button>
+                <div class="lg:col-span-12 xl:col-span-5 card-surface p-6 flex flex-col h-full">
+                    <div class="flex justify-between items-center mb-5">
+                        <h2 class="text-lg font-bold text-[#37352F]">Ringkasan Produk</h2>
                     </div>
 
-                    <div class="flex-1 flex flex-col gap-4">
-                        <!-- Progress Items -->
+                    <div class="flex-1 flex flex-col gap-5">
                         <div>
-                            <div class="flex justify-between items-center mb-1.5">
-                                <span class="text-[13px] font-bold text-zinc-500 dark:text-zinc-400">Total Produk <!-- Standarisasi bahasa UjiKom --></span>
-                                <span class="text-[13px] font-extrabold text-zinc-900 dark:text-white">{{ $productsCount }}</span>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs font-semibold text-[#787774]">Total Produk</span>
+                                <span class="text-xs font-bold text-[#37352F]">{{ $productsCount }}</span>
                             </div>
-                            <div class="w-full h-1.5 bg-zinc-50/50 dark:bg-zinc-800 rounded-full overflow-hidden">
-                                <div class="h-full bg-gray-50 rounded-full" style="width: {{ $productsCount > 0 ? 100 : 0 }}%"></div>
+                            <div class="w-full h-1.5 bg-[#F1F1EF] rounded-full overflow-hidden">
+                                <div class="h-full bg-[#37352F] rounded-full transition-all duration-700" style="width: {{ $productsCount > 0 ? 100 : 0 }}%"></div>
                             </div>
                         </div>
                         <div>
-                            <div class="flex justify-between items-center mb-1.5">
-                                <span class="text-[13px] font-bold text-zinc-500 dark:text-zinc-400">Peringatan Stok Tipis <!-- Standarisasi bahasa UjiKom --></span>
-                                <span class="text-[13px] font-extrabold text-amber-500 dark:text-amber-400">{{ $lowStockCount }}</span>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs font-semibold text-[#787774]">Peringatan Stok Tipis</span>
+                                <span class="text-xs font-bold text-amber-600">{{ $lowStockCount }}</span>
                             </div>
-                            <div class="w-full h-1.5 bg-zinc-50/50 dark:bg-zinc-800 rounded-full overflow-hidden">
-                                <div class="h-full bg-amber-500 opacity-80 rounded-full" style="width: {{ $lowStockPercent }}%"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between items-center mb-1.5">
-                                <span class="text-[13px] font-bold text-zinc-500 dark:text-zinc-400">Terjual Bulan Ini <!-- Standarisasi bahasa UjiKom --></span>
-                                <span class="text-[13px] font-extrabold text-emerald-500 dark:text-emerald-400">{{ number_format($soldThisMonth) }}</span>
-                            </div>
-                            <div class="w-full h-1.5 bg-zinc-50/50 dark:bg-zinc-800 rounded-full overflow-hidden">
-                                <div class="h-full bg-emerald-500 opacity-80 rounded-full" style="width: 100%"></div>
+                            <div class="w-full h-1.5 bg-[#F1F1EF] rounded-full overflow-hidden">
+                                <div class="h-full bg-amber-500 rounded-full transition-all duration-700" style="width: {{ $lowStockPercent }}%"></div>
                             </div>
                         </div>
                         <div>
-                            <div class="flex justify-between items-center mb-1.5">
-                                <span class="text-[13px] font-bold text-zinc-500 dark:text-zinc-400">Produk Dikembalikan <!-- Standarisasi bahasa UjiKom --></span>
-                                <span class="text-[13px] font-extrabold text-zinc-900 dark:text-white">{{ $returnedProducts }}</span>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs font-semibold text-[#787774]">Terjual Bulan Ini</span>
+                                <span class="text-xs font-bold text-emerald-600">{{ number_format($soldThisMonth) }}</span>
                             </div>
-                            <div class="w-full h-1.5 bg-zinc-50/50 dark:bg-zinc-800 rounded-full overflow-hidden">
-                                <div class="h-full bg-[#FF6A3D] rounded-full" style="width: 0%"></div>
+                            <div class="w-full h-1.5 bg-[#F1F1EF] rounded-full overflow-hidden">
+                                <div class="h-full bg-emerald-500 rounded-full transition-all duration-700" style="width: 100%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-xs font-semibold text-[#787774]">Produk Dikembalikan</span>
+                                <span class="text-xs font-bold text-[#37352F]">{{ $returnedProducts }}</span>
+                            </div>
+                            <div class="w-full h-1.5 bg-[#F1F1EF] rounded-full overflow-hidden">
+                                <div class="h-full bg-rose-400 rounded-full transition-all duration-700" style="width: 0%"></div>
                             </div>
                         </div>
                     </div>
@@ -193,49 +180,42 @@
             </div>
         </div>
 
-        <!-- RIGHT AREA (col-span-4) -->
+        <!-- RIGHT AREA -->
         <div class="lg:col-span-4 flex flex-col gap-6">
-            <!-- Total View/Orders Chart -->
-            <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] border border-zinc-100 dark:border-zinc-800 p-6 flex flex-col flex-1">
-                <h2 class="text-[18px] font-bold text-zinc-900 dark:text-white mb-2">Ringkasan Metode Pembayaran <!-- Standarisasi bahasa UjiKom --></h2>
+            <!-- Payment Methods Chart -->
+            <div class="card-surface p-6 flex flex-col flex-1">
+                <h2 class="text-lg font-bold text-[#37352F] mb-2">Ringkasan Metode Pembayaran</h2>
                 
                 <div class="flex-1 flex items-center justify-center my-4 min-h-55">
                     <div id="performance-chart" class="w-full max-h-60 flex justify-center"></div>
                 </div>
 
                 <div class="flex justify-between items-center gap-2 mt-auto">
-                    <div class="flex items-center gap-2.5">
-                        <span class="w-2.5 h-2.5 rounded-full bg-[#94a3b8]"></span>
-                        <span class="text-xs font-bold text-zinc-500">Cash</span>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#9B9A97]"></span>
+                        <span class="text-xs font-semibold text-[#787774]">Cash</span>
                     </div>
-                    <div class="flex items-center gap-2.5">
-                        <span class="w-2.5 h-2.5 rounded-full bg-[#0f172a]"></span>
-                        <span class="text-xs font-bold text-zinc-500">QRIS</span>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-[#37352F]"></span>
+                        <span class="text-xs font-semibold text-[#787774]">QRIS</span>
                     </div>
-                    <div class="flex items-center gap-2.5">
-                        <span class="w-2.5 h-2.5 rounded-full bg-[#f97316]"></span>
-                        <span class="text-xs font-bold text-zinc-500">E-Wallet</span>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                        <span class="text-xs font-semibold text-[#787774]">E-Wallet</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Promo Banner Box -->
-            <div class="bg-[#09090b] rounded-2xl p-8 text-white relative overflow-hidden shadow-sm flex flex-col justify-center min-h-45 group">
-                <!-- Geometric Decoration -->
-                <div class="absolute -right-6 -bottom-6 opacity-80">
-                    <svg class="transition-transform duration-2000 ease-in-out group-hover:rotate-180" width="160" height="160" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <g transform="translate(50,50)">
-                            <rect x="-6" y="-45" width="12" height="90" rx="6" ry="6" fill="#fafafa" />
-                            <rect x="-6" y="-45" width="12" height="90" rx="6" ry="6" fill="#fafafa" transform="rotate(60)" />
-                            <rect x="-6" y="-45" width="12" height="90" rx="6" ry="6" fill="#fafafa" transform="rotate(120)" />
-                        </g>
-                    </svg>
+            <!-- Promo Banner -->
+            <div class="bg-[#37352F] rounded-2xl p-8 text-white relative overflow-hidden shadow-md flex flex-col justify-center min-h-45 group">
+                <div class="absolute -right-6 -bottom-6 opacity-[0.06]">
+                    <span class="material-symbols-rounded text-[180px] text-white group-hover:rotate-12 transition-transform duration-700">storefront</span>
                 </div>
 
                 <div class="relative z-10 w-4/5">
-                    <h3 class="text-[22px] font-extrabold leading-tight text-white mb-3 tracking-tight">Tingkatkan pengelolaan penjualan Anda ke level berikutnya. <!-- Standarisasi bahasa UjiKom --></h3>
-                    <p class="text-white/60 text-[13px] font-medium leading-relaxed mb-6">Cara mudah mengelola penjualan dengan teliti dan presisi.</p>
-                    <button class="bg-gray-50 hover:bg-[#c4fc19] text-[#09090b] px-5 py-2.5 rounded-xl text-[13px] font-bold transition-transform hover:-translate-y-0.5 whitespace-nowrap">
+                    <h3 class="text-xl font-extrabold leading-tight text-white mb-3 tracking-tight">Tingkatkan pengelolaan penjualan Anda ke level berikutnya.</h3>
+                    <p class="text-white/50 text-xs font-medium leading-relaxed mb-6">Cara mudah mengelola penjualan dengan teliti dan presisi.</p>
+                    <button class="bg-white text-[#37352F] px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 hover:bg-[#F7F7F5] hover:-translate-y-0.5 active:scale-95 shadow-sm whitespace-nowrap">
                         Cek pembaruan sekarang
                     </button>
                 </div>
@@ -243,10 +223,10 @@
         </div>
     </div>
 
-    <!-- Scripts for ApexCharts inside Tailwind Dashboard -->
+    <!-- Scripts for ApexCharts -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 1. Sparkline: Net Income (7 Days Volume)
+            // 1. Sparkline: Net Income
             var incomeSparklineOptions = {
                 series: [{ data: @json(array_slice($revenueData, -8, 8)) }],
                 chart: { type: 'area', height: 60, sparkline: { enabled: true } },
@@ -255,12 +235,12 @@
                     type: 'gradient',
                     gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0, stops: [0, 100] }
                 },
-                colors: ['#10b981'], // Emerald 500
+                colors: ['#10b981'],
                 tooltip: { fixed: { enabled: false }, x: { show: false }, y: { title: { formatter: function () { return '' } } }, marker: { show: false } }
             };
             new ApexCharts(document.querySelector("#income-sparkline"), incomeSparklineOptions).render();
 
-            // 2. Sparkline: Total Orders (7 Days Volume)
+            // 2. Sparkline: Total Orders
             var returnSparklineOptions = {
                 series: [{ data: @json(array_slice($ordersData, -8, 8)) }],
                 chart: { type: 'area', height: 60, sparkline: { enabled: true } },
@@ -269,12 +249,12 @@
                     type: 'gradient',
                     gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0, stops: [0, 100] }
                 },
-                colors: ['#f43f5e'], // Rose 500
+                colors: ['#3b82f6'],
                 tooltip: { fixed: { enabled: false }, x: { show: false }, y: { title: { formatter: function () { return '' } } }, marker: { show: false } }
             };
             new ApexCharts(document.querySelector("#return-sparkline"), returnSparklineOptions).render();
 
-            // 3. Main Area Chart: Revenue vs Orders
+            // 3. Main Area Chart: Revenue
             var revenueOptions = {
                 series: [{
                     name: "Income",
@@ -286,24 +266,24 @@
                 chart: {
                     height: 280,
                     type: 'area',
-                    fontFamily: 'inherit',
+                    fontFamily: 'Plus Jakarta Sans, Inter, sans-serif',
                     toolbar: { show: false },
                     sparkline: { enabled: false }
                 },
-                colors: ['#09090b', '#fafafa'], 
+                colors: ['#37352F', '#E9E9E7'], 
                 dataLabels: { enabled: false },
-                stroke: { curve: 'smooth', width: 3 },
+                stroke: { curve: 'smooth', width: 2.5 },
                 xaxis: {
                     categories: @json($chartDates),
                     axisBorder: { show: false },
                     axisTicks: { show: false },
-                    labels: { style: { colors: '#94a3b8', fontSize: '13px', fontWeight: 600 } }
+                    labels: { style: { colors: '#9B9A97', fontSize: '12px', fontWeight: 500, fontFamily: 'Plus Jakarta Sans, Inter, sans-serif' } }
                 },
                 yaxis: {
-                    labels: { style: { colors: '#94a3b8', fontSize: '13px', fontWeight: 600 } }
+                    labels: { style: { colors: '#9B9A97', fontSize: '12px', fontWeight: 500, fontFamily: 'Plus Jakarta Sans, Inter, sans-serif' } }
                 },
                 grid: {
-                    borderColor: '#f1f5f9',
+                    borderColor: '#F1F1EF',
                     strokeDashArray: 4,
                     xaxis: { lines: { show: false } },
                     yaxis: { lines: { show: true } }
@@ -312,7 +292,7 @@
                     type: 'gradient',
                     gradient: {
                         shadeIntensity: 1,
-                        opacityFrom: 0.2, // very transparent
+                        opacityFrom: 0.15,
                         opacityTo: 0.0,
                         stops: [0, 100]
                     }
@@ -328,29 +308,27 @@
                 chart: {
                     type: 'donut',
                     height: 260,
-                    fontFamily: 'inherit'
+                    fontFamily: 'Plus Jakarta Sans, Inter, sans-serif'
                 },
-                colors: ['#94a3b8', '#0f172a', '#f97316'],
+                colors: ['#9B9A97', '#37352F', '#f59e0b'],
                 plotOptions: {
                     pie: {
                         donut: {
                             size: '75%',
                             labels: {
                                 show: true,
-                                name: { show: true, fontSize: '12px', fontWeight: 600, color: '#64748b', offsetY: -5 },
-                                value: { show: true, fontSize: '28px', fontWeight: 800, color: '#0f172a', offsetY: 5, formatter: function (val) { return val } },
-                                total: { show: true, showAlways: true, label: 'Total Lunas', fontSize: '12px', fontWeight: 600, color: '#64748b', formatter: function (w) { return "{{ $totalPaidOrders }}" } } // <!-- Standarisasi bahasa UjiKom -->
+                                name: { show: true, fontSize: '12px', fontWeight: 600, color: '#787774', offsetY: -5 },
+                                value: { show: true, fontSize: '28px', fontWeight: 800, color: '#37352F', offsetY: 5, formatter: function (val) { return val } },
+                                total: { show: true, showAlways: true, label: 'Total Lunas', fontSize: '12px', fontWeight: 600, color: '#787774', formatter: function (w) { return "{{ $totalPaidOrders }}" } }
                             }
                         },
                         customScale: 0.8,
-                        dataLabels: {
-                            offset: 40
-                        }
+                        dataLabels: { offset: 40 }
                     }
                 },
                 dataLabels: { 
                     enabled: true,
-                    style: { fontSize: '12px', colors: ['#0f172a'], fontWeight: 800 },
+                    style: { fontSize: '12px', colors: ['#37352F'], fontWeight: 800 },
                     dropShadow: { enabled: false }
                 },
                 stroke: { show: true, width: 4, colors: ['transparent'] },

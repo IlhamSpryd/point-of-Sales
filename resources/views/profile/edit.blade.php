@@ -1,21 +1,21 @@
 <x-app-layout>
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h4 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Profil</h4> <!-- Standarisasi bahasa UjiKom -->
-            <p class="text-sm font-medium text-zinc-500 mt-1">Kelola pengaturan dan preferensi akun Anda</p> <!-- Standarisasi bahasa UjiKom -->
+            <h4 class="text-xl font-bold text-[#37352F] tracking-tight">Profil</h4>
+            <p class="text-sm font-medium text-[#787774] mt-1">Kelola pengaturan dan preferensi akun Anda</p>
         </div>
     </div>
 
     <div class="space-y-6">
-        <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-zinc-100 dark:border-zinc-800 overflow-hidden w-full p-6 md:p-8">
+        <div class="card-surface p-6 md:p-8">
             @include('profile.partials.update-profile-information-form')
         </div>
 
-        <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-zinc-100 dark:border-zinc-800 overflow-hidden w-full p-6 md:p-8">
+        <div class="card-surface p-6 md:p-8">
             @include('profile.partials.update-password-form')
         </div>
 
-        <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-zinc-100 dark:border-zinc-800 overflow-hidden w-full p-6 md:p-8">
+        <div class="card-surface p-6 md:p-8">
             @include('profile.partials.delete-user-form')
         </div>
     </div>

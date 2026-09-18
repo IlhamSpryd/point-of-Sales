@@ -1,15 +1,20 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 @import 'tailwindcss';
-
-@custom-variant dark (&:where(.dark, .dark *));
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 @source '../../resources/views/**/*.blade.php';
 
+/* ═══════════════════════════════════════════════════════
+   THEME — Tailwind v4 CSS-first configuration
+   All design tokens defined here via @theme directive.
+   NO tailwind.config.js needed.
+   ═══════════════════════════════════════════════════════ */
 @theme {
-    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
-    
+    --font-sans: 'Plus Jakarta Sans', 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-brand: 'Playfair Display', 'Georgia', serif;
+
+    /* ── Gray Scale ── */
     --color-gray-50: #fafafa;
     --color-gray-100: #f5f5f5;
     --color-gray-200: #e5e5e5;
@@ -21,22 +26,34 @@
     --color-gray-800: #262626;
     --color-gray-900: #171717;
 
-    /* Semantic Primary Palette */
-    --color-primary-50: var(--primary-50, #f8fafc);
-    --color-primary-100: var(--primary-100, #f1f5f9);
-    --color-primary-200: var(--primary-200, #e2e8f0);
-    --color-primary-300: var(--primary-300, #cbd5e1);
-    --color-primary-400: var(--primary-400, #94a3b8);
-    --color-primary-500: var(--primary-500, #64748b);
-    --color-primary-600: var(--primary-600, #475569);
-    --color-primary-700: var(--primary-700, #334155);
-    --color-primary-800: var(--primary-800, #1e293b);
-    --color-primary-900: var(--primary-900, #0f172a);
-    --color-primary-950: var(--primary-950, #020617);
+    /* ── Primary Palette — Remapped to Monochrome Ink ── */
+    --color-primary-50:  #F7F7F5;
+    --color-primary-100: #F1F1EF;
+    --color-primary-200: #E3E2E0;
+    --color-primary-300: #C4C3C0;
+    --color-primary-400: #9B9A97;
+    --color-primary-500: #787774;
+    --color-primary-600: #55544E;
+    --color-primary-700: #37352F;
+    --color-primary-800: #2B2926;
+    --color-primary-900: #1F1E1C;
+    --color-primary-950: #141413;
+
+    /* ── Yovel Brand Tokens ── */
+    --color-yovel-bg:  #F7F7F5;
+    --color-yovel-ink: #37352F;
+    --color-yovel-muted: #787774;
+    --color-yovel-border: #E9E9E7;
+    --color-yovel-surface: #F1F1EF;
 }
 
+/* ═══════════════════════════════════════════════════════
+   GLOBAL BASE
+   ═══════════════════════════════════════════════════════ */
 body {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+    background-color: var(--color-yovel-bg);
+    color: var(--color-yovel-ink);
 }
 
 /* Hide spinner in number fields */
@@ -50,45 +67,17 @@ input[type="number"]::-webkit-outer-spin-button {
     display: none !important;
 }
 
-/* Kelas untuk efek transisi fade-up saat navigasi antar halaman via Swup */
-.transition-fade {
-    transition: all var(--dur-fast) var(--ease-out);
-    will-change: transform, opacity;
-    opacity: 1;
-    transform: translateY(0);
-}
-
-html.is-animating .transition-fade {
-    opacity: 0;
-    transform: translateY(12px);
-}
-
-/*
- * TOKEN MOTION — CSS CUSTOM PROPERTIES
- * Semua nilai durasi & easing didefinisikan DI SINI, bukan
- * di-hardcode berulang. Konsistensi dijaga dari titik tunggal.
- *  */
+/* ═══════════════════════════════════════════════════════
+   MOTION TOKENS — CSS Custom Properties
+   ═══════════════════════════════════════════════════════ */
 :root {
-    /* Durasi */
     --dur-micro: 120ms;
-    /* Hover ikon, toggle kecil          */
     --dur-fast: 200ms;
-    /* Focus input, border error          */
     --dur-medium: 350ms;
-    /* Entrance elemen individual          */
-
-    /* Easing */
     --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-    /* Entrance (elemen ke layar)    */
     --ease-ui: cubic-bezier(0.4, 0, 0.2, 1);
-    /* State-change hover/focus      */
 }
 
-/*
- * REDUCED MOTION FALLBACK
- * User dengan prefers-reduced-motion: reduce mendapat
- * transisi instan — tidak ada gerakan besar.
- *  */
 @media (prefers-reduced-motion: reduce) {
     :root {
         --dur-micro: 0ms;
@@ -102,10 +91,103 @@ html.is-animating .transition-fade {
     }
 }
 
-/*
- * INPUT FOCUS TRANSITIONS
- * Pakai token --dur-fast & --ease-ui agar konsisten.
- *  */
+/* ═══════════════════════════════════════════════════════
+   REUSABLE SURFACE CLASSES
+   ═══════════════════════════════════════════════════════ */
+
+/* Card Surface — the universal container */
+.card-surface {
+    background-color: #ffffff;
+    border: 1px solid var(--color-yovel-border);
+    border-radius: 1rem; /* rounded-2xl */
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition:
+        box-shadow var(--dur-fast) var(--ease-ui),
+        border-color var(--dur-fast) var(--ease-ui);
+}
+
+.card-surface:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Data Table — clean, readable tables */
+.data-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.875rem;
+}
+
+.data-table thead th {
+    background-color: var(--color-yovel-bg);
+    color: var(--color-yovel-muted);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--color-yovel-border);
+    text-align: left;
+    white-space: nowrap;
+}
+
+.data-table tbody td {
+    padding: 0.875rem 1rem;
+    border-bottom: 1px solid var(--color-yovel-border);
+    color: var(--color-yovel-ink);
+    vertical-align: middle;
+}
+
+.data-table tbody tr {
+    transition: background-color var(--dur-micro) var(--ease-ui);
+}
+
+.data-table tbody tr:hover {
+    background-color: var(--color-yovel-bg);
+}
+
+.data-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* ═══════════════════════════════════════════════════════
+   MODIFIER BOX — button-box for radio/checkbox selections
+   ═══════════════════════════════════════════════════════ */
+.modifier-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    border: 1.5px solid var(--color-yovel-border);
+    background-color: #ffffff;
+    cursor: pointer;
+    transition:
+        border-color var(--dur-fast) var(--ease-ui),
+        background-color var(--dur-fast) var(--ease-ui),
+        box-shadow var(--dur-fast) var(--ease-ui);
+}
+
+.modifier-box:hover {
+    background-color: var(--color-yovel-bg);
+    border-color: #C4C3C0;
+}
+
+.modifier-box.selected {
+    border-color: var(--color-yovel-ink);
+    background-color: var(--color-yovel-bg);
+    box-shadow: 0 0 0 1px var(--color-yovel-ink);
+}
+
+.modifier-box input[type="radio"],
+.modifier-box input[type="checkbox"] {
+    display: none;
+}
+
+/* ═══════════════════════════════════════════════════════
+   INPUT FOCUS TRANSITIONS
+   ═══════════════════════════════════════════════════════ */
 .form-input {
     transition:
         border-color var(--dur-fast) var(--ease-ui),
@@ -113,12 +195,8 @@ html.is-animating .transition-fade {
         background-color var(--dur-fast) var(--ease-ui);
 }
 
-/*
- * ERROR BORDER — transisi HALUS ke merah, bukan mendadak
- *  */
 .input-error {
     border-color: #fda4af !important;
-    /* rose-300 */
     box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.15) !important;
     transition:
         border-color var(--dur-fast) var(--ease-ui),
@@ -127,13 +205,12 @@ html.is-animating .transition-fade {
 
 .label-error {
     color: #e11d48;
-    /* rose-600 */
     transition: color var(--dur-fast) var(--ease-ui);
 }
 
-/*
- * TOGGLE PASSWORD — container relatif untuk cross-fade ikon
- *  */
+/* ═══════════════════════════════════════════════════════
+   TOGGLE PASSWORD — cross-fade icon container
+   ═══════════════════════════════════════════════════════ */
 .eye-icon-wrapper {
     position: relative;
     width: 20px;
@@ -163,9 +240,9 @@ html.is-animating .transition-fade {
     pointer-events: none;
 }
 
-/*
- * TOMBOL SUBMIT — hover / active pakai token
- *  */
+/* ═══════════════════════════════════════════════════════
+   SUBMIT BUTTON — hover/active with motion tokens
+   ═══════════════════════════════════════════════════════ */
 .btn-submit {
     transition:
         background-color var(--dur-fast) var(--ease-ui),
@@ -178,12 +255,10 @@ html.is-animating .transition-fade {
     background-color: #171717;
 }
 
-/* neutral-900 */
 .btn-submit:active {
     transform: scale(0.98);
 }
 
-/* Loading state — tombol saat sedang submit */
 .btn-submit.is-loading {
     cursor: not-allowed;
     opacity: 0.85;
@@ -197,7 +272,11 @@ html.is-animating .transition-fade {
     transform: none;
 }
 
-/* Spinner — rotasi linear (pengecualian yang dibolehkan) */
+/* ═══════════════════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+   ═══════════════════════════════════════════════════════ */
+
+/* Spinner */
 @keyframes spin-linear {
     to {
         transform: rotate(360deg);
@@ -214,86 +293,123 @@ html.is-animating .transition-fade {
     flex-shrink: 0;
 }
 
-/*
- * ERROR ALERT — slide-down + shake keyframes
- *  */
-@keyframes slide-down-fade {
+/* Slide Up Fade — entrance animation for cards, modals */
+@keyframes slideUpFade {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(16px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-/* Shake — 2-3 osilasi kecil, total ≤ 280ms, amplitudo kecil */
-@keyframes shake-subtle {
+.animate-slide-up-fade {
+    animation: slideUpFade var(--dur-medium) var(--ease-out) both;
+}
 
-    0%,
-    100% {
-        transform: translateX(0);
+/* Stagger delay utilities */
+.delay-1 { animation-delay: 50ms; }
+.delay-2 { animation-delay: 100ms; }
+.delay-3 { animation-delay: 150ms; }
+.delay-4 { animation-delay: 200ms; }
+.delay-5 { animation-delay: 250ms; }
+
+/* Fade In */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+.animate-fade-in {
+    animation: fadeIn var(--dur-fast) var(--ease-out) both;
+}
+
+/* Slide Down Fade — for alerts/toasts */
+@keyframes slide-down-fade {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
     }
-
-    18% {
-        transform: translateX(-5px);
-    }
-
-    36% {
-        transform: translateX(4px);
-    }
-
-    54% {
-        transform: translateX(-3px);
-    }
-
-    72% {
-        transform: translateX(2px);
-    }
-
-    90% {
-        transform: translateX(-1px);
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
+/* Shake — subtle micro error animation */
+@keyframes shake-subtle {
+    0%,
+    100% { transform: translateX(0); }
+    18%  { transform: translateX(-5px); }
+    36%  { transform: translateX(4px); }
+    54%  { transform: translateX(-3px); }
+    72%  { transform: translateX(2px); }
+    90%  { transform: translateX(-1px); }
+}
+
 .error-alert {
-    /* Slide-down dulu (350ms expo-out), lalu shake (280ms) */
     animation:
         slide-down-fade 350ms cubic-bezier(0.16, 1, 0.3, 1) both,
         shake-subtle 280ms cubic-bezier(0.4, 0, 0.2, 1) 380ms both;
 }
 
-/*
- * ELEMEN GSAP — semua di-set opacity:0 via inline style
- * dari JS untuk menghindari FOUC. CSS hanya memberi petunjuk
- * will-change agar GPU bisa bersiap.
- *  */
+/* ═══════════════════════════════════════════════════════
+   SWUP PAGE TRANSITION
+   ═══════════════════════════════════════════════════════ */
+.transition-fade {
+    transition: all var(--dur-fast) var(--ease-out);
+    will-change: transform, opacity;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+html.is-animating .transition-fade {
+    opacity: 0;
+    transform: translateY(12px);
+}
+
+/* ═══════════════════════════════════════════════════════
+   GSAP — GPU hints
+   ═══════════════════════════════════════════════════════ */
 .js-anim {
     will-change: transform, opacity;
 }
 
-/*
- * SOCIAL BUTTON — DISABLED STYLING
- * Tidak ada hover transform / shadow — supaya tidak menipu
- * user seolah tombol aktif (sesuai spek: tombol non-aktif).
- *  */
+/* ═══════════════════════════════════════════════════════
+   SOCIAL BUTTON — DISABLED STYLING
+   ═══════════════════════════════════════════════════════ */
 .btn-social {
     transition: background-color var(--dur-fast) var(--ease-ui);
     cursor: not-allowed;
     pointer-events: none;
 }
 
-/*
- * GLOBAL OPTION FIX
- * Cegah teks 'nyaru' (tak terbaca) pada dropdown native saat dark mode
- */
-html.dark option {
-    background-color: #171717 !important;
-    color: #f5f5f5 !important;
-}
+/* ═══════════════════════════════════════════════════════
+   OPTION FIX — readable dropdown text
+   ═══════════════════════════════════════════════════════ */
 option {
     background-color: #ffffff;
     color: #171717;
+}
+
+/* ═══════════════════════════════════════════════════════
+   CUSTOM SCROLLBAR — thin, minimal
+   ═══════════════════════════════════════════════════════ */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #d4d4d4;
+    border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #a3a3a3;
 }

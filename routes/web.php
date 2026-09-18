@@ -2,11 +2,12 @@
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\KdsController;
+use App\Http\Controllers\MidtransNotificationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
-use App\Http\Controllers\SelfOrderController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
@@ -20,12 +21,13 @@ Route::get('/', function () {
 // Diletakkan di luar grup 'auth' & 'verified' secara sengaja.
 require __DIR__.'/customer.php';
 
-// Rute Self-Order Baru (Single Page Alpine.js)
-Route::middleware(['throttle:60,1'])->group(function () {
-    Route::get('/order/{table}', [SelfOrderController::class, 'menu'])->name('self-order.menu');
-    Route::post('/order/{table}', [SelfOrderController::class, 'store'])->name('self-order.store');
-    Route::get('/order/confirmation/{order}', [SelfOrderController::class, 'confirmation'])->name('self-order.confirmation');
-});
+// Webhook Midtrans (server-to-server, TANPA CSRF & TANPA auth -- lihat
+// pengecualian CSRF di bootstrap/app.php). Endpoint ini SATU-SATUNYA
+// sumber kebenaran otomatis untuk transisi status pembayaran non-tunai,
+// dipakai bersama oleh Self-Order pelanggan maupun Kasir POS.
+Route::post('/midtrans/notification', [MidtransNotificationController::class, 'handle'])
+    ->middleware('throttle:120,1')
+    ->name('midtrans.notification');
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
@@ -58,6 +60,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Laporan Penjualan (Pimpinan)
     Route::middleware(['role:Pimpinan'])->group(function () {
         Route::get('/reports/sales', [ReportController::class, 'index'])->name('reports.sales');
+    });
+
+    // Kitchen Display System (Administrator + Kasir -- toko kecil, kasir sering merangkap barista)
+    Route::middleware(['role:Administrator,Kasir'])->group(function () {
+        Route::get('/kds', [KdsController::class, 'index'])->name('kds.index');
     });
 
     // Profile

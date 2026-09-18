@@ -1,36 +1,34 @@
 <x-app-layout>
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h4 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">Ubah Peran <!-- Standarisasi bahasa UjiKom --></h4>
-            <p class="text-sm font-medium text-zinc-500 mt-1">Perbarui peran #{{ $role->id }} <!-- Standarisasi bahasa UjiKom --></p>
+            <h4 class="text-xl font-bold text-[#37352F] tracking-tight">Ubah Peran</h4>
+            <p class="text-sm font-medium text-[#787774] mt-1">Perbarui peran #{{ $role->id }}</p>
         </div>
-        <a href="{{ route('roles.index') }}" class="flex items-center gap-2 px-4 py-2 bg-zinc-50/50 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 text-sm font-medium rounded-lg transition-colors shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
-            <span class="material-symbols-rounded">arrow_back</span> Kembali <!-- Standarisasi bahasa UjiKom -->
+        <a href="{{ route('roles.index') }}" class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#F7F7F5] border border-[#E9E9E7] text-[#37352F] text-sm font-medium rounded-xl transition-all duration-200 shadow-sm active:scale-95">
+            <span class="material-symbols-rounded text-[18px]">arrow_back</span> Kembali
         </a>
     </div>
 
-    <div class="bg-white dark:bg-zinc-900 rounded-xl shadow-[0_2px_8px_rgba(0,0,0,0.04)] border border-zinc-100 dark:border-zinc-800 overflow-hidden w-full">
+    <div class="card-surface overflow-hidden w-full">
         <form action="{{ route('roles.update', $role->id) }}" method="POST" x-data="{ submitting: false }" @submit="submitting = true" class="p-6 md:p-8 space-y-6">
             @csrf
             @method('PUT')
 
             <div>
-                <x-form-label for="name">Nama Peran <!-- Standarisasi bahasa UjiKom --></x-form-label>
-                {{-- Menggunakan <x-form-input> alih-alih <input> manual, supaya style Create & Edit selalu seragam dan mudah dirawat dari satu sumber (komponen). --}}
+                <x-form-label for="name">Nama Peran</x-form-label>
                 <x-form-input type="text" id="name" name="name" 
                        value="{{ old('name', $role->name) }}" 
                        placeholder="Masukkan nama peran" required 
                        class="{{ $errors->has('name') ? 'input-error' : '' }}" />
                 @error('name')
-                    <p class="text-sm text-rose-500 mt-1.5 font-medium label-error">{{ $message }}</p>
+                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
             </div>
 
-            <div class="pt-4 border-t border-zinc-100 dark:border-zinc-800 flex justify-end">
-                {{-- submitting mencegah user klik tombol dua kali saat form sedang diproses server, supaya tidak ada data duplikat --}}
+            <div class="pt-4 border-t border-[#E9E9E7] flex justify-end">
                 <x-button type="submit" variant="primary" :disabled="false" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''">
                     <span x-show="!submitting">
-                        <span class="material-symbols-rounded">save</span> Perbarui Peran <!-- Standarisasi bahasa UjiKom -->
+                        <span class="material-symbols-rounded text-[18px]">save</span> Perbarui Peran
                     </span>
                     <span x-show="submitting" x-cloak>Menyimpan...</span>
                 </x-button>

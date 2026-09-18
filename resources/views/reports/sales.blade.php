@@ -1,116 +1,103 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-            {{ __('Laporan Penjualan') }}
-        </h2>
-    </x-slot>
-<div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-
     <!-- Page header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <!-- Left: Title -->
         <div>
-            <h4 class="text-xl font-bold text-zinc-900 dark:text-zinc-100 tracking-tight">{{ $title }}</h4>
-            <p class="text-sm font-medium text-zinc-500 mt-1">Ringkasan transaksi dan pendapatan</p>
+            <h4 class="text-xl font-bold text-[#37352F] tracking-tight">{{ $title }}</h4>
+            <p class="text-sm font-medium text-[#787774] mt-1">Ringkasan transaksi dan pendapatan</p>
         </div>
         
-        <!-- Right: Actions -->
         <div class="flex gap-2 w-full sm:w-auto">
-            <!-- Export button -->
             <a href="{{ route('reports.sales', ['export' => 'csv'] + request()->except('export')) }}" class="flex-1 sm:flex-none">
                 <x-button variant="secondary" type="button" class="w-full h-10">
-                    <span class="material-symbols-rounded">download</span> Ekspor <!-- Standarisasi bahasa UjiKom -->
+                    <span class="material-symbols-rounded text-[18px]">download</span> Ekspor
                 </x-button>
             </a>
         </div>
     </div>
 
-    <!-- Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
         <!-- Harian -->
-        <div class="flex flex-col col-span-1 bg-white dark:bg-gray-800 shadow-sm rounded-xl">
-            <div class="px-5 pt-5">
-                <header class="flex justify-between items-start mb-2">
-                    <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Pendapatan Hari Ini</h2>
-                </header>
-                <div class="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">Rp {{ number_format($dailySales->total, 0, ',', '.') }}</div>
-                <div class="text-sm font-semibold text-gray-500 dark:text-gray-400 mt-2">{{ $dailySales->count }} Transaksi</div>
+        <div class="card-surface p-6">
+            <div class="flex justify-between items-start mb-3">
+                <span class="text-sm font-semibold text-[#787774]">Pendapatan Hari Ini</span>
+                <span class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
+                    <span class="material-symbols-rounded text-[18px] text-emerald-600">today</span>
+                </span>
             </div>
-            <div class="grow"></div>
+            <h3 class="text-2xl font-extrabold text-[#37352F] tracking-tight">Rp {{ number_format($dailySales->total, 0, ',', '.') }}</h3>
+            <p class="text-xs font-medium text-[#9B9A97] mt-1.5">{{ $dailySales->count }} Transaksi</p>
         </div>
         
         <!-- Mingguan -->
-        <div class="flex flex-col col-span-1 bg-white dark:bg-gray-800 shadow-sm rounded-xl">
-            <div class="px-5 pt-5">
-                <header class="flex justify-between items-start mb-2">
-                    <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Pendapatan Minggu Ini</h2>
-                </header>
-                <div class="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">Rp {{ number_format($weeklySales->total, 0, ',', '.') }}</div>
-                <div class="text-sm font-semibold text-gray-500 dark:text-gray-400 mt-2">{{ $weeklySales->count }} Transaksi</div>
+        <div class="card-surface p-6">
+            <div class="flex justify-between items-start mb-3">
+                <span class="text-sm font-semibold text-[#787774]">Pendapatan Minggu Ini</span>
+                <span class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
+                    <span class="material-symbols-rounded text-[18px] text-blue-600">date_range</span>
+                </span>
             </div>
-            <div class="grow"></div>
+            <h3 class="text-2xl font-extrabold text-[#37352F] tracking-tight">Rp {{ number_format($weeklySales->total, 0, ',', '.') }}</h3>
+            <p class="text-xs font-medium text-[#9B9A97] mt-1.5">{{ $weeklySales->count }} Transaksi</p>
         </div>
         
         <!-- Bulanan -->
-        <div class="flex flex-col col-span-1 bg-white dark:bg-gray-800 shadow-sm rounded-xl">
-            <div class="px-5 pt-5">
-                <header class="flex justify-between items-start mb-2">
-                    <h2 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">Pendapatan Bulan Ini</h2>
-                </header>
-                <div class="text-3xl font-bold text-gray-800 dark:text-gray-100 mr-2">Rp {{ number_format($monthlySales->total, 0, ',', '.') }}</div>
-                <div class="text-sm font-semibold text-gray-500 dark:text-gray-400 mt-2">{{ $monthlySales->count }} Transaksi</div>
+        <div class="card-surface p-6">
+            <div class="flex justify-between items-start mb-3">
+                <span class="text-sm font-semibold text-[#787774]">Pendapatan Bulan Ini</span>
+                <span class="w-9 h-9 rounded-xl bg-amber-50 flex items-center justify-center">
+                    <span class="material-symbols-rounded text-[18px] text-amber-600">calendar_month</span>
+                </span>
             </div>
-            <div class="grow"></div>
+            <h3 class="text-2xl font-extrabold text-[#37352F] tracking-tight">Rp {{ number_format($monthlySales->total, 0, ',', '.') }}</h3>
+            <p class="text-xs font-medium text-[#9B9A97] mt-1.5">{{ $monthlySales->count }} Transaksi</p>
         </div>
-
     </div>
 
-    <!-- Table -->
-    <div class="bg-white dark:bg-gray-800 shadow-sm rounded-xl mb-8">
-        <header class="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-            <h2 class="font-semibold text-gray-800 dark:text-gray-100">Daftar Transaksi Terbaru</h2>
+    <!-- Transaction Table -->
+    <div class="card-surface overflow-hidden shrink-0">
+        <header class="px-6 py-4 border-b border-[#E9E9E7]">
+            <h2 class="text-lg font-bold text-[#37352F]">Daftar Transaksi Terbaru</h2>
         </header>
-        <div class="p-3">
-            <div class="overflow-x-auto">
-                <table class="table-auto w-full dark:text-gray-300">
-                    <thead class="text-xs font-semibold uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50">
-                        <tr>
-                            <th class="p-2 whitespace-nowrap"><div class="font-semibold text-left">Kode Pesanan</div></th>
-                            <th class="p-2 whitespace-nowrap"><div class="font-semibold text-left">Tanggal</div></th>
-                            <th class="p-2 whitespace-nowrap"><div class="font-semibold text-left">Kasir</div></th>
-                            <th class="p-2 whitespace-nowrap"><div class="font-semibold text-right">Nilai Transaksi</div></th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-sm divide-y divide-gray-100 dark:divide-gray-700/60">
-                        @forelse ($recentOrders as $order)
-                        <tr>
-                            <td class="p-2 whitespace-nowrap">
-                                <div class="font-medium text-gray-800 dark:text-gray-100">{{ $order->order_code }}</div>
-                            </td>
-                            <td class="p-2 whitespace-nowrap">
-                                <div class="text-left font-medium">{{ \Carbon\Carbon::parse($order->created_at)->format('d-m-Y H:i') }}</div>
-                            </td>
-                            <td class="p-2 whitespace-nowrap">
-                                <div class="text-left font-medium">{{ $order->user->name ?? 'Kasir' }}</div>
-                            </td>
-                            <td class="p-2 whitespace-nowrap">
-                                <div class="font-bold text-gray-800 dark:text-gray-100 text-right">Rp {{ number_format($order->order_amount, 0, ',', '.') }}</div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="4" class="p-2 whitespace-nowrap text-center text-gray-500">Belum ada transaksi di periode ini.</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+        <div class="overflow-x-auto">
+            <table class="data-table">
+                <thead>
+                    <tr class="bg-[#F7F7F5]">
+                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kode Pesanan</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Tanggal</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kasir</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Nilai Transaksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-[#E9E9E7]">
+                    @forelse ($recentOrders as $order)
+                    <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
+                        <td class="px-6 py-4">
+                            <span class="text-sm font-medium text-[#37352F]">{{ $order->order_code }}</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-[#787774]">{{ \Carbon\Carbon::parse($order->created_at)->format('d-m-Y H:i') }}</td>
+                        <td class="px-6 py-4 text-sm text-[#787774]">{{ $order->user->name ?? 'Kasir' }}</td>
+                        <td class="px-6 py-4 text-right">
+                            <span class="text-sm font-bold text-[#37352F]">Rp {{ number_format($order->order_amount, 0, ',', '.') }}</span>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="4" class="px-6 py-12 text-center text-[#9B9A97] text-sm">
+                            <div class="flex flex-col items-center justify-center">
+                                <div class="w-14 h-14 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
+                                    <span class="material-symbols-rounded text-[28px] text-[#C4C3C0]">receipt_long</span>
+                                </div>
+                                <p class="font-medium">Belum ada transaksi di periode ini.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
-        <div class="px-5 py-4">
+        <div class="p-4 border-t border-[#E9E9E7]">
             {{ $recentOrders->links() }}
         </div>
     </div>
-
-</div>
 </x-app-layout>
