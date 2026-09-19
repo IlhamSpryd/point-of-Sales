@@ -1,0 +1,1 @@
+"DB_STATUS_AFTER=$(php artisan tinker --execute="echo App\Models\Order::where('order_code', '${ORDER_CODE}')-;" | tail -n 1)"

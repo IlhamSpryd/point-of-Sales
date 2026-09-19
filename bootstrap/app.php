@@ -24,6 +24,14 @@ return Application::configure(basePath: dirname(__DIR__))
             'table.token' => ResolveTableFromToken::class,
             'table.session' => EnsureTableSession::class,
         ]);
+
+        // Midtrans mengirim notifikasi webhook server-to-server TANPA cookie
+        // sesi browser, sehingga TIDAK PERNAH bisa menyertakan CSRF token.
+        // Keamanan endpoint ini dijamin oleh verifikasi signature_key (SHA512)
+        // di MidtransNotificationController, bukan oleh CSRF.
+        $middleware->validateCsrfTokens(except: [
+            'midtrans/notification',
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

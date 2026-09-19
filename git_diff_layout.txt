@@ -1,0 +1,21 @@
+﻿diff --git a/resources/views/layouts/app.blade.php b/resources/views/layouts/app.blade.php
+index bc8b073..ee12e7c 100644
+--- a/resources/views/layouts/app.blade.php
++++ b/resources/views/layouts/app.blade.php
+@@ -1,4 +1,4 @@
+-<!DOCTYPE html>
++﻿<!DOCTYPE html>
+ <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="light">
+ 
+ <head>
+@@ -61,8 +61,8 @@
+             <header
+                 class="bg-white/80 backdrop-blur-xl border-b border-[#E9E9E7] h-14 flex items-center justify-between px-4 sm:px-6 shrink-0 lg:hidden">
+                 <div class="flex items-center ml-10">
+-                    <span class="text-lg font-bold text-[#37352F] tracking-tight whitespace-nowrap">
+-                        Yovel<span class="font-normal text-[#787774]"> Coffee</span>
++                    <span class="text-lg font-black text-[#37352F] tracking-tight whitespace-nowrap" style="font-family: 'Inter', sans-serif;">
++                        Yovel Coffee & Cafe
+                     </span>
+                 </div>
+             </header>

@@ -18,17 +18,24 @@ class Order extends Model
      */
     protected $fillable = [
         'user_id',
+        'shift_id',
         'order_code',
         'order_date',
         'subtotal_amount',
+        'discount_amount',
         'tax_amount',
+        'service_charge_amount',
         'order_amount',
         'order_change',
         'order_status',
         'payment_method',
         'cash_received',
-        'table_id', // PERUBAHAN: menggantikan table_number string, lihat migration
+        'table_id',
         'order_type',
+        'discount_id',
+        'voided_by',
+        'void_reason',
+        'voided_at',
     ];
 
     /**
@@ -39,6 +46,7 @@ class Order extends Model
         return [
             'order_date' => 'date',
             'order_type' => OrderType::class,
+            'voided_at' => 'datetime',
         ];
     }
 
@@ -65,5 +73,23 @@ class Order extends Model
     public function table(): BelongsTo
     {
         return $this->belongsTo(Table::class);
+    }
+
+    /** Relasi (BelongsTo): Shift kasir yang aktif saat transaksi ini dibuat. */
+    public function shift(): BelongsTo
+    {
+        return $this->belongsTo(Shift::class);
+    }
+
+    /** Relasi (BelongsTo): Master diskon yang diterapkan pada transaksi ini, jika ada. */
+    public function discount(): BelongsTo
+    {
+        return $this->belongsTo(Discount::class);
+    }
+
+    /** Relasi (BelongsTo): Pengguna yang membatalkan (void) transaksi ini, jika ada. */
+    public function voidedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'voided_by')->withTrashed();
     }
 }

@@ -21,7 +21,7 @@ class ResolveTableFromToken
         $token = $request->route('token');
 
         $table = Table::where('secure_token', $token)
-            ->where('status', 'active')
+            ->where('is_active', true)
             ->first();
 
         if (! $table) {
@@ -33,7 +33,7 @@ class ResolveTableFromToken
         // Simpan ke session agar halaman Cart & Checkout (yang URL-nya TIDAK
         // membawa token) tetap tahu pelanggan ini duduk di meja mana.
         $request->session()->put('current_table_id', $table->id);
-        $request->session()->put('current_table_number', $table->table_number);
+        $request->session()->put('current_table_name', $table->table_name);
 
         return $next($request);
     }

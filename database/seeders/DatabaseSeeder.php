@@ -71,5 +71,8 @@ class DatabaseSeeder extends Seeder
 
         // 6. Seed data Modifiers untuk self-order
         $this->call(ModifierSeeder::class);
+
+        // 7. Seed nilai default System Settings
+        $this->call(SettingSeeder::class);
     }
 }

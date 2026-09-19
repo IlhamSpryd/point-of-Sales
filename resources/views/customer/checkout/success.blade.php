@@ -1,7 +1,7 @@
 <x-customer-layout>
     <div class="text-center py-10">
         <h1 class="text-xl font-bold">Pesanan #{{ $order->order_code }}</h1>
-        <p class="text-sm text-zinc-500 mt-2">Meja {{ $order->table?->table_number ?? '-' }} — selesaikan pembayaran untuk melanjutkan.</p>
+        <p class="text-sm text-zinc-500 mt-2">Meja {{ $order->table?->table_name ?? '-' }} — selesaikan pembayaran untuk melanjutkan.</p>
     </div>
 
     @if($order->snap_token)

@@ -1,0 +1,13 @@
+﻿5c93493 Fix undefined variables in TransactionController, format files, and other updates
+3eac735 finalization
+704f26b update navigationbar
+184a55c UI/UX: Polish POS layout, native wheel scroll & align search bar
+66dfcca Update transaction, layout and general UI
+bb0184b feat(exports): implement professional excel formatting for all tables and update app branding to SparkAdmin POS
+52fa377 Refactor: Extract Services, apply DRY Blade components, fix N+1, and implement defense in depth for product status
+d6d84e5 Fix UI issues, fix alpine x-bind syntax error, make POS page full bleed, and set global background to white
+1f48a5f Refactor Dashboard to use real-time data instead of static stubs
+9998435 Refactor POS payment flow, receipt layout, and UI modals
+dc22801 feat(pos): complete midtrans transaction flow integration and thermal receipt printing
+838ec7f feat: phase 4 UjiKom sync, consistent full-width UI, and global material icons migration
+73aeaa9 feat: complete enterprise architecture, POS standards, and Gemini-inspired UI/UX overhaul

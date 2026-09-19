@@ -6,7 +6,7 @@
         <input type="hidden" name="_idempotency_key" value="{{ $idempotencyKey }}">
 
         <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800 text-sm">
-            Meja: <span class="font-bold">{{ session('current_table_number') }}</span>
+            Meja: <span class="font-bold">{{ session('current_table_name') }}</span>
         </div>
 
         <div>

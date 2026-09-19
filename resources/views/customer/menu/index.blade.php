@@ -23,115 +23,90 @@
     </style>
 </head>
 
-<body class="antialiased bg-yovel-bg text-yovel-ink selection:bg-yovel-ink selection:text-white pt-safe">
-    <div x-data="{ modalOpen: false, activeProduct: null, activeCategory: 'all' }" class="pb-32 max-w-2xl mx-auto">
+<body class="antialiased selection:bg-gray-200 pt-safe bg-[#F7F7F5]">
+<div class="min-h-screen bg-[#F7F7F5] text-[#37352F] pb-28 font-sans" 
+     x-data="{ modalOpen: false, activeProduct: null, activeCategory: 'all' }">
+    
+    <!-- Sticky Header -->
+    <header class="sticky top-0 z-40 bg-[#F7F7F5]/80 backdrop-blur-md border-b border-gray-200 px-4 py-4 flex justify-between items-center">
+        <h1 class="text-xl font-bold tracking-tight text-center flex-1 font-brand">Yovel Coffee</h1>
+        <span class="inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 bg-white border border-gray-200 px-3 py-1.5 rounded-lg shadow-sm">
+            <span class="material-symbols-rounded text-[16px]">table_restaurant</span>
+            Meja {{ \App\Models\Table::find(session('current_table_id'))?->table_name ?? '-' }}
+        </span>
+    </header>
 
-        <!-- Header -->
-        <div class="px-5 pt-8 pb-6">
-            <div class="flex items-center gap-2 mb-1">
-                <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" class="text-yovel-ink">
-                    <path d="M8 0a1 1 0 0 1 1 1v5.268l4.562-2.634a1 1 0 1 1 1 1.732L10 8l4.562 2.634a1 1 0 1 1-1 1.732L9 9.732V15a1 1 0 1 1-2 0V9.732l-4.562 2.634a1 1 0 1 1-1-1.732L6 8 1.438 5.366a1 1 0 0 1 1-1.732L7 6.268V1a1 1 0 0 1 1-1z"/>
-                </svg>
-                <h1 class="text-2xl tracking-tight leading-tight font-brand">
-                    <span class="font-bold">Yovel Coffee</span><span class="font-normal text-yovel-muted ml-0.5"> & Cafe</span>
-                </h1>
+    <!-- Horizontal Category Pills -->
+    <div class="overflow-x-auto hide-scrollbar px-4 py-4 flex space-x-2 sticky top-[61px] z-30 bg-[#F7F7F5]/90 backdrop-blur-sm">
+        <button type="button" @click="activeCategory = 'all'" 
+                :class="activeCategory === 'all' ? 'border-gray-300 bg-white text-gray-900 shadow-sm' : 'border-transparent text-gray-500 bg-transparent hover:bg-gray-200'"
+                class="px-5 py-2 rounded-full border text-sm font-semibold whitespace-nowrap active:scale-95 transition-all duration-200">
+            Semua Menu
+        </button>
+        @foreach($categories as $cat)
+        <button type="button" @click="activeCategory = '{{ $cat->id }}'"
+                :class="activeCategory === '{{ $cat->id }}' ? 'border-gray-300 bg-white text-gray-900 shadow-sm' : 'border-transparent text-gray-500 bg-transparent hover:bg-gray-200'"
+                class="px-5 py-2 rounded-full border text-sm font-medium whitespace-nowrap active:scale-95 transition-all duration-200">
+            {{ $cat->category_name }}
+        </button>
+        @endforeach
+    </div>
+
+    <!-- Product Grid (2 Kolom Mobile, 4 Kolom Desktop) -->
+    <div class="px-4 py-2 grid grid-cols-2 gap-4 md:grid-cols-4 lg:grid-cols-5">
+        @foreach($products as $product)
+        <!-- Card Produk -->
+        <div x-show="activeCategory === 'all' || activeCategory === '{{ $product->category_id }}'"
+             x-transition:enter="transition ease-out duration-200"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             class="bg-white rounded-3xl p-3 border border-gray-100 shadow-sm flex flex-col active:scale-[0.98] transition cursor-pointer group hover:shadow-md" 
+             @click="modalOpen = true; activeProduct = '{{ $product->id }}'">
+            
+            <div class="aspect-square bg-gray-50 rounded-2xl mb-3 flex items-center justify-center text-gray-300 overflow-hidden relative">
+                @if($product->product_photo)
+                    <img src="{{ asset('storage/'.$product->product_photo) }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" alt="{{ $product->product_name }}" loading="lazy" />
+                @else
+                    <span class="material-symbols-rounded text-[48px] text-gray-300">coffee</span>
+                @endif
             </div>
-            <div class="flex items-center gap-2 mt-2">
-                <span class="inline-flex items-center gap-1.5 text-sm font-medium text-yovel-muted bg-white border border-yovel-border px-3 py-1.5 rounded-lg shadow-sm">
-                    <span class="material-symbols-rounded text-[16px]">table_restaurant</span>
-                    Meja {{ \App\Models\Table::find(session('current_table_id'))?->table_number ?? '-' }}
-                </span>
-            </div>
-        </div>
-
-        <!-- Categories Horizontal Scroll -->
-        <div class="mb-6">
-            <div class="flex overflow-x-auto scrollbar-hide gap-2 pb-2 px-5">
-                <button type="button"
-                        @click="activeCategory = 'all'"
-                        :class="activeCategory === 'all' ? 'bg-primary-700 text-white border-transparent shadow-md' : 'bg-white text-yovel-muted border-yovel-border hover:bg-yovel-bg hover:text-yovel-ink'"
-                        class="px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 border active:scale-95">
-                    Semua
-                </button>
-                @foreach($categories as $cat)
-                    <button type="button"
-                            @click="activeCategory = '{{ $cat->id }}'"
-                            :class="activeCategory === '{{ $cat->id }}' ? 'bg-primary-700 text-white border-transparent shadow-md' : 'bg-white text-yovel-muted border-yovel-border hover:bg-yovel-bg hover:text-yovel-ink'"
-                            class="px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all duration-200 border active:scale-95">
-                        {{ $cat->category_name }}
-                    </button>
-                @endforeach
-            </div>
-        </div>
-
-        <!-- Products Grid -->
-        <div class="px-5">
-            <div class="grid grid-cols-2 gap-3.5">
-                @foreach($products as $product)
-                    <div x-show="activeCategory === 'all' || activeCategory === '{{ $product->category_id }}'"
-                        x-transition:enter="transition ease-out duration-200"
-                        x-transition:enter-start="opacity-0 scale-95"
-                        x-transition:enter-end="opacity-100 scale-100"
-                        @click="activeProduct = {{ $product->id }}; modalOpen = true"
-                        class="bg-white border border-yovel-border rounded-2xl overflow-hidden flex flex-col shadow-sm transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-95 cursor-pointer group">
-
-                        <div class="aspect-square bg-yovel-surface w-full relative overflow-hidden">
-                            @if($product->product_photo)
-                                <img src="{{ asset('storage/'.$product->product_photo) }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out" alt="{{ $product->product_name }}" loading="lazy" />
-                            @else
-                                <div class="w-full h-full flex items-center justify-center">
-                                    <span class="material-symbols-rounded text-[48px] text-yovel-border">coffee</span>
-                                </div>
-                            @endif
-                        </div>
-
-                        <div class="p-3.5 flex flex-col flex-grow justify-between">
-                            <div>
-                                <h3 class="font-semibold text-yovel-ink text-[13px] leading-tight mb-1.5 line-clamp-2">{{ $product->product_name }}</h3>
-                            </div>
-                            <div class="flex items-center justify-between mt-2">
-                                <span class="font-bold text-yovel-ink text-sm tracking-tight">Rp {{ number_format($product->product_price, 0, ',', '.') }}</span>
-                                <button type="button" class="w-8 h-8 rounded-xl bg-primary-700 text-white flex items-center justify-center group-hover:bg-primary-900 transition-all duration-200 active:scale-90 shadow-sm shrink-0">
-                                    <span class="material-symbols-rounded" style="font-size: 18px;">add</span>
-                                </button>
-                            </div>
-                        </div>
+            <div class="flex flex-col flex-grow justify-between">
+                <h3 class="font-bold text-sm leading-tight mb-2 line-clamp-2 text-gray-900">{{ $product->product_name }}</h3>
+                <div class="mt-auto flex justify-between items-center pt-1">
+                    <span class="font-bold text-sm tracking-tight">Rp {{ number_format($product->product_price, 0, ',', '.') }}</span>
+                    <div class="bg-[#37352F] text-white rounded-full w-7 h-7 flex items-center justify-center shrink-0 shadow-sm group-hover:bg-black transition-colors">
+                        <span class="material-symbols-rounded text-[18px]">add</span>
                     </div>
-                @endforeach
+                </div>
             </div>
         </div>
+        @endforeach
+    </div>
 
-        @include('customer.menu.partials.variant-modal')
-
-        <!-- Floating Bottom Cart Bar -->
-        <div x-data="{
+    <!-- Floating Cart Button -->
+    <div x-data="{
                 count: window.customerCartCount ?? {{ app(\App\Services\CartService::class)->getTotalQty() }},
                 subtotal: {{ app(\App\Services\CartService::class)->getSubtotal() }}
-             }"
-             x-on:cart-updated.window="count = $event.detail.total_qty; subtotal = $event.detail.subtotal;"
-             x-show="count > 0"
-             x-cloak
-             x-transition:enter="transition ease-[cubic-bezier(0.16,1,0.3,1)] duration-400"
-             x-transition:enter-start="translate-y-full opacity-0"
-             x-transition:enter-end="translate-y-0 opacity-100"
-             x-transition:leave="transition ease-in duration-200"
-             x-transition:leave-start="translate-y-0 opacity-100"
-             x-transition:leave-end="translate-y-full opacity-0"
-             class="fixed bottom-0 left-0 right-0 p-5 bg-white/90 backdrop-blur-xl border-t border-yovel-border shadow-[0_-10px_40px_-10px_rgba(0,0,0,0.08)] pb-safe z-40 max-w-2xl mx-auto">
-
-            <a href="{{ route('customer.cart.index') }}"
-                class="w-full bg-primary-700 hover:bg-primary-900 text-white py-3.5 rounded-2xl font-medium shadow-lg transition-all duration-200 flex items-center justify-between px-5 active:scale-[0.98]">
-
-                <div class="flex items-center gap-2">
-                    <span class="bg-white/20 px-2.5 py-0.5 rounded-lg text-sm font-bold" x-text="count + ' Item'"></span>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <span class="font-bold" x-text="'Rp ' + subtotal.toLocaleString('id-ID')"></span>
-                    <span class="material-symbols-rounded" style="font-size: 20px;">chevron_right</span>
-                </div>
-            </a>
-        </div>
+         }"
+         x-on:cart-updated.window="count = $event.detail.total_qty; subtotal = $event.detail.subtotal;"
+         x-show="count > 0"
+         x-cloak
+         x-transition:enter="transition ease-[cubic-bezier(0.16,1,0.3,1)] duration-400"
+         x-transition:enter-start="translate-y-full opacity-0"
+         x-transition:enter-end="translate-y-0 opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="translate-y-0 opacity-100"
+         x-transition:leave-end="translate-y-full opacity-0"
+         class="fixed bottom-6 inset-x-4 z-40 max-w-2xl mx-auto">
+         <a href="{{ route('customer.cart.index') }}" class="w-full bg-[#37352F] hover:bg-black text-white rounded-2xl py-4 font-semibold shadow-xl active:scale-[0.98] transition-all flex justify-between px-5 items-center">
+             <span class="bg-white/20 px-3 py-1 rounded-lg text-sm" x-text="count + ' Item'"></span>
+             <span>Lihat Keranjang</span>
+             <span x-text="'Rp ' + subtotal.toLocaleString('id-ID')"></span>
+         </a>
     </div>
+
+    @include('customer.menu.partials.variant-modal')
+
+</div>
 </body>
 </html>
