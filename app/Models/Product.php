@@ -21,8 +21,18 @@ class Product extends Model
      */
     protected $fillable = [
         'category_id', 'product_name', 'product_photo', 'product_price',
-        'product_description', 'stock', 'is_active',
+        'product_description', 'stock', 'is_active', 'product_code'
     ];
+
+    protected static function booted() {
+        static::creating(function ($model) {
+            if (empty($model->product_code)) {
+                $latest = static::latest('id')->first();
+                $nextId = $latest ? $latest->id + 1 : 1;
+                $model->product_code = 'PRD-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+            }
+        });
+    }
 
     /**
      * Konversi boolean di ranah aplikasi meskipun tersimpan dalam format TinyInt database.

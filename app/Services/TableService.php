@@ -18,7 +18,7 @@ class TableService
     {
         $query = Table::query()->latest();
         if ($request->has('search') && $request->search) {
-            $query->where('table_number', 'like', '%'.$request->search.'%');
+            $query->where('table_name', 'like', '%'.$request->search.'%');
         }
 
         return $query;
@@ -52,7 +52,7 @@ class TableService
     {
         return DB::transaction(function () use ($table) {
             if ($table->orders()->exists()) {
-                throw new Exception('Tidak dapat menghapus meja "'.$table->table_number.'" karena masih memiliki riwayat pesanan.');
+                throw new Exception('Tidak dapat menghapus meja "'.$table->table_name.'" karena masih memiliki riwayat pesanan.');
             }
 
             return $table->delete();

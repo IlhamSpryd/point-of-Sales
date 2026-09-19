@@ -1,25 +1,45 @@
 <?php
-
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-/**
- * Model Role digunakan untuk menyimpan hak akses level akun
- * seperti "Administrator", "Kasir", atau "Pimpinan".
- */
 class Role extends Model
 {
-    /**
-     * Kolom pada tabel roles yang diizinkan diisi massal.
-     */
-    protected $fillable = ['name'];
+    use HasFactory, SoftDeletes;
 
-    /**
-     * Relasi (HasMany): Sebuah Role dapat menempel pada banyak akun Pengguna (User).
-     */
-    public function users(): HasMany
+    protected $fillable = [
+        'role_code',
+        'name',
+        'description',
+        'permissions',
+        'is_active',
+    ];
+
+    // Casting agar data JSON otomatis dibaca sebagai array di Laravel
+    protected function casts(): array
+    {
+        return [
+            'permissions' => 'array',
+            'is_active' => 'boolean',
+        ];
+    }
+
+    // Auto-generate Business ID
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (empty($model->role_code)) {
+                $latest = static::latest('id')->first();
+                $nextId = $latest ? $latest->id + 1 : 1;
+                $model->role_code = 'ROL-' . str_pad($nextId, 3, '0', STR_PAD_LEFT);
+            }
+        });
+    }
+
+    // Relasi ke tabel Users
+    public function users()
     {
         return $this->hasMany(User::class);
     }

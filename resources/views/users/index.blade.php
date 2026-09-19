@@ -40,9 +40,10 @@
             <table class="data-table relative">
                 <thead class="sticky top-0 z-10 shadow-sm">
                     <tr class="bg-[#F7F7F5]">
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Nama</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Email</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Peran</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">ID Karyawan</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Karyawan</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kontak</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Peran & Status</th>
                         <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Bergabung Pada</th>
                         <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
                     </tr>
@@ -50,23 +51,33 @@
                 <tbody class="divide-y divide-[#E9E9E7]">
                     @forelse($users as $user)
                         <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
+                            <td class="px-6 py-4 font-medium text-[#37352F] text-sm">{{ $user->employee_id }}</td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-[#F1F1EF] text-[#37352F] flex items-center justify-center font-bold text-xs border border-[#E9E9E7]">
+                                    <div class="w-8 h-8 rounded-full bg-[#F1F1EF] text-[#37352F] flex items-center justify-center font-bold text-xs border border-[#E9E9E7] shrink-0">
                                         {{ strtoupper(substr($user->name, 0, 1)) }}
                                     </div>
-                                    <span class="text-sm font-medium text-[#37352F]">{{ $user->name }}</span>
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-medium text-[#37352F]">{{ $user->name }}</span>
+                                        <span class="text-xs text-[#787774]">{{ $user->email }}</span>
+                                    </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-sm text-[#787774]">{{ $user->email }}</td>
+                            <td class="px-6 py-4 text-sm text-[#37352F]">{{ $user->phone_number ?: '—' }}</td>
                             <td class="px-6 py-4">
-                                @if($user->role)
-                                    <x-badge type="info">{{ $user->role->name }}</x-badge>
-                                @else
-                                    <x-badge type="secondary">Belum Ditentukan</x-badge>
-                                @endif
+                                <div class="flex flex-col items-start gap-1.5">
+                                    @if($user->role)
+                                        <x-badge type="info">{{ $user->role->name }}</x-badge>
+                                    @else
+                                        <x-badge type="secondary">Belum Ditentukan</x-badge>
+                                    @endif
+                                    
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium {{ $user->is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200' }}">
+                                        {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
+                                    </span>
+                                </div>
                             </td>
-                            <td class="px-6 py-4 text-sm text-[#787774]">{{ $user->created_at?->format('M d, Y') ?? '—' }}</td>
+                            <td class="px-6 py-4 text-sm text-[#787774]">{{ $user->join_date ? $user->join_date->format('M d, Y') : ($user->created_at?->format('M d, Y') ?? '—') }}</td>
                             <td class="px-6 py-4 text-right space-x-2">
                                 <a href="{{ route('users.edit', $user->id) }}" class="p-1.5 text-[#9B9A97] hover:text-[#37352F] transition-colors duration-200 inline-block"><span class="material-symbols-rounded">edit</span></a>
                                 @if(auth()->id() !== $user->id)
@@ -80,7 +91,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-[#9B9A97] text-sm">
+                            <td colspan="6" class="px-6 py-12 text-center text-[#9B9A97] text-sm">
                                 <div class="flex flex-col items-center justify-center">
                                     <div class="w-14 h-14 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
                                         <span class="material-symbols-rounded text-[28px] text-[#C4C3C0]">group</span>

@@ -11,7 +11,7 @@
          x-transition:leave="ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="fixed inset-0 bg-black/40 backdrop-blur-sm"
+         class="sheet-overlay"
          @click="modalOpen = false"></div>
 
     <template x-if="modalOpen && activeProduct">
@@ -99,48 +99,46 @@
             x-transition:leave="ease-in duration-200"
             x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
             x-transition:leave-end="opacity-0 translate-y-full sm:translate-y-8 sm:scale-95"
-            class="relative bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-md max-h-[85vh] flex flex-col shadow-2xl border border-[#E9E9E7] overflow-hidden z-10">
+            class="relative sheet-panel sm:rounded-2xl w-full sm:max-w-md max-h-[85vh] flex flex-col shadow-2xl border border-yovel-border overflow-hidden z-10">
 
             {{-- Loading State --}}
             <template x-if="loading">
                 <div class="flex flex-col items-center justify-center py-16 px-6">
-                    <div class="w-8 h-8 border-2 border-[#E9E9E7] border-t-[#37352F] rounded-full animate-spin mb-4"></div>
-                    <p class="text-sm text-[#787774] font-medium">Memuat pilihan varian...</p>
+                    <div class="w-8 h-8 border-2 border-yovel-border border-t-yovel-ink rounded-full animate-spin mb-4"></div>
+                    <p class="text-sm text-yovel-muted font-medium">Memuat pilihan varian...</p>
                 </div>
             </template>
 
             <template x-if="!loading && product">
                 <div class="flex flex-col max-h-[85vh]">
                     {{-- Header --}}
-                    <div class="px-6 pt-6 pb-4 border-b border-[#E9E9E7] shrink-0">
+                    <div class="px-6 pt-6 pb-4 border-b border-yovel-border shrink-0">
                         <div class="flex items-center justify-between">
-                            <h2 class="text-lg font-bold text-[#37352F]" x-text="product.name"></h2>
-                            <button @click="modalOpen = false" class="p-2 rounded-xl bg-[#F1F1EF] text-[#787774] hover:text-[#37352F] hover:bg-[#E3E2E0] transition-all duration-200 active:scale-90">
+                            <h2 class="text-lg font-bold text-yovel-ink" x-text="product.name"></h2>
+                            <button @click="modalOpen = false" class="p-2 rounded-xl bg-yovel-surface text-yovel-muted hover:text-yovel-ink hover:bg-primary-200 transition-all duration-200 active:scale-90">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             </button>
                         </div>
-                        <p class="text-sm text-[#787774] mt-1" x-text="'Rp ' + (product.price || 0).toLocaleString('id-ID')"></p>
+                        <p class="text-sm text-yovel-muted mt-1" x-text="'Rp ' + (product.price || 0).toLocaleString('id-ID')"></p>
                     </div>
 
                     {{-- Body — Modifier Groups --}}
-                    <div class="flex-1 overflow-y-auto px-6 py-4 space-y-5">
+                    <div class="flex-1 overflow-y-auto custom-scrollbar px-6 py-4 space-y-5">
                         <template x-for="group in groups" :key="group.id">
                             <div>
                                 <div class="flex items-center justify-between mb-3">
-                                    <p class="text-xs font-bold uppercase tracking-wider text-[#787774]" x-text="group.name"></p>
-                                    <span class="text-[10px] font-medium text-[#9B9A97] bg-[#F7F7F5] px-2 py-0.5 rounded-md"
+                                    <p class="text-xs font-bold uppercase tracking-wider text-yovel-muted" x-text="group.name"></p>
+                                    <span class="text-[10px] font-medium text-primary-400 bg-yovel-bg px-2 py-0.5 rounded-md"
                                           x-text="group.selection_type === 'single' ? 'Pilih 1' : 'Multi'"></span>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2">
                                     <template x-for="mod in group.modifiers" :key="mod.id">
                                         <button type="button"
                                                 @click="toggleOption(group, mod.id)"
-                                                :class="isSelected(group.id, mod.id)
-                                                    ? 'ring-2 ring-[#37352F] bg-[#F7F7F5] border-transparent text-[#37352F]'
-                                                    : 'border-[#E9E9E7] bg-white text-[#55544E] hover:bg-[#F7F7F5] hover:border-[#C4C3C0]'"
-                                                class="flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all duration-200 active:scale-95 min-h-[60px]">
+                                                class="modifier-box flex-col items-center justify-center text-center min-h-[60px]"
+                                                :class="{ 'selected': isSelected(group.id, mod.id) }">
                                             <span class="text-sm font-medium leading-tight" x-text="mod.name"></span>
-                                            <span x-show="mod.extra_price > 0" x-text="'+Rp ' + mod.extra_price.toLocaleString('id-ID')" class="text-[11px] text-[#9B9A97] mt-0.5 font-medium"></span>
+                                            <span x-show="mod.extra_price > 0" x-text="'+Rp ' + mod.extra_price.toLocaleString('id-ID')" class="text-[11px] text-primary-400 mt-0.5 font-medium"></span>
                                         </button>
                                     </template>
                                 </div>
@@ -149,27 +147,27 @@
 
                         {{-- Notes --}}
                         <div>
-                            <p class="text-xs font-bold uppercase tracking-wider text-[#787774] mb-2">Catatan</p>
+                            <p class="text-xs font-bold uppercase tracking-wider text-yovel-muted mb-2">Catatan</p>
                             <textarea x-model="notes" rows="2" placeholder="Contoh: Kurangi es, tanpa sedotan..."
-                                      class="w-full bg-[#F7F7F5] border border-[#E9E9E7] rounded-xl text-sm text-[#37352F] placeholder:text-[#9B9A97] focus:border-[#37352F] focus:ring-1 focus:ring-[#37352F] focus:bg-white transition-all duration-200 px-4 py-3 resize-none"></textarea>
+                                      class="w-full bg-yovel-bg border border-yovel-border rounded-xl text-sm text-yovel-ink placeholder:text-primary-400 focus:border-yovel-ink focus:ring-1 focus:ring-yovel-ink focus:bg-white transition-all duration-200 px-4 py-3 resize-none"></textarea>
                         </div>
                     </div>
 
                     {{-- Footer --}}
-                    <div class="px-6 py-4 border-t border-[#E9E9E7] bg-white shrink-0">
+                    <div class="px-6 py-4 border-t border-yovel-border bg-white shrink-0 pb-safe">
                         <div class="flex items-center justify-between mb-4">
-                            <span class="text-sm font-semibold text-[#37352F]">Jumlah</span>
+                            <span class="text-sm font-semibold text-yovel-ink">Jumlah</span>
                             <div class="flex items-center gap-3">
-                                <button type="button" @click="qty = Math.max(1, qty - 1)" 
-                                        class="w-9 h-9 rounded-xl border border-[#E9E9E7] bg-white flex items-center justify-center text-[#37352F] font-medium hover:bg-[#F7F7F5] transition-all duration-200 active:scale-90 shadow-sm">−</button>
-                                <span class="w-6 text-center font-bold text-[#37352F]" x-text="qty"></span>
-                                <button type="button" @click="qty++" 
-                                        class="w-9 h-9 rounded-xl border border-[#E9E9E7] bg-white flex items-center justify-center text-[#37352F] font-medium hover:bg-[#F7F7F5] transition-all duration-200 active:scale-90 shadow-sm">+</button>
+                                <button type="button" @click="qty = Math.max(1, qty - 1)"
+                                        class="w-9 h-9 rounded-xl border border-yovel-border bg-white flex items-center justify-center text-yovel-ink font-medium hover:bg-yovel-bg transition-all duration-200 active:scale-90 shadow-sm">−</button>
+                                <span class="w-6 text-center font-bold text-yovel-ink" x-text="qty"></span>
+                                <button type="button" @click="qty++"
+                                        class="w-9 h-9 rounded-xl border border-yovel-border bg-white flex items-center justify-center text-yovel-ink font-medium hover:bg-yovel-bg transition-all duration-200 active:scale-90 shadow-sm">+</button>
                             </div>
                         </div>
 
                         <button type="button" @click="addToCart()" :disabled="submitting"
-                                class="w-full bg-[#37352F] text-white rounded-2xl py-3.5 font-bold text-sm flex items-center justify-center gap-2 hover:bg-black transition-all duration-200 active:scale-[0.98] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
+                                class="w-full bg-primary-700 text-white rounded-2xl py-3.5 font-bold text-sm flex items-center justify-center gap-2 hover:bg-primary-900 transition-all duration-200 active:scale-[0.98] shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
                             <span class="material-symbols-rounded" style="font-size: 18px;" x-show="!submitting">add_shopping_cart</span>
                             <div x-show="submitting" class="spinner"></div>
                             <span x-text="submitting ? 'Menambahkan...' : 'Tambah — Rp ' + totalPrice.toLocaleString('id-ID')"></span>

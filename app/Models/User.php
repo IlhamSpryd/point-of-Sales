@@ -1,61 +1,61 @@
 <?php
-
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-/**
- * Model User merepresentasikan entitas pengguna (Administrator/Kasir/Pimpinan) di dalam aplikasi.
- * Mewarisi kolom autentikasi bawaan tabel users.
- */
 class User extends Authenticatable
 {
-    /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
 
-    /**
-     * Kolom-kolom yang diperbolehkan untuk diisi secara massal (Mass-assignment).
-     */
-    protected $fillable = ['name', 'email', 'password', 'role_id'];
+    protected $fillable = [
+        'employee_id',
+        'name',
+        'email',
+        'phone_number',
+        'password',
+        'pin_code',
+        'join_date',
+        'role_id',
+        'is_active',
+        'last_login_at',
+    ];
 
-    /**
-     * Menjaga kolom-kolom ini tetap rahasia saat objek dipanggil menjadi Array/JSON.
-     */
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = [
+        'password',
+        'pin_code',
+        'remember_token',
+    ];
 
-    /**
-     * Relasi (BelongsTo): Setiap pengguna memiliki satu hak akses atau peran (Role).
-     */
-    public function role(): BelongsTo
-    {
-        return $this->belongsTo(Role::class);
-    }
-
-    /**
-     * Relasi (HasMany): Seorang pengguna (kasir) dapat melayani atau mencatat banyak transaksi (Orders).
-     */
-    public function orders(): HasMany
-    {
-        return $this->hasMany(Order::class);
-    }
-
-    /**
-     * Konversi tipe data otomatis (Type Casting).
-     *
-     * @return array<string, string>
-     */
     protected function casts(): array
     {
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'pin_code' => 'hashed', // Amankan PIN seperti password
+            'join_date' => 'date',
+            'last_login_at' => 'datetime',
+            'is_active' => 'boolean',
         ];
+    }
+
+    // Otomatis buat Employee ID saat user baru ditambahkan
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (empty($model->employee_id)) {
+                $latest = static::latest('id')->first();
+                $nextId = $latest ? $latest->id + 1 : 1;
+                $model->employee_id = 'YVL-EMP-' . date('Y') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+            }
+        });
+    }
+    
+    // Relasi ke Role
+    public function role()
+    {
+        return $this->belongsTo(Role::class);
     }
 }

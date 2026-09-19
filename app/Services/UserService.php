@@ -65,6 +65,9 @@ class UserService
             if (empty($data['password'])) {
                 unset($data['password']);
             }
+            if (empty($data['pin_code'])) {
+                unset($data['pin_code']);
+            }
 
             $user->update($data);
 

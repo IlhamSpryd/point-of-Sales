@@ -33,8 +33,6 @@
             },
 
             get isPayDisabled() {
-                // isPayDisabled mencegah kasir menekan tombol Bayar sebelum data benar-benar valid,
-                // daripada membiarkan klik lalu menampilkan error yang mungkin tidak pernah muncul.
                 if (this.submitting || this.cart.length === 0) return true;
                 if (this.paymentMethod === 'cash' && this.uangDibayar < this.totalAmount) return true;
                 return false;
@@ -79,7 +77,6 @@
                 return this.cart.reduce((sum, item) => sum + (item.harga * item.qty), 0);
             },
 
-            // --- Computed: Tax ---
             get taxAmount() {
                 return this.cartSubtotal * this.taxRate;
             },
@@ -194,7 +191,6 @@
                 }
                 
                 try {
-                    // Build request payload including discount data
                     let payload = {
                         items: this.cart.map(function(item) {   
                             return {
@@ -256,7 +252,6 @@
                         
                         window.snap.pay(responseData.snap_token, {
                                 onSuccess: async (result) => {
-                                    // Sync status pembayaran ke Midtrans (untuk localhost tanpa webhook)
                                     try {
                                         await fetch(`/api/orders/${responseData.order_number}/sync-status`, {
                                             method: 'POST',
@@ -295,7 +290,6 @@
                                     this.submitting = false;
                                 },
                                 onClose: async () => {
-                                    // Sync status pembayaran ke Midtrans (untuk localhost tanpa webhook)
                                     try {
                                         await fetch(`/api/orders/${responseData.order_number}/sync-status`, {
                                             method: 'POST',
@@ -308,12 +302,10 @@
                                     
                                     this.emptyCart();
                                     this.submitting = false;
-                                    // Karena tutup paksa (onClose) bisa berarti belum bayar atau sudah bayar tapi telat callback
                                     this.showSuccessPopup(responseData.order_number, true);
                                 }
                             });
                     } else {
-                        // Transaksi Tunai berhasil
                         this.emptyCart();
                         this.submitting = false;
                         this.showSuccessPopup(responseData.order_number, false);
@@ -342,8 +334,8 @@
                 Swal.fire({
                     width: 420,
                     padding: '2rem 1.5rem',
-                    title: `<div class="text-2xl font-extrabold tracking-tight text-gray-900 dark:text-white">${title}</div>`,
-                    html: `<p class="text-[14px] font-medium text-gray-500 dark:text-gray-400 leading-relaxed mt-3 px-2">${text}</p>`,
+                    title: `<div class="text-2xl font-extrabold tracking-tight text-yovel-ink">${title}</div>`,
+                    html: `<p class="text-[14px] font-medium text-yovel-muted leading-relaxed mt-3 px-2">${text}</p>`,
                     icon: icon,
                     showCancelButton: true,
                     confirmButtonText: 'Cetak Struk',
@@ -352,12 +344,12 @@
                     allowOutsideClick: false,
                     buttonsStyling: false,
                     customClass: {
-                        popup: 'rounded-[24px] border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-2xl',
+                        popup: 'rounded-[24px] border border-yovel-border bg-white shadow-2xl',
                         title: 'p-0',
                         htmlContainer: 'p-0 m-0',
                         actions: 'mt-8 flex gap-3 w-full px-6 box-border justify-center',
-                        confirmButton: 'flex-1 py-3.5 bg-gray-900 dark:bg-zinc-100 text-white dark:text-gray-900 rounded-[14px] font-bold text-[14px] hover:bg-gray-800 dark:hover:bg-white transition-colors shadow-md whitespace-nowrap',
-                        cancelButton: 'flex-1 py-3.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-[14px] font-bold text-[14px] hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors whitespace-nowrap'
+                        confirmButton: 'flex-1 py-3.5 bg-primary-700 text-white rounded-[14px] font-bold text-[14px] hover:bg-primary-900 transition-colors shadow-md whitespace-nowrap',
+                        cancelButton: 'flex-1 py-3.5 bg-yovel-surface text-yovel-muted rounded-[14px] font-bold text-[14px] hover:bg-primary-200 hover:text-yovel-ink transition-colors whitespace-nowrap'
                     }
                 }).then((result) => {
                     if (result.isConfirmed) {

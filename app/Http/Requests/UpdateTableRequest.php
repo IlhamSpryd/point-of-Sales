@@ -14,8 +14,11 @@ class UpdateTableRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'table_number' => ['required', 'string', 'max:10', 'unique:tables,table_number,'.$this->table->id],
-            'status' => ['required', 'in:active,inactive'],
+            'table_name' => ['required', 'string', 'max:100', 'unique:tables,table_name,'.$this->table->id],
+            'capacity' => ['required', 'integer', 'min:1'],
+            'area' => ['required', 'string'],
+            'is_active' => ['boolean'],
+            'operational_status' => ['required', 'in:available,occupied,cleaning,reserved'],
         ];
     }
 }

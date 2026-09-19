@@ -48,6 +48,7 @@ class RoleService
     public function store(array $data): Role
     {
         return DB::transaction(function () use ($data) {
+            $data['permissions'] = $data['permissions'] ?? null;
             return Role::create($data);
         });
     }
@@ -58,6 +59,7 @@ class RoleService
     public function update(Role $role, array $data): Role
     {
         return DB::transaction(function () use ($role, $data) {
+            $data['permissions'] = $data['permissions'] ?? null;
             $role->update($data);
 
             return $role;

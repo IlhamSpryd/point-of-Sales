@@ -21,7 +21,7 @@
                            placeholder="Masukkan nama lengkap" required autocomplete="name" class="{{ $errors->has('name') ? 'input-error' : '' }}" />
                     @error('name')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
-                @enderror
+                    @enderror
                 </div>
 
                 <div>
@@ -30,41 +30,78 @@
                            placeholder="example@domain.com" required autocomplete="username" class="{{ $errors->has('email') ? 'input-error' : '' }}" />
                     @error('email')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
-                @enderror
+                    @enderror
                 </div>
-            </div>
-
-            <!-- Role Row -->
-            <div>
-                <x-form-label for="role_id">Pilih Peran</x-form-label>
-                <div class="relative">
-                    <select id="role_id" name="role_id" 
-                            class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-[#37352F] appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] transition-all duration-200 shadow-sm {{ $errors->has('role_id') ? 'input-error' : '' }}" required>
-                        <option value="">Pilih Peran</option>
-                        @foreach($roles as $role)
-                            <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
-                                {{ $role->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-[#9B9A97]">
-                        <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
-                    </div>
-                </div>
-                @error('role_id')
+                
+                <div>
+                    <x-form-label for="phone_number">Nomor HP / WhatsApp</x-form-label>
+                    <x-form-input type="text" id="phone_number" name="phone_number" value="{{ old('phone_number') }}" 
+                           placeholder="08123456789" class="{{ $errors->has('phone_number') ? 'input-error' : '' }}" />
+                    @error('phone_number')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
-                @enderror
+                    @enderror
+                </div>
+
+                <div>
+                    <x-form-label for="join_date">Tanggal Bergabung</x-form-label>
+                    <x-form-input type="date" id="join_date" name="join_date" value="{{ old('join_date') }}" 
+                           class="{{ $errors->has('join_date') ? 'input-error' : '' }}" />
+                    @error('join_date')
+                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
             </div>
 
-            <!-- Password Row -->
+            <!-- Role & Status Row -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[#E9E9E7]">
                 <div>
-                    <x-form-label for="password">Kata Sandi</x-form-label>
+                    <x-form-label for="role_id">Pilih Peran</x-form-label>
+                    <div class="relative">
+                        <select id="role_id" name="role_id" 
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-[#37352F] appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] transition-all duration-200 shadow-sm {{ $errors->has('role_id') ? 'input-error' : '' }}" required>
+                            <option value="">Pilih Peran</option>
+                            @foreach($roles as $role)
+                                <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
+                                    {{ $role->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-[#9B9A97]">
+                            <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                        </div>
+                    </div>
+                    @error('role_id')
+                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="flex items-center pt-8">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="hidden" name="is_active" value="0">
+                        <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="w-5 h-5 rounded border-[#E9E9E7] text-[#37352F] focus:ring-[#37352F] transition-colors">
+                        <span class="text-sm font-medium text-[#37352F]">Karyawan Aktif</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Security Row -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-[#E9E9E7]">
+                <div>
+                    <x-form-label for="pin_code">PIN Kasir (4-6 Digit)</x-form-label>
+                    <x-form-input type="password" id="pin_code" name="pin_code" 
+                           placeholder="Contoh: 1234" class="{{ $errors->has('pin_code') ? 'input-error' : '' }}" />
+                    @error('pin_code')
+                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <x-form-label for="password">Kata Sandi Web</x-form-label>
                     <x-form-input type="password" id="password" name="password" 
                            placeholder="••••••••" required autocomplete="new-password" class="{{ $errors->has('password') ? 'input-error' : '' }}" />
                     @error('password')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
-                @enderror
+                    @enderror
                 </div>
 
                 <div>

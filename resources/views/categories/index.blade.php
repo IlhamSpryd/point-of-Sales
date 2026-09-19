@@ -53,7 +53,7 @@
                 <tbody class="divide-y divide-[#E9E9E7]">
                     @forelse($categories as $category)
                         <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
-                            <td class="px-6 py-4 font-medium text-[#37352F] text-sm">#{{ $category->id }}</td>
+                            <td class="px-6 py-4 font-medium text-[#37352F] text-sm">{{ $category->category_code }}</td>
                             <td class="px-6 py-4">
                                 <div class="font-medium text-[#37352F] text-sm">{{ $category->category_name }}</div>
                             </td>

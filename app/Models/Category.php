@@ -17,7 +17,17 @@ class Category extends Model
     /**
      * Komponen isian kolom database kategori.
      */
-    protected $fillable = ['category_name'];
+    protected $fillable = ['category_name', 'category_code'];
+
+    protected static function booted() {
+        static::creating(function ($model) {
+            if (empty($model->category_code)) {
+                $latest = static::latest('id')->first();
+                $nextId = $latest ? $latest->id + 1 : 1;
+                $model->category_code = 'CAT-' . str_pad($nextId, 3, '0', STR_PAD_LEFT);
+            }
+        });
+    }
 
     /**
      * Relasi (HasMany): Sebuah kategori lazimnya memayungi banyak daftar produk.

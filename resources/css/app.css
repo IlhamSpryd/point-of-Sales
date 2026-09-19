@@ -26,7 +26,7 @@
     --color-gray-800: #262626;
     --color-gray-900: #171717;
 
-    /* ── Primary Palette — Remapped to Monochrome Ink ── */
+    /* ── Primary Palette — Monochrome Ink (single source of truth) ── */
     --color-primary-50:  #F7F7F5;
     --color-primary-100: #F1F1EF;
     --color-primary-200: #E3E2E0;
@@ -45,6 +45,11 @@
     --color-yovel-muted: #787774;
     --color-yovel-border: #E9E9E7;
     --color-yovel-surface: #F1F1EF;
+
+    /* ── Radius Scale — consistent premium rounding ── */
+    --radius-card: 1rem;      /* rounded-2xl equivalent, used by .card-surface */
+    --radius-sheet: 1.75rem;  /* bottom-sheet top corners */
+    --radius-pill: 9999px;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -56,7 +61,6 @@ body {
     color: var(--color-yovel-ink);
 }
 
-/* Hide spinner in number fields */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
     -webkit-appearance: none;
@@ -68,7 +72,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 /* ═══════════════════════════════════════════════════════
-   MOTION TOKENS — CSS Custom Properties
+   MOTION TOKENS
    ═══════════════════════════════════════════════════════ */
 :root {
     --dur-micro: 120ms;
@@ -84,7 +88,6 @@ input[type="number"]::-webkit-outer-spin-button {
         --dur-fast: 0ms;
         --dur-medium: 0ms;
     }
-
     * {
         transition-duration: 0ms !important;
         animation-duration: 0ms !important;
@@ -92,14 +95,25 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 /* ═══════════════════════════════════════════════════════
+   SAFE-AREA HANDLING — WAJIB untuk Self-Order & Kasir mobile
+   Mencegah cart-bar/bottom-sheet ketiban home-indicator iOS
+   atau gesture bar Android.
+   ═══════════════════════════════════════════════════════ */
+.pb-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1.25rem);
+}
+
+.pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* ═══════════════════════════════════════════════════════
    REUSABLE SURFACE CLASSES
    ═══════════════════════════════════════════════════════ */
-
-/* Card Surface — the universal container */
 .card-surface {
     background-color: #ffffff;
     border: 1px solid var(--color-yovel-border);
-    border-radius: 1rem; /* rounded-2xl */
+    border-radius: var(--radius-card);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     transition:
         box-shadow var(--dur-fast) var(--ease-ui),
@@ -110,7 +124,6 @@ input[type="number"]::-webkit-outer-spin-button {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
-/* Data Table — clean, readable tables */
 .data-table {
     width: 100%;
     border-collapse: separate;
@@ -151,7 +164,28 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 /* ═══════════════════════════════════════════════════════
-   MODIFIER BOX — button-box for radio/checkbox selections
+   BOTTOM SHEET — satu sumber kebenaran untuk SEMUA modal
+   mobile (Variant Modal, Cart Modal, Self-Order legacy).
+   Pakai: <div class="sheet-overlay" x-show="open"> + <div class="sheet-panel">
+   ═══════════════════════════════════════════════════════ */
+.sheet-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgb(55 53 47 / 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 50;
+}
+
+.sheet-panel {
+    background-color: var(--color-yovel-bg);
+    border-top-left-radius: var(--radius-sheet);
+    border-top-right-radius: var(--radius-sheet);
+    box-shadow: 0 -12px 40px -10px rgba(0, 0, 0, 0.12);
+    border-top: 1px solid var(--color-yovel-border);
+}
+
+/* ═══════════════════════════════════════════════════════
+   MODIFIER BOX — button-box untuk radio/checkbox selections
    ═══════════════════════════════════════════════════════ */
 .modifier-box {
     display: flex;
@@ -159,6 +193,7 @@ input[type="number"]::-webkit-outer-spin-button {
     justify-content: space-between;
     gap: 0.75rem;
     padding: 0.75rem 1rem;
+    min-height: 52px; /* touch target */
     border-radius: 0.75rem;
     border: 1.5px solid var(--color-yovel-border);
     background-color: #ffffff;
@@ -166,12 +201,17 @@ input[type="number"]::-webkit-outer-spin-button {
     transition:
         border-color var(--dur-fast) var(--ease-ui),
         background-color var(--dur-fast) var(--ease-ui),
-        box-shadow var(--dur-fast) var(--ease-ui);
+        box-shadow var(--dur-fast) var(--ease-ui),
+        transform var(--dur-micro) var(--ease-ui);
 }
 
 .modifier-box:hover {
     background-color: var(--color-yovel-bg);
     border-color: #C4C3C0;
+}
+
+.modifier-box:active {
+    transform: scale(0.97);
 }
 
 .modifier-box.selected {
@@ -209,7 +249,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 /* ═══════════════════════════════════════════════════════
-   TOGGLE PASSWORD — cross-fade icon container
+   TOGGLE PASSWORD
    ═══════════════════════════════════════════════════════ */
 .eye-icon-wrapper {
     position: relative;
@@ -241,7 +281,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 /* ═══════════════════════════════════════════════════════
-   SUBMIT BUTTON — hover/active with motion tokens
+   SUBMIT BUTTON
    ═══════════════════════════════════════════════════════ */
 .btn-submit {
     transition:
@@ -252,7 +292,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .btn-submit:hover {
-    background-color: #171717;
+    background-color: var(--color-primary-900);
 }
 
 .btn-submit:active {
@@ -265,7 +305,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .btn-submit.is-loading:hover {
-    background-color: #000;
+    background-color: var(--color-primary-950);
 }
 
 .btn-submit.is-loading:active {
@@ -275,12 +315,8 @@ input[type="number"]::-webkit-outer-spin-button {
 /* ═══════════════════════════════════════════════════════
    KEYFRAME ANIMATIONS
    ═══════════════════════════════════════════════════════ */
-
-/* Spinner */
 @keyframes spin-linear {
-    to {
-        transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
 }
 
 .spinner {
@@ -293,30 +329,21 @@ input[type="number"]::-webkit-outer-spin-button {
     flex-shrink: 0;
 }
 
-/* Slide Up Fade — entrance animation for cards, modals */
 @keyframes slideUpFade {
-    from {
-        opacity: 0;
-        transform: translateY(16px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
 .animate-slide-up-fade {
     animation: slideUpFade var(--dur-medium) var(--ease-out) both;
 }
 
-/* Stagger delay utilities */
 .delay-1 { animation-delay: 50ms; }
 .delay-2 { animation-delay: 100ms; }
 .delay-3 { animation-delay: 150ms; }
 .delay-4 { animation-delay: 200ms; }
 .delay-5 { animation-delay: 250ms; }
 
-/* Fade In */
 @keyframes fadeIn {
     from { opacity: 0; }
     to   { opacity: 1; }
@@ -326,22 +353,13 @@ input[type="number"]::-webkit-outer-spin-button {
     animation: fadeIn var(--dur-fast) var(--ease-out) both;
 }
 
-/* Slide Down Fade — for alerts/toasts */
 @keyframes slide-down-fade {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
 }
 
-/* Shake — subtle micro error animation */
 @keyframes shake-subtle {
-    0%,
-    100% { transform: translateX(0); }
+    0%, 100% { transform: translateX(0); }
     18%  { transform: translateX(-5px); }
     36%  { transform: translateX(4px); }
     54%  { transform: translateX(-3px); }
@@ -377,28 +395,24 @@ html.is-animating .transition-fade {
     will-change: transform, opacity;
 }
 
-/* ═══════════════════════════════════════════════════════
-   SOCIAL BUTTON — DISABLED STYLING
-   ═══════════════════════════════════════════════════════ */
 .btn-social {
     transition: background-color var(--dur-fast) var(--ease-ui);
     cursor: not-allowed;
     pointer-events: none;
 }
 
-/* ═══════════════════════════════════════════════════════
-   OPTION FIX — readable dropdown text
-   ═══════════════════════════════════════════════════════ */
 option {
     background-color: #ffffff;
     color: #171717;
 }
 
 /* ═══════════════════════════════════════════════════════
-   CUSTOM SCROLLBAR — thin, minimal
+   CUSTOM SCROLLBAR — satu utility dipakai di semua file
+   (menggantikan definisi duplikat di transaction/create.blade.php)
    ═══════════════════════════════════════════════════════ */
 .custom-scrollbar::-webkit-scrollbar {
     width: 4px;
+    height: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -406,10 +420,24 @@ option {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #d4d4d4;
-    border-radius: 9999px;
+    background-color: var(--color-primary-300);
+    border-radius: var(--radius-pill);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: #a3a3a3;
+    background-color: var(--color-primary-400);
+}
+
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary-300) transparent;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }

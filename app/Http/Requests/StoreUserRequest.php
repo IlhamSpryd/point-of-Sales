@@ -22,6 +22,10 @@ class StoreUserRequest extends FormRequest
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', Password::defaults()],
             'role_id' => ['required', 'exists:roles,id'],
+            'phone_number' => ['nullable', 'string', 'max:20'],
+            'pin_code' => ['nullable', 'string', 'digits_between:4,6', 'unique:users'],
+            'join_date' => ['nullable', 'date'],
+            'is_active' => ['boolean'],
         ];
     }
 }
