@@ -1,3 +1,7 @@
+@php
+    // Izin kelola katalog (tambah/ubah/hapus). Nama role harus sama persis dengan tabel roles.
+    $canManage = in_array(auth()->user()?->role?->name, ['Owner', 'Manager', 'Inventory'], true);
+@endphp
 <x-app-layout>
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
@@ -18,7 +22,7 @@
                     </x-button>
                 </a>
                 
-                @if(auth()->user()->role?->name === 'Administrator')
+                @if($canManage)
                     <a href="{{ route('products.create') }}" class="flex-1 sm:flex-none">
                         <x-button variant="primary" type="button" class="w-full h-10">
                             <span class="material-symbols-rounded text-[18px]">add</span> Tambah Produk
@@ -47,7 +51,7 @@
                         <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Harga</th>
                         <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Stok</th>
                         <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Status</th>
-                        @if(auth()->user()->role?->name === 'Administrator')
+                        @if($canManage)
                             <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
                         @endif
                     </tr>
@@ -79,7 +83,7 @@
                                     <x-badge type="secondary">Nonaktif</x-badge>
                                 @endif
                             </td>
-                            @if(auth()->user()->role?->name === 'Administrator')
+                            @if($canManage)
                                 <td class="px-6 py-4 text-right space-x-2">
                                     <a href="{{ route('products.edit', $product->id) }}" class="p-1.5 text-[#9B9A97] hover:text-[#37352F] transition-colors duration-200 inline-block"><span class="material-symbols-rounded">edit</span></a>
                                     <form id="delete-form-{{ $product->id }}" action="{{ route('products.destroy', $product->id) }}" method="POST" class="inline-block">
@@ -92,7 +96,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ auth()->user()->role?->name === 'Administrator' ? 6 : 5 }}" class="px-6 py-12 text-center text-[#9B9A97] text-sm">
+                            <td colspan="{{ $canManage ? 6 : 5 }}" class="px-6 py-12 text-center text-[#9B9A97] text-sm">
                                 <div class="flex flex-col items-center justify-center">
                                     <div class="w-14 h-14 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
                                         <span class="material-symbols-rounded text-[28px] text-[#C4C3C0]">inventory_2</span>

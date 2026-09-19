@@ -39,7 +39,7 @@ Route::middleware(['throttle:60,1', 'table.session'])
 
 use App\Http\Controllers\Customer\CheckoutController;
 
-Route::middleware(['throttle:5,1', 'table.session'])  // Hanya 5 request per menit untuk checkout
+Route::middleware(['throttle:30,1', 'table.session'])  // Diperlonggar menjadi 30 agar tidak cepat kena 429 saat test
     ->prefix('checkout')
     ->name('customer.checkout.')
     ->group(function () {

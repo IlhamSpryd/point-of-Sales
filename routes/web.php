@@ -31,20 +31,24 @@ Route::post('/midtrans/notification', [MidtransNotificationController::class, 'h
 
 Route::middleware(['auth', 'verified'])->group(function () {
 
-    // Core Entity Resources (Administrator only for Create/Edit/Delete)
-    Route::middleware(['role:Administrator'])->group(function () {
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Owner
+    Route::middleware(['role:Owner'])->group(function () {
         Route::resource('roles', RoleController::class)->except(['show']);
         Route::resource('users', UserController::class)->except(['show']);
-
-        // Category and Product management (create, store, edit, update, destroy)
-        Route::resource('categories', CategoryController::class)->except(['index', 'show']);
-        Route::resource('products', ProductController::class)->except(['index', 'show']);
-        Route::resource('tables', TableController::class)->except(['show']);
     });
 
-    // Katalog (Read-only) / products.index bisa diakses oleh Admin, Kasir, Pimpinan
-    Route::middleware(['role:Administrator,Kasir,Pimpinan'])->group(function () {
+    // Owner, Manager
+    Route::middleware(['role:Owner,Manager'])->group(function () {
+        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::resource('tables', TableController::class)->except(['show']);
+        Route::get('/reports/sales', [ReportController::class, 'index'])->name('reports.sales');
+    });
+
+    // Owner, Manager, Inventory
+    Route::middleware(['role:Owner,Manager,Inventory'])->group(function () {
+        Route::resource('categories', CategoryController::class)->except(['index', 'show']);
+        Route::resource('products', ProductController::class)->except(['index', 'show']);
+        
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
         Route::get('/products', [ProductController::class, 'index'])->name('products.index');
     });
@@ -57,13 +61,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/api/orders/{order_number}/sync-status', [TransactionController::class, 'syncMidtrans'])->name('api.order.sync-status');
     });
 
-    // Laporan Penjualan (Pimpinan)
-    Route::middleware(['role:Pimpinan'])->group(function () {
-        Route::get('/reports/sales', [ReportController::class, 'index'])->name('reports.sales');
-    });
-
-    // Kitchen Display System (Administrator + Kasir -- toko kecil, kasir sering merangkap barista)
-    Route::middleware(['role:Administrator,Kasir'])->group(function () {
+    // Kitchen Display System
+    Route::middleware(['role:Owner,Manager,Kasir,Barista,Waiter'])->group(function () {
         Route::get('/kds', [KdsController::class, 'index'])->name('kds.index');
     });
 

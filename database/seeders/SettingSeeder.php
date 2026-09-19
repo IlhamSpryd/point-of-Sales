@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 
 /**
  * SettingSeeder: Memindahkan nilai default konfigurasi bisnis dari
- * config/pos.php ke dalam tabel settings, supaya Administrator bisa
+ * config/pos.php ke dalam tabel settings, supaya Owner bisa
  * mengubahnya nanti lewat halaman Pengaturan Sistem tanpa perlu akses
  * server atau redeploy kode.
  */

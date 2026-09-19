@@ -36,6 +36,7 @@ class Order extends Model
         'voided_by',
         'void_reason',
         'voided_at',
+        'snap_token',
     ];
 
     /**

@@ -11,8 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
  * Digunakan pada definisi Route Group di web.php untuk menerapkan RBAC.
  *
  * Contoh penggunaan pada route:
- *   Route::middleware('role:Administrator')->group(...)
- *   Route::middleware('role:Administrator,Kasir')->group(...)
+ *   Route::middleware('role:Owner')->group(...)
+ *   Route::middleware('role:Owner,Kasir')->group(...)
  */
 class RoleMiddleware
 {

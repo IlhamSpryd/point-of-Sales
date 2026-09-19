@@ -152,7 +152,7 @@
                         </div>
                         <div>
                             <p class="text-sm font-semibold text-white">Pengguna Admin</p>
-                            <p class="text-xs text-white/50 mt-0.5">Administrator Sistem</p>
+                            <p class="text-xs text-white/50 mt-0.5">Owner / Manager</p>
                         </div>
                     </div>
                 </div>

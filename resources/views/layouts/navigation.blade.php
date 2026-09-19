@@ -1,337 +1,201 @@
-{{-- Mobile Overlay --}}
+{{--
+    SIDEBAR DINAMIS BERBASIS ROLE — Yovel Coffee
+
+    Satu-satunya tempat mengatur "siapa melihat menu apa" adalah array $menu di bawah.
+    Visibilitas menu BUKAN keamanan: keamanan tetap di middleware `role:` pada routes/web.php.
+    Item yang route-nya belum terdaftar tampil nonaktif dengan label "Segera",
+    sehingga sidebar tidak pernah melempar RouteNotFoundException.
+--}}
+@php
+    $roleName = auth()->user()?->role?->name;
+
+    // ENAM ROLE RESMI — satu-satunya nama role yang sah di seluruh UI:
+    // Owner, Manager, Kasir, Waiter, Barista, Inventory.
+    // Matriks ini HARUS sejalan dengan middleware `role:` di routes/web.php.
+    // Visibilitas menu BUKAN keamanan; keamanan tetap di middleware.
+    $menu = [
+        'Operasional' => [
+            ['label' => 'Dashboard',       'icon' => 'space_dashboard',  'route' => 'dashboard',          'active' => 'dashboard',      'roles' => ['Owner', 'Manager']],
+            ['label' => 'Kasir (POS)',     'icon' => 'point_of_sale',    'route' => 'transaction.create', 'active' => 'transaction.*',  'roles' => ['Kasir']],
+            ['label' => 'Shift Kasir',     'icon' => 'lock_clock',       'route' => 'shifts.index',       'active' => 'shifts.*',       'roles' => ['Owner', 'Manager', 'Kasir']],
+            ['label' => 'Dapur (KDS)',     'icon' => 'restaurant_menu',  'route' => 'kds.index',          'active' => 'kds.*',          'roles' => ['Owner', 'Manager', 'Kasir', 'Barista', 'Waiter']],
+            ['label' => 'Riwayat Pesanan', 'icon' => 'receipt_long',     'route' => 'orders.index',       'active' => 'orders.*',       'roles' => ['Owner', 'Manager', 'Kasir', 'Waiter']],
+            ['label' => 'Meja & QR',       'icon' => 'table_restaurant', 'route' => 'tables.index',       'active' => 'tables.*',       'roles' => ['Owner', 'Manager']],
+        ],
+        'Katalog' => [
+            ['label' => 'Produk',          'icon' => 'inventory_2',      'route' => 'products.index',     'active' => 'products.*',     'roles' => ['Owner', 'Manager', 'Inventory']],
+            ['label' => 'Kategori',        'icon' => 'category',         'route' => 'categories.index',   'active' => 'categories.*',   'roles' => ['Owner', 'Manager', 'Inventory']],
+            ['label' => 'Diskon & Promo',  'icon' => 'sell',             'route' => 'discounts.index',    'active' => 'discounts.*',    'roles' => ['Owner', 'Manager']],
+        ],
+        'Laporan' => [
+            ['label' => 'Laporan Penjualan', 'icon' => 'analytics',      'route' => 'reports.sales',      'active' => 'reports.*',      'roles' => ['Owner', 'Manager']],
+        ],
+        'Sistem' => [
+            ['label' => 'Pengguna',        'icon' => 'group',                'route' => 'users.index',         'active' => 'users.*',         'roles' => ['Owner']],
+            ['label' => 'Peran',           'icon' => 'admin_panel_settings', 'route' => 'roles.index',         'active' => 'roles.*',         'roles' => ['Owner']],
+            ['label' => 'Pengaturan',      'icon' => 'tune',                 'route' => 'settings.index',      'active' => 'settings.*',      'roles' => ['Owner']],
+            ['label' => 'Audit Log',       'icon' => 'history',              'route' => 'activity-logs.index', 'active' => 'activity-logs.*', 'roles' => ['Owner', 'Manager']],
+        ],
+    ];
+
+    $visibleMenu = collect($menu)
+        ->map(fn ($items) => array_values(array_filter($items, fn ($i) => in_array($roleName, $i['roles'], true))))
+        ->filter(fn ($items) => count($items) > 0);
+
+    // Logo mengarah ke menu pertama yang benar-benar bisa diakses role ini (bukan selalu /dashboard → 403).
+    $homeUrl = '#';
+    foreach ($visibleMenu as $sectionItems) {
+        foreach ($sectionItems as $candidate) {
+            if (\Illuminate\Support\Facades\Route::has($candidate['route'])) {
+                $homeUrl = route($candidate['route']);
+                break 2;
+            }
+        }
+    }
+@endphp
+
+{{-- Overlay drawer mobile. Menutup drawer cukup lewat overlay ini. --}}
 <div x-show="sidebarMobileOpen" @click="sidebarMobileOpen = false"
      x-transition.opacity.duration.200ms
-     class="fixed inset-0 bg-[#37352F]/40 backdrop-blur-sm z-40 lg:hidden" x-cloak tabindex="-1" aria-hidden="true"></div>
+     class="fixed inset-0 bg-[#37352F]/40 backdrop-blur-sm z-40 lg:hidden" x-cloak aria-hidden="true"></div>
 
-{{-- Mobile Toggle Button --}}
-<button x-show="!sidebarMobileOpen" @click="sidebarMobileOpen = true"
-        aria-controls="main-sidebar"
-        :aria-expanded="sidebarMobileOpen.toString()"
-        aria-label="Open sidebar"
-        class="lg:hidden fixed top-3 left-4 z-40 p-2 bg-white/90 backdrop-blur border border-[#E9E9E7] rounded-xl text-[#787774] shadow-sm hover:text-[#37352F] focus-visible:ring-2 focus-visible:ring-[#37352F] transition-all duration-200">
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+{{-- Tombol buka drawer (mobile). Touch target 44px. --}}
+<button type="button" x-show="!sidebarMobileOpen" @click="sidebarMobileOpen = true"
+        aria-controls="main-sidebar" :aria-expanded="sidebarMobileOpen.toString()" aria-label="Buka menu"
+        class="lg:hidden fixed top-1.5 left-2 z-40 w-11 h-11 flex items-center justify-center bg-white/90 backdrop-blur border border-[#E9E9E7] rounded-xl text-[#787774] shadow-sm hover:text-[#37352F] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#37352F] transition-all duration-200">
+    <span class="material-symbols-rounded text-[22px]">menu</span>
 </button>
 
+{{--
+    `wide` = sidebar tampil lebar (desktop expanded ATAU drawer mobile terbuka).
+    Ini memperbaiki drawer mobile yang ikut "terlipat" bila preferensi desktop tersimpan collapsed.
+    overflow-hidden DIHAPUS dari <aside> agar popover profil tidak terpotong saat sidebar dilipat.
+--}}
 <aside id="main-sidebar"
+       x-data="{ openPopover: false, wide: true }"
+       x-effect="wide = expanded || sidebarMobileOpen"
        :class="[
            sidebarMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
-           expanded ? 'w-64' : 'w-18'
+           wide ? 'w-72 lg:w-64' : 'w-18'
        ]"
-       class="bg-white/80 backdrop-blur-xl border-r border-[#E9E9E7] flex flex-col fixed lg:static h-full z-40 text-[#37352F] transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden select-none"
-       x-data="{ openPopover: false }"
-       @click.outside="sidebarMobileOpen = false">
+       class="fixed lg:relative z-40 h-full flex flex-col bg-white/80 backdrop-blur-xl border-r border-[#E9E9E7] text-[#37352F] select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
 
-    {{-- ─── Logo & Collapse Toggle ─── --}}
-    <div class="h-15 flex items-center shrink-0 px-4 gap-3 border-b border-transparent"
-         :class="expanded ? 'justify-between' : 'justify-center'">
-
-        {{-- Logo (Acts as Expand Toggle when collapsed) --}}
-        <a href="{{ route('dashboard') }}" 
-           @click="if(!expanded) { $event.preventDefault(); expanded = true; }"
-           class="flex items-center min-w-0 group rounded-full" 
-           :class="expanded ? 'justify-start' : 'justify-center w-full'"
-           :title="!expanded ? 'Expand sidebar' : ''">
-            
-            <div class="font-bold tracking-tight whitespace-nowrap flex items-center transition-all duration-200 text-xl" :class="expanded ? 'w-auto' : 'justify-center w-full'">
-                
-                {{-- Gemini-Style Wrapper --}}
-                <div class="flex items-center justify-center shrink-0 p-2 rounded-full hover:bg-[#F7F7F5] transition-colors relative" :class="expanded ? 'mr-3' : ''">
-                    
-                    {{-- 1. Sparkle Logo (Visible normally, hidden on hover ONLY when collapsed) --}}
-                    <svg :class="!expanded ? 'block group-hover:hidden' : 'block'" width="18" height="18" viewBox="0 0 16 16" fill="currentColor" class="text-[#37352F] transition-transform duration-600 ease-in-out group-hover:rotate-180">
-                        <path d="M8 0a1 1 0 0 1 1 1v5.268l4.562-2.634a1 1 0 1 1 1 1.732L10 8l4.562 2.634a1 1 0 1 1-1 1.732L9 9.732V15a1 1 0 1 1-2 0V9.732l-4.562 2.634a1 1 0 1 1-1-1.732L6 8 1.438 5.366a1 1 0 0 1 1-1.732L7 6.268V1a1 1 0 0 1 1-1z"/>
-                    </svg>
-
-                    {{-- 2. Expand Sidebar Icon (Hidden normally, visible on hover ONLY when collapsed) --}}
-                    <svg :class="!expanded ? 'hidden group-hover:block' : 'hidden'" width="18" height="18" viewBox="0 0 24 24" fill="none" class="text-[#787774] transition-transform duration-300" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
-                        <path d="M9 3v18"></path>
-                        <path d="m14 9 3 3-3 3"></path>
-                    </svg>
-
-                </div>
-                
-                <span :class="expanded ? 'opacity-100 w-auto inline' : 'opacity-0 w-0 hidden'" class="transition-all duration-200 overflow-hidden font-brand">
-                    <span class="font-bold">Yovel</span><span class="font-normal text-[#787774] ml-0.5">Coffee</span>
-                </span>
-            </div>
+    {{-- Logo + tombol lipat --}}
+    <div class="h-15 flex items-center shrink-0 px-4 gap-3" :class="wide ? 'justify-between' : 'justify-center'">
+        <a href="{{ $homeUrl }}"
+           @click="if (!wide) { $event.preventDefault(); expanded = true; }"
+           :title="!wide ? 'Buka sidebar' : ''"
+           class="group flex items-center min-w-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
+            <span class="flex items-center justify-center shrink-0 w-10 h-10 rounded-full group-hover:bg-[#F7F7F5] transition-colors">
+                <svg :class="!wide ? 'group-hover:hidden' : ''" width="18" height="18" viewBox="0 0 16 16" fill="currentColor" class="text-[#37352F] transition-transform duration-500 group-hover:rotate-180" aria-hidden="true">
+                    <path d="M8 0a1 1 0 0 1 1 1v5.268l4.562-2.634a1 1 0 1 1 1 1.732L10 8l4.562 2.634a1 1 0 1 1-1 1.732L9 9.732V15a1 1 0 1 1-2 0V9.732l-4.562 2.634a1 1 0 1 1-1-1.732L6 8 1.438 5.366a1 1 0 0 1 1-1.732L7 6.268V1a1 1 0 0 1 1-1z"/>
+                </svg>
+                <svg :class="!wide ? 'hidden group-hover:block' : 'hidden'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-[#787774]" aria-hidden="true">
+                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect><path d="M9 3v18"></path><path d="m14 9 3 3-3 3"></path>
+                </svg>
+            </span>
+            <span :class="wide ? 'opacity-100 ml-2' : 'opacity-0 w-0 hidden'" class="font-brand text-xl whitespace-nowrap overflow-hidden transition-all duration-200">
+                <span class="font-bold">Yovel</span><span class="font-normal text-[#787774] ml-0.5">Coffee</span>
+            </span>
         </a>
 
-        {{-- Collapse Toggle (Desktop Only) --}}
-        <button @click="expanded = !expanded"
-                x-show="expanded"
-                x-cloak
-                class="hidden lg:flex p-1.5 rounded-lg text-[#9B9A97] hover:text-[#37352F] hover:bg-[#F7F7F5] transition-all duration-200"
-                title="Collapse sidebar">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+        {{-- Lipat sidebar (desktop) --}}
+        <button type="button" @click="expanded = false" x-show="expanded" x-cloak title="Lipat sidebar" aria-label="Lipat sidebar"
+                class="hidden lg:flex w-9 h-9 items-center justify-center rounded-lg text-[#9B9A97] hover:text-[#37352F] hover:bg-[#F7F7F5] active:scale-95 transition-all duration-200">
+            <span class="material-symbols-rounded text-[20px]">left_panel_close</span>
+        </button>
+        {{-- Tutup drawer (mobile) --}}
+        <button type="button" @click="sidebarMobileOpen = false" x-show="sidebarMobileOpen" x-cloak aria-label="Tutup menu"
+                class="lg:hidden w-11 h-11 flex items-center justify-center rounded-xl text-[#787774] hover:bg-[#F7F7F5] active:scale-95 transition-all duration-200">
+            <span class="material-symbols-rounded text-[22px]">close</span>
         </button>
     </div>
 
-    {{-- ─── Navigation ─── --}}
-    <nav class="flex-1 py-3 overflow-y-auto overflow-x-hidden scrollbar-none"
-         :class="expanded ? 'px-3' : 'px-2'">
+    {{-- Navigasi --}}
+    <nav class="flex-1 py-3 overflow-y-auto overflow-x-hidden scrollbar-hide" :class="wide ? 'px-3' : 'px-2'" aria-label="Navigasi utama">
+        @foreach ($visibleMenu as $section => $items)
+            <div class="{{ $loop->first ? '' : 'mt-5' }}">
+                <p x-show="wide" class="px-3 pb-1.5 text-[10px] font-bold text-[#9B9A97] uppercase tracking-[0.08em] whitespace-nowrap">{{ $section }}</p>
+                @unless ($loop->first)
+                    <div x-show="!wide" x-cloak class="mx-3 mb-2 border-t border-[#E9E9E7]"></div>
+                @endunless
 
-        <ul class="space-y-0.5">
-            {{-- Section: Menu --}}
-            <li :class="expanded ? 'opacity-100 h-auto mt-1 mb-1' : 'opacity-0 h-0 m-0 overflow-hidden'"
-                class="px-3 pb-1.5 text-[10px] font-bold text-[#9B9A97] uppercase tracking-[0.08em] transition-all duration-200">
-                Menu
-            </li>
-
-            {{-- Dashboard --}}
-            @if(auth()->check() && auth()->user()->role?->name === 'Administrator')
-            <li>
-                <a href="{{ route('dashboard') }}"
-                   class="group flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 relative overflow-hidden whitespace-nowrap
-                          {{ request()->routeIs('dashboard')
-                              ? 'bg-[#F1F1EF] text-[#37352F]'
-                              : 'text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5]' }}"
-                   :class="expanded ? 'px-3 py-2.5' : 'px-0 py-2.5 justify-center'"
-                   title="Dashboard">
-                    @if(request()->routeIs('dashboard'))
-                        <span class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-[#37352F] rounded-r-full" :class="expanded ? 'opacity-100' : 'opacity-0'"></span>
-                    @endif
-                    <span class="material-symbols-rounded text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''">space_dashboard</span>
-                    <span :class="expanded ? 'opacity-100 w-auto ml-3' : 'opacity-0 w-0 ml-0'"
-                          class="transition-all duration-200 overflow-hidden whitespace-nowrap">Dashboard</span>
-                </a>
-            </li>
-            @endif
-
-            {{-- Manajemen Meja (Hanya Administrator) --}}
-            @if(auth()->check() && auth()->user()->role?->name === 'Administrator')
-            <li>
-                <a href="{{ route('tables.index') }}"
-                   class="group flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 relative overflow-hidden whitespace-nowrap
-                          {{ request()->routeIs('tables.*')
-                              ? 'bg-[#F1F1EF] text-[#37352F]'
-                              : 'text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5]' }}"
-                   :class="expanded ? 'px-3 py-2.5' : 'px-0 py-2.5 justify-center'"
-                   title="Manajemen Meja">
-                    <span class="material-symbols-rounded text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''">table_restaurant</span>
-                    <span :class="expanded ? 'opacity-100 w-auto ml-3' : 'opacity-0 w-0 ml-0'" class="transition-all duration-200 overflow-hidden whitespace-nowrap">Meja</span>
-                </a>
-            </li>
-            @endif
-
-            {{-- Kitchen (KDS) --}}
-            @if(auth()->check() && in_array(auth()->user()->role?->name, ['Administrator', 'Kasir']))
-            <li>
-                <a href="{{ route('kds.index') }}"
-                   class="group flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 relative overflow-hidden whitespace-nowrap
-                          {{ request()->routeIs('kds.*')
-                              ? 'bg-[#F1F1EF] text-[#37352F]'
-                              : 'text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5]' }}"
-                   :class="expanded ? 'px-3 py-2.5' : 'px-0 py-2.5 justify-center'"
-                   title="Dapur (KDS)">
-                    @if(request()->routeIs('kds.*'))
-                        <span class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-[#37352F] rounded-r-full" :class="expanded ? 'opacity-100' : 'opacity-0'"></span>
-                    @endif
-                    <span class="material-symbols-rounded text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''">restaurant_menu</span>
-                    <span :class="expanded ? 'opacity-100 w-auto ml-3' : 'opacity-0 w-0 ml-0'"
-                          class="transition-all duration-200 overflow-hidden whitespace-nowrap">Dapur</span>
-                </a>
-            </li>
-            @endif
-
-            {{-- Transaksi (Hanya Kasir) --}}
-            @if(auth()->check() && auth()->user()->role?->name === 'Kasir')
-            <li>
-                <a href="{{ route('transaction.create') }}"
-                   class="group flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 relative overflow-hidden whitespace-nowrap
-                          {{ request()->routeIs('transaction.*')
-                              ? 'bg-[#F1F1EF] text-[#37352F]'
-                              : 'text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5]' }}"
-                   :class="expanded ? 'px-3 py-2.5' : 'px-0 py-2.5 justify-center'"
-                   title="Order">
-                    @if(request()->routeIs('transaction.*'))
-                        <span class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-[#37352F] rounded-r-full" :class="expanded ? 'opacity-100' : 'opacity-0'"></span>
-                    @endif
-                    <span class="material-symbols-rounded text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''">point_of_sale</span>
-                    <span :class="expanded ? 'opacity-100 w-auto ml-3' : 'opacity-0 w-0 ml-0'"
-                          class="transition-all duration-200 overflow-hidden whitespace-nowrap">Orders</span>
-                </a>
-            </li>
-            @endif
-
-            {{-- Laporan Penjualan (Hanya Pimpinan) --}}
-            @if(auth()->check() && auth()->user()->role?->name === 'Pimpinan')
-            <li>
-                <a href="{{ route('reports.sales') }}"
-                   class="group flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 relative overflow-hidden whitespace-nowrap
-                          {{ request()->routeIs('reports.*')
-                              ? 'bg-[#F1F1EF] text-[#37352F]'
-                              : 'text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5]' }}"
-                   :class="expanded ? 'px-3 py-2.5' : 'px-0 py-2.5 justify-center'"
-                   title="Laporan Penjualan">
-                    @if(request()->routeIs('reports.*'))
-                        <span class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-[#37352F] rounded-r-full" :class="expanded ? 'opacity-100' : 'opacity-0'"></span>
-                    @endif
-                    <span class="material-symbols-rounded text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''">analytics</span>
-                    <span :class="expanded ? 'opacity-100 w-auto ml-3' : 'opacity-0 w-0 ml-0'"
-                          class="transition-all duration-200 overflow-hidden whitespace-nowrap">Laporan</span>
-                </a>
-            </li>
-            @endif
-
-            {{-- Catalog (Collapsible Group) - For Admin, Kasir, Pimpinan --}}
-            @if(auth()->check() && in_array(auth()->user()->role?->name, ['Administrator', 'Kasir', 'Pimpinan']))
-            <li x-data="{ subOpen: {{ request()->routeIs('products.*') || request()->routeIs('categories.*') ? 'true' : 'false' }} }">
-                <button @click="subOpen = !subOpen; if(!expanded) expanded = true;"
-                        class="group w-full flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 overflow-hidden whitespace-nowrap
-                               {{ request()->routeIs('products.*') || request()->routeIs('categories.*')
-                                   ? 'text-[#37352F]'
-                                   : 'text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5]' }}"
-                        :class="expanded ? 'px-3 py-2.5 justify-between' : 'px-0 py-2.5 justify-center'"
-                        title="Catalog">
-                    <div class="flex items-center">
-                        <span class="material-symbols-rounded text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''">inventory_2</span>
-                        <span :class="expanded ? 'opacity-100 w-auto ml-3' : 'opacity-0 w-0 ml-0'"
-                              class="transition-all duration-200 overflow-hidden whitespace-nowrap">Katalog</span>
-                    </div>
-                    <svg :class="[expanded ? 'opacity-100 w-3.5 ml-2' : 'opacity-0 w-0 ml-0', subOpen ? 'rotate-180' : '']"
-                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                         class="shrink-0 transition-all duration-200 text-[#9B9A97]"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-                <ul x-show="subOpen && expanded" x-collapse x-cloak
-                    class="mt-0.5 ml-6.5 pl-3 border-l border-[#E9E9E7] space-y-0.5 whitespace-nowrap">
-                    <li>
-                        <a href="{{ route('categories.index') }}"
-                           class="block px-3 py-1.75 text-[13px] rounded-lg transition-all duration-200
-                                  {{ request()->routeIs('categories.*')
-                                      ? 'text-[#37352F] bg-[#F1F1EF] font-medium'
-                                      : 'text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5]' }}">
-                            Kategori
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('products.index') }}"
-                           class="block px-3 py-1.75 text-[13px] rounded-lg transition-all duration-200
-                                  {{ request()->routeIs('products.*')
-                                      ? 'text-[#37352F] bg-[#F1F1EF] font-medium'
-                                      : 'text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5]' }}">
-                            Produk
-                        </a>
-                    </li>
+                <ul class="space-y-0.5">
+                    @foreach ($items as $item)
+                        @php
+                            $routeExists = \Illuminate\Support\Facades\Route::has($item['route']);
+                            $isActive = $routeExists && request()->routeIs($item['active']);
+                            $rowBase = 'group relative flex items-center rounded-xl text-[13px] font-medium whitespace-nowrap min-h-11 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#37352F]';
+                        @endphp
+                        <li>
+                            @if ($routeExists)
+                                <a href="{{ route($item['route']) }}"
+                                   @if ($isActive) aria-current="page" @endif
+                                   title="{{ $item['label'] }}"
+                                   :class="wide ? 'px-3' : 'justify-center px-0'"
+                                   class="{{ $rowBase }} {{ $isActive ? 'bg-[#F1F1EF] text-[#37352F]' : 'text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5] active:scale-[0.98]' }}">
+                                    @if ($isActive)
+                                        <span class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-[#37352F] rounded-r-full"></span>
+                                    @endif
+                                    <span class="material-symbols-rounded text-[20px] shrink-0 w-5 text-center">{{ $item['icon'] }}</span>
+                                    <span :class="wide ? 'opacity-100 ml-3' : 'opacity-0 w-0 ml-0'" class="overflow-hidden transition-all duration-200">{{ $item['label'] }}</span>
+                                </a>
+                            @else
+                                <div aria-disabled="true" title="{{ $item['label'] }} — segera hadir"
+                                     :class="wide ? 'px-3' : 'justify-center px-0'"
+                                     class="{{ $rowBase }} text-[#C4C3C0] cursor-not-allowed">
+                                    <span class="material-symbols-rounded text-[20px] shrink-0 w-5 text-center">{{ $item['icon'] }}</span>
+                                    <span :class="wide ? 'opacity-100 ml-3' : 'opacity-0 w-0 ml-0'" class="overflow-hidden transition-all duration-200">{{ $item['label'] }}</span>
+                                    <span x-show="wide" class="ml-auto text-[9px] font-bold uppercase tracking-wider text-[#9B9A97] bg-[#F1F1EF] border border-[#E9E9E7] rounded-md px-1.5 py-0.5">Segera</span>
+                                </div>
+                            @endif
+                        </li>
+                    @endforeach
                 </ul>
-            </li>
-            @endif
-
-            {{-- Access (Collapsible Group) - Only for Administrator --}}
-            @if(auth()->check() && auth()->user()->role?->name === 'Administrator')
-            <li x-data="{ subOpen: {{ request()->routeIs('users.*') || request()->routeIs('roles.*') ? 'true' : 'false' }} }">
-                <button @click="subOpen = !subOpen; if(!expanded) expanded = true;"
-                        class="group w-full flex items-center rounded-xl text-[13px] font-medium transition-all duration-200 overflow-hidden whitespace-nowrap
-                               {{ request()->routeIs('users.*') || request()->routeIs('roles.*')
-                                   ? 'text-[#37352F]'
-                                   : 'text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5]' }}"
-                        :class="expanded ? 'px-3 py-2.5 justify-between' : 'px-0 py-2.5 justify-center'"
-                        title="Access Control">
-                    <div class="flex items-center">
-                        <span class="material-symbols-rounded text-[18px] shrink-0" :class="expanded ? 'w-5 text-center' : ''">admin_panel_settings</span>
-                        <span :class="expanded ? 'opacity-100 w-auto ml-3' : 'opacity-0 w-0 ml-0'"
-                              class="transition-all duration-200 overflow-hidden whitespace-nowrap">Akses</span>
-                    </div>
-                    <svg :class="[expanded ? 'opacity-100 w-3.5 ml-2' : 'opacity-0 w-0 ml-0', subOpen ? 'rotate-180' : '']"
-                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                         class="shrink-0 transition-all duration-200 text-[#9B9A97]"><polyline points="6 9 12 15 18 9"/></svg>
-                </button>
-                <ul x-show="subOpen && expanded" x-collapse x-cloak
-                    class="mt-0.5 ml-6.5 pl-3 border-l border-[#E9E9E7] space-y-0.5 whitespace-nowrap">
-                    <li>
-                        <a href="{{ route('roles.index') }}"
-                           class="block px-3 py-1.75 text-[13px] rounded-lg transition-all duration-200
-                                  {{ request()->routeIs('roles.*')
-                                      ? 'text-[#37352F] bg-[#F1F1EF] font-medium'
-                                      : 'text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5]' }}">
-                            Peran
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ route('users.index') }}"
-                           class="block px-3 py-1.75 text-[13px] rounded-lg transition-all duration-200
-                                  {{ request()->routeIs('users.*')
-                                      ? 'text-[#37352F] bg-[#F1F1EF] font-medium'
-                                      : 'text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5]' }}">
-                            Pengguna
-                        </a>
-                    </li>
-                </ul>
-            </li>
-            @endif
-        </ul>
+            </div>
+        @endforeach
     </nav>
 
-    {{-- ─── Bottom Profile + Popover ─── --}}
-    <div class="shrink-0 mt-auto relative" :class="expanded ? 'p-3' : 'p-2'">
-
-        {{-- User Profile Trigger --}}
-        <button @click="openPopover = !openPopover"
-                class="w-full flex items-center rounded-xl transition-all duration-200 group relative overflow-hidden whitespace-nowrap"
-                :class="[
-                    expanded ? 'p-2.5 hover:bg-[#F7F7F5]' : 'p-2 justify-center hover:bg-[#F7F7F5]',
-                    openPopover ? 'bg-[#F7F7F5]' : ''
-                ]"
-                title="{{ auth()->user()->name ?? 'Profile' }}">
-
-            {{-- Avatar --}}
-            <div class="w-8 h-8 rounded-md bg-[#F1F1EF] text-[#37352F] border border-[#E9E9E7] flex items-center justify-center font-medium text-[13px] shrink-0 mx-auto md:mx-0">
+    {{-- Profil + popover --}}
+    <div class="shrink-0 mt-auto relative border-t border-[#E9E9E7]" :class="wide ? 'p-3' : 'p-2'">
+        <button type="button" @click="openPopover = !openPopover" :aria-expanded="openPopover.toString()"
+                class="w-full flex items-center rounded-xl transition-all duration-200 whitespace-nowrap min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]"
+                :class="[wide ? 'p-2 hover:bg-[#F7F7F5]' : 'p-1.5 justify-center hover:bg-[#F7F7F5]', openPopover ? 'bg-[#F7F7F5]' : '']"
+                title="{{ auth()->user()->name ?? 'Profil' }}">
+            <div class="w-8 h-8 rounded-lg bg-[#F1F1EF] text-[#37352F] border border-[#E9E9E7] flex items-center justify-center font-semibold text-[13px] shrink-0">
                 {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
             </div>
-
-            {{-- Name & Email --}}
-            <div :class="expanded ? 'opacity-100 w-auto ml-3 flex-1 text-left hidden lg:block' : 'opacity-0 w-0 ml-0 hidden'"
-                 class="transition-all duration-200 overflow-hidden whitespace-nowrap">
-                <p class="text-[13px] font-semibold text-[#37352F] truncate leading-tight">{{ auth()->user()->name ?? 'Administrator' }}</p>
-                <p class="text-[11px] text-[#787774] truncate leading-tight mt-0.5">{{ auth()->user()->email ?? 'admin@mail.com' }}</p>
+            <div :class="wide ? 'opacity-100 ml-3 flex-1 text-left' : 'opacity-0 w-0 ml-0 hidden'" class="overflow-hidden transition-all duration-200">
+                <p class="text-[13px] font-semibold truncate leading-tight">{{ auth()->user()->name ?? 'Pengguna' }}</p>
+                <p class="text-[11px] text-[#787774] truncate leading-tight mt-0.5">{{ $roleName ?? 'Tanpa peran' }}</p>
             </div>
-
-            {{-- Chevron --}}
-            <svg :class="[expanded ? 'opacity-100 w-3.5 ml-2 hidden lg:block' : 'opacity-0 w-0 ml-0 hidden', openPopover ? 'rotate-180' : '']"
-                 viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                 class="shrink-0 transition-all duration-200 text-[#9B9A97]"><polyline points="6 9 12 15 18 9"/></svg>
+            <span x-show="wide" class="material-symbols-rounded text-[18px] text-[#9B9A97] transition-transform duration-200" :class="openPopover ? 'rotate-180' : ''">expand_less</span>
         </button>
 
-        {{-- ─── Popover Menu ─── --}}
-        <div x-show="openPopover"
-             x-cloak
-             @click.outside="openPopover = false"
+        <div x-show="openPopover" x-cloak @click.outside="openPopover = false" @keydown.escape.window="openPopover = false"
              x-transition:enter="transition-all duration-200 ease-[cubic-bezier(0.16,1,0.3,1)]"
              x-transition:enter-start="opacity-0 scale-95 translate-y-2"
              x-transition:enter-end="opacity-100 scale-100 translate-y-0"
              x-transition:leave="transition-all duration-150 ease-in"
              x-transition:leave-start="opacity-100 scale-100 translate-y-0"
              x-transition:leave-end="opacity-0 scale-95 translate-y-2"
-             class="absolute bottom-full mb-2 bg-white rounded-xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] border border-[#E9E9E7] overflow-hidden z-50"
-             :class="expanded ? 'left-3 right-3' : 'left-2 w-52 md:left-full md:ml-3'">
-
-            {{-- Popover Header --}}
+             class="absolute bottom-full mb-2 bg-white rounded-2xl shadow-[0_4px_24px_rgba(0,0,0,0.08)] border border-[#E9E9E7] overflow-hidden z-50"
+             :class="wide ? 'left-3 right-3' : 'left-2 w-56 md:left-full md:ml-3'">
             <div class="px-4 py-3 border-b border-[#E9E9E7]">
-                <p class="text-sm font-semibold text-[#37352F] truncate">{{ auth()->user()->name ?? 'Administrator' }}</p>
-                <p class="text-xs text-[#787774] truncate mt-0.5">{{ auth()->user()->email ?? 'admin@mail.com' }}</p>
-                @if(auth()->user()->role)
-                    <span class="inline-flex items-center mt-2 px-2 py-0.5 rounded-md text-[10px] font-medium bg-[#F7F7F5] text-[#37352F] border border-[#E9E9E7]">
-                        {{ auth()->user()->role->name }}
-                    </span>
+                <p class="text-sm font-semibold truncate">{{ auth()->user()->name ?? 'Pengguna' }}</p>
+                <p class="text-xs text-[#787774] truncate mt-0.5">{{ auth()->user()->email ?? '' }}</p>
+                @if ($roleName)
+                    <span class="inline-flex items-center mt-2 px-2 py-0.5 rounded-md text-[10px] font-medium bg-[#F7F7F5] border border-[#E9E9E7]">{{ $roleName }}</span>
                 @endif
             </div>
-
-            {{-- Popover Actions --}}
             <div class="p-1.5">
-                <a href="{{ route('profile.edit') }}"
-                   class="flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5] transition-all duration-150 font-medium">
-                    <svg class="w-4 h-4 shrink-0 text-center" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                    <span>Profil Saya</span>
+                <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-3 min-h-11 rounded-xl text-[13px] font-medium text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5] active:scale-[0.98] transition-all duration-150">
+                    <span class="material-symbols-rounded text-[18px]">person</span> Profil Saya
                 </a>
-
-                <div class="my-1.5 border-t border-[#E9E9E7]"></div>
-
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit"
-                            class="flex w-full items-center gap-3 px-3 py-2 rounded-lg text-[13px] text-rose-600 hover:bg-rose-50 transition-all duration-150 font-medium">
-                        <svg class="w-4 h-4 shrink-0 text-center" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                        <span>Keluar</span>
+                    <button type="submit" class="flex w-full items-center gap-3 px-3 min-h-11 rounded-xl text-[13px] font-medium text-rose-600 hover:bg-rose-50 active:scale-[0.98] transition-all duration-150">
+                        <span class="material-symbols-rounded text-[18px]">logout</span> Keluar
                     </button>
                 </form>
             </div>

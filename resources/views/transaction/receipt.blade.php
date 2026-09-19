@@ -28,7 +28,7 @@
             </div>
             @if ($order->table)
                 <div class="flex justify-between">
-                    <span>Meja</span><span>{{ $order->table->table_number }}</span>
+                    <span>Meja</span><span>{{ $order->table->table_name }}</span>
                 </div>
             @endif
         </div>
@@ -44,7 +44,7 @@
                     {{-- Modifier di-indent di bawah nama produk utama --}}
                     @foreach ($item->options ?? [] as $mod)
                         <div class="pl-4 text-[9px] text-gray-700">
-                            + {{ $mod['name'] }}
+                            + {{ $mod['name'] ?? $mod['modifier_name'] ?? '-' }}
                             @if (($mod['extra_price'] ?? 0) > 0)
                                 (+{{ number_format($mod['extra_price'], 0, ',', '.') }})
                             @endif

@@ -18,16 +18,16 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // 1. Seed Roles terlebih dahulu (Administrator, Kasir, Pimpinan)
+        // 1. Seed Roles terlebih dahulu
         $this->call(RoleSeeder::class);
 
-        // 2. Buat akun default Administrator
-        $adminRole = Role::where('name', 'Administrator')->first();
+        // 2. Buat akun default Owner
+        $adminRole = Role::where('name', 'Owner')->first();
 
         User::updateOrCreate(
             ['email' => 'admin@pos.test'],
             [
-                'name' => 'Administrator',
+                'name' => 'Owner',
                 'password' => Hash::make('12345678'),
                 'role_id' => $adminRole->id,
             ]
@@ -45,13 +45,13 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
-        // 4. Buat akun Pimpinan untuk demo
-        $pimpinanRole = Role::where('name', 'Pimpinan')->first();
+        // 4. Buat akun Manager untuk demo
+        $pimpinanRole = Role::where('name', 'Manager')->first();
 
         User::updateOrCreate(
-            ['email' => 'pimpinan@pos.test'],
+            ['email' => 'manager@pos.test'],
             [
-                'name' => 'Pimpinan Demo',
+                'name' => 'Manager Demo',
                 'password' => Hash::make('12345678'),
                 'role_id' => $pimpinanRole->id,
             ]

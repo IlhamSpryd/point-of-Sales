@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration
 {
     /**
-     * Tabel Settings: key-value store agar Administrator bisa mengubah
+     * Tabel Settings: key-value store agar Owner bisa mengubah
      * konfigurasi bisnis (tarif pajak, pembulatan, dll) langsung dari
      * halaman Pengaturan Sistem di UI -- tanpa perlu akses server atau
      * redeploy kode setiap kali pemerintah mengubah tarif PPN, misalnya.

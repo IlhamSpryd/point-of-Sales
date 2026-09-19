@@ -75,14 +75,14 @@ final class KdsService
      * di status BREWING (misal staf lupa logout / shift berakhir), agar bisa
      * diklaim ulang oleh staf lain.
      */
-    public function release(int $orderItemId, int $staffId, bool $isAdministrator): OrderItem
+    public function release(int $orderItemId, int $staffId, bool $canManage): OrderItem
     {
-        return DB::transaction(function () use ($orderItemId, $staffId, $isAdministrator) {
+        return DB::transaction(function () use ($orderItemId, $staffId, $canManage) {
             $item = OrderItem::lockForUpdate()->findOrFail($orderItemId);
 
-            if (! $isAdministrator && $item->processed_by !== $staffId) {
+            if (! $canManage && $item->processed_by !== $staffId) {
                 throw ValidationException::withMessages([
-                    'kds' => 'Hanya Administrator atau staf yang mengambil item ini yang bisa melepaskannya.',
+                    'kds' => 'Hanya Owner/Manager atau staf yang mengambil item ini yang bisa melepaskannya.',
                 ]);
             }
 

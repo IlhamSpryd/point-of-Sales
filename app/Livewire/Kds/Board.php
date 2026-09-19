@@ -40,7 +40,7 @@ class Board extends Component
             app(KdsService::class)->release(
                 $itemId,
                 (int) Auth::id(),
-                isAdministrator: Auth::user()->role?->name === 'Administrator',
+                canManage: in_array(Auth::user()->role?->name, ['Owner', 'Manager'], true),
             );
         } catch (ValidationException $e) {
             $this->addError('kds', collect($e->errors())->flatten()->first());

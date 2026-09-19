@@ -7,7 +7,7 @@
         </div>
         <div class="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-white border border-[#E9E9E7] text-[#787774] text-sm font-medium rounded-xl shadow-sm">
             <span class="material-symbols-rounded text-[18px]">calendar_today</span>
-            <span>{{ now()->subDays(11)->format('F d, Y') }} — {{ now()->format('F d, Y') }}</span>
+            <span>{{ now()->subDays(6)->format('F d, Y') }} — {{ now()->format('F d, Y') }}</span>
         </div>
     </div>
 
@@ -37,14 +37,14 @@
         <!-- 2. Net Income -->
         <div class="card-surface p-6 flex flex-col relative min-h-40 overflow-hidden">
             <div class="flex justify-between items-start mb-3 relative z-10">
-                <span class="text-sm font-semibold text-[#787774]">Pendapatan Bersih</span>
+                <h3 class="text-xs font-semibold text-[#787774] mb-1 tracking-tight">Total Pendapatan</h3>
                 <span class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
                     <span class="material-symbols-rounded text-[18px] text-emerald-600">trending_up</span>
                 </span>
             </div>
             <h3 class="text-[28px] font-extrabold text-[#37352F] mb-2 tracking-tight relative z-10">Rp {{ number_format($totalEarnings, 0, ',', '.') }}</h3>
             <span class="inline-flex items-center text-xs font-bold text-emerald-600 gap-1 relative z-10">
-                <span class="material-symbols-rounded text-[14px]">north_east</span> Pendapatan bulan ini
+                <span class="material-symbols-rounded text-[14px]">north_east</span> Akumulasi seluruh waktu
             </span>
             <div class="absolute bottom-0 left-0 w-full h-15 opacity-100">
                 <div id="income-sparkline"></div>
@@ -61,7 +61,7 @@
             </div>
             <h3 class="text-[28px] font-extrabold text-[#37352F] mb-2 tracking-tight relative z-10">{{ number_format($totalOrders) }}</h3>
             <span class="inline-flex items-center text-xs font-bold text-emerald-600 gap-1 relative z-10">
-                <span class="material-symbols-rounded text-[14px]">north_east</span> Transaksi bulan ini
+                <span class="material-symbols-rounded text-[14px]">north_east</span> Akumulasi seluruh waktu
             </span>
             <div class="absolute bottom-0 left-0 w-full h-15 opacity-100">
                 <div id="return-sparkline"></div>
@@ -81,16 +81,16 @@
                     <h2 class="text-lg font-bold text-[#37352F]">Pendapatan</h2>
                     <div class="flex items-center gap-4 text-sm font-medium">
                         <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-[#37352F]"></span> <span class="text-[#787774]">Pemasukan</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-[#37352F]"></span> <span class="text-[#787774]">Pendapatan</span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-[#E9E9E7]"></span> <span class="text-[#787774]">Pengeluaran</span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-[#E9E9E7]"></span> <span class="text-[#787774]">Jumlah Transaksi</span>
                         </div>
                     </div>
                 </div>
                 <div class="flex items-baseline gap-2 mb-4 relative z-10">
                     <span class="text-[28px] font-extrabold text-[#37352F] tracking-tight">Rp {{ number_format($totalEarnings, 0, ',', '.') }}</span>
-                    <span class="text-xs font-bold text-emerald-600">Data akumulatif bulan ini</span>
+                    <div class="text-[11px] font-medium text-[#787774]">Akumulasi seluruh waktu</div>
                 </div>
                 <div id="revenue-chart" class="w-full h-70 -mx-2"></div>
             </div>

@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * TableController: Thin Controller untuk manajemen Meja (khusus Administrator).
+ * TableController: Thin Controller untuk manajemen Meja (khusus Owner/Manager).
  */
 class TableController extends Controller
 {

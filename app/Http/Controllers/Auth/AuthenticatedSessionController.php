@@ -29,12 +29,12 @@ class AuthenticatedSessionController extends Controller
         $request->session()->regenerate();
 
         // Arahkan sesuai role — Kasir TIDAK PERNAH menyentuh dashboard finansial,
-        // Pimpinan langsung ke laporan, Administrator ke dashboard.
+        // Manager langsung ke laporan, Owner ke dashboard.
         $user = $request->user();
 
         return match ($user->role?->name) {
             'Kasir' => redirect()->route('transaction.create'),
-            'Pimpinan' => redirect()->route('reports.sales'),
+            'Manager' => redirect()->route('reports.sales'),
             default => redirect()->intended(route('dashboard', absolute: false)),
         };
     }

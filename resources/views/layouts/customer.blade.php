@@ -2,40 +2,65 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {{-- SENGAJA tanpa maximum-scale / user-scalable=no: pinch-zoom wajib aktif (WCAG 1.4.4). --}}
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? config('app.name') }} - Menu</title>
+    <title>{{ isset($title) ? trim(strip_tags((string) $title)) : 'Pesan' }} — {{ config('app.name') }}</title>
 
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 {{--
-    Layout khusus pelanggan: TIDAK ada sidebar admin, TIDAK ada menu login.
-    Sengaja dibuat minimalis (mono-column, mobile-first) karena target
-    device utama adalah HP pelanggan yang scan QR code di meja.
+    Layout khusus pelanggan (mobile-first, satu kolom). Tanpa sidebar admin, tanpa login.
+    Halaman anak:
+      <x-customer-layout back-url="{{ $url }}">
+          <x-slot:title>Keranjang</x-slot:title>
+          ...konten...
+      </x-customer-layout>
 --}}
-<body class="antialiased bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans min-h-screen">
+<body class="antialiased bg-yovel-bg text-yovel-ink font-sans min-h-screen pt-safe">
 
-    {{-- Top bar minimalis, sticky, gaya Apple/Notion: tipis, tanpa shadow tebal --}}
-    <header class="sticky top-0 z-30 bg-white/80 dark:bg-zinc-900/80 backdrop-blur-xl border-b border-zinc-100 dark:border-zinc-800 h-14 flex items-center justify-between px-4">
-        <span class="font-bold text-sm tracking-tight">{{ config('app.name') }}</span>
+    <header class="sticky top-0 z-30 h-14 flex items-center gap-1 px-3 bg-yovel-bg/80 backdrop-blur-xl border-b border-yovel-border">
+        @if ($backUrl = $attributes->get('back-url'))
+            <a href="{{ $backUrl }}" aria-label="Kembali"
+               class="w-11 h-11 -ml-1 flex items-center justify-center rounded-full hover:bg-yovel-surface active:scale-95 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-yovel-ink">
+                <span class="material-symbols-rounded">arrow_back</span>
+            </a>
+        @endif
 
-        {{-- Tombol keranjang mengambang dengan badge jumlah item --}}
-        <a href="{{ route('customer.cart.index') }}" class="relative p-2 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors">
-            <span class="material-symbols-rounded">shopping_bag</span>
-            <span x-data="{ count: 0 }"
-                  x-init="count = window.customerCartCount ?? 0"
-                  x-show="count > 0"
-                  x-text="count"
-                  x-cloak
-                  class="absolute -top-1 -right-1 bg-zinc-900 text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center"></span>
-        </a>
+        <span class="font-brand font-semibold text-base tracking-tight truncate {{ $backUrl ? '' : 'ml-1' }}">
+            {{ $title ?? config('app.name') }}
+        </span>
+
+        @if (session('current_table_name'))
+            <span class="ml-auto shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold text-yovel-muted bg-white border border-yovel-border rounded-full px-3 py-1.5 shadow-sm">
+                <span class="material-symbols-rounded text-[16px]">table_restaurant</span>
+                {{ session('current_table_name') }}
+            </span>
+        @endif
     </header>
 
-    <main class="max-w-2xl mx-auto p-4">
+    <main class="max-w-2xl mx-auto px-4 pt-5 pb-8">
         {{ $slot }}
     </main>
 
+    {{-- Toast global. Pemakaian dari Alpine mana pun: $dispatch('toast', { message: 'Teks' }) --}}
+    <div x-data="{ show: false, message: '', timer: null }"
+         x-on:toast.window="message = $event.detail.message; show = true; clearTimeout(timer); timer = setTimeout(() => show = false, 3200)"
+         x-show="show" x-cloak role="status"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 translate-y-4"
+         x-transition:enter-end="opacity-100 translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 translate-y-0"
+         x-transition:leave-end="opacity-0 translate-y-4"
+         class="fixed inset-x-4 bottom-32 z-50 max-w-sm mx-auto rounded-2xl bg-yovel-ink text-white text-sm font-medium px-4 py-3 shadow-xl text-center">
+        <span x-text="message"></span>
+    </div>
 </body>
 </html>

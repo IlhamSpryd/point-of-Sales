@@ -6,19 +6,25 @@ use App\Models\Role;
 use Illuminate\Database\Seeder;
 
 /**
- * RoleSeeder: Mengisi 3 role standar yang dipersyaratkan oleh ERD.
- * 1. Administrator — Kelola master data (Produk, Kategori, User)
- * 2. Kasir — Melakukan transaksi penjualan
- * 3. Pimpinan — Melihat laporan penjualan
+ * RoleSeeder: Mengisi 6 role standar yang dipersyaratkan.
+ * 1. Owner
+ * 2. Manager
+ * 3. Kasir
+ * 4. Waiter
+ * 5. Barista
+ * 6. Inventory
  */
 class RoleSeeder extends Seeder
 {
     public function run(): void
     {
         $roles = [
-            ['name' => 'Administrator'],
+            ['name' => 'Owner'],
+            ['name' => 'Manager'],
             ['name' => 'Kasir'],
-            ['name' => 'Pimpinan'],
+            ['name' => 'Waiter'],
+            ['name' => 'Barista'],
+            ['name' => 'Inventory'],
         ];
 
         foreach ($roles as $role) {
