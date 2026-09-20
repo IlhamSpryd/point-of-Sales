@@ -216,3 +216,33 @@ Meniadakan skenario *dead-end* di mana kasir menemui tombol *blank* setelah popu
 
 Ini mengukuhkan *Point of Sales* ini tak cuma sebatas form input CRUD biasa, melainkan jembatan komersil transaksional absolut layaknya sistem retail masa depan.
 
+---
+
+## Fase 6: Enterprise Hardware & Infrastructure Upgrade (Phase 1 & 2)
+
+Tahapan ini merupakan lompatan besar menuju skalabilitas dan keandalan sistem ritel kelas *Enterprise*, mengukuhkan integrasi perangkat keras fisik (*Hardware*) secara langsung, memproteksi logika finansial tingkat tinggi dari *race conditions*, serta membangun fondasi ketahanan (*Resilience*) saat *offline*.
+
+### 1. Enterprise Receipt Printing & EscPos-PHP (QZ Tray)
+- **Direct Hardware Communication:** Mengintegrasikan pustaka `mike42/escpos-php` untuk menyusun *payload* *raw* ESC/POS, menghilangkan kebergantungan cetak struk dari *Print Preview Browser / OS-level drivers*.
+- **QZ Tray WebSocket Integration:** Komunikasi asinkron via `qz-tray.js` di klien web langsung ke *service websocket* di mesin kasir (*localhost*). Pencetakan terjadi seketika di belakang layar tanpa memutus alur UI kasir.
+- **Secure Print Payload API:** Pembuatan *route* aman `GET /api/orders/{order_number}/print-payload` di mana aksesnya terkunci ketat oleh otorisasi `role:Kasir`, menghindari manipulasi *print payload* oleh entitas tanpa otoritas.
+
+### 2. Fitur Elektrik Laci Kasir (Cash Drawer Kick)
+- Menanamkan *pulse/kick command* heksadesimal laci kasir otomatis yang terenkapsulasi di dalam `ReceiptPrinterService`. Laci kasir otomatis "menendang" dan terbuka tepat sesaat sebelum struk transaksi dicetak secara termal.
+
+### 3. Ketahanan Finansial (Idempotency & Race Condition Guard)
+- **Database Idempotency:** Modifikasi skema `orders` dengan penyisipan atribut `idempotency_key` unik untuk mencatat setiap sidik jari *request* transaksi. Terlindungi sepenuhnya dengan *fallback* fungsi `uuidv4()` _polyfill_ bila _browser_ kasir beroperasi di luar HTTPS (non-secure context).
+- **Cache::lock() Atomic Block:** Transaksi diamankan dalam cengkeraman *atomic lock* pada `TransactionController::store()`. Ini menjadi perisai krusial yang mengeliminasi anomali *double checkout / race condition* akibat klik ganda beruntun atau koneksi *flaky*.
+
+### 4. PWA Offline Resilience (Service Worker & Buffered Queue)
+- **Service Worker (`sw.js`):** Registrasi awal *Progressive Web App* statis untuk menanggulangi kondisi *connection drop* mendadak. Klien tak lagi menjumpai halaman galat *browser*, namun dialihkan dengan elegan ke laman *fallback* `offline.html`.
+- **Local Storage Queue:** Pemrosesan _order_ POS saat jaringan menghilang dialihkan (*buffered*) secara transparan ke ruang `localStorage` milik *browser* kasir (`pos_offline_queue`). 
+- **Auto-Flush Syncing:** Mekanisme *event listener* (`window.online`) bersiaga untuk menarik (*flush*) dan mensinkronisasikan ulang semua antrean transaksi *offline* langsung menuju REST API *server* seketika tatkala koneksi internet pulih.
+
+### 5. Otomasi Navigasi Kasir (Scanner & Hotkeys)
+- *Event listener* tingkat global (*Global keystroke trapping*) direkayasa khusus pada kerangka Alpine.js. 
+- Aliran masukan cepat dari perangkat keras *Barcode Scanner USB* dicegat dan dipetakan secara akurat kepada parameter `product_code`. 
+- Dedikasi pintasan `F2` (*Hotkeys*) ditanam guna memerintahkan fokus UI ke kotak pencarian inventaris. Seluruh pembaruan ini membebaskan pergelangan tangan kasir dari keharusan meraba *mouse* (mouse-free navigation).
+
+### 6. Disaster Recovery (Automated Backups)
+- **EnterpriseBackupCommand:** Melahirkan rutinitas cadangan *Database* harian lewat *Artisan Console* yang dijalankan periodik via penjadwal (*Task Scheduler*). Skrip ini menampung berkas kompresi `gzip` ke direktori terisolasi `storage/app/backups`, lengkap dengan logika pembersihan rotasi umur *file* di atas 7 hari.
