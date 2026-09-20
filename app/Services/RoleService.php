@@ -49,6 +49,7 @@ class RoleService
     {
         return DB::transaction(function () use ($data) {
             $data['permissions'] = $data['permissions'] ?? null;
+
             return Role::create($data);
         });
     }

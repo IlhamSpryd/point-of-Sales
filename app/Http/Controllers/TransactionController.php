@@ -5,13 +5,18 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
+use App\Services\Printing\ReceiptPrinterService;
 use App\Services\TransactionService;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Midtrans\Config;
@@ -71,6 +76,14 @@ class TransactionController extends Controller
         $idempotencyKey = $validated['idempotency_key'] ?? null;
 
         try {
+            // [OMEGA-NODE1] Zero-Trust shift guard: setiap transaksi Kasir
+            // WAJIB terikat ke shift yang sedang terbuka -- mencegah
+            // "penjualan hantu" yang tidak pernah masuk rekonsiliasi kas
+            // per-shift (ShiftManager). Melempar ValidationException jika
+            // kasir belum membuka shift, ditangkap oleh catch(\Throwable)
+            // di bawah seperti validasi Service lain di controller ini.
+            $validated['shift_id'] = $this->transactionService->resolveOpenShiftOrFail((int) $userId);
+
             // Guard against race conditions using Cache::lock
             if ($idempotencyKey) {
                 // If it already exists in DB, simply return success (idempotency)
@@ -82,9 +95,9 @@ class TransactionController extends Controller
                     ]);
                 }
 
-                $lock = \Illuminate\Support\Facades\Cache::lock('order_idempotency_'.$idempotencyKey, 10);
+                $lock = Cache::lock('order_idempotency_'.$idempotencyKey, 10);
                 if (! $lock->get()) {
-                    throw new \Illuminate\Contracts\Cache\LockTimeoutException();
+                    throw new LockTimeoutException;
                 }
             }
 
@@ -102,12 +115,12 @@ class TransactionController extends Controller
                 'snap_token' => $order->snap_token ?? null,
                 'order_number' => $order->order_code,
             ]);
-        } catch (\Illuminate\Contracts\Cache\LockTimeoutException $e) {
+        } catch (LockTimeoutException $e) {
             return response()->json([
                 'success' => false,
                 'message' => 'Transaksi serupa sedang diproses, coba lagi.',
             ], 429);
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             if (isset($idempotencyKey) && str_contains($e->getMessage(), 'Duplicate entry') && str_contains($e->getMessage(), 'idempotency_key')) {
                 return response()->json([
                     'success' => true,
@@ -116,6 +129,7 @@ class TransactionController extends Controller
                 ]);
             }
             Log::error('Transaction Query Error: '.$e->getMessage());
+
             return response()->json(['success' => false, 'message' => 'Gagal memproses transaksi (DB Error)'], 500);
         } catch (\Throwable $e) {
             Log::error('Transaction Error: '.$e->getMessage().' '.$e->getTraceAsString());
@@ -182,7 +196,7 @@ class TransactionController extends Controller
     {
         $order = Order::where('order_code', $orderNumber)->first();
 
-        if (! $order || $order->order_status !== OrderStatus::Pending || $order->payment_method === \App\Enums\PaymentMethod::Cash) {
+        if (! $order || $order->order_status !== OrderStatus::Pending || $order->payment_method === PaymentMethod::Cash) {
             return response()->json(['success' => true]);
         }
 
@@ -227,7 +241,7 @@ class TransactionController extends Controller
     /**
      * Endpoint untuk mendapatkan payload raw ESC/POS (QZ Tray).
      */
-    public function printPayload(string $orderNumber, \App\Services\Printing\ReceiptPrinterService $printerService): JsonResponse
+    public function printPayload(string $orderNumber, ReceiptPrinterService $printerService): JsonResponse
     {
         $order = Order::with(['orderItems.product', 'user', 'table'])
             ->where('order_code', $orderNumber)

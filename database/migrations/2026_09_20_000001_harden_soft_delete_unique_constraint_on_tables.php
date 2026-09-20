@@ -60,11 +60,11 @@ return new class extends Migration
         // Cari nama index unique yang SESUNGGUHNYA pada kolom table_name,
         // alih-alih menebak nama statis (lihat catatan teknis di atas).
         $oldIndexName = 'tables_table_number_unique';
-        
+
         $driver = DB::connection()->getDriverName();
         if ($driver === 'mysql' || $driver === 'mariadb') {
             $indexes = DB::select("SHOW INDEX FROM `tables` WHERE Column_name = 'table_name' AND Non_unique = 0 AND Key_name != 'PRIMARY'");
-            if (!empty($indexes)) {
+            if (! empty($indexes)) {
                 $oldIndexName = $indexes[0]->Key_name;
             }
         }

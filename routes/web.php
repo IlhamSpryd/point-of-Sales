@@ -1,21 +1,23 @@
 <?php
 
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\MidtransNotificationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SettingController;
+use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\ShiftController;
-use App\Http\Controllers\DiscountController;
-use App\Http\Controllers\SettingController;
-use App\Http\Controllers\ActivityLogController;
+use App\Livewire\Kds\Board;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -30,7 +32,7 @@ require __DIR__.'/customer.php';
 // pengecualian CSRF di bootstrap/app.php). Endpoint ini SATU-SATUNYA
 // sumber kebenaran otomatis untuk transisi status pembayaran non-tunai,
 // dipakai bersama oleh Self-Order pelanggan maupun Kasir POS.
-Route::post('/midtrans/notification', [\App\Http\Controllers\MidtransNotificationController::class, 'handle'])
+Route::post('/midtrans/notification', [MidtransNotificationController::class, 'handle'])
     ->middleware('throttle:120,1')
     ->name('midtrans.notification');
 
@@ -67,7 +69,7 @@ Route::middleware('auth')->group(function () {
 
     // Dapur (KDS)
     Route::middleware('role:Owner,Manager,Kasir,Barista,Waiter')->group(function () {
-        Route::get('/kds', \App\Livewire\Kds\Board::class)->name('kds.index');
+        Route::get('/kds', Board::class)->name('kds.index');
     });
 
     // Katalog (Produk & Kategori)
@@ -81,7 +83,7 @@ Route::middleware('auth')->group(function () {
         Route::resource('users', UserController::class);
         Route::resource('roles', RoleController::class);
     });
-    
+
     // Meja
     Route::middleware('role:Owner,Manager')->group(function () {
         Route::resource('tables', TableController::class);

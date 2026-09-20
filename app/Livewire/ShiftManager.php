@@ -11,8 +11,11 @@ use Livewire\Component;
 class ShiftManager extends Component
 {
     public $activeShift;
+
     public $opening_balance = 0;
+
     public $closing_balance = 0;
+
     public $notes = '';
 
     public function mount()

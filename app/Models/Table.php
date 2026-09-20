@@ -26,7 +26,7 @@ class Table extends Model
         'area',
         'is_active',
         'operational_status',
-        'secure_token'
+        'secure_token',
     ];
 
     protected function casts(): array
@@ -48,9 +48,9 @@ class Table extends Model
             if (empty($table->table_code)) {
                 $latest = static::latest('id')->first();
                 $nextId = $latest ? $latest->id + 1 : 1;
-                $table->table_code = 'YVL-TBL-' . str_pad($nextId, 3, '0', STR_PAD_LEFT);
+                $table->table_code = 'YVL-TBL-'.str_pad($nextId, 3, '0', STR_PAD_LEFT);
             }
-            
+
             // KUNCI PERMANEN: Auto-generate Secure Token (UUID) jika kosong
             if (empty($table->secure_token)) {
                 $table->secure_token = (string) Str::uuid();

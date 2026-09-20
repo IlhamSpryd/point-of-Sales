@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\ChannelOrderLog;
 use App\Jobs\ProcessWebhookOrderJob;
+use App\Models\ChannelOrderLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -14,7 +14,7 @@ class WebhookController extends Controller
     {
         $externalOrderId = $request->input('order_id');
 
-        if (!$externalOrderId) {
+        if (! $externalOrderId) {
             return response()->json(['message' => 'Missing order_id'], 422);
         }
 
@@ -27,7 +27,7 @@ class WebhookController extends Controller
 
             // Jika status bukan pending (misal completed/processing), berarti ini request duplikat.
             // Tetap jawab 200/202 agar Grab/GoFood berhenti me-retry, tapi JANGAN diproses ulang.
-            if (!$log->wasRecentlyCreated && $log->status !== 'pending') {
+            if (! $log->wasRecentlyCreated && $log->status !== 'pending') {
                 return response()->json(['message' => 'Order already processed'], 200);
             }
 
@@ -35,9 +35,10 @@ class WebhookController extends Controller
             ProcessWebhookOrderJob::dispatch($log);
 
             return response()->json(['message' => 'Accepted for processing'], 202);
-            
+
         } catch (\Exception $e) {
-            Log::error("Webhook DB error: " . $e->getMessage());
+            Log::error('Webhook DB error: '.$e->getMessage());
+
             return response()->json(['message' => 'Internal Server Error'], 500);
         }
     }

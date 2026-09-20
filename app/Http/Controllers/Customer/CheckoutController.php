@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
+use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\StoreCheckoutRequest;
 use App\Models\Modifier;
@@ -151,7 +152,7 @@ class CheckoutController extends Controller
 
         return response()->json([
             'order_status' => $status->value,
-            'is_paid' => $status === \App\Enums\OrderStatus::Paid,
+            'is_paid' => $status === OrderStatus::Paid,
             'is_final' => $status->isFinal(),
         ]);
     }

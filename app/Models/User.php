@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -48,11 +49,11 @@ class User extends Authenticatable
             if (empty($model->employee_id)) {
                 $latest = static::latest('id')->first();
                 $nextId = $latest ? $latest->id + 1 : 1;
-                $model->employee_id = 'YVL-EMP-' . date('Y') . '-' . str_pad($nextId, 4, '0', STR_PAD_LEFT);
+                $model->employee_id = 'YVL-EMP-'.date('Y').'-'.str_pad($nextId, 4, '0', STR_PAD_LEFT);
             }
         });
     }
-    
+
     // Relasi ke Role
     public function role()
     {

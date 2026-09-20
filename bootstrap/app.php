@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureTableSession;
 use App\Http\Middleware\ResolveTableFromToken;
 use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\VerifyWebhookSignature;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -23,7 +24,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'table.token' => ResolveTableFromToken::class,
             'table.session' => EnsureTableSession::class,
-            'verify.webhook' => \App\Http\Middleware\VerifyWebhookSignature::class,
+            'verify.webhook' => VerifyWebhookSignature::class,
         ]);
 
         // Midtrans mengirim notifikasi webhook server-to-server TANPA cookie

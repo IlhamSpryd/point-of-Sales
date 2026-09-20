@@ -73,7 +73,7 @@ class OrderItem extends Model
         if ($elapsed >= $critical) {
             return 'critical';
         }
-        
+
         if ($elapsed >= $warning) {
             return 'warning';
         }

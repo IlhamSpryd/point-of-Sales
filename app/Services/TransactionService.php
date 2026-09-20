@@ -6,10 +6,13 @@ namespace App\Services;
 
 use App\Enums\OrderStatus;
 use App\Enums\OrderType;
+use App\Enums\StockMovementType;
 use App\Models\Modifier;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Shift;
+use App\Models\StockMovement;
 use App\Models\Table;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -135,6 +138,11 @@ class TransactionService
             // Buat record Order dengan semua field lengkap
             $order = Order::forceCreate([
                 'user_id' => $userId,
+                // [OMEGA-NODE1] shift_id kini WAJIB diisi oleh caller Kasir
+                // (TransactionController::store() via resolveOpenShiftOrFail()).
+                // Tetap null untuk alur self-order (CheckoutController) yang
+                // memang tidak pernah punya konsep shift kasir.
+                'shift_id' => $data['shift_id'] ?? null,
                 'order_code' => $orderCode,
                 'idempotency_key' => $data['idempotency_key'] ?? null,
                 'order_date' => now()->toDateString(),
@@ -214,7 +222,12 @@ class TransactionService
 
                 try {
                     $snapToken = Snap::getSnapToken($params);
-                    $order->update(['snap_token' => $snapToken]);
+                    // [OMEGA-NODE1] FIX: snap_token BUKAN atribut $fillable (sengaja,
+                    // mencegah mass-assignment field sensitif) -- ->update() lama
+                    // di sini SENYAP membuang nilai ini (Laravel tidak melempar
+                    // exception untuk atribut non-fillable). forceFill() melewati
+                    // guard tsb secara eksplisit HANYA di titik sah ini.
+                    $order->forceFill(['snap_token' => $snapToken])->save();
                 } catch (\Exception $e) {
                     throw new \Exception('Gagal mendapatkan Snap Token Midtrans: '.$e->getMessage());
                 }
@@ -278,6 +291,29 @@ class TransactionService
             'omzet' => (float) $metricsQuery->omzet,
             'jumlah' => (int) $metricsQuery->jumlah,
         ];
+    }
+
+    /**
+     * [OMEGA-NODE1] Zero-Trust shift guard untuk SEMUA transaksi berbasis
+     * Kasir (bukan self-order). Dipanggil oleh caller SEBELUM stok/Order
+     * disentuh sama sekali, agar transaksi tanpa shift aktif ditolak lebih
+     * awal tanpa efek samping apa pun ke database.
+     *
+     * @throws ValidationException jika kasir belum membuka shift.
+     */
+    public function resolveOpenShiftOrFail(int $userId): int
+    {
+        $shiftId = Shift::where('user_id', $userId)
+            ->where('status', 'open')
+            ->value('id');
+
+        if ($shiftId === null) {
+            throw ValidationException::withMessages([
+                'shift' => 'Anda belum membuka shift kasir. Silakan buka shift terlebih dahulu sebelum memproses transaksi.',
+            ]);
+        }
+
+        return $shiftId;
     }
 
     /**
@@ -367,8 +403,10 @@ class TransactionService
         ?int $tableId,
         string $paymentMethod,
         int $cashReceived,
+        int $userId,
+        int $shiftId,
     ): Order {
-        return DB::transaction(function () use ($itemsPayload, $orderType, $tableId, $paymentMethod, $cashReceived) {
+        return DB::transaction(function () use ($itemsPayload, $orderType, $tableId, $paymentMethod, $cashReceived, $userId, $shiftId) {
             [$orderItemsData, $subtotal] = $this->buildOrderItemsWithStockLock($itemsPayload);
 
             ['tax_amount' => $taxAmount, 'total_amount' => $totalAmount] = $this->calculateOrderTotals($subtotal);
@@ -384,6 +422,12 @@ class TransactionService
             } while (Order::where('order_code', $orderCode)->exists());
 
             $order = Order::forceCreate([
+                // [OMEGA-NODE1] FIX KRITIS: user_id & shift_id SEBELUMNYA tidak
+                // pernah diisi di method ini -- kolom 'orders.user_id' NOT NULL
+                // berarti SETIAP panggilan method ini akan GAGAL dengan
+                // QueryException sebelum perbaikan ini.
+                'user_id' => $userId,
+                'shift_id' => $shiftId,
                 'table_id' => $tableId, // null aman untuk takeaway (kolom sudah nullable)
                 'order_code' => $orderCode,
                 'order_date' => now()->toDateString(),
@@ -501,17 +545,106 @@ class TransactionService
                 $transactionStatus === 'cancel' => OrderStatus::Cancelled,
                 $transactionStatus === 'expire' => OrderStatus::Expired,
                 default => null, // 'pending', 'authorize', dll -- notifikasi Midtrans yang BELUM final.
-                                  // TANPA arm ini, match() melempar UnhandledMatchError untuk setiap
-                                  // notifikasi 'pending' -- padahal itu JUSTRU notifikasi PALING SERING
-                                  // dikirim Midtrans (dikirim pertama kali begitu customer membuka
-                                  // popup Snap, sebelum pembayaran selesai).
+                // TANPA arm ini, match() melempar UnhandledMatchError untuk setiap
+                // notifikasi 'pending' -- padahal itu JUSTRU notifikasi PALING SERING
+                // dikirim Midtrans (dikirim pertama kali begitu customer membuka
+                // popup Snap, sebelum pembayaran selesai).
             };
 
             if ($newStatus !== null) {
                 $order->forceFill(['order_status' => $newStatus])->save();
+
+                // [OMEGA-NODE1] Stock Compensation Engine. Hanya berjalan saat
+                // transisi ke status GAGAL FINAL -- stok yang "direservasi" saat
+                // order dibuat (createSelfOrder/buildOrderItemsWithStockLock)
+                // dikembalikan tepat SATU KALI. isFinal() guard di atas + lock
+                // Order ini menjamin blok ini hanya pernah tereksekusi sekali per
+                // order_code, walau Midtrans mengirim notifikasi duplikat.
+                if (in_array($newStatus, [OrderStatus::Failed, OrderStatus::Cancelled, OrderStatus::Expired], true)) {
+                    $this->restoreStockForOrder($order);
+                }
             }
 
             return $order;
-        });
+
+            // attempts: 3 -- retry otomatis bila lockForUpdate() bertabrakan
+            // (deadlock) dengan proses restorasi stok order LAIN yang kebetulan
+            // menyentuh produk yang sama secara bersamaan.
+        }, attempts: 3);
+    }
+
+    /**
+     * [OMEGA-NODE1] Mengembalikan stok yang sempat "direservasi" (dipotong)
+     * saat order dibuat, PERSIS SATU KALI, walau method pemanggil dipicu
+     * berkali-kali oleh notifikasi webhook Midtrans yang duplikat.
+     *
+     * Lapisan idempotency (Defense in Depth):
+     *  1) isFinal() guard pada Order (caller) -- order yang sudah final
+     *     tidak akan pernah masuk ke method ini lagi.
+     *  2) lockForUpdate() pada Order (caller) + Product (di sini) --
+     *     menyerialkan proses jika ada notifikasi paralel untuk order_code
+     *     yang SAMA.
+     *  3) Unique constraint `stock_movements.idempotency_key` -- lapisan
+     *     terakhir di level database, aktif walau method ini suatu saat
+     *     dipanggil dari luar konteks lock di atas.
+     */
+    private function restoreStockForOrder(Order $order): void
+    {
+        $items = $order->orderItems()->get();
+
+        if ($items->isEmpty()) {
+            return;
+        }
+
+        $productIds = $items->pluck('product_id')->unique()->sort()->values();
+
+        // Urutkan lock berdasarkan product_id ASC -- konsisten dengan pola
+        // locking di createTransaction()/buildOrderItemsWithStockLock(),
+        // mencegah deadlock silang antar-order yang merestorasi produk sama.
+        $products = Product::withTrashed()
+            ->whereIn('id', $productIds)
+            ->orderBy('id')
+            ->lockForUpdate()
+            ->get()
+            ->keyBy('id');
+
+        foreach ($items as $item) {
+            $product = $products->get($item->product_id);
+
+            if (! $product) {
+                // Praktis mustahil (FK product_id memakai restrictOnDelete()),
+                // tapi dicatat sebagai insiden kritis jika suatu saat terjadi
+                // (misal data legacy sebelum constraint ini ditegakkan).
+                Log::critical('[OMEGA-NODE1] Stock restore GAGAL: produk tidak ditemukan.', [
+                    'order_code' => $order->order_code,
+                    'order_item_id' => $item->id,
+                    'product_id' => $item->product_id,
+                ]);
+
+                continue;
+            }
+
+            $idempotencyKey = 'stock_restore:'.$order->order_code.':'.$item->id;
+
+            $movement = StockMovement::firstOrCreate(
+                ['idempotency_key' => $idempotencyKey],
+                [
+                    'product_id' => $product->id,
+                    'order_id' => $order->id,
+                    'order_item_id' => $item->id,
+                    'type' => StockMovementType::RestoreCompensation,
+                    'quantity' => $item->qty,
+                    'reason' => "Kompensasi stok otomatis: order {$order->order_code} berubah ke status {$order->order_status->value}.",
+                ]
+            );
+
+            // firstOrCreate() mengembalikan baris LAMA (wasRecentlyCreated =
+            // false) jika idempotency_key sudah ada -- webhook duplikat --
+            // sehingga stok TIDAK di-increment lagi. Inilah jaminan
+            // "exactly-once" utama untuk kompensasi stok.
+            if ($movement->wasRecentlyCreated) {
+                $product->increment('stock', $item->qty);
+            }
+        }
     }
 }

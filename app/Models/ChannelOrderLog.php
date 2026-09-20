@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class ChannelOrderLog extends Model
 {
     protected $fillable = [
-        'provider', 'external_order_id', 'status', 'payload', 'error_message'
+        'provider', 'external_order_id', 'status', 'payload', 'error_message',
     ];
 
     protected $casts = [

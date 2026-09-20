@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -33,7 +34,7 @@ class Role extends Model
             if (empty($model->role_code)) {
                 $latest = static::latest('id')->first();
                 $nextId = $latest ? $latest->id + 1 : 1;
-                $model->role_code = 'ROL-' . str_pad($nextId, 3, '0', STR_PAD_LEFT);
+                $model->role_code = 'ROL-'.str_pad($nextId, 3, '0', STR_PAD_LEFT);
             }
         });
     }

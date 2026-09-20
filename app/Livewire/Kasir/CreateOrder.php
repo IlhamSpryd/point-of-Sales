@@ -2,12 +2,17 @@
 
 namespace App\Livewire\Kasir;
 
+use App\Enums\OrderStatus;
 use App\Enums\OrderType;
-use App\Models\Category;
+use App\Enums\PaymentMethod;
+use App\Enums\PreparationStatus;
 use App\Models\Modifier;
+use App\Models\Order;
 use App\Models\Product;
 use App\Models\Table;
+use App\Services\MenuCacheService;
 use App\Services\TransactionService;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -28,6 +33,7 @@ class CreateOrder extends Component
 
     // Properti baru untuk mode "Retrieve Order"
     public ?string $pendingOrderCode = null;
+
     public ?int $pendingOrderId = null;
 
     // state modal pemilihan modifier
@@ -57,13 +63,14 @@ class CreateOrder extends Component
 
     public function loadPendingOrder(string $orderCode): void
     {
-        $order = \App\Models\Order::with('orderItems.product')
+        $order = Order::with('orderItems.product')
             ->where('order_code', $orderCode)
             ->where('order_status', 'pending')
             ->first();
 
-        if (!$order) {
+        if (! $order) {
             $this->dispatch('toast', message: 'Pesanan tidak ditemukan atau sudah dibayar.', type: 'error');
+
             return;
         }
 
@@ -82,8 +89,8 @@ class CreateOrder extends Component
         $this->pendingOrderId = $order->id;
         $this->orderType = $order->order_type?->value;
         $this->tableId = $order->table_id;
-        
-        $this->dispatch('toast', message: 'Pesanan ' . $orderCode . ' berhasil ditarik!', type: 'success');
+
+        $this->dispatch('toast', message: 'Pesanan '.$orderCode.' berhasil ditarik!', type: 'success');
     }
 
     public function cancelPendingOrderMode(): void
@@ -107,7 +114,7 @@ class CreateOrder extends Component
         // OPTIMASI GANDA:
         // 1. MenuCacheService::getCatalog() kini benar-benar pakai Cache::remember (Laravel Cache, TTL 1 jam).
         // 2. #[Computed(cache: true)] mencegah query/cache-lookup diulang dalam siklus request Livewire yang sama.
-        return app(\App\Services\MenuCacheService::class)->getCatalog();
+        return app(MenuCacheService::class)->getCatalog();
     }
 
     // Modal state reset
@@ -221,51 +228,66 @@ class CreateOrder extends Component
 
         // Jika bukan pending order, validasi meja diperlukan untuk dine_in
         // Jika pending order, mungkin meja sudah diset dari awal oleh pelanggan
-        if (!$this->pendingOrderId && $this->orderType === 'dine_in') {
+        if (! $this->pendingOrderId && $this->orderType === 'dine_in') {
             $rules['tableId'] = ['required'];
         }
 
         $this->validate($rules);
 
         try {
-            \Illuminate\Support\Facades\DB::beginTransaction();
+            DB::beginTransaction();
+
+            $transactionService = app(TransactionService::class);
+
+            // [OMEGA-NODE1] Zero-Trust shift guard, dipusatkan lewat Service
+            // agar identik dengan alur TransactionController::store() --
+            // sebelumnya cabang "Skenario 2" mengambil shift_id TANPA
+            // validasi (bisa NULL diam-diam), dan "Skenario 1" tidak
+            // mengambil shift_id SAMA SEKALI.
+            $shiftId = $transactionService->resolveOpenShiftOrFail((int) \Illuminate\Support\Facades\Auth::id());
 
             if ($this->pendingOrderId) {
                 // Skenario 2: Membayar Pesanan Self-Order yang tertunda
-                $order = \App\Models\Order::findOrFail($this->pendingOrderId);
+                $order = Order::findOrFail($this->pendingOrderId);
                 $order->forceFill([
-                    'payment_method' => \App\Enums\PaymentMethod::tryFrom($this->paymentMethod) ?? \App\Enums\PaymentMethod::Cash,
+                    'payment_method' => PaymentMethod::tryFrom($this->paymentMethod) ?? PaymentMethod::Cash,
                     'cash_received' => $this->paymentMethod === 'cash' ? $this->cashReceived : null,
                     'order_change' => $this->paymentMethod === 'cash' ? ($this->cashReceived - $order->order_amount) : 0,
-                    'order_status' => \App\Enums\OrderStatus::Paid,
-                    'shift_id' => \App\Models\Shift::where('user_id', auth()->id())->where('status', 'open')->value('id'),
+                    'order_status' => OrderStatus::Paid,
+                    'shift_id' => $shiftId,
                 ])->save();
-                
+
                 // Ubah status KDS menjadi Pending (masuk dapur)
-                $order->orderItems()->update(['preparation_status' => \App\Enums\PreparationStatus::Pending->value]);
+                $order->orderItems()->update(['preparation_status' => PreparationStatus::Pending->value]);
             } else {
                 // Skenario 1: Pesanan Walk-in Baru (Logic Lama)
-                $order = app(TransactionService::class)->createWalkInOrder(
+                // [OMEGA-NODE1] FIX KRITIS: userId & shiftId sekarang WAJIB
+                // dioper eksplisit -- lihat TransactionService::createWalkInOrder().
+                $order = $transactionService->createWalkInOrder(
                     itemsPayload: $this->cart,
                     orderType: OrderType::from($this->orderType),
                     tableId: $this->tableId,
                     paymentMethod: $this->paymentMethod,
                     cashReceived: (int) $this->cashReceived,
+                    userId: (int) \Illuminate\Support\Facades\Auth::id(),
+                    shiftId: $shiftId,
                 );
             }
 
-            \Illuminate\Support\Facades\DB::commit();
+            DB::commit();
 
             session()->flash('success', "Order {$order->order_code} berhasil diproses.");
+
             return redirect()->route('transaction.receipt', $order->order_code);
 
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\DB::rollBack();
+            DB::rollBack();
             if ($e instanceof ValidationException) {
                 $this->addError('cart', collect($e->errors())->flatten()->first());
             } else {
                 $this->addError('cart', $e->getMessage());
             }
+
             return;
         }
     }

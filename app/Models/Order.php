@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
 use App\Enums\OrderType;
+use App\Enums\PaymentMethod;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,6 +17,12 @@ class Order extends Model
 {
     /**
      * Data isian order yang diizinkan untuk disisipkan ke dalam basis data secara bersamaan.
+     *
+     * [OMEGA-NODE1] SENGAJA TIDAK memasukkan: order_status, payment_method,
+     * snap_token, voided_by, void_reason, voided_at. Field-field ini adalah
+     * transisi status/keuangan yang HANYA boleh diubah lewat forceFill()
+     * eksplisit di TransactionService (titik tunggal kebenaran), BUKAN lewat
+     * mass-assignment biasa. JANGAN tambahkan ke daftar ini tanpa audit ulang.
      */
     protected $fillable = [
         'user_id',
@@ -40,8 +48,8 @@ class Order extends Model
         return [
             'order_date' => 'date',
             'order_type' => OrderType::class,
-            'order_status' => \App\Enums\OrderStatus::class,
-            'payment_method' => \App\Enums\PaymentMethod::class,
+            'order_status' => OrderStatus::class,
+            'payment_method' => PaymentMethod::class,
             'voided_at' => 'datetime',
         ];
     }

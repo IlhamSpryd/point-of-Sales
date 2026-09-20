@@ -19,12 +19,13 @@ class Category extends Model
      */
     protected $fillable = ['category_name', 'category_code'];
 
-    protected static function booted() {
+    protected static function booted()
+    {
         static::creating(function ($model) {
             if (empty($model->category_code)) {
                 $latest = static::latest('id')->first();
                 $nextId = $latest ? $latest->id + 1 : 1;
-                $model->category_code = 'CAT-' . str_pad($nextId, 3, '0', STR_PAD_LEFT);
+                $model->category_code = 'CAT-'.str_pad($nextId, 3, '0', STR_PAD_LEFT);
             }
         });
     }
