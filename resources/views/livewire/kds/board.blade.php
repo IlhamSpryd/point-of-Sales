@@ -1,8 +1,18 @@
 <div wire:poll.5s.visible="$refresh" class="space-y-6">
 
+    <div>
+        <h4 class="text-xl font-bold tracking-tight text-yovel-ink">Kitchen Display System</h4>
+        <p class="mt-1 text-sm font-medium text-yovel-muted">Pantau dan proses pesanan yang masuk secara real-time</p>
+    </div>
+
     @error('kds')
-        <div role="alert" class="flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700">
-            <span class="material-symbols-rounded text-[18px]">error</span> {{ $message }}
+        <div role="alert" class="flex items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-rounded text-[18px]">error</span> {{ $message }}
+            </div>
+            <button wire:click="dismissError" class="ml-4 rounded-lg p-1 hover:bg-rose-100/50">
+                <span class="material-symbols-rounded text-[16px]">close</span>
+            </button>
         </div>
     @enderror
 

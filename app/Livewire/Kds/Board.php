@@ -18,30 +18,35 @@ class Board extends Component
 {
     public function claim(int $itemId): void
     {
-        try {
-            app(KdsService::class)->claim($itemId, (int) Auth::id());
-        } catch (ValidationException $e) {
-            $this->addError('kds', collect($e->errors())->flatten()->first());
-        }
+        $this->guard(fn () => app(KdsService::class)->claim($itemId, (int) Auth::id()));
     }
 
     public function markReady(int $itemId): void
     {
-        try {
-            app(KdsService::class)->markReady($itemId, (int) Auth::id());
-        } catch (ValidationException $e) {
-            $this->addError('kds', collect($e->errors())->flatten()->first());
-        }
+        $this->guard(fn () => app(KdsService::class)->markReady($itemId, (int) Auth::id()));
     }
 
     public function release(int $itemId): void
     {
+        $this->guard(fn () => app(KdsService::class)->release(
+            $itemId,
+            (int) Auth::id(),
+            canManage: in_array(Auth::user()->role?->name, ['Owner', 'Manager'], true),
+        ));
+    }
+
+    public function dismissError(): void
+    {
+        $this->resetErrorBag('kds');
+    }
+
+    /** Bersihkan error lama sebelum setiap aksi, agar banner tidak menempel selamanya. */
+    private function guard(callable $action): void
+    {
+        $this->resetErrorBag('kds');
+
         try {
-            app(KdsService::class)->release(
-                $itemId,
-                (int) Auth::id(),
-                canManage: in_array(Auth::user()->role?->name, ['Owner', 'Manager'], true),
-            );
+            $action();
         } catch (ValidationException $e) {
             $this->addError('kds', collect($e->errors())->flatten()->first());
         }
@@ -72,10 +77,7 @@ class Board extends Component
         return $this->baseQuery()
             ->with('processedBy')
             ->where('preparation_status', PreparationStatus::Ready->value)
-            // OPTIMASI INDEX: whereDate() membungkus kolom dengan fungsi DATE() sehingga
-            // MySQL TIDAK BISA memakai index (non-sargable) -- full scan setiap poll 5
-            // detik. whereBetween dengan rentang eksplisit tetap sargable dan memanfaatkan
-            // index baru (preparation_status, updated_at).
+            // whereBetween tetap sargable dan memakai index (preparation_status, updated_at).
             ->whereBetween('order_items.updated_at', [today(), today()->endOfDay()])
             ->orderByDesc('order_items.updated_at')
             ->limit(12)
@@ -83,10 +85,7 @@ class Board extends Component
     }
 
     /**
-     * Zero-Trust gate: HANYA tampilkan item dari order yang sudah LUNAS
-     * (paid). Menutup celah dapur menyiapkan pesanan self-order QRIS/E-Wallet
-     * yang secara teknis belum benar-benar dibayar (masih menunggu callback
-     * atau sync manual Midtrans di /api/orders/{id}/sync-status).
+     * Zero-Trust gate: HANYA item dari order LUNAS (paid) yang tampil di dapur.
      */
     private function baseQuery(): Builder
     {

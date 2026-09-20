@@ -96,7 +96,7 @@ Route::middleware('auth')->group(function () {
     // Riwayat Pesanan
     Route::middleware('role:Owner,Manager,Kasir,Waiter')->group(function () {
         // Fallback sementara agar sidebar aktif. Nanti diganti Controller beneran.
-        Route::get('/orders', function() { return 'Modul Riwayat Pesanan Segera Hadir'; })->name('orders.index');
+        Route::get('/orders', fn () => view('orders.index'))->name('orders.index');
     });
 
     // Diskon & Promo

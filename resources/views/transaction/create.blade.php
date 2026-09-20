@@ -253,7 +253,7 @@
 
             <!-- PANEL KANAN: Daftar Keranjang Belanja -->
             <section
-                class="w-full lg:w-96 xl:w-[400px] bg-white flex flex-col shrink-0 h-[50vh] lg:h-full lg:border-l border-yovel-border z-30">
+                class="w-full lg:w-96 xl:w-[400px] bg-white flex flex-col shrink-0 h-[50dvh] lg:h-full lg:border-l border-yovel-border z-30">
                 <div
                     class="p-4 lg:p-5 border-b border-yovel-border flex items-center justify-between shrink-0 h-[72px]">
                     <div class="flex items-center gap-3">
@@ -264,7 +264,7 @@
                             x-text="cart.length"></span>
                     </div>
                     <span title="Kode final dibuat otomatis oleh sistem saat transaksi disimpan"
-                        class="text-[11px] font-semibold text-yovel-muted bg-yovel-surface px-3 py-1 rounded-full uppercase tracking-wider border border-yovel-border">#{{ strtoupper(\Illuminate\Support\Str::random(8)) }}</span>
+                        class="text-[11px] font-semibold text-yovel-muted bg-yovel-surface px-3 py-1 rounded-full uppercase tracking-wider border border-yovel-border">{{ __('Draft') }}</span>
                 </div>
 
                 <!-- Form dijadikan kontainer relatif -->
@@ -324,7 +324,7 @@
                                             <div
                                                 class="flex items-center gap-1.5 bg-yovel-bg border border-yovel-border rounded-full px-1.5 py-1">
                                                 <button type="button" @click="decreaseQty(index)"
-                                                    class="w-6 h-6 rounded-full flex items-center justify-center bg-white border border-yovel-border text-yovel-muted hover:bg-yovel-surface hover:text-yovel-ink transition-colors shadow-sm">
+                                                    class="w-6 h-6 min-w-[40px] min-h-[40px] rounded-full flex items-center justify-center bg-white border border-yovel-border text-yovel-muted hover:bg-yovel-surface hover:text-yovel-ink transition-colors shadow-sm">
                                                     <svg class="w-3 h-3" fill="none" stroke="currentColor"
                                                         viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round"
@@ -337,7 +337,7 @@
                                                 <button type="button" @click="increaseQty(index)"
                                                     :disabled="item.qty >= item.stock"
                                                     :class="item.qty >= item.stock ? 'opacity-30 cursor-not-allowed' : ''"
-                                                    class="w-6 h-6 rounded-full flex items-center justify-center bg-white border border-yovel-border text-yovel-muted hover:bg-yovel-surface hover:text-yovel-ink transition-colors shadow-sm">
+                                                    class="w-6 h-6 min-w-[40px] min-h-[40px] rounded-full flex items-center justify-center bg-white border border-yovel-border text-yovel-muted hover:bg-yovel-surface hover:text-yovel-ink transition-colors shadow-sm">
                                                     <svg class="w-3 h-3" fill="none" stroke="currentColor"
                                                         viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round"

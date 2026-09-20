@@ -24,7 +24,7 @@
 </head>
 
 <body class="antialiased bg-yovel-bg text-yovel-ink font-sans pt-safe">
-<div class="min-h-screen pb-32"
+<div class="mx-auto min-h-screen max-w-md pb-32 sm:border-x sm:border-yovel-border"
      x-data="{
         activeCategory: 'all',
         searchQuery: '',
@@ -127,7 +127,7 @@
                 <p class="mt-1 text-sm text-yovel-muted">Silakan panggil staf kami untuk bantuan.</p>
             </div>
         @else
-            <ul class="grid grid-cols-2 gap-3 md:grid-cols-4 lg:grid-cols-5">
+            <ul class="grid grid-cols-2 gap-3">
                 @foreach ($products as $product)
                     @php 
                         $soldOut = $product->stock <= 0; 
@@ -136,7 +136,7 @@
                     @endphp
                     
                     {{-- Logic Alpine: Tampilkan jika kategori cocok ATAU sedang mencari nama produk --}}
-                    <li x-show="(activeCategory === 'all' || activeCategory === '{{ $product->category_id }}') && '{{ strtolower($product->product_name) }}'.includes(searchQuery.toLowerCase())"
+                    <li x-show="(activeCategory === 'all' || activeCategory === '{{ $product->category_id }}') && @js(mb_strtolower($product->product_name)).includes(searchQuery.toLowerCase())"
                         x-transition:enter="transition ease-out duration-200"
                         x-transition:enter-start="opacity-0 scale-95"
                         x-transition:enter-end="opacity-100 scale-100">
@@ -197,7 +197,7 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="translate-y-0 opacity-100"
          x-transition:leave-end="translate-y-full opacity-0"
-         class="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] z-40 mx-auto max-w-2xl">
+         class="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] z-40 mx-auto max-w-md">
         <a href="{{ route('customer.cart.index') }}"
            class="flex min-h-14 w-full items-center justify-between rounded-2xl bg-yovel-ink px-5 font-semibold text-white shadow-xl transition-all hover:bg-black active:scale-[0.98]">
             <span class="rounded-lg bg-white/20 px-3 py-1 text-sm" x-text="count + ' Item'"></span>

@@ -46,7 +46,7 @@ class SalesExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
             $order->created_at->format('d/m/Y H:i'),
             $order->order_code,
             $order->user ? $order->user->name : 'Kasir',
-            strtoupper($order->payment_method),
+            strtoupper($order->payment_method?->value ?? '-'),
             $order->order_amount,
         ];
     }

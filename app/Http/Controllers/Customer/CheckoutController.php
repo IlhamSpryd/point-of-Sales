@@ -147,10 +147,12 @@ class CheckoutController extends Controller
 
         $order = $query->firstOrFail();
 
+        $status = $order->order_status; // sudah instance OrderStatus (cast di model Order)
+
         return response()->json([
-            'order_status' => $order->order_status,
-            'is_paid' => \App\Enums\OrderStatus::tryFrom($order->order_status) === \App\Enums\OrderStatus::Paid,
-            'is_final' => \App\Enums\OrderStatus::tryFrom($order->order_status)?->isFinal() ?? false,
+            'order_status' => $status->value,
+            'is_paid' => $status === \App\Enums\OrderStatus::Paid,
+            'is_final' => $status->isFinal(),
         ]);
     }
 }

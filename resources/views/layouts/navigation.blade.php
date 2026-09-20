@@ -62,7 +62,7 @@
 {{-- Tombol buka drawer (mobile). Touch target 44px. --}}
 <button type="button" x-show="!sidebarMobileOpen" @click="sidebarMobileOpen = true"
         aria-controls="main-sidebar" :aria-expanded="sidebarMobileOpen.toString()" aria-label="Buka menu"
-        class="lg:hidden fixed top-1.5 left-2 z-40 w-11 h-11 flex items-center justify-center bg-white/90 backdrop-blur border border-[#E9E9E7] rounded-xl text-[#787774] shadow-sm hover:text-[#37352F] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#37352F] transition-all duration-200">
+        class="lg:hidden fixed top-1.5 left-2 z-40 w-[44px] h-[44px] flex items-center justify-center bg-white/90 backdrop-blur border border-[#E9E9E7] rounded-xl text-[#787774] shadow-sm hover:text-[#37352F] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#37352F] transition-all duration-200">
     <span class="material-symbols-rounded text-[22px]">menu</span>
 </button>
 
@@ -106,7 +106,7 @@
         </button>
         {{-- Tutup drawer (mobile) --}}
         <button type="button" @click="sidebarMobileOpen = false" x-show="sidebarMobileOpen" x-cloak aria-label="Tutup menu"
-                class="lg:hidden w-11 h-11 flex items-center justify-center rounded-xl text-[#787774] hover:bg-[#F7F7F5] active:scale-95 transition-all duration-200">
+                class="lg:hidden w-[44px] h-[44px] flex items-center justify-center rounded-xl text-[#787774] hover:bg-[#F7F7F5] active:scale-95 transition-all duration-200">
             <span class="material-symbols-rounded text-[22px]">close</span>
         </button>
     </div>
@@ -125,7 +125,7 @@
                         @php
                             $routeExists = \Illuminate\Support\Facades\Route::has($item['route']);
                             $isActive = $routeExists && request()->routeIs($item['active']);
-                            $rowBase = 'group relative flex items-center rounded-xl text-[13px] font-medium whitespace-nowrap min-h-11 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#37352F]';
+                            $rowBase = 'group relative flex items-center rounded-xl text-[13px] font-medium whitespace-nowrap min-h-[44px] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#37352F]';
                         @endphp
                         <li>
                             @if ($routeExists)
@@ -159,7 +159,7 @@
     {{-- Profil + popover --}}
     <div class="shrink-0 mt-auto relative border-t border-[#E9E9E7]" :class="wide ? 'p-3' : 'p-2'">
         <button type="button" @click="openPopover = !openPopover" :aria-expanded="openPopover.toString()"
-                class="w-full flex items-center rounded-xl transition-all duration-200 whitespace-nowrap min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]"
+                class="w-full flex items-center rounded-xl transition-all duration-200 whitespace-nowrap min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]"
                 :class="[wide ? 'p-2 hover:bg-[#F7F7F5]' : 'p-1.5 justify-center hover:bg-[#F7F7F5]', openPopover ? 'bg-[#F7F7F5]' : '']"
                 title="{{ auth()->user()->name ?? 'Profil' }}">
             <div class="w-8 h-8 rounded-lg bg-[#F1F1EF] text-[#37352F] border border-[#E9E9E7] flex items-center justify-center font-semibold text-[13px] shrink-0">
@@ -189,12 +189,12 @@
                 @endif
             </div>
             <div class="p-1.5">
-                <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-3 min-h-11 rounded-xl text-[13px] font-medium text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5] active:scale-[0.98] transition-all duration-150">
+                <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-[13px] font-medium text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5] active:scale-[0.98] transition-all duration-150">
                     <span class="material-symbols-rounded text-[18px]">person</span> Profil Saya
                 </a>
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
-                    <button type="submit" class="flex w-full items-center gap-3 px-3 min-h-11 rounded-xl text-[13px] font-medium text-rose-600 hover:bg-rose-50 active:scale-[0.98] transition-all duration-150">
+                    <button type="submit" class="flex w-full items-center gap-3 px-3 min-h-[44px] rounded-xl text-[13px] font-medium text-rose-600 hover:bg-rose-50 active:scale-[0.98] transition-all duration-150">
                         <span class="material-symbols-rounded text-[18px]">logout</span> Keluar
                     </button>
                 </form>

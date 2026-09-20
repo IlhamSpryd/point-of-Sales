@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ $title ?? 'Yovel Coffee & Cafe' }}</title>
@@ -27,8 +27,13 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    @php($livewirePage = request()->routeIs('kds.*', 'shifts.*'))
+    @if ($livewirePage)
+        @livewireStyles
+    @else
+        <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/collapse@3.x.x/dist/cdn.min.js"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    @endif
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.42.0/dist/apexcharts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -48,7 +53,7 @@
     </style>
 </head>
 
-<body class="antialiased bg-[#F7F7F5] text-[#37352F] flex h-screen overflow-hidden" style="font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;">
+<body class="antialiased bg-[#F7F7F5] text-[#37352F] flex h-dvh overflow-hidden" style="font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;">
 
     <div x-data="{ sidebarMobileOpen: false, expanded: localStorage.getItem('sidebarExpanded') !== 'false' }" x-init="$watch('expanded', val => localStorage.setItem('sidebarExpanded', val))" class="flex w-full h-full">
         <!-- Sidebar Navigation -->
@@ -84,6 +89,9 @@
         </div>
     </div>
 
+    @if ($livewirePage)
+        @livewireScripts
+    @endif
     @include('partials.sweetalert-confirm-delete')
 </body>
 

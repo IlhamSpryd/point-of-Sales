@@ -456,20 +456,8 @@ option {
        =========================================================
     */
 
-    /* Default (Mobile / Layar sempit) */
-    html.admin-ui {
-        font-size: 12px;
-    }
-
-    /* Tablet (iPad, dsb) */
-    @media (min-width: 768px) {
-        html.admin-ui { font-size: 12.5px; }
-    }
-
-    /* Laptop Standar (1024px - 1365px) -> Sweet spot anti sesak */
-    @media (min-width: 1024px) {
-        html.admin-ui { font-size: 13.5px; }
-    }
+    /* Revisi: Lantai 14px agar touch target (w-6, dll) tidak menyusut di bawah batas aman */
+    html.admin-ui { font-size: 14px; }
 
     /* Monitor Eksternal Menengah (1366px - 1599px) */
     @media (min-width: 1366px) {
@@ -479,5 +467,14 @@ option {
     /* Monitor Besar / Full HD 1080p ke atas (1600px+) -> Kembali ke ukuran normal 100% */
     @media (min-width: 1600px) {
         html.admin-ui { font-size: 16px; }
+    }
+}
+
+/* SENGAJA di luar @layer: mencegah auto-zoom di iOS Safari saat klik input */
+@media (pointer: coarse) {
+    html.admin-ui input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+    html.admin-ui select,
+    html.admin-ui textarea {
+        font-size: 16px;
     }
 }

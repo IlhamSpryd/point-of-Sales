@@ -73,14 +73,14 @@ class CreateOrder extends Component
             $this->cart[] = [
                 'product_id' => $item->product_id,
                 'qty' => $item->qty,
-                'modifier_ids' => collect($item->options)->pluck('id')->filter()->toArray(),
+                'modifier_ids' => collect($item->options)->pluck('modifier_id')->filter()->values()->toArray(),
                 'notes' => $item->notes,
             ];
         }
 
         $this->pendingOrderCode = $order->order_code;
         $this->pendingOrderId = $order->id;
-        $this->orderType = $order->order_type;
+        $this->orderType = $order->order_type?->value;
         $this->tableId = $order->table_id;
         
         $this->dispatch('toast', message: 'Pesanan ' . $orderCode . ' berhasil ditarik!', type: 'success');

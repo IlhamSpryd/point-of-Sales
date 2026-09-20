@@ -28,7 +28,7 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="translate-y-0 opacity-100"
          x-transition:leave-end="translate-y-full opacity-0"
-         class="relative z-10 flex max-h-[88vh] w-full flex-col overflow-hidden rounded-t-[1.75rem] bg-white shadow-2xl">
+         class="relative z-10 mx-auto flex max-h-[88dvh] w-full max-w-md flex-col overflow-hidden rounded-t-[1.75rem] bg-white shadow-2xl">
 
         {{-- Handle (mobile) --}}
         <div class="flex shrink-0 justify-center pt-3" aria-hidden="true">
@@ -128,12 +128,12 @@
                     <span class="text-[14px] font-bold text-yovel-muted">Jumlah:</span>
                     <div class="flex shrink-0 items-center rounded-full border border-yovel-border bg-yovel-surface p-0.5" role="group" aria-label="Jumlah">
                         <button type="button" @click="qty = Math.max(1, qty - 1)" :disabled="qty <= 1" aria-label="Kurangi jumlah"
-                                class="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition-all duration-200 active:scale-90 disabled:opacity-40">
+                                class="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm transition-all duration-200 active:scale-90 disabled:opacity-40">
                             <span class="material-symbols-rounded text-[18px]">remove</span>
                         </button>
                         <span class="w-8 text-center text-[15px] font-bold tabular-nums" x-text="qty" aria-live="polite"></span>
                         <button type="button" @click="qty = Math.min(20, qty + 1)" :disabled="qty >= 20" aria-label="Tambah jumlah"
-                                class="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition-all duration-200 active:scale-90 disabled:opacity-40">
+                                class="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm transition-all duration-200 active:scale-90 disabled:opacity-40">
                             <span class="material-symbols-rounded text-[18px]">add</span>
                         </button>
                     </div>

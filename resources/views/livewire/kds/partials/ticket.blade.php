@@ -75,7 +75,7 @@
 
     @if ($variant === 'pending')
         <button type="button" wire:click="claim({{ $item->id }})" wire:loading.attr="disabled" wire:target="claim({{ $item->id }})"
-                class="mt-4 flex min-h-12 w-full items-center justify-center rounded-xl bg-yovel-ink text-sm font-bold text-white shadow-sm transition-all duration-200 hover:bg-black active:scale-[0.97] disabled:cursor-wait disabled:opacity-60">
+                class="mt-4 flex min-h-11 w-full items-center justify-center rounded-xl bg-yovel-ink text-sm font-bold text-white shadow-sm transition-all duration-200 hover:bg-black active:scale-[0.97] disabled:cursor-wait disabled:opacity-60">
             <span wire:loading.remove wire:target="claim({{ $item->id }})" class="flex items-center gap-2">
                 <span class="material-symbols-rounded text-[18px]">skillet</span> Mulai Racik
             </span>
@@ -88,7 +88,7 @@
             <div class="mt-4 flex gap-2">
                 @if ($isMine)
                     <button type="button" wire:click="markReady({{ $item->id }})" wire:loading.attr="disabled" wire:target="markReady({{ $item->id }})"
-                            class="flex min-h-12 flex-1 items-center justify-center rounded-xl bg-yovel-ink text-sm font-bold text-white shadow-sm transition-all duration-200 hover:bg-black active:scale-[0.97] disabled:cursor-wait disabled:opacity-60">
+                            class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-yovel-ink text-sm font-bold text-white shadow-sm transition-all duration-200 hover:bg-black active:scale-[0.97] disabled:cursor-wait disabled:opacity-60">
                         <span wire:loading.remove wire:target="markReady({{ $item->id }})" class="flex items-center gap-2">
                             <span class="material-symbols-rounded text-[18px]">check_circle</span> Selesai
                         </span>
@@ -99,7 +99,7 @@
                 @endif
                 <button type="button" wire:click="release({{ $item->id }})" wire:loading.attr="disabled" wire:target="release({{ $item->id }})"
                         title="Lepaskan item ini" aria-label="Lepaskan item ini"
-                        class="flex min-h-12 min-w-12 items-center justify-center rounded-xl border border-yovel-border bg-white shadow-sm transition-all duration-200 hover:bg-yovel-bg active:scale-[0.97] disabled:cursor-wait disabled:opacity-60 {{ $isMine ? '' : 'flex-1 gap-2 text-sm font-bold' }}">
+                        class="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-yovel-border bg-white shadow-sm transition-all duration-200 hover:bg-yovel-bg active:scale-[0.97] disabled:cursor-wait disabled:opacity-60 {{ $isMine ? '' : 'flex-1 gap-2 text-sm font-bold' }}">
                     <span wire:loading.remove wire:target="release({{ $item->id }})" class="flex items-center gap-2">
                         <span class="material-symbols-rounded text-[20px]">undo</span>
                         @unless ($isMine) Lepaskan @endunless

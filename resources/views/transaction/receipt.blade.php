@@ -65,7 +65,7 @@
                 <span>Subtotal</span><span>{{ number_format($order->subtotal_amount, 0, ',', '.') }}</span>
             </div>
             <div class="flex justify-between">
-                <span>Pajak (11%)</span><span>{{ number_format($order->tax_amount, 0, ',', '.') }}</span>
+                <span>Pajak ({{ rtrim(rtrim(number_format($taxRatePercent ?? 11, 1), '0'), '.') }}%)</span><span>{{ number_format($order->tax_amount, 0, ',', '.') }}</span>
             </div>
             <div class="flex justify-between font-bold text-[13px] mt-1">
                 <span>TOTAL</span><span>{{ number_format($order->order_amount, 0, ',', '.') }}</span>
@@ -102,7 +102,7 @@
                tanpa baris ini, hanya hasil hide sidebar, kertas tetap
                dianggap A4 oleh browser/driver. */
             @page {
-                size: var(--receipt-width) auto;
+                size: {{ (int) config('pos.receipt_width_mm', 58) }}mm auto;
                 margin: 0;
             }
 
@@ -110,6 +110,7 @@
                layout wrapper/navbar dari x-app-layout yang tidak bisa kita
                tandai print:hidden langsung dari file ini), lalu munculkan
                HANYA area struk. */
+            html, body { height: auto !important; overflow: visible !important; }
             body * { visibility: hidden; }
             #receipt, #receipt * { visibility: visible; }
 

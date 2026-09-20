@@ -24,20 +24,19 @@
     </style>
 </head>
 
-<body class="antialiased text-[#37352F] bg-[#F7F7F5]">
+<body class="font-sans antialiased text-[#37352F] bg-[#F7F7F5] flex h-dvh flex-col items-center justify-center p-4">
 
-    <div id="swup" class="transition-fade min-h-screen grid lg:grid-cols-2 w-full">
-
-        <!-- KIRI: KONTEN SLOT -->
-        <div class="flex flex-col items-center justify-center p-6 sm:p-10 w-full relative bg-white">
-            <div class="w-full max-w-105">
-                @yield('content')
-            </div>
+    <div id="swup" class="transition-fade w-full max-w-md bg-white rounded-3xl p-8 shadow-sm border border-[#E9E9E7] animate-slide-up-fade">
+        <div class="flex justify-center mb-8">
+            <a href="/" class="flex flex-col items-center gap-2">
+                <div class="w-16 h-16 bg-[#37352F] rounded-2xl flex items-center justify-center shadow-md">
+                    <span class="text-white font-bold text-2xl tracking-tighter">Y</span>
+                </div>
+                <span class="text-lg tracking-tight font-brand font-bold">Yovel<span class="font-normal text-[#787774] ml-1">Coffee</span></span>
+            </a>
         </div>
 
-        <!-- KANAN: PANEL VISUAL -->
-        @yield('panel')
-
+        {{ $slot }}
     </div>
 
     @yield('scripts')
