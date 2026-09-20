@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
@@ -8,6 +10,7 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\TransactionService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
@@ -112,39 +115,76 @@ class TransactionController extends Controller
 
     /**
      * Sinkronisasi status Midtrans secara manual (untuk localhost tanpa webhook).
-     * Identik dengan belajar-laravel/OrderController@syncMidtrans
+     *
+     * [SEC-005 - CRITICAL FIX - AUDIT KEAMANAN]
+     * SEBELUM perbaikan ini, method ini melakukan pembacaan (`Order::first()`)
+     * dan penulisan (`->update()`) TANPA `lockForUpdate()`/`DB::transaction()`
+     * sama sekali, dan HANYA menangani status 'capture'/'settlement' --
+     * mengabaikan 'deny'/'cancel'/'expire' sepenuhnya. Ini membuka DUA celah:
+     *
+     *  1. RACE CONDITION -- frontend (pos-script.blade.php) memanggil endpoint
+     *     ini dari callback onSuccess() DAN onClose() Midtrans Snap, yang bisa
+     *     terpicu nyaris bersamaan. Tanpa row-lock, dua request paralel bisa
+     *     saling menimpa dalam jendela balapan yang sama.
+     *  2. STATUS REGRESSION -- karena Transaction::status() adalah panggilan
+     *     jaringan ke Midtrans (butuh waktu), webhook resmi
+     *     (MidtransNotificationController) bisa saja SUDAH memfinalisasi order
+     *     ini (misal jadi 'Failed' via notifikasi 'deny') PERSIS di jendela
+     *     waktu tersebut -- lalu endpoint sync ini datang belakangan dan
+     *     MENIMPA PAKSA status yang sudah final itu kembali jadi 'Paid'. Ini
+     *     adalah kebocoran finansial nyata: pembayaran yang sudah ditolak
+     *     Midtrans bisa tercatat lunas di sistem kita.
+     *
+     * Perbaikan: seluruh logika pembaruan status kini didelegasikan penuh ke
+     * TransactionService::updateStatusFromMidtransNotification() -- method
+     * yang SAMA PERSIS dipakai webhook resmi, yang sudah membungkus
+     * lockForUpdate()+DB::transaction()+idempotency guard (isFinal()) dan
+     * menangani SELURUH status Midtrans, bukan hanya jalur bahagia. Controller
+     * ini sekarang HANYA bertugas mengambil status terbaru dari Midtrans
+     * (network call) lalu meneruskannya -- tidak lagi menulis ke database
+     * secara langsung.
      */
-    public function syncMidtrans(string $orderNumber)
+    public function syncMidtrans(string $orderNumber): JsonResponse
     {
         $order = Order::where('order_code', $orderNumber)->first();
 
-        if ($order && $order->order_status === OrderStatus::Pending->value && $order->payment_method !== 'cash') {
-            Config::$serverKey = config('services.midtrans.server_key');
-            Config::$isProduction = config('services.midtrans.is_production', false);
-            if (! Config::$isProduction) {
-                Config::$curlOptions = [
-                    CURLOPT_SSL_VERIFYHOST => 0,
-                    CURLOPT_SSL_VERIFYPEER => false,
-                    CURLOPT_HTTPHEADER => [],
-                ];
-            }
+        if (! $order || $order->order_status !== OrderStatus::Pending || $order->payment_method === \App\Enums\PaymentMethod::Cash) {
+            return response()->json(['success' => true]);
+        }
 
-            try {
-                // Beri waktu 2 detik agar status midtrans di Sandbox benar-benar berubah menjadi settlement,
-                // sebelum kita melakukan pengecekan ke server mereka.
-                sleep(2);
+        Config::$serverKey = config('services.midtrans.server_key');
+        Config::$isProduction = config('services.midtrans.is_production', false);
+        if (! Config::$isProduction) {
+            Config::$curlOptions = [
+                CURLOPT_SSL_VERIFYHOST => 0,
+                CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_HTTPHEADER => [],
+            ];
+        }
 
-                $status = (object) Transaction::status($orderNumber);
+        try {
+            // Beri waktu 2 detik agar status midtrans di Sandbox benar-benar berubah menjadi settlement,
+            // sebelum kita melakukan pengecekan ke server mereka.
+            sleep(2);
 
-                if (isset($status->transaction_status) && in_array($status->transaction_status, ['capture', 'settlement'])) {
-                    if ($order->order_status !== OrderStatus::Paid->value) {
-                        $order->update(['order_status' => OrderStatus::Paid->value]);
-                    }
-                }
-            } catch (\Exception $e) {
-                Log::error('syncMidtrans Error: '.$e->getMessage());
-                // Biarkan hening, akan di-retry manual
-            }
+            $status = (object) Transaction::status($orderNumber);
+
+            // [SEC-006] Sertakan gross_amount yang dilaporkan Midtrans (jika ada)
+            // agar TransactionService bisa memverifikasinya terhadap order_amount
+            // di database sebelum mengubah status apa pun.
+            $grossAmount = isset($status->gross_amount)
+                ? (int) round((float) $status->gross_amount)
+                : null;
+
+            $this->transactionService->updateStatusFromMidtransNotification(
+                orderCode: $orderNumber,
+                transactionStatus: (string) ($status->transaction_status ?? ''),
+                fraudStatus: $status->fraud_status ?? null,
+                grossAmount: $grossAmount,
+            );
+        } catch (\Exception $e) {
+            Log::error('syncMidtrans Error: '.$e->getMessage());
+            // Biarkan hening, akan di-retry manual
         }
 
         return response()->json(['success' => true]);

@@ -72,7 +72,11 @@ class Board extends Component
         return $this->baseQuery()
             ->with('processedBy')
             ->where('preparation_status', PreparationStatus::Ready->value)
-            ->whereDate('order_items.updated_at', today())
+            // OPTIMASI INDEX: whereDate() membungkus kolom dengan fungsi DATE() sehingga
+            // MySQL TIDAK BISA memakai index (non-sargable) -- full scan setiap poll 5
+            // detik. whereBetween dengan rentang eksplisit tetap sargable dan memanfaatkan
+            // index baru (preparation_status, updated_at).
+            ->whereBetween('order_items.updated_at', [today(), today()->endOfDay()])
             ->orderByDesc('order_items.updated_at')
             ->limit(12)
             ->get();

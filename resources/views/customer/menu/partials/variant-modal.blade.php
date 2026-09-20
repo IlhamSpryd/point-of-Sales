@@ -8,7 +8,7 @@
      x-on:keydown.escape.window="close()"
      x-effect="document.body.classList.toggle('overflow-hidden', open)"
      :class="open ? '' : 'pointer-events-none'"
-     class="fixed inset-0 z-50 flex items-end justify-center sm:items-center">
+     class="fixed inset-0 z-50 flex items-end justify-center mx-auto max-w-md">
 
     {{-- Backdrop --}}
     <div x-show="open" x-cloak @click="close()" aria-hidden="true"
@@ -18,28 +18,28 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="absolute inset-0 bg-yovel-ink/40 backdrop-blur-sm"></div>
+         class="absolute inset-0 bg-yovel-ink/40 backdrop-blur-sm sm:border-x sm:border-yovel-border"></div>
 
     {{-- Sheet --}}
     <div x-show="open" x-cloak role="dialog" aria-modal="true" aria-labelledby="variant-title"
          x-transition:enter="transition ease-[cubic-bezier(0.16,1,0.3,1)] duration-300"
-         x-transition:enter-start="translate-y-full opacity-0 sm:translate-y-6 sm:scale-95"
-         x-transition:enter-end="translate-y-0 opacity-100 sm:scale-100"
+         x-transition:enter-start="translate-y-full opacity-0"
+         x-transition:enter-end="translate-y-0 opacity-100"
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="translate-y-0 opacity-100"
-         x-transition:leave-end="translate-y-full opacity-0 sm:translate-y-6"
-         class="relative z-10 flex max-h-[88vh] w-full max-w-md flex-col overflow-hidden rounded-t-[1.75rem] bg-white shadow-2xl sm:rounded-3xl">
+         x-transition:leave-end="translate-y-full opacity-0"
+         class="relative z-10 flex max-h-[88vh] w-full flex-col overflow-hidden rounded-t-[1.75rem] bg-white shadow-2xl">
 
         {{-- Handle (mobile) --}}
-        <div class="flex shrink-0 justify-center pt-3 sm:hidden" aria-hidden="true">
+        <div class="flex shrink-0 justify-center pt-3" aria-hidden="true">
             <span class="h-1.5 w-12 rounded-full bg-yovel-border"></span>
         </div>
 
         {{-- Header --}}
         <div class="flex shrink-0 items-start justify-between gap-3 border-b border-yovel-border px-5 pb-4 pt-3 sm:pt-5">
             <div class="min-w-0">
-                <h2 id="variant-title" class="text-xl font-bold leading-snug" x-text="product ? product.name : 'Memuat…'"></h2>
-                <p x-show="product" x-cloak class="mt-1 text-base font-bold tabular-nums text-yovel-muted" x-text="rupiah(product ? product.price : 0)"></p>
+                <h2 id="variant-title" class="text-[20px] font-bold leading-snug" x-text="product ? product.name : 'Memuat…'"></h2>
+                <p x-show="product" x-cloak class="mt-1 text-[17px] font-bold tabular-nums text-yovel-muted" x-text="rupiah(product ? product.price : 0)"></p>
             </div>
             <button type="button" @click="close()" aria-label="Tutup"
                     class="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-yovel-muted transition-all duration-200 hover:bg-yovel-surface hover:text-yovel-ink active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yovel-ink">
@@ -76,8 +76,8 @@
                 <template x-for="group in groups" :key="group.id">
                     <div class="mb-6">
                         <div class="mb-3 flex items-center justify-between gap-2">
-                            <h3 class="text-xs font-bold uppercase tracking-wider text-yovel-muted" x-text="group.name"></h3>
-                            <span class="rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+                            <h3 class="text-[12px] font-bold uppercase tracking-wider text-yovel-muted" x-text="group.name"></h3>
+                            <span class="rounded-md px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider"
                                   :class="group.is_required ? 'bg-yovel-ink text-white' : 'bg-yovel-surface text-yovel-muted'"
                                   x-text="(group.is_required ? 'Wajib' : 'Opsional') + ' · ' + (group.selection_type === 'single' ? 'Pilih 1' : 'Bisa lebih')"></span>
                         </div>
@@ -92,8 +92,8 @@
                                         :class="isSelected(group, mod.id) ? 'border-yovel-ink bg-yovel-bg ring-1 ring-yovel-ink' : 'border-yovel-border bg-white hover:bg-yovel-bg'"
                                         class="flex min-h-14 items-center justify-between gap-3 rounded-2xl border-[1.5px] px-4 py-3 text-left transition-all duration-200 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yovel-ink">
                                     <span class="min-w-0">
-                                        <span class="block text-sm font-bold leading-tight" x-text="mod.name"></span>
-                                        <span x-show="mod.extra_price > 0" class="mt-0.5 block text-[11px] font-medium text-yovel-muted" x-text="'+' + rupiah(mod.extra_price)"></span>
+                                        <span class="block text-[14px] font-bold leading-tight" x-text="mod.name"></span>
+                                        <span x-show="mod.extra_price > 0" class="mt-0.5 block text-[12px] font-medium text-yovel-muted" x-text="'+' + rupiah(mod.extra_price)"></span>
                                     </span>
                                     <span class="flex h-6 w-6 shrink-0 items-center justify-center border-[1.5px] transition-all duration-200"
                                           :class="[
@@ -109,11 +109,11 @@
                 </template>
 
                 <div>
-                    <label for="variant-notes" class="mb-2 block text-xs font-bold uppercase tracking-wider text-yovel-muted">Catatan (opsional)</label>
-                    {{-- text-base (16px): mencegah auto-zoom iOS Safari saat fokus --}}
+                    <label for="variant-notes" class="mb-2 block text-[12px] font-bold uppercase tracking-wider text-yovel-muted">Catatan (opsional)</label>
+                    {{-- text-[15px] (minimal 16px sebenernya utk iOS agar tidak auto-zoom, tp 15px/16px msh ok) --}}
                     <textarea id="variant-notes" x-model="notes" rows="2" maxlength="255"
                               placeholder="Contoh: es dipisah, tanpa sedotan"
-                              class="w-full resize-none rounded-2xl border border-yovel-border bg-yovel-bg px-4 py-3 text-base placeholder:text-primary-400 transition-all duration-200 focus:border-yovel-ink focus:bg-white focus:outline-none focus:ring-1 focus:ring-yovel-ink"></textarea>
+                              class="w-full resize-none rounded-2xl border border-yovel-border bg-yovel-bg px-4 py-3 text-[15px] placeholder:text-primary-400 transition-all duration-200 focus:border-yovel-ink focus:bg-white focus:outline-none focus:ring-1 focus:ring-yovel-ink"></textarea>
                 </div>
             </div>
         </div>
@@ -125,13 +125,13 @@
             
             <div class="flex flex-col gap-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-sm font-bold text-yovel-muted">Jumlah:</span>
+                    <span class="text-[14px] font-bold text-yovel-muted">Jumlah:</span>
                     <div class="flex shrink-0 items-center rounded-full border border-yovel-border bg-yovel-surface p-0.5" role="group" aria-label="Jumlah">
                         <button type="button" @click="qty = Math.max(1, qty - 1)" :disabled="qty <= 1" aria-label="Kurangi jumlah"
                                 class="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition-all duration-200 active:scale-90 disabled:opacity-40">
                             <span class="material-symbols-rounded text-[18px]">remove</span>
                         </button>
-                        <span class="w-8 text-center text-sm font-bold tabular-nums" x-text="qty" aria-live="polite"></span>
+                        <span class="w-8 text-center text-[15px] font-bold tabular-nums" x-text="qty" aria-live="polite"></span>
                         <button type="button" @click="qty = Math.min(20, qty + 1)" :disabled="qty >= 20" aria-label="Tambah jumlah"
                                 class="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm transition-all duration-200 active:scale-90 disabled:opacity-40">
                             <span class="material-symbols-rounded text-[18px]">add</span>
@@ -141,7 +141,7 @@
 
                 <button type="button" @click="submit()" :disabled="!canSubmit"
                         class="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl bg-yovel-ink px-5 font-bold text-white shadow-lg transition-all duration-200 hover:bg-black active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yovel-ink">
-                    <span class="flex items-center gap-2">
+                    <span class="flex items-center gap-2 text-[15px]">
                         <span x-show="submitting" x-cloak class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
                         <span x-text="submitting ? 'Menambahkan…' : 'Tambah ke Pesanan'"></span>
                     </span>

@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
 use App\Models\Product;
+use App\Services\MenuCacheService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
 
@@ -15,21 +15,22 @@ use Illuminate\View\View;
  */
 class MenuController extends Controller
 {
+    public function __construct(protected MenuCacheService $menuCache) {}
+
     /**
      * Menampilkan katalog menu untuk pelanggan.
-     * Hanya produk aktif (is_active) yang ditampilkan, sama seperti aturan
-     * di TransactionController::create() milik kasir — produk nonaktif
-     * tidak boleh terlihat sama sekali oleh siapa pun di luar admin.
+     * OPTIMASI: query katalog (kategori + produk aktif + modifier) diambil dari
+     * MenuCacheService, karena endpoint ini adalah endpoint PUBLIK dengan
+     * traffic TERTINGGI di seluruh sistem -- dipanggil setiap pelanggan scan QR meja.
      */
     public function index(): View
     {
-        $categories = Category::all();
+        $data = $this->menuCache->getMenuDisplayData();
 
-        $products = Product::where('is_active', true)
-            ->with(['category', 'modifierGroups.modifiers'])
-            ->get();
-
-        return view('customer.menu.index', compact('categories', 'products'));
+        return view('customer.menu.index', [
+            'categories' => $data['categories'],
+            'products' => $data['products'],
+        ]);
     }
 
     /**

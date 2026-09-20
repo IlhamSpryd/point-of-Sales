@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Services\TransactionService;
@@ -54,10 +56,15 @@ class MidtransNotificationController extends Controller
         }
 
         try {
+            // [SEC-006] gross_amount dari payload (yang keasliannya sudah
+            // terverifikasi lewat pengecekan signature di atas) diteruskan
+            // ke Service agar dicocokkan terhadap order_amount di database
+            // sebelum status benar-benar diubah menjadi Paid.
             $this->transactionService->updateStatusFromMidtransNotification(
                 orderCode: (string) $orderId,
                 transactionStatus: (string) ($payload['transaction_status'] ?? ''),
                 fraudStatus: $payload['fraud_status'] ?? null,
+                grossAmount: (int) round((float) $grossAmount),
             );
         } catch (ModelNotFoundException) {
             Log::warning('Midtrans notification: order tidak ditemukan.', ['order_id' => $orderId]);

@@ -25,18 +25,11 @@ class Order extends Model
         'discount_amount',
         'tax_amount',
         'service_charge_amount',
-        'order_amount',
         'order_change',
-        'order_status',
-        'payment_method',
         'cash_received',
         'table_id',
         'order_type',
         'discount_id',
-        'voided_by',
-        'void_reason',
-        'voided_at',
-        'snap_token',
     ];
 
     /**
@@ -47,6 +40,8 @@ class Order extends Model
         return [
             'order_date' => 'date',
             'order_type' => OrderType::class,
+            'order_status' => \App\Enums\OrderStatus::class,
+            'payment_method' => \App\Enums\PaymentMethod::class,
             'voided_at' => 'datetime',
         ];
     }

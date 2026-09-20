@@ -138,11 +138,34 @@
         {{-- KOLOM KANAN: keranjang + pembayaran --}}
         <div>
             <div class="card-surface sticky top-0 bg-white overflow-hidden flex flex-col max-h-[calc(100vh-5rem)]">
-                <div class="p-4 border-b border-yovel-border bg-white shrink-0">
-                    <h3 class="font-bold text-lg text-yovel-ink flex items-center gap-2">
-                        <span class="material-symbols-rounded text-[20px]">shopping_cart</span>
-                        Detail Pesanan
-                    </h3>
+                <div class="p-4 border-b border-yovel-border bg-white shrink-0 flex flex-col gap-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-lg text-yovel-ink flex items-center gap-2">
+                            <span class="material-symbols-rounded text-[20px]">shopping_cart</span>
+                            Detail Pesanan
+                        </h3>
+                        <span class="bg-yovel-ink text-white text-xs font-bold px-2.5 py-1 rounded-full">{{ count($this->cartLines) }}</span>
+                    </div>
+
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-yovel-muted">
+                            <span class="material-symbols-rounded text-[18px]">qr_code_scanner</span>
+                        </span>
+                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="Scan QR Pesanan..." class="bg-yovel-bg border border-yovel-border text-yovel-ink text-sm rounded-xl focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink block w-full pl-9 pr-3 py-2 shadow-sm transition-all duration-200" autofocus>
+                    </div>
+
+                    {{-- Alert Mode Tarik Pesanan --}}
+                    @if($pendingOrderCode)
+                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex justify-between items-center">
+                            <div>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600 block">Membayar Pesanan Self-Order</span>
+                                <span class="font-mono font-bold text-yovel-ink">{{ $pendingOrderCode }}</span>
+                            </div>
+                            <button wire:click="cancelPendingOrderMode" class="text-rose-500 hover:text-rose-700 p-1 bg-white rounded-lg border border-amber-100 shadow-sm active:scale-90 transition-all duration-200">
+                                <span class="material-symbols-rounded text-[20px]">close</span>
+                            </button>
+                        </div>
+                    @endif
                 </div>
                 
                 <div class="p-4 flex-1 overflow-y-auto bg-yovel-bg custom-scrollbar">

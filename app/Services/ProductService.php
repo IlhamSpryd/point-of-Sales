@@ -17,6 +17,8 @@ use Maatwebsite\Excel\Facades\Excel;
  */
 class ProductService
 {
+    public function __construct(protected MenuCacheService $menuCache) {}
+
     /**
      * Menyusun urutan Kueri (Product Builder) sembari meramu join ringan "Category".
      */
@@ -54,7 +56,13 @@ class ProductService
                 $data['product_photo'] = $file->store('products', 'public');
             }
 
-            return Product::create($data);
+            $product = Product::create($data);
+
+            // PENTING: invalidasi cache katalog menu setiap ada produk baru,
+            // agar Kasir/Self-Order langsung melihat produk baru tanpa delay 1 jam.
+            $this->menuCache->flush();
+
+            return $product;
         });
     }
 
@@ -75,6 +83,8 @@ class ProductService
 
             $product->update($data);
 
+            $this->menuCache->flush();
+
             return $product;
         });
     }
@@ -93,7 +103,11 @@ class ProductService
                 Storage::disk('public')->delete($product->product_photo);
             }
 
-            return $product->delete();
+            $result = $product->delete();
+
+            $this->menuCache->flush();
+
+            return $result;
         });
     }
 }

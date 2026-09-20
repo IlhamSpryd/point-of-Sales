@@ -446,3 +446,38 @@ option {
   .hide-scrollbar::-webkit-scrollbar { display: none; }
   .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 }
+
+@layer base {
+    /* 
+       =========================================================
+       FLUID REM SCALING UNTUK DASHBOARD & POS
+       Mengatur base font-size agar komponen Tailwind (rem)
+       membesar/mengecil proporsional mengikuti lebar layar.
+       =========================================================
+    */
+
+    /* Default (Mobile / Layar sempit) */
+    html.admin-ui {
+        font-size: 12px;
+    }
+
+    /* Tablet (iPad, dsb) */
+    @media (min-width: 768px) {
+        html.admin-ui { font-size: 12.5px; }
+    }
+
+    /* Laptop Standar (1024px - 1365px) -> Sweet spot anti sesak */
+    @media (min-width: 1024px) {
+        html.admin-ui { font-size: 13.5px; }
+    }
+
+    /* Monitor Eksternal Menengah (1366px - 1599px) */
+    @media (min-width: 1366px) {
+        html.admin-ui { font-size: 14.5px; }
+    }
+
+    /* Monitor Besar / Full HD 1080p ke atas (1600px+) -> Kembali ke ukuran normal 100% */
+    @media (min-width: 1600px) {
+        html.admin-ui { font-size: 16px; }
+    }
+}

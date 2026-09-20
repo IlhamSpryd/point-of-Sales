@@ -107,9 +107,9 @@
                         @forelse($recentOrders->take(4) as $order)
                         <div class="flex items-center justify-between group p-3 rounded-xl hover:bg-[#F7F7F5] transition-all duration-200">
                             <div class="flex items-center gap-3.5">
-                                <div class="w-10 h-10 rounded-xl {{ $order->order_status == 'paid' ? 'bg-emerald-50' : 'bg-amber-50' }} flex items-center justify-center shrink-0">
-                                    <span class="material-symbols-rounded text-[18px] {{ $order->order_status == 'paid' ? 'text-emerald-600' : 'text-amber-600' }}">
-                                        {{ $order->order_status == 'paid' ? 'check_circle' : 'schedule' }}
+                                <div class="w-10 h-10 rounded-xl {{ $order->order_status->value === 'paid' ? 'bg-emerald-50' : 'bg-amber-50' }} flex items-center justify-center shrink-0">
+                                    <span class="material-symbols-rounded text-[18px] {{ $order->order_status->value === 'paid' ? 'text-emerald-600' : 'text-amber-600' }}">
+                                        {{ $order->order_status->value === 'paid' ? 'check_circle' : 'schedule' }}
                                     </span>
                                 </div>
                                 <div>
@@ -117,8 +117,8 @@
                                     <p class="text-xs font-medium text-[#9B9A97] mt-0.5">{{ $order->created_at?->format('F d, Y • h:i A') ?? now()->format('F d, Y') }}</p>
                                 </div>
                             </div>
-                            <span class="text-sm font-extrabold {{ $order->order_status == 'paid' ? 'text-emerald-600' : 'text-amber-600' }}">
-                                {{ $order->order_status == 'paid' ? '+' : '' }}Rp {{ number_format($order->order_amount, 0, ',', '.') }}
+                            <span class="text-sm font-extrabold {{ $order->order_status->value === 'paid' ? 'text-emerald-600' : 'text-amber-600' }}">
+                                {{ $order->order_status->value === 'paid' ? '+' : '' }}Rp {{ number_format($order->order_amount, 0, ',', '.') }}
                             </span>
                         </div>
                         @empty

@@ -23,44 +23,45 @@
           ...konten...
       </x-customer-layout>
 --}}
-<body class="antialiased bg-yovel-bg text-yovel-ink font-sans min-h-screen pt-safe">
-
-    <header class="sticky top-0 z-30 h-14 flex items-center gap-1 px-3 bg-yovel-bg/80 backdrop-blur-xl border-b border-yovel-border">
-        @if ($backUrl = $attributes->get('back-url'))
-            <a href="{{ $backUrl }}" aria-label="Kembali"
-               class="w-11 h-11 -ml-1 flex items-center justify-center rounded-full hover:bg-yovel-surface active:scale-95 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-yovel-ink">
-                <span class="material-symbols-rounded">arrow_back</span>
-            </a>
-        @endif
-
-        <span class="font-brand font-semibold text-base tracking-tight truncate {{ $backUrl ? '' : 'ml-1' }}">
-            {{ $title ?? config('app.name') }}
-        </span>
-
-        @if (session('current_table_name'))
-            <span class="ml-auto shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold text-yovel-muted bg-white border border-yovel-border rounded-full px-3 py-1.5 shadow-sm">
-                <span class="material-symbols-rounded text-[16px]">table_restaurant</span>
-                {{ session('current_table_name') }}
+<body class="antialiased bg-gray-50 text-yovel-ink font-sans">
+    <div class="mx-auto max-w-md min-h-screen bg-yovel-bg relative shadow-2xl sm:border-x sm:border-yovel-border pt-safe">
+        <header class="sticky top-0 z-30 h-14 flex items-center gap-1 px-3 bg-yovel-bg/80 backdrop-blur-xl border-b border-yovel-border">
+            @if ($backUrl = $attributes->get('back-url'))
+                <a href="{{ $backUrl }}" aria-label="Kembali"
+                   class="w-11 h-11 -ml-1 flex items-center justify-center rounded-full hover:bg-yovel-surface active:scale-95 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-yovel-ink">
+                    <span class="material-symbols-rounded">arrow_back</span>
+                </a>
+            @endif
+    
+            <span class="font-brand font-semibold text-[17px] tracking-tight truncate {{ $backUrl ? '' : 'ml-1' }}">
+                {{ $title ?? config('app.name') }}
             </span>
-        @endif
-    </header>
-
-    <main class="max-w-2xl mx-auto px-4 pt-5 pb-8">
-        {{ $slot }}
-    </main>
-
-    {{-- Toast global. Pemakaian dari Alpine mana pun: $dispatch('toast', { message: 'Teks' }) --}}
-    <div x-data="{ show: false, message: '', timer: null }"
-         x-on:toast.window="message = $event.detail.message; show = true; clearTimeout(timer); timer = setTimeout(() => show = false, 3200)"
-         x-show="show" x-cloak role="status"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0 translate-y-4"
-         x-transition:enter-end="opacity-100 translate-y-0"
-         x-transition:leave="transition ease-in duration-200"
-         x-transition:leave-start="opacity-100 translate-y-0"
-         x-transition:leave-end="opacity-0 translate-y-4"
-         class="fixed inset-x-4 bottom-32 z-50 max-w-sm mx-auto rounded-2xl bg-yovel-ink text-white text-sm font-medium px-4 py-3 shadow-xl text-center">
-        <span x-text="message"></span>
+    
+            @if (session('current_table_name'))
+                <span class="ml-auto shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold text-yovel-muted bg-white border border-yovel-border rounded-full px-3 py-1.5 shadow-sm">
+                    <span class="material-symbols-rounded text-[16px]">table_restaurant</span>
+                    {{ session('current_table_name') }}
+                </span>
+            @endif
+        </header>
+    
+        <main class="px-4 pt-5 pb-8">
+            {{ $slot }}
+        </main>
+    
+        {{-- Toast global. Pemakaian dari Alpine mana pun: $dispatch('toast', { message: 'Teks' }) --}}
+        <div x-data="{ show: false, message: '', timer: null }"
+             x-on:toast.window="message = $event.detail.message; show = true; clearTimeout(timer); timer = setTimeout(() => show = false, 3200)"
+             x-show="show" x-cloak role="status"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 translate-y-4"
+             x-transition:enter-end="opacity-100 translate-y-0"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 translate-y-0"
+             x-transition:leave-end="opacity-0 translate-y-4"
+             class="fixed inset-x-4 bottom-32 z-50 max-w-sm mx-auto rounded-2xl bg-yovel-ink text-white text-sm font-medium px-4 py-3 shadow-xl text-center">
+            <span x-text="message"></span>
+        </div>
     </div>
 </body>
 </html>

@@ -36,34 +36,34 @@
 
             {{-- Ringkasan pesanan --}}
             <section class="card-surface p-5 mb-5" aria-labelledby="ringkasan">
-                <h2 id="ringkasan" class="text-xs font-bold uppercase tracking-wider text-yovel-muted mb-2">Ringkasan Pesanan</h2>
+                <h2 id="ringkasan" class="text-[12px] font-bold uppercase tracking-wider text-yovel-muted mb-2">Ringkasan Pesanan</h2>
                 <ul class="divide-y divide-yovel-border">
                     @foreach ($items as $item)
                         <li class="py-3 flex items-start justify-between gap-4">
                             <div class="min-w-0">
-                                <p class="text-sm font-semibold">{{ $item['qty'] }}× {{ $item['product_name'] }}</p>
+                                <p class="text-[14px] font-semibold">{{ $item['qty'] }}× {{ $item['product_name'] }}</p>
                                 @if (! empty($item['options']))
-                                    <p class="text-xs text-yovel-muted mt-0.5">{{ collect($item['options'])->pluck('modifier_name')->filter()->implode(' · ') }}</p>
+                                    <p class="text-[12px] text-yovel-muted mt-0.5">{{ collect($item['options'])->pluck('modifier_name')->filter()->implode(' · ') }}</p>
                                 @endif
                                 @if (! empty($item['notes']))
-                                    <p class="text-xs italic text-yovel-muted mt-0.5">Catatan: {{ $item['notes'] }}</p>
+                                    <p class="text-[12px] italic text-yovel-muted mt-0.5">Catatan: {{ $item['notes'] }}</p>
                                 @endif
                             </div>
-                            <span class="text-sm font-semibold tabular-nums shrink-0">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</span>
+                            <span class="text-[14px] font-semibold tabular-nums shrink-0">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</span>
                         </li>
                     @endforeach
                 </ul>
 
-                <dl class="mt-2 pt-3 border-t border-yovel-border text-sm space-y-1.5">
+                <dl class="mt-2 pt-3 border-t border-yovel-border text-[14px] space-y-1.5">
                     <div class="flex justify-between text-yovel-muted"><dt>Subtotal</dt><dd class="tabular-nums">Rp {{ number_format($subtotal, 0, ',', '.') }}</dd></div>
                     <div class="flex justify-between text-yovel-muted"><dt>Pajak ({{ rtrim(rtrim(number_format($taxRate * 100, 1), '0'), '.') }}%)</dt><dd class="tabular-nums">Rp {{ number_format($tax, 0, ',', '.') }}</dd></div>
-                    <div class="flex justify-between text-base font-extrabold pt-1"><dt>Total</dt><dd class="tabular-nums">Rp {{ number_format($total, 0, ',', '.') }}</dd></div>
+                    <div class="flex justify-between text-[17px] font-extrabold pt-1"><dt>Total</dt><dd class="tabular-nums">Rp {{ number_format($total, 0, ',', '.') }}</dd></div>
                 </dl>
             </section>
 
             {{-- Metode pembayaran: Button-Box --}}
             <section aria-labelledby="metode">
-                <h2 id="metode" class="text-xs font-bold uppercase tracking-wider text-yovel-muted mb-3">Metode Pembayaran</h2>
+                <h2 id="metode" class="text-[12px] font-bold uppercase tracking-wider text-yovel-muted mb-3">Metode Pembayaran</h2>
                 <div role="radiogroup" aria-labelledby="metode" class="grid grid-cols-1 gap-3">
                     @foreach ($methods as [$value, $icon, $label, $hint])
                         <button type="button" role="radio"
@@ -75,8 +75,8 @@
                                 <span class="material-symbols-rounded text-[22px]">{{ $icon }}</span>
                             </span>
                             <span class="flex-1 min-w-0">
-                                <span class="block text-sm font-bold">{{ $label }}</span>
-                                <span class="block text-xs text-yovel-muted mt-0.5">{{ $hint }}</span>
+                                <span class="block text-[15px] font-bold">{{ $label }}</span>
+                                <span class="block text-[13px] text-yovel-muted mt-0.5">{{ $hint }}</span>
                             </span>
                             <span class="w-6 h-6 rounded-full border-[1.5px] flex items-center justify-center shrink-0 transition-all duration-200"
                                   :class="method === '{{ $value }}' ? 'bg-yovel-ink border-yovel-ink text-white' : 'border-primary-300 text-transparent'">
@@ -93,15 +93,15 @@
             <div class="h-40" aria-hidden="true"></div>
 
             {{-- Bar CTA (fixed) --}}
-            <div class="fixed inset-x-0 bottom-0 z-30 bg-white/90 backdrop-blur-xl border-t border-yovel-border">
-                <div class="max-w-2xl mx-auto px-4 pt-4 pb-safe">
+            <div class="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md bg-white/90 backdrop-blur-xl border-t border-yovel-border sm:border-x">
+                <div class="px-4 pt-4 pb-safe">
                     <button type="submit" :disabled="submitting"
                             class="w-full flex items-center justify-between rounded-2xl bg-yovel-ink text-white px-5 min-h-14 font-semibold shadow-lg hover:bg-black active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 focus-visible:ring-2 focus-visible:ring-yovel-ink focus-visible:ring-offset-2">
-                        <span class="flex items-center gap-2">
+                        <span class="flex items-center gap-2 text-[15px]">
                             <span x-show="submitting" x-cloak class="spinner" aria-hidden="true"></span>
                             <span x-text="submitting ? 'Memproses…' : 'Bayar Sekarang'"></span>
                         </span>
-                        <span class="tabular-nums">Rp {{ number_format($total, 0, ',', '.') }}</span>
+                        <span class="tabular-nums text-[15px]">Rp {{ number_format($total, 0, ',', '.') }}</span>
                     </button>
                 </div>
             </div>

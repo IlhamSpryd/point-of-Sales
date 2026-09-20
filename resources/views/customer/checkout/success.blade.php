@@ -8,7 +8,7 @@
     $snapToken =$order->snap_token ?? null;
     
     $config = [
-        'status'    => $order->order_status,
+        'status'    => $order->order_status->value,
         'token'     => $snapToken,
         'statusUrl' => route('customer.checkout.status', ['orderCode' => $order->order_code]),
     ];
@@ -28,20 +28,20 @@
                  :class="isPending ? 'animate-pulse' : ''">
                 <span class="material-symbols-rounded text-[40px]" :class="view.critical ? 'text-rose-600' : ''" x-text="view.icon"></span>
             </div>
-            <h1 class="text-xl font-bold tracking-tight" x-text="view.title"></h1>
-            <p class="mt-2 max-w-xs text-sm text-yovel-muted" x-text="view.text"></p>
+            <h1 class="text-[20px] font-bold tracking-tight" x-text="view.title"></h1>
+            <p class="mt-2 max-w-xs text-[14px] text-yovel-muted" x-text="view.text"></p>
             
             {{-- Tombol Snap Fallback (Pastikan ini selalu ada di HTML jika token tersedia) --}}
             @if ($snapToken)
                 <button type="button" x-show="isPending" @click="pay()" x-cloak
                         class="mt-6 flex min-h-12 w-full max-w-[200px] items-center justify-center gap-2 rounded-xl bg-yovel-ink font-semibold text-white shadow-md transition-all hover:bg-black active:scale-[0.98]">
-                    <span class="material-symbols-rounded text-[18px]">payments</span> Bayar Sekarang
+                    <span class="material-symbols-rounded text-[18px]">payments</span> <span class="text-[15px]">Bayar Sekarang</span>
                 </button>
             @endif
         </section>
 
         <section class="card-surface mt-4 p-5">
-            <dl class="space-y-3 text-sm">
+            <dl class="space-y-3 text-[14px]">
                 <div class="flex justify-between gap-4">
                     <dt class="text-yovel-muted">Nomor pesanan</dt>
                     <dd class="font-mono font-bold">{{ $order->order_code }}</dd>
@@ -52,7 +52,7 @@
                 </div>
                 <div class="flex justify-between gap-4 border-t border-yovel-border pt-3">
                     <dt class="font-semibold">Total</dt>
-                    <dd class="text-base font-extrabold tabular-nums">Rp {{ number_format($order->order_amount, 0, ',', '.') }}</dd>
+                    <dd class="text-[17px] font-extrabold tabular-nums">Rp {{ number_format($order->order_amount, 0, ',', '.') }}</dd>
                 </div>
             </dl>
         </section>
@@ -61,7 +61,7 @@
             @if ($menuUrl)
                 <a href="{{ $menuUrl }}" x-show="!isPending" x-cloak
                    class="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border border-yovel-border bg-white font-semibold shadow-sm transition-all hover:bg-yovel-bg active:scale-[0.98]">
-                    <span class="material-symbols-rounded text-[20px]">restaurant_menu</span> Kembali ke Menu
+                    <span class="material-symbols-rounded text-[20px]">restaurant_menu</span> <span class="text-[15px]">Kembali ke Menu</span>
                 </a>
             @endif
         </div>

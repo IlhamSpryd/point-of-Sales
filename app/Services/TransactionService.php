@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
 use App\Enums\OrderStatus;
@@ -11,6 +13,7 @@ use App\Models\Product;
 use App\Models\Table;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Midtrans\Config;
@@ -112,7 +115,7 @@ class TransactionService
             }
 
             // Status awal: cash = paid, non-cash = pending (menunggu konfirmasi Midtrans)
-            $initialStatus = $paymentMethod === 'cash' ? OrderStatus::Paid->value : OrderStatus::Pending->value;
+            $initialStatus = $paymentMethod === 'cash' ? OrderStatus::Paid : OrderStatus::Pending;
 
             // Generate order code unik
             do {
@@ -130,7 +133,7 @@ class TransactionService
             }
 
             // Buat record Order dengan semua field lengkap
-            $order = Order::create([
+            $order = Order::forceCreate([
                 'user_id' => $userId,
                 'order_code' => $orderCode,
                 'order_date' => now()->toDateString(),
@@ -266,7 +269,7 @@ class TransactionService
     {
         $today = Carbon::today();
         $metricsQuery = Order::whereDate('order_date', $today)
-            ->where('order_status', OrderStatus::Paid->value)
+            ->where('order_status', OrderStatus::Paid)
             ->selectRaw('COALESCE(SUM(order_amount), 0) as omzet, COUNT(*) as jumlah')
             ->first();
 
@@ -291,7 +294,7 @@ class TransactionService
                 $orderCode = 'POS-'.strtoupper(Str::random(6)).'-'.rand(100, 999);
             } while (Order::where('order_code', $orderCode)->exists());
 
-            $order = Order::create([
+            $order = Order::forceCreate([
                 'table_id' => $table->id,
                 'order_type' => 'dine_in',
                 'order_code' => $orderCode,
@@ -299,7 +302,7 @@ class TransactionService
                 'subtotal_amount' => $subtotalAmount,
                 'tax_amount' => $taxAmount,
                 'order_amount' => $totalAmount,
-                'order_status' => OrderStatus::Pending->value,
+                'order_status' => OrderStatus::Pending,
                 'payment_method' => null,
                 'user_id' => null,
             ]);
@@ -379,12 +382,12 @@ class TransactionService
                 $orderCode = 'POS-'.strtoupper(Str::random(6)).'-'.rand(100, 999);
             } while (Order::where('order_code', $orderCode)->exists());
 
-            $order = Order::create([
+            $order = Order::forceCreate([
                 'table_id' => $tableId, // null aman untuk takeaway (kolom sudah nullable)
                 'order_code' => $orderCode,
                 'order_date' => now()->toDateString(),
                 'order_type' => $orderType,
-                'order_status' => OrderStatus::Paid->value, // kasir = bayar di tempat, langsung Paid
+                'order_status' => OrderStatus::Paid, // kasir = bayar di tempat, langsung Paid
                 'subtotal_amount' => $subtotal,
                 'tax_amount' => $taxAmount,
                 'order_amount' => $totalAmount,
@@ -431,14 +434,63 @@ class TransactionService
      * (dipanggil oleh MidtransNotificationController setelah signature
      * terverifikasi). Dipakai untuk SEMUA pembayaran non-tunai, baik dari
      * Self-Order pelanggan maupun Kasir POS.
+     *
+     * [SEC-005 - CRITICAL FIX - AUDIT KEAMANAN]
+     * Sebelumnya, TransactionController::syncMidtrans() (endpoint polling
+     * manual untuk lingkungan localhost tanpa webhook) menduplikasi logika
+     * pembaruan status ini secara TERPISAH, TANPA lockForUpdate()/
+     * DB::transaction(), dan HANYA menangani status 'capture'/'settlement'
+     * (mengabaikan 'deny'/'cancel'/'expire' sepenuhnya). Ini membuka celah
+     * race condition + status regression: webhook resmi bisa sudah
+     * memfinalisasi order ini menjadi 'Failed', lalu endpoint sync yang
+     * terlambat datang (karena panggilan jaringan ke Midtrans butuh waktu)
+     * menimpanya paksa kembali menjadi 'Paid'.
+     *
+     * Perbaikan: method INI sekarang menjadi SATU-SATUNYA titik masuk untuk
+     * mengubah order_status akibat respons Midtrans, dipakai bersama oleh
+     * webhook resmi MAUPUN endpoint sync manual (lihat
+     * TransactionController::syncMidtrans() yang telah direfactor untuk
+     * mendelegasikan ke sini). Locking + idempotency guard + cakupan status
+     * lengkap kini otomatis berlaku untuk KEDUA jalur tersebut.
+     *
+     * @param  int|null  $grossAmount  [SEC-006] Nominal (gross_amount) yang
+     *                                 dilaporkan Midtrans, jika tersedia. Jika
+     *                                 diisi dan TIDAK COCOK dengan order_amount
+     *                                 di database, status TIDAK akan diubah dan
+     *                                 insiden dicatat sebagai log kritis --
+     *                                 mencegah order dengan nominal yang
+     *                                 divergen dari catatan kita tertandai lunas
+     *                                 secara diam-diam.
      */
-    public function updateStatusFromMidtransNotification(string $orderCode, string $transactionStatus, ?string $fraudStatus): Order
-    {
-        return DB::transaction(function () use ($orderCode, $transactionStatus, $fraudStatus) {
+    public function updateStatusFromMidtransNotification(
+        string $orderCode,
+        string $transactionStatus,
+        ?string $fraudStatus,
+        ?int $grossAmount = null,
+    ): Order {
+        return DB::transaction(function () use ($orderCode, $transactionStatus, $fraudStatus, $grossAmount) {
             $order = Order::where('order_code', $orderCode)->lockForUpdate()->firstOrFail();
 
             // Idempotency guard: status final TIDAK PERNAH ditimpa ulang.
-            if (OrderStatus::from($order->order_status)->isFinal()) {
+            if ($order->order_status->isFinal()) {
+                return $order;
+            }
+
+            // [SEC-006] Defense-in-depth: signature SHA512 hanya membuktikan
+            // payload tidak berubah dalam perjalanan, BUKAN bahwa gross_amount
+            // yang dilaporkan sama dengan order_amount yang tercatat di sisi
+            // kita. Tanpa pengecekan ini, divergensi nominal (misal akibat bug
+            // rounding di masa depan) bisa membuat order tertandai LUNAS
+            // padahal nominal yang sebenarnya berbeda dari yang seharusnya
+            // ditagihkan -- kebocoran finansial senyap yang sangat sulit dilacak.
+            if ($grossAmount !== null && $grossAmount !== (int) $order->order_amount) {
+                Log::critical('Midtrans notification GROSS AMOUNT MISMATCH -- status TIDAK diubah demi keamanan.', [
+                    'order_code' => $orderCode,
+                    'order_amount_di_database' => (int) $order->order_amount,
+                    'gross_amount_dari_midtrans' => $grossAmount,
+                    'transaction_status' => $transactionStatus,
+                ]);
+
                 return $order;
             }
 
@@ -455,7 +507,7 @@ class TransactionService
             };
 
             if ($newStatus !== null) {
-                $order->update(['order_status' => $newStatus->value]);
+                $order->forceFill(['order_status' => $newStatus])->save();
             }
 
             return $order;

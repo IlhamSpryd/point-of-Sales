@@ -16,9 +16,8 @@ use Maatwebsite\Excel\Facades\Excel;
  */
 class CategoryService
 {
-    /**
-     * Merancang pangkalan referensi Eloquent tabel Kategori beserta fungsional filter search-nya.
-     */
+    public function __construct(protected MenuCacheService $menuCache) {}
+
     public function getFilteredQuery(Request $request): Builder
     {
         $query = Category::query()->latest();
@@ -30,9 +29,6 @@ class CategoryService
         return $query;
     }
 
-    /**
-     * Eksekusi blok bongkahan data per 100 row kategori dalam mencetak CSV.
-     */
     public function exportCsv(Request $request)
     {
         $query = $this->getFilteredQuery($request);
@@ -41,31 +37,28 @@ class CategoryService
         return Excel::download(new CategoriesExport($query), $fileName);
     }
 
-    /**
-     * Penyematan instansiasi Katalog Kategori baru.
-     */
     public function store(array $data): Category
     {
         return DB::transaction(function () use ($data) {
-            return Category::create($data);
-        });
-    }
+            $category = Category::create($data);
 
-    /**
-     * Menyempurnakan pembaruan Kategori.
-     */
-    public function update(Category $category, array $data): Category
-    {
-        return DB::transaction(function () use ($category, $data) {
-            $category->update($data);
+            $this->menuCache->flush();
 
             return $category;
         });
     }
 
-    /**
-     * Buang klasifikasi dari daftar sistem (Menolak aksi bila kategori terhubung dengan produk).
-     */
+    public function update(Category $category, array $data): Category
+    {
+        return DB::transaction(function () use ($category, $data) {
+            $category->update($data);
+
+            $this->menuCache->flush();
+
+            return $category;
+        });
+    }
+
     public function delete(Category $category): bool
     {
         return DB::transaction(function () use ($category) {
@@ -73,7 +66,11 @@ class CategoryService
                 throw new Exception('Tidak dapat menghapus kategori "'.$category->category_name.'" karena masih memiliki '.$category->products()->count().' produk.');
             }
 
-            return $category->delete();
+            $result = $category->delete();
+
+            $this->menuCache->flush();
+
+            return $result;
         });
     }
 }

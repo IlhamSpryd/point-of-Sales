@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -50,6 +51,37 @@ class LoginRequest extends FormRequest
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
+            ]);
+        }
+
+        // [SEC-004 - CRITICAL FIX - AUDIT KEAMANAN]
+        // SEBELUM perbaikan ini, kolom `users.is_active` HANYA bersifat
+        // kosmetik: ditampilkan di UI sebagai toggle "Karyawan Aktif" /
+        // "Nonaktif" (lihat users/create.blade.php, users/edit.blade.php),
+        // tapi TIDAK PERNAH benar-benar dicek di jalur otentikasi. Guard
+        // SessionGuard bawaan Laravel (Auth::attempt) hanya mencocokkan
+        // email + hash password, sama sekali tidak tahu soal is_active.
+        //
+        // Akibatnya: karyawan yang di-nonaktifkan Owner (resign, dipecat,
+        // atau bahkan sedang diselidiki dugaan kecurangan kas) TETAP BISA
+        // login dan memproses transaksi selama masih ingat password lamanya
+        // -- kegagalan kontrol akses paling berbahaya untuk sistem yang
+        // menangani uang tunai secara langsung.
+        //
+        // Pengecekan WAJIB dilakukan SETELAH Auth::attempt() berhasil
+        // (bukan sebelum, dan bukan lewat query terpisah sebelum attempt),
+        // supaya kita hanya membocorkan informasi "akun ini nonaktif"
+        // kepada seseorang yang SUDAH terbukti tahu password yang benar --
+        // ini mencegah celah User Enumeration lewat perbedaan pesan error.
+        $user = Auth::user();
+
+        if ($user instanceof User && ! $user->is_active) {
+            Auth::logout();
+
+            RateLimiter::hit($this->throttleKey());
+
+            throw ValidationException::withMessages([
+                'email' => 'Akun ini telah dinonaktifkan. Silakan hubungi Owner atau Manager.',
             ]);
         }
 

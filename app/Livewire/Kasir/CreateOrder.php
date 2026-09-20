@@ -22,6 +22,14 @@ class CreateOrder extends Component
 
     public float $cashReceived = 0;
 
+    public string $search = '';
+
+    public string $paymentMethod = 'cash';
+
+    // Properti baru untuk mode "Retrieve Order"
+    public ?string $pendingOrderCode = null;
+    public ?int $pendingOrderId = null;
+
     // state modal pemilihan modifier
     public ?int $selectingProductId = null;
 
@@ -38,6 +46,55 @@ class CreateOrder extends Component
         }
     }
 
+    public function updatedSearch(): void
+    {
+        // Jika input pencarian adalah Kode Pesanan (dimulai dengan POS-)
+        if (str_starts_with(strtoupper($this->search), 'POS-')) {
+            $this->loadPendingOrder(strtoupper($this->search));
+            $this->search = ''; // bersihkan input
+        }
+    }
+
+    public function loadPendingOrder(string $orderCode): void
+    {
+        $order = \App\Models\Order::with('orderItems.product')
+            ->where('order_code', $orderCode)
+            ->where('order_status', 'pending')
+            ->first();
+
+        if (!$order) {
+            $this->dispatch('toast', message: 'Pesanan tidak ditemukan atau sudah dibayar.', type: 'error');
+            return;
+        }
+
+        // Pindahkan data pesanan ke cart kasir
+        $this->cart = [];
+        foreach ($order->orderItems as $item) {
+            $this->cart[] = [
+                'product_id' => $item->product_id,
+                'qty' => $item->qty,
+                'modifier_ids' => collect($item->options)->pluck('id')->filter()->toArray(),
+                'notes' => $item->notes,
+            ];
+        }
+
+        $this->pendingOrderCode = $order->order_code;
+        $this->pendingOrderId = $order->id;
+        $this->orderType = $order->order_type;
+        $this->tableId = $order->table_id;
+        
+        $this->dispatch('toast', message: 'Pesanan ' . $orderCode . ' berhasil ditarik!', type: 'success');
+    }
+
+    public function cancelPendingOrderMode(): void
+    {
+        $this->pendingOrderCode = null;
+        $this->pendingOrderId = null;
+        $this->cart = [];
+        $this->orderType = null;
+        $this->tableId = null;
+    }
+
     #[Computed]
     public function activeTables()
     {
@@ -47,9 +104,10 @@ class CreateOrder extends Component
     #[Computed]
     public function categories()
     {
-        return Category::with([
-            'products' => fn ($q) => $q->availableForOrder()->with('modifierGroups.modifiers'),
-        ])->get();
+        // OPTIMASI: query katalog sekarang diambil dari MenuCacheService (cache 1 jam,
+        // di-flush otomatis saat Admin mengubah produk/kategori) alih-alih query DB
+        // penuh pada SETIAP interaksi Livewire (buka modal, toggle modifier, dll).
+        return app(\App\Services\MenuCacheService::class)->getCatalog();
     }
 
     // Modal state reset
@@ -109,9 +167,19 @@ class CreateOrder extends Component
     {
         $service = app(TransactionService::class);
 
-        return collect($this->cart)->map(function ($raw, $i) use ($service) {
+        // OPTIMASI N+1: computed property ini dieksekusi ulang pada SETIAP interaksi
+        // Livewire. Versi lama menjalankan Product::findOrFail() SATU KALI PER ITEM
+        // keranjang pada SETIAP render -- kasir dengan 5 item bisa memicu puluhan query
+        // hanya untuk preview keranjang. Sekarang semua produk relevan diambil dalam
+        // SATU query batch, lengkap dengan modifierGroups eager-loaded.
+        $productIds = collect($this->cart)->pluck('product_id')->unique()->values();
+        $products = Product::with('modifierGroups')->whereIn('id', $productIds)->get()->keyBy('id');
+
+        return collect($this->cart)->map(function ($raw, $i) use ($service, $products) {
+            $product = $products->get($raw['product_id']) ?? Product::findOrFail($raw['product_id']);
+
             $line = $service->resolveOrderItemLine(
-                Product::findOrFail($raw['product_id']),
+                $product,
                 $raw['modifier_ids'], $raw['qty'], $raw['notes'],
             );
 
@@ -145,30 +213,61 @@ class CreateOrder extends Component
 
     public function submitOrder()
     {
-        $this->validate([
+        $rules = [
             'orderType' => ['required', 'in:dine_in,takeaway'],
-            'tableId' => ['required_if:orderType,dine_in'],
             'cart' => ['required', 'array', 'min:1'],
             'cashReceived' => ['required', 'numeric', 'min:0'],
-        ]);
+        ];
 
-        try {
-            $order = app(TransactionService::class)->createWalkInOrder(
-                itemsPayload: $this->cart,
-                orderType: OrderType::from($this->orderType),
-                tableId: $this->tableId,
-                paymentMethod: 'cash',
-                cashReceived: (int) $this->cashReceived,
-            );
-        } catch (ValidationException $e) {
-            $this->addError('cart', collect($e->errors())->flatten()->first());
-
-            return;
+        // Jika bukan pending order, validasi meja diperlukan untuk dine_in
+        // Jika pending order, mungkin meja sudah diset dari awal oleh pelanggan
+        if (!$this->pendingOrderId && $this->orderType === 'dine_in') {
+            $rules['tableId'] = ['required'];
         }
 
-        session()->flash('success', "Order {$order->order_code} berhasil dibuat.");
+        $this->validate($rules);
 
-        return redirect()->route('transaction.receipt', $order->order_code);
+        try {
+            \Illuminate\Support\Facades\DB::beginTransaction();
+
+            if ($this->pendingOrderId) {
+                // Skenario 2: Membayar Pesanan Self-Order yang tertunda
+                $order = \App\Models\Order::findOrFail($this->pendingOrderId);
+                $order->forceFill([
+                    'payment_method' => \App\Enums\PaymentMethod::tryFrom($this->paymentMethod) ?? \App\Enums\PaymentMethod::Cash,
+                    'cash_received' => $this->paymentMethod === 'cash' ? $this->cashReceived : null,
+                    'order_change' => $this->paymentMethod === 'cash' ? ($this->cashReceived - $order->order_amount) : 0,
+                    'order_status' => \App\Enums\OrderStatus::Paid,
+                    'shift_id' => \App\Models\Shift::where('user_id', auth()->id())->where('status', 'open')->value('id'),
+                ])->save();
+                
+                // Ubah status KDS menjadi Pending (masuk dapur)
+                $order->orderItems()->update(['preparation_status' => \App\Enums\PreparationStatus::Pending->value]);
+            } else {
+                // Skenario 1: Pesanan Walk-in Baru (Logic Lama)
+                $order = app(TransactionService::class)->createWalkInOrder(
+                    itemsPayload: $this->cart,
+                    orderType: OrderType::from($this->orderType),
+                    tableId: $this->tableId,
+                    paymentMethod: $this->paymentMethod,
+                    cashReceived: (int) $this->cashReceived,
+                );
+            }
+
+            \Illuminate\Support\Facades\DB::commit();
+
+            session()->flash('success', "Order {$order->order_code} berhasil diproses.");
+            return redirect()->route('transaction.receipt', $order->order_code);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            if ($e instanceof ValidationException) {
+                $this->addError('cart', collect($e->errors())->flatten()->first());
+            } else {
+                $this->addError('cart', $e->getMessage());
+            }
+            return;
+        }
     }
 
     public function render()

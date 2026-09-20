@@ -1,4 +1,4 @@
-<div wire:poll.5s="$refresh" class="space-y-6">
+<div wire:poll.5s.visible="$refresh" class="space-y-6">
 
     @error('kds')
         <div role="alert" class="flex items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700">

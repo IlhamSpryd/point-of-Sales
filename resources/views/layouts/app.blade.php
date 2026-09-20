@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="admin-ui">
 
 <head>
     <meta charset="utf-8">
@@ -69,7 +69,7 @@
 
             <!-- Main Scrollable Area -->
             <main
-                class="flex-1 overflow-y-auto w-full {{ $noPadding ? '' : 'p-4 sm:p-6 lg:p-8' }} animate-fade-in flex flex-col"
+                class="flex-1 overflow-y-auto w-full {{ ($noPadding ?? false) ? '' : 'p-4 sm:p-6 lg:p-8' }} animate-fade-in flex flex-col"
                 id="main-content">
                 <!-- Page Heading -->
                 @isset($header)

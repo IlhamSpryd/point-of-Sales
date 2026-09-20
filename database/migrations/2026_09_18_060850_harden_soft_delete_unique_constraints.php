@@ -35,7 +35,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->unsignedBigInteger('email_uniqueness_key')
                 ->nullable()
-                ->virtualAs('IF(`deleted_at` IS NULL, 0, NULL)')
+                ->virtualAs('CASE WHEN deleted_at IS NULL THEN 0 ELSE NULL END')
                 ->after('deleted_at');
         });
 
@@ -47,7 +47,7 @@ return new class extends Migration
         Schema::table('categories', function (Blueprint $table) {
             $table->unsignedBigInteger('name_uniqueness_key')
                 ->nullable()
-                ->virtualAs('IF(`deleted_at` IS NULL, 0, NULL)')
+                ->virtualAs('CASE WHEN deleted_at IS NULL THEN 0 ELSE NULL END')
                 ->after('deleted_at');
         });
 
