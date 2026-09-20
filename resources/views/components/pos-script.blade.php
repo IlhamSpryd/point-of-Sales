@@ -20,6 +20,20 @@
             // Fitur diskon dihapus (dead code) karena backend tidak mengimplementasikannya,
             // untuk mencegah selisih hitungan frontend vs backend.
 
+            barcodeBuffer: '',
+            barcodeTimeout: null,
+
+            // Fallback UUID untuk lingkungan non-HTTPS
+            uuidv4() {
+                if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+                    return crypto.randomUUID();
+                }
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+                    const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            },
+
             init() {
                 // Pre-compute lowercase names to optimize search performance
                 this.products = this.products.map(p => ({ ...p, _searchKey: p.nama.toLowerCase() }));
@@ -29,6 +43,94 @@
                     script.src = "{{ config('services.midtrans.is_production') ? 'https://app.midtrans.com/snap/snap.js' : 'https://app.sandbox.midtrans.com/snap/snap.js' }}";
                     script.setAttribute('data-client-key', "{{ config('services.midtrans.client_key') }}");
                     document.head.appendChild(script);
+                }
+
+                // Listener untuk global barcode scanner
+                window.addEventListener('keypress', (e) => {
+                    // Hanya tangkap jika bukan dari input field
+                    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+                    if (e.key === 'Enter') {
+                        if (this.barcodeBuffer.length > 0) {
+                            this.handleBarcodeScan(this.barcodeBuffer);
+                            this.barcodeBuffer = '';
+                        }
+                    } else {
+                        this.barcodeBuffer += e.key;
+                        clearTimeout(this.barcodeTimeout);
+                        this.barcodeTimeout = setTimeout(() => {
+                            this.barcodeBuffer = '';
+                        }, 50); // reset jika terlalu lambat
+                    }
+                });
+                
+                // Hotkey F2
+                window.addEventListener('keydown', (e) => {
+                    if (e.key === 'F2') {
+                        e.preventDefault();
+                        const searchInput = document.querySelector('input[type="text"][x-model="searchQuery"]');
+                        if (searchInput) searchInput.focus();
+                    }
+                });
+
+                window.addEventListener('online', () => this.syncOfflineQueue());
+                // Sync on load just in case
+                setTimeout(() => this.syncOfflineQueue(), 2000);
+            },
+
+            handleBarcodeScan(code) {
+                const product = this.products.find(p => p.code === code);
+                if (product) {
+                    this.addToCart(product);
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'Scanned: ' + product.nama,
+                        showConfirmButton: false,
+                        timer: 1000
+                    });
+                }
+            },
+
+            // Sinkronisasi antrean offline
+            async syncOfflineQueue() {
+                let queue = JSON.parse(localStorage.getItem('pos_offline_queue') || '[]');
+                if (queue.length === 0) return;
+
+                if (!navigator.onLine) return; // tunggu online
+
+                let remainingQueue = [];
+                for (let payload of queue) {
+                    try {
+                        let response = await fetch(initialData.storeRoute, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                            },
+                            body: JSON.stringify(payload)
+                        });
+                        
+                        if (!response.ok) {
+                            remainingQueue.push(payload);
+                        }
+                    } catch (e) {
+                        remainingQueue.push(payload);
+                    }
+                }
+                
+                localStorage.setItem('pos_offline_queue', JSON.stringify(remainingQueue));
+                if (remainingQueue.length < queue.length) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'success',
+                        title: 'Antrean offline berhasil disinkronisasi',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
                 }
             },
 
@@ -190,8 +292,39 @@
                     return;
                 }
                 
+                if (!navigator.onLine) {
+                    // Offline mode queueing
+                    let payload = {
+                        idempotency_key: this.uuidv4(),
+                        items: this.cart.map(function(item) {   
+                            return {
+                                product_id: item.id,
+                                quantity: item.qty,
+                            }
+                        }),
+                        payment_method: this.paymentMethod,
+                        cash_received: this.uangDibayar
+                    };
+                    
+                    let queue = JSON.parse(localStorage.getItem('pos_offline_queue') || '[]');
+                    queue.push(payload);
+                    localStorage.setItem('pos_offline_queue', JSON.stringify(queue));
+                    
+                    this.emptyCart();
+                    this.submitting = false;
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Tersimpan Offline',
+                        text: 'Transaksi disimpan ke antrean offline dan akan dikirim saat koneksi pulih.',
+                        confirmButtonText: 'OK'
+                    });
+                    
+                    return;
+                }
+
                 try {
                     let payload = {
+                        idempotency_key: this.uuidv4(),
                         items: this.cart.map(function(item) {   
                             return {
                                 product_id: item.id,
@@ -324,12 +457,52 @@
                     this.submitting = false;
                 }
             },
+            async printReceiptHardware(orderNumber) {
+                if (!initialData.printerName) return false;
+                if (typeof qz === 'undefined') return false;
+
+                try {
+                    if (!qz.websocket.isActive()) {
+                        await qz.websocket.connect();
+                    }
+                    
+                    let config = qz.configs.create(initialData.printerName);
+                    
+                    let response = await fetch(`/api/orders/${orderNumber}/print-payload`, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                        }
+                    });
+                    
+                    if (!response.ok) throw new Error('Gagal memuat payload struk');
+                    let printData = await response.json();
+                    
+                    if (printData && printData.payload) {
+                        let data = [
+                            { type: 'raw', format: 'command', data: printData.payload }
+                        ];
+                        await qz.print(config, data);
+                        return true;
+                    }
+                    return false;
+                } catch (err) {
+                    console.error("Hardware Print Error:", err);
+                    return false;
+                }
+            },
+            
             showSuccessPopup(orderNumber, isPending = false) {
                 let title = isPending ? 'Menunggu Pembayaran' : 'Pembayaran Sukses!';
                 let text = isPending 
                     ? `Order <b>#${orderNumber}</b> telah di-generate. Silakan selesaikan instruksi pembayaran.`
                     : `Transaksi <b>#${orderNumber}</b> telah sukses dikonfirmasi oleh sistem.`;
                 let icon = isPending ? 'info' : 'success';
+
+                // Hardware Auto Print
+                if (!isPending && initialData.printerName && typeof qz !== 'undefined') {
+                    this.printReceiptHardware(orderNumber).catch(e => console.error(e));
+                }
                 
                 Swal.fire({
                     width: 420,
@@ -353,14 +526,11 @@
                     }
                 }).then((result) => {
                     if (result.isConfirmed) {
+                        // Fallback browser print jika auto-print gagal/tidak ada printer
                         window.open(`/transaction/${orderNumber}/receipt`, '_blank');
                     }
                 });
             },
-            // Fungsi cetak via WebUSB & cash drawer dihapus karena tidak pernah
-            // dipanggil dari elemen UI manapun (dead code) dan di luar cakupan
-            // kebutuhan UjiKom — cetak struk sudah ditangani cukup oleh halaman
-            // transaction.receipt (window.print() bawaan browser).
             formatRupiah(angka) {
                 return new Intl.NumberFormat('id-ID').format(Math.round(angka));
             }

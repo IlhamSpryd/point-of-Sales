@@ -62,6 +62,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/transaction', [TransactionController::class, 'store'])->name('transaction.store');
         Route::get('/transaction/receipt/{orderCode}', [TransactionController::class, 'receipt'])->name('transaction.receipt');
         Route::post('/api/orders/{order_number}/sync-status', [TransactionController::class, 'syncMidtrans'])->name('api.order.sync-status');
+        Route::get('/api/orders/{order_number}/print-payload', [TransactionController::class, 'printPayload'])->name('api.order.print-payload');
     });
 
     // Dapur (KDS)

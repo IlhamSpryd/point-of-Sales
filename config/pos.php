@@ -11,4 +11,5 @@ return [
     ],
     'self_order_system_email' => 'selforder@system.local',
     'receipt_width_mm' => env('POS_RECEIPT_WIDTH_MM', 58),
+    'printer_name' => env('POS_PRINTER_NAME', 'EPSON_TM_T82'),
 ];

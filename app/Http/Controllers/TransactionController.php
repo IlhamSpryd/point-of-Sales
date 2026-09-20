@@ -66,23 +66,57 @@ class TransactionController extends Controller
     public function store(StoreTransactionRequest $request)
     {
         $validated = $request->validated();
-
-        // Route ini sudah dilindungi middleware 'auth' dan 'role:Kasir' (lihat routes/web.php),
-        // sehingga Auth::id() dijamin tidak pernah null di titik ini. Kita SENGAJA tidak memberi
-        // fallback angka statis (misal "?? 1") karena itu akan menyembunyikan bug autentikasi
-        // dan mencatat transaksi atas nama user yang salah tanpa disadari (buruk untuk audit trail kasir).
         $userId = Auth::id();
 
-        try {
-            $order = $this->transactionService->createTransaction($validated, $userId);
+        $idempotencyKey = $validated['idempotency_key'] ?? null;
 
-            // Karena UI baru menggunakan popup/modal dinamis di frontend, selalu kembalikan JSON.
+        try {
+            // Guard against race conditions using Cache::lock
+            if ($idempotencyKey) {
+                // If it already exists in DB, simply return success (idempotency)
+                if (Order::where('idempotency_key', $idempotencyKey)->exists()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Pesanan sudah diproses sebelumnya (Idempotent)',
+                        'order_number' => Order::where('idempotency_key', $idempotencyKey)->value('order_code'),
+                    ]);
+                }
+
+                $lock = \Illuminate\Support\Facades\Cache::lock('order_idempotency_'.$idempotencyKey, 10);
+                if (! $lock->get()) {
+                    throw new \Illuminate\Contracts\Cache\LockTimeoutException();
+                }
+            }
+
+            try {
+                $order = $this->transactionService->createTransaction($validated, $userId);
+            } finally {
+                if (isset($lock)) {
+                    $lock->release();
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Pesanan berhasil dibuat',
                 'snap_token' => $order->snap_token ?? null,
                 'order_number' => $order->order_code,
             ]);
+        } catch (\Illuminate\Contracts\Cache\LockTimeoutException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Transaksi serupa sedang diproses, coba lagi.',
+            ], 429);
+        } catch (\Illuminate\Database\QueryException $e) {
+            if (isset($idempotencyKey) && str_contains($e->getMessage(), 'Duplicate entry') && str_contains($e->getMessage(), 'idempotency_key')) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Pesanan sudah diproses (Idempotent fallback)',
+                    'order_number' => Order::where('idempotency_key', $idempotencyKey)->value('order_code'),
+                ]);
+            }
+            Log::error('Transaction Query Error: '.$e->getMessage());
+            return response()->json(['success' => false, 'message' => 'Gagal memproses transaksi (DB Error)'], 500);
         } catch (\Throwable $e) {
             Log::error('Transaction Error: '.$e->getMessage().' '.$e->getTraceAsString());
             if ($request->wantsJson()) {
@@ -188,5 +222,19 @@ class TransactionController extends Controller
         }
 
         return response()->json(['success' => true]);
+    }
+
+    /**
+     * Endpoint untuk mendapatkan payload raw ESC/POS (QZ Tray).
+     */
+    public function printPayload(string $orderNumber, \App\Services\Printing\ReceiptPrinterService $printerService): JsonResponse
+    {
+        $order = Order::with(['orderItems.product', 'user', 'table'])
+            ->where('order_code', $orderNumber)
+            ->firstOrFail();
+
+        $payload = $printerService->generatePayload($order);
+
+        return response()->json($payload);
     }
 }

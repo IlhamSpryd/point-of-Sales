@@ -34,6 +34,7 @@ class StoreTransactionRequest extends FormRequest
             // agar tidak ada nilai sembarangan yang lolos ke TransactionService.
             'payment_method' => ['required', 'string', Rule::in(['cash', 'qris', 'ewallet'])],
             'cash_received' => 'nullable|numeric|min:0',
+            'idempotency_key' => 'nullable|string|size:36',
         ];
     }
 

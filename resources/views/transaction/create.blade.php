@@ -5,10 +5,12 @@
      filter produk, dll) didefinisikan dalam fungsi posApp() di bagian <script> paling bawah --}}
     <div class="bg-white flex flex-col flex-1 overflow-hidden min-h-0" x-data="posApp({{ \Illuminate\Support\Js::from([
         'paymentMethod' => 'cash',
+        'printerName' => config('pos.printer_name'),
         'products' => $products->map(function ($p) {
             return [
                 'id' => $p->id,
                 'nama' => $p->product_name, // di Alpine diikat ke 'nama' dan _searchKey
+                'code' => $p->product_code,
                 'harga' => $p->product_price, // format JS butuh nama key yang sama dgn referensi
                 'stock' => $p->stock,
                 'photo' => $p->product_photo ? asset('storage/' . $p->product_photo) : null,
@@ -482,5 +484,14 @@
         }
     </style>
 
+    <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.2.4/qz-tray.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .catch((err) => console.error('[SW] Registrasi gagal:', err));
+            });
+        }
+    </script>
     <x-pos-script />
 </x-app-layout>

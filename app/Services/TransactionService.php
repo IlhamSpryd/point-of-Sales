@@ -136,6 +136,7 @@ class TransactionService
             $order = Order::forceCreate([
                 'user_id' => $userId,
                 'order_code' => $orderCode,
+                'idempotency_key' => $data['idempotency_key'] ?? null,
                 'order_date' => now()->toDateString(),
                 'subtotal_amount' => $subtotalAmount,
                 'tax_amount' => $taxAmount,
