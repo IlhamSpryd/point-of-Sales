@@ -1,7 +1,7 @@
 # Business-Agnostic Point of Sales (POS) System
 
 **Author:** Ilham Sepriyadi  
-**Tanggal:** 9 September 2026  
+**Tanggal:** 20 September 2026  
 
 ## Deskripsi
 Dokumen ini merupakan rangkuman komprehensif arsitektur, keputusan teknis, dan implementasi dari aplikasi *Business-Agnostic Point of Sales (POS) System*. Sistem ini dirancang sebagai platform kasir dan manajemen inventaris lintas bisnis yang menekankan performa tinggi, keamanan absolut, dan antarmuka dinamis modern.
@@ -211,7 +211,7 @@ Logika eksekusi pesanan kompleks dipusatkan di dalam komponen sentral `Transacti
 ### 3. Perutean Terminal & Halaman Finalisasi UI
 Meniadakan skenario *dead-end* di mana kasir menemui tombol *blank* setelah popup Midtrans lenyap, POS UI/UX merombak kerangka kerja peruteannya dari nol dengan menghadirkan:
 *   **Halaman Payment Success**: Semua pesanan valid akan otomatis me-_redirect_ antarmuka sistem menuju `/payment/success`. Terinspirasi secara mutlak dari navigasi e-commerce tingkat lanjut, *Interface* layar penuh ini memandu pengguna pada konfirmasi sukses instan serta pintasan besar guna mencetak struk secara termal *(Thermal Prints)*.
-*   **Fasilitas Cetak Struk WebUSB**: Menghadirkan halaman render terpisah yang berdiri independen berbasis HTML/CSS native (`transaction.receipt`) khusus demi optimalisasi perangkat eksternal (*Receipt Printers* 80/58mm). Renderan membuat paksa cetakan *window.print()* seketika dengan format struk minimalis yang bersih.
+*   **Fasilitas Cetak Struk Native (Legacy):** Menghadirkan halaman render terpisah yang berdiri independen berbasis HTML/CSS native (`transaction.receipt`) khusus demi optimalisasi awal. Renderan membuat paksa cetakan *window.print()* seketika dengan format struk minimalis yang bersih. *(Catatan: Mekanisme cetak via browser ini telah ditinggalkan dan di-upgrade sepenuhnya menjadi pencetakan ESC/POS *hardware-direct* menggunakan QZ Tray pada Fase 6).*
 *   **API Localhost Synchronization**: Menyediakan rute internal pelacak API terselubung *(`/api/orders/{id}/sync-status`)*. Sistem bertindak sangat adaptif mem-bypass limitasi jaringan statis (Tanpa koneksi Webhook Live / di environment sandbox localhost) dengan meminta pembacaan pro-aktif dari API `Transaction::status()` Midtrans demi menyeleksi pembayaran lunas secara *synchronous* layaknya mesin webhook asli.
 
 Ini mengukuhkan *Point of Sales* ini tak cuma sebatas form input CRUD biasa, melainkan jembatan komersil transaksional absolut layaknya sistem retail masa depan.
