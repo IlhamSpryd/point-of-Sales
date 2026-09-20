@@ -4,7 +4,7 @@
         <h1 class="text-xl font-bold">Konfirmasi Pesanan</h1>
         <div class="flex gap-2">
             <a href="{{ route('transaction.create') }}"
-               class="px-4 py-2 rounded border">Pesanan Baru</a>
+               class="px-4 py-2 rounded border" wire:navigate>Pesanan Baru</a>
             <button onclick="window.print()"
                     class="px-4 py-2 rounded bg-blue-600 text-white font-bold">
                 🖨 Cetak Struk

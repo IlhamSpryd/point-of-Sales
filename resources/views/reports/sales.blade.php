@@ -7,7 +7,7 @@
         </div>
         
         <div class="flex gap-2 w-full sm:w-auto">
-            <a href="{{ route('reports.sales', ['export' => 'csv'] + request()->except('export')) }}" class="flex-1 sm:flex-none">
+            <a href="{{ route('reports.sales', ['export' => 'csv'] + request()->except('export')) }}" class="flex-1 sm:flex-none" wire:navigate>
                 <x-button variant="secondary" type="button" class="w-full h-10">
                     <span class="material-symbols-rounded text-[18px]">download</span> Ekspor
                 </x-button>

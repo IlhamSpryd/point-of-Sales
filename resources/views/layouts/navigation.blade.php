@@ -82,7 +82,7 @@
 
     {{-- Logo + tombol lipat --}}
     <div class="h-15 flex items-center shrink-0 px-4 gap-3" :class="wide ? 'justify-between' : 'justify-center'">
-        <a href="{{ $homeUrl }}"
+        <a href="{{ $homeUrl }}" wire:navigate
            @click="if (!wide) { $event.preventDefault(); expanded = true; }"
            :title="!wide ? 'Buka sidebar' : ''"
            class="group flex items-center min-w-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
@@ -129,7 +129,7 @@
                         @endphp
                         <li>
                             @if ($routeExists)
-                                <a href="{{ route($item['route']) }}"
+                                <a href="{{ route($item['route']) }}" wire:navigate
                                    @if ($isActive) aria-current="page" @endif
                                    title="{{ $item['label'] }}"
                                    :class="wide ? 'px-3' : 'justify-center px-0'"
@@ -189,7 +189,7 @@
                 @endif
             </div>
             <div class="p-1.5">
-                <a href="{{ route('profile.edit') }}" class="flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-[13px] font-medium text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5] active:scale-[0.98] transition-all duration-150">
+                <a href="{{ route('profile.edit') }}" wire:navigate class="flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-[13px] font-medium text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5] active:scale-[0.98] transition-all duration-150">
                     <span class="material-symbols-rounded text-[18px]">person</span> Profil Saya
                 </a>
                 <form method="POST" action="{{ route('logout') }}">

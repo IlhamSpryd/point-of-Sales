@@ -4,7 +4,7 @@
             <h4 class="text-xl font-bold text-[#37352F] tracking-tight">Tambah Kategori</h4>
             <p class="text-sm font-medium text-[#787774] mt-1">Tambah kategori produk baru</p>
         </div>
-        <a href="{{ route('categories.index') }}" class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#F7F7F5] border border-[#E9E9E7] text-[#37352F] text-sm font-medium rounded-xl transition-all duration-200 shadow-sm active:scale-95">
+        <a href="{{ route('categories.index') }}" class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#F7F7F5] border border-[#E9E9E7] text-[#37352F] text-sm font-medium rounded-xl transition-all duration-200 shadow-sm active:scale-95" wire:navigate>
             <span class="material-symbols-rounded text-[18px]">arrow_back</span> Kembali
         </a>
     </div>

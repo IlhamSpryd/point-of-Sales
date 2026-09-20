@@ -23,7 +23,7 @@
     <!-- KDS Header / Nav -->
     <header class="flex items-center justify-between mb-6 shrink-0">
         <div class="flex items-center gap-4">
-            <a href="{{ route('dashboard') }}" class="flex h-11 w-11 items-center justify-center rounded-xl bg-white border border-[#E9E9E7] shadow-sm hover:bg-gray-50 transition-colors">
+            <a href="{{ route('dashboard') }}" class="flex h-11 w-11 items-center justify-center rounded-xl bg-white border border-[#E9E9E7] shadow-sm hover:bg-gray-50 transition-colors" wire:navigate>
                 <span class="material-symbols-rounded text-[20px]">arrow_back</span>
             </a>
             <div>

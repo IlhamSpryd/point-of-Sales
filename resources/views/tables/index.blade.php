@@ -4,7 +4,7 @@
             <h4 class="text-xl font-bold text-[#37352F] tracking-tight">Manajemen Meja</h4>
             <p class="text-sm font-medium text-[#787774] mt-1">Kelola meja & QR Code self-order</p>
         </div>
-        <a href="{{ route('tables.create') }}">
+        <a href="{{ route('tables.create') }}" wire:navigate>
             <x-button variant="primary" type="button">
                 <span class="material-symbols-rounded text-[18px]">add</span> Tambah Meja
             </x-button>
@@ -72,11 +72,11 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="bg-white p-2 rounded-xl border border-[#E9E9E7] inline-block shadow-sm">
-                                    {!! QrCode::size(80)->generate(rtrim(config('app.url'), '/') . route('customer.menu.index', ['token' => $table->secure_token], false)) !!}
+                                    {!! Cache::remember('pos:qr:table:'.$table->id, 86400, fn() => QrCode::size(80)->generate(rtrim(config('app.url'), '/') . route('customer.menu.index', ['token' => $table->secure_token], false))) !!}
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-right space-x-2">
-                                <a href="{{ route('tables.edit', $table->secure_token) }}" class="p-1.5 text-[#9B9A97] hover:text-[#37352F] transition-colors duration-200 inline-block"><span class="material-symbols-rounded">edit</span></a>
+                                <a href="{{ route('tables.edit', $table->secure_token) }}" class="p-1.5 text-[#9B9A97] hover:text-[#37352F] transition-colors duration-200 inline-block" wire:navigate><span class="material-symbols-rounded">edit</span></a>
                                 <form id="delete-form-{{ $table->id }}" action="{{ route('tables.destroy', $table->secure_token) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')

@@ -212,7 +212,7 @@
                                 <div
                                     class="w-full aspect-square sm:aspect-[4/3] bg-yovel-surface relative overflow-hidden group-hover:opacity-95 transition-opacity rounded-t-2xl shrink-0 border-b border-primary-100">
                                     <template x-if="product.photo">
-                                        <img :src="product.photo" :alt="product.nama"
+                                        <img :src="product.photo" :alt="product.nama" loading="lazy"
                                             class="w-full h-full object-cover">
                                     </template>
                                     <template x-if="!product.photo">
@@ -305,7 +305,7 @@
                                     <div
                                         class="w-16 h-16 rounded-lg bg-yovel-surface overflow-hidden shrink-0 flex items-center justify-center border border-primary-100">
                                         <template x-if="item.photo">
-                                            <img :src="item.photo" class="w-full h-full object-cover">
+                                            <img :src="item.photo" loading="lazy" class="w-full h-full object-cover">
                                         </template>
                                     </div>
                                     <div class="flex-1 flex flex-col justify-between">

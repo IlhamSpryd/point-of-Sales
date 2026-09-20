@@ -23,7 +23,7 @@
                 </a>
                 
                 @if($canManage)
-                    <a href="{{ route('categories.create') }}" class="flex-1 sm:flex-none">
+                    <a href="{{ route('categories.create') }}" class="flex-1 sm:flex-none" wire:navigate>
                         <x-button variant="primary" type="button" class="w-full h-10">
                             <span class="material-symbols-rounded text-[18px]">add</span> Tambah Kategori
                         </x-button>
@@ -64,7 +64,7 @@
                             <td class="px-6 py-4 text-sm text-[#787774]">{{ $category->created_at?->format('M d, Y') ?? '—' }}</td>
                             @if($canManage)
                                 <td class="px-6 py-4 text-right space-x-2">
-                                    <a href="{{ route('categories.edit', $category->id) }}" class="p-1.5 text-[#9B9A97] hover:text-[#37352F] transition-colors duration-200 inline-block"><span class="material-symbols-rounded">edit</span></a>
+                                    <a href="{{ route('categories.edit', $category->id) }}" class="p-1.5 text-[#9B9A97] hover:text-[#37352F] transition-colors duration-200 inline-block" wire:navigate><span class="material-symbols-rounded">edit</span></a>
                                     <form id="delete-form-{{ $category->id }}" action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline-block">
                                         @csrf
                                         @method('DELETE')

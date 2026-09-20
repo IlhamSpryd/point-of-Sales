@@ -1,32 +1,31 @@
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const deleteButtons = document.querySelectorAll('.delete-button');
+    // OPTIMASI SPA (wire:navigate):
+    // DOMContentLoaded HANYA jalan 1x saat first load. Saat user berpindah halaman
+    // lewat wire:navigate, script lama mati, script baru butuh di-bind ulang ke document.
+    // Kita pakai Event Delegation global agar tidak perlu bind ulang tiap ganti halaman.
+    document.addEventListener('click', function(e) {
+        // Cari tombol delete (mungkin tombolnya sendiri atau icon di dalamnya)
+        const deleteBtn = e.target.closest('button[data-confirm-delete="true"]');
 
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function (e) {
-                e.preventDefault();
-                const formId = this.getAttribute('data-form-id');
-                const form = document.getElementById(formId);
+        if (deleteBtn) {
+            e.preventDefault();
+            const form = deleteBtn.closest('form');
 
-                // Perbaikan XSS: gunakan plain text, bukan HTML rendering untuk nama produk
-                const itemName = this.getAttribute('data-item-name') || 'item ini';
-                
-                // Pastikan nama di-escape di UI dengan textContent (via parameter text SweetAlert)
-                Swal.fire({
-                    title: 'Apakah Anda Yakin?',
-                    text: `Anda akan menghapus ${itemName}. Tindakan ini tidak dapat dibatalkan!`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#3085d6',
-                    cancelButtonColor: '#d33',
-                    confirmButtonText: 'Ya, hapus!',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                });
+            Swal.fire({
+                title: 'Apakah Anda Yakin?',
+                text: "Data yang dihapus tidak dapat dikembalikan!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, Hapus!',
+                cancelButtonText: 'Batal',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
             });
-        });
+        }
     });
 </script>

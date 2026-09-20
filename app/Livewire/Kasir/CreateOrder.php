@@ -101,12 +101,12 @@ class CreateOrder extends Component
         return Table::where('status', 'active')->orderBy('table_number')->get();
     }
 
-    #[Computed]
+    #[Computed(cache: true, key: 'kasir-categories-catalog')]
     public function categories()
     {
-        // OPTIMASI: query katalog sekarang diambil dari MenuCacheService (cache 1 jam,
-        // di-flush otomatis saat Admin mengubah produk/kategori) alih-alih query DB
-        // penuh pada SETIAP interaksi Livewire (buka modal, toggle modifier, dll).
+        // OPTIMASI GANDA:
+        // 1. MenuCacheService::getCatalog() kini benar-benar pakai Cache::remember (Laravel Cache, TTL 1 jam).
+        // 2. #[Computed(cache: true)] mencegah query/cache-lookup diulang dalam siklus request Livewire yang sama.
         return app(\App\Services\MenuCacheService::class)->getCatalog();
     }
 

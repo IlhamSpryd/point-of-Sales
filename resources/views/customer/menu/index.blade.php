@@ -199,7 +199,7 @@
          x-transition:leave-end="translate-y-full opacity-0"
          class="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] z-40 mx-auto max-w-md">
         <a href="{{ route('customer.cart.index') }}"
-           class="flex min-h-14 w-full items-center justify-between rounded-2xl bg-yovel-ink px-5 font-semibold text-white shadow-xl transition-all hover:bg-black active:scale-[0.98]">
+           class="flex min-h-14 w-full items-center justify-between rounded-2xl bg-yovel-ink px-5 font-semibold text-white shadow-xl transition-all hover:bg-black active:scale-[0.98]" wire:navigate>
             <span class="rounded-lg bg-white/20 px-3 py-1 text-sm" x-text="count + ' Item'"></span>
             <span>Lihat Keranjang</span>
             <span class="tabular-nums" x-text="'Rp ' + Number(subtotal).toLocaleString('id-ID')"></span>

@@ -18,7 +18,7 @@
                     </x-button>
                 </a>
                 
-                <a href="{{ route('roles.create') }}" class="flex-1 sm:flex-none">
+                <a href="{{ route('roles.create') }}" class="flex-1 sm:flex-none" wire:navigate>
                     <x-button variant="primary" type="button" class="w-full h-10">
                         <span class="material-symbols-rounded text-[18px]">add</span> Tambah Peran
                     </x-button>
@@ -73,7 +73,7 @@
                                 {{ $role->users_count ?? 0 }} Pengguna
                             </td>
                             <td class="px-6 py-4 text-right space-x-2">
-                                <a href="{{ route('roles.edit', $role->id) }}" class="p-1.5 text-[#9B9A97] hover:text-[#37352F] transition-colors duration-200 inline-block"><span class="material-symbols-rounded">edit</span></a>
+                                <a href="{{ route('roles.edit', $role->id) }}" class="p-1.5 text-[#9B9A97] hover:text-[#37352F] transition-colors duration-200 inline-block" wire:navigate><span class="material-symbols-rounded">edit</span></a>
                                 <form id="delete-form-{{ $role->id }}" action="{{ route('roles.destroy', $role->id) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')

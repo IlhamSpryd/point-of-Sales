@@ -21,8 +21,9 @@ class DashboardService
      */
     public function getDashboardMetrics(): array
     {
-        // 1. Core KPIs
-        $now = Carbon::now();
+        return Cache::remember('pos:dashboard:metrics', 90, function () {
+            // 1. Core KPIs
+            $now = Carbon::now();
             $thisMonth = $now->month;
             $thisYear = $now->year;
             $lastMonthDate = $now->copy()->subMonth();
@@ -54,7 +55,6 @@ class DashboardService
                 ? round((($kpi->this_month_orders - $kpi->last_month_orders) / $kpi->last_month_orders) * 100, 1)
                 : null;
 
-            // 2. Real-time Progress Card Data
             $lowStockCount = Product::where('stock', '<=', 10)->count();
             $lowStockPercent = $productsCount > 0 ? min(100, round(($lowStockCount / $productsCount) * 100)) : 0;
 
@@ -64,12 +64,10 @@ class DashboardService
                     ->whereYear('created_at', Carbon::now()->year);
             })->sum('qty');
 
-            $returnedProducts = 0; // Karena fitur retur belum diaktifkan (selalu 0)
+            $returnedProducts = 0;
 
-            // 3. Recent Transactions
             $recentOrders = Order::with('user')->orderBy('created_at', 'desc')->take(4)->get();
 
-            // 4. Revenue Big Chart (7 Hari Terakhir)
             $chartDates = collect(range(6, 0))->map(function ($days) {
                 return Carbon::now()->subDays($days)->format('M d');
             })->toArray();
@@ -95,7 +93,6 @@ class DashboardService
                 $ordersData[] = $stat ? (int) $stat->jumlah : 0;
             }
 
-            // 5. Payment Methods Donut Chart
             $cashOrders = (int) $kpi->cash_orders;
             $qrisOrders = (int) $kpi->qris_orders;
             $ewalletOrders = (int) $kpi->ewallet_orders;
@@ -103,22 +100,23 @@ class DashboardService
             $totalPaidOrders = $cashOrders + $qrisOrders + $ewalletOrders;
             $paymentStats = $totalPaidOrders > 0 ? [$cashOrders, $qrisOrders, $ewalletOrders] : [0, 0, 0];
 
-        return compact(
-            'totalEarnings',
-            'totalOrders',
-            'productsCount',
-            'lowStockCount',
-            'lowStockPercent',
-            'soldThisMonth',
-            'returnedProducts',
-            'recentOrders',
-            'chartDates',
-            'revenueData',
-            'ordersData',
-            'paymentStats',
-            'totalPaidOrders',
-            'earningsDeltaPercent',
-            'ordersDeltaPercent'
-        );
+            return compact(
+                'totalEarnings',
+                'totalOrders',
+                'productsCount',
+                'lowStockCount',
+                'lowStockPercent',
+                'soldThisMonth',
+                'returnedProducts',
+                'recentOrders',
+                'chartDates',
+                'revenueData',
+                'ordersData',
+                'paymentStats',
+                'totalPaidOrders',
+                'earningsDeltaPercent',
+                'ordersDeltaPercent'
+            );
+        });
     }
 }

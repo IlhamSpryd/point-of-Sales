@@ -225,7 +225,8 @@
 
     <!-- Scripts for ApexCharts -->
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        (function() {
+            const renderCharts = () => {
             // 1. Sparkline: Net Income
             var incomeSparklineOptions = {
                 series: [{ data: @json(array_slice($revenueData, -8, 8)) }],
@@ -335,6 +336,14 @@
                 legend: { show: false }
             };
             new ApexCharts(document.querySelector("#performance-chart"), performanceOptions).render();
-        });
+            };
+
+            // Support both standard load and SPA (wire:navigate)
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', renderCharts);
+            } else {
+                renderCharts();
+            }
+        })();
     </script>
 </x-app-layout>
