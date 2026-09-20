@@ -44,4 +44,9 @@ return [
         'is_3ds' => env('MIDTRANS_IS_3DS', true),
     ],
 
+    'webhooks' => [
+        'grabfood_secret' => env('WEBHOOK_GRABFOOD_SECRET'),
+        'gofood_secret' => env('WEBHOOK_GOFOOD_SECRET'),
+    ],
+
 ];
