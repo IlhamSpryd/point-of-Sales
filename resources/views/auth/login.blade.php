@@ -127,7 +127,7 @@
 
 @section('panel')
         <div class="hidden lg:flex flex-col justify-between p-12 text-white bg-cover bg-center relative overflow-hidden bg-[#37352F]"
-            style="background-image: url('https://images.unsplash.com/photo-1555421689-491a97ff2040?auto=format&fit=crop&q=80');" id="anim-panel-right">
+            style="background-image: url('{{ asset('assets/images/auth/backgroundLoginpanelkanan.avif') }}');" id="anim-panel-right">
             <div class="absolute inset-0 bg-[#37352F]/70 mix-blend-multiply"></div>
             <div class="absolute inset-0 bg-gradient-to-t from-[#37352F]/90 via-transparent to-transparent"></div>
 
