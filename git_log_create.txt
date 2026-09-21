@@ -1,6 +1,0 @@
-﻿5c93493 Fix undefined variables in TransactionController, format files, and other updates
-184a55c UI/UX: Polish POS layout, native wheel scroll & align search bar
-66dfcca Update transaction, layout and general UI
-d6d84e5 Fix UI issues, fix alpine x-bind syntax error, make POS page full bleed, and set global background to white
-9998435 Refactor POS payment flow, receipt layout, and UI modals
-dc22801 feat(pos): complete midtrans transaction flow integration and thermal receipt printing

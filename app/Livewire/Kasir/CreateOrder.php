@@ -12,6 +12,7 @@ use App\Models\Product;
 use App\Models\Table;
 use App\Services\MenuCacheService;
 use App\Services\TransactionService;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
@@ -244,7 +245,7 @@ class CreateOrder extends Component
             // sebelumnya cabang "Skenario 2" mengambil shift_id TANPA
             // validasi (bisa NULL diam-diam), dan "Skenario 1" tidak
             // mengambil shift_id SAMA SEKALI.
-            $shiftId = $transactionService->resolveOpenShiftOrFail((int) \Illuminate\Support\Facades\Auth::id());
+            $shiftId = $transactionService->resolveOpenShiftOrFail((int) Auth::id());
 
             if ($this->pendingOrderId) {
                 // Skenario 2: Membayar Pesanan Self-Order yang tertunda
@@ -269,7 +270,7 @@ class CreateOrder extends Component
                     tableId: $this->tableId,
                     paymentMethod: $this->paymentMethod,
                     cashReceived: (int) $this->cashReceived,
-                    userId: (int) \Illuminate\Support\Facades\Auth::id(),
+                    userId: (int) Auth::id(),
                     shiftId: $shiftId,
                 );
             }

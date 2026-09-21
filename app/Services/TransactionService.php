@@ -31,6 +31,25 @@ class TransactionService
     public function createTransaction(array $data, int $userId): Order
     {
         return DB::transaction(function () use ($data, $userId) {
+            // [OMEGA-NODE1] Shift-lock guard | 2026-09-21
+            // resolveOpenShiftOrFail() (dipanggil caller SEBELUM transaksi
+            // DB ini dimulai) hanya query biasa TANPA lock -- ada jendela
+            // waktu (network/HTTP latency) di mana shift bisa ditutup
+            // PERSIS di antara resolveOpenShiftOrFail() dan baris ini.
+            // Tanpa guard ini, order bisa lolos tercatat ke shift yang
+            // status-nya sudah 'closed' -- rekonsiliasi shift tersebut
+            // sudah final (expected_cash sudah dihitung) padahal ada
+            // penjualan baru yang tidak pernah masuk hitungan.
+            if (! empty($data['shift_id'])) {
+                $shift = Shift::lockForUpdate()->find($data['shift_id']);
+
+                if (! $shift || $shift->status !== 'open') {
+                    throw ValidationException::withMessages([
+                        'shift' => 'Shift Anda baru saja ditutup. Transaksi ini dibatalkan, silakan buka shift baru sebelum melanjutkan.',
+                    ]);
+                }
+            }
+
             $subtotalAmount = 0;
             $lines = [];
             $items = $data['items'] ?? [];
@@ -407,6 +426,16 @@ class TransactionService
         int $shiftId,
     ): Order {
         return DB::transaction(function () use ($itemsPayload, $orderType, $tableId, $paymentMethod, $cashReceived, $userId, $shiftId) {
+            // [OMEGA-NODE1] Shift-lock guard, pola identik dengan
+            // createTransaction() -- lihat komentar di sana | 2026-09-21
+            $shift = Shift::lockForUpdate()->find($shiftId);
+
+            if (! $shift || $shift->status !== 'open') {
+                throw ValidationException::withMessages([
+                    'shift' => 'Shift Anda baru saja ditutup. Transaksi ini dibatalkan, silakan buka shift baru sebelum melanjutkan.',
+                ]);
+            }
+
             [$orderItemsData, $subtotal] = $this->buildOrderItemsWithStockLock($itemsPayload);
 
             ['tax_amount' => $taxAmount, 'total_amount' => $totalAmount] = $this->calculateOrderTotals($subtotal);
