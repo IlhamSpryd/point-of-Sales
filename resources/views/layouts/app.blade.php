@@ -50,7 +50,7 @@
     </style>
 </head>
 
-<body class="antialiased bg-[#F7F7F5] text-[#37352F] flex h-dvh overflow-hidden" style="font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;">
+<body class="antialiased bg-[#F7F7F5] text-[#37352F] flex h-dvh overflow-hidden pos-layout-locked" style="font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;">
 
     <div x-data="{ sidebarMobileOpen: false, expanded: localStorage.getItem('sidebarExpanded') !== 'false' }" x-init="$watch('expanded', val => localStorage.setItem('sidebarExpanded', val))" class="flex w-full h-full">
         <!-- Sidebar Navigation -->
@@ -88,6 +88,7 @@
 
     @livewireScripts
     @include('partials.sweetalert-confirm-delete')
+    <x-fullscreen-toggle />
 </body>
 
 </html>

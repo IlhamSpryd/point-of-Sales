@@ -3,7 +3,7 @@
     <!-- Wrapper POS fullscreen-ish inside layout padding -->
     {{-- x-data="posApp()" mengaktifkan Alpine.js: semua logic interaktif (keranjang, kalkulasi,
      filter produk, dll) didefinisikan dalam fungsi posApp() di bagian <script> paling bawah --}}
-    <div class="bg-white flex flex-col flex-1 overflow-hidden min-h-0" x-data="posApp({{ \Illuminate\Support\Js::from([
+    <div id="pos-root" style="zoom: 0.8;" class="bg-white flex flex-col flex-1 overflow-hidden min-h-0" x-data="posApp({{ \Illuminate\Support\Js::from([
         'paymentMethod' => 'cash',
         'printerName' => config('pos.printer_name'),
         'products' => $products->map(function ($p) {
@@ -108,7 +108,7 @@
             <section
                 class="flex-1 min-w-0 min-h-0 flex flex-col bg-white border-b lg:border-b-0 lg:border-r border-yovel-border overflow-y-auto custom-scrollbar">
                 <div
-                    class="sticky top-0 p-4 lg:p-6 bg-white shrink-0 border-b border-yovel-border z-20 shadow-sm">
+                    class="sticky top-0 p-4 lg:p-6 bg-white shrink-0 z-20">
                     <div class="flex flex-col gap-4">
 
                         <!-- Filter Categories -->
@@ -189,9 +189,9 @@
                                 :aria-label="product.nama + ', Rp ' + formatRupiah(product.harga) + (product.stock > 0 ? '' :
                                     ', stok habis')"
                                 :class="product.stock > 0 ?
-                                    'hover:border-yovel-ink hover:shadow-md hover:-translate-y-1 cursor-pointer active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-yovel-ink focus-visible:ring-offset-2' :
+                                    'hover:shadow-md hover:-translate-y-1 cursor-pointer active:scale-[0.98] focus-visible:ring-2 focus-visible:ring-yovel-ink focus-visible:ring-offset-2' :
                                     'opacity-60 grayscale-[0.8] cursor-not-allowed'"
-                                class="group bg-white rounded-2xl border border-yovel-border shadow-sm transition-all duration-200 flex flex-col h-full relative outline-none">
+                                class="group bg-white rounded-2xl transition-all duration-200 flex flex-col h-full relative outline-none">
 
                                 <div class="absolute top-2 left-2 z-20 flex flex-col gap-1 items-start">
                                     <template x-if="product.stock <= 0">
@@ -212,7 +212,7 @@
                                 </div>
 
                                 <div
-                                    class="w-full aspect-square sm:aspect-[4/3] bg-yovel-surface relative overflow-hidden group-hover:opacity-95 transition-opacity rounded-t-2xl shrink-0 border-b border-primary-100">
+                                    class="w-full aspect-square sm:aspect-[4/3] bg-yovel-surface relative overflow-hidden group-hover:opacity-95 transition-opacity rounded-t-2xl shrink-0">
                                     <template x-if="product.photo">
                                         <img :src="product.photo" :alt="product.nama" loading="lazy"
                                             class="w-full h-full object-cover">
@@ -443,7 +443,7 @@
                                 </div>
                                 <div class="flex gap-1.5">
                                     <button type="button"
-                                        @click="uangDibayarFormatted = formatRupiah(totalAmount); calculateChange()"
+                                        @click="uangDibayar = totalAmount; uangDibayarFormatted = formatRupiah(totalAmount); calculateChange()"
                                         class="flex-1 text-[11px] font-black py-2 rounded-xl bg-primary-700 text-white hover:bg-primary-900 shadow-sm">PAS</button>
                                     <button type="button" @click="addUangDibayar(50000)"
                                         class="flex-1 text-[12px] font-bold py-2 rounded-xl bg-yovel-surface text-yovel-muted hover:bg-primary-200 hover:text-yovel-ink transition-colors">+50K</button>
@@ -457,11 +457,18 @@
                              code) yang berisiko menyebabkan selisih pembayaran jika diaktifkan tanpa
                              perubahan backend yang sepadan. -->
 
-                            <button type="submit" :disabled="isPayDisabled"
+                            <button type="submit" id="pos-pay-btn" data-testid="btn-pay" dusk="btn-pay" :disabled="isPayDisabled"
                                 :class="isPayDisabled ? 'bg-primary-200 cursor-not-allowed text-primary-400' :
                                     'bg-primary-700 hover:bg-primary-950 text-white hover:-translate-y-0.5'"
                                 class="w-full h-12 mt-1 shrink-0 rounded-xl font-black text-[13px] transition-all duration-200 shadow-sm flex items-center justify-center gap-2">
-                                <span x-text="submitting ? '{{ __('Memproses...') }}' : paymentMethodText"></span>
+                                <span x-show="submitting" class="flex items-center gap-2">
+                                    <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    {{ __('Memproses...') }}
+                                </span>
+                                <span x-show="!submitting">{{ __('Proses Pembayaran') }}</span>
                             </button>
                         </div>
                     </div>
@@ -493,5 +500,13 @@
             });
         }
     </script>
+    <style>
+        /* [OMEGA-NODE2] Touch target 44px berbasis px */
+        #pos-root button:not([data-touch="hitarea"]),
+        #pos-root select { min-height: 44px; }
+        #pos-root button[data-touch="icon"] { min-width: 44px; }
+        #pos-root input[data-touch="field"] { min-height: 44px; }
+        #pos-root button[data-touch="hitarea"]::after { content: ""; position: absolute; inset: -12px; }
+    </style>
     <x-pos-script />
 </x-app-layout>

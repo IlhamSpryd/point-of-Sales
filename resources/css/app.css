@@ -478,3 +478,51 @@ option {
         font-size: 16px;
     }
 }
+
+
+@layer utilities {
+    /* Mencegah layar tertarik/memantul (Pull-to-refresh) di Tablet/iPad */
+    .overscroll-none {
+        overscroll-behavior: none;
+    }
+    
+    /* Mencegah delay 300ms saat disentuh di tablet/mobile */
+    .touch-fast {
+        touch-action: manipulation;
+    }
+
+    /* Mencegah teks terblokir/ter-highlight warna biru saat kasir menekan tombol terlalu lama/cepat */
+    .no-select {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    /* Scrollbar elegan dan tipis agar tidak makan tempat di layar kecil */
+    .custom-scrollbar::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+        background-color: #cbd5e1; /* Tailwind slate-300 */
+        border-radius: 9999px;
+    }
+    .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+        background-color: #94a3b8; /* Tailwind slate-400 */
+    }
+}
+
+/* Base class untuk Layout POS (PC/Tablet) - Mengunci layar 100% dan menghilangkan scroll halaman utama */
+.pos-layout-locked {
+    @apply h-screen w-screen overflow-hidden bg-[#F7F7F5];
+    overscroll-behavior: none;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}

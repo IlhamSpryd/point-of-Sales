@@ -72,7 +72,7 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="bg-white p-2 rounded-xl border border-[#E9E9E7] inline-block shadow-sm">
-                                    {!! Cache::remember('pos:qr:table:'.$table->id, 86400, fn() => QrCode::size(80)->generate(rtrim(config('app.url'), '/') . route('customer.menu.index', ['token' => $table->secure_token], false))) !!}
+                                    {!! Cache::remember('pos:qr:table:'.$table->id, 86400, fn() => (string) QrCode::size(80)->generate(rtrim(config('app.url'), '/') . route('customer.menu.index', ['token' => $table->secure_token], false))) !!}
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-right space-x-2">

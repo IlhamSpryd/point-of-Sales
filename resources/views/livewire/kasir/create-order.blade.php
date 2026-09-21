@@ -1,4 +1,4 @@
-<div>
+<div id="livewire-pos-root" data-testid="lw-pos-root" dusk="lw-pos-root">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-5rem)]">
         {{-- KOLOM KIRI: pilih order type + produk --}}
         <div class="lg:col-span-2 flex flex-col overflow-hidden">
