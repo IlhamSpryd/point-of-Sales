@@ -9,6 +9,7 @@
    - Kompensasi stok otomatis via tabel ledger `stock_movements`.
    - **Logika Shift Management:** Penegakan constraint 1 shift per kasir di level database (Virtual Column + Unique Index) dan pencegahan *race-condition* saat tutup shift.
    - **Core TransactionService Refactored** (BOM Deduction, Split Payment, Loyalty Points) dengan strict DB Transaction & Lock Hierarchy.
+   - **Self-Order Workflows Unified:** Jalur penyelesaian pesanan tertunda via Webhook (Midtrans) dan Kasir (Pending Fulfillment) telah diarahkan ke `TransactionService` (mendukung Ledger `payments` dan mesin *Loyalty*).
 2. **Frontend & Kiosk (Node 2):** 
    - Mode Kiosk/Fullscreen dengan layout terkunci (`pos-layout-locked`, `overscroll-none`, `no-select`).
    - Standardisasi touch-target 44px dan pencegahan double-submit via state Alpine.js.
