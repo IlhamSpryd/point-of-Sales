@@ -1,4 +1,5 @@
 <?php
+
 // [OMEGA-NODE1] Refactor checkout inti: BOM ingredient deduction (ganti
 // pemotongan products.stock untuk produk ber-resep), Split Payments
 // (ledger `payments` multi-leg), dan Loyalty Points (ledger append-only

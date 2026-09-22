@@ -43,7 +43,7 @@ return new class extends Migration
             $table->index(['order_id', 'status'], 'payments_order_status_index');
         });
 
-        DB::statement("ALTER TABLE payments ADD CONSTRAINT chk_payments_amount_positive CHECK (amount > 0)");
+        DB::statement('ALTER TABLE payments ADD CONSTRAINT chk_payments_amount_positive CHECK (amount > 0)');
         DB::statement("ALTER TABLE payments ADD CONSTRAINT chk_payments_method_enum CHECK (payment_method IN ('cash','qris','ewallet','card'))");
         DB::statement("ALTER TABLE payments ADD CONSTRAINT chk_payments_status_enum CHECK (status IN ('pending','captured','failed','refunded'))");
 

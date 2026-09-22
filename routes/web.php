@@ -17,6 +17,7 @@ use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
+use App\Livewire\Kasir\CreateOrder;
 use App\Livewire\Kds\Board;
 use Illuminate\Support\Facades\Route;
 
@@ -60,7 +61,7 @@ Route::middleware('auth')->group(function () {
 
     // Kasir POS
     Route::middleware('role:Kasir')->group(function () {
-        Route::get('/transaction', [TransactionController::class, 'create'])->name('transaction.create');
+        Route::get('/transaction', CreateOrder::class)->name('transaction.create');
         Route::post('/transaction', [TransactionController::class, 'store'])->name('transaction.store');
         Route::get('/transaction/receipt/{orderCode}', [TransactionController::class, 'receipt'])->name('transaction.receipt');
         Route::post('/api/orders/{order_number}/sync-status', [TransactionController::class, 'syncMidtrans'])->name('api.order.sync-status');

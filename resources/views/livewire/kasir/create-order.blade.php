@@ -1,3 +1,6 @@
+{{-- [OMEGA-NODE2] Tambah pemilihan pelanggan (Loyalty) + modal Split Payment
+     (Alpine.js murni, exact-sum ke TransactionService). Skenario Tarik
+     Pesanan sengaja TIDAK diubah -- lihat SYNC ALERT Node 1. | 2026-09-22 --}}
 <div id="livewire-pos-root" data-testid="lw-pos-root" dusk="lw-pos-root">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-5rem)]">
         {{-- KOLOM KIRI: pilih order type + produk --}}
@@ -21,7 +24,7 @@
 
                 @if ($orderType === 'dine_in')
                     <div class="flex-1 w-full sm:w-auto">
-                        <select wire:model="tableId" class="bg-white border border-yovel-border text-yovel-ink text-sm rounded-xl focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink block w-full p-2.5 shadow-sm transition-all duration-200">
+                        <select wire:model="tableId" class="bg-white border border-yovel-border text-yovel-ink text-sm rounded-xl focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink block w-full p-2.5 shadow-sm transition-all duration-200 min-h-[44px]">
                             <option value="">-- Pilih Meja --</option>
                             @foreach ($this->activeTables as $table)
                                 <option value="{{ $table->id }}">Meja {{ $table->table_number }}</option>
@@ -44,7 +47,7 @@
                             <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                                 @foreach ($category->products as $product)
                                     <button wire:click="openModifierPicker({{ $product->id }})"
-                                            class="card-surface p-4 text-left hover:shadow-md transition-all duration-200 hover:border-primary-300 active:scale-[0.97] flex flex-col justify-between h-full bg-white group">
+                                            class="card-surface p-4 text-left hover:shadow-md transition-all duration-200 hover:border-primary-300 active:scale-[0.97] flex flex-col justify-between h-full bg-white group min-h-[44px]">
                                         <div class="font-semibold text-sm text-yovel-ink leading-snug group-hover:text-primary-900 transition-colors duration-200">{{ $product->product_name }}</div>
                                         <div class="text-yovel-ink font-bold mt-3 text-sm tracking-tight">Rp {{ number_format($product->product_price, 0, ',', '.') }}</div>
                                     </button>
@@ -59,14 +62,14 @@
             @if ($selectingProductId && isset($selectingProduct))
                 <div class="fixed inset-0 z-50 flex items-center justify-center bg-primary-700/40 backdrop-blur-sm" wire:transition>
                     <div class="bg-white rounded-2xl p-0 w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl border border-yovel-border">
-                        
+
                         <!-- Header Modal -->
                         <div class="px-5 py-4 border-b border-yovel-border flex justify-between items-center bg-white rounded-t-2xl z-10 shrink-0">
                             <div>
                                 <h3 class="font-bold text-lg text-yovel-ink">{{ $selectingProduct->product_name }}</h3>
                                 <p class="text-sm text-yovel-muted mt-0.5">Rp {{ number_format($selectingProduct->product_price, 0, ',', '.') }}</p>
                             </div>
-                            <button wire:click="closeModifierPicker" class="p-2 bg-yovel-surface rounded-xl text-yovel-muted hover:text-yovel-ink hover:bg-primary-200 transition-all duration-200 active:scale-90">
+                            <button wire:click="closeModifierPicker" class="p-2 bg-yovel-surface rounded-xl text-yovel-muted hover:text-yovel-ink hover:bg-primary-200 transition-all duration-200 active:scale-90 min-w-[44px] min-h-[44px]">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                             </button>
                         </div>
@@ -81,7 +84,7 @@
                                             {{ $group->is_required ? ($group->selection_type === 'single' ? 'Wajib pilih 1' : 'Wajib pilih') : 'Opsional' }}
                                         </span>
                                     </div>
-                                    
+
                                     <div class="grid grid-cols-2 gap-2">
                                         @foreach ($group->modifiers as $mod)
                                             @php
@@ -90,13 +93,13 @@
                                             <label class="modifier-box flex-col min-h-[56px]"
                                                    :class="{ 'selected': {{ $isSelected ? 'true' : 'false' }} }">
                                                 @if($group->selection_type === 'single')
-                                                    <input type="radio" 
+                                                    <input type="radio"
                                                            wire:click="toggleModifier({{ $group->id }}, {{ $mod->id }}, 'single')"
-                                                           name="group_{{ $group->id }}" 
+                                                           name="group_{{ $group->id }}"
                                                            {{ $isSelected ? 'checked' : '' }}
                                                            class="sr-only">
                                                 @else
-                                                    <input type="checkbox" 
+                                                    <input type="checkbox"
                                                            wire:click="toggleModifier({{ $group->id }}, {{ $mod->id }}, 'multiple')"
                                                            {{ $isSelected ? 'checked' : '' }}
                                                            class="sr-only">
@@ -122,11 +125,11 @@
                         <!-- Footer Modal -->
                         <div class="p-4 border-t border-yovel-border bg-white flex items-center justify-between gap-4 rounded-b-2xl shrink-0">
                             <div class="flex items-center gap-1 bg-yovel-surface rounded-xl p-1 border border-yovel-border">
-                                <button type="button" wire:click="$set('pendingQty', {{ max(1, $pendingQty - 1) }})" class="w-9 h-9 bg-white rounded-lg shadow-sm text-yovel-ink font-medium hover:bg-yovel-bg active:scale-90 transition-all duration-200">−</button>
+                                <button type="button" wire:click="$set('pendingQty', {{ max(1, $pendingQty - 1) }})" class="w-11 h-11 bg-white rounded-lg shadow-sm text-yovel-ink font-medium hover:bg-yovel-bg active:scale-90 transition-all duration-200">−</button>
                                 <span class="w-8 text-center font-bold text-yovel-ink">{{ $pendingQty }}</span>
-                                <button type="button" wire:click="$set('pendingQty', {{ $pendingQty + 1 }})" class="w-9 h-9 bg-white rounded-lg shadow-sm text-yovel-ink font-medium hover:bg-yovel-bg active:scale-90 transition-all duration-200">+</button>
+                                <button type="button" wire:click="$set('pendingQty', {{ $pendingQty + 1 }})" class="w-11 h-11 bg-white rounded-lg shadow-sm text-yovel-ink font-medium hover:bg-yovel-bg active:scale-90 transition-all duration-200">+</button>
                             </div>
-                            <button wire:click="confirmAddToCart" class="flex-1 bg-primary-700 hover:bg-primary-900 text-white py-3 rounded-xl font-medium shadow-md transition-all duration-200 active:scale-[0.97]">
+                            <button wire:click="confirmAddToCart" class="flex-1 min-h-[44px] bg-primary-700 hover:bg-primary-900 text-white py-3 rounded-xl font-medium shadow-md transition-all duration-200 active:scale-[0.97]">
                                 Tambahkan
                             </button>
                         </div>
@@ -151,8 +154,53 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-yovel-muted">
                             <span class="material-symbols-rounded text-[18px]">qr_code_scanner</span>
                         </span>
-                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="Scan QR Pesanan..." class="bg-yovel-bg border border-yovel-border text-yovel-ink text-sm rounded-xl focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink block w-full pl-9 pr-3 py-2 shadow-sm transition-all duration-200" autofocus>
+                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="Scan QR Pesanan..." class="bg-yovel-bg border border-yovel-border text-yovel-ink text-sm rounded-xl focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink block w-full pl-9 pr-3 py-2 shadow-sm transition-all duration-200 min-h-[44px]" autofocus>
                     </div>
+
+                    {{-- [OMEGA-NODE2] Pemilihan Pelanggan (Loyalty) -- hanya untuk
+                         mode Walk-in Baru, lihat SYNC ALERT #3 untuk mode Tarik Pesanan. --}}
+                    @unless ($pendingOrderId)
+                        <div class="relative" x-data="{ showResults: false }">
+                            @if ($customerId)
+                                <div class="flex items-center justify-between gap-2 bg-white border border-yovel-border rounded-xl px-3 py-2.5 min-h-[44px] shadow-sm">
+                                    <span class="flex items-center gap-2 text-sm font-semibold text-yovel-ink truncate">
+                                        <span class="material-symbols-rounded text-[18px] text-primary-400">person</span>
+                                        {{ $customerName }}
+                                    </span>
+                                    <button type="button" wire:click="clearCustomer" aria-label="Hapus pelanggan"
+                                            class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-rose-500 hover:bg-rose-50 transition-all duration-200 active:scale-90">
+                                        <span class="material-symbols-rounded text-[18px]">close</span>
+                                    </button>
+                                </div>
+                            @else
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-yovel-muted z-10">
+                                    <span class="material-symbols-rounded text-[18px]">person_search</span>
+                                </span>
+                                <input type="text" wire:model.live.debounce.300ms="customerSearch"
+                                       x-on:focus="showResults = true"
+                                       x-on:click.outside="showResults = false"
+                                       placeholder="Cari pelanggan (opsional, untuk poin loyalti)..."
+                                       class="bg-yovel-bg border border-yovel-border text-yovel-ink text-sm rounded-xl focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink block w-full pl-9 pr-3 py-2.5 shadow-sm transition-all duration-200 min-h-[44px]">
+
+                                @if (mb_strlen(trim($customerSearch)) >= 2)
+                                    <div x-show="showResults" x-cloak wire:loading.class="opacity-50" wire:target="customerSearch"
+                                         class="absolute z-40 mt-1 w-full bg-white rounded-xl border border-yovel-border shadow-lg overflow-hidden max-h-56 overflow-y-auto custom-scrollbar">
+                                        @forelse ($this->customerResults as $c)
+                                            <button type="button" wire:key="customer-result-{{ $c->id }}"
+                                                    wire:click="selectCustomer({{ $c->id }}, '{{ addslashes($c->name) }}')"
+                                                    x-on:click="showResults = false"
+                                                    class="w-full min-h-[44px] flex items-center justify-between gap-2 px-3.5 py-2 text-left hover:bg-yovel-bg transition-colors duration-150">
+                                                <span class="text-sm font-semibold text-yovel-ink truncate">{{ $c->name }}</span>
+                                                <span class="text-xs text-yovel-muted shrink-0">{{ $c->phone ?? '-' }}</span>
+                                            </button>
+                                        @empty
+                                            <div class="px-3.5 py-3 text-xs text-yovel-muted text-center">Pelanggan tidak ditemukan.</div>
+                                        @endforelse
+                                    </div>
+                                @endif
+                            @endif
+                        </div>
+                    @endunless
 
                     {{-- Alert Mode Tarik Pesanan --}}
                     @if($pendingOrderCode)
@@ -161,13 +209,13 @@
                                 <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600 block">Membayar Pesanan Self-Order</span>
                                 <span class="font-mono font-bold text-yovel-ink">{{ $pendingOrderCode }}</span>
                             </div>
-                            <button wire:click="cancelPendingOrderMode" class="text-rose-500 hover:text-rose-700 p-1 bg-white rounded-lg border border-amber-100 shadow-sm active:scale-90 transition-all duration-200">
+                            <button wire:click="cancelPendingOrderMode" class="text-rose-500 hover:text-rose-700 p-1 bg-white rounded-lg border border-amber-100 shadow-sm active:scale-90 transition-all duration-200 min-w-[44px] min-h-[44px]">
                                 <span class="material-symbols-rounded text-[20px]">close</span>
                             </button>
                         </div>
                     @endif
                 </div>
-                
+
                 <div class="p-4 flex-1 overflow-y-auto bg-yovel-bg custom-scrollbar">
                     @if(count($this->cartLines) === 0)
                         <div class="text-center text-primary-400 py-16 text-sm flex flex-col items-center">
@@ -200,7 +248,7 @@
                                             </div>
                                         </div>
                                         <div class="flex flex-col items-end justify-between h-full">
-                                            <button wire:click="removeFromCart({{ $line['index'] }})" class="text-primary-300 hover:text-rose-500 p-1.5 bg-white rounded-lg hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all duration-200 active:scale-90">
+                                            <button wire:click="removeFromCart({{ $line['index'] }})" class="text-primary-300 hover:text-rose-500 p-1.5 bg-white rounded-lg hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all duration-200 active:scale-90 min-w-[44px] min-h-[44px] flex items-center justify-center">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                             </button>
                                         </div>
@@ -226,33 +274,283 @@
                     </div>
                 </div>
 
+                {{-- [OMEGA-NODE2] Dua jalur pembayaran: Tarik Pesanan (tunggal, UNCHANGED)
+                     vs Walk-in Baru (Split Payment via modal). --}}
                 <div class="p-4 border-t border-yovel-border bg-yovel-bg shrink-0">
-                    <label class="block text-xs font-semibold text-yovel-muted mb-1.5 uppercase tracking-wider">Uang Diterima (Cash)</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary-400 font-medium text-sm">Rp</span>
-                        <input type="number" wire:model.live="cashReceived" class="bg-white border border-yovel-border text-yovel-ink text-base rounded-xl focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink block w-full pl-10 pr-3 py-2.5 shadow-sm transition-all duration-200 font-bold" placeholder="0">
-                    </div>
-                    
-                    <div class="flex justify-between items-center mt-3 p-3 bg-white rounded-xl border border-yovel-border shadow-sm">
-                        <span class="text-sm font-medium text-yovel-muted">Kembalian</span>
-                        <span class="font-bold text-yovel-ink text-lg">Rp {{ number_format($this->changeAmount, 0, ',', '.') }}</span>
-                    </div>
+                    @if ($pendingOrderId)
+                        <label class="block text-xs font-semibold text-yovel-muted mb-1.5 uppercase tracking-wider">Uang Diterima (Cash)</label>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary-400 font-medium text-sm">Rp</span>
+                            <input type="number" wire:model.live="cashReceived"
+                                   class="bg-white border border-yovel-border text-yovel-ink text-base rounded-xl focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink block w-full pl-10 pr-3 py-2.5 shadow-sm transition-all duration-200 font-bold min-h-[52px]"
+                                   placeholder="0">
+                        </div>
 
-                    @error('cart') 
-                        <div class="mt-4 p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-sm font-medium flex items-start gap-2">
-                            <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                            {{ $message }}
-                        </div> 
-                    @enderror
+                        <div class="flex justify-between items-center mt-3 p-3 bg-white rounded-xl border border-yovel-border shadow-sm">
+                            <span class="text-sm font-medium text-yovel-muted">Kembalian</span>
+                            <span class="font-bold text-yovel-ink text-lg">Rp {{ number_format($this->changeAmount, 0, ',', '.') }}</span>
+                        </div>
 
-                    <button wire:click="submitOrder" 
-                            class="w-full bg-primary-700 hover:bg-primary-900 text-white py-3.5 px-4 rounded-xl mt-5 font-medium shadow-md transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97]"
-                            @if(count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId)) disabled @endif>
-                        <span class="material-symbols-rounded text-[20px]">payments</span>
-                        Proses Pembayaran
-                    </button>
+                        @error('cart')
+                            <div class="mt-4 p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-sm font-medium flex items-start gap-2">
+                                <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                {{ $message }}
+                            </div>
+                        @enderror
+
+                        <button wire:click="submitOrder"
+                                class="w-full min-h-[56px] bg-primary-700 hover:bg-primary-900 text-white py-3.5 px-4 rounded-xl mt-5 font-medium shadow-md transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97] text-lg"
+                                @if(count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId)) disabled @endif>
+                            <span class="material-symbols-rounded text-[22px]">payments</span>
+                            Proses Pembayaran
+                        </button>
+                    @else
+                        @error('cart')
+                            <div class="mb-4 p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-sm font-medium flex items-start gap-2">
+                                <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                {{ $message }}
+                            </div>
+                        @enderror
+
+                        <button type="button"
+                                @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }} }); $dispatch('open-modal', 'checkout-payment')"
+                                class="w-full min-h-[56px] bg-primary-700 hover:bg-primary-900 text-white py-3.5 px-4 rounded-xl font-medium shadow-md transition-all duration-200 flex items-center justify-between gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97] text-lg"
+                                @if(count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId)) disabled @endif>
+                            <span class="flex items-center gap-2">
+                                <span class="material-symbols-rounded text-[22px]">payments</span>
+                                Checkout
+                            </span>
+                            <span class="tabular-nums">Rp {{ number_format($this->totalAmount, 0, ',', '.') }}</span>
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
+
+    {{-- [OMEGA-NODE2] Split Payment Modal -- murni Alpine.js, exact-sum,
+         hanya dikirim ke server saat "Proses Transaksi" ditekan. --}}
+    <x-modal name="checkout-payment" max-width="lg" focusable>
+        <div x-data="checkoutPayment()" x-init="init()" class="flex flex-col max-h-[85vh]">
+            <div class="px-5 py-4 border-b border-yovel-border flex items-center justify-between shrink-0">
+                <h3 class="font-bold text-lg text-yovel-ink flex items-center gap-2">
+                    <span class="material-symbols-rounded text-[22px]">payments</span> Pembayaran
+                </h3>
+                <button type="button" x-on:click="$dispatch('close')" aria-label="Tutup"
+                        class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-yovel-muted hover:bg-yovel-surface hover:text-yovel-ink transition-all duration-200 active:scale-90">
+                    <span class="material-symbols-rounded text-[22px]">close</span>
+                </button>
+            </div>
+
+            <div class="p-5 overflow-y-auto flex-1 custom-scrollbar space-y-5 bg-yovel-bg">
+                <!-- Ringkasan tagihan -->
+                <div class="bg-white rounded-2xl border border-yovel-border p-4 shadow-sm space-y-2">
+                    <div class="flex justify-between text-sm">
+                        <span class="text-yovel-muted font-medium">Total Tagihan</span>
+                        <span class="font-bold text-yovel-ink tabular-nums" x-text="'Rp ' + formatRupiah(total)"></span>
+                    </div>
+                    <div class="flex justify-between text-sm">
+                        <span class="text-yovel-muted font-medium">Sudah Dibayar</span>
+                        <span class="font-semibold text-emerald-600 tabular-nums" x-text="'Rp ' + formatRupiah(paidTotal)"></span>
+                    </div>
+                    <div class="flex justify-between items-baseline pt-2 border-t border-yovel-border">
+                        <span class="font-bold text-yovel-ink">Sisa Tagihan</span>
+                        <span class="text-2xl font-black tabular-nums" :class="remaining > 0 ? 'text-rose-600' : 'text-emerald-600'" x-text="'Rp ' + formatRupiah(remaining)"></span>
+                    </div>
+                </div>
+
+                <!-- Daftar leg yang sudah ditambahkan -->
+                <div x-show="legs.length > 0" x-cloak class="space-y-2">
+                    <template x-for="leg in legs" :key="leg.uid">
+                        <div class="flex items-center justify-between gap-3 bg-white rounded-xl border border-yovel-border p-3 shadow-sm">
+                            <div class="min-w-0">
+                                <span class="block text-sm font-bold text-yovel-ink" x-text="leg.label"></span>
+                                <span class="block text-xs text-yovel-muted tabular-nums" x-text="'Rp ' + formatRupiah(leg.amount) + (leg.changeShown > 0 ? ' · Kembalian Rp ' + formatRupiah(leg.changeShown) : '')"></span>
+                            </div>
+                            <button type="button" x-on:click="removeLeg(leg.uid)" aria-label="Hapus metode ini"
+                                    class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-lg text-primary-400 hover:text-rose-500 hover:bg-rose-50 transition-all duration-200 active:scale-90 shrink-0">
+                                <span class="material-symbols-rounded text-[20px]">delete</span>
+                            </button>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Form tambah metode -->
+                <div x-show="remaining > 0" x-cloak class="bg-white rounded-2xl border border-yovel-border p-4 shadow-sm space-y-4">
+                    <div>
+                        <span class="block text-xs font-bold uppercase tracking-wider text-yovel-muted mb-2">Metode Pembayaran</span>
+                        <div class="grid grid-cols-4 gap-2">
+                            <button type="button" x-on:click="method = 'cash'" :class="method === 'cash' ? 'bg-yovel-ink text-white border-yovel-ink' : 'bg-white text-yovel-muted border-yovel-border hover:bg-yovel-bg'"
+                                    class="min-h-[52px] rounded-xl border-[1.5px] flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition-all duration-200 active:scale-95">
+                                <span class="material-symbols-rounded text-[20px]">payments</span> Tunai
+                            </button>
+                            <button type="button" x-on:click="method = 'qris'" :class="method === 'qris' ? 'bg-yovel-ink text-white border-yovel-ink' : 'bg-white text-yovel-muted border-yovel-border hover:bg-yovel-bg'"
+                                    class="min-h-[52px] rounded-xl border-[1.5px] flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition-all duration-200 active:scale-95">
+                                <span class="material-symbols-rounded text-[20px]">qr_code_2</span> QRIS
+                            </button>
+                            <button type="button" x-on:click="method = 'ewallet'" :class="method === 'ewallet' ? 'bg-yovel-ink text-white border-yovel-ink' : 'bg-white text-yovel-muted border-yovel-border hover:bg-yovel-bg'"
+                                    class="min-h-[52px] rounded-xl border-[1.5px] flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition-all duration-200 active:scale-95">
+                                <span class="material-symbols-rounded text-[20px]">account_balance_wallet</span> E-Wallet
+                            </button>
+                            <button type="button" x-on:click="method = 'card'" :class="method === 'card' ? 'bg-yovel-ink text-white border-yovel-ink' : 'bg-white text-yovel-muted border-yovel-border hover:bg-yovel-bg'"
+                                    class="min-h-[52px] rounded-xl border-[1.5px] flex flex-col items-center justify-center gap-1 text-[11px] font-bold transition-all duration-200 active:scale-95">
+                                <span class="material-symbols-rounded text-[20px]">credit_card</span> Kartu
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="block text-xs font-bold uppercase tracking-wider text-yovel-muted mb-2" x-text="method === 'cash' ? 'Uang Diterima' : 'Nominal Dibayar'"></span>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 font-bold text-primary-400 text-lg">Rp</span>
+                            <input type="text" inputmode="numeric" :value="amountFormatted" x-on:input="setAmountInput($event)"
+                                   class="w-full min-h-[56px] pl-12 pr-4 bg-yovel-bg border border-yovel-border rounded-xl focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink focus:bg-white outline-none text-xl font-black text-yovel-ink transition-all duration-200"
+                                   placeholder="0">
+                        </div>
+                        <p x-show="method === 'cash' && changePreview > 0" x-cloak class="mt-2 text-sm font-semibold text-emerald-600">
+                            Kembalian: <span x-text="'Rp ' + formatRupiah(changePreview)"></span>
+                        </p>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <button type="button" x-on:click="fillRemaining()"
+                                class="flex-1 min-h-[44px] text-sm font-black rounded-xl bg-primary-700 text-white hover:bg-primary-900 shadow-sm transition-all duration-200 active:scale-95">PAS</button>
+                        <template x-if="method === 'cash'">
+                            <button type="button" x-on:click="addQuick(50000)"
+                                    class="flex-1 min-h-[44px] text-sm font-bold rounded-xl bg-yovel-surface text-yovel-muted hover:bg-primary-200 hover:text-yovel-ink transition-all duration-200 active:scale-95">+50K</button>
+                        </template>
+                        <template x-if="method === 'cash'">
+                            <button type="button" x-on:click="addQuick(100000)"
+                                    class="flex-1 min-h-[44px] text-sm font-bold rounded-xl bg-yovel-surface text-yovel-muted hover:bg-primary-200 hover:text-yovel-ink transition-all duration-200 active:scale-95">+100K</button>
+                        </template>
+                    </div>
+
+                    <p x-show="errorMsg" x-cloak class="text-sm font-medium text-rose-600" x-text="errorMsg"></p>
+
+                    <button type="button" x-on:click="addLeg()"
+                            class="w-full min-h-[52px] rounded-xl bg-yovel-surface text-yovel-ink font-bold text-sm border border-yovel-border hover:bg-primary-200 transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2">
+                        <span class="material-symbols-rounded text-[20px]">add_circle</span> Tambah Metode Ini
+                    </button>
+                </div>
+
+                @error('cart')
+                    <div class="p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-sm font-medium flex items-start gap-2">
+                        <span class="material-symbols-rounded text-[18px] mt-0.5">error</span> {{ $message }}
+                    </div>
+                @enderror
+            </div>
+
+            <div class="p-4 border-t border-yovel-border bg-white shrink-0">
+                <button type="button" x-on:click="submit()" :disabled="remaining > 0 || legs.length === 0 || submitting"
+                        class="w-full min-h-[56px] rounded-xl bg-primary-700 hover:bg-primary-900 text-white font-bold text-lg shadow-md transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    <span x-show="submitting" class="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
+                    <span x-text="submitting ? 'Memproses...' : 'Proses Transaksi'"></span>
+                </button>
+            </div>
+        </div>
+    </x-modal>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('checkoutPayment', () => ({
+                total: 0,
+                legs: [],
+                method: 'cash',
+                amountRaw: 0,
+                amountFormatted: '',
+                submitting: false,
+                errorMsg: '',
+                idempotencyKey: null,
+
+                init() {
+                    window.addEventListener('open-checkout-modal', (e) => {
+                        this.total = e.detail.total;
+                        this.legs = [];
+                        this.method = 'cash';
+                        this.amountRaw = 0;
+                        this.amountFormatted = '';
+                        this.errorMsg = '';
+                        this.submitting = false;
+                        this.idempotencyKey = (window.crypto && window.crypto.randomUUID)
+                            ? window.crypto.randomUUID()
+                            : (Date.now().toString(36) + Math.random().toString(36).slice(2));
+                    });
+                },
+
+                get paidTotal() {
+                    return this.legs.reduce((s, l) => s + l.amount, 0);
+                },
+                get remaining() {
+                    return Math.max(0, this.total - this.paidTotal);
+                },
+                get changePreview() {
+                    if (this.method !== 'cash') return 0;
+                    return Math.max(0, (this.amountRaw || 0) - this.remaining);
+                },
+
+                formatRupiah(n) {
+                    return new Intl.NumberFormat('id-ID').format(Math.round(n || 0));
+                },
+
+                setAmountInput(e) {
+                    const raw = e.target.value.replace(/[^0-9]/g, '');
+                    this.amountRaw = raw === '' ? 0 : parseInt(raw, 10);
+                    this.amountFormatted = raw === '' ? '' : this.formatRupiah(this.amountRaw);
+                },
+
+                fillRemaining() {
+                    this.amountRaw = this.remaining;
+                    this.amountFormatted = this.formatRupiah(this.remaining);
+                },
+
+                addQuick(amount) {
+                    if (this.method !== 'cash') this.method = 'cash';
+                    this.amountRaw = (this.amountRaw || 0) + amount;
+                    this.amountFormatted = this.formatRupiah(this.amountRaw);
+                },
+
+                methodLabel(m) {
+                    return { cash: 'Tunai', qris: 'QRIS', ewallet: 'E-Wallet', card: 'Kartu' }[m] ?? m;
+                },
+
+                addLeg() {
+                    this.errorMsg = '';
+                    if (!this.amountRaw || this.amountRaw <= 0) {
+                        this.errorMsg = 'Masukkan nominal pembayaran.';
+                        return;
+                    }
+                    if (this.remaining <= 0) {
+                        this.errorMsg = 'Tagihan sudah lunas.';
+                        return;
+                    }
+                    const applied = Math.min(this.amountRaw, this.remaining);
+                    const change = Math.max(0, this.amountRaw - this.remaining);
+                    this.legs.push({
+                        uid: Date.now() + Math.random(),
+                        method: this.method,
+                        label: this.methodLabel(this.method),
+                        amount: applied,
+                        changeShown: this.method === 'cash' ? change : 0,
+                    });
+                    this.amountRaw = 0;
+                    this.amountFormatted = '';
+                },
+
+                removeLeg(uid) {
+                    this.legs = this.legs.filter(l => l.uid !== uid);
+                },
+
+                async submit() {
+                    if (this.remaining > 0 || this.legs.length === 0 || this.submitting) return;
+                    this.submitting = true;
+                    const payload = this.legs.map(l => ({ method: l.method, amount: l.amount }));
+                    try {
+                        await $wire.call('submitOrder', payload, this.idempotencyKey);
+                    } finally {
+                        this.submitting = false;
+                    }
+                },
+            }));
+        });
+    </script>
 </div>

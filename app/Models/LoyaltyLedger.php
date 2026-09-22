@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Models;
@@ -31,11 +32,11 @@ class LoyaltyLedger extends Model
 
     public function update(array $attributes = [], array $options = [])
     {
-        throw new \LogicException("Immutable Ledger: Modifikasi data dilarang oleh arsitektur Tier-1.");
+        throw new \LogicException('Immutable Ledger: Modifikasi data dilarang oleh arsitektur Tier-1.');
     }
 
     public function delete()
     {
-        throw new \LogicException("Immutable Ledger: Modifikasi data dilarang oleh arsitektur Tier-1.");
+        throw new \LogicException('Immutable Ledger: Modifikasi data dilarang oleh arsitektur Tier-1.');
     }
 }

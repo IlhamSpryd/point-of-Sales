@@ -13,6 +13,7 @@
    - Mode Kiosk/Fullscreen dengan layout terkunci (`pos-layout-locked`, `overscroll-none`, `no-select`).
    - Standardisasi touch-target 44px dan pencegahan double-submit via state Alpine.js.
    - Pemasangan selector deterministik (`dusk`, `data-testid`) untuk pengujian otomatis.
+   - **UI Kiosk Refactor:** Integrasi Split Payment (exact-sum via Alpine.js) dan Pemilihan Pelanggan (Loyalty) di Kasir Livewire.
 3. **Omnichannel Gateway (Node 5):**
    - Webhook GrabFood/GoFood aktif dengan validasi HMAC-SHA256 (5-minute skew).
    - Antrean asinkron menggunakan Background Jobs (`ProcessWebhookOrderJob`).

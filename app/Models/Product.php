@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace App\Models;
@@ -90,7 +91,7 @@ class Product extends Model
     /**
      * [OMEGA-NODE1] FIX PRASYARAT BOM: Hapus 'unit_of_measurement' karena tidak ada di tabel pivot.
      */
-    public function ingredients(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function ingredients(): BelongsToMany
     {
         return $this->belongsToMany(Ingredient::class, 'product_ingredients')
             ->withPivot('quantity_required');

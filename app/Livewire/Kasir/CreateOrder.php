@@ -1,11 +1,17 @@
 <?php
 
+// [OMEGA-NODE2] Refactor Kiosk Kasir: dukungan pemilihan pelanggan (loyalti)
+// dan Split Payment exact-sum via TransactionService::createTransaction().
+// Skenario "Tarik Pesanan" TETAP memakai pembayaran tunggal lama -- lihat
+// SYNC ALERT Node 1 untuk rencana migrasinya ke split payment. | 2026-09-22
+
 namespace App\Livewire\Kasir;
 
 use App\Enums\OrderStatus;
-use App\Enums\OrderType;
 use App\Enums\PaymentMethod;
+use App\Enums\PaymentMethodEnum;
 use App\Enums\PreparationStatus;
+use App\Models\Customer;
 use App\Models\Modifier;
 use App\Models\Order;
 use App\Models\Product;
@@ -13,6 +19,7 @@ use App\Models\Table;
 use App\Services\MenuCacheService;
 use App\Services\TransactionService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
@@ -26,11 +33,11 @@ class CreateOrder extends Component
 
     public array $cart = [];            // payload MENTAH, sama format dgn self-order
 
-    public float $cashReceived = 0;
+    public float $cashReceived = 0;     // HANYA dipakai skenario Tarik Pesanan (pembayaran tunggal)
 
     public string $search = '';
 
-    public string $paymentMethod = 'cash';
+    public string $paymentMethod = 'cash'; // HANYA dipakai skenario Tarik Pesanan
 
     // Properti baru untuk mode "Retrieve Order"
     public ?string $pendingOrderCode = null;
@@ -45,6 +52,15 @@ class CreateOrder extends Component
     public int $pendingQty = 1;
 
     public ?string $pendingNotes = null;
+
+    // [OMEGA-NODE2] Customer selection (Loyalty) -- HANYA berlaku untuk
+    // skenario Walk-in Baru (lihat SYNC ALERT #3 di Phase 1 untuk alasan
+    // skenario Tarik Pesanan belum mendukung ini).
+    public ?int $customerId = null;
+
+    public ?string $customerName = null;
+
+    public string $customerSearch = '';
 
     public function updatedOrderType(): void
     {
@@ -86,6 +102,11 @@ class CreateOrder extends Component
             ];
         }
 
+        // [OMEGA-NODE2] Skenario ini tidak mendukung customer_id/loyalti --
+        // pastikan tidak ada sisa pilihan pelanggan dari sesi sebelumnya.
+        $this->customerId = null;
+        $this->customerName = null;
+
         $this->pendingOrderCode = $order->order_code;
         $this->pendingOrderId = $order->id;
         $this->orderType = $order->order_type?->value;
@@ -101,6 +122,10 @@ class CreateOrder extends Component
         $this->cart = [];
         $this->orderType = null;
         $this->tableId = null;
+        // [OMEGA-NODE2] Hygiene fix (lihat Phase 1 self-adversarial review):
+        // customer terpilih tidak boleh ikut terbawa ke pesanan berikutnya.
+        $this->customerId = null;
+        $this->customerName = null;
     }
 
     #[Computed]
@@ -116,6 +141,44 @@ class CreateOrder extends Component
         // 1. MenuCacheService::getCatalog() kini benar-benar pakai Cache::remember (Laravel Cache, TTL 1 jam).
         // 2. #[Computed(cache: true)] mencegah query/cache-lookup diulang dalam siklus request Livewire yang sama.
         return app(MenuCacheService::class)->getCatalog();
+    }
+
+    // [OMEGA-NODE2] Pencarian pelanggan untuk Loyalty. Query DB tetap
+    // dipertahankan server-side (tidak bisa full-client) tapi dibatasi
+    // debounce 300ms + minimal 2 karakter di sisi Blade agar sesuai
+    // prinsip Zero-Latency Concurrency sebisa mungkin.
+    #[Computed]
+    public function customerResults()
+    {
+        $q = trim($this->customerSearch);
+
+        if (mb_strlen($q) < 2) {
+            return collect();
+        }
+
+        return Customer::query()
+            ->where('is_active', true)
+            ->where(fn ($qq) => $qq->where('name', 'like', "%{$q}%")->orWhere('phone', 'like', "%{$q}%"))
+            ->orderBy('name')
+            ->limit(8)
+            ->get(['id', 'name', 'phone']);
+    }
+
+    public function selectCustomer(int $id, string $name): void
+    {
+        if (! Customer::where('id', $id)->where('is_active', true)->exists()) {
+            return;
+        }
+
+        $this->customerId = $id;
+        $this->customerName = $name;
+        $this->customerSearch = '';
+    }
+
+    public function clearCustomer(): void
+    {
+        $this->customerId = null;
+        $this->customerName = null;
     }
 
     // Modal state reset
@@ -216,24 +279,55 @@ class CreateOrder extends Component
     #[Computed]
     public function changeAmount(): int
     {
+        // HANYA relevan untuk skenario Tarik Pesanan (pembayaran tunggal).
         return max(0, (int) $this->cashReceived - $this->totalAmount);
     }
 
-    public function submitOrder()
+    /**
+     * [OMEGA-NODE2] Menerima $legs dari Alpine (Split Payment modal) untuk
+     * skenario Walk-in Baru. Skenario Tarik Pesanan tetap dilayani via
+     * $this->paymentMethod/$this->cashReceived seperti sebelumnya --
+     * $legs diabaikan sepenuhnya di cabang itu (lihat SYNC ALERT Node 1).
+     *
+     * @param  array<int, array{method: string, amount: int}>  $legs
+     */
+    public function submitOrder(array $legs = [], ?string $idempotencyKey = null)
     {
         $rules = [
             'orderType' => ['required', 'in:dine_in,takeaway'],
             'cart' => ['required', 'array', 'min:1'],
-            'cashReceived' => ['required', 'numeric', 'min:0'],
         ];
 
+        if ($this->pendingOrderId) {
+            $rules['cashReceived'] = ['required', 'numeric', 'min:0'];
+        }
+
         // Jika bukan pending order, validasi meja diperlukan untuk dine_in
-        // Jika pending order, mungkin meja sudah diset dari awal oleh pelanggan
         if (! $this->pendingOrderId && $this->orderType === 'dine_in') {
             $rules['tableId'] = ['required'];
         }
 
         $this->validate($rules);
+
+        // [OMEGA-NODE2] Idempotency guard -- pola direplikasi persis dari
+        // TransactionController::store() agar kasir yang panik menekan
+        // tombol berkali-kali tidak menghasilkan order duplikat.
+        if ($idempotencyKey && Order::where('idempotency_key', $idempotencyKey)->exists()) {
+            return redirect()->route(
+                'transaction.receipt',
+                Order::where('idempotency_key', $idempotencyKey)->value('order_code')
+            );
+        }
+
+        $lock = null;
+        if ($idempotencyKey) {
+            $lock = Cache::lock('order_idempotency_'.$idempotencyKey, 10);
+            if (! $lock->get()) {
+                $this->addError('cart', 'Transaksi serupa sedang diproses, coba lagi.');
+
+                return;
+            }
+        }
 
         try {
             DB::beginTransaction();
@@ -241,14 +335,14 @@ class CreateOrder extends Component
             $transactionService = app(TransactionService::class);
 
             // [OMEGA-NODE1] Zero-Trust shift guard, dipusatkan lewat Service
-            // agar identik dengan alur TransactionController::store() --
-            // sebelumnya cabang "Skenario 2" mengambil shift_id TANPA
-            // validasi (bisa NULL diam-diam), dan "Skenario 1" tidak
-            // mengambil shift_id SAMA SEKALI.
+            // agar identik dengan alur TransactionController::store().
             $shiftId = $transactionService->resolveOpenShiftOrFail((int) Auth::id());
 
             if ($this->pendingOrderId) {
-                // Skenario 2: Membayar Pesanan Self-Order yang tertunda
+                // Skenario 2: Membayar Pesanan Self-Order yang tertunda.
+                // UNCHANGED dari versi sebelumnya -- lihat SYNC ALERT #3:
+                // jalur ini belum melalui TransactionService::createTransaction(),
+                // sehingga split payment & loyalti TIDAK berlaku di sini.
                 $order = Order::findOrFail($this->pendingOrderId);
                 $order->forceFill([
                     'payment_method' => PaymentMethod::tryFrom($this->paymentMethod) ?? PaymentMethod::Cash,
@@ -261,18 +355,62 @@ class CreateOrder extends Component
                 // Ubah status KDS menjadi Pending (masuk dapur)
                 $order->orderItems()->update(['preparation_status' => PreparationStatus::Pending->value]);
             } else {
-                // Skenario 1: Pesanan Walk-in Baru (Logic Lama)
-                // [OMEGA-NODE1] FIX KRITIS: userId & shiftId sekarang WAJIB
-                // dioper eksplisit -- lihat TransactionService::createWalkInOrder().
-                $order = $transactionService->createWalkInOrder(
-                    itemsPayload: $this->cart,
-                    orderType: OrderType::from($this->orderType),
-                    tableId: $this->tableId,
-                    paymentMethod: $this->paymentMethod,
-                    cashReceived: (int) $this->cashReceived,
-                    userId: (int) Auth::id(),
-                    shiftId: $shiftId,
-                );
+                // Skenario 1: Pesanan Walk-in Baru + Split Payment + Loyalti.
+                $normalizedLegs = [];
+                foreach ($legs as $leg) {
+                    $method = PaymentMethodEnum::tryFrom((string) ($leg['method'] ?? ''));
+                    $amount = (int) ($leg['amount'] ?? 0);
+
+                    if (! $method || $amount <= 0) {
+                        throw ValidationException::withMessages([
+                            'cart' => 'Salah satu metode pembayaran tidak valid.',
+                        ]);
+                    }
+
+                    $normalizedLegs[] = ['method' => $method->value, 'amount' => $amount];
+                }
+
+                if (empty($normalizedLegs)) {
+                    throw ValidationException::withMessages([
+                        'cart' => 'Minimal satu metode pembayaran wajib diisi sebelum memproses transaksi.',
+                    ]);
+                }
+
+                // Batch-load produk (pola sama dengan cartLines() di atas) agar
+                // resolveOrderItemLine() tidak memicu N+1 saat membangun payload.
+                $productIds = collect($this->cart)->pluck('product_id')->unique()->values();
+                $products = Product::with('modifierGroups')->whereIn('id', $productIds)->get()->keyBy('id');
+
+                $items = [];
+                foreach ($this->cart as $raw) {
+                    $product = $products->get($raw['product_id']) ?? Product::findOrFail($raw['product_id']);
+                    $line = $transactionService->resolveOrderItemLine(
+                        $product, $raw['modifier_ids'], $raw['qty'], $raw['notes'],
+                    );
+
+                    $items[] = [
+                        'product_id' => $line['product_id'],
+                        'quantity' => $line['qty'],
+                        'extra_price' => $line['order_price'] - $product->product_price,
+                        'options' => $line['options'],
+                    ];
+                }
+
+                // PERLU KONFIRMASI NODE 1 (lihat SYNC ALERT #2): 'order_type'
+                // di bawah ini AMAN dikirim tapi saat ini DIABAIKAN oleh
+                // TransactionService::createTransaction() karena key tsb
+                // belum ada di Order::forceCreate() method itu. Takeaway
+                // order akan tersimpan sebagai 'dine_in' (default kolom)
+                // sampai Node 1 menambahkannya.
+                $order = $transactionService->createTransaction([
+                    'items' => $items,
+                    'payments' => $normalizedLegs,
+                    'customer_id' => $this->customerId,
+                    'table_id' => $this->tableId,
+                    'order_type' => $this->orderType,
+                    'shift_id' => $shiftId,
+                    'idempotency_key' => $idempotencyKey,
+                ], (int) Auth::id());
             }
 
             DB::commit();
@@ -290,6 +428,10 @@ class CreateOrder extends Component
             }
 
             return;
+        } finally {
+            if ($lock) {
+                $lock->release();
+            }
         }
     }
 
