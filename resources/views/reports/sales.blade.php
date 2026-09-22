@@ -5,13 +5,12 @@
             <h4 class="text-xl font-bold text-[#37352F] tracking-tight">{{ $title }}</h4>
             <p class="text-sm font-medium text-[#787774] mt-1">Ringkasan transaksi dan pendapatan</p>
         </div>
-        
         <div class="flex gap-2 w-full sm:w-auto">
-            <a href="{{ route('reports.sales', ['export' => 'csv'] + request()->except('export')) }}" class="flex-1 sm:flex-none" wire:navigate>
-                <x-button variant="secondary" type="button" class="w-full h-10">
-                    <span class="material-symbols-rounded text-[18px]">download</span> Ekspor
-                </x-button>
-            </a>
+            @php
+                $startDate = request('start', \Carbon\Carbon::now()->startOfMonth()->toDateString());
+                $endDate = request('end', \Carbon\Carbon::now()->toDateString());
+            @endphp
+            <livewire:async-export-button :start-date="$startDate" :end-date="$endDate" />
         </div>
     </div>
 

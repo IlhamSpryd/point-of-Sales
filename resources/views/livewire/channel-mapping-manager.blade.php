@@ -1,0 +1,101 @@
+<div>
+    <div class="mb-6 flex flex-col items-start gap-1">
+        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Integrasi Channel</h1>
+        <p class="text-sm font-medium text-gray-500">Kelola pemetaan SKU dari platform eksternal ke produk internal.</p>
+    </div>
+
+    @if (session()->has('message'))
+        <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm shadow-sm flex items-center gap-2">
+            <span class="material-symbols-rounded text-[18px]">check_circle</span>
+            {{ session('message') }}
+        </div>
+    @endif
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Form mapping -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 lg:col-span-1 h-fit">
+            <h2 class="text-sm font-semibold text-gray-900 mb-5 tracking-tight border-b border-gray-100 pb-3">Tambah Pemetaan Baru</h2>
+            
+            <form wire:submit="saveMapping" class="flex flex-col gap-4">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide">Provider</label>
+                    <select wire:model="provider" class="w-full border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 rounded-md text-sm shadow-sm">
+                        <option value="grabfood">GrabFood</option>
+                        <option value="gofood">GoFood</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide">SKU Provider (External ID)</label>
+                    <input type="text" wire:model="externalProductId" placeholder="Misal: GF-1234" class="w-full border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 rounded-md text-sm shadow-sm">
+                    @error('externalProductId') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1.5 uppercase tracking-wide">Produk Internal</label>
+                    <select wire:model="productId" class="w-full border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 rounded-md text-sm shadow-sm">
+                        <option value="">-- Pilih Produk --</option>
+                        @foreach($products as $product)
+                            <option value="{{ $product->id }}">{{ $product->name }}</option>
+                        @endforeach
+                    </select>
+                    @error('productId') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                </div>
+                
+                <button type="submit" class="mt-4 w-full bg-gray-900 text-white hover:bg-gray-800 rounded-md px-4 py-2.5 text-sm font-medium transition-colors shadow-sm">
+                    Simpan Pemetaan
+                </button>
+            </form>
+        </div>
+
+        <!-- Tabel mapping -->
+        <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden lg:col-span-2 flex flex-col">
+            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
+                <h2 class="text-sm font-semibold text-gray-900 tracking-tight">Daftar Pemetaan Aktif</h2>
+            </div>
+            <div class="overflow-x-auto flex-1">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-gray-50 border-b border-gray-200">
+                            <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Provider</th>
+                            <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">SKU Eksternal</th>
+                            <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Produk Internal</th>
+                            <th class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse($mappings as $mapping)
+                            <tr class="hover:bg-gray-50/50 transition-colors">
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700 capitalize border border-gray-200">
+                                        {{ $mapping->provider }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-sm font-medium text-gray-900">
+                                    {{ $mapping->external_product_id }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">
+                                    {{ $mapping->product->name ?? 'Produk Dihapus' }}
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <button wire:click="deleteMapping({{ $mapping->id }})" class="text-red-600 hover:text-red-800 text-sm font-medium transition-colors">
+                                        Hapus
+                                    </button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-12 text-center">
+                                    <div class="flex flex-col items-center justify-center text-gray-500">
+                                        <span class="material-symbols-rounded text-4xl text-gray-300 mb-3">link_off</span>
+                                        <p class="text-sm font-medium">Belum ada pemetaan sku channel.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

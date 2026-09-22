@@ -20,6 +20,7 @@ use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
+use App\Livewire\ChannelMappingManager;
 use App\Livewire\Kasir\CreateOrder;
 use App\Livewire\Kds\Board;
 use Illuminate\Support\Facades\Route;
@@ -129,6 +130,11 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:Owner,Manager,Inventory')->group(function () {
         Route::get('/api/analytics/restock-forecasts', [RestockForecastController::class, 'index'])
             ->name('analytics.restock-forecasts');
+    });
+
+    // [OMEGA-NODE5] Channel Mapping Manager
+    Route::middleware('role:Owner,Manager')->group(function () {
+        Route::get('/integrations/channel-mapping', ChannelMappingManager::class)->name('integrations.channel-mapping');
     });
 
     Route::middleware('role:Owner')->group(function () {
