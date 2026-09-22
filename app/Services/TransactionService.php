@@ -812,6 +812,83 @@ class TransactionService
      * products.stock, BELUM ingredients.current_stock. Lihat Fase 1.1
      * finding CRITICAL/Backlog.)
      */
+    public function payPendingOrder(Order $order, array $rawPaymentLegs, ?int $userId = null, ?int $shiftId = null): Order
+    {
+        return DB::transaction(function () use ($order, $rawPaymentLegs, $userId, $shiftId) {
+            $order = Order::lockForUpdate()->findOrFail($order->id);
+
+            if ($order->order_status->isFinal()) {
+                return $order;
+            }
+
+            if ($order->order_status !== OrderStatus::Pending) {
+                throw ValidationException::withMessages([
+                    'payments' => 'Pesanan ini tidak dalam status Pending.',
+                ]);
+            }
+
+            if ($shiftId) {
+                $shift = Shift::lockForUpdate()->find($shiftId);
+                if (! $shift || $shift->status !== 'open') {
+                    throw ValidationException::withMessages([
+                        'shift' => 'Shift Anda baru saja ditutup. Transaksi ini dibatalkan.',
+                    ]);
+                }
+            }
+
+            $parsedPaymentLegs = $this->parsePaymentLegs($rawPaymentLegs);
+            $sumApplied = array_sum(array_column($parsedPaymentLegs, 'amount'));
+
+            if ($sumApplied !== (int) $order->order_amount) {
+                throw ValidationException::withMessages([
+                    'payments' => 'Total metode pembayaran (Rp'.number_format($sumApplied, 0, ',', '.').') tidak sama dengan total tagihan (Rp'.number_format((int)$order->order_amount, 0, ',', '.').').',
+                ]);
+            }
+
+            $legsByAmountDesc = collect($parsedPaymentLegs)->sortByDesc('amount');
+            $safeDominant = $legsByAmountDesc->first(fn ($l) => $l['method'] !== PaymentMethodEnum::Card);
+            $dominantPaymentMethod = $safeDominant ? $safeDominant['method']->value : 'qris';
+
+            $cashLegTotal = collect($parsedPaymentLegs)->where('method', PaymentMethodEnum::Cash)->sum('amount');
+            $cashReceivedForReceipt = $cashLegTotal > 0 ? $cashLegTotal : null;
+
+            foreach ($parsedPaymentLegs as $i => $leg) {
+                Payment::create([
+                    'order_id' => $order->id,
+                    'payment_method' => $leg['method'],
+                    'amount' => $leg['amount'],
+                    'reference_number' => $leg['reference_number'],
+                    'status' => PaymentStatusEnum::Captured,
+                    'captured_at' => now(),
+                    'processed_by' => $userId,
+                    'idempotency_key' => $leg['idempotency_key'] ?? ('payment:'.$order->order_code.':'.$i.':pending'),
+                ]);
+            }
+
+            $order->forceFill([
+                'order_status' => OrderStatus::Paid,
+                'payment_method' => $dominantPaymentMethod,
+                'cash_received' => $cashReceivedForReceipt,
+                'order_change' => 0,
+                'shift_id' => $shiftId ?? $order->shift_id,
+            ])->save();
+
+            // Ubah status KDS menjadi Pending (masuk dapur)
+            $order->orderItems()->update(['preparation_status' => 'pending']);
+
+            if ($order->customer_id) {
+                $this->grantLoyaltyPoints((int) $order->customer_id, $order, (int) $order->subtotal_amount);
+            }
+
+            return $order;
+        }, attempts: 3);
+    }
+
+    /**
+     * (UNCHANGED -- restoreStockForOrder() masih hanya mengembalikan
+     * products.stock, BELUM ingredients.current_stock. Lihat Fase 1.1
+     * finding CRITICAL/Backlog.)
+     */
     public function updateStatusFromMidtransNotification(
         string $orderCode,
         string $transactionStatus,
@@ -845,10 +922,21 @@ class TransactionService
             };
 
             if ($newStatus !== null) {
-                $order->forceFill(['order_status' => $newStatus])->save();
+                if ($newStatus === OrderStatus::Paid && $order->order_status !== OrderStatus::Paid) {
+                    $legMethod = $order->payment_method ? (is_string($order->payment_method) ? $order->payment_method : $order->payment_method->value) : 'qris';
+                    
+                    $this->payPendingOrder(
+                        $order,
+                        [['method' => $legMethod, 'amount' => (int) $order->order_amount, 'reference_number' => 'MIDTRANS-'.$transactionStatus]],
+                        null,
+                        null
+                    );
+                } else {
+                    $order->forceFill(['order_status' => $newStatus])->save();
 
-                if (in_array($newStatus, [OrderStatus::Failed, OrderStatus::Cancelled, OrderStatus::Expired], true)) {
-                    $this->restoreStockForOrder($order);
+                    if (in_array($newStatus, [OrderStatus::Failed, OrderStatus::Cancelled, OrderStatus::Expired], true)) {
+                        $this->restoreStockForOrder($order);
+                    }
                 }
             }
 

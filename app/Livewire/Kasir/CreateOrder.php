@@ -338,43 +338,39 @@ class CreateOrder extends Component
             // agar identik dengan alur TransactionController::store().
             $shiftId = $transactionService->resolveOpenShiftOrFail((int) Auth::id());
 
-            if ($this->pendingOrderId) {
-                // Skenario 2: Membayar Pesanan Self-Order yang tertunda.
-                // UNCHANGED dari versi sebelumnya -- lihat SYNC ALERT #3:
-                // jalur ini belum melalui TransactionService::createTransaction(),
-                // sehingga split payment & loyalti TIDAK berlaku di sini.
-                $order = Order::findOrFail($this->pendingOrderId);
-                $order->forceFill([
-                    'payment_method' => PaymentMethod::tryFrom($this->paymentMethod) ?? PaymentMethod::Cash,
-                    'cash_received' => $this->paymentMethod === 'cash' ? $this->cashReceived : null,
-                    'order_change' => $this->paymentMethod === 'cash' ? ($this->cashReceived - $order->order_amount) : 0,
-                    'order_status' => OrderStatus::Paid,
-                    'shift_id' => $shiftId,
-                ])->save();
+            // Normalisasi payment legs untuk KEDUA skenario (Walk-in & Pending)
+            $normalizedLegs = [];
+            foreach ($legs as $leg) {
+                $method = PaymentMethodEnum::tryFrom((string) ($leg['method'] ?? ''));
+                $amount = (int) ($leg['amount'] ?? 0);
 
-                // Ubah status KDS menjadi Pending (masuk dapur)
-                $order->orderItems()->update(['preparation_status' => PreparationStatus::Pending->value]);
-            } else {
-                // Skenario 1: Pesanan Walk-in Baru + Split Payment + Loyalti.
-                $normalizedLegs = [];
-                foreach ($legs as $leg) {
-                    $method = PaymentMethodEnum::tryFrom((string) ($leg['method'] ?? ''));
-                    $amount = (int) ($leg['amount'] ?? 0);
-
-                    if (! $method || $amount <= 0) {
-                        throw ValidationException::withMessages([
-                            'cart' => 'Salah satu metode pembayaran tidak valid.',
-                        ]);
-                    }
-
-                    $normalizedLegs[] = ['method' => $method->value, 'amount' => $amount];
-                }
-
-                if (empty($normalizedLegs)) {
+                if (! $method || $amount <= 0) {
                     throw ValidationException::withMessages([
-                        'cart' => 'Minimal satu metode pembayaran wajib diisi sebelum memproses transaksi.',
+                        'cart' => 'Salah satu metode pembayaran tidak valid.',
                     ]);
                 }
+
+                $normalizedLegs[] = ['method' => $method->value, 'amount' => $amount];
+            }
+
+            if (empty($normalizedLegs)) {
+                throw ValidationException::withMessages([
+                    'cart' => 'Minimal satu metode pembayaran wajib diisi sebelum memproses transaksi.',
+                ]);
+            }
+
+            if ($this->pendingOrderId) {
+                // Skenario 2: Membayar Pesanan Self-Order yang tertunda.
+                // Sekarang menggunakan TransactionService untuk insert ledger payments & loyalty.
+                $order = Order::findOrFail($this->pendingOrderId);
+                $transactionService->payPendingOrder(
+                    $order,
+                    $normalizedLegs,
+                    (int) Auth::id(),
+                    $shiftId
+                );
+            } else {
+                // Skenario 1: Pesanan Walk-in Baru + Split Payment + Loyalti.
 
                 // Batch-load produk (pola sama dengan cartLines() di atas) agar
                 // resolveOrderItemLine() tidak memicu N+1 saat membangun payload.
@@ -396,12 +392,6 @@ class CreateOrder extends Component
                     ];
                 }
 
-                // PERLU KONFIRMASI NODE 1 (lihat SYNC ALERT #2): 'order_type'
-                // di bawah ini AMAN dikirim tapi saat ini DIABAIKAN oleh
-                // TransactionService::createTransaction() karena key tsb
-                // belum ada di Order::forceCreate() method itu. Takeaway
-                // order akan tersimpan sebagai 'dine_in' (default kolom)
-                // sampai Node 1 menambahkannya.
                 $order = $transactionService->createTransaction([
                     'items' => $items,
                     'payments' => $normalizedLegs,

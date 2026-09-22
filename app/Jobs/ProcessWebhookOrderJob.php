@@ -30,12 +30,11 @@ class ProcessWebhookOrderJob implements ShouldQueue
                 // Di sini Anda akan memanggil $transactionService->createTransaction()
                 // dengan mapping data dari $this->log->payload.
 
-                // ┌─ SYNC ALERT — NODE 1 (BACKEND) ──────────────────────┐
-                // │ Saat ini TransactionService menganggap semua status 'paid'
-                // │ harus melalui metode 'cash'. Untuk order Omnichannel yang
-                // │ sudah dibayar di aplikasi (OVO/Gopay), service perlu
-                // │ dimodifikasi untuk menerima flag `is_externally_paid`.
-                // └──────────────────────────────────────────────────────┘
+                // [OMEGA-NODE2] Fix: TransactionService::createTransaction() sekarang sudah
+                // mendukung parameter `payments` (Split Payment / Omnichannel) sehingga tidak
+                // perlu lagi flag `is_externally_paid`. Cukup berikan:
+                // 'payments' => [['method' => 'ewallet', 'amount' => $totalAmountDariPayload]]
+                // Order akan otomatis menjadi Paid dan tidak memanggil Midtrans Snap.
             });
 
             $this->log->update(['status' => 'completed']);
