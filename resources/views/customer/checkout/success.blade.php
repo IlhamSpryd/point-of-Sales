@@ -8,9 +8,10 @@
     $snapToken =$order->snap_token ?? null;
     
     $config = [
-        'status'    => $order->order_status->value,
-        'token'     => $snapToken,
-        'statusUrl' => route('customer.checkout.status', ['orderCode' => $order->order_code]),
+        'status'        => $order->order_status->value,
+        'token'         => $snapToken,
+        'paymentMethod' => $order->payment_method->value ?? 'cash',
+        'statusUrl'     => route('customer.checkout.status', ['orderCode' => $order->order_code]),
     ];
 @endphp
 
@@ -75,7 +76,7 @@
                 timer: null,
 
                 states: {
-                    pending:   { icon: 'hourglass_top', title: 'Menunggu pembayaran',   text: 'Selesaikan pembayaran agar pesanan diproses.' },
+                    pending:   { icon: 'hourglass_top', title: 'Menunggu pembayaran',   text: cfg.paymentMethod === 'cash' ? 'Silakan tunjukkan QR/kode ini ke kasir untuk membayar tunai.' : 'Selesaikan pembayaran agar pesanan diproses.' },
                     paid:      { icon: 'check_circle',  title: 'Pembayaran diterima',   text: 'Pesanan masuk antrean dapur.' },
                     completed: { icon: 'task_alt',      title: 'Pesanan selesai',       text: 'Selamat menikmati.' },
                     expired:   { icon: 'timer_off',     title: 'Kedaluwarsa',           text: 'Pembayaran lewat batas waktu.', critical: true },

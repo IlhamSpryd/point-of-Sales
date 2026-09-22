@@ -585,7 +585,7 @@ class TransactionService
      * Method ini adalah SATU-SATUNYA tempat menghitung total transaksi.
      * (UNCHANGED)
      */
-    private function calculateOrderTotals(int $subtotalAmount): array
+    private function calculateOrderTotals(float $subtotalAmount): array
     {
         $taxRate = config('pos.tax_rate', 0.11);
         $taxAmount = (int) round($subtotalAmount * $taxRate);

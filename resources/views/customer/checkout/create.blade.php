@@ -13,6 +13,7 @@
     $methods = [
         ['qris',    'qr_code_2',              'QRIS',     'Scan dengan aplikasi bank atau e-wallet apa pun'],
         ['ewallet', 'account_balance_wallet', 'E-Wallet', 'GoPay atau ShopeePay'],
+        ['cash',    'payments',               'Bayar Tunai', 'Bayar ke kasir dan tunjukkan kode pesanan'],
     ];
 @endphp
 
