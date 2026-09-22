@@ -43,9 +43,9 @@ return new class extends Migration
             $table->index(['order_id', 'status'], 'payments_order_status_index');
         });
 
-        DB::statement('ALTER TABLE payments ADD CONSTRAINT chk_payments_amount_positive CHECK (amount > 0)');
-        DB::statement("ALTER TABLE payments ADD CONSTRAINT chk_payments_method_enum CHECK (payment_method IN ('cash','qris','ewallet','card'))");
-        DB::statement("ALTER TABLE payments ADD CONSTRAINT chk_payments_status_enum CHECK (status IN ('pending','captured','failed','refunded'))");
+        if (DB::getDriverName() !== 'sqlite') { DB::statement('ALTER TABLE payments ADD CONSTRAINT chk_payments_amount_positive CHECK (amount > 0)'); }
+        if (DB::getDriverName() !== 'sqlite') { DB::statement("ALTER TABLE payments ADD CONSTRAINT chk_payments_method_enum CHECK (payment_method IN ('cash','qris','ewallet','card'))"); }
+        if (DB::getDriverName() !== 'sqlite') { DB::statement("ALTER TABLE payments ADD CONSTRAINT chk_payments_status_enum CHECK (status IN ('pending','captured','failed','refunded'))"); }
 
         // Defense-in-depth (pola sama dengan SEC-006 di TransactionService):
         // validasi Service layer bisa dilewati oleh query manual. Trigger
@@ -61,7 +61,7 @@ return new class extends Migration
         // persis seperti race condition yang sudah didokumentasikan proyek
         // ini di TransactionConcurrencyTest. Service layer WAJIB membungkus
         // insert payment dalam DB::transaction() + Order::lockForUpdate().
-        DB::unprepared(<<<'SQL'
+        if (DB::getDriverName() !== 'sqlite') { DB::unprepared(<<<'SQL'
             CREATE TRIGGER trg_payments_prevent_overpayment
             BEFORE INSERT ON payments
             FOR EACH ROW
@@ -83,7 +83,7 @@ return new class extends Migration
                     END IF;
                 END IF;
             END
-        SQL);
+        SQL); }
     }
 
     public function down(): void

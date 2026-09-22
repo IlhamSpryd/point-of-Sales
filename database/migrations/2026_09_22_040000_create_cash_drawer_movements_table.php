@@ -42,9 +42,9 @@ return new class extends Migration
             $table->index(['shift_id', 'type'], 'cash_drawer_movements_shift_type_index');
         });
 
-        DB::statement('ALTER TABLE cash_drawer_movements ADD CONSTRAINT chk_cdm_amount_positive CHECK (amount > 0)');
-        DB::statement("ALTER TABLE cash_drawer_movements ADD CONSTRAINT chk_cdm_type_enum CHECK (type IN ('cash_in','cash_out'))");
-        DB::statement("ALTER TABLE cash_drawer_movements ADD CONSTRAINT chk_cdm_category_enum CHECK (category IN ('restock_change','petty_expense','owner_withdrawal','bank_deposit','correction'))");
+        if (DB::getDriverName() !== 'sqlite') { DB::statement('ALTER TABLE cash_drawer_movements ADD CONSTRAINT chk_cdm_amount_positive CHECK (amount > 0)'); }
+        if (DB::getDriverName() !== 'sqlite') { DB::statement("ALTER TABLE cash_drawer_movements ADD CONSTRAINT chk_cdm_type_enum CHECK (type IN ('cash_in','cash_out'))"); }
+        if (DB::getDriverName() !== 'sqlite') { DB::statement("ALTER TABLE cash_drawer_movements ADD CONSTRAINT chk_cdm_category_enum CHECK (category IN ('restock_change','petty_expense','owner_withdrawal','bank_deposit','correction'))"); }
     }
 
     public function down(): void

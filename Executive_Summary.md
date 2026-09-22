@@ -20,18 +20,9 @@
    - Antrean asinkron menggunakan Background Jobs (`ProcessWebhookOrderJob`).
 4. **QA Automation & CI/CD (Node 6):**
    - Pipeline GitHub Actions, PHPStan tingkat 5, dan `TransactionConcurrencyTest` untuk *Chaos Testing* database nyata.
-5. **Enterprise Database Architecture (Node 7) & Models (Node 1):**
-   - Skema *Bill of Materials* (BOM/Resep Bahan Baku).
-   - Skema *Split Payments* (Pembayaran multi-metode dalam 1 struk).
-   - Skema CRM, *Loyalty Points*, dan *Membership Tiers*.
-   - Tabel *Petty Cash / Cash Drawer Ledger*.
-   - Konfigurasi Native Enums dan Strict Type Eloquent Models untuk seluruh 4 pilar di atas.
-   - *Catatan Kaki:* Database Triggers & Append-Only Ledgers (beserta `LogicException` di layer Model) telah tervalidasi.
-6. **Fullstack Architecture (Node 8):**
-   - Halaman Riwayat Pesanan (Order History) terimplementasi dengan Livewire, dilengkapi optimasi pencegahan N+1 query yang sempurna (pemisahan *batch eager loading* daftar vs relasi mendalam di modal detail).
+3. **IoT Hardware & Performance (Fokus Node 3 & 4):**
+   - Integrasi langsung ke ESC/POS (Thermal Printer) via QZ Tray dan *Cash Drawer Kick* telah diaktifkan sepenuhnya.
 
 ## 🚧 BACKLOG & FITUR YANG BELUM ADA (PENDING / IN PROGRESS)
 1. **Manajemen Toko:**
    - Halaman pengaturan dinamis toko belum berfungsi sepenuhnya.
-2. **IoT Hardware & Performance (Fokus Node 3 & 4):**
-   - Integrasi langsung ke ESC/POS (Thermal Printer) dan *Cash Drawer Kick* belum diaktifkan.

@@ -32,7 +32,7 @@ class Product extends Model
             if (empty($model->product_code)) {
                 $latest = static::latest('id')->first();
                 $nextId = $latest ? $latest->id + 1 : 1;
-                $model->product_code = 'PRD-'.str_pad($nextId, 4, '0', STR_PAD_LEFT);
+                $model->product_code = 'PRD-'.str_pad((string) $nextId, 4, '0', STR_PAD_LEFT);
             }
         });
     }

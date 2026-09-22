@@ -32,7 +32,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        DB::unprepared(<<<'SQL'
+        if (DB::getDriverName() !== 'sqlite') { DB::unprepared(<<<'SQL'
             CREATE TRIGGER trg_loyalty_ledger_sync_account
             AFTER INSERT ON loyalty_ledger
             FOR EACH ROW
@@ -50,7 +50,7 @@ return new class extends Migration
                     lifetime_points_earned = lifetime_points_earned + GREATEST(NEW.points, 0),
                     updated_at = NOW();
             END
-        SQL);
+        SQL); }
     }
 
     public function down(): void

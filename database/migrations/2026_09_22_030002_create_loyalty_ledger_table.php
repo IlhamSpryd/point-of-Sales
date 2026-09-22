@@ -42,9 +42,9 @@ return new class extends Migration
             $table->index('order_id', 'loyalty_ledger_order_index');
         });
 
-        DB::statement("ALTER TABLE loyalty_ledger ADD CONSTRAINT chk_loyalty_ledger_type_enum CHECK (type IN ('earn','redeem','expire','adjustment','bonus','reversal'))");
+        if (DB::getDriverName() !== 'sqlite') { DB::statement("ALTER TABLE loyalty_ledger ADD CONSTRAINT chk_loyalty_ledger_type_enum CHECK (type IN ('earn','redeem','expire','adjustment','bonus','reversal'))"); }
 
-        DB::unprepared(<<<'SQL'
+        if (DB::getDriverName() !== 'sqlite') { DB::unprepared(<<<'SQL'
             CREATE TRIGGER trg_loyalty_ledger_hash_chain
             BEFORE INSERT ON loyalty_ledger
             FOR EACH ROW
@@ -63,9 +63,9 @@ return new class extends Migration
                     NEW.balance_after, IFNULL(last_hash, ''), NOW()
                 ), 256);
             END
-        SQL);
+        SQL); }
 
-        DB::unprepared(<<<'SQL'
+        if (DB::getDriverName() !== 'sqlite') { DB::unprepared(<<<'SQL'
             CREATE TRIGGER trg_loyalty_ledger_no_update
             BEFORE UPDATE ON loyalty_ledger
             FOR EACH ROW
@@ -73,9 +73,9 @@ return new class extends Migration
                 SIGNAL SQLSTATE '45000'
                     SET MESSAGE_TEXT = 'loyalty_ledger bersifat append-only: UPDATE dilarang.';
             END
-        SQL);
+        SQL); }
 
-        DB::unprepared(<<<'SQL'
+        if (DB::getDriverName() !== 'sqlite') { DB::unprepared(<<<'SQL'
             CREATE TRIGGER trg_loyalty_ledger_no_delete
             BEFORE DELETE ON loyalty_ledger
             FOR EACH ROW
@@ -83,7 +83,7 @@ return new class extends Migration
                 SIGNAL SQLSTATE '45000'
                     SET MESSAGE_TEXT = 'loyalty_ledger bersifat append-only: DELETE dilarang.';
             END
-        SQL);
+        SQL); }
     }
 
     public function down(): void

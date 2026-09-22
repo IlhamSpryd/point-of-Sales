@@ -44,7 +44,7 @@ return new class extends Migration
         // nol), padahal baris resep dengan kebutuhan NOL bahan baku tidak
         // masuk akal secara bisnis -- seharusnya baris itu dihapus, bukan
         // di-nol-kan.
-        DB::statement('ALTER TABLE product_ingredients ADD CONSTRAINT chk_pi_qty_positive CHECK (quantity_required > 0)');
+        if (DB::getDriverName() !== 'sqlite') { DB::statement('ALTER TABLE product_ingredients ADD CONSTRAINT chk_pi_qty_positive CHECK (quantity_required > 0)'); }
     }
 
     public function down(): void
