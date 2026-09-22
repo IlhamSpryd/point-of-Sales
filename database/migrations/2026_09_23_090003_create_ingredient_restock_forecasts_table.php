@@ -21,7 +21,7 @@ return new class extends Migration
             $table->timestamp('projected_stockout_at')->nullable();
             $table->decimal('suggested_reorder_qty', 14, 4)->default(0);
             $table->string('trend', 10)->default('stable'); // rising | falling | stable
-            $table->timestamp('computed_at');
+            $table->timestamp('computed_at')->useCurrent();
             $table->timestamps();
         });
     }
