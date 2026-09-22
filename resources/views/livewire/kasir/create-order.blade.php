@@ -547,10 +547,42 @@
                     try {
                         await $wire.call('submitOrder', payload, this.idempotencyKey);
                     } finally {
-                        this.submitting = false;
+                        this.submitting = false; // Note: akan di-reload oleh listener di bawah
                     }
                 },
             }));
+        });
+
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('transaction-success', async (e) => {
+                const orderCode = e[0].orderCode;
+                const isCash = e[0].isCash;
+                
+                // Show loading modal while printing
+                Swal.fire({
+                    title: 'Memproses Struk...',
+                    text: 'Menghubungkan ke printer',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Hardware Drawer Kick
+                if (isCash && {{ config('pos.auto_open_drawer') ? 'true' : 'false' }}) {
+                    await window.YovelPrint.kickDrawer(orderCode);
+                }
+                
+                // Silent Print
+                const printed = await window.YovelPrint.printReceipt(orderCode);
+                
+                if (!printed) {
+                    // Fallback to manual print dialog window
+                    window.open(`/transaction/receipt/${orderCode}?autoprint=1`, '_blank', 'width=400,height=600');
+                }
+                
+                window.location.reload();
+            });
         });
     </script>
 </div>

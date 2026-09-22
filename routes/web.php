@@ -10,6 +10,7 @@ use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\MidtransNotificationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\QzTraySigningController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
@@ -66,6 +67,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/transaction/receipt/{orderCode}', [TransactionController::class, 'receipt'])->name('transaction.receipt');
         Route::post('/api/orders/{order_number}/sync-status', [TransactionController::class, 'syncMidtrans'])->name('api.order.sync-status');
         Route::get('/api/orders/{order_number}/print-payload', [TransactionController::class, 'printPayload'])->name('api.order.print-payload');
+        
+        Route::get('/qz/certificate', [QzTraySigningController::class, 'certificate'])->name('qz.certificate');
+        Route::post('/qz/sign', [QzTraySigningController::class, 'sign'])->name('qz.sign');
     });
 
     // Dapur (KDS)

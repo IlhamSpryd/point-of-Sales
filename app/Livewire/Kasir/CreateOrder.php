@@ -405,9 +405,9 @@ class CreateOrder extends Component
 
             DB::commit();
 
-            session()->flash('success', "Order {$order->order_code} berhasil diproses.");
+            $this->dispatch('transaction-success', orderCode: $order->order_code, isCash: collect($normalizedLegs)->contains('method', 'cash'));
 
-            return redirect()->route('transaction.receipt', $order->order_code);
+            return;
 
         } catch (\Exception $e) {
             DB::rollBack();

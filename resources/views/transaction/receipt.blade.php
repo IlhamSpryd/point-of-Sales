@@ -106,28 +106,60 @@
         }
 
         @media print {
-            /* Ini mengatur UKURAN KERTAS FISIK yang diminta ke printer --
-               tanpa baris ini, hanya hasil hide sidebar, kertas tetap
-               dianggap A4 oleh browser/driver. */
             @page {
                 size: {{ (int) config('pos.receipt_width_mm', 58) }}mm auto;
                 margin: 0;
             }
 
-            /* Safety net: sembunyikan SEGALA sesuatu di halaman (termasuk
-               layout wrapper/navbar dari x-app-layout yang tidak bisa kita
-               tandai print:hidden langsung dari file ini), lalu munculkan
-               HANYA area struk. */
-            html, body { height: auto !important; overflow: visible !important; }
-            body * { visibility: hidden; }
-            #receipt, #receipt * { visibility: visible; }
+            html, body {
+                height: auto !important;
+                overflow: visible !important;
+                background: #fff !important;
+            }
+
+            /* [OMEGA-NODE4] Ganti pendekatan visibility:hidden (tidak menghapus
+               box dari flow, rawan halaman kosong tambahan pada shell h-dvh/flex)
+               dengan display:none pada shell yang sudah punya ID stabil. | 2026-09-22 */
+            #main-sidebar,
+            #main-wrapper > header,
+            #main-content > *:not(#receipt) {
+                display: none !important;
+            }
+
+            #main-wrapper,
+            #main-content {
+                display: block !important;
+                height: auto !important;
+                overflow: visible !important;
+                width: auto !important;
+                padding: 0 !important;
+                margin: 0 !important;
+            }
 
             #receipt {
-                position: absolute;
-                top: 0;
-                left: 0;
-                padding: 2mm;
+                position: static !important;
+                width: var(--receipt-width) !important;
+                max-width: var(--receipt-width) !important;
+                margin: 0 !important;
+                padding: 2mm !important;
+            }
+
+            /* Legibilitas di thermal head 203dpi: pastikan baris item tidak
+               terpotong pertengahan saat kertas melewati batas cut otomatis. */
+            #receipt > div,
+            #receipt .flex.justify-between {
+                page-break-inside: avoid;
             }
         }
     </style>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('autoprint') === '1') {
+                // Beri jeda singkat agar layout print selesai reflow sebelum dialog muncul.
+                setTimeout(() => window.print(), 150);
+            }
+        });
+    </script>
 </x-app-layout>
