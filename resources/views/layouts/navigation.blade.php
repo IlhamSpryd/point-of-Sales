@@ -119,6 +119,13 @@
                 'active' => 'activity-logs.*',
                 'roles' => ['Owner', 'Manager'],
             ],
+            [
+                'label' => 'Integrasi Channel',
+                'icon' => 'hub',
+                'route' => 'integrations.channel-mapping',
+                'active' => 'integrations.*',
+                'roles' => ['Owner', 'Manager'],
+            ],
         ],
     ];
 
