@@ -22,7 +22,9 @@
    - Pipeline GitHub Actions, PHPStan tingkat 5, dan `TransactionConcurrencyTest` untuk *Chaos Testing* database nyata.
 3. **IoT Hardware & Performance (Fokus Node 3 & 4):**
    - Integrasi langsung ke ESC/POS (Thermal Printer) via QZ Tray dan *Cash Drawer Kick* telah diaktifkan sepenuhnya.
-
+   - **MenuCacheService Refactored (Node 3):** Implementasi `Cache::lock()` (anti thundering-herd) dan `Cache::remember()` untuk performa katalog menu 0-latensi.
+   - **Automated Cache Invalidation:** Hook `Product::saved()` dengan `DB::afterCommit()` untuk memastikan sinkronisasi menu aman terhadap row lock (`lockForUpdate`).
+   - **Composite Indexing:** Menambahkan index `orders_date_status_code_index` untuk mengoptimasi throughput tinggi pada query riwayat pesanan.
 ## 🚧 BACKLOG & FITUR YANG BELUM ADA (PENDING / IN PROGRESS)
 1. **Manajemen Toko:**
    - Halaman pengaturan dinamis toko belum berfungsi sepenuhnya.

@@ -7,11 +7,13 @@ use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiscountController;
+use App\Http\Controllers\ExportTaskController;
 use App\Http\Controllers\MidtransNotificationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QzTraySigningController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RestockForecastController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShiftController;
@@ -67,7 +69,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/transaction/receipt/{orderCode}', [TransactionController::class, 'receipt'])->name('transaction.receipt');
         Route::post('/api/orders/{order_number}/sync-status', [TransactionController::class, 'syncMidtrans'])->name('api.order.sync-status');
         Route::get('/api/orders/{order_number}/print-payload', [TransactionController::class, 'printPayload'])->name('api.order.print-payload');
-        
+
         Route::get('/qz/certificate', [QzTraySigningController::class, 'certificate'])->name('qz.certificate');
         Route::post('/qz/sign', [QzTraySigningController::class, 'sign'])->name('qz.sign');
     });
@@ -115,6 +117,18 @@ Route::middleware('auth')->group(function () {
     // Pengaturan & Audit Log
     Route::middleware('role:Owner,Manager')->group(function () {
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+    });
+
+    // [OMEGA-NODE5] Ekspor laporan asinkron (polling status + download)
+    Route::middleware('role:Owner,Manager')->group(function () {
+        Route::get('/exports/{exportTask}/status', [ExportTaskController::class, 'status'])->name('exports.status');
+        Route::get('/exports/{exportTask}/download', [ExportTaskController::class, 'download'])->name('exports.download');
+    });
+
+    // [OMEGA-NODE5] BI restock forecast (JSON read-only, dikonsumsi widget Node 2)
+    Route::middleware('role:Owner,Manager,Inventory')->group(function () {
+        Route::get('/api/analytics/restock-forecasts', [RestockForecastController::class, 'index'])
+            ->name('analytics.restock-forecasts');
     });
 
     Route::middleware('role:Owner')->group(function () {

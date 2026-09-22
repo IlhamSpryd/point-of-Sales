@@ -2,8 +2,11 @@
 
 namespace App\Services;
 
+use App\Enums\ExportTaskStatus;
 use App\Enums\OrderStatus;
 use App\Exports\SalesExport;
+use App\Jobs\ProcessSalesReportExportJob;
+use App\Models\ExportTask;
 use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -48,5 +51,24 @@ class ReportService
         $filename = 'Laporan_Penjualan_'.$start->format('Ymd').'-'.$end->format('Ymd').'.xlsx';
 
         return Excel::download(new SalesExport($start, $end), $filename);
+    }
+
+    /**
+     * [OMEGA-NODE5] Versi ASINKRON exportCsv() untuk rentang besar --
+     * exportCsv() (sinkron) SENGAJA TIDAK diubah, UI existing (Node 2)
+     * masih memakainya untuk rentang kecil. Lihat SYNC ALERT NODE 2.
+     */
+    public function queueExport(Carbon $start, Carbon $end, ?int $requestedBy = null): ExportTask
+    {
+        $task = ExportTask::create([
+            'requested_by' => $requestedBy,
+            'type' => 'sales_report',
+            'parameters' => ['start' => $start->toDateString(), 'end' => $end->toDateString()],
+            'status' => ExportTaskStatus::Pending,
+        ]);
+
+        ProcessSalesReportExportJob::dispatch($task);
+
+        return $task;
     }
 }
