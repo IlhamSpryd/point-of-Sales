@@ -131,15 +131,15 @@ class CreateOrder extends Component
     #[Computed]
     public function activeTables()
     {
-        return Table::where('status', 'active')->orderBy('table_number')->get();
+        return Table::where('is_active', true)->orderBy('table_name')->get();
     }
 
-    #[Computed(cache: true, key: 'kasir-categories-catalog')]
+    #[Computed]
     public function categories()
     {
-        // OPTIMASI GANDA:
-        // 1. MenuCacheService::getCatalog() kini benar-benar pakai Cache::remember (Laravel Cache, TTL 1 jam).
-        // 2. #[Computed(cache: true)] mencegah query/cache-lookup diulang dalam siklus request Livewire yang sama.
+        // OPTIMASI:
+        // 1. MenuCacheService::getCatalog() pakai Cache::remember (Laravel Cache, TTL 1 jam).
+        // 2. #[Computed] mencegah query/cache-lookup diulang dalam siklus request Livewire yang sama.
         return app(MenuCacheService::class)->getCatalog();
     }
 

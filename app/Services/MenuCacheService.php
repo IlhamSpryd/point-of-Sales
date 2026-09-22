@@ -22,11 +22,9 @@ class MenuCacheService
 
     public function getCatalog()
     {
-        return Cache::remember(self::KEY_CATALOG, self::TTL_SECONDS, function () {
-            return Category::with([
-                'products' => fn ($q) => $q->availableForOrder()->with('modifierGroups.modifiers'),
-            ])->get();
-        });
+        return Category::with([
+            'products' => fn ($q) => $q->availableForOrder()->with('modifierGroups.modifiers'),
+        ])->get();
     }
 
     public function getAllCategories()

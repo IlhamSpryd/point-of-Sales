@@ -71,7 +71,15 @@
                 <span>TOTAL</span><span>{{ number_format($order->order_amount, 0, ',', '.') }}</span>
             </div>
 
-            @if ($order->payment_method?->value === 'cash')
+            @if ($order->payments && $order->payments->count() > 0)
+                <div class="mt-1">
+                    @foreach ($order->payments as $payment)
+                        <div class="flex justify-between">
+                            <span>{{ ucfirst($payment->payment_method?->value ?? 'Pembayaran') }}</span><span>{{ number_format($payment->amount, 0, ',', '.') }}</span>
+                        </div>
+                    @endforeach
+                </div>
+            @elseif ($order->payment_method?->value === 'cash')
                 <div class="flex justify-between mt-1">
                     <span>Tunai</span><span>{{ number_format($order->cash_received, 0, ',', '.') }}</span>
                 </div>

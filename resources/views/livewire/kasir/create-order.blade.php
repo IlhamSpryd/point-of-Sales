@@ -27,7 +27,7 @@
                         <select wire:model="tableId" class="bg-white border border-yovel-border text-yovel-ink text-sm rounded-xl focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink block w-full p-2.5 shadow-sm transition-all duration-200 min-h-[44px]">
                             <option value="">-- Pilih Meja --</option>
                             @foreach ($this->activeTables as $table)
-                                <option value="{{ $table->id }}">Meja {{ $table->table_number }}</option>
+                                <option value="{{ $table->id }}">Meja {{ $table->table_name }}</option>
                             @endforeach
                         </select>
                         @error('tableId') <p class="text-rose-500 text-xs mt-1 font-medium">{{ $message }}</p> @enderror
