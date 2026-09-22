@@ -41,7 +41,7 @@ class ChannelMappingManager extends Component
     {
         return view('livewire.channel-mapping-manager', [
             'mappings' => ChannelProductMapping::with('product')->orderBy('created_at', 'desc')->get(),
-            'products' => Product::where('is_active', true)->orderBy('name')->get(),
+            'products' => Product::where('is_active', true)->orderBy('product_name')->get(),
         ])->layout('layouts.app');
     }
 }

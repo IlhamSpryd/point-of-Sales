@@ -37,6 +37,13 @@
                 'roles' => ['Owner', 'Manager', 'Kasir'],
             ],
             [
+                'label' => 'Tugas Ekspor',
+                'icon' => 'file_download',
+                'route' => 'export-tasks',
+                'active' => request()->routeIs('export-tasks'),
+                'roles' => ['Owner', 'Manager', 'Cashier'],
+            ],
+            [
                 'label' => 'Dapur (KDS)',
                 'icon' => 'restaurant_menu',
                 'route' => 'kds.index',
@@ -55,6 +62,22 @@
                 'icon' => 'table_restaurant',
                 'route' => 'tables.index',
                 'active' => 'tables.*',
+                'roles' => ['Owner', 'Manager'],
+            ],
+        ],
+        'Inventory & Stok' => [
+            [
+                'label' => 'Bahan Baku',
+                'icon' => 'inventory_2',
+                'route' => 'inventory.ingredients',
+                'active' => 'inventory.ingredients',
+                'roles' => ['Owner', 'Manager'],
+            ],
+            [
+                'label' => 'Riwayat Stok',
+                'icon' => 'history',
+                'route' => 'inventory.ledger',
+                'active' => 'inventory.ledger',
                 'roles' => ['Owner', 'Manager'],
             ],
         ],

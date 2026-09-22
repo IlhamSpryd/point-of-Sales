@@ -21,6 +21,8 @@ use App\Http\Controllers\TableController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Livewire\ChannelMappingManager;
+use App\Livewire\Inventory\IngredientLedger;
+use App\Livewire\Inventory\IngredientManager;
 use App\Livewire\Kasir\CreateOrder;
 use App\Livewire\Kds\Board;
 use Illuminate\Support\Facades\Route;
@@ -82,6 +84,12 @@ Route::middleware('auth')->group(function () {
 
     // Katalog (Produk & Kategori)
     Route::middleware('role:Owner,Manager,Inventory')->group(function () {
+        // Inventory (BOM & Ingredients)
+        Route::middleware('role:Owner,Manager')->prefix('inventory')->name('inventory.')->group(function () {
+            Route::get('/ingredients', IngredientManager::class)->name('ingredients');
+            Route::get('/ledger', IngredientLedger::class)->name('ledger');
+        });
+
         Route::resource('products', ProductController::class);
         Route::resource('categories', CategoryController::class);
     });

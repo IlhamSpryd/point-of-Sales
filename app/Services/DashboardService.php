@@ -21,7 +21,7 @@ class DashboardService
      */
     public function getDashboardMetrics(): array
     {
-        return Cache::remember('pos:dashboard:metrics', 90, function () {
+        $metrics = Cache::remember('pos:dashboard:metrics', 90, function () {
             // 1. Core KPIs
             $now = Carbon::now();
             $thisMonth = $now->month;
@@ -66,8 +66,6 @@ class DashboardService
 
             $returnedProducts = 0;
 
-            $recentOrders = Order::with('user')->orderBy('created_at', 'desc')->take(4)->get();
-
             $chartDates = collect(range(6, 0))->map(function ($days) {
                 return Carbon::now()->subDays($days)->format('M d');
             })->toArray();
@@ -108,7 +106,6 @@ class DashboardService
                 'lowStockPercent',
                 'soldThisMonth',
                 'returnedProducts',
-                'recentOrders',
                 'chartDates',
                 'revenueData',
                 'ordersData',
@@ -118,5 +115,10 @@ class DashboardService
                 'ordersDeltaPercent'
             );
         });
+
+        // Ambil data non-kalkulasi yang rawan serialization error jika di-cache
+        $metrics['recentOrders'] = Order::with('user')->orderBy('created_at', 'desc')->take(4)->get();
+
+        return $metrics;
     }
 }

@@ -58,6 +58,16 @@ class ProductService
 
             $product = Product::create($data);
 
+            if (isset($data['ingredients']) && is_array($data['ingredients'])) {
+                $ingredientsSync = [];
+                foreach ($data['ingredients'] as $ing) {
+                    if (isset($ing['id']) && isset($ing['quantity'])) {
+                        $ingredientsSync[$ing['id']] = ['quantity_required' => $ing['quantity']];
+                    }
+                }
+                $product->ingredients()->sync($ingredientsSync);
+            }
+
             // PENTING: invalidasi cache katalog menu setiap ada produk baru,
             // agar Kasir/Self-Order langsung melihat produk baru tanpa delay 1 jam.
             $this->menuCache->flush();
@@ -82,6 +92,23 @@ class ProductService
             }
 
             $product->update($data);
+
+            if (isset($data['ingredients']) && is_array($data['ingredients'])) {
+                $ingredientsSync = [];
+                foreach ($data['ingredients'] as $ing) {
+                    if (isset($ing['id']) && isset($ing['quantity'])) {
+                        $ingredientsSync[$ing['id']] = ['quantity_required' => $ing['quantity']];
+                    }
+                }
+                $product->ingredients()->sync($ingredientsSync);
+            } else {
+                // If ingredients are omitted from the form completely, sync empty (clear BOM)
+                if (request()->has('ingredients') || request()->isMethod('PUT') || request()->isMethod('PATCH')) {
+                    // only clear if it was meant to be cleared. But actually we pass it as empty array if cleared in Alpine.
+                    // If not passed at all, assume empty.
+                    $product->ingredients()->sync([]);
+                }
+            }
 
             $this->menuCache->flush();
 

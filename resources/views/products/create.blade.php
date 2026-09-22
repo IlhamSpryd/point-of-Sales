@@ -96,6 +96,53 @@
                 @enderror
             </div>
 
+            <!-- Bill of Materials (BOM) Section -->
+            <div x-data="{
+                items: {{ json_encode(old('ingredients', [])) }},
+                ingredients: {{ json_encode($ingredients->map(fn($i) => ['id' => $i->id, 'name' => $i->name, 'unit' => $i->unit])) }},
+                addItem() {
+                    this.items.push({ id: '', quantity: '' });
+                },
+                removeItem(index) {
+                    this.items.splice(index, 1);
+                }
+            }" class="pt-4 border-t border-[#E9E9E7]">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h5 class="text-sm font-bold text-[#37352F]">Bahan Baku (Bill of Materials)</h5>
+                        <p class="text-xs text-[#787774] mt-0.5">Tentukan bahan baku yang akan memotong stok otomatis saat produk ini terjual.</p>
+                    </div>
+                    <button type="button" @click="addItem" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
+                        <span class="material-symbols-rounded text-[16px]">add</span> Tambah Bahan
+                    </button>
+                </div>
+
+                <div class="space-y-3">
+                    <template x-for="(item, index) in items" :key="index">
+                        <div class="flex items-start gap-3">
+                            <div class="flex-1">
+                                <select x-model="item.id" :name="'ingredients['+index+'][id]'" class="form-select w-full px-3 py-2 rounded-lg border border-[#E9E9E7] bg-white text-[#37352F] text-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 shadow-sm" required>
+                                    <option value="">-- Pilih Bahan --</option>
+                                    <template x-for="ing in ingredients" :key="ing.id">
+                                        <option :value="ing.id" x-text="ing.name + ' (' + ing.unit + ')'" :selected="item.id == ing.id"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <div class="w-32">
+                                <input type="number" step="0.0001" x-model="item.quantity" :name="'ingredients['+index+'][quantity]'" placeholder="Kuantitas" class="form-input w-full px-3 py-2 rounded-lg border border-[#E9E9E7] bg-white text-[#37352F] text-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 shadow-sm" required>
+                            </div>
+                            <button type="button" @click="removeItem(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors" title="Hapus baris">
+                                <span class="material-symbols-rounded text-[18px]">close</span>
+                            </button>
+                        </div>
+                    </template>
+                    
+                    <div x-show="items.length === 0" class="text-center py-6 bg-[#F7F7F5] rounded-xl border border-[#E9E9E7] border-dashed">
+                        <p class="text-sm text-[#9B9A97]">Belum ada bahan baku. Klik "Tambah Bahan" untuk menyusun resep.</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Photo Upload -->
             <div>
                 <x-form-label for="product_photo">Foto Produk (Opsional)</x-form-label>

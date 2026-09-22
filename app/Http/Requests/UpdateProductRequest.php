@@ -24,6 +24,11 @@ class UpdateProductRequest extends FormRequest
             'product_photo' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'product_description' => 'nullable|string',
             'is_active' => 'nullable|boolean',
+
+            // BOM / Ingredients validation
+            'ingredients' => 'nullable|array',
+            'ingredients.*.id' => 'required_with:ingredients|exists:ingredients,id',
+            'ingredients.*.quantity' => 'required_with:ingredients|numeric|min:0.0001',
         ];
     }
 }

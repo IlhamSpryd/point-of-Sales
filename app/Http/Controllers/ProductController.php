@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Category;
+use App\Models\Ingredient;
 use App\Models\Product;
 use App\Services\ProductService;
 use Illuminate\Database\QueryException;
@@ -51,8 +52,9 @@ class ProductController extends Controller
     {
         // Mengambil semua data kategori untuk kebutuhan dropdown pilihan
         $categories = Category::all();
+        $ingredients = Ingredient::where('is_active', true)->orderBy('name')->get();
 
-        return view('products.create', compact('categories'));
+        return view('products.create', compact('categories', 'ingredients'));
     }
 
     /**
@@ -74,8 +76,12 @@ class ProductController extends Controller
     public function edit(Product $product): View
     {
         $categories = Category::all();
+        $ingredients = Ingredient::where('is_active', true)->orderBy('name')->get();
 
-        return view('products.edit', compact('product', 'categories'));
+        // Muat relasi ingredients (BOM) beserta kuantitasnya
+        $product->load('ingredients');
+
+        return view('products.edit', compact('product', 'categories', 'ingredients'));
     }
 
     /**
