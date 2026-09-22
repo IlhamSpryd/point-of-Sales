@@ -10,4 +10,15 @@ enum PaymentMethodEnum: string
     case Qris = 'qris';
     case Ewallet = 'ewallet';
     case Card = 'card';
+
+    /** Label ramah UI, konsisten dengan App\Enums\PaymentMethod::label(). */
+    public function label(): string
+    {
+        return match ($this) {
+            self::Cash => 'Tunai',
+            self::Qris => 'QRIS',
+            self::Ewallet => 'E-Wallet',
+            self::Card => 'Kartu',
+        };
+    }
 }

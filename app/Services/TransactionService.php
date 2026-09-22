@@ -329,7 +329,7 @@ class TransactionService
                 'payment_method' => $dominantPaymentMethod,
                 'table_id' => $data['table_id'] ?? null,
                 'customer_id' => $data['customer_id'] ?? null,
-                'order_type' => $data['order_type'] ?? \App\Enums\OrderType::DineIn->value,
+                'order_type' => $data['order_type'] ?? OrderType::DineIn->value,
             ]);
 
             // Buat order items (UNCHANGED bentuknya).
