@@ -75,14 +75,24 @@ class Product extends Model
      * KUNCI INTEGRASI: menu self-order & kasir HANYA boleh menampilkan produk
      * yang benar-benar bisa dijual -- aktif, tidak di-soft-delete, stok ada.
      */
+    /**
+     * KUNCI INTEGRASI: menu self-order & kasir HANYA boleh menampilkan produk
+     * yang benar-benar bisa dijual -- aktif, tidak di-soft-delete, stok ada.
+     *
+     * [OMEGA-NODE1] CATATAN AUDIT: untuk produk ber-BOM, `stock` di sini TIDAK LAGI dipotong
+     * oleh TransactionService::createTransaction().
+     */
     public function scopeAvailableForOrder($query)
     {
         return $query->where('is_active', true)->where('stock', '>', 0);
     }
 
-    public function ingredients(): BelongsToMany
+    /**
+     * [OMEGA-NODE1] FIX PRASYARAT BOM: Hapus 'unit_of_measurement' karena tidak ada di tabel pivot.
+     */
+    public function ingredients(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Ingredient::class, 'product_ingredients')
-            ->withPivot('quantity_required', 'unit_of_measurement');
+            ->withPivot('quantity_required');
     }
 }

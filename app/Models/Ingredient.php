@@ -19,10 +19,13 @@ class Ingredient extends Model
         'reorder_level' => 'decimal:4',
     ];
 
-    public function products(): BelongsToMany
+    /**
+     * [OMEGA-NODE1] FIX PRASYARAT BOM: Hapus 'unit_of_measurement' dari pivot.
+     */
+    public function products(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
         return $this->belongsToMany(Product::class, 'product_ingredients')
-            ->withPivot('quantity_required', 'unit_of_measurement');
+            ->withPivot('quantity_required');
     }
 
     public static function lockAndGetIngredient(int $id): ?self

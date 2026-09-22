@@ -1,15 +1,31 @@
 <?php
+// [OMEGA-NODE1] Refactor checkout inti: BOM ingredient deduction (ganti
+// pemotongan products.stock untuk produk ber-resep), Split Payments
+// (ledger `payments` multi-leg), dan Loyalty Points (ledger append-only
+// `loyalty_ledger`) -- seluruhnya dalam SATU DB::transaction() dengan
+// disiplin urutan lock: Shift -> Products -> Ingredients ->
+// Customer/LoyaltyAccount. | 2026-09-22
 
 declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\IngredientStockMovementTypeEnum;
+use App\Enums\LoyaltyLedgerTypeEnum;
 use App\Enums\OrderStatus;
 use App\Enums\OrderType;
+use App\Enums\PaymentMethodEnum;
+use App\Enums\PaymentStatusEnum;
 use App\Enums\StockMovementType;
+use App\Models\Customer;
+use App\Models\CustomerLoyaltyAccount;
+use App\Models\Ingredient;
+use App\Models\IngredientStockMovement;
+use App\Models\LoyaltyLedger;
 use App\Models\Modifier;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Shift;
 use App\Models\StockMovement;
@@ -25,21 +41,39 @@ use Midtrans\Snap;
 class TransactionService
 {
     /**
-     * Memproses pesanan baru ke sistem database.
-     * Disinkronkan dari belajar-laravel/OrderService agar alur identik.
+     * [OMEGA-NODE1] Kontrak baru $data (SEMUA field baru bersifat OPSIONAL,
+     * caller lama tetap jalan tanpa perubahan):
+     *
+     *   'payments' => [
+     *       ['method' => 'cash'|'qris'|'ewallet'|'card', 'amount' => int,
+     *        'reference_number' => ?string, 'idempotency_key' => ?string],
+     *       ...
+     *   ]
+     *   KONTRAK: setiap 'amount' adalah NOMINAL BERSIH yang diterapkan ke
+     *   tagihan (BUKAN uang tunai mentah yang diterima) -- total SELURUH
+     *   leg WAJIB sama persis dengan total tagihan. Kembalian tunai
+     *   dihitung & ditampilkan di lapisan UI SEBELUM memanggil Service ini.
+     *   Jika 'payments' diisi, order LANGSUNG berstatus Paid (tidak ada
+     *   Snap Midtrans) -- dipakai untuk pembayaran yang sudah settled di
+     *   tempat (tunai + EDC + QRIS fisik yang dikonfirmasi kasir).
+     *
+     *   'customer_id' => ?int  -- jika diisi DAN order langsung Paid pada
+     *   panggilan ini, poin loyalty otomatis diberikan.
+     *
+     * Jika 'payments' TIDAK diisi, perilaku 100% identik dengan sebelumnya:
+     * 'payment_method' + 'cash_received' tunggal, non-cash => Pending +
+     * Snap Token Midtrans.
+     *
+     * Produk yang memiliki resep BOM (Product::ingredients() tidak kosong)
+     * TIDAK LAGI memotong products.stock -- stok bahan baku
+     * (ingredients.current_stock) yang dipotong & dikunci sebagai
+     * gantinya. Produk TANPA resep tetap memakai model lama
+     * (products.stock) untuk kompatibilitas mundur penuh.
      */
     public function createTransaction(array $data, int $userId): Order
     {
         return DB::transaction(function () use ($data, $userId) {
-            // [OMEGA-NODE1] Shift-lock guard | 2026-09-21
-            // resolveOpenShiftOrFail() (dipanggil caller SEBELUM transaksi
-            // DB ini dimulai) hanya query biasa TANPA lock -- ada jendela
-            // waktu (network/HTTP latency) di mana shift bisa ditutup
-            // PERSIS di antara resolveOpenShiftOrFail() dan baris ini.
-            // Tanpa guard ini, order bisa lolos tercatat ke shift yang
-            // status-nya sudah 'closed' -- rekonsiliasi shift tersebut
-            // sudah final (expected_cash sudah dihitung) padahal ada
-            // penjualan baru yang tidak pernah masuk hitungan.
+            // [OMEGA-NODE1] Shift-lock guard (UNCHANGED).
             if (! empty($data['shift_id'])) {
                 $shift = Shift::lockForUpdate()->find($data['shift_id']);
 
@@ -50,17 +84,27 @@ class TransactionService
                 }
             }
 
+            // [OMEGA-NODE7] Validasi STRUKTURAL split payment dilakukan
+            // SEDINI MUNGKIN -- sebelum mengunci satu pun baris Product
+            // atau Ingredient -- agar payload yang jelas cacat gagal cepat
+            // tanpa menahan lock (selaras mandat Zero-Latency Concurrency).
+            // Validasi "total leg == total tagihan" TIDAK bisa dilakukan di
+            // sini karena totalAmount belum diketahui; itu menyusul setelah
+            // calculateOrderTotals().
+            $parsedPaymentLegs = null;
+            if (! empty($data['payments']) && is_array($data['payments'])) {
+                $parsedPaymentLegs = $this->parsePaymentLegs($data['payments']);
+            }
+
             $subtotalAmount = 0;
             $lines = [];
+            $bomBreakdownByLineIndex = [];
+            // Akumulator kebutuhan bahan baku lintas SELURUH baris order,
+            // keyed by ingredient_id => total qty (string bcmath, skala 4).
+            $ingredientRequirements = [];
             $items = $data['items'] ?? [];
 
-            // Merge items yang sama agar stok tidak double-decrement
-            // PERUBAHAN: Grouping SEBELUMNYA hanya berdasarkan product_id, sehingga
-            // "Kopi Susu - Ice" dan "Kopi Susu - Hot" akan salah digabung jadi satu baris
-            // dan kehilangan harga tambahan dari modifier (extra_price). Sekarang kita
-            // gabungkan HANYA jika product_id DAN kombinasi varian (options) sama persis.
-            // Item dari Kasir (yang tidak pernah mengirim 'options') tetap berperilaku
-            // SAMA seperti sebelumnya — 100% backward compatible, tidak ada regresi.
+            // Merge items yang sama agar stok tidak double-decrement (UNCHANGED).
             $mergedItems = collect($items)
                 ->groupBy(function ($item) {
                     $optionsSignature = ! empty($item['options']) ? json_encode($item['options']) : '';
@@ -70,17 +114,26 @@ class TransactionService
                 ->map(fn ($group) => [
                     'product_id' => $group->first()['product_id'],
                     'quantity' => $group->sum('quantity'),
-                    // extra_price = total tambahan harga dari modifier (misal Oat Milk +5000).
-                    // Selalu 0 untuk item dari Kasir yang tidak mengenal konsep modifier.
                     'extra_price' => $group->first()['extra_price'] ?? 0,
-                    // options = data mentah varian untuk "dibekukan" ke order_details nanti.
                     'options' => $group->first()['options'] ?? null,
                 ])
                 ->values()
                 ->all();
 
             $productIds = collect($mergedItems)->pluck('product_id')->toArray();
-            $products = Product::whereIn('id', $productIds)->orderBy('id')->lockForUpdate()->get();
+
+            // [OMEGA-NODE7] Eager-load resep BOM (ingredients + pivot
+            // quantity_required) BERSAMAAN dengan row-lock Product yang
+            // sudah ada. Baris resep (`product_ingredients`) adalah master
+            // data dan TIDAK dikunci di sini -- hanya
+            // `ingredients.current_stock` yang dikunci, terpisah, di
+            // bawah, SETELAH lock Product selesai (disiplin urutan lock
+            // global: Shift -> Products -> Ingredients -> Customer/Loyalty).
+            $products = Product::whereIn('id', $productIds)
+                ->with('ingredients')
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get();
 
             foreach ($mergedItems as $item) {
                 $product = $products->find($item['product_id']);
@@ -91,76 +144,177 @@ class TransactionService
                     ]);
                 }
 
-                // GUARD TERAKHIR: Baris produk ini sudah di-lock (lockForUpdate) di atas,
-                // jadi ini titik paling aman untuk mengecek status aktif. Pengecekan ini
-                // menutup celah race condition — kasus di mana Admin menonaktifkan produk
-                // PERSIS saat kasir sedang menekan tombol bayar (setelah lolos validasi
-                // Form Request, tapi sebelum stok benar-benar dipotong).
                 if (! $product->is_active) {
                     throw ValidationException::withMessages([
                         'items' => 'Produk "'.$product->product_name.'" sudah dinonaktifkan dan tidak dapat dijual.',
                     ]);
                 }
 
-                if ($product->stock < $item['quantity']) {
+                $hasBom = $product->ingredients->isNotEmpty();
+
+                // [OMEGA-NODE7] LEGACY STOCK PATH: produk TANPA resep BOM
+                // tetap memakai model lama (potong products.stock langsung,
+                // divalidasi di sini juga seperti sebelumnya). Produk yang
+                // SUDAH punya resep TIDAK PERNAH lagi menyentuh
+                // products.stock -- lihat SYNC ALERT staleness di Fase 1.
+                if (! $hasBom && $product->stock < $item['quantity']) {
                     throw ValidationException::withMessages([
                         'items' => 'Stok produk "'.$product->product_name.'" tidak mencukupi. (Sisa: '.$product->stock.')',
                     ]);
                 }
 
-                // PERUBAHAN: harga satuan sekarang memperhitungkan extra_price dari modifier.
-                // Untuk item Kasir, extra_price selalu 0 sehingga hasilnya identik dengan
-                // perhitungan lama (product_price saja) — tidak ada perubahan perilaku.
                 $unitPrice = $product->product_price + $item['extra_price'];
                 $itemSubtotal = $unitPrice * $item['quantity'];
                 $subtotalAmount += $itemSubtotal;
 
+                $lineIndex = count($lines);
                 $lines[] = [
                     'order_price' => $unitPrice,
                     'qty' => $item['quantity'],
                     'order_subtotal' => $itemSubtotal,
                     'product_id' => $product->id,
-                    'options' => $item['options'], // dibekukan apa adanya ke order_details
+                    'options' => $item['options'],
                 ];
+                $bomBreakdownByLineIndex[$lineIndex] = [];
 
-                $product->decrement('stock', $item['quantity']);
+                if ($hasBom) {
+                    foreach ($product->ingredients as $ingredient) {
+                        $qtyNeeded = bcmul((string) $ingredient->pivot->quantity_required, (string) $item['quantity'], 4);
+                        $ingredientRequirements[$ingredient->id] = bcadd(
+                            $ingredientRequirements[$ingredient->id] ?? '0',
+                            $qtyNeeded,
+                            4
+                        );
+                        $bomBreakdownByLineIndex[$lineIndex][] = [
+                            'ingredient_id' => $ingredient->id,
+                            'qty' => $qtyNeeded,
+                        ];
+                    }
+                } else {
+                    $product->decrement('stock', $item['quantity']);
+                }
+            }
+
+            // [OMEGA-NODE7] BOM LOCKING & DEDUCTION.
+            // Diurutkan ASCENDING by id, pola deadlock-avoidance yang SAMA
+            // dengan lock Product di atas. Kontrak urutan lock global untuk
+            // Service ini: Shift -> Products -> Ingredients ->
+            // Customer/LoyaltyAccount. Kode lain TIDAK BOLEH mengunci
+            // Ingredients sebelum Products, atau jaminan ini runtuh.
+            $lockedIngredients = collect();
+            if (! empty($ingredientRequirements)) {
+                $ingredientIds = array_keys($ingredientRequirements);
+                sort($ingredientIds);
+
+                $lockedIngredients = Ingredient::whereIn('id', $ingredientIds)
+                    ->orderBy('id')
+                    ->lockForUpdate()
+                    ->get()
+                    ->keyBy('id');
+
+                foreach ($ingredientIds as $ingredientId) {
+                    $needed = $ingredientRequirements[$ingredientId];
+                    $ingredient = $lockedIngredients->get($ingredientId);
+
+                    if (! $ingredient) {
+                        throw ValidationException::withMessages([
+                            'items' => 'Bahan baku dengan ID '.$ingredientId.' tidak ditemukan atau sudah diarsipkan.',
+                        ]);
+                    }
+
+                    if (! $ingredient->is_active) {
+                        throw ValidationException::withMessages([
+                            'items' => 'Bahan baku "'.$ingredient->name.'" sedang dinonaktifkan dan tidak dapat dipakai.',
+                        ]);
+                    }
+
+                    if (bccomp((string) $ingredient->current_stock, $needed, 4) < 0) {
+                        throw ValidationException::withMessages([
+                            'items' => 'Stok bahan baku "'.$ingredient->name.'" tidak mencukupi. '
+                                .'(Dibutuhkan: '.$needed.' '.$ingredient->unit.', Tersedia: '.$ingredient->current_stock.' '.$ingredient->unit.')',
+                        ]);
+                    }
+                }
+
+                // [OMEGA-NODE1] PERLU VERIFIKASI DOCS: Model::decrement()
+                // menyisipkan $amount sebagai literal SQL mentah ("column -
+                // $amount"), bukan parameter ter-bind -- aman di sini karena
+                // $needed murni hasil bcmath dari sumber terpercaya (qty
+                // integer tervalidasi x quantity_required master data),
+                // TIDAK PERNAH berasal dari string input mentah pengguna.
+                foreach ($ingredientIds as $ingredientId) {
+                    $lockedIngredients->get($ingredientId)->decrement('current_stock', $ingredientRequirements[$ingredientId]);
+                }
             }
 
             ['tax_amount' => $taxAmount, 'total_amount' => $totalAmount] = $this->calculateOrderTotals($subtotalAmount);
 
-            $paymentMethod = $data['payment_method'] ?? 'cash';
-            $cashReceived = $data['cash_received'] ?? null;
-            $orderChange = 0;
+            // [OMEGA-NODE7] RESOLUSI METODE PEMBAYARAN.
+            $dominantPaymentMethod = 'cash';
+            $cashReceivedForReceipt = null;
+            $orderChangeForReceipt = 0;
+            $finalPaymentLegs = [];
 
-            if ($paymentMethod === 'cash' && $cashReceived) {
-                $orderChange = max(0, (int) $cashReceived - $totalAmount);
+            if ($parsedPaymentLegs !== null) {
+                $sumApplied = array_sum(array_column($parsedPaymentLegs, 'amount'));
+
+                if ($sumApplied !== $totalAmount) {
+                    throw ValidationException::withMessages([
+                        'payments' => 'Total seluruh metode pembayaran (Rp'.number_format($sumApplied, 0, ',', '.')
+                            .') tidak sama dengan total tagihan (Rp'.number_format($totalAmount, 0, ',', '.').').',
+                    ]);
+                }
+
+                $finalPaymentLegs = $parsedPaymentLegs;
+
+                // [OMEGA-NODE1] "Dominant method" untuk kolom ringkas
+                // orders.payment_method (legacy, single-value, dipertahankan
+                // demi laporan/dashboard/receipt existing yang belum
+                // diperbarui). KETERBATASAN DIKETAHUI: App\Enums\PaymentMethod
+                // (enum LAMA yang dipakai cast Order::payment_method) TIDAK
+                // punya case 'card'. Jika leg terbesar bermetode Card, method
+                // dominan di-fallback ke leg non-Card terbesar berikutnya
+                // (atau 'qris' bila SELURUH leg Card) agar tidak melempar
+                // ValueError setiap kali order ini dibaca ulang. Rincian
+                // sesungguhnya (termasuk leg Card) tetap 100% akurat di
+                // tabel `payments`. PERLU TINDAK LANJUT: satukan
+                // App\Enums\PaymentMethod dengan App\Enums\PaymentMethodEnum.
+                $legsByAmountDesc = collect($finalPaymentLegs)->sortByDesc('amount');
+                $safeDominant = $legsByAmountDesc->first(fn ($l) => $l['method'] !== PaymentMethodEnum::Card);
+                $dominantPaymentMethod = $safeDominant ? $safeDominant['method']->value : 'qris';
+
+                $cashLegTotal = collect($finalPaymentLegs)->where('method', PaymentMethodEnum::Cash)->sum('amount');
+                $cashReceivedForReceipt = $cashLegTotal > 0 ? $cashLegTotal : null;
+                $orderChangeForReceipt = 0; // kontrak exact-sum -- lihat docblock method ini
+
+                $initialStatus = OrderStatus::Paid;
+            } else {
+                // LEGACY PATH (UNCHANGED) -- single payment_method, cash =
+                // langsung Paid, non-cash = Pending + Midtrans Snap.
+                $dominantPaymentMethod = $data['payment_method'] ?? 'cash';
+                $cashReceived = $data['cash_received'] ?? null;
+
+                if ($dominantPaymentMethod === 'cash' && (int) $cashReceived < $totalAmount) {
+                    throw ValidationException::withMessages([
+                        'cash_received' => 'Uang tunai yang diterima tidak mencukupi total tagihan.',
+                    ]);
+                }
+
+                $cashReceivedForReceipt = $dominantPaymentMethod === 'cash' ? ($cashReceived ?? $totalAmount) : null;
+                $orderChangeForReceipt = ($dominantPaymentMethod === 'cash' && $cashReceived)
+                    ? max(0, (int) $cashReceived - $totalAmount)
+                    : 0;
+
+                $initialStatus = $dominantPaymentMethod === 'cash' ? OrderStatus::Paid : OrderStatus::Pending;
             }
 
-            // Status awal: cash = paid, non-cash = pending (menunggu konfirmasi Midtrans)
-            $initialStatus = $paymentMethod === 'cash' ? OrderStatus::Paid : OrderStatus::Pending;
-
-            // Generate order code unik
+            // Generate order code unik (UNCHANGED).
             do {
                 $orderCode = 'POS-'.strtoupper(Str::random(6)).'-'.rand(100, 999);
             } while (Order::where('order_code', $orderCode)->exists());
 
-            // Validasi keamanan sisi server: pastikan uang tunai cukup untuk total tagihan.
-            // Pengecekan di frontend (Alpine.js, pos-script.blade.php) bisa dilewati
-            // dengan mengirim request langsung ke endpoint transaction.store, sehingga
-            // validasi ini WAJIB diulang di sini sebagai sumber kebenaran terakhir.
-            if ($paymentMethod === 'cash' && (int) $cashReceived < $totalAmount) {
-                throw ValidationException::withMessages([
-                    'cash_received' => 'Uang tunai yang diterima tidak mencukupi total tagihan.',
-                ]);
-            }
-
-            // Buat record Order dengan semua field lengkap
             $order = Order::forceCreate([
                 'user_id' => $userId,
-                // [OMEGA-NODE1] shift_id kini WAJIB diisi oleh caller Kasir
-                // (TransactionController::store() via resolveOpenShiftOrFail()).
-                // Tetap null untuk alur self-order (CheckoutController) yang
-                // memang tidak pernah punya konsep shift kasir.
                 'shift_id' => $data['shift_id'] ?? null,
                 'order_code' => $orderCode,
                 'idempotency_key' => $data['idempotency_key'] ?? null,
@@ -168,26 +322,99 @@ class TransactionService
                 'subtotal_amount' => $subtotalAmount,
                 'tax_amount' => $taxAmount,
                 'order_amount' => $totalAmount,
-                'cash_received' => $paymentMethod === 'cash' ? ($cashReceived ?? $totalAmount) : null,
-                'order_change' => $orderChange,
+                'cash_received' => $cashReceivedForReceipt,
+                'order_change' => $orderChangeForReceipt,
                 'order_status' => $initialStatus,
-                'payment_method' => $paymentMethod,
+                'payment_method' => $dominantPaymentMethod,
                 'table_id' => $data['table_id'] ?? null,
+                'customer_id' => $data['customer_id'] ?? null,
             ]);
 
-            // Buat order details
+            // Buat order items (UNCHANGED bentuknya).
+            $createdItems = [];
             foreach ($lines as $line) {
-                OrderItem::create(array_merge($line, ['order_id' => $order->id]));
+                $createdItems[] = OrderItem::create(array_merge($line, ['order_id' => $order->id]));
             }
 
-            // Jika pembayaran non-tunai, generate Snap Token Midtrans
-            if ($paymentMethod !== 'cash') {
+            // [OMEGA-NODE7] Ledger bahan baku granular, SETELAH order_item
+            // benar-benar punya id (FK order_item_id butuh baris nyata).
+            foreach ($lines as $i => $line) {
+                $breakdown = $bomBreakdownByLineIndex[$i] ?? [];
+                if (empty($breakdown)) {
+                    continue;
+                }
+
+                $orderItemId = $createdItems[$i]->id;
+
+                foreach ($breakdown as $consumption) {
+                    $ingredient = $lockedIngredients->get($consumption['ingredient_id']);
+                    $idempotencyKey = 'sale_deduction:'.$order->order_code.':'.$orderItemId.':'.$consumption['ingredient_id'];
+
+                    IngredientStockMovement::create([
+                        'ingredient_id' => $consumption['ingredient_id'],
+                        'order_id' => $order->id,
+                        'order_item_id' => $orderItemId,
+                        'type' => IngredientStockMovementTypeEnum::SaleDeduction,
+                        'quantity' => bcmul($consumption['qty'], '-1', 4), // signed: keluar = negatif
+                        'unit_cost' => $ingredient?->cost_per_unit,
+                        'reason' => 'Konsumsi otomatis saat penjualan order '.$order->order_code.'.',
+                        'idempotency_key' => $idempotencyKey,
+                        'created_by' => $userId,
+                    ]);
+                }
+            }
+
+            // [OMEGA-NODE7] LEDGER PEMBAYARAN.
+            if (! empty($finalPaymentLegs)) {
+                foreach ($finalPaymentLegs as $i => $leg) {
+                    Payment::create([
+                        'order_id' => $order->id,
+                        'payment_method' => $leg['method'],
+                        'amount' => $leg['amount'],
+                        'reference_number' => $leg['reference_number'],
+                        'status' => PaymentStatusEnum::Captured,
+                        'captured_at' => now(),
+                        'processed_by' => $userId,
+                        'idempotency_key' => $leg['idempotency_key'] ?? ('payment:'.$order->order_code.':'.$i),
+                    ]);
+                }
+            } elseif ($initialStatus === OrderStatus::Paid) {
+                // [OMEGA-NODE7] Jalur legacy TUNAI tunggal -- tetap dicatat
+                // SATU baris di ledger `payments` agar tabel ini konsisten
+                // jadi sumber kebenaran untuk SEMUA order Paid, bukan hanya
+                // yang lewat jalur split.
+                // PERLU TINDAK LANJUT (di luar cakupan hari ini): jalur
+                // non-cash Midtrans (order Pending) BELUM mencatat baris
+                // `payments` -- semestinya di-insert oleh
+                // updateStatusFromMidtransNotification() saat transisi ke
+                // Paid, agar `payments` lengkap untuk SEMUA metode.
+                Payment::create([
+                    'order_id' => $order->id,
+                    'payment_method' => PaymentMethodEnum::from($dominantPaymentMethod),
+                    'amount' => $totalAmount,
+                    'status' => PaymentStatusEnum::Captured,
+                    'captured_at' => now(),
+                    'processed_by' => $userId,
+                    'idempotency_key' => 'payment:'.$order->order_code.':0',
+                ]);
+            }
+
+            // [OMEGA-NODE7] LOYALTY POINTS -- hanya untuk order yang
+            // LANGSUNG Paid pada panggilan ini (cash / split payment).
+            // Order Pending (Midtrans non-cash) SENGAJA tidak diberi poin
+            // di sini -- lihat PERLU TINDAK LANJUT di Fase 1.
+            if (! empty($data['customer_id']) && $initialStatus === OrderStatus::Paid) {
+                $this->grantLoyaltyPoints((int) $data['customer_id'], $order, $subtotalAmount);
+            }
+
+            // Snap Token Midtrans HANYA untuk jalur LEGACY non-cash TANPA
+            // split payment (UNCHANGED dari revisi sebelumnya).
+            if (empty($finalPaymentLegs) && $dominantPaymentMethod !== 'cash') {
                 Config::$serverKey = config('services.midtrans.server_key');
                 Config::$isProduction = config('services.midtrans.is_production', false);
                 Config::$isSanitized = config('services.midtrans.is_sanitized', true);
                 Config::$is3ds = config('services.midtrans.is_3ds', true);
 
-                // Fix SSL + PHP 8 bug pada Midtrans SDK (hanya untuk sandbox)
                 if (! config('services.midtrans.is_production', false)) {
                     Config::$curlOptions = [
                         CURLOPT_SSL_VERIFYHOST => 0,
@@ -224,15 +451,10 @@ class TransactionService
                     ],
                 ];
 
-                // Mapping enabled_payments sesuai belajar-laravel
-                $enabledPayments = match ($paymentMethod) {
+                $enabledPayments = match ($dominantPaymentMethod) {
                     'qris' => ['other_qris', 'gopay'],
                     'ewallet' => ['gopay', 'shopeepay'],
-                    // Opsi metode pembayaran ini dihapus karena tidak pernah diaktifkan lewat
-                    // $activePaymentMethods (TransactionController::create()) — menyederhanakan
-                    // kode agar sesuai cakupan kebutuhan UjiKom.
-                    // TODO: aktifkan setelah $activePaymentMethods mendukung.
-                    default => []
+                    default => [],
                 };
 
                 if (! empty($enabledPayments)) {
@@ -241,11 +463,6 @@ class TransactionService
 
                 try {
                     $snapToken = Snap::getSnapToken($params);
-                    // [OMEGA-NODE1] FIX: snap_token BUKAN atribut $fillable (sengaja,
-                    // mencegah mass-assignment field sensitif) -- ->update() lama
-                    // di sini SENYAP membuang nilai ini (Laravel tidak melempar
-                    // exception untuk atribut non-fillable). forceFill() melewati
-                    // guard tsb secara eksplisit HANYA di titik sah ini.
                     $order->forceFill(['snap_token' => $snapToken])->save();
                 } catch (\Exception $e) {
                     throw new \Exception('Gagal mendapatkan Snap Token Midtrans: '.$e->getMessage());
@@ -253,30 +470,125 @@ class TransactionService
             }
 
             return $order;
-        });
+        }, attempts: 3);
+        // [OMEGA-NODE1] attempts: 3 ditambahkan (sebelumnya default 1) --
+        // permukaan lock kini lebih besar (Ingredients, Customer). Lihat
+        // Fase 1.4 poin 6 untuk trade-off retry vs pemanggilan Snap ganda.
+    }
+
+    /**
+     * [OMEGA-NODE7] Validasi & normalisasi STRUKTURAL leg pembayaran
+     * (bentuk, enum, nominal positif) -- TIDAK memvalidasi jumlah total
+     * (butuh totalAmount yang belum diketahui saat method ini dipanggil).
+     *
+     * @return array<int, array{method: PaymentMethodEnum, amount: int, reference_number: ?string, idempotency_key: ?string}>
+     */
+    private function parsePaymentLegs(array $rawLegs): array
+    {
+        $legs = [];
+
+        foreach ($rawLegs as $raw) {
+            $rawMethod = $raw['method'] ?? null;
+
+            try {
+                $method = $rawMethod instanceof PaymentMethodEnum
+                    ? $rawMethod
+                    : PaymentMethodEnum::from((string) $rawMethod);
+            } catch (\ValueError) {
+                throw ValidationException::withMessages([
+                    'payments' => 'Metode pembayaran "'.$rawMethod.'" tidak dikenali.',
+                ]);
+            }
+
+            $amount = (int) ($raw['amount'] ?? 0);
+
+            if ($amount <= 0) {
+                throw ValidationException::withMessages([
+                    'payments' => 'Nominal setiap metode pembayaran harus lebih dari nol.',
+                ]);
+            }
+
+            $legs[] = [
+                'method' => $method,
+                'amount' => $amount,
+                'reference_number' => $raw['reference_number'] ?? null,
+                'idempotency_key' => $raw['idempotency_key'] ?? null,
+            ];
+        }
+
+        if (empty($legs)) {
+            throw ValidationException::withMessages([
+                'payments' => 'Minimal satu metode pembayaran wajib diisi.',
+            ]);
+        }
+
+        return $legs;
+    }
+
+    /**
+     * [OMEGA-NODE7] Memberikan poin loyalty untuk SATU order yang baru
+     * saja Paid. Menulis HANYA ke `loyalty_ledger` -- `customer_loyalty_accounts`
+     * DISINKRONKAN OTOMATIS oleh trigger `trg_loyalty_ledger_sync_account`;
+     * JANGAN PERNAH menulis manual ke tabel cache itu dari sini.
+     *
+     * PERLU KONFIRMASI: aturan bisnis perolehan poin belum ditentukan
+     * secara resmi. Diimplementasikan SEMENTARA sebagai 1 poin per
+     * kelipatan Rp1.000 dari subtotal (SEBELUM pajak), dikalikan
+     * points_multiplier tier pelanggan saat ini (default 1.00 bila belum
+     * bertier). Mohon konfirmasi rate final sebelum go-live.
+     */
+    private function grantLoyaltyPoints(int $customerId, Order $order, int $subtotalAmount): void
+    {
+        // [OMEGA-NODE7] Serialisasi race FIRST-EARN: customer_loyalty_accounts
+        // hanya tercipta lewat trigger AFTER INSERT pada loyalty_ledger,
+        // sehingga TIDAK ADA baris untuk dikunci pada earn PERTAMA seorang
+        // pelanggan -- lockForUpdate() pada baris yang belum ada tidak
+        // mengunci apa pun. Kunci baris `customers` induknya LEBIH DULU
+        // agar dua transaksi earn PERTAMA untuk pelanggan yang SAMA
+        // menunggu secara serial; transaksi kedua akan melihat baris
+        // customer_loyalty_accounts yang sudah dibuat transaksi pertama.
+        $customer = Customer::where('id', $customerId)->lockForUpdate()->first();
+
+        if (! $customer) {
+            Log::warning('[OMEGA-NODE7] Loyalty skip: customer tidak ditemukan.', [
+                'customer_id' => $customerId,
+                'order_code' => $order->order_code,
+            ]);
+
+            return;
+        }
+
+        $account = CustomerLoyaltyAccount::lockAndGetAccount($customerId);
+        $currentPoints = $account?->current_points ?? 0;
+        $multiplier = $account?->currentTier?->points_multiplier ?? 1.00;
+
+        $pointsEarned = (int) floor(($subtotalAmount / 1000) * (float) $multiplier);
+
+        if ($pointsEarned <= 0) {
+            return;
+        }
+
+        LoyaltyLedger::create([
+            'customer_id' => $customerId,
+            'order_id' => $order->id,
+            'type' => LoyaltyLedgerTypeEnum::Earn,
+            'points' => $pointsEarned,
+            'balance_after' => $currentPoints + $pointsEarned,
+            'reference' => 'Perolehan poin otomatis dari order '.$order->order_code.'.',
+            'created_by' => null,
+        ]);
     }
 
     /**
      * Method ini adalah SATU-SATUNYA tempat menghitung total transaksi.
-     *
-     * // TODO (Titik Ekstensi Ujian): Jika asesor meminta fitur diskon,
-     * // tambahkan parameter float $discountPercent = 0 di sini, kurangi
-     * // $subtotalAmount SEBELUM menghitung pajak, lalu update pemanggilnya.
+     * (UNCHANGED)
      */
     private function calculateOrderTotals(int $subtotalAmount): array
     {
-        // Pajak 10%
-        // Dipindahkan ke config/pos.php agar tarif pajak & aturan pembulatan tidak
-        // terduplikasi dan berisiko tidak sinkron antara Controller dan Service.
         $taxRate = config('pos.tax_rate', 0.11);
         $taxAmount = (int) round($subtotalAmount * $taxRate);
         $totalAmount = (int) ($subtotalAmount + $taxAmount);
 
-        // Pembulatan WAJIB dilakukan di backend, bukan hanya di Alpine.js,
-        // agar order_amount yang tersimpan sama persis dengan nominal yang
-        // disepakati kasir & pelanggan di layar (single source of truth).
-        // PERHATIAN: Desinkronisasi pengaturan pembulatan di sini bisa membuat
-        // kembalian yang diucapkan kasir ke pelanggan berbeda dari nominal di struk cetak.
         $roundingValue = config('pos.rounding_value', 100);
         $roundingBehavior = config('pos.rounding_behavior', 'ROUND_NEAREST');
 
@@ -294,9 +606,7 @@ class TransactionService
     }
 
     /**
-     * Mengambil metrik transaksi hari ini (omzet finansial & total order).
-     * Memindahkan query dari Controller untuk mengembalikan konsistensi arsitektur
-     * (Thin Controller) sesuai standar yang sudah diterapkan pada modul lain.
+     * Mengambil metrik transaksi hari ini. (UNCHANGED)
      */
     public function getTodayMetrics(): array
     {
@@ -313,10 +623,7 @@ class TransactionService
     }
 
     /**
-     * [OMEGA-NODE1] Zero-Trust shift guard untuk SEMUA transaksi berbasis
-     * Kasir (bukan self-order). Dipanggil oleh caller SEBELUM stok/Order
-     * disentuh sama sekali, agar transaksi tanpa shift aktif ditolak lebih
-     * awal tanpa efek samping apa pun ke database.
+     * Zero-Trust shift guard. (UNCHANGED)
      *
      * @throws ValidationException jika kasir belum membuka shift.
      */
@@ -336,8 +643,8 @@ class TransactionService
     }
 
     /**
-     * Memproses pesanan dari Self-Order QR (Publik).
-     * Fokus pada validasi server-side modifier.
+     * Memproses pesanan dari Self-Order QR (Publik). (UNCHANGED -- BELUM
+     * BOM/Split-Payment/Loyalty aware, lihat backlog Fase 1.4)
      */
     public function createSelfOrder(Table $table, array $itemsPayload): Order
     {
@@ -370,8 +677,7 @@ class TransactionService
     }
 
     // PUBLIC -- dipanggil dari createSelfOrder, createWalkInOrder, DAN dari
-    // Livewire computed property untuk preview (read-only, aman dipanggil
-    // berkali-kali per render, tidak menyentuh stok).
+    // Livewire computed property untuk preview. (UNCHANGED)
     public function resolveOrderItemLine(Product $product, array $modifierIds, int $qty, ?string $notes): array
     {
         $requiredGroupIds = $product->modifierGroups()
@@ -388,8 +694,6 @@ class TransactionService
             }
         }
 
-        // --- VALIDASI SELECTION TYPE SINGLE ---
-        // Karena form array bisa saja meloloskan 2 modifier pada grup single
         $productGroups = $product->modifierGroups;
         foreach ($productGroups as $group) {
             $selectedForGroup = $selectedModifiers->where('modifier_group_id', $group->id)->count();
@@ -404,7 +708,7 @@ class TransactionService
 
         return [
             'product_id' => $product->id,
-            'product_name' => $product->product_name, // untuk tampilan cart saja
+            'product_name' => $product->product_name,
             'qty' => $qty,
             'order_price' => $unitPrice,
             'order_subtotal' => $lineSubtotal,
@@ -416,6 +720,11 @@ class TransactionService
         ];
     }
 
+    /**
+     * (UNCHANGED -- BELUM BOM/Split-Payment/Loyalty aware, lihat backlog
+     * Fase 1.4: jalur ini masih memotong products.stock langsung untuk
+     * SEMUA produk, termasuk yang sudah punya resep BOM.)
+     */
     public function createWalkInOrder(
         array $itemsPayload,
         OrderType $orderType,
@@ -426,8 +735,6 @@ class TransactionService
         int $shiftId,
     ): Order {
         return DB::transaction(function () use ($itemsPayload, $orderType, $tableId, $paymentMethod, $cashReceived, $userId, $shiftId) {
-            // [OMEGA-NODE1] Shift-lock guard, pola identik dengan
-            // createTransaction() -- lihat komentar di sana | 2026-09-21
             $shift = Shift::lockForUpdate()->find($shiftId);
 
             if (! $shift || $shift->status !== 'open') {
@@ -451,17 +758,13 @@ class TransactionService
             } while (Order::where('order_code', $orderCode)->exists());
 
             $order = Order::forceCreate([
-                // [OMEGA-NODE1] FIX KRITIS: user_id & shift_id SEBELUMNYA tidak
-                // pernah diisi di method ini -- kolom 'orders.user_id' NOT NULL
-                // berarti SETIAP panggilan method ini akan GAGAL dengan
-                // QueryException sebelum perbaikan ini.
                 'user_id' => $userId,
                 'shift_id' => $shiftId,
-                'table_id' => $tableId, // null aman untuk takeaway (kolom sudah nullable)
+                'table_id' => $tableId,
                 'order_code' => $orderCode,
                 'order_date' => now()->toDateString(),
                 'order_type' => $orderType,
-                'order_status' => OrderStatus::Paid, // kasir = bayar di tempat, langsung Paid
+                'order_status' => OrderStatus::Paid,
                 'subtotal_amount' => $subtotal,
                 'tax_amount' => $taxAmount,
                 'order_amount' => $totalAmount,
@@ -476,7 +779,7 @@ class TransactionService
         });
     }
 
-    // Helper privat yang dipakai ULANG oleh createSelfOrder & createWalkInOrder
+    // Helper privat dipakai ULANG oleh createSelfOrder & createWalkInOrder. (UNCHANGED)
     private function buildOrderItemsWithStockLock(array $itemsPayload): array
     {
         $orderItemsData = [];
@@ -493,7 +796,6 @@ class TransactionService
 
             $line = $this->resolveOrderItemLine($product, $itemInput['modifier_ids'] ?? [], $itemInput['qty'], $itemInput['notes'] ?? null);
 
-            // Hapus atribut view-only sebelum simpan DB
             unset($line['product_name']);
 
             $subtotal += $line['order_subtotal'];
@@ -504,37 +806,9 @@ class TransactionService
     }
 
     /**
-     * Memperbarui status Order berdasarkan notifikasi webhook Midtrans
-     * (dipanggil oleh MidtransNotificationController setelah signature
-     * terverifikasi). Dipakai untuk SEMUA pembayaran non-tunai, baik dari
-     * Self-Order pelanggan maupun Kasir POS.
-     *
-     * [SEC-005 - CRITICAL FIX - AUDIT KEAMANAN]
-     * Sebelumnya, TransactionController::syncMidtrans() (endpoint polling
-     * manual untuk lingkungan localhost tanpa webhook) menduplikasi logika
-     * pembaruan status ini secara TERPISAH, TANPA lockForUpdate()/
-     * DB::transaction(), dan HANYA menangani status 'capture'/'settlement'
-     * (mengabaikan 'deny'/'cancel'/'expire' sepenuhnya). Ini membuka celah
-     * race condition + status regression: webhook resmi bisa sudah
-     * memfinalisasi order ini menjadi 'Failed', lalu endpoint sync yang
-     * terlambat datang (karena panggilan jaringan ke Midtrans butuh waktu)
-     * menimpanya paksa kembali menjadi 'Paid'.
-     *
-     * Perbaikan: method INI sekarang menjadi SATU-SATUNYA titik masuk untuk
-     * mengubah order_status akibat respons Midtrans, dipakai bersama oleh
-     * webhook resmi MAUPUN endpoint sync manual (lihat
-     * TransactionController::syncMidtrans() yang telah direfactor untuk
-     * mendelegasikan ke sini). Locking + idempotency guard + cakupan status
-     * lengkap kini otomatis berlaku untuk KEDUA jalur tersebut.
-     *
-     * @param  int|null  $grossAmount  [SEC-006] Nominal (gross_amount) yang
-     *                                 dilaporkan Midtrans, jika tersedia. Jika
-     *                                 diisi dan TIDAK COCOK dengan order_amount
-     *                                 di database, status TIDAK akan diubah dan
-     *                                 insiden dicatat sebagai log kritis --
-     *                                 mencegah order dengan nominal yang
-     *                                 divergen dari catatan kita tertandai lunas
-     *                                 secara diam-diam.
+     * (UNCHANGED -- restoreStockForOrder() masih hanya mengembalikan
+     * products.stock, BELUM ingredients.current_stock. Lihat Fase 1.1
+     * finding CRITICAL/Backlog.)
      */
     public function updateStatusFromMidtransNotification(
         string $orderCode,
@@ -545,18 +819,10 @@ class TransactionService
         return DB::transaction(function () use ($orderCode, $transactionStatus, $fraudStatus, $grossAmount) {
             $order = Order::where('order_code', $orderCode)->lockForUpdate()->firstOrFail();
 
-            // Idempotency guard: status final TIDAK PERNAH ditimpa ulang.
             if ($order->order_status->isFinal()) {
                 return $order;
             }
 
-            // [SEC-006] Defense-in-depth: signature SHA512 hanya membuktikan
-            // payload tidak berubah dalam perjalanan, BUKAN bahwa gross_amount
-            // yang dilaporkan sama dengan order_amount yang tercatat di sisi
-            // kita. Tanpa pengecekan ini, divergensi nominal (misal akibat bug
-            // rounding di masa depan) bisa membuat order tertandai LUNAS
-            // padahal nominal yang sebenarnya berbeda dari yang seharusnya
-            // ditagihkan -- kebocoran finansial senyap yang sangat sulit dilacak.
             if ($grossAmount !== null && $grossAmount !== (int) $order->order_amount) {
                 Log::critical('Midtrans notification GROSS AMOUNT MISMATCH -- status TIDAK diubah demi keamanan.', [
                     'order_code' => $orderCode,
@@ -573,49 +839,23 @@ class TransactionService
                 $transactionStatus === 'deny' => OrderStatus::Failed,
                 $transactionStatus === 'cancel' => OrderStatus::Cancelled,
                 $transactionStatus === 'expire' => OrderStatus::Expired,
-                default => null, // 'pending', 'authorize', dll -- notifikasi Midtrans yang BELUM final.
-                // TANPA arm ini, match() melempar UnhandledMatchError untuk setiap
-                // notifikasi 'pending' -- padahal itu JUSTRU notifikasi PALING SERING
-                // dikirim Midtrans (dikirim pertama kali begitu customer membuka
-                // popup Snap, sebelum pembayaran selesai).
+                default => null,
             };
 
             if ($newStatus !== null) {
                 $order->forceFill(['order_status' => $newStatus])->save();
 
-                // [OMEGA-NODE1] Stock Compensation Engine. Hanya berjalan saat
-                // transisi ke status GAGAL FINAL -- stok yang "direservasi" saat
-                // order dibuat (createSelfOrder/buildOrderItemsWithStockLock)
-                // dikembalikan tepat SATU KALI. isFinal() guard di atas + lock
-                // Order ini menjamin blok ini hanya pernah tereksekusi sekali per
-                // order_code, walau Midtrans mengirim notifikasi duplikat.
                 if (in_array($newStatus, [OrderStatus::Failed, OrderStatus::Cancelled, OrderStatus::Expired], true)) {
                     $this->restoreStockForOrder($order);
                 }
             }
 
             return $order;
-
-            // attempts: 3 -- retry otomatis bila lockForUpdate() bertabrakan
-            // (deadlock) dengan proses restorasi stok order LAIN yang kebetulan
-            // menyentuh produk yang sama secara bersamaan.
         }, attempts: 3);
     }
 
     /**
-     * [OMEGA-NODE1] Mengembalikan stok yang sempat "direservasi" (dipotong)
-     * saat order dibuat, PERSIS SATU KALI, walau method pemanggil dipicu
-     * berkali-kali oleh notifikasi webhook Midtrans yang duplikat.
-     *
-     * Lapisan idempotency (Defense in Depth):
-     *  1) isFinal() guard pada Order (caller) -- order yang sudah final
-     *     tidak akan pernah masuk ke method ini lagi.
-     *  2) lockForUpdate() pada Order (caller) + Product (di sini) --
-     *     menyerialkan proses jika ada notifikasi paralel untuk order_code
-     *     yang SAMA.
-     *  3) Unique constraint `stock_movements.idempotency_key` -- lapisan
-     *     terakhir di level database, aktif walau method ini suatu saat
-     *     dipanggil dari luar konteks lock di atas.
+     * (UNCHANGED)
      */
     private function restoreStockForOrder(Order $order): void
     {
@@ -627,9 +867,6 @@ class TransactionService
 
         $productIds = $items->pluck('product_id')->unique()->sort()->values();
 
-        // Urutkan lock berdasarkan product_id ASC -- konsisten dengan pola
-        // locking di createTransaction()/buildOrderItemsWithStockLock(),
-        // mencegah deadlock silang antar-order yang merestorasi produk sama.
         $products = Product::withTrashed()
             ->whereIn('id', $productIds)
             ->orderBy('id')
@@ -641,9 +878,6 @@ class TransactionService
             $product = $products->get($item->product_id);
 
             if (! $product) {
-                // Praktis mustahil (FK product_id memakai restrictOnDelete()),
-                // tapi dicatat sebagai insiden kritis jika suatu saat terjadi
-                // (misal data legacy sebelum constraint ini ditegakkan).
                 Log::critical('[OMEGA-NODE1] Stock restore GAGAL: produk tidak ditemukan.', [
                     'order_code' => $order->order_code,
                     'order_item_id' => $item->id,
@@ -667,10 +901,6 @@ class TransactionService
                 ]
             );
 
-            // firstOrCreate() mengembalikan baris LAMA (wasRecentlyCreated =
-            // false) jika idempotency_key sudah ada -- webhook duplikat --
-            // sehingga stok TIDAK di-increment lagi. Inilah jaminan
-            // "exactly-once" utama untuk kompensasi stok.
             if ($movement->wasRecentlyCreated) {
                 $product->increment('stock', $item->qty);
             }
