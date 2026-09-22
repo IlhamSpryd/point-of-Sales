@@ -26,9 +26,11 @@
    - Tabel *Petty Cash / Cash Drawer Ledger*.
    - Konfigurasi Native Enums dan Strict Type Eloquent Models untuk seluruh 4 pilar di atas.
    - *Catatan Kaki:* Database Triggers & Append-Only Ledgers (beserta `LogicException` di layer Model) telah tervalidasi.
+6. **Fullstack Architecture (Node 8):**
+   - Halaman Riwayat Pesanan (Order History) terimplementasi dengan Livewire, dilengkapi optimasi pencegahan N+1 query yang sempurna (pemisahan *batch eager loading* daftar vs relasi mendalam di modal detail).
 
 ## 🚧 BACKLOG & FITUR YANG BELUM ADA (PENDING / IN PROGRESS)
-1. **Order History & Manajemen Toko:**
-   - Halaman Riwayat Pesanan (`OrderController`) dan pengaturan dinamis toko belum berfungsi.
+1. **Manajemen Toko:**
+   - Halaman pengaturan dinamis toko belum berfungsi sepenuhnya.
 2. **IoT Hardware & Performance (Fokus Node 3 & 4):**
    - Integrasi langsung ke ESC/POS (Thermal Printer) dan *Cash Drawer Kick* belum diaktifkan.
