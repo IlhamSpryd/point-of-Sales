@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Models;
 
@@ -77,5 +78,11 @@ class Product extends Model
     public function scopeAvailableForOrder($query)
     {
         return $query->where('is_active', true)->where('stock', '>', 0);
+    }
+
+    public function ingredients(): BelongsToMany
+    {
+        return $this->belongsToMany(Ingredient::class, 'product_ingredients')
+            ->withPivot('quantity_required', 'unit_of_measurement');
     }
 }

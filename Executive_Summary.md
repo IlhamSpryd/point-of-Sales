@@ -17,12 +17,13 @@
    - Antrean asinkron menggunakan Background Jobs (`ProcessWebhookOrderJob`).
 4. **QA Automation & CI/CD (Node 6):**
    - Pipeline GitHub Actions, PHPStan tingkat 5, dan `TransactionConcurrencyTest` untuk *Chaos Testing* database nyata.
-5. **Enterprise Database Architecture (Node 7):**
+5. **Enterprise Database Architecture (Node 7) & Models (Node 1):**
    - Skema *Bill of Materials* (BOM/Resep Bahan Baku).
    - Skema *Split Payments* (Pembayaran multi-metode dalam 1 struk).
    - Skema CRM, *Loyalty Points*, dan *Membership Tiers*.
    - Tabel *Petty Cash / Cash Drawer Ledger*.
-   - *Catatan Kaki:* Database Triggers & Append-Only Ledgers telah tervalidasi secara komprehensif.
+   - Konfigurasi Native Enums dan Strict Type Eloquent Models untuk seluruh 4 pilar di atas.
+   - *Catatan Kaki:* Database Triggers & Append-Only Ledgers (beserta `LogicException` di layer Model) telah tervalidasi.
 
 ## 🚧 BACKLOG & FITUR YANG BELUM ADA (PENDING / IN PROGRESS)
 1. **Order History & Manajemen Toko:**
