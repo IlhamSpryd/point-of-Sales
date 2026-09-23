@@ -33,7 +33,7 @@
         </div>
     </div>
 
-    <div class="card-surface overflow-hidden w-full">
+    <div class="card-surface overflow-hidden w-full shrink-0">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>

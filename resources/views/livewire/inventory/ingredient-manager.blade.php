@@ -28,7 +28,7 @@
         </div>
     @endif
 
-    <div class="bg-white border border-[#E9E9E7] rounded-lg shadow-sm overflow-hidden w-full">
+    <div class="bg-white border border-[#E9E9E7] rounded-lg shadow-sm overflow-hidden w-full shrink-0">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>

@@ -9,7 +9,7 @@
         </a>
     </div>
 
-    <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden w-full">
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden w-full shrink-0">
         <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data" x-data="{ submitting: false }" @submit="submitting = true" class="p-6 md:p-8 space-y-6">
             @csrf
 

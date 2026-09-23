@@ -71,7 +71,7 @@
 
             <!-- Main Scrollable Area -->
             <main
-                class="flex-1 overflow-y-auto w-full {{ ($noPadding ?? false) ? '' : 'p-4 sm:p-6 lg:p-8' }} animate-fade-in block"
+                class="flex-1 overflow-y-auto overflow-x-hidden w-full {{ ($noPadding ?? false) ? '' : 'p-4 sm:p-6 lg:p-8' }} animate-fade-in flex flex-col"
                 id="main-content">
                 <!-- Page Heading -->
                 @isset($header)

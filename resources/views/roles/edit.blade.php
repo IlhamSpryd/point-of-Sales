@@ -9,7 +9,7 @@
         </a>
     </div>
 
-    <div class="card-surface overflow-hidden w-full">
+    <div class="card-surface overflow-hidden w-full shrink-0">
         <form action="{{ route('roles.update', $role->id) }}" method="POST" x-data="{ submitting: false }" @submit="submitting = true" class="p-6 md:p-8 space-y-8">
             @csrf
             @method('PUT')
