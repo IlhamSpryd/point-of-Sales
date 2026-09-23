@@ -7,7 +7,7 @@
     'searchPlaceholder' => 'Cari...',
 ])
 
-<div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between rounded-2xl border border-[#E9E9E7] bg-[#F7F7F5] p-2 mb-6">
+<div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between rounded-2xl border border-[#E9E9E7] bg-[#F7F7F5] p-2 shrink-0">
     @if ($searchAction)
         <form action="{{ $searchAction }}" method="GET" class="relative w-full lg:w-72">
             <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-[#9B9A97] text-[18px]">search</span>
