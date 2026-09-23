@@ -222,7 +222,7 @@
             </div>
 
             <!-- AI Predictive Restocking Widget -->
-            <div class="bg-white border border-gray-200 rounded-lg shadow-sm p-6 flex flex-col" x-data="{
+            <div class="card-surface p-6 flex flex-col h-full" x-data="{
                 forecasts: [],
                 loading: true,
                 init() {
@@ -238,35 +238,35 @@
                         });
                 }
             }">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-sm font-semibold text-gray-900 tracking-tight">Prakiraan Restock AI</h2>
-                    <span class="material-symbols-rounded text-[18px] text-gray-400">auto_awesome</span>
+                <div class="flex justify-between items-center mb-5">
+                    <h2 class="text-lg font-bold text-[#37352F]">Prakiraan Restock AI</h2>
+                    <span class="material-symbols-rounded text-[18px] text-[#9B9A97]">auto_awesome</span>
                 </div>
                 
                 <div x-show="loading" class="flex justify-center items-center py-6">
-                    <svg class="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg class="animate-spin h-5 w-5 text-[#9B9A97]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                 </div>
                 
-                <div x-show="!loading && forecasts.length === 0" class="text-xs text-gray-500 text-center py-4">
+                <div x-show="!loading && forecasts.length === 0" class="text-xs text-[#787774] text-center py-4">
                     Belum ada data prediksi stok.
                 </div>
                 
-                <div x-show="!loading && forecasts.length > 0" class="flex flex-col gap-3">
+                <div x-show="!loading && forecasts.length > 0" class="flex flex-col gap-4">
                     <template x-for="item in forecasts" :key="item.ingredient_id">
-                        <div class="flex items-center justify-between border-b border-gray-100 pb-3 last:border-0 last:pb-0">
+                        <div class="flex items-center justify-between border-b border-[#F1F1EF] pb-3 last:border-0 last:pb-0">
                             <div>
-                                <h4 class="text-xs font-bold text-gray-900" x-text="item.name"></h4>
+                                <h4 class="text-sm font-bold text-[#37352F]" x-text="item.name"></h4>
                                 <div class="flex items-center gap-2 mt-0.5">
-                                    <span class="text-[11px] text-gray-500">Sisa: <strong class="text-gray-900" x-text="item.projected_days_remaining ? item.projected_days_remaining + ' hari' : '-'"></strong></span>
+                                    <span class="text-[11px] text-[#787774]">Sisa: <strong class="text-[#37352F]" x-text="item.projected_days_remaining ? item.projected_days_remaining + ' hari' : '-'"></strong></span>
                                 </div>
                             </div>
                             <div class="flex flex-col items-end gap-1">
-                                <span x-show="item.trend === 'falling'" class="bg-red-50 text-red-700 border border-red-200 rounded-full px-2 py-0.5 text-[10px] font-medium leading-none">Turun</span>
-                                <span x-show="item.trend === 'rising'" class="bg-green-50 text-green-700 border border-green-200 rounded-full px-2 py-0.5 text-[10px] font-medium leading-none">Naik</span>
-                                <span x-show="item.trend === 'stable'" class="bg-gray-50 text-gray-600 border border-gray-200 rounded-full px-2 py-0.5 text-[10px] font-medium leading-none">Stabil</span>
+                                <span x-show="item.trend === 'falling'" class="bg-rose-50 text-rose-700 border border-rose-200 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wide uppercase leading-none">Turun</span>
+                                <span x-show="item.trend === 'rising'" class="bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wide uppercase leading-none">Naik</span>
+                                <span x-show="item.trend === 'stable'" class="bg-[#F1F1EF] text-[#787774] border border-[#E9E9E7] rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wide uppercase leading-none">Stabil</span>
                             </div>
                         </div>
                     </template>
