@@ -184,6 +184,22 @@ class CreateOrder extends Component
     {
         $this->selectingProductId = $productId;
         $this->pendingModifierIds = [];
+
+        // Pre-select default modifiers
+        $product = Product::with('modifierGroups.modifiers')->find($productId);
+        if ($product) {
+            foreach ($product->modifierGroups as $group) {
+                foreach ($group->modifiers as $mod) {
+                    if ($mod->is_default) {
+                        $this->pendingModifierIds[] = $mod->id;
+                        if ($group->selection_type === 'single') {
+                            break; // only select the first default for single selection
+                        }
+                    }
+                }
+            }
+        }
+
         $this->pendingQty = 1;
         $this->pendingNotes = null;
     }
@@ -213,6 +229,20 @@ class CreateOrder extends Component
 
     public function confirmAddToCart(): void
     {
+        // Try to find an identical item to group with
+        foreach ($this->cart as $index => $item) {
+            if (
+                $item['product_id'] === $this->selectingProductId &&
+                $item['modifier_ids'] === $this->pendingModifierIds &&
+                $item['notes'] === $this->pendingNotes
+            ) {
+                $this->cart[$index]['qty'] += $this->pendingQty;
+                $this->selectingProductId = null;
+
+                return;
+            }
+        }
+
         $this->cart[] = [
             'product_id' => $this->selectingProductId,
             'qty' => $this->pendingQty,
@@ -220,6 +250,29 @@ class CreateOrder extends Component
             'notes' => $this->pendingNotes,
         ];
         $this->selectingProductId = null;
+    }
+
+    public function addToCartDirectly(int $productId): void
+    {
+        // Group with identical item if exists
+        foreach ($this->cart as $index => $item) {
+            if (
+                $item['product_id'] === $productId &&
+                empty($item['modifier_ids']) &&
+                empty($item['notes'])
+            ) {
+                $this->cart[$index]['qty']++;
+
+                return;
+            }
+        }
+
+        $this->cart[] = [
+            'product_id' => $productId,
+            'qty' => 1,
+            'modifier_ids' => [],
+            'notes' => null,
+        ];
     }
 
     public function removeFromCart(int $index): void

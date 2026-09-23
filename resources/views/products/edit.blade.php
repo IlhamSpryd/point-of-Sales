@@ -158,6 +158,53 @@
                 </div>
             </div>
 
+            <!-- Modifier Groups Section -->
+            @php
+                $existingGroups = old('modifier_groups') ? old('modifier_groups') : $product->modifierGroups->pluck('id')->toArray();
+            @endphp
+            <div x-data="{
+                selectedGroups: {{ json_encode($existingGroups) }},
+                groups: {{ json_encode($modifierGroups->map(fn($g) => ['id' => $g->id, 'name' => $g->name])) }},
+                addGroup() {
+                    this.selectedGroups.push('');
+                },
+                removeGroup(index) {
+                    this.selectedGroups.splice(index, 1);
+                }
+            }" class="pt-4 border-t border-gray-200">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h5 class="text-sm font-bold text-gray-900">Grup Varian & Modifier</h5>
+                        <p class="text-xs text-gray-500 mt-0.5">Tautkan grup modifier (seperti Pilihan Susu, Suhu) yang tersedia untuk produk ini.</p>
+                    </div>
+                    <button type="button" @click="addGroup" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
+                        <span class="material-symbols-rounded text-[16px]">add</span> Tambah Grup Varian
+                    </button>
+                </div>
+
+                <div class="space-y-3">
+                    <template x-for="(groupId, index) in selectedGroups" :key="index">
+                        <div class="flex items-start gap-3">
+                            <div class="flex-1">
+                                <select x-model="selectedGroups[index]" :name="'modifier_groups['+index+']'" class="form-select w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-900 text-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 shadow-sm" required>
+                                    <option value="">-- Pilih Grup Varian --</option>
+                                    <template x-for="g in groups" :key="g.id">
+                                        <option :value="g.id" x-text="g.name" :selected="groupId == g.id"></option>
+                                    </template>
+                                </select>
+                            </div>
+                            <button type="button" @click="removeGroup(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors" title="Hapus baris">
+                                <span class="material-symbols-rounded text-[18px]">close</span>
+                            </button>
+                        </div>
+                    </template>
+                    
+                    <div x-show="selectedGroups.length === 0" class="text-center py-6 bg-gray-50 rounded-lg border border-gray-200 border-dashed">
+                        <p class="text-sm text-gray-400">Belum ada grup varian. Klik "Tambah Grup Varian" jika diperlukan.</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Photo Upload -->
             <div>
                 <x-form-label for="product_photo">Foto Produk</x-form-label>

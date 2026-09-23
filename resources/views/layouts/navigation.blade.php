@@ -90,6 +90,13 @@
                 'roles' => ['Owner', 'Manager', 'Inventory'],
             ],
             [
+                'label' => 'Varian & Modifier',
+                'icon' => 'tune',
+                'route' => 'inventory.modifiers',
+                'active' => 'inventory.modifiers',
+                'roles' => ['Owner', 'Manager', 'Inventory'],
+            ],
+            [
                 'label' => 'Kategori',
                 'icon' => 'category',
                 'route' => 'categories.index',

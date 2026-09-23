@@ -23,6 +23,7 @@ use App\Http\Controllers\UserController;
 use App\Livewire\ChannelMappingManager;
 use App\Livewire\Inventory\IngredientLedger;
 use App\Livewire\Inventory\IngredientManager;
+use App\Livewire\Inventory\ModifierManager;
 use App\Livewire\Kasir\CreateOrder;
 use App\Livewire\Kds\Board;
 use Illuminate\Support\Facades\Route;
@@ -88,6 +89,7 @@ Route::middleware('auth')->group(function () {
         Route::prefix('inventory')->name('inventory.')->group(function () {
             Route::get('/ingredients', IngredientManager::class)->name('ingredients');
             Route::get('/ledger', IngredientLedger::class)->name('ledger');
+            Route::get('/modifiers', ModifierManager::class)->name('modifiers');
         });
 
         Route::resource('products', ProductController::class);

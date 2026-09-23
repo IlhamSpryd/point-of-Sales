@@ -123,6 +123,20 @@ class TransactionService
 
             $productIds = collect($mergedItems)->pluck('product_id')->toArray();
 
+            // Collect all modifier IDs
+            $modifierIds = [];
+            foreach ($mergedItems as $item) {
+                if (! empty($item['options'])) {
+                    foreach ($item['options'] as $opt) {
+                        if (isset($opt['modifier_id'])) {
+                            $modifierIds[] = $opt['modifier_id'];
+                        }
+                    }
+                }
+            }
+            $modifierIds = array_unique($modifierIds);
+            $modifiersWithBom = Modifier::whereIn('id', $modifierIds)->with('ingredients')->get()->keyBy('id');
+
             // [OMEGA-NODE7] Eager-load resep BOM (ingredients + pivot
             // quantity_required) BERSAMAAN dengan row-lock Product yang
             // sudah ada. Baris resep (`product_ingredients`) adalah master
@@ -193,6 +207,28 @@ class TransactionService
                     }
                 } else {
                     $product->decrement('stock', $item['quantity']);
+                }
+
+                if (! empty($item['options'])) {
+                    foreach ($item['options'] as $opt) {
+                        if (isset($opt['modifier_id'])) {
+                            $mod = $modifiersWithBom->get($opt['modifier_id']);
+                            if ($mod && $mod->ingredients->isNotEmpty()) {
+                                foreach ($mod->ingredients as $ingredient) {
+                                    $qtyNeeded = bcmul((string) $ingredient->pivot->quantity_required, (string) $item['quantity'], 4);
+                                    $ingredientRequirements[$ingredient->id] = bcadd(
+                                        $ingredientRequirements[$ingredient->id] ?? '0',
+                                        $qtyNeeded,
+                                        4
+                                    );
+                                    $bomBreakdownByLineIndex[$lineIndex][] = [
+                                        'ingredient_id' => $ingredient->id,
+                                        'qty' => $qtyNeeded,
+                                    ];
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -343,7 +379,23 @@ class TransactionService
             // Buat order items (UNCHANGED bentuknya).
             $createdItems = [];
             foreach ($lines as $line) {
-                $createdItems[] = OrderItem::create(array_merge($line, ['order_id' => $order->id]));
+                $orderItem = OrderItem::create(array_merge($line, ['order_id' => $order->id]));
+                $createdItems[] = $orderItem;
+
+                if (! empty($line['options'])) {
+                    $modifierSync = [];
+                    foreach ($line['options'] as $opt) {
+                        if (isset($opt['modifier_id'])) {
+                            $modifierSync[$opt['modifier_id']] = [
+                                'price_at_time' => $opt['extra_price'] ?? 0,
+                                'qty' => $line['qty'],
+                            ];
+                        }
+                    }
+                    if (! empty($modifierSync)) {
+                        $orderItem->modifiers()->sync($modifierSync);
+                    }
+                }
             }
 
             // [OMEGA-NODE7] Ledger bahan baku granular, SETELAH order_item

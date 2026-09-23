@@ -29,6 +29,10 @@ class StoreProductRequest extends FormRequest
             'ingredients' => 'nullable|array',
             'ingredients.*.id' => 'required_with:ingredients|exists:ingredients,id',
             'ingredients.*.quantity' => 'required_with:ingredients|numeric|min:0.0001',
+
+            // Modifier Groups
+            'modifier_groups' => 'nullable|array',
+            'modifier_groups.*' => 'exists:modifier_groups,id',
         ];
     }
 }

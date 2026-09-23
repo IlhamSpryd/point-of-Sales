@@ -88,6 +88,7 @@ class CheckoutController extends Controller
                 'quantity' => $item['qty'],
                 'extra_price' => (float) $serverExtraPrice,
                 'options' => $item['options'],
+                'notes' => $item['notes'] ?? null,
             ];
         }, $items);
 

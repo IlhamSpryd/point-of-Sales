@@ -6,6 +6,7 @@ use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Category;
 use App\Models\Ingredient;
+use App\Models\ModifierGroup;
 use App\Models\Product;
 use App\Services\ProductService;
 use Illuminate\Database\QueryException;
@@ -53,8 +54,9 @@ class ProductController extends Controller
         // Mengambil semua data kategori untuk kebutuhan dropdown pilihan
         $categories = Category::all();
         $ingredients = Ingredient::where('is_active', true)->orderBy('name')->get();
+        $modifierGroups = ModifierGroup::orderBy('name')->get();
 
-        return view('products.create', compact('categories', 'ingredients'));
+        return view('products.create', compact('categories', 'ingredients', 'modifierGroups'));
     }
 
     /**
@@ -77,11 +79,12 @@ class ProductController extends Controller
     {
         $categories = Category::all();
         $ingredients = Ingredient::where('is_active', true)->orderBy('name')->get();
+        $modifierGroups = ModifierGroup::orderBy('name')->get();
 
-        // Muat relasi ingredients (BOM) beserta kuantitasnya
-        $product->load('ingredients');
+        // Muat relasi ingredients (BOM) beserta kuantitasnya dan modifierGroups
+        $product->load('ingredients', 'modifierGroups');
 
-        return view('products.edit', compact('product', 'categories', 'ingredients'));
+        return view('products.edit', compact('product', 'categories', 'ingredients', 'modifierGroups'));
     }
 
     /**

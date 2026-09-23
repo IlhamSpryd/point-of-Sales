@@ -46,8 +46,13 @@
                             </h3>
                             <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                                 @foreach ($category->products as $product)
-                                    <button wire:click="openModifierPicker({{ $product->id }})"
-                                            class="card-surface p-4 text-left hover:shadow-md transition-all duration-200 hover:border-primary-300 active:scale-[0.97] flex flex-col justify-between h-full bg-white group min-h-[44px]">
+                                    @if($product->modifierGroups->count() > 0)
+                                        <button wire:click="openModifierPicker({{ $product->id }})"
+                                                class="card-surface p-4 text-left hover:shadow-md transition-all duration-200 hover:border-primary-300 active:scale-[0.97] flex flex-col justify-between h-full bg-white group min-h-[44px]">
+                                    @else
+                                        <button wire:click="addToCartDirectly({{ $product->id }})"
+                                                class="card-surface p-4 text-left hover:shadow-md transition-all duration-200 hover:border-primary-300 active:scale-[0.97] flex flex-col justify-between h-full bg-white group min-h-[44px]">
+                                    @endif
                                         <div class="font-semibold text-sm text-yovel-ink leading-snug group-hover:text-primary-900 transition-colors duration-200">{{ $product->product_name }}</div>
                                         <div class="text-yovel-ink font-bold mt-3 text-sm tracking-tight">Rp {{ number_format($product->product_price, 0, ',', '.') }}</div>
                                     </button>

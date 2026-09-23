@@ -68,6 +68,10 @@ class ProductService
                 $product->ingredients()->sync($ingredientsSync);
             }
 
+            if (isset($data['modifier_groups']) && is_array($data['modifier_groups'])) {
+                $product->modifierGroups()->sync($data['modifier_groups']);
+            }
+
             // PENTING: invalidasi cache katalog menu setiap ada produk baru,
             // agar Kasir/Self-Order langsung melihat produk baru tanpa delay 1 jam.
             $this->menuCache->flush();
@@ -107,6 +111,14 @@ class ProductService
                     // only clear if it was meant to be cleared. But actually we pass it as empty array if cleared in Alpine.
                     // If not passed at all, assume empty.
                     $product->ingredients()->sync([]);
+                }
+            }
+
+            if (isset($data['modifier_groups']) && is_array($data['modifier_groups'])) {
+                $product->modifierGroups()->sync($data['modifier_groups']);
+            } else {
+                if (request()->has('modifier_groups') || request()->isMethod('PUT') || request()->isMethod('PATCH')) {
+                    $product->modifierGroups()->sync([]);
                 }
             }
 

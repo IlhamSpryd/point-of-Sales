@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\PreparationStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * Model OrderItem mengatur spesifikasi parsial dalam keranjang transaksi,
@@ -43,6 +44,16 @@ class OrderItem extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class)->withTrashed();
+    }
+
+    /**
+     * Relasi (BelongsToMany): Modifier/Add-ons yang dipilih untuk item pesanan ini.
+     */
+    public function modifiers(): BelongsToMany
+    {
+        return $this->belongsToMany(Modifier::class, 'order_item_modifiers')
+            ->withPivot('price_at_time', 'qty')
+            ->withTimestamps();
     }
 
     /**
