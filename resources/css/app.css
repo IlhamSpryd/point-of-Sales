@@ -50,6 +50,15 @@
     --radius-card: 1rem;      /* rounded-2xl equivalent, used by .card-surface */
     --radius-sheet: 1.75rem;  /* bottom-sheet top corners */
     --radius-pill: 9999px;
+
+    /* ── Warm Accent — [OMEGA-NODE2] 2026-09-23. Dipakai SANGAT jarang:
+       sorotan progres, ikon "perlu perhatian", badge warning. Bukan warna
+       brand kedua — hanya satu titik penekanan, menggantikan tebakan
+       amber-50/500/600/700 mentah yang berbeda di setiap file. ── */
+    --color-yovel-amber-50:  #FBF3E7;
+    --color-yovel-amber-200: #EFD8AE;
+    --color-yovel-amber-500: #C88A2E;
+    --color-yovel-amber-700: #8A5A16;
 }
 
 /* ═══════════════════════════════════════════════════════

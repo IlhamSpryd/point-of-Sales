@@ -4,12 +4,15 @@
             <h4 class="text-xl font-bold text-[#37352F] tracking-tight">Manajemen Meja</h4>
             <p class="text-sm font-medium text-[#787774] mt-1">Kelola meja & QR Code self-order</p>
         </div>
-        <a href="{{ route('tables.create') }}" wire:navigate>
-            <x-button variant="primary" type="button">
-                <span class="material-symbols-rounded text-[18px]">add</span> Tambah Meja
-            </x-button>
-        </a>
-    </div>
+        <x-list-toolbar search-action="{{ route('tables.index') }}" search-placeholder="Cari meja...">
+            <x-slot:actions>
+                <a href="{{ route('tables.create') }}" class="flex-1 sm:flex-none" wire:navigate>
+                    <x-button variant="primary" type="button" class="w-full h-10">
+                        <span class="material-symbols-rounded text-[18px]">add</span> Tambah Meja
+                    </x-button>
+                </a>
+            </x-slot:actions>
+        </x-list-toolbar>
 
     @if(session('success'))
         <x-alert type="success">{{ session('success') }}</x-alert>

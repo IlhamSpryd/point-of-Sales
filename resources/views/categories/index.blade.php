@@ -9,19 +9,13 @@
             <p class="text-sm font-medium text-[#787774] mt-1">Kelola kategori produk</p>
         </div>
         
-        <div class="flex flex-col lg:flex-row gap-3 items-center w-full sm:w-auto">
-            <form action="{{ route('categories.index') }}" method="GET" class="w-full sm:w-72 relative">
-                <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-[#9B9A97]">search</span>
-                <x-form-input type="search" name="search" value="{{ request('search') }}" placeholder="Cari kategori..." class="pl-10 h-10 w-full" />
-            </form>
-            
-            <div class="flex gap-2 w-full sm:w-auto">
+        <x-list-toolbar search-action="{{ route('categories.index') }}" search-placeholder="Cari kategori...">
+            <x-slot:actions>
                 <a href="{{ request()->fullUrlWithQuery(['export' => 'csv']) }}" class="flex-1 sm:flex-none">
                     <x-button variant="secondary" type="button" class="w-full h-10">
                         <span class="material-symbols-rounded text-[18px]">download</span> Ekspor
                     </x-button>
                 </a>
-                
                 @if($canManage)
                     <a href="{{ route('categories.create') }}" class="flex-1 sm:flex-none" wire:navigate>
                         <x-button variant="primary" type="button" class="w-full h-10">
@@ -29,8 +23,8 @@
                         </x-button>
                     </a>
                 @endif
-            </div>
-        </div>
+            </x-slot:actions>
+        </x-list-toolbar>
     </div>
 
     @if(session('success'))
