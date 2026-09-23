@@ -13,6 +13,7 @@
                 </a>
             </x-slot:actions>
         </x-list-toolbar>
+    </div>
 
     @if(session('success'))
         <x-alert type="success">{{ session('success') }}</x-alert>
