@@ -98,6 +98,7 @@ class CheckoutController extends Controller
                 'items' => $transactionItems,
                 'payment_method' => $request->validated('payment_method'),
                 'cash_received' => null,
+                'is_self_order_cash' => $request->validated('payment_method') === 'cash',
                 'table_id' => $tableId, // BARU: masukkan ke dalam payload
             ], $systemUserId);
         } catch (\Throwable $e) {

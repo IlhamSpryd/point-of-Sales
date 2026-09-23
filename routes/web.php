@@ -85,7 +85,7 @@ Route::middleware('auth')->group(function () {
     // Katalog (Produk & Kategori)
     Route::middleware('role:Owner,Manager,Inventory')->group(function () {
         // Inventory (BOM & Ingredients)
-        Route::middleware('role:Owner,Manager')->prefix('inventory')->name('inventory.')->group(function () {
+        Route::prefix('inventory')->name('inventory.')->group(function () {
             Route::get('/ingredients', IngredientManager::class)->name('ingredients');
             Route::get('/ledger', IngredientLedger::class)->name('ledger');
         });

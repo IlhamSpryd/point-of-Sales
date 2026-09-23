@@ -35,6 +35,8 @@ class AuthenticatedSessionController extends Controller
         return match ($user->role?->name) {
             'Kasir' => redirect()->route('transaction.create'),
             'Manager' => redirect()->route('reports.sales'),
+            'Barista', 'Waiter' => redirect()->route('kds.index'),
+            'Inventory' => redirect()->route('products.index'),
             default => redirect()->intended(route('dashboard', absolute: false)),
         };
     }

@@ -290,23 +290,31 @@ class TransactionService
 
                 $initialStatus = OrderStatus::Paid;
             } else {
-                // LEGACY PATH (UNCHANGED) -- single payment_method, cash =
-                // langsung Paid, non-cash = Pending + Midtrans Snap.
+                // LEGACY PATH -- single payment_method.
+                // [SPRINT-0] 'cash' punya dua sub-alur:
+                //  - Kasir POS reguler: uang SUDAH diterima fisik saat ini -> validasi
+                //    kecukupan tunai + langsung Paid.
+                //  - Self-Order pelanggan (is_self_order_cash=true): 'cash' di sini
+                //    adalah JANJI bayar di kasir, uang BELUM diterima -> lewati validasi
+                //    kecukupan, status Pending, diselesaikan lewat payPendingOrder()
+                //    (alur "Tarik Pesanan" yang sudah ada, TIDAK dibuat ulang).
                 $dominantPaymentMethod = $data['payment_method'] ?? 'cash';
                 $cashReceived = $data['cash_received'] ?? null;
+                $isDeferredCash = $dominantPaymentMethod === 'cash' && ! empty($data['is_self_order_cash']);
+                $isImmediateCash = $dominantPaymentMethod === 'cash' && ! $isDeferredCash;
 
-                if ($dominantPaymentMethod === 'cash' && (int) $cashReceived < $totalAmount) {
+                if ($isImmediateCash && (int) $cashReceived < $totalAmount) {
                     throw ValidationException::withMessages([
                         'cash_received' => 'Uang tunai yang diterima tidak mencukupi total tagihan.',
                     ]);
                 }
 
-                $cashReceivedForReceipt = $dominantPaymentMethod === 'cash' ? ($cashReceived ?? $totalAmount) : null;
-                $orderChangeForReceipt = ($dominantPaymentMethod === 'cash' && $cashReceived)
+                $cashReceivedForReceipt = $isImmediateCash ? ($cashReceived ?? $totalAmount) : null;
+                $orderChangeForReceipt = ($isImmediateCash && $cashReceived)
                     ? max(0, (int) $cashReceived - $totalAmount)
                     : 0;
 
-                $initialStatus = $dominantPaymentMethod === 'cash' ? OrderStatus::Paid : OrderStatus::Pending;
+                $initialStatus = $isImmediateCash ? OrderStatus::Paid : OrderStatus::Pending;
             }
 
             // Generate order code unik (UNCHANGED).
@@ -841,7 +849,7 @@ class TransactionService
 
             if ($sumApplied !== (int) $order->order_amount) {
                 throw ValidationException::withMessages([
-                    'payments' => 'Total metode pembayaran (Rp'.number_format($sumApplied, 0, ',', '.').') tidak sama dengan total tagihan (Rp'.number_format((int)$order->order_amount, 0, ',', '.').').',
+                    'payments' => 'Total metode pembayaran (Rp'.number_format($sumApplied, 0, ',', '.').') tidak sama dengan total tagihan (Rp'.number_format((int) $order->order_amount, 0, ',', '.').').',
                 ]);
             }
 
@@ -924,7 +932,7 @@ class TransactionService
             if ($newStatus !== null) {
                 if ($newStatus === OrderStatus::Paid && $order->order_status !== OrderStatus::Paid) {
                     $legMethod = $order->payment_method ? (is_string($order->payment_method) ? $order->payment_method : $order->payment_method->value) : 'qris';
-                    
+
                     $this->payPendingOrder(
                         $order,
                         [['method' => $legMethod, 'amount' => (int) $order->order_amount, 'reference_number' => 'MIDTRANS-'.$transactionStatus]],

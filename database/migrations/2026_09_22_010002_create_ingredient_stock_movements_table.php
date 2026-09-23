@@ -43,14 +43,17 @@ return new class extends Migration
             $table->index(['order_id', 'type'], 'ingredient_stock_movements_order_type_index');
         });
 
-        if (DB::getDriverName() !== 'sqlite') { DB::statement("ALTER TABLE ingredient_stock_movements ADD CONSTRAINT chk_ism_type_enum CHECK (type IN ('sale_deduction','purchase_receipt','waste','adjustment','restore_compensation'))"); }
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE ingredient_stock_movements ADD CONSTRAINT chk_ism_type_enum CHECK (type IN ('sale_deduction','purchase_receipt','waste','adjustment','restore_compensation'))");
+        }
 
         // Imutabilitas DITEGAKKAN DI DATABASE, bukan hanya konvensi kode:
         // siapa pun yang mencoba UPDATE atau DELETE baris ledger ini --
         // termasuk query raw/manual dari luar Eloquent -- ditolak dengan
         // error eksplisit. Ini melengkapi (bukan menggantikan) disiplin
         // "jangan pernah update ledger" di level aplikasi.
-        if (DB::getDriverName() !== 'sqlite') { DB::unprepared(<<<'SQL'
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::unprepared(<<<'SQL'
             CREATE TRIGGER trg_ingredient_stock_movements_no_update
             BEFORE UPDATE ON ingredient_stock_movements
             FOR EACH ROW
@@ -58,9 +61,11 @@ return new class extends Migration
                 SIGNAL SQLSTATE '45000'
                     SET MESSAGE_TEXT = 'ingredient_stock_movements bersifat append-only: UPDATE dilarang.';
             END
-        SQL); }
+        SQL);
+        }
 
-        if (DB::getDriverName() !== 'sqlite') { DB::unprepared(<<<'SQL'
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::unprepared(<<<'SQL'
             CREATE TRIGGER trg_ingredient_stock_movements_no_delete
             BEFORE DELETE ON ingredient_stock_movements
             FOR EACH ROW
@@ -68,7 +73,8 @@ return new class extends Migration
                 SIGNAL SQLSTATE '45000'
                     SET MESSAGE_TEXT = 'ingredient_stock_movements bersifat append-only: DELETE dilarang.';
             END
-        SQL); }
+        SQL);
+        }
     }
 
     public function down(): void

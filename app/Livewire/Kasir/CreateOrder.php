@@ -7,10 +7,8 @@
 
 namespace App\Livewire\Kasir;
 
-use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentMethodEnum;
-use App\Enums\PreparationStatus;
 use App\Models\Customer;
 use App\Models\Modifier;
 use App\Models\Order;
