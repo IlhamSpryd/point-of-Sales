@@ -1,25 +1,25 @@
 <div>
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
-            <h4 class="text-xl font-bold text-[#37352F] tracking-tight">Manajemen Bahan Baku</h4>
-            <p class="text-sm font-medium text-[#787774] mt-1">Kelola data bahan baku dan sesuaikan stok (Bill of Materials)</p>
+            <h4 class="text-xl font-bold text-gray-900 tracking-tight">Manajemen Bahan Baku</h4>
+            <p class="text-sm font-medium text-gray-500 mt-1">Kelola data bahan baku dan sesuaikan stok (Bill of Materials)</p>
         </div>
         <div class="flex items-center gap-3 w-full sm:w-auto">
             <div class="relative w-full sm:w-64">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-[#9B9A97]">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
                     <span class="material-symbols-rounded text-[18px]">search</span>
                 </span>
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari bahan baku..." 
-                       class="form-input w-full pl-10 pr-4 py-2 rounded-xl border border-[#E9E9E7] bg-white text-[#37352F] placeholder-[#9B9A97] focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] transition-all duration-200 shadow-sm">
+                       class="form-input w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 shadow-sm">
             </div>
-            <button wire:click="create" class="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white hover:bg-gray-800 text-sm font-medium rounded-xl transition-all duration-200 shadow-sm active:scale-95">
+            <button wire:click="create" class="flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 bg-gray-900 text-white hover:bg-gray-800 text-sm font-medium rounded-lg transition-all duration-200 shadow-sm active:scale-95">
                 <span class="material-symbols-rounded text-[18px]">add</span> Tambah
             </button>
         </div>
     </div>
 
     @if (session()->has('success'))
-        <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 flex items-start gap-3">
+        <div class="mb-6 p-4 rounded-lg bg-emerald-50 border border-emerald-200 flex items-start gap-3">
             <span class="material-symbols-rounded text-emerald-600 mt-0.5">check_circle</span>
             <div>
                 <h5 class="text-sm font-semibold text-emerald-800">Berhasil</h5>
@@ -28,40 +28,40 @@
         </div>
     @endif
 
-    <div class="card-surface overflow-hidden w-full">
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden w-full">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="border-b border-[#E9E9E7] bg-[#F7F7F5]">
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Bahan Baku</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Stok Saat Ini</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Harga/Unit</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
+                    <tr class="border-b border-gray-200 bg-gray-50">
+                        <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Bahan Baku</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Stok Saat Ini</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Harga/Unit</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-[#E9E9E7] bg-white">
+                <tbody class="divide-y divide-gray-200 bg-white">
                     @forelse ($ingredients as $item)
-                        <tr class="hover:bg-[#F7F7F5]/50 transition-colors duration-150">
+                        <tr class="hover:bg-gray-50/50 transition-colors duration-150">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-semibold text-[#37352F]">{{ $item->name }}</span>
-                                    <span class="text-xs text-[#9B9A97]">{{ $item->ingredient_code ?? '-' }}</span>
+                                    <span class="text-sm font-semibold text-gray-900">{{ $item->name }}</span>
+                                    <span class="text-xs text-gray-400">{{ $item->ingredient_code ?? '-' }}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-sm font-medium {{ $item->current_stock <= $item->reorder_level ? 'text-rose-600' : 'text-[#37352F]' }}">
+                                    <span class="text-sm font-medium {{ $item->current_stock <= $item->reorder_level ? 'text-rose-600' : 'text-gray-900' }}">
                                         {{ number_format($item->current_stock, 2) }} {{ $item->unit }}
                                     </span>
                                     @if($item->current_stock <= $item->reorder_level)
                                         <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700" title="Stok Menipis">!</span>
                                     @endif
                                 </div>
-                                <div class="text-[10px] text-[#9B9A97] mt-0.5">Min: {{ number_format($item->reorder_level, 2) }}</div>
+                                <div class="text-[10px] text-gray-400 mt-0.5">Min: {{ number_format($item->reorder_level, 2) }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm text-[#37352F]">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }}</span>
+                                <span class="text-sm text-gray-900">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($item->is_active)
@@ -90,11 +90,11 @@
                         <tr>
                             <td colspan="5" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center justify-center">
-                                    <div class="w-16 h-16 mb-4 rounded-full bg-[#F7F7F5] flex items-center justify-center border border-[#E9E9E7]">
-                                        <span class="material-symbols-rounded text-3xl text-[#9B9A97]">inventory_2</span>
+                                    <div class="w-16 h-16 mb-4 rounded-full bg-gray-50 flex items-center justify-center border border-gray-200">
+                                        <span class="material-symbols-rounded text-3xl text-gray-400">inventory_2</span>
                                     </div>
-                                    <h3 class="text-base font-semibold text-[#37352F] mb-1">Belum Ada Bahan Baku</h3>
-                                    <p class="text-sm text-[#787774] max-w-sm mx-auto">Tambahkan bahan baku baru untuk mulai mengelola inventory dan resep produk.</p>
+                                    <h3 class="text-base font-semibold text-gray-900 mb-1">Belum Ada Bahan Baku</h3>
+                                    <p class="text-sm text-gray-500 max-w-sm mx-auto">Tambahkan bahan baku baru untuk mulai mengelola inventory dan resep produk.</p>
                                 </div>
                             </td>
                         </tr>
@@ -103,7 +103,7 @@
             </table>
         </div>
         @if($ingredients->hasPages())
-            <div class="px-6 py-4 border-t border-[#E9E9E7]">
+            <div class="px-6 py-4 border-t border-gray-200">
                 {{ $ingredients->links() }}
             </div>
         @endif
@@ -115,7 +115,7 @@
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" aria-hidden="true" wire:click="$set('showModal', false)"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full border border-gray-200">
+            <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full border border-gray-200">
                 <form wire:submit.prevent="save">
                     <div class="bg-white px-6 pt-6 pb-6">
                         <div class="mb-5 flex justify-between items-center">
@@ -130,32 +130,32 @@
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Kode Bahan (Opsional)</label>
-                                <input type="text" wire:model="ingredient_code" class="form-input w-full px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-sm">
+                                <input type="text" wire:model="ingredient_code" class="form-input w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-sm">
                                 @error('ingredient_code') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                             </div>
                             
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Nama Bahan <span class="text-rose-500">*</span></label>
-                                <input type="text" wire:model="name" class="form-input w-full px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-sm" required>
+                                <input type="text" wire:model="name" class="form-input w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-sm" required>
                                 @error('name') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                             </div>
 
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-1">Satuan Dasar <span class="text-rose-500">*</span></label>
-                                    <input type="text" wire:model="unit" placeholder="g, ml, pcs..." class="form-input w-full px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-sm" required>
+                                    <input type="text" wire:model="unit" placeholder="g, ml, pcs..." class="form-input w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-sm" required>
                                     @error('unit') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                                 <div>
                                     <label class="block text-sm font-semibold text-gray-700 mb-1">Harga per Satuan <span class="text-rose-500">*</span></label>
-                                    <input type="number" step="0.01" wire:model="cost_per_unit" class="form-input w-full px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-sm" required>
+                                    <input type="number" step="0.01" wire:model="cost_per_unit" class="form-input w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-sm" required>
                                     @error('cost_per_unit') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                                 </div>
                             </div>
 
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Batas Minimum (Reorder Level) <span class="text-rose-500">*</span></label>
-                                <input type="number" step="0.0001" wire:model="reorder_level" class="form-input w-full px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-sm" required>
+                                <input type="number" step="0.0001" wire:model="reorder_level" class="form-input w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-sm" required>
                                 @error('reorder_level') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                             </div>
 
@@ -193,7 +193,7 @@
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" aria-hidden="true" wire:click="$set('showAdjustModal', false)"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full border border-gray-200">
+            <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full border border-gray-200">
                 <form wire:submit.prevent="saveAdjustment">
                     <div class="bg-white px-6 pt-6 pb-6">
                         <div class="mb-5 flex justify-between items-center">
@@ -208,7 +208,7 @@
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Tipe Mutasi <span class="text-rose-500">*</span></label>
-                                <select wire:model="adjustType" class="form-select w-full px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-sm">
+                                <select wire:model="adjustType" class="form-select w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-sm">
                                     <option value="purchase_receipt">Barang Masuk (Pembelian)</option>
                                     <option value="adjustment">Koreksi Manual (+ / -)</option>
                                     <option value="waste">Barang Rusak / Waste (-)</option>
@@ -218,13 +218,13 @@
 
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Jumlah <span class="text-rose-500">*</span></label>
-                                <input type="number" step="0.0001" wire:model="adjustQuantity" placeholder="Gunakan minus (-) untuk pengurangan jika tipe Koreksi Manual" class="form-input w-full px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-sm" required>
+                                <input type="number" step="0.0001" wire:model="adjustQuantity" placeholder="Gunakan minus (-) untuk pengurangan jika tipe Koreksi Manual" class="form-input w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-sm" required>
                                 @error('adjustQuantity') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
                                 <label class="block text-sm font-semibold text-gray-700 mb-1">Keterangan / Alasan (Opsional)</label>
-                                <textarea wire:model="adjustReason" rows="3" class="form-textarea w-full px-4 py-2 rounded-xl border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-sm" placeholder="Catatan tambahan..."></textarea>
+                                <textarea wire:model="adjustReason" rows="3" class="form-textarea w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 text-sm" placeholder="Catatan tambahan..."></textarea>
                                 @error('adjustReason') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                             </div>
                         </div>

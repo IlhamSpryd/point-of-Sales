@@ -4,16 +4,18 @@ namespace App\Livewire\Inventory;
 
 use App\Models\Ingredient;
 use App\Models\IngredientStockMovement;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Layout('layouts.app')]
 class IngredientLedger extends Component
 {
     use WithPagination;
 
-    public $ingredient_id = '';
+    public string $ingredient_id = '';
 
-    public $type = '';
+    public string $type = '';
 
     public function updatingIngredientId()
     {
@@ -42,6 +44,6 @@ class IngredientLedger extends Component
         return view('livewire.inventory.ingredient-ledger', [
             'movements' => $movements,
             'ingredients' => $ingredients,
-        ])->layout('layouts.app');
+        ]);
     }
 }

@@ -4,46 +4,49 @@ namespace App\Livewire\Inventory;
 
 use App\Models\Ingredient;
 use App\Models\IngredientStockMovement;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
 
+#[Layout('layouts.app')]
 class IngredientManager extends Component
 {
     use WithPagination;
 
-    public $search = '';
+    public string $search = '';
 
     // Form properties
-    public $ingredientId;
+    public ?int $ingredientId = null;
 
-    public $ingredient_code;
+    public ?string $ingredient_code = null;
 
-    public $name;
+    public string $name = '';
 
-    public $unit;
+    public string $unit = '';
 
-    public $cost_per_unit;
+    public ?float $cost_per_unit = null;
 
-    public $reorder_level;
+    public ?float $reorder_level = null;
 
-    public $is_active = true;
+    public bool $is_active = true;
 
     // Adjust Stock properties
-    public $adjustIngredientId;
+    public ?int $adjustIngredientId = null;
 
-    public $adjustQuantity;
+    public ?float $adjustQuantity = null;
 
-    public $adjustType = 'purchase_receipt';
+    public string $adjustType = 'purchase_receipt';
 
-    public $adjustReason;
+    public ?string $adjustReason = null;
 
-    public $showModal = false;
+    public bool $showModal = false;
 
-    public $isEditing = false;
+    public bool $isEditing = false;
 
-    public $showAdjustModal = false;
+    public bool $showAdjustModal = false;
 
     protected $rules = [
         'ingredient_code' => 'nullable|string|max:255',
@@ -66,7 +69,7 @@ class IngredientManager extends Component
         $this->showModal = true;
     }
 
-    public function edit($id)
+    public function edit(int $id)
     {
         $this->resetForm();
         $this->isEditing = true;
@@ -121,14 +124,14 @@ class IngredientManager extends Component
         $this->showModal = false;
     }
 
-    public function delete($id)
+    public function delete(int $id)
     {
         $ingredient = Ingredient::findOrFail($id);
         $ingredient->delete();
         session()->flash('success', 'Bahan baku berhasil dihapus.');
     }
 
-    public function adjustStock($id)
+    public function adjustStock(int $id)
     {
         $this->resetAdjustForm();
         $this->adjustIngredientId = $id;
@@ -165,7 +168,7 @@ class IngredientManager extends Component
                 'unit_cost' => $ingredient->cost_per_unit,
                 'reason' => $this->adjustReason,
                 'idempotency_key' => 'adj_'.Str::uuid()->toString(),
-                'created_by' => auth()->id(),
+                'created_by' => Auth::id(),
             ]);
 
             $ingredient->current_stock += $qty;
@@ -199,6 +202,6 @@ class IngredientManager extends Component
             ->latest()
             ->paginate(10);
 
-        return view('livewire.inventory.ingredient-manager', compact('ingredients'))->layout('layouts.app');
+        return view('livewire.inventory.ingredient-manager', compact('ingredients'));
     }
 }

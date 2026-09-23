@@ -1,24 +1,24 @@
 <div>
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
-            <h4 class="text-xl font-bold text-[#37352F] tracking-tight">Riwayat Stok Bahan Baku</h4>
-            <p class="text-sm font-medium text-[#787774] mt-1">Laporan mutasi pergerakan stok secara historis (Ledger Immutable)</p>
+            <h4 class="text-xl font-bold text-gray-900 tracking-tight">Riwayat Stok Bahan Baku</h4>
+            <p class="text-sm font-medium text-gray-500 mt-1">Laporan mutasi pergerakan stok secara historis (Ledger Immutable)</p>
         </div>
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
             <div class="relative w-full sm:w-48">
-                <select wire:model.live="ingredient_id" class="form-select w-full pl-4 pr-8 py-2 rounded-xl border border-[#E9E9E7] bg-white text-[#37352F] focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] transition-all duration-200 shadow-sm appearance-none">
+                <select wire:model.live="ingredient_id" class="form-select w-full pl-4 pr-8 py-2 rounded-lg border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 shadow-sm appearance-none">
                     <option value="">Semua Bahan Baku</option>
                     @foreach($ingredients as $ing)
                         <option value="{{ $ing->id }}">{{ $ing->name }}</option>
                     @endforeach
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-[#9B9A97]">
+                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-400">
                     <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
                 </div>
             </div>
             
             <div class="relative w-full sm:w-48">
-                <select wire:model.live="type" class="form-select w-full pl-4 pr-8 py-2 rounded-xl border border-[#E9E9E7] bg-white text-[#37352F] focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] transition-all duration-200 shadow-sm appearance-none">
+                <select wire:model.live="type" class="form-select w-full pl-4 pr-8 py-2 rounded-lg border border-gray-200 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 shadow-sm appearance-none">
                     <option value="">Semua Tipe Mutasi</option>
                     <option value="sale_deduction">Penjualan (Keluar)</option>
                     <option value="purchase_receipt">Pembelian (Masuk)</option>
@@ -26,34 +26,34 @@
                     <option value="adjustment">Koreksi Manual</option>
                     <option value="restore_compensation">Pembatalan (Masuk)</option>
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-[#9B9A97]">
+                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-400">
                     <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="card-surface overflow-hidden w-full">
+    <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden w-full">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="border-b border-[#E9E9E7] bg-[#F7F7F5]">
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Waktu</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Bahan Baku</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Tipe</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Kuantitas</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Keterangan</th>
+                    <tr class="border-b border-gray-200 bg-gray-50">
+                        <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Waktu</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Bahan Baku</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tipe</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Kuantitas</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Keterangan</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-[#E9E9E7] bg-white">
+                <tbody class="divide-y divide-gray-200 bg-white">
                     @forelse ($movements as $movement)
-                        <tr class="hover:bg-[#F7F7F5]/50 transition-colors duration-150">
+                        <tr class="hover:bg-gray-50/50 transition-colors duration-150">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-[#37352F]">{{ $movement->created_at->format('d M Y') }}</div>
-                                <div class="text-xs text-[#9B9A97]">{{ $movement->created_at->format('H:i') }}</div>
+                                <div class="text-sm text-gray-900">{{ $movement->created_at->format('d M Y') }}</div>
+                                <div class="text-xs text-gray-400">{{ $movement->created_at->format('H:i') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-semibold text-[#37352F]">{{ $movement->ingredient->name ?? '-' }}</span>
+                                <span class="text-sm font-semibold text-gray-900">{{ $movement->ingredient->name ?? '-' }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php
@@ -85,7 +85,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4">
-                                <span class="text-sm text-[#787774] truncate max-w-xs block" title="{{ $movement->reason }}">
+                                <span class="text-sm text-gray-500 truncate max-w-xs block" title="{{ $movement->reason }}">
                                     {{ $movement->reason ?: '-' }}
                                 </span>
                             </td>
@@ -94,11 +94,11 @@
                         <tr>
                             <td colspan="5" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center justify-center">
-                                    <div class="w-16 h-16 mb-4 rounded-full bg-[#F7F7F5] flex items-center justify-center border border-[#E9E9E7]">
-                                        <span class="material-symbols-rounded text-3xl text-[#9B9A97]">history</span>
+                                    <div class="w-16 h-16 mb-4 rounded-full bg-gray-50 flex items-center justify-center border border-gray-200">
+                                        <span class="material-symbols-rounded text-3xl text-gray-400">history</span>
                                     </div>
-                                    <h3 class="text-base font-semibold text-[#37352F] mb-1">Belum Ada Riwayat</h3>
-                                    <p class="text-sm text-[#787774] max-w-sm mx-auto">Riwayat pergerakan stok akan muncul secara otomatis saat terjadi transaksi atau penyesuaian stok.</p>
+                                    <h3 class="text-base font-semibold text-gray-900 mb-1">Belum Ada Riwayat</h3>
+                                    <p class="text-sm text-gray-500 max-w-sm mx-auto">Riwayat pergerakan stok akan muncul secara otomatis saat terjadi transaksi atau penyesuaian stok.</p>
                                 </div>
                             </td>
                         </tr>
@@ -107,7 +107,7 @@
             </table>
         </div>
         @if($movements->hasPages())
-            <div class="px-6 py-4 border-t border-[#E9E9E7]">
+            <div class="px-6 py-4 border-t border-gray-200">
                 {{ $movements->links() }}
             </div>
         @endif
