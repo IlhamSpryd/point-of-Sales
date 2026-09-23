@@ -36,7 +36,7 @@
                     <select wire:model="productId" class="w-full border-gray-300 focus:ring-2 focus:ring-gray-900 focus:border-gray-900 rounded-md text-sm shadow-sm">
                         <option value="">-- Pilih Produk --</option>
                         @foreach($products as $product)
-                            <option value="{{ $product->id }}">{{ $product->name }}</option>
+                            <option value="{{ $product->id }}">{{ $product->product_name }}</option>
                         @endforeach
                     </select>
                     @error('productId') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
@@ -75,7 +75,7 @@
                                     {{ $mapping->external_product_id }}
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-500">
-                                    {{ $mapping->product->name ?? 'Produk Dihapus' }}
+                                    {{ $mapping->product->product_name ?? 'Produk Dihapus' }}
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <button wire:click="deleteMapping({{ $mapping->id }})" class="text-red-600 hover:text-red-800 text-sm font-medium transition-colors">
@@ -95,6 +95,9 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+            <div class="px-6 py-4 border-t border-gray-200">
+                {{ $mappings->links() }}
             </div>
         </div>
     </div>

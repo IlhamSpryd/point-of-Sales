@@ -23,7 +23,7 @@ class UserService
      */
     public function getFilteredQuery(Request $request): Builder
     {
-        $query = User::query()->with('role')->latest();
+        $query = User::query()->with('role')->latest('id');
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {

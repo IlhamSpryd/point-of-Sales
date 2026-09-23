@@ -22,7 +22,7 @@ class RoleService
      */
     public function getFilteredQuery(Request $request): Builder
     {
-        $query = Role::query()->withCount('users')->latest();
+        $query = Role::query()->withCount('users')->latest('id');
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where('name', 'like', "%{$search}%");

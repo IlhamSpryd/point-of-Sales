@@ -16,7 +16,7 @@ class Payment extends Model
     protected $guarded = ['id'];
 
     protected $casts = [
-        'amount' => 'decimal:4',
+        'amount' => 'integer',
         'payment_method' => PaymentMethodEnum::class,
         'status' => PaymentStatusEnum::class,
     ];

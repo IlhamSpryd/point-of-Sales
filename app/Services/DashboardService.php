@@ -55,7 +55,7 @@ class DashboardService
                 ? round((($kpi->this_month_orders - $kpi->last_month_orders) / $kpi->last_month_orders) * 100, 1)
                 : null;
 
-            $lowStockCount = Product::where('stock', '<=', 10)->count();
+            $lowStockCount = Product::where('is_active', true)->where('stock', '<=', 10)->count();
             $lowStockPercent = $productsCount > 0 ? min(100, round(($lowStockCount / $productsCount) * 100)) : 0;
 
             $soldThisMonth = OrderItem::whereHas('order', function ($query) {

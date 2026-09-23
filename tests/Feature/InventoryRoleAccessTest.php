@@ -2,8 +2,10 @@
 
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class, Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 it('mengizinkan role Inventory mengakses modul bahan baku', function () {
     $role = Role::firstOrCreate(['name' => 'Inventory']);

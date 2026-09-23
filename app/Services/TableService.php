@@ -16,7 +16,7 @@ class TableService
 {
     public function getFilteredQuery(Request $request): Builder
     {
-        $query = Table::query()->latest();
+        $query = Table::query()->latest('id');
         if ($request->has('search') && $request->search) {
             $query->where('table_name', 'like', '%'.$request->search.'%');
         }

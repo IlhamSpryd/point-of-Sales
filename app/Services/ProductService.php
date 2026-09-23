@@ -24,7 +24,7 @@ class ProductService
      */
     public function getFilteredQuery(Request $request): Builder
     {
-        $query = Product::query()->with('category')->latest();
+        $query = Product::query()->with('category')->latest('id');
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where('product_name', 'like', "%{$search}%");

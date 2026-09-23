@@ -7,13 +7,13 @@
                     &laquo; Sebelumnya
                 </span>
             @else
-                <a href="{{ $paginator->previousPageUrl() }}" class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-[#37352F] bg-white border border-[#E9E9E7] rounded-lg hover:bg-[#F7F7F5] transition-colors duration-200 active:scale-[0.98]">
+                <a href="{{ $paginator->previousPageUrl() }}" wire:navigate class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-[#37352F] bg-white border border-[#E9E9E7] rounded-lg hover:bg-[#F7F7F5] transition-colors duration-200 active:scale-[0.98]">
                     &laquo; Sebelumnya
                 </a>
             @endif
 
             @if ($paginator->hasMorePages())
-                <a href="{{ $paginator->nextPageUrl() }}" class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-[#37352F] bg-white border border-[#E9E9E7] rounded-lg hover:bg-[#F7F7F5] transition-colors duration-200 active:scale-[0.98]">
+                <a href="{{ $paginator->nextPageUrl() }}" wire:navigate class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-[#37352F] bg-white border border-[#E9E9E7] rounded-lg hover:bg-[#F7F7F5] transition-colors duration-200 active:scale-[0.98]">
                     Berikutnya &raquo;
                 </a>
             @else
@@ -45,7 +45,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                         </span>
                     @else
-                        <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="relative inline-flex items-center p-2 text-[#787774] bg-white rounded-lg hover:bg-[#F1F1EF] hover:text-[#37352F] transition-colors duration-200 active:scale-[0.98]">
+                        <a href="{{ $paginator->previousPageUrl() }}" wire:navigate rel="prev" class="relative inline-flex items-center p-2 text-[#787774] bg-white rounded-lg hover:bg-[#F1F1EF] hover:text-[#37352F] transition-colors duration-200 active:scale-[0.98]">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                         </a>
                     @endif
@@ -63,7 +63,7 @@
                                 @if ($page == $paginator->currentPage())
                                     <span aria-current="page" class="relative inline-flex items-center px-3 py-1.5 text-sm font-semibold text-white bg-[#37352F] rounded-lg shadow-sm">{{ $page }}</span>
                                 @else
-                                    <a href="{{ $url }}" class="relative inline-flex items-center px-3 py-1.5 text-sm font-medium text-[#787774] rounded-lg hover:bg-[#F1F1EF] hover:text-[#37352F] transition-colors duration-200 active:scale-[0.98]">{{ $page }}</a>
+                                    <a href="{{ $url }}" wire:navigate class="relative inline-flex items-center px-3 py-1.5 text-sm font-medium text-[#787774] rounded-lg hover:bg-[#F1F1EF] hover:text-[#37352F] transition-colors duration-200 active:scale-[0.98]">{{ $page }}</a>
                                 @endif
                             @endforeach
                         @endif
@@ -71,7 +71,7 @@
 
                     {{-- Next Page --}}
                     @if ($paginator->hasMorePages())
-                        <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="relative inline-flex items-center p-2 text-[#787774] bg-white rounded-lg hover:bg-[#F1F1EF] hover:text-[#37352F] transition-colors duration-200 active:scale-[0.98]">
+                        <a href="{{ $paginator->nextPageUrl() }}" wire:navigate rel="next" class="relative inline-flex items-center p-2 text-[#787774] bg-white rounded-lg hover:bg-[#F1F1EF] hover:text-[#37352F] transition-colors duration-200 active:scale-[0.98]">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </a>
                     @else

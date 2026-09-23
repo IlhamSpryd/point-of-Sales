@@ -7,9 +7,7 @@ namespace App\Http\Controllers;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Http\Requests\StoreTransactionRequest;
-use App\Models\Category;
 use App\Models\Order;
-use App\Models\Product;
 use App\Services\Printing\ReceiptPrinterService;
 use App\Services\TransactionService;
 use Illuminate\Contracts\Cache\LockTimeoutException;
@@ -25,45 +23,6 @@ use Midtrans\Transaction;
 class TransactionController extends Controller
 {
     public function __construct(protected TransactionService $transactionService) {}
-
-    /**
-     * Menampilkan antarmuka Pembuatan Pesanan (Point of Sales)
-     */
-    public function create(): View
-    {
-        $products = Product::where('is_active', true)->with('category')->get();
-        $categories = Category::all();
-
-        $taxRate = config('pos.tax_rate', 0.11);
-        $taxRatePercent = $taxRate * 100;
-        $roundingBehavior = config('pos.rounding_behavior', 'ROUND_NEAREST');
-        $roundingValue = config('pos.rounding_value', 100);
-        $activePaymentMethods = config('pos.active_payment_methods', [
-            'cash' => true,
-            'qris' => false,
-            'ewallet' => false,
-        ]);
-
-        // As per TransactionService implementation
-        $hardwareAutoDrawer = false;
-
-        $metrics = $this->transactionService->getTodayMetrics();
-        $todayOmzet = $metrics['omzet'];
-        $todayCount = $metrics['jumlah'];
-
-        return view('transaction.create', compact(
-            'products',
-            'categories',
-            'taxRate',
-            'taxRatePercent',
-            'roundingBehavior',
-            'roundingValue',
-            'activePaymentMethods',
-            'hardwareAutoDrawer',
-            'todayOmzet',
-            'todayCount'
-        ));
-    }
 
     /**
      * Memproses pesanan dari UI Kasir

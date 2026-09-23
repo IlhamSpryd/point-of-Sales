@@ -18,7 +18,7 @@ class CashDrawerMovement extends Model
     protected $casts = [
         'type' => CashDrawerMovementTypeEnum::class,
         'category' => CashDrawerMovementCategoryEnum::class,
-        'amount' => 'decimal:4',
+        'amount' => 'integer',
     ];
 
     public function shift(): BelongsTo

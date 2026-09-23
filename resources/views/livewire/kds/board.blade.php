@@ -1,4 +1,5 @@
-<div wire:poll.5s.visible="$refresh" class="space-y-6">
+@php $pollMs = random_int(4500, 5700); @endphp
+<div wire:poll.{{ $pollMs }}ms.visible="$refresh" class="space-y-6">
 
     <div>
         <h4 class="text-xl font-bold tracking-tight text-yovel-ink">Kitchen Display System</h4>

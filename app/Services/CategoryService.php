@@ -20,7 +20,7 @@ class CategoryService
 
     public function getFilteredQuery(Request $request): Builder
     {
-        $query = Category::query()->latest();
+        $query = Category::query()->latest('id');
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where('category_name', 'like', "%{$search}%");

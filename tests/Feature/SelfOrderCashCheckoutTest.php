@@ -6,8 +6,10 @@ use App\Models\Product;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\TransactionService;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
-uses(Tests\TestCase::class, Illuminate\Foundation\Testing\RefreshDatabase::class);
+uses(TestCase::class, RefreshDatabase::class);
 
 if (! function_exists('selfOrderMakeProduct')) {
     function selfOrderMakeProduct(int $stock = 10): Product
