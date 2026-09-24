@@ -10,6 +10,8 @@ enum PaymentStatusEnum: string
     case Captured = 'captured';
     case Failed = 'failed';
     case Refunded = 'refunded';
+    // PATCH FOR F-02/F-03: status void counter-entry di ledger immutable.
+    case Voided = 'voided';
 
     /** Label ramah UI untuk status per-leg pembayaran di ledger `payments`. */
     public function label(): string
@@ -19,6 +21,7 @@ enum PaymentStatusEnum: string
             self::Captured => 'Berhasil',
             self::Failed => 'Gagal',
             self::Refunded => 'Dikembalikan',
+            self::Voided => 'Dibatalkan (Void)',
         };
     }
 }

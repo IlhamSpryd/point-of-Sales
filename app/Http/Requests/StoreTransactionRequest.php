@@ -30,6 +30,17 @@ class StoreTransactionRequest extends FormRequest
                 }),
             ],
             'items.*.quantity' => 'required|integer|min:1',
+            // PATCH FOR F-04: extra_price & options sebelumnya tidak divalidasi
+            // sama sekali, sehingga hilang dari validated() dan modifier senyap
+            // tidak terhitung. Lapisan pertama — TransactionService tetap harus
+            // menghitung ulang harga dari DB.
+            'items.*.extra_price' => 'nullable|numeric|min:0',
+            'items.*.options' => 'nullable|array',
+            'items.*.options.*.modifier_id' => [
+                'required_with:items.*.options',
+                Rule::exists('modifiers', 'id')->where(fn ($q) => $q->where('is_active', true)),
+            ],
+            'items.*.options.*.extra_price' => 'nullable|numeric|min:0',
             // Hanya izinkan metode pembayaran yang benar-benar didukung sistem,
             // agar tidak ada nilai sembarangan yang lolos ke TransactionService.
             'payment_method' => ['required', 'string', Rule::in(['cash', 'qris', 'ewallet'])],

@@ -1035,15 +1035,25 @@ class TransactionService
     }
 
     // [OMEGA-NODE9] PATCH FOR M-04: Official Void Workflow.
+    // PATCH FOR F-01 (TOCTOU): re-check status SETELAH lock didapat.
+    // PATCH FOR F-02: reverse payments + loyalty ledger saat void.
     public function voidOrder(Order $order, string $reason, int $userId): void
     {
+        // Pre-check sebagai fail-fast UX saja (BUKAN penjaga tunggal).
         if ($order->order_status !== OrderStatus::Paid) {
             throw new \Exception('Hanya pesanan yang sudah lunas (Paid) yang dapat di-void.');
         }
 
         DB::transaction(function () use ($order, $reason, $userId) {
-            // 1. Lock and Update Order Status
+            // 1. Lock dan RE-VALIDASI di dalam transaksi (F-01 fix).
             $lockedOrder = Order::where('id', $order->id)->lockForUpdate()->first();
+
+            if (! $lockedOrder || $lockedOrder->order_status !== OrderStatus::Paid) {
+                throw new \Exception(
+                    'Pesanan ini sudah tidak berstatus Lunas (mungkin baru saja di-void oleh proses lain).'
+                );
+            }
+
             $lockedOrder->update([
                 'order_status' => OrderStatus::Void,
                 'voided_by' => $userId,
@@ -1051,10 +1061,35 @@ class TransactionService
                 'voided_at' => now(),
             ]);
 
-            // 2. Restore all BOM & Modifiers Stocks
+            // 2. Restore all BOM & Product Stocks
             $this->restoreStockForOrder($lockedOrder);
 
-            // 3. Record to Activity Log (Otoritas Void)
+            // 3. PATCH FOR F-02: Reverse payment records.
+            // Payments table immutable (update/delete throws), jadi kita
+            // buat baris BARU berstatus Voided sebagai counter-entry.
+            $existingPayments = Payment::where('order_id', $lockedOrder->id)
+                ->where('status', PaymentStatusEnum::Captured)
+                ->get();
+
+            foreach ($existingPayments as $i => $payment) {
+                Payment::forceCreate([
+                    'order_id' => $lockedOrder->id,
+                    'payment_method' => $payment->payment_method,
+                    'amount' => $payment->amount,
+                    'reference_number' => 'VOID-' . ($payment->reference_number ?? $payment->idempotency_key),
+                    'status' => PaymentStatusEnum::Voided,
+                    'captured_at' => null,
+                    'processed_by' => $userId,
+                    'idempotency_key' => 'void:' . $lockedOrder->order_code . ':' . $i,
+                ]);
+            }
+
+            // 4. PATCH FOR F-02: Reverse loyalty points if any were granted.
+            if ($lockedOrder->customer_id) {
+                $this->reverseLoyaltyPointsForOrder($lockedOrder, $userId);
+            }
+
+            // 5. Record to Activity Log
             ActivityLog::create([
                 'user_id' => $userId,
                 'action' => 'VOID_ORDER',
@@ -1063,10 +1098,50 @@ class TransactionService
                 'user_agent' => request()->userAgent(),
                 'metadata' => [
                     'order_id' => $lockedOrder->id,
-                    'total_amount' => $lockedOrder->total_amount,
+                    'total_amount' => $lockedOrder->order_amount,
                 ],
             ]);
         });
+    }
+
+    /**
+     * PATCH FOR F-02: Balik poin loyalty yang pernah diberikan untuk order ini.
+     * LoyaltyLedgerTypeEnum::Reversal sudah dideklarasikan sejak awal tapi
+     * tidak pernah dipakai — sekarang dipakai.
+     */
+    private function reverseLoyaltyPointsForOrder(Order $order, int $userId): void
+    {
+        $earnedEntry = LoyaltyLedger::where('order_id', $order->id)
+            ->where('type', LoyaltyLedgerTypeEnum::Earn)
+            ->first();
+
+        if (! $earnedEntry || $earnedEntry->points <= 0) {
+            return;
+        }
+
+        // Cek apakah sudah pernah di-reverse (idempotency).
+        $reversalKey = 'reversal:' . $order->order_code;
+        $alreadyReversed = LoyaltyLedger::where('order_id', $order->id)
+            ->where('type', LoyaltyLedgerTypeEnum::Reversal)
+            ->exists();
+
+        if ($alreadyReversed) {
+            return;
+        }
+
+        $account = CustomerLoyaltyAccount::lockAndGetAccount((int) $order->customer_id);
+        $currentPoints = $account?->current_points ?? 0;
+        $newBalance = max(0, $currentPoints - $earnedEntry->points);
+
+        LoyaltyLedger::create([
+            'customer_id' => $order->customer_id,
+            'order_id' => $order->id,
+            'type' => LoyaltyLedgerTypeEnum::Reversal,
+            'points' => -$earnedEntry->points,
+            'balance_after' => $newBalance,
+            'reference' => "Pembalikan poin: order {$order->order_code} di-void.",
+            'created_by' => $userId,
+        ]);
     }
 
     // [OMEGA-NODE1] PATCH FOR M-03: sebelumnya fungsi ini HANYA mengembalikan

@@ -92,14 +92,21 @@ class TransactionController extends Controller
             return response()->json(['success' => false, 'message' => 'Gagal memproses transaksi (DB Error)'], 500);
         } catch (\Throwable $e) {
             Log::error('Transaction Error: '.$e->getMessage().' '.$e->getTraceAsString());
+            
+            // PATCH FOR F-05: Sanitize exception messages
+            $safeMessage = $e->getMessage();
+            if (!config('app.debug') && ($e instanceof \PDOException || $e instanceof \Error)) {
+                $safeMessage = 'Gagal memproses transaksi (Internal Error).';
+            }
+
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => $e->getMessage(),
+                    'message' => $safeMessage,
                 ], 400);
             }
 
-            return back()->with('error', $e->getMessage());
+            return back()->with('error', $safeMessage);
         }
     }
 
