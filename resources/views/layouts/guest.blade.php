@@ -9,9 +9,7 @@
     <title>@yield('title', config('app.name'))</title>
     <link rel="icon" href="{{ asset('spark-admin-1.0.0/assets/images/favicon.ico') }}">
     
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -19,9 +17,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    <style>
-        body { font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; }
-    </style>
+
 </head>
 
 <body class="font-sans antialiased text-[#37352F] bg-[#F7F7F5]">

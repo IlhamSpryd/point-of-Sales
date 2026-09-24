@@ -1076,11 +1076,11 @@ class TransactionService
                     'order_id' => $lockedOrder->id,
                     'payment_method' => $payment->payment_method,
                     'amount' => $payment->amount,
-                    'reference_number' => 'VOID-' . ($payment->reference_number ?? $payment->idempotency_key),
+                    'reference_number' => 'VOID-'.($payment->reference_number ?? $payment->idempotency_key),
                     'status' => PaymentStatusEnum::Voided,
                     'captured_at' => null,
                     'processed_by' => $userId,
-                    'idempotency_key' => 'void:' . $lockedOrder->order_code . ':' . $i,
+                    'idempotency_key' => 'void:'.$lockedOrder->order_code.':'.$i,
                 ]);
             }
 
@@ -1120,7 +1120,7 @@ class TransactionService
         }
 
         // Cek apakah sudah pernah di-reverse (idempotency).
-        $reversalKey = 'reversal:' . $order->order_code;
+        $reversalKey = 'reversal:'.$order->order_code;
         $alreadyReversed = LoyaltyLedger::where('order_id', $order->id)
             ->where('type', LoyaltyLedgerTypeEnum::Reversal)
             ->exists();

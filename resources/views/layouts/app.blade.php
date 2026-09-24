@@ -15,12 +15,7 @@
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
         rel="stylesheet" />
 
-    <!-- Plus Jakarta Sans + Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&family=Inter:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
+
 
     <!-- ApexCharts -->
     <link href="https://cdn.jsdelivr.net/npm/apexcharts@3.42.0/dist/apexcharts.css" rel="stylesheet">
@@ -50,7 +45,7 @@
     </style>
 </head>
 
-<body class="antialiased bg-[#F7F7F5] text-[#37352F] flex h-dvh overflow-hidden pos-layout-locked" style="font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;">
+<body class="font-sans antialiased bg-[#F7F7F5] text-[#37352F] flex h-dvh overflow-hidden pos-layout-locked">
 
     <div x-data="{ sidebarMobileOpen: false, expanded: localStorage.getItem('sidebarExpanded') !== 'false' }" x-init="$watch('expanded', val => localStorage.setItem('sidebarExpanded', val))" class="flex w-full h-full">
         <!-- Sidebar Navigation -->

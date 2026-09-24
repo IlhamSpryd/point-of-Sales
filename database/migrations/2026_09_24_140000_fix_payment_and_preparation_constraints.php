@@ -22,8 +22,8 @@ return new class extends Migration
 
         // --- payments.amount: relax >0 ke >=0 untuk void counter-entry ---
         $this->dropCheck('payments', 'chk_payments_amount_positive');
-        DB::statement("ALTER TABLE payments ADD CONSTRAINT chk_payments_amount_positive
-            CHECK (amount >= 0)");
+        DB::statement('ALTER TABLE payments ADD CONSTRAINT chk_payments_amount_positive
+            CHECK (amount >= 0)');
 
         // --- payments.status: tambah 'voided' ---
         $this->dropCheck('payments', 'chk_payments_status');
@@ -45,10 +45,10 @@ return new class extends Migration
     {
         try {
             DB::statement("ALTER TABLE {$table} DROP CONSTRAINT {$name}");
-        } catch (\Throwable) {
+        } catch (Throwable) {
             try {
                 DB::statement("ALTER TABLE {$table} DROP CHECK {$name}");
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 // Constraint mungkin belum ada.
             }
         }
