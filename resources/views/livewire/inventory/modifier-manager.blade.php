@@ -54,7 +54,7 @@
                             @if($modifier->ingredients->isNotEmpty())
                                 <span class="text-xs text-[#9C9A94]">BOM: {{ $modifier->ingredients->count() }} Bahan</span>
                             @endif
-                            <button wire:click="editModifier({{ $modifier->id }})" class="text-[#37352F] hover:underline text-sm font-medium">Edit</button>
+                            <button wire:click="editModifier({{ $modifier->id }})" class="text-[#37352F] hover:underline text-sm font-medium">Ubah</button>
                             <button wire:click="deleteModifier({{ $modifier->id }})" class="text-red-600 hover:underline text-sm font-medium" onclick="confirm('Hapus modifier ini?') || event.stopImmediatePropagation()">Hapus</button>
                         </div>
                     </div>

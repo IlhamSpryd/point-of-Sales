@@ -97,7 +97,7 @@
                         <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Item</th>
                         <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Pelanggan</th>
                         <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Pembayaran</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Total</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Total Tagihan</th>
                         <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Status</th>
                         <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
                     </tr>
@@ -299,7 +299,7 @@
                             <div class="flex justify-between text-rose-600"><span>Diskon</span><span class="tabular-nums">- Rp {{ number_format($detail->discount_amount, 0, ',', '.') }}</span></div>
                         @endif
                         <div class="flex justify-between text-[#787774]"><span>Pajak</span><span class="tabular-nums">Rp {{ number_format($detail->tax_amount, 0, ',', '.') }}</span></div>
-                        <div class="flex justify-between font-bold text-[#37352F] text-base pt-2 mt-1 border-t border-[#E9E9E7]"><span>Total</span><span class="tabular-nums">Rp {{ number_format($detail->order_amount, 0, ',', '.') }}</span></div>
+                        <div class="flex justify-between font-bold text-[#37352F] text-base pt-2 mt-1 border-t border-[#E9E9E7]"><span>Total Tagihan</span><span class="tabular-nums">Rp {{ number_format($detail->order_amount, 0, ',', '.') }}</span></div>
                     </div>
                 </div>
 

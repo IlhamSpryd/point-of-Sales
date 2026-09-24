@@ -58,7 +58,7 @@
                 <dl class="mt-2 pt-3 border-t border-yovel-border text-[14px] space-y-1.5">
                     <div class="flex justify-between text-yovel-muted"><dt>Subtotal</dt><dd class="tabular-nums">Rp {{ number_format($subtotal, 0, ',', '.') }}</dd></div>
                     <div class="flex justify-between text-yovel-muted"><dt>Pajak ({{ rtrim(rtrim(number_format($taxRate * 100, 1), '0'), '.') }}%)</dt><dd class="tabular-nums">Rp {{ number_format($tax, 0, ',', '.') }}</dd></div>
-                    <div class="flex justify-between text-[17px] font-extrabold pt-1"><dt>Total</dt><dd class="tabular-nums">Rp {{ number_format($total, 0, ',', '.') }}</dd></div>
+                    <div class="flex justify-between text-[17px] font-extrabold pt-1"><dt>Total Tagihan</dt><dd class="tabular-nums">Rp {{ number_format($total, 0, ',', '.') }}</dd></div>
                 </dl>
             </section>
 

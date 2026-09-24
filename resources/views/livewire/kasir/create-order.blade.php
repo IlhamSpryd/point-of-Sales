@@ -323,7 +323,7 @@
                                 @if(count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId)) disabled @endif>
                             <span class="flex items-center gap-2">
                                 <span class="material-symbols-rounded text-[22px]">payments</span>
-                                Checkout
+                                Bayar Sekarang
                             </span>
                             <span class="tabular-nums">Rp {{ number_format($this->totalAmount, 0, ',', '.') }}</span>
                         </button>

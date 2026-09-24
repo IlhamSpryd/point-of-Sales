@@ -2,7 +2,7 @@
     <!-- PAGE HEADER -->
     <div class="flex items-center justify-between mb-8">
         <div>
-            <h1 class="text-2xl font-bold text-[#37352F] tracking-tight">Dashboard</h1>
+            <h1 class="text-2xl font-bold text-[#37352F] tracking-tight">Dasbor</h1>
             <p class="text-sm font-medium text-[#787774] mt-1">Cara mudah mengelola penjualan dengan teliti dan presisi.</p>
         </div>
         <div class="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-white border border-[#E9E9E7] text-[#787774] text-sm font-medium rounded-xl shadow-sm">

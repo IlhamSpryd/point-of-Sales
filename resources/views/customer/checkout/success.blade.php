@@ -58,7 +58,7 @@
                     <dd class="font-semibold">{{ $order->table?->table_name ?? '-' }}</dd>
                 </div>
                 <div class="flex justify-between gap-4 border-t border-yovel-border pt-3">
-                    <dt class="font-semibold">Total</dt>
+                    <dt class="font-semibold">Total Tagihan</dt>
                     <dd class="text-[17px] font-extrabold tabular-nums">Rp {{ number_format($order->order_amount, 0, ',', '.') }}</dd>
                 </div>
             </dl>
