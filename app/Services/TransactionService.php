@@ -110,14 +110,16 @@ class TransactionService
             $mergedItems = collect($items)
                 ->groupBy(function ($item) {
                     $optionsSignature = ! empty($item['options']) ? json_encode($item['options']) : '';
+                    $notesSignature = ! empty($item['notes']) ? $item['notes'] : '';
 
-                    return $item['product_id'].'|'.$optionsSignature;
+                    return $item['product_id'].'|'.$optionsSignature.'|'.$notesSignature;
                 })
                 ->map(fn ($group) => [
                     'product_id' => $group->first()['product_id'],
                     'quantity' => $group->sum('quantity'),
                     'extra_price' => $group->first()['extra_price'] ?? 0,
                     'options' => $group->first()['options'] ?? null,
+                    'notes' => $group->first()['notes'] ?? null,
                 ])
                 ->values()
                 ->all();
@@ -190,6 +192,7 @@ class TransactionService
                     'order_subtotal' => $itemSubtotal,
                     'product_id' => $product->id,
                     'options' => $item['options'],
+                    'notes' => $item['notes'] ?? null,
                 ];
                 $bomBreakdownByLineIndex[$lineIndex] = [];
 
@@ -908,7 +911,9 @@ class TransactionService
             $order = Order::lockForUpdate()->findOrFail($order->id);
 
             if ($order->order_status->isFinal()) {
-                return $order;
+                throw ValidationException::withMessages([
+                    'payments' => 'Pesanan ini sudah '.$order->order_status->value.' dan tidak dapat dibayar lagi.',
+                ]);
             }
 
             if ($order->order_status !== OrderStatus::Pending) {

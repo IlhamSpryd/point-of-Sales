@@ -82,58 +82,8 @@ class CheckoutController extends Controller
             return redirect()->route('customer.cart.index')->with('error', 'Keranjang Anda masih kosong.');
         }
 
-        // PATCH FOR S-05: cap order Pending per sesi dan per meja.
-        $mine = session('customer_orders', []);
-        $openPending = $mine === [] ? 0 : Order::whereIn('order_code', $mine)->where('order_status', OrderStatus::Pending)->count();
-        $tablePending = Order::where('table_id', $tableId)->where('order_status', OrderStatus::Pending)
-            ->where('created_at', '>=', now()->subMinutes(30))->count();
-        if ($openPending >= 2 || $tablePending >= 5) {
-            return back()->with('error', 'Masih ada pesanan yang belum dibayar. Selesaikan atau tunggu kedaluwarsa sebelum memesan lagi.');
-        }
-
-        $transactionItems = array_map(function (array $item) {
-            // SECURITY: Hitung ulang extra_price dari database, jangan percaya
-            // nilai yang sudah dihitung di session (bisa dimanipulasi via devtools).
-            $modifierIds = collect($item['options'] ?? [])->pluck('modifier_id')->all();
-            // PATCH FOR S-15: hanya modifier aktif.
-            $serverExtraPrice = Modifier::whereIn('id', $modifierIds)->where('is_active', true)->sum('extra_price');
-
-            $product = Product::find($item['product_id']);
-
-            return [
-                'product_id' => $item['product_id'],
-                'quantity' => $item['qty'],
-                'extra_price' => (float) $serverExtraPrice,
-                'unit_price' => ($product ? $product->product_price : 0) + $serverExtraPrice,
-                'options' => $item['options'],
-                'notes' => $item['notes'] ?? null,
-            ];
-        }, $items);
-
-        // PATCH FOR S-07: guard system user dengan pesan aman.
-        $systemUserId = User::where('email', config('pos.self_order_system_email'))->value('id');
-        if (! $systemUserId) {
-            Log::critical('[SELF-ORDER] akun sistem self-order belum di-seed.');
-
-            return back()->with('error', 'Layanan pemesanan mandiri sedang tidak tersedia. Silakan panggil staf.');
-        }
-
-        if (empty($transactionItems)) {
-            return back()->with('error', 'Keranjang belanja Anda kosong.');
-        }
-
-        // [OMEGA-NODE9] PATCH FOR M-05: Stale Price Protection.
-        $liveSubtotal = 0;
-        foreach ($transactionItems as $item) {
-            $liveSubtotal += ($item['unit_price'] * $item['quantity']);
-        }
-
-        $sessionSubtotal = $this->cartService->getSubtotal();
-
-        if (abs($liveSubtotal - $sessionSubtotal) > 1) {
-            $this->cartService->refreshCartPrices();
-
-            return back()->with('error', 'Harga beberapa item telah berubah. Silakan periksa kembali keranjang Anda dan coba lagi.');
+        if ($this->cartService->getTotalQty() > 40) {
+            return redirect()->route('customer.cart.index')->with('error', 'Maksimal 40 item per pesanan. Silakan panggil staf untuk pesanan besar.');
         }
 
         // PATCH FOR S-13: gunakan Cache::lock untuk idempotensi yang sesungguhnya.
@@ -143,17 +93,83 @@ class CheckoutController extends Controller
                 ->with('error', 'Pembayaran sedang diproses, mohon tunggu sebentar.');
         }
 
-        $customerId = null;
-        if ($phone = $request->validated('customer_phone')) {
-            $customer = Customer::where('phone', $phone)->where('is_active', true)->first();
-            if ($customer) {
-                $customerId = $customer->id;
-            } else {
-                return back()->with('error', 'Nomor HP tidak terdaftar sebagai member.');
-            }
+        // PATCH FOR SO-04: Implementasi atomic quota
+        $tableQuotaLock = Cache::lock('table_quota_'.$tableId, 15);
+        if (! $tableQuotaLock->get()) {
+            $lock->release();
+
+            return back()->with('error', 'Pesanan Anda sedang diproses. Mohon tunggu.');
         }
 
         try {
+            // PATCH FOR S-05: cap order Pending per sesi dan per meja.
+            $mine = session('customer_orders', []);
+            $openPending = $mine === [] ? 0 : Order::whereIn('order_code', $mine)->where('order_status', OrderStatus::Pending)->count();
+            $tablePending = Order::where('table_id', $tableId)->where('order_status', OrderStatus::Pending)
+                ->where('created_at', '>=', now()->subMinutes(30))->count();
+            if ($openPending >= 2 || $tablePending >= 5) {
+                return back()->with('error', 'Masih ada pesanan yang belum dibayar. Selesaikan atau tunggu kedaluwarsa sebelum memesan lagi.');
+            }
+
+            $transactionItems = array_map(function (array $item) {
+                // SECURITY: Hitung ulang extra_price dari database, jangan percaya
+                // nilai yang sudah dihitung di session (bisa dimanipulasi via devtools).
+                $modifierIds = collect($item['options'] ?? [])->pluck('modifier_id')->all();
+                // PATCH FOR S-15: hanya modifier aktif.
+                $serverExtraPrice = Modifier::whereIn('id', $modifierIds)->where('is_active', true)->sum('extra_price');
+
+                $product = Product::find($item['product_id']);
+
+                return [
+                    'product_id' => $item['product_id'],
+                    'quantity' => $item['qty'],
+                    'extra_price' => (float) $serverExtraPrice,
+                    'unit_price' => ($product ? $product->product_price : 0) + $serverExtraPrice,
+                    'options' => $item['options'],
+                    'notes' => $item['notes'] ?? null,
+                ];
+            }, $items);
+
+            // PATCH FOR S-07: guard system user dengan pesan aman.
+            $systemUserId = User::where('email', config('pos.self_order_system_email'))->value('id');
+            if (! $systemUserId) {
+                Log::critical('[SELF-ORDER] akun sistem self-order belum di-seed.');
+
+                return back()->with('error', 'Layanan pemesanan mandiri sedang tidak tersedia. Silakan panggil staf.');
+            }
+
+            if (empty($transactionItems)) {
+                return back()->with('error', 'Keranjang belanja Anda kosong.');
+            }
+
+            // [OMEGA-NODE9] PATCH FOR M-05: Stale Price Protection.
+            $liveSubtotal = 0;
+            foreach ($transactionItems as $item) {
+                $liveSubtotal += ($item['unit_price'] * $item['quantity']);
+            }
+
+            $sessionSubtotal = $this->cartService->getSubtotal();
+
+            if ($request->validated('payment_method') === 'cash' && $liveSubtotal > 500000) {
+                return back()->with('error', 'Pesanan tunai maksimal Rp 500.000. Untuk pesanan lebih besar, gunakan pembayaran digital atau pesan di Kasir.');
+            }
+
+            if (abs($liveSubtotal - $sessionSubtotal) > 1) {
+                $this->cartService->refreshCartPrices();
+
+                return back()->with('error', 'Harga beberapa item telah berubah. Silakan periksa kembali keranjang Anda dan coba lagi.');
+            }
+
+            $customerId = null;
+            if ($phone = $request->validated('customer_phone')) {
+                $customer = Customer::where('phone', $phone)->where('is_active', true)->first();
+                if ($customer) {
+                    $customerId = $customer->id;
+                } else {
+                    return back()->with('error', 'Nomor HP tidak terdaftar sebagai member.');
+                }
+            }
+
             $order = $this->transactionService->createTransaction([
                 'items' => $transactionItems,
                 'payment_method' => $request->validated('payment_method'),
@@ -182,6 +198,7 @@ class CheckoutController extends Controller
             return back()->with('error', 'Pesanan gagal diproses. Silakan coba lagi atau panggil staf.');
         } finally {
             $lock->release();
+            $tableQuotaLock->release();
         }
 
         // PATCH FOR P-09: track order per sesi untuk otorisasi dan riwayat.

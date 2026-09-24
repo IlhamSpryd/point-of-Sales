@@ -17,3 +17,6 @@ Schedule::command('analytics:recompute-restock-forecasts')->dailyAt('03:30');
 
 // [SPRINT-0] Kedaluwarsakan self-order cash yang belum dibayar di kasir
 Schedule::command('orders:expire-stale-cash')->everyFiveMinutes();
+
+// PATCH FOR SO-01: Rekonsiliasi Midtrans order
+Schedule::command('orders:reconcile-midtrans')->everyTenMinutes();

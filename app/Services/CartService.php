@@ -112,6 +112,12 @@ class CartService
             $cart[$lineId]['qty'] = min(self::MAX_LINE_QTY, $qty);
         }
 
+        if (array_sum(array_column($cart, 'qty')) > self::MAX_CART_QTY) {
+            throw ValidationException::withMessages([
+                'items' => 'Maksimal '.self::MAX_CART_QTY.' item per pesanan. Silakan panggil staf untuk pesanan besar.',
+            ]);
+        }
+
         $this->saveCartArray($cart);
     }
 

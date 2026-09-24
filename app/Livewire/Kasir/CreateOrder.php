@@ -81,6 +81,7 @@ class CreateOrder extends Component
         $order = Order::with('orderItems.product')
             ->where('order_code', $orderCode)
             ->where('order_status', 'pending')
+            ->where('payment_method', 'cash')
             ->first();
 
         if (! $order) {
@@ -440,6 +441,7 @@ class CreateOrder extends Component
                         'quantity' => $line['qty'],
                         'extra_price' => $line['order_price'] - $product->product_price,
                         'options' => $line['options'],
+                        'notes' => $line['notes'] ?? null,
                     ];
                 }
 

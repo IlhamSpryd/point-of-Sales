@@ -44,4 +44,14 @@ class Role extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    public function hasPermission(string $permission): bool
+    {
+        return is_array($this->permissions) && in_array($permission, $this->permissions, true);
+    }
+
+    public function getIsAdminAttribute(): bool
+    {
+        return strtolower($this->name) === 'admin' || strtolower($this->name) === 'superadmin';
+    }
 }

@@ -30,6 +30,8 @@ class MidtransNotificationController extends Controller
     {
         $payload = $request->all();
 
+        Log::info('Midtrans webhook received:', $payload);
+
         $orderId = $payload['order_id'] ?? null;
         $statusCode = $payload['status_code'] ?? null;
         $grossAmount = $payload['gross_amount'] ?? null;
