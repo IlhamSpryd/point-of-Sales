@@ -15,6 +15,8 @@ use App\Models\CustomerLoyaltyAccount;
 use App\Models\Ingredient;
 use App\Models\IngredientStockMovement;
 use App\Models\LoyaltyLedger;
+use App\Models\Modifier;
+use App\Models\ModifierGroup;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
@@ -231,6 +233,33 @@ function chaosBomProduct(Ingredient $ingredient, float $qtyRequiredPerUnit, int 
     return $product;
 }
 
+/**
+ * Produk TANPA BOM langsung, tapi memiliki 1 Modifier wajib-pilih yang ber-BOM.
+ */
+function chaosModifierBomProduct(Ingredient $ingredient, float $qtyRequiredPerUnit, int $price = 20_000): array
+{
+    $product = chaosProduct(stock: 9999, price: $price);
+
+    $group = ModifierGroup::create([
+        'name' => 'Chaos Group '.Str::random(6),
+        'selection_type' => 'single',
+        'is_required' => true,
+    ]);
+
+    $product->modifierGroups()->attach($group->id);
+
+    $modifier = Modifier::create([
+        'modifier_group_id' => $group->id,
+        'name' => 'Chaos Modifier '.Str::random(6),
+        'extra_price' => 0,
+        'is_active' => true,
+    ]);
+
+    $modifier->ingredients()->attach($ingredient->id, ['quantity_required' => $qtyRequiredPerUnit]);
+
+    return [$product, $modifier];
+}
+
 function chaosCustomer(): Customer
 {
     return Customer::create([
@@ -276,6 +305,18 @@ function chaosBomPayload(int $productId, array $legs, ?int $customerId = null): 
     return [
         'items' => [
             ['product_id' => $productId, 'quantity' => 1, 'extra_price' => 0, 'options' => null],
+        ],
+        'payments' => $legs,
+        'customer_id' => $customerId,
+        'table_id' => null,
+    ];
+}
+
+function chaosModifierBomPayload(int $productId, int $modifierId, array $legs, ?int $customerId = null): array
+{
+    return [
+        'items' => [
+            ['product_id' => $productId, 'quantity' => 1, 'extra_price' => 0, 'options' => [['modifier_id' => $modifierId, 'modifier_name' => 'X', 'price' => 0]]],
         ],
         'payments' => $legs,
         'customer_id' => $customerId,
@@ -478,4 +519,65 @@ it('ingredient_stock_movements bersifat append-only: UPDATE dan DELETE ditolak o
         ->toThrow(QueryException::class);
 
     expect(IngredientStockMovement::find($movement->id))->not->toBeNull();
+});
+
+it('BOM overselling mustahil (Modifier Edition): restoreStockForOrder() PATCH FOR M-03 exactly-once', function () {
+    $ingredientStock = 100.0;
+    $qtyRequiredPerUnit = 100.0;
+    $requests = 5; // 5 notification paralel memperebutkan `expire` (M-03 race condition)
+
+    $ingredient = chaosIngredient($ingredientStock);
+    [$product, $modifier] = chaosModifierBomProduct($ingredient, $qtyRequiredPerUnit);
+    $user = User::factory()->create();
+
+    $total = chaosCalculateTotal($product->product_price);
+
+    // Create an un-paid order (qris)
+    $payload = chaosModifierBomPayload($product->id, $modifier->id, [], $user->id);
+    $payload['payment_method'] = 'qris';
+    $payload['is_self_order_cash'] = false;
+    $payload['cash_received'] = null;
+
+    $order = app(TransactionService::class)->createTransaction($payload, $user->id);
+
+    // Verify stock is consumed
+    expect(bccomp((string) $ingredient->fresh()->current_stock, '0.0000', 4))->toBe(0);
+
+    // Simulate concurrent expire notifications
+    $database = chaosDatabaseName();
+    $startAt = chaosBarrier($requests);
+    $workers = [];
+
+    for ($i = 0; $i < $requests; $i++) {
+        $workers[] = static function () use ($database, $order, $startAt): array {
+            $default = config('database.default');
+            config(["database.connections.{$default}.database" => $database]);
+            DB::purge($default);
+
+            while (microtime(true) < $startAt) {
+                usleep(500);
+            }
+
+            try {
+                // Fake midtrans notification payload
+                app(TransactionService::class)->updateStatusFromMidtransNotification(
+                    $order->order_code,
+                    'expire',
+                    null
+                );
+
+                return ['ok' => true];
+            } catch (Throwable $e) {
+                return ['ok' => false, 'exception' => $e::class, 'message' => $e->getMessage()];
+            }
+        };
+    }
+
+    $results = collect(array_values(Concurrency::driver('process')->run($workers)));
+
+    // Assert ingredient stock is exactly restored ONCE
+    expect(bccomp((string) $ingredient->fresh()->current_stock, '100.0000', 4))->toBe(0);
+
+    // There should be exactly 1 deduction and 1 restoration
+    expect(IngredientStockMovement::where('order_id', $order->id)->count())->toBe(2);
 });

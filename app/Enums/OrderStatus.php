@@ -12,12 +12,13 @@ enum OrderStatus: string
     case Expired = 'expired';
     case Failed = 'failed';
     case Completed = 'completed';
+    case Void = 'void';
 
     /** Apakah status ini dianggap "final" (tidak bisa berubah lagi). */
     public function isFinal(): bool
     {
         return match ($this) {
-            self::Paid, self::Cancelled, self::Expired, self::Failed, self::Completed => true,
+            self::Paid, self::Cancelled, self::Expired, self::Failed, self::Completed, self::Void => true,
             default => false,
         };
     }
@@ -32,6 +33,7 @@ enum OrderStatus: string
             self::Expired => 'Kedaluwarsa',
             self::Failed => 'Gagal',
             self::Completed => 'Selesai',
+            self::Void => 'Di-void',
         };
     }
 }

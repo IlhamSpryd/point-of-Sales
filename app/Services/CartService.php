@@ -23,8 +23,18 @@ class CartService
      *
      * @param  array<int>  $modifierIds  ID modifier yang dipilih pelanggan (bisa lebih dari satu grup)
      */
+    // [OMEGA-NODE1] PATCH FOR M-01: sebelumnya CartService::addItem() TIDAK
+    // memvalidasi bahwa modifier_id benar-benar milik grup varian yang
+    // ditautkan ke product ini, dan TIDAK menegakkan is_required/selection_type
+    // -- padahal aturan ini SUDAH BENAR di TransactionService::resolveOrderItemLine(),
+    // hanya jalur self-order yang tidak pernah memanggilnya. Memanggil ulang
+    // method yang sama di sini menutup drift dua-aturan secara permanen. | 2026-09-24
     public function addItem(Product $product, array $modifierIds, int $qty, ?string $notes = null): array
     {
+        // Validasi keanggotaan grup + is_required + selection_type single/multiple.
+        // Melempar ValidationException jika payload tidak sah -- persis aturan Kasir.
+        app(TransactionService::class)->resolveOrderItemLine($product, $modifierIds, $qty, null);
+
         // Ambil detail modifier yang dipilih dari database, sekaligus validasi
         // bahwa modifier tersebut memang ada (mencegah ID palsu dari request manual).
         $modifiers = Modifier::whereIn('id', $modifierIds)->with('modifierGroup')->get();
@@ -41,8 +51,19 @@ class CartService
         $cart = $this->getCartArray();
 
         if (isset($cart[$lineId])) {
-            // Kombinasi identik sudah ada → tambah qty saja, bukan baris baru.
+            // [OMEGA-NODE1] PATCH FOR M-06: sebelumnya notes dari
+            // penambahan kedua dibuang senyap. Sekarang digabung (bukan
+            // ditimpa) agar tidak ada instruksi khusus pelanggan yang
+            // hilang -- barista tetap melihat SEMUA catatan yang pernah
+            // ditulis untuk kombinasi item ini. | 2026-09-24
             $cart[$lineId]['qty'] += $qty;
+
+            if (! empty($notes)) {
+                $cart[$lineId]['notes'] = trim(implode(' | ', array_filter([
+                    $cart[$lineId]['notes'] ?? null,
+                    $notes,
+                ])));
+            }
         } else {
             // Kombinasi baru → buat baris keranjang baru.
             $cart[$lineId] = [
@@ -140,6 +161,44 @@ class CartService
     public function getTotalQty(): int
     {
         return array_sum(array_column($this->getCartArray(), 'qty'));
+    }
+
+    /**
+     * Memperbarui harga di keranjang sesuai harga terbaru dari database.
+     * Dipanggil jika terdeteksi perubahan harga saat checkout.
+     */
+    public function refreshCartPrices(): void
+    {
+        $cart = $this->getCartArray();
+
+        foreach ($cart as $lineId => $item) {
+            $product = Product::find($item['product_id']);
+            if (! $product) {
+                // Produk dihapus, skip atau hapus dari keranjang.
+                unset($cart[$lineId]);
+
+                continue;
+            }
+
+            $modifierIds = array_column($item['options'] ?? [], 'modifier_id');
+            $modifiers = Modifier::whereIn('id', $modifierIds)->with('modifierGroup')->get();
+
+            $extraPrice = $modifiers->sum('extra_price');
+            $unitPrice = $product->product_price + $extraPrice;
+
+            $cart[$lineId]['base_price'] = $product->product_price;
+            $cart[$lineId]['unit_price'] = $unitPrice;
+
+            // Perbarui juga data options agar sesuai
+            $cart[$lineId]['options'] = $modifiers->map(fn (Modifier $m) => [
+                'modifier_id' => $m->id,
+                'group_name' => $m->modifierGroup->name,
+                'modifier_name' => $m->name,
+                'extra_price' => $m->extra_price,
+            ])->values()->all();
+        }
+
+        $this->saveCartArray($cart);
     }
 
     /** Helper internal: ambil array keranjang mentah dari session. */

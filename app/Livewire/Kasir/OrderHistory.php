@@ -6,6 +6,7 @@ namespace App\Livewire\Kasir;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Services\TransactionService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Livewire\Attributes\Computed;
@@ -33,6 +34,10 @@ class OrderHistory extends Component
     public ?string $endDate = null;
 
     public ?int $selectedOrderId = null;
+
+    public string $voidReason = '';
+
+    public ?int $voidingOrderId = null;
 
     public function updatedSearch(): void
     {
@@ -79,12 +84,44 @@ class OrderHistory extends Component
         $this->selectedOrderId = null;
     }
 
+    public function voidOrder(): void
+    {
+        // Validasi otoritas (bisa disesuaikan dengan gate/permission yg sesungguhnya di sistem)
+        if (! auth()->user()->role->hasPermission('can_void_order') && ! auth()->user()->role->is_admin) {
+            abort(403, 'Anda tidak memiliki izin untuk membatalkan (void) pesanan.');
+        }
+
+        $this->validate([
+            'voidReason' => 'required|min:5',
+        ]);
+
+        $order = Order::find($this->voidingOrderId);
+        if (! $order || $order->order_status !== OrderStatus::Paid) {
+            session()->flash('error', 'Pesanan tidak ditemukan atau tidak dalam status Lunas.');
+
+            return;
+        }
+
+        try {
+            app(TransactionService::class)->voidOrder($order, $this->voidReason, auth()->id());
+            session()->flash('success', 'Pesanan berhasil di-void dan stok dikembalikan.');
+        } catch (\Exception $e) {
+            session()->flash('error', $e->getMessage());
+        }
+
+        $this->voidingOrderId = null;
+        $this->voidReason = '';
+        if ($this->selectedOrderId === $order->id) {
+            $this->closeDetail();
+        }
+    }
+
     public function statusBadgeType(OrderStatus $status): string
     {
         return match ($status) {
             OrderStatus::Paid, OrderStatus::Completed => 'success',
             OrderStatus::Pending => 'warning',
-            OrderStatus::Failed => 'danger',
+            OrderStatus::Failed, OrderStatus::Void => 'danger',
             OrderStatus::Cancelled, OrderStatus::Expired => 'secondary',
         };
     }

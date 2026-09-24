@@ -308,6 +308,12 @@
                             class="flex-1 min-h-[44px] rounded-xl border border-[#E9E9E7] bg-white text-sm font-semibold text-[#787774] hover:bg-[#F7F7F5] transition-all duration-200 active:scale-95">
                         Tutup
                     </button>
+                    @if ($detail->order_status->value === 'paid' && (auth()->user()->role->hasPermission('can_void_order') || auth()->user()->role->is_admin))
+                        <button type="button" wire:click="$set('voidingOrderId', {{ $detail->id }})"
+                                class="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600 text-white text-sm font-bold hover:bg-rose-700 transition-all duration-200 active:scale-95 shadow-sm">
+                            <span class="material-symbols-rounded text-[18px]">cancel</span> Batalkan (Void)
+                        </button>
+                    @endif
                     @if (in_array($detail->order_status->value, ['paid', 'completed'], true))
                         <a href="{{ route('transaction.receipt', $detail->order_code) }}" target="_blank" rel="noopener"
                            class="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl bg-[#37352F] text-white text-sm font-bold hover:bg-black transition-all duration-200 active:scale-95 shadow-sm">
@@ -315,6 +321,33 @@
                         </a>
                     @endif
                 </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ==================== MODAL VOID ==================== --}}
+    @if ($this->voidingOrderId)
+        <div class="fixed inset-0 z-[60] flex items-center justify-center bg-[#37352F]/40 backdrop-blur-sm p-4">
+            <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-[#E9E9E7]">
+                <h3 class="font-bold text-lg text-rose-600 mb-2">Batalkan (Void) Pesanan</h3>
+                <p class="text-sm text-[#787774] mb-4">Aksi ini akan mengubah status pesanan menjadi Void dan mengembalikan semua stok secara otomatis. Silakan tuliskan alasan pembatalan.</p>
+                
+                <form wire:submit.prevent="voidOrder">
+                    <textarea wire:model="voidReason" rows="3" required minlength="5"
+                              placeholder="Alasan pembatalan (min. 5 karakter)..."
+                              class="w-full rounded-xl border border-[#E9E9E7] p-3 text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 mb-4 shadow-sm"></textarea>
+                              
+                    <div class="flex justify-end gap-3">
+                        <button type="button" wire:click="$set('voidingOrderId', null)"
+                                class="px-4 py-2 rounded-xl border border-[#E9E9E7] text-sm font-semibold text-[#787774] hover:bg-[#F7F7F5]">
+                            Kembali
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 rounded-xl bg-rose-600 text-white text-sm font-bold hover:bg-rose-700 shadow-sm disabled:opacity-50">
+                            Konfirmasi Void
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     @endif

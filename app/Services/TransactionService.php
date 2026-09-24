@@ -18,6 +18,7 @@ use App\Enums\OrderType;
 use App\Enums\PaymentMethodEnum;
 use App\Enums\PaymentStatusEnum;
 use App\Enums\StockMovementType;
+use App\Models\ActivityLog;
 use App\Models\Customer;
 use App\Models\CustomerLoyaltyAccount;
 use App\Models\Ingredient;
@@ -742,11 +743,16 @@ class TransactionService
     // Livewire computed property untuk preview. (UNCHANGED)
     public function resolveOrderItemLine(Product $product, array $modifierIds, int $qty, ?string $notes): array
     {
-        $requiredGroupIds = $product->modifierGroups()
-            ->where('is_required', true)->pluck('modifier_groups.id');
+        // [OMEGA-NODE1] PATCH FOR M-10: pakai koleksi yang sudah (atau baru
+        // sekali) di-load, bukan query fresh modifierGroups() setiap panggil
+        // -- ini offender utama N+1 di CreateOrder::cartLines(). | 2026-09-24
+        $productGroups = $product->modifierGroups;
+        $requiredGroupIds = $productGroups->where('is_required', true)->pluck('id');
 
-        $selectedModifiers = Modifier::whereIn('id', $modifierIds)->with('modifierGroup')->get();
-        $selectedGroupIds = $selectedModifiers->pluck('modifierGroup.id')->unique();
+        // [OMEGA-NODE1] PATCH FOR M-10: modifier_group_id sudah kolom biasa
+        // di tabel modifiers -- ->with('modifierGroup') tidak diperlukan lagi.
+        $selectedModifiers = Modifier::whereIn('id', $modifierIds)->get();
+        $selectedGroupIds = $selectedModifiers->pluck('modifier_group_id')->unique();
 
         foreach ($requiredGroupIds as $groupId) {
             if (! $selectedGroupIds->contains($groupId)) {
@@ -756,7 +762,20 @@ class TransactionService
             }
         }
 
-        $productGroups = $product->modifierGroups;
+        // [OMEGA-NODE1] PATCH FOR M-01 (ADDENDUM): tolak modifier yang bukan
+        // milik SATU PUN grup varian produk ini. Sebelumnya modifier "asing"
+        // (mis. milik produk lain) lolos tanpa error karena tidak pernah
+        // dihitung di loop required-group maupun single-select manapun.
+        $productGroupIds = $productGroups->pluck('id');
+        $foreignModifiers = $selectedModifiers->reject(
+            fn ($m) => $productGroupIds->contains($m->modifier_group_id)
+        );
+        if ($foreignModifiers->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'items' => "Satu atau lebih varian yang dipilih tidak tersedia untuk {$product->product_name}.",
+            ]);
+        }
+
         foreach ($productGroups as $group) {
             $selectedForGroup = $selectedModifiers->where('modifier_group_id', $group->id)->count();
             if ($group->selection_type === 'single' && $selectedForGroup > 1) {
@@ -1004,9 +1023,45 @@ class TransactionService
         }, attempts: 3);
     }
 
-    /**
-     * (UNCHANGED)
-     */
+    // [OMEGA-NODE9] PATCH FOR M-04: Official Void Workflow.
+    public function voidOrder(Order $order, string $reason, int $userId): void
+    {
+        if ($order->order_status !== OrderStatus::Paid) {
+            throw new \Exception('Hanya pesanan yang sudah lunas (Paid) yang dapat di-void.');
+        }
+
+        \DB::transaction(function () use ($order, $reason, $userId) {
+            // 1. Lock and Update Order Status
+            $lockedOrder = Order::where('id', $order->id)->lockForUpdate()->first();
+            $lockedOrder->update([
+                'order_status' => OrderStatus::Void,
+                'voided_by' => $userId,
+                'void_reason' => $reason,
+                'voided_at' => now(),
+            ]);
+
+            // 2. Restore all BOM & Modifiers Stocks
+            $this->restoreStockForOrder($lockedOrder);
+
+            // 3. Record to Activity Log (Otoritas Void)
+            ActivityLog::create([
+                'user_id' => $userId,
+                'action' => 'VOID_ORDER',
+                'description' => "Membatalkan pesanan {$lockedOrder->order_code}. Alasan: {$reason}",
+                'ip_address' => request()->ip(),
+                'user_agent' => request()->userAgent(),
+                'metadata' => [
+                    'order_id' => $lockedOrder->id,
+                    'total_amount' => $lockedOrder->total_amount,
+                ],
+            ]);
+        });
+    }
+
+    // [OMEGA-NODE1] PATCH FOR M-03: sebelumnya fungsi ini HANYA mengembalikan
+    // products.stock (jalur legacy). Order dengan BOM (produk atau varian)
+    // yang kedaluwarsa/gagal tidak pernah mengembalikan ingredients.current_stock,
+    // menyebabkan stok bahan baku bocor setiap kali self-order dibatalkan. | 2026-09-24
     private function restoreStockForOrder(Order $order): void
     {
         $items = $order->orderItems()->get();
@@ -1018,12 +1073,14 @@ class TransactionService
         $productIds = $items->pluck('product_id')->unique()->sort()->values();
 
         $products = Product::withTrashed()
+            ->with('ingredients') // Eager load untuk mengecek $hasBom
             ->whereIn('id', $productIds)
             ->orderBy('id')
             ->lockForUpdate()
             ->get()
             ->keyBy('id');
 
+        // 1. Restore Legacy Product Stock
         foreach ($items as $item) {
             $product = $products->get($item->product_id);
 
@@ -1034,6 +1091,12 @@ class TransactionService
                     'product_id' => $item->product_id,
                 ]);
 
+                continue;
+            }
+
+            // HANYA produk TANPA BOM yang stok products.stock-nya dikembalikan.
+            $hasBom = $product->ingredients->isNotEmpty();
+            if ($hasBom) {
                 continue;
             }
 
@@ -1053,6 +1116,52 @@ class TransactionService
 
             if ($movement->wasRecentlyCreated) {
                 $product->increment('stock', $item->qty);
+            }
+        }
+
+        // 2. Restore Ingredient Stock (BOM)
+        // Ambil semua deduksi bahan baku yang terjadi saat pembuatan order ini.
+        $deductions = IngredientStockMovement::where('order_id', $order->id)
+            ->where('type', IngredientStockMovementTypeEnum::SaleDeduction)
+            ->get();
+
+        if ($deductions->isNotEmpty()) {
+            $ingredientIds = $deductions->pluck('ingredient_id')->unique()->sort()->values();
+
+            $lockedIngredients = Ingredient::whereIn('id', $ingredientIds)
+                ->orderBy('id')
+                ->lockForUpdate()
+                ->get()
+                ->keyBy('id');
+
+            foreach ($deductions as $deduction) {
+                $ingredient = $lockedIngredients->get($deduction->ingredient_id);
+                if (! $ingredient) {
+                    continue;
+                }
+
+                $idempotencyKey = 'ingredient_restore:'.$order->order_code.':'.$deduction->id;
+
+                $movement = IngredientStockMovement::firstOrCreate(
+                    ['idempotency_key' => $idempotencyKey],
+                    [
+                        'ingredient_id' => $ingredient->id,
+                        'order_id' => $order->id,
+                        'order_item_id' => $deduction->order_item_id,
+                        'type' => IngredientStockMovementTypeEnum::RestoreCompensation,
+                        // Deduction quantity disimpen negatif, jadi abs() untuk restore positif
+                        'quantity' => abs((float) $deduction->quantity),
+                        'unit_cost' => $ingredient->cost_per_unit,
+                        'reason' => "Kompensasi bahan baku otomatis: order {$order->order_code} berubah ke status {$order->order_status->value}.",
+                        'created_by' => null,
+                    ]
+                );
+
+                if ($movement->wasRecentlyCreated) {
+                    // Karena quantity di IngredientStockMovement berupa decimal/string,
+                    // increment dengan string bcmul/abs. Model->increment support decimal.
+                    $ingredient->increment('current_stock', abs((float) $deduction->quantity));
+                }
             }
         }
     }

@@ -5,13 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Model Modifier merepresentasikan SATU opsi pilihan di dalam sebuah grup varian.
  * Contoh: "Ice", "Hot", "Less Sugar", "Oat Milk" (+Rp5.000).
  */
+// [OMEGA-NODE1] PATCH FOR M-02 (lihat ModifierGroup.php untuk alasan penuh). | 2026-09-24
 class Modifier extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = ['modifier_group_id', 'name', 'extra_price', 'is_default'];
 
     protected function casts(): array

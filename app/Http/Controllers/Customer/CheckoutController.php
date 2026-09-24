@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\StoreCheckoutRequest;
 use App\Models\Modifier;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\User;
 use App\Services\CartService;
 use App\Services\TransactionService;
@@ -83,16 +84,39 @@ class CheckoutController extends Controller
             $modifierIds = collect($item['options'] ?? [])->pluck('modifier_id')->all();
             $serverExtraPrice = Modifier::whereIn('id', $modifierIds)->sum('extra_price');
 
+            $product = Product::find($item['product_id']);
+
             return [
                 'product_id' => $item['product_id'],
                 'quantity' => $item['qty'],
                 'extra_price' => (float) $serverExtraPrice,
+                'unit_price' => ($product ? $product->product_price : 0) + $serverExtraPrice,
                 'options' => $item['options'],
                 'notes' => $item['notes'] ?? null,
             ];
         }, $items);
 
         $systemUserId = User::where('email', config('pos.self_order_system_email'))->value('id');
+
+        if (empty($transactionItems)) {
+            return back()->with('error', 'Keranjang belanja Anda kosong.');
+        }
+
+        // [OMEGA-NODE9] PATCH FOR M-05: Stale Price Protection.
+        // Hitung ulang harga *live* dari database dan pastikan cocok dengan harga di session cart.
+        $liveSubtotal = 0;
+        foreach ($transactionItems as $item) {
+            $liveSubtotal += ($item['unit_price'] * $item['quantity']);
+        }
+
+        $sessionSubtotal = $this->cartService->getSubtotal();
+
+        if (abs($liveSubtotal - $sessionSubtotal) > 1) { // Toleransi Rp 1
+            // Harga berubah! Paksa update session cart dengan harga live.
+            $this->cartService->refreshCartPrices();
+
+            return back()->with('error', 'Harga beberapa item telah berubah. Silakan periksa kembali keranjang Anda dan coba lagi.');
+        }
 
         try {
             $order = $this->transactionService->createTransaction([
@@ -101,6 +125,7 @@ class CheckoutController extends Controller
                 'cash_received' => null,
                 'is_self_order_cash' => $request->validated('payment_method') === 'cash',
                 'table_id' => $tableId, // BARU: masukkan ke dalam payload
+                'idempotency_key' => $idempotencyKey, // [OMEGA-NODE1] PATCH FOR M-13: Teruskan idempotency key ke layer DB.
             ], $systemUserId);
         } catch (\Throwable $e) {
             return back()->with('error', $e->getMessage());
