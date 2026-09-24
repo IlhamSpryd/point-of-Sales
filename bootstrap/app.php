@@ -19,7 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         // PATCH FOR S-04: jangan percaya semua proxy. Isi TRUSTED_PROXIES=IP_LB di produksi.
         $middleware->trustProxies(
-            at: env('TRUSTED_PROXIES', '*'),
+            at: env('TRUSTED_PROXIES', '127.0.0.1'),
             headers: Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST
                    | Request::HEADER_X_FORWARDED_PORT | Request::HEADER_X_FORWARDED_PROTO,
         );
