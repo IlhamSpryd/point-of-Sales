@@ -74,5 +74,8 @@ class DatabaseSeeder extends Seeder
 
         // 7. Seed nilai default System Settings
         $this->call(SettingSeeder::class);
+
+        // 8. Seed full POS realistic data (12 months, ~50K orders)
+        $this->call(PosFullSeeder::class);
     }
 }
