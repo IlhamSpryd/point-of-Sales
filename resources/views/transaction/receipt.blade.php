@@ -24,7 +24,13 @@
             <div class="flex justify-between"><span>Kasir</span><span>{{ $order->user->name ?? '-' }}</span></div>
             <div class="flex justify-between">
                 <span>Tipe</span>
-                <span>{{ $order->order_type->value === 'dine_in' ? 'Dine-In' : 'Takeaway' }}</span>
+                <span>
+                    @if($order->order_type?->value === 'dine_in') Dine-In
+                    @elseif($order->order_type?->value === 'takeaway') Takeaway
+                    @elseif($order->order_type?->value === 'delivery') Delivery
+                    @elseif($order->order_type?->value === 'self_order') Self-Order
+                    @else {{ ucfirst($order->order_type?->value ?? 'Takeaway') }} @endif
+                </span>
             </div>
             @if ($order->table)
                 <div class="flex justify-between">

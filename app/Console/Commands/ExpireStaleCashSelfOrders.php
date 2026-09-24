@@ -15,11 +15,22 @@ class ExpireStaleCashSelfOrders extends Command
 
     public function handle(TransactionService $service): int
     {
-        $stale = Order::where('order_status', OrderStatus::Pending)
+        // [OMEGA-NODE9] SEC FIX HIGH: sebelumnya hanya menyapu order
+        // self-order CASH. Order QRIS/E-wallet yang macet karena Snap
+        // gagal terbuat (snap_token tetap NULL) sebelumnya tidak PERNAH
+        // disapu, membuat stok/BOM menggantung permanen. | 2026-09-25
+        $staleSelfOrderCash = Order::where('order_status', OrderStatus::Pending)
             ->where('payment_method', 'cash')
             ->whereNotNull('table_id')
-            ->where('created_at', '<=', now()->subMinutes(30))
-            ->get();
+            ->where('created_at', '<=', now()->subMinutes(30));
+
+        $staleNonCashStuck = Order::where('order_status', OrderStatus::Pending)
+            ->whereIn('payment_method', ['qris', 'ewallet'])
+            ->whereNull('snap_token')
+            ->where('created_at', '<=', now()->subMinutes(35));
+
+        // Use union then get
+        $stale = $staleSelfOrderCash->union($staleNonCashStuck)->get();
 
         foreach ($stale as $order) {
             $service->updateStatusFromMidtransNotification(

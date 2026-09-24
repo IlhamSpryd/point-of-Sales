@@ -270,7 +270,7 @@
                         <span class="text-yovel-ink font-medium">Rp {{ number_format($this->subtotal, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between text-sm text-yovel-muted">
-                        <span>Pajak (11%)</span>
+                        <span>Pajak ({{ rtrim(rtrim(number_format(config('pos.tax_rate', 0.11) * 100, 1), '0'), '.') }}%)</span>
                         <span class="text-yovel-ink font-medium">Rp {{ number_format($this->taxAmount, 0, ',', '.') }}</span>
                     </div>
                     <div class="flex justify-between font-bold text-lg text-yovel-ink border-t border-yovel-border pt-3 mt-3">

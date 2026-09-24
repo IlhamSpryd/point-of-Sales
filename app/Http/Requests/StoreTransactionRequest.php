@@ -43,9 +43,15 @@ class StoreTransactionRequest extends FormRequest
             'items.*.options.*.extra_price' => 'nullable|numeric|min:0',
             // Hanya izinkan metode pembayaran yang benar-benar didukung sistem,
             // agar tidak ada nilai sembarangan yang lolos ke TransactionService.
-            'payment_method' => ['required', 'string', Rule::in(['cash', 'qris', 'ewallet'])],
+            'payment_method' => ['required', 'string', Rule::in(['cash', 'qris', 'ewallet', 'card'])],
             'cash_received' => 'nullable|numeric|min:0',
-            'idempotency_key' => 'nullable|string|size:36',
+            // [OMEGA-NODE9] SEC FIX CRITICAL: idempotency_key kini WAJIB.
+            // Sebelumnya nullable, dan Cache::lock() di
+            // TransactionController::store() dibungkus if($idempotencyKey)
+            // sehingga TANPA field ini SELURUH proteksi idempotency lolos
+            // total, memungkinkan order & grant poin loyalti duplikat tak
+            // terbatas dari satu klik ganda via klien HTTP mentah. | 2026-09-25
+            'idempotency_key' => 'required|string|size:36',
         ];
     }
 

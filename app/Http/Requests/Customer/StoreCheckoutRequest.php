@@ -17,7 +17,7 @@ class StoreCheckoutRequest extends FormRequest
         return [
             // table_number DIHAPUS: nomor meja sekarang diambil otomatis dari
             // session (hasil scan QR), bukan input manual pelanggan.
-            'payment_method' => ['required', Rule::in(['qris', 'ewallet', 'cash'])],
+            'payment_method' => ['required', Rule::in(['qris', 'ewallet', 'cash', 'card'])],
             'customer_phone' => ['nullable', 'string', 'max:20'],
         ];
     }

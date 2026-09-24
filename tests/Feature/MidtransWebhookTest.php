@@ -89,6 +89,7 @@ class MidtransWebhookTest extends TestCase
     {
         $order = Order::forceCreate([
             'order_code' => 'ORD-MISMATCH-1',
+            'idempotency_key' => \Illuminate\Support\Str::uuid()->toString(),
             'order_status' => OrderStatus::Pending,
             'order_amount' => 50000,
             'subtotal_amount' => 50000,
@@ -121,6 +122,7 @@ class MidtransWebhookTest extends TestCase
     {
         $order = Order::forceCreate([
             'order_code' => 'ORD-SETTLEMENT-1',
+            'idempotency_key' => \Illuminate\Support\Str::uuid()->toString(),
             'order_status' => OrderStatus::Pending,
             'order_amount' => 100000,
             'subtotal_amount' => 100000,
@@ -157,6 +159,7 @@ class MidtransWebhookTest extends TestCase
     {
         $order = Order::forceCreate([
             'order_code' => 'ORD-EXPIRE-1',
+            'idempotency_key' => \Illuminate\Support\Str::uuid()->toString(),
             'order_status' => OrderStatus::Pending,
             'order_amount' => 100000,
             'subtotal_amount' => 100000,

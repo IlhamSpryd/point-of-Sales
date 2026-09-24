@@ -60,6 +60,13 @@ class CreateOrder extends Component
 
     public string $customerSearch = '';
 
+    public string $idempotencyKey;
+
+    public function mount(): void
+    {
+        $this->idempotencyKey = (string) \Illuminate\Support\Str::uuid();
+    }
+
     public function updatedOrderType(): void
     {
         if ($this->orderType === 'takeaway') {
@@ -124,7 +131,9 @@ class CreateOrder extends Component
         // [OMEGA-NODE2] Hygiene fix (lihat Phase 1 self-adversarial review):
         // customer terpilih tidak boleh ikut terbawa ke pesanan berikutnya.
         $this->customerId = null;
+        $this->customerId = null;
         $this->customerName = null;
+        $this->idempotencyKey = (string) \Illuminate\Support\Str::uuid();
     }
 
     #[Computed]
@@ -345,6 +354,8 @@ class CreateOrder extends Component
      */
     public function submitOrder(array $legs = [], ?string $idempotencyKey = null)
     {
+        $idempotencyKey = $idempotencyKey ?? $this->idempotencyKey;
+
         $rules = [
             'orderType' => ['required', 'in:dine_in,takeaway'],
             'cart' => ['required', 'array', 'min:1'],
@@ -459,6 +470,9 @@ class CreateOrder extends Component
             DB::commit();
 
             $this->dispatch('transaction-success', orderCode: $order->order_code, isCash: collect($normalizedLegs)->contains('method', 'cash'));
+
+            // Reset idempotency key for next transaction
+            $this->idempotencyKey = (string) \Illuminate\Support\Str::uuid();
 
             return;
 

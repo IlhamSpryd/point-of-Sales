@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * PosFullSeeder: Orchestrator seeder for the full Yovel Coffee & Cafe POS dataset.
@@ -30,7 +31,7 @@ class PosFullSeeder extends Seeder
         $this->command->info('');
 
         // Disable FK checks for truncation safety during master data seeding
-        \Illuminate\Support\Facades\Schema::disableForeignKeyConstraints();
+        Schema::disableForeignKeyConstraints();
 
         // ══════════════════════════════════════════════════════
         // PHASE 1: Master Data (fast — under 30 seconds)

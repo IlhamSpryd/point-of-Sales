@@ -78,7 +78,7 @@ class IdempotencyLockTest extends TestCase
 
         // Request 1: Success
         $res1 = $this->actingAs($this->user)->postJson(route('transaction.store'), $payload);
-        $res1->dump();
+
         $res1->assertStatus(200)
              ->assertJsonFragment(['success' => true, 'message' => 'Pesanan berhasil dibuat']);
              

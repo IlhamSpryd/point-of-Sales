@@ -22,8 +22,8 @@ class CashDrawerMovementSeeder extends Seeder
         $managerIds = [1, 3, 5, 6, 7, 8];
         $reasons = [
             'restock_change' => ['Kas awal shift', 'Penerimaan tunai penjualan'],
-            'bank_deposit'   => ['Setor ke brankas', 'Setor ke safe', 'Penyetoran kas malam'],
-            'petty_expense'  => [
+            'bank_deposit' => ['Setor ke brankas', 'Setor ke safe', 'Penyetoran kas malam'],
+            'petty_expense' => [
                 'Beli es batu', 'Beli galon air', 'Beli tissue & straw',
                 'Parkir supplier', 'Beli plastik kemasan', 'Beli cup takeaway',
                 'Beli serbet', 'Ganti tabung gas', 'Beli sabun cuci',
@@ -65,7 +65,7 @@ class CashDrawerMovementSeeder extends Seeder
                     'category' => 'correction',
                     'amount' => rand(200000, 2000000),
                     'reason' => $reasons['restock_change'][1],
-                    'receipt_reference' => 'BATCH-' . strtoupper(Str::random(6)),
+                    'receipt_reference' => 'BATCH-'.strtoupper(Str::random(6)),
                     'created_by' => $shift->user_id,
                     'approved_by' => null,
                     'idempotency_key' => Str::uuid()->toString(),
@@ -83,7 +83,7 @@ class CashDrawerMovementSeeder extends Seeder
                     'category' => 'bank_deposit',
                     'amount' => rand(500000, 2000000),
                     'reason' => $reasons['bank_deposit'][array_rand($reasons['bank_deposit'])],
-                    'receipt_reference' => 'DROP-' . strtoupper(Str::random(6)),
+                    'receipt_reference' => 'DROP-'.strtoupper(Str::random(6)),
                     'created_by' => $shift->user_id,
                     'approved_by' => $managerIds[array_rand($managerIds)],
                     'idempotency_key' => Str::uuid()->toString(),
@@ -102,7 +102,7 @@ class CashDrawerMovementSeeder extends Seeder
                     'category' => 'petty_expense',
                     'amount' => rand(10000, 100000),
                     'reason' => $reasons['petty_expense'][array_rand($reasons['petty_expense'])],
-                    'receipt_reference' => 'PC-' . strtoupper(Str::random(6)),
+                    'receipt_reference' => 'PC-'.strtoupper(Str::random(6)),
                     'created_by' => $shift->user_id,
                     'approved_by' => (rand(1, 100) <= 50) ? $managerIds[array_rand($managerIds)] : null,
                     'idempotency_key' => Str::uuid()->toString(),

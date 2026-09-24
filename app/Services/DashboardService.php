@@ -40,7 +40,8 @@ class DashboardService
                     SUM(CASE WHEN MONTH(created_at) = ? AND YEAR(created_at) = ? THEN 1 ELSE 0 END) as last_month_orders,
                     SUM(CASE WHEN payment_method = 'cash' THEN 1 ELSE 0 END) as cash_orders,
                     SUM(CASE WHEN payment_method = 'qris' THEN 1 ELSE 0 END) as qris_orders,
-                    SUM(CASE WHEN payment_method = 'ewallet' THEN 1 ELSE 0 END) as ewallet_orders
+                    SUM(CASE WHEN payment_method = 'ewallet' THEN 1 ELSE 0 END) as ewallet_orders,
+                    SUM(CASE WHEN payment_method = 'card' THEN 1 ELSE 0 END) as card_orders
                 ", [$thisMonth, $thisYear, $lastMonth, $lastYear, $thisMonth, $thisYear, $lastMonth, $lastYear])
                 ->first();
 

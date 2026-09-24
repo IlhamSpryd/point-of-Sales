@@ -112,8 +112,16 @@
                             <td class="px-6 py-4">
                                 <div class="text-sm font-medium text-[#37352F]">{{ $order->user->name ?? 'Self-Order' }}</div>
                                 <div class="text-xs text-[#787774] mt-0.5 flex items-center gap-1">
-                                    <span class="material-symbols-rounded text-[13px]">{{ $order->order_type?->value === 'takeaway' ? 'shopping_bag' : 'table_restaurant' }}</span>
-                                    {{ $order->order_type?->value === 'takeaway' ? 'Takeaway' : ($order->table->table_name ?? 'Dine-In') }}
+                                    <span class="material-symbols-rounded text-[13px]">
+                                        @if($order->order_type?->value === 'takeaway') shopping_bag
+                                        @elseif($order->order_type?->value === 'delivery') local_shipping
+                                        @elseif($order->order_type?->value === 'self_order') touch_app
+                                        @else table_restaurant @endif
+                                    </span>
+                                    @if($order->order_type?->value === 'takeaway') Takeaway
+                                    @elseif($order->order_type?->value === 'delivery') Delivery
+                                    @elseif($order->order_type?->value === 'self_order') Self-Order
+                                    @else {{ $order->table->table_name ?? 'Dine-In' }} @endif
                                 </div>
                             </td>
                             <td class="px-6 py-4">
@@ -208,7 +216,10 @@
                         <div>
                             <p class="text-xs font-semibold text-[#9B9A97] uppercase tracking-wider mb-1">Tipe Pesanan</p>
                             <p class="font-medium text-[#37352F]">
-                                {{ $detail->order_type?->value === 'takeaway' ? 'Takeaway' : 'Dine-In · '.($detail->table->table_name ?? '-') }}
+                                @if($detail->order_type?->value === 'takeaway') Takeaway
+                                @elseif($detail->order_type?->value === 'delivery') Delivery
+                                @elseif($detail->order_type?->value === 'self_order') Self-Order
+                                @else Dine-In · {{ $detail->table->table_name ?? '-' }} @endif
                             </p>
                         </div>
                         <div>
@@ -308,7 +319,7 @@
                             class="flex-1 min-h-[44px] rounded-xl border border-[#E9E9E7] bg-white text-sm font-semibold text-[#787774] hover:bg-[#F7F7F5] transition-all duration-200 active:scale-95">
                         Tutup
                     </button>
-                    @if ($detail->order_status->value === 'paid' && (auth()->user()->role->hasPermission('can_void_order') || auth()->user()->role->is_admin))
+                    @if ($detail->order_status->value === 'paid' && (auth()->user()->role->hasPermission('can_void_order') || in_array(auth()->user()->role->name, ['Owner', 'Manager'])))
                         <button type="button" wire:click="$set('voidingOrderId', {{ $detail->id }})"
                                 class="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600 text-white text-sm font-bold hover:bg-rose-700 transition-all duration-200 active:scale-95 shadow-sm">
                             <span class="material-symbols-rounded text-[18px]">cancel</span> Batalkan (Void)

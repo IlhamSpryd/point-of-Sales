@@ -26,7 +26,7 @@ class CustomerSeeder extends Seeder
             $usedPhones[] = $phone;
 
             do {
-                $email = strtolower(preg_replace('/[^a-zA-Z]/', '', $faker->firstName())) . $i . '@' . $faker->freeEmailDomain();
+                $email = strtolower(preg_replace('/[^a-zA-Z]/', '', $faker->firstName())).$i.'@'.$faker->freeEmailDomain();
             } while (in_array($email, $usedEmails, true));
             $usedEmails[] = $email;
 

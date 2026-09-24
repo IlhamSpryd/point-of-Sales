@@ -39,6 +39,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Midtrans\Config;
 use Midtrans\Snap;
+use Midtrans\Transaction;
 
 class TransactionService
 {
@@ -181,7 +182,37 @@ class TransactionService
                     ]);
                 }
 
-                $unitPrice = $product->product_price + $item['extra_price'];
+                // [OMEGA-NODE9] SEC FIX CRITICAL: extra_price & options[].
+                // extra_price dari client TIDAK PERNAH dipakai langsung --
+                // StoreTransactionRequest hanya memvalidasi BENTUK/keberadaan
+                // modifier_id, bukan nilainya. Hitung ulang dari
+                // $modifiersWithBom (sudah dimuat dari DB) agar kasir tidak
+                // bisa mengirim modifier premium dengan extra_price:0.
+                // | 2026-09-25
+                $verifiedOptions = [];
+                $serverExtraPrice = 0;
+
+                if (! empty($item['options'])) {
+                    foreach ($item['options'] as $opt) {
+                        $modId = $opt['modifier_id'] ?? null;
+                        $mod = $modId ? $modifiersWithBom->get($modId) : null;
+
+                        if (! $mod || ! $mod->is_active) {
+                            throw ValidationException::withMessages([
+                                'items' => 'Salah satu varian yang dipilih sudah tidak tersedia. Muat ulang halaman.',
+                            ]);
+                        }
+
+                        $serverExtraPrice += (int) $mod->extra_price;
+                        $verifiedOptions[] = [
+                            'modifier_id' => $mod->id,
+                            'name' => $mod->name,
+                            'extra_price' => (int) $mod->extra_price,
+                        ];
+                    }
+                }
+
+                $unitPrice = $product->product_price + $serverExtraPrice;
                 $itemSubtotal = $unitPrice * $item['quantity'];
                 $subtotalAmount += $itemSubtotal;
 
@@ -191,7 +222,7 @@ class TransactionService
                     'qty' => $item['quantity'],
                     'order_subtotal' => $itemSubtotal,
                     'product_id' => $product->id,
-                    'options' => $item['options'],
+                    'options' => $verifiedOptions,
                     'notes' => $item['notes'] ?? null,
                 ];
                 $bomBreakdownByLineIndex[$lineIndex] = [];
@@ -366,7 +397,7 @@ class TransactionService
                 'user_id' => $userId,
                 'shift_id' => $data['shift_id'] ?? null,
                 'order_code' => $orderCode,
-                'idempotency_key' => $data['idempotency_key'] ?? null,
+                'idempotency_key' => $data['idempotency_key'] ?? (string) Str::uuid(),
                 'order_date' => now()->toDateString(),
                 'subtotal_amount' => $subtotalAmount,
                 'tax_amount' => $taxAmount,
@@ -880,6 +911,13 @@ class TransactionService
         $orderItemsData = [];
         $subtotal = 0;
 
+        // [OMEGA-NODE9] SEC FIX HIGH (Deadlock): sebelumnya produk dikunci
+        // SATU PER SATU mengikuti urutan payload klien -- BERBEDA dari
+        // createTransaction() yang selalu ->orderBy('id'). Dua request
+        // paralel dengan urutan item terbalik (A,B vs B,A) bisa saling
+        // menunggu lock -> deadlock InnoDB. | 2026-09-25
+        usort($itemsPayload, fn ($a, $b) => $a['product_id'] <=> $b['product_id']);
+
         foreach ($itemsPayload as $itemInput) {
             $product = Product::availableForOrder()->lockForUpdate()->findOrFail($itemInput['product_id']);
             if ($product->stock < $itemInput['qty']) {
@@ -1065,6 +1103,23 @@ class TransactionService
                 'void_reason' => $reason,
                 'voided_at' => now(),
             ]);
+
+            // [OMEGA-NODE9] SEC FIX HIGH (Missing Refund): Jika order non-tunai
+            // di-void, otomatis panggil Refund API Midtrans. | 2026-09-25
+            $pm = is_string($lockedOrder->payment_method) ? $lockedOrder->payment_method : ($lockedOrder->payment_method->value ?? null);
+            if (in_array($pm, ['qris', 'ewallet'])) {
+                try {
+                    Config::$serverKey = config('services.midtrans.server_key');
+                    Config::$isProduction = config('services.midtrans.is_production');
+                    Transaction::refund($lockedOrder->order_code, [
+                        'refund_key' => 'refund-'.$lockedOrder->order_code,
+                        'amount' => $lockedOrder->order_amount,
+                        'reason' => 'Voided: '.$reason,
+                    ]);
+                } catch (\Exception $e) {
+                    throw new \Exception('Gagal melakukan refund Midtrans: '.$e->getMessage());
+                }
+            }
 
             // 2. Restore all BOM & Product Stocks
             $this->restoreStockForOrder($lockedOrder);

@@ -88,8 +88,8 @@ class CheckoutGuardTest extends TestCase
         Session::put('customer_orders', ['ORD-001', 'ORD-002']);
 
         // Create 2 pending orders
-        Order::create(['user_id' => $this->systemUser->id, 'order_type' => 'dine_in', 'order_date' => now(), 'subtotal_amount' => 0, 'discount_amount' => 0, 'tax_amount' => 0, 'service_charge_amount' => 0, 'order_amount' => 0, 'order_change' => 0, 'payment_method' => 'cash', 'order_code' => 'ORD-001', 'order_status' => OrderStatus::Pending, 'table_id' => $table->id]);
-        Order::create(['user_id' => $this->systemUser->id, 'order_type' => 'dine_in', 'order_date' => now(), 'subtotal_amount' => 0, 'discount_amount' => 0, 'tax_amount' => 0, 'service_charge_amount' => 0, 'order_amount' => 0, 'order_change' => 0, 'payment_method' => 'cash', 'order_code' => 'ORD-002', 'order_status' => OrderStatus::Pending, 'table_id' => $table->id]);
+        Order::forceCreate(['idempotency_key' => \Illuminate\Support\Str::uuid()->toString(), 'user_id' => $this->systemUser->id, 'order_type' => 'dine_in', 'order_date' => now(), 'subtotal_amount' => 0, 'discount_amount' => 0, 'tax_amount' => 0, 'service_charge_amount' => 0, 'order_amount' => 0, 'order_change' => 0, 'payment_method' => 'cash', 'order_code' => 'ORD-001', 'order_status' => OrderStatus::Pending, 'table_id' => $table->id]);
+        Order::forceCreate(['idempotency_key' => \Illuminate\Support\Str::uuid()->toString(), 'user_id' => $this->systemUser->id, 'order_type' => 'dine_in', 'order_date' => now(), 'subtotal_amount' => 0, 'discount_amount' => 0, 'tax_amount' => 0, 'service_charge_amount' => 0, 'order_amount' => 0, 'order_change' => 0, 'payment_method' => 'cash', 'order_code' => 'ORD-002', 'order_status' => OrderStatus::Pending, 'table_id' => $table->id]);
 
         $this->mock(CartService::class, function ($mock) {
             $mock->shouldReceive('getItems')->andReturn([
@@ -122,7 +122,8 @@ class CheckoutGuardTest extends TestCase
 
         // Create 5 pending orders for the table, but NOT in this session
         for ($i = 0; $i < 5; $i++) {
-            Order::create([
+            Order::forceCreate([
+                'idempotency_key' => \Illuminate\Support\Str::uuid()->toString(),
                 'user_id' => $this->systemUser->id,
                 'order_code' => 'ORD-TB-'.$i,
                 'order_type' => 'dine_in', 'order_date' => now(), 'subtotal_amount' => 0, 'discount_amount' => 0, 'tax_amount' => 0, 'service_charge_amount' => 0, 'order_amount' => 0, 'order_change' => 0, 'payment_method' => 'cash',
