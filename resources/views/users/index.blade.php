@@ -30,7 +30,8 @@
     @endif
 
     <div class="card-surface flex flex-col flex-1 min-h-0">
-        <div class="overflow-auto flex-1">
+        {{-- Desktop/tablet-landscape: existing table --}}
+        <div class="hidden lg:block overflow-auto flex-1 table-scroll-shadow">
             <table class="data-table relative">
                 <thead class="sticky top-0 z-10 shadow-sm">
                     <tr class="bg-[#F7F7F5]">
@@ -101,6 +102,63 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        {{-- Mobile/tablet-portrait: card list --}}
+        <div class="lg:hidden flex flex-col gap-3 p-4 overflow-y-auto flex-1">
+            @forelse($users as $user)
+                <div class="card-surface p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-[#F1F1EF] text-[#37352F] flex items-center justify-center font-bold text-sm border border-[#E9E9E7] shrink-0">
+                                {{ strtoupper(substr($user->name, 0, 1)) }}
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="font-bold text-[#37352F] text-sm">{{ $user->name }}</span>
+                                <span class="text-xs text-[#787774]">{{ $user->employee_id }}</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-col items-end gap-1">
+                            @if($user->role)
+                                <x-badge type="info">{{ $user->role->name }}</x-badge>
+                            @else
+                                <x-badge type="secondary">Belum Ditentukan</x-badge>
+                            @endif
+                            <x-badge :type="$user->is_active ? 'success' : 'danger'">
+                                {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
+                            </x-badge>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 mt-3 pt-3 border-t border-[#E9E9E7]">
+                        <div class="flex-1">
+                            <span class="text-[11px] font-semibold text-[#9B9A97] uppercase tracking-wider block mb-0.5">Kontak</span>
+                            <span class="text-xs text-[#37352F] block truncate">{{ $user->email }}</span>
+                            <span class="text-xs text-[#37352F]">{{ $user->phone_number ?: '—' }}</span>
+                        </div>
+                        <div class="flex items-center gap-1 shrink-0">
+                            <a href="{{ route('users.edit', $user->id) }}" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200" aria-label="Ubah pengguna" wire:navigate>
+                                <span class="material-symbols-rounded text-[18px]">edit</span>
+                            </a>
+                            @if(auth()->id() !== $user->id)
+                                <form id="delete-form-mobile-{{ $user->id }}" action="{{ route('users.destroy', $user->id) }}" method="POST" class="inline-block">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="button" onclick="confirmDelete('delete-form-mobile-{{ $user->id }}', '{{ addslashes($user->name) }}')" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200" aria-label="Hapus">
+                                        <span class="material-symbols-rounded text-[18px]">delete</span>
+                                    </button>
+                                </form>
+                            @endif
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="py-8 text-center text-[#9B9A97] text-sm flex flex-col items-center justify-center">
+                    <div class="w-12 h-12 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
+                        <span class="material-symbols-rounded text-[24px] text-[#C4C3C0]">group</span>
+                    </div>
+                    <p class="font-medium">Pengguna tidak ditemukan.</p>
+                </div>
+            @endforelse
         </div>
         <div class="p-4 border-t border-[#E9E9E7] shrink-0">
             {{ $users->links() }}

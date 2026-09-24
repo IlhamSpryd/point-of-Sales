@@ -14,9 +14,9 @@
      }"
      @keydown.window.f2.prevent="focusSearch()"
      @keydown.window.f4.prevent="triggerPay()">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-5rem)]">
+    <div class="flex flex-col lg:grid lg:grid-cols-3 gap-6 lg:h-[calc(100vh-5rem)] overflow-y-auto lg:overflow-visible">
         {{-- KOLOM KIRI: pilih order type + produk --}}
-        <div class="lg:col-span-2 flex flex-col overflow-hidden">
+        <div class="lg:col-span-2 flex flex-col lg:overflow-hidden">
             <!-- Tipe Pesanan & Meja -->
             <div class="card-surface p-5 mb-6 flex flex-col sm:flex-row items-center gap-6 bg-white shrink-0">
                 <div class="flex gap-1 p-1 bg-yovel-surface rounded-xl">
@@ -56,7 +56,7 @@
                                 <span class="w-1.5 h-1.5 rounded-full bg-yovel-ink"></span>
                                 {{ $category->category_name }}
                             </h3>
-                            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            <div class="grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3">
                                 @foreach ($category->products as $product)
                                     @if($product->modifierGroups->count() > 0)
                                         <button wire:click="openModifierPicker({{ $product->id }})"
@@ -156,8 +156,8 @@
         </div>
 
         {{-- KOLOM KANAN: keranjang + pembayaran --}}
-        <div>
-            <div class="card-surface sticky top-0 bg-white overflow-hidden flex flex-col max-h-[calc(100vh-5rem)]">
+        <div class="lg:sticky lg:top-0">
+            <div class="card-surface bg-white flex flex-col lg:max-h-[calc(100vh-5rem)] lg:overflow-hidden">
                 <div class="p-4 border-b border-yovel-border bg-white shrink-0 flex flex-col gap-3">
                     <div class="flex items-center justify-between">
                         <h3 class="font-bold text-lg text-yovel-ink flex items-center gap-2">

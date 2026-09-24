@@ -15,7 +15,7 @@
 
     <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
-            <p class="font-mono text-[10px] font-bold uppercase tracking-widest text-yovel-muted">{{ $order->order_code }}</p>
+            <p class="font-mono text-[10px] 3xl:text-xs font-bold uppercase tracking-widest text-yovel-muted">{{ $order->order_code }}</p>
             <p class="mt-1 truncate text-lg font-extrabold leading-tight">{{ $place }}</p>
         </div>
         <span @class([
@@ -27,7 +27,7 @@
 
     <div class="mt-3 flex items-baseline gap-2">
         <span class="rounded-lg border border-yovel-border bg-yovel-bg px-2 py-0.5 text-sm font-extrabold tabular-nums">{{ $item->qty }}×</span>
-        <span class="text-base font-bold leading-snug">{{ $item->product->product_name }}</span>
+        <span class="text-base 3xl:text-xl font-bold leading-snug">{{ $item->product->product_name }}</span>
     </div>
 
     @if ($variant !== 'ready' && $options->isNotEmpty())

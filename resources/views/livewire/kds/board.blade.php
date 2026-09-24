@@ -17,7 +17,7 @@
         </div>
     @enderror
 
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 3xl:gap-8 4xl:grid-cols-4">
 
         {{-- KOLOM 1: MENUNGGU --}}
         <section aria-labelledby="kds-pending" class="card-surface flex flex-col overflow-hidden">

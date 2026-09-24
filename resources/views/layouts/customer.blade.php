@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="admin-ui">
 <head>
     <meta charset="UTF-8">
     {{-- SENGAJA tanpa maximum-scale / user-scalable=no: pinch-zoom wajib aktif (WCAG 1.4.4). --}}

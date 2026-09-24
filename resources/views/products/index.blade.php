@@ -36,7 +36,8 @@
     @endif
 
     <div class="card-surface flex flex-col flex-1 min-h-0">
-        <div class="overflow-auto flex-1">
+        {{-- Desktop/tablet-landscape: existing table --}}
+        <div class="hidden lg:block overflow-auto flex-1 table-scroll-shadow">
             <table class="data-table relative">
                 <thead class="sticky top-0 z-10 shadow-sm">
                     <tr class="bg-[#F7F7F5]">
@@ -106,6 +107,59 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        {{-- Mobile/tablet-portrait: card list --}}
+        <div class="lg:hidden flex flex-col gap-3 p-4 overflow-y-auto flex-1">
+            @forelse($products as $product)
+                <div class="card-surface p-4">
+                    <div class="flex items-start gap-3">
+                        @if($product->product_photo)
+                            <img src="{{ asset('storage/' . $product->product_photo) }}" alt="{{ $product->product_name }}" loading="lazy" class="w-16 h-16 rounded-xl object-cover border border-[#E9E9E7] shrink-0">
+                        @else
+                            <div class="w-16 h-16 rounded-xl bg-[#F1F1EF] flex items-center justify-center text-[#C4C3C0] shrink-0">
+                                <span class="material-symbols-rounded">image</span>
+                            </div>
+                        @endif
+                        <div class="flex-1 min-w-0">
+                            <div class="flex justify-between items-start">
+                                <span class="font-bold text-[#37352F] text-sm truncate pr-2">{{ $product->product_name }}</span>
+                                @if($product->is_active)
+                                    <x-badge type="success">Aktif</x-badge>
+                                @else
+                                    <x-badge type="secondary">Nonaktif</x-badge>
+                                @endif
+                            </div>
+                            <span class="text-xs text-[#787774] block mb-1">{{ $product->category ? $product->category->category_name : '-' }}</span>
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm font-semibold text-[#37352F]">Rp {{ number_format($product->product_price, 0, ',', '.') }}</span>
+                                <span class="text-xs text-[#787774]">Stok: <span class="font-bold text-[#37352F]">{{ $product->stock }}</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    @if($canManage)
+                        <div class="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-[#E9E9E7]">
+                            <a href="{{ route('products.edit', $product->id) }}" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200" aria-label="Ubah produk" wire:navigate>
+                                <span class="material-symbols-rounded text-[18px]">edit</span>
+                            </a>
+                            <form id="delete-form-mobile-{{ $product->id }}" action="{{ route('products.destroy', $product->id) }}" method="POST" class="inline-block">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button" onclick="confirmDelete('delete-form-mobile-{{ $product->id }}', '{{ addslashes($product->product_name) }}')" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200" aria-label="Hapus">
+                                    <span class="material-symbols-rounded text-[18px]">delete</span>
+                                </button>
+                            </form>
+                        </div>
+                    @endif
+                </div>
+            @empty
+                <div class="py-8 text-center text-[#9B9A97] text-sm flex flex-col items-center justify-center">
+                    <div class="w-12 h-12 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
+                        <span class="material-symbols-rounded text-[24px] text-[#C4C3C0]">inventory_2</span>
+                    </div>
+                    <p class="font-medium">Produk tidak ditemukan.</p>
+                </div>
+            @endforelse
         </div>
         <div class="p-4 border-t border-[#E9E9E7] shrink-0">
             {{ $products->links() }}

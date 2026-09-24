@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ $title ?? 'Yovel Coffee & Cafe' }}</title>
@@ -54,19 +54,9 @@
         <!-- Main Content Wrapper -->
         <div class="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300" id="main-wrapper">
 
-            <!-- Topbar Header (Mobile Only) -->
-            <header
-                class="bg-yovel-surface/80 backdrop-blur-xl border-b border-yovel-border h-14 flex items-center justify-between px-4 sm:px-6 shrink-0 lg:hidden">
-                <div class="flex items-center ml-10">
-                    <span class="text-lg tracking-tight whitespace-nowrap font-brand">
-                        <span class="font-bold text-yovel-ink">Yovel</span><span class="font-normal text-yovel-muted ml-1">Coffee</span>
-                    </span>
-                </div>
-            </header>
-
             <!-- Main Scrollable Area -->
             <main
-                class="flex-1 overflow-y-auto overflow-x-hidden w-full {{ ($noPadding ?? false) ? '' : 'p-4 sm:p-6 lg:p-8' }} animate-fade-in flex flex-col"
+                class="flex-1 overflow-y-auto overflow-x-hidden w-full {{ ($noPadding ?? false) ? '' : 'px-4 pb-4 pt-16 sm:px-6 sm:pb-6 sm:pt-16 lg:p-8' }} animate-fade-in flex flex-col"
                 id="main-content">
                 <!-- Page Heading -->
                 @isset($header)

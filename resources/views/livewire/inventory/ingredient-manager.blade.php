@@ -105,11 +105,12 @@
         </div>
     @endif
 
-    <div class="card-surface overflow-hidden w-full shrink-0">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="border-b border-yovel-border bg-yovel-surface">
+    <div class="card-surface flex flex-col flex-1 min-h-0 w-full shrink-0">
+        {{-- Desktop/tablet-landscape: existing table --}}
+        <div class="hidden lg:block overflow-x-auto flex-1 table-scroll-shadow">
+            <table class="data-table relative w-full text-left">
+                <thead class="sticky top-0 z-10 shadow-sm">
+                    <tr class="bg-yovel-surface">
                         <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider">Bahan Baku</th>
                         <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider">Stok Saat Ini</th>
                         <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider">Harga/Unit</th>
@@ -173,8 +174,54 @@
                 </tbody>
             </table>
         </div>
+
+        {{-- Mobile/tablet-portrait: card list --}}
+        <div class="lg:hidden flex flex-col gap-3 p-4 overflow-y-auto flex-1">
+            @forelse($ingredients as $item)
+                <div class="card-surface p-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <div class="flex flex-col">
+                            <span class="font-bold text-yovel-ink text-sm">{{ $item->name }}</span>
+                            <span class="text-xs text-yovel-muted">{{ $item->ingredient_code ?? '-' }}</span>
+                        </div>
+                        <div class="flex flex-col items-end gap-1">
+                            @if($item->is_active)
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/50">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Aktif
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-yovel-surface text-yovel-muted border border-yovel-border">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-yovel-muted"></span> Nonaktif
+                                </span>
+                            @endif
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-yovel-border">
+                        <div class="flex-1">
+                            <span class="text-[11px] font-semibold text-yovel-muted uppercase tracking-wider block mb-0.5">Stok: <span class="{{ $item->current_stock <= $item->reorder_level ? 'text-rose-600' : 'text-yovel-ink' }}">{{ number_format($item->current_stock, 2) }} {{ $item->unit }}</span></span>
+                            <span class="text-xs text-yovel-ink">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }} / {{ $item->unit }}</span>
+                        </div>
+                        <div class="flex items-center gap-1 shrink-0">
+                            <button wire:click="adjustStock({{ $item->id }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Sesuaikan Stok">
+                                <span class="material-symbols-rounded text-[18px]">inventory</span>
+                            </button>
+                            <button wire:click="edit({{ $item->id }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-blue-600 hover:bg-blue-50 transition-colors" title="Ubah">
+                                <span class="material-symbols-rounded text-[18px]">edit</span>
+                            </button>
+                            <button wire:click="delete({{ $item->id }})" wire:confirm="Yakin ingin menghapus bahan baku ini?" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus">
+                                <span class="material-symbols-rounded text-[18px]">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            @empty
+                <div class="py-8 text-center">
+                    <x-empty-state icon="inventory_2" title="Belum Ada Bahan Baku" description="Tambahkan bahan baku baru untuk mulai mengelola inventory dan resep produk." />
+                </div>
+            @endforelse
+        </div>
         @if($ingredients->hasPages())
-            <div class="px-6 py-4 border-t border-yovel-border">
+            <div class="px-6 py-4 border-t border-yovel-border shrink-0">
                 {{ $ingredients->links() }}
             </div>
         @endif
@@ -187,7 +234,7 @@
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" aria-hidden="true" wire:click="$set('showAdjustModal', false)"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="relative z-10 inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full border border-yovel-border">
+            <div class="relative z-10 inline-block align-bottom bg-white rounded-xl text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full border border-yovel-border max-h-[90vh] overflow-y-auto">
                 <form wire:submit.prevent="saveAdjustment">
                     <div class="bg-white px-6 pt-6 pb-6">
                         <div class="mb-5 flex justify-between items-center">

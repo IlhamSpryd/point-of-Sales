@@ -88,7 +88,8 @@
 
     {{-- ==================== TABEL RIWAYAT ==================== --}}
     <div class="card-surface flex flex-col flex-1 min-h-0">
-        <div class="overflow-auto flex-1">
+        {{-- Desktop/tablet-landscape: existing table --}}
+        <div class="hidden lg:block overflow-auto flex-1 table-scroll-shadow">
             <table class="data-table relative">
                 <thead class="sticky top-0 z-10 shadow-sm">
                     <tr class="bg-[#F7F7F5]">
@@ -184,6 +185,32 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+
+        {{-- Mobile/tablet-portrait: card list --}}
+        <div class="lg:hidden flex flex-col gap-3 p-4 overflow-y-auto flex-1">
+            @forelse ($this->orders as $order)
+                <div wire:key="order-card-{{ $order->id }}" class="card-surface p-4 cursor-pointer hover:bg-[#F7F7F5] transition-colors duration-200" wire:click="viewDetail({{ $order->id }})">
+                    <div class="flex justify-between items-start">
+                        <span class="font-mono font-bold text-sm text-yovel-ink">{{ $order->order_code }}</span>
+                        <x-badge :type="$this->statusBadgeType($order->order_status)">{{ $order->order_status->label() }}</x-badge>
+                    </div>
+                    <div class="flex justify-between items-end mt-3">
+                        <div class="flex flex-col gap-1">
+                            <span class="text-xs text-yovel-muted">{{ $order->created_at->format('d M, H:i') }}</span>
+                            <span class="text-xs font-semibold text-yovel-ink">{{ $order->user->name ?? 'Self-Order' }}</span>
+                        </div>
+                        <span class="font-bold tabular-nums text-yovel-ink">Rp {{ number_format($order->order_amount, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+            @empty
+                <div class="py-8 text-center text-[#9B9A97] text-sm flex flex-col items-center justify-center">
+                    <div class="w-12 h-12 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
+                        <span class="material-symbols-rounded text-[24px] text-[#C4C3C0]">receipt_long</span>
+                    </div>
+                    <p class="font-medium">Tidak ada transaksi ditemukan.</p>
+                </div>
+            @endforelse
         </div>
         <div class="p-4 border-t border-[#E9E9E7] shrink-0">
             {{ $this->orders->links() }}

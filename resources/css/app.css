@@ -71,6 +71,10 @@
     --color-warning-600: #C88A2E;
     --color-info-50:     #EFF6FF;
     --color-info-600:    #2563EB;
+
+    /* NEW — large-display tiers for KDS TV (currently absent from the codebase) */
+    --breakpoint-3xl: 1920px;
+    --breakpoint-4xl: 2560px;
 }
 
 /* --- TAMBAHAN P1: varian KDS gelap --- */
@@ -80,6 +84,13 @@
     --color-yovel-muted: #A9A79E;
     --color-yovel-border: #2A2A22;
     --color-yovel-surface: #1F1F18;
+}
+
+@media (min-width: 1920px) {
+    [data-theme="kds-dark"] { font-size: 18px; }
+}
+@media (min-width: 2560px) {
+    [data-theme="kds-dark"] { font-size: 24px; }
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -496,9 +507,14 @@ option {
     /* Revisi: Lantai 14px agar touch target (w-6, dll) tidak menyusut di bawah batas aman */
     html.admin-ui { font-size: 14px; }
 
+    /* Tablet Landscape (1024px - 1365px) - naikkan font-size agar hit-area membesar */
+    @media (min-width: 1024px) {
+        html.admin-ui { font-size: 15px; }
+    }
+
     /* Monitor Eksternal Menengah (1366px - 1599px) */
     @media (min-width: 1366px) {
-        html.admin-ui { font-size: 14.5px; }
+        html.admin-ui { font-size: 15.5px; }
     }
 
     /* Monitor Besar / Full HD 1080p ke atas (1600px+) -> Kembali ke ukuran normal 100% */
@@ -514,6 +530,27 @@ option {
     html.admin-ui textarea {
         font-size: 16px;
     }
+}
+
+/* Extend the existing iOS-zoom guard to the customer/self-order shell */
+@media (pointer: coarse) {
+    html:not(.admin-ui) input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+    html:not(.admin-ui) select,
+    html:not(.admin-ui) textarea {
+        font-size: 16px;
+    }
+}
+
+/* Horizontal-scroll affordance for tables that legitimately need it */
+.table-scroll-shadow {
+    background:
+        linear-gradient(to right, white 30%, rgba(255,255,255,0)),
+        linear-gradient(to right, rgba(255,255,255,0), white 70%) 100% 0,
+        radial-gradient(farthest-side at 0 50%, rgba(0,0,0,.08), rgba(0,0,0,0)),
+        radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.08), rgba(0,0,0,0)) 100% 0;
+    background-repeat: no-repeat;
+    background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
+    background-attachment: local, local, scroll, scroll;
 }
 
 

@@ -138,7 +138,7 @@
                 <p class="mt-1 text-sm text-yovel-muted">Silakan panggil staf kami untuk bantuan.</p>
             </div>
         @else
-            <ul class="grid grid-cols-2 gap-3">
+            <ul class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3">
                 @foreach ($products as $product)
                     @php 
                         // PATCH FOR S-18: gunakan sellableQuantity() jika tersedia, fallback ke stock.

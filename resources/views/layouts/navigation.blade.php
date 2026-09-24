@@ -182,8 +182,8 @@
 {{-- Tombol buka drawer (mobile). Touch target 44px. --}}
 <button type="button" x-show="!sidebarMobileOpen" @click="sidebarMobileOpen = true" aria-controls="main-sidebar"
     :aria-expanded="sidebarMobileOpen.toString()" aria-label="Buka menu"
-    class="lg:hidden fixed top-1.5 left-2 z-40 w-[44px] h-[44px] flex items-center justify-center bg-white/90 backdrop-blur border border-[#E9E9E7] rounded-xl text-[#787774] shadow-sm hover:text-[#37352F] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#37352F] transition-all duration-200">
-    <span class="material-symbols-rounded text-[22px]">menu</span>
+    class="lg:hidden fixed top-1.5 left-2 z-40 w-[44px] h-[44px] flex items-center justify-center text-[#37352F] hover:bg-[#F7F7F5] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#37352F] transition-all duration-200 rounded-xl">
+    <span class="material-symbols-rounded text-[26px]">menu</span>
 </button>
 
 {{--
