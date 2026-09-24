@@ -127,6 +127,31 @@ function chaosRace(array $payloads, int $userId): array
     return array_values(Concurrency::driver('process')->run($workers));
 }
 
+function chaosExpireWorker(string $database, string $orderCode, float $startAt): Closure
+{
+    return static function () use ($database, $orderCode, $startAt): array {
+        $default = config('database.default');
+        config(["database.connections.{$default}.database" => $database]);
+        DB::purge($default);
+
+        while (microtime(true) < $startAt) {
+            usleep(500);
+        }
+
+        try {
+            app(TransactionService::class)->updateStatusFromMidtransNotification(
+                $orderCode,
+                'expire',
+                null
+            );
+
+            return ['ok' => true];
+        } catch (Throwable $e) {
+            return ['ok' => false, 'exception' => $e::class, 'message' => $e->getMessage()];
+        }
+    };
+}
+
 it('lockForUpdate NYATA: baris produk dikunci koneksi lain -> timeout, rollback atomik', function () {
     $product = chaosProduct(stock: 1);
     $user = User::factory()->create();
@@ -344,6 +369,8 @@ it('lockForUpdate NYATA pada Ingredient: baris bahan baku dikunci koneksi lain -
         try {
             $service->createTransaction([
                 'items' => [['product_id' => $product->id, 'quantity' => 1, 'extra_price' => 0, 'options' => null]],
+                'payment_method' => 'cash',
+                'cash_received' => 10_000_000,
             ], $user->id);
         } catch (QueryException $e) {
             $caught = $e;
@@ -363,6 +390,8 @@ it('lockForUpdate NYATA pada Ingredient: baris bahan baku dikunci koneksi lain -
 
     $order = $service->createTransaction([
         'items' => [['product_id' => $product->id, 'quantity' => 1, 'extra_price' => 0, 'options' => null]],
+        'payment_method' => 'cash',
+        'cash_received' => 10_000_000,
     ], $user->id);
 
     expect($order->order_code)->toStartWith('POS-');
@@ -504,6 +533,8 @@ it('ingredient_stock_movements bersifat append-only: UPDATE dan DELETE ditolak o
 
     $order = app(TransactionService::class)->createTransaction([
         'items' => [['product_id' => $product->id, 'quantity' => 1, 'extra_price' => 0, 'options' => null]],
+        'payment_method' => 'cash',
+        'cash_received' => 10_000_000,
     ], $user->id);
 
     $movement = IngredientStockMovement::where('order_id', $order->id)->firstOrFail();
@@ -529,11 +560,12 @@ it('BOM overselling mustahil (Modifier Edition): restoreStockForOrder() PATCH FO
     $ingredient = chaosIngredient($ingredientStock);
     [$product, $modifier] = chaosModifierBomProduct($ingredient, $qtyRequiredPerUnit);
     $user = User::factory()->create();
+    $customer = chaosCustomer();
 
     $total = chaosCalculateTotal($product->product_price);
 
     // Create an un-paid order (qris)
-    $payload = chaosModifierBomPayload($product->id, $modifier->id, [], $user->id);
+    $payload = chaosModifierBomPayload($product->id, $modifier->id, [], $customer->id);
     $payload['payment_method'] = 'qris';
     $payload['is_self_order_cash'] = false;
     $payload['cash_received'] = null;
@@ -543,34 +575,13 @@ it('BOM overselling mustahil (Modifier Edition): restoreStockForOrder() PATCH FO
     // Verify stock is consumed
     expect(bccomp((string) $ingredient->fresh()->current_stock, '0.0000', 4))->toBe(0);
 
-    // Simulate concurrent expire notifications
+    $orderCode = $order->order_code;
     $database = chaosDatabaseName();
     $startAt = chaosBarrier($requests);
     $workers = [];
 
     for ($i = 0; $i < $requests; $i++) {
-        $workers[] = static function () use ($database, $order, $startAt): array {
-            $default = config('database.default');
-            config(["database.connections.{$default}.database" => $database]);
-            DB::purge($default);
-
-            while (microtime(true) < $startAt) {
-                usleep(500);
-            }
-
-            try {
-                // Fake midtrans notification payload
-                app(TransactionService::class)->updateStatusFromMidtransNotification(
-                    $order->order_code,
-                    'expire',
-                    null
-                );
-
-                return ['ok' => true];
-            } catch (Throwable $e) {
-                return ['ok' => false, 'exception' => $e::class, 'message' => $e->getMessage()];
-            }
-        };
+        $workers[] = chaosExpireWorker($database, $orderCode, $startAt);
     }
 
     $results = collect(array_values(Concurrency::driver('process')->run($workers)));
