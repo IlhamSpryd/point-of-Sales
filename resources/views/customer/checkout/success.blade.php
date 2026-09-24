@@ -39,6 +39,12 @@
                     <span class="material-symbols-rounded text-[18px]">payments</span> <span class="text-[15px]">Bayar Sekarang</span>
                 </button>
             @endif
+
+            {{-- F-11 ETA --}}
+            <div x-show="status === 'paid' && eta > 0" x-cloak class="mt-4 inline-flex items-center gap-1.5 rounded-full bg-orange-100 px-3 py-1.5 text-sm font-medium text-orange-800">
+                <span class="material-symbols-rounded text-[16px]">timer</span>
+                <span>Estimasi siap dalam <span x-text="eta"></span> menit</span>
+            </div>
         </section>
 
         <section class="card-surface mt-4 p-5">
@@ -81,6 +87,7 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('orderStatus', (cfg) => ({
                 status: cfg.status,
+                eta: 0,
                 startedAt: Date.now(),
                 timer: null,
 
@@ -97,6 +104,11 @@
                 get isPending() { return this.status === 'pending'; },
 
                 init() {
+                    // Start polling immediately if paid to get ETA
+                    if (this.isPending || this.status === 'paid') {
+                        this.schedule();
+                    }
+                    
                     if (!this.isPending) return;
                     
                     // Coba panggil snap otomatis dengan sedikit delay agar script Midtrans siap
@@ -112,7 +124,7 @@
 
                 schedule() {
                     clearTimeout(this.timer);
-                    if (!this.isPending) return;
+                    if (this.status === 'completed' || this.status === 'failed' || this.status === 'cancelled' || this.status === 'expired') return;
                     this.timer = setTimeout(async () => {
                         await this.refresh();
                         this.schedule();
@@ -122,7 +134,11 @@
                 async refresh() {
                     try {
                         const res = await fetch(cfg.statusUrl, { headers: { 'Accept': 'application/json' } });
-                        if (res.ok) this.status = (await res.json()).order_status;
+                        if (res.ok) {
+                            const data = await res.json();
+                            this.status = data.order_status;
+                            this.eta = data.eta_minutes || 0;
+                        }
                     } catch (e) {
                         // Jaringan putus: abaikan
                     }

@@ -26,11 +26,11 @@ class SecurityHeaders
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
-        // CSP report-only: audit dulu, aktifkan enforce setelah stabil.
+        // CSP Enforced:
         if (app()->isProduction()) {
             $response->headers->set(
-                'Content-Security-Policy-Report-Only',
-                "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://app.sandbox.midtrans.com https://app.midtrans.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://app.sandbox.midtrans.com https://app.midtrans.com;"
+                'Content-Security-Policy',
+                "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://app.sandbox.midtrans.com https://app.midtrans.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://app.sandbox.midtrans.com https://app.midtrans.com;"
             );
         }
 

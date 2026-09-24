@@ -137,13 +137,12 @@ class Product extends Model
      * untuk produk ber-BOM, ketersediaan sesungguhnya ditentukan oleh
      * `ingredients.current_stock`, BUKAN kolom `stock` di tabel ini --
      * kolom `stock` produk ber-BOM tidak lagi dimutakhirkan sama sekali
-     * (lihat catatan Node 1 di atas), sehingga hook cache-invalidation di
-     * booted() TIDAK dapat mendeteksi produk ber-BOM yang kehabisan bahan
-     * baku. PERLU TINDAK LANJUT: menu Self-Order/Kasir untuk produk
-     * ber-BOM berpotensi tetap tampil "tersedia" walau bahan bakunya
-     * habis, sampai ada mekanisme cache-invalidation terpisah yang
-     * memantau Ingredient::current_stock. Di luar cakupan permintaan
-     * migrasi indexing & MenuCacheService kali ini.
+     * (lihat catatan Node 1 di atas).
+     *
+     * [F-07 RESOLVED] Cache invalidation untuk produk ber-BOM kini
+     * ditangani oleh Ingredient::booted()::saved() -- saat current_stock
+     * melewati ambang nol, menu cache di-flush otomatis via
+     * DB::afterCommit(), pola identik dengan Product::booted()::saved().
      */
     public function scopeAvailableForOrder($query)
     {

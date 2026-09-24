@@ -62,6 +62,18 @@
                 </dl>
             </section>
 
+            {{-- Member / Loyalty --}}
+            <section aria-labelledby="loyalty" class="mb-5">
+                <h2 id="loyalty" class="text-[12px] font-bold uppercase tracking-wider text-yovel-muted mb-3">Member & Loyalty (Opsional)</h2>
+                <div class="card-surface p-4">
+                    <label for="customer_phone" class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nomor Handphone</label>
+                    <input type="tel" name="customer_phone" id="customer_phone" value="{{ old('customer_phone') }}"
+                           placeholder="Contoh: 08123456789"
+                           class="w-full rounded-xl border-yovel-border bg-white px-4 py-2.5 text-[14px] focus:border-yovel-ink focus:ring-1 focus:ring-yovel-ink outline-none transition-all" />
+                    <p class="mt-2 text-[11px] text-yovel-muted">Masukkan nomor HP yang terdaftar untuk mendapatkan Poin Loyalty dari transaksi ini.</p>
+                </div>
+            </section>
+
             {{-- Metode pembayaran: Button-Box --}}
             <section aria-labelledby="metode">
                 <h2 id="metode" class="text-[12px] font-bold uppercase tracking-wider text-yovel-muted mb-3">Metode Pembayaran</h2>

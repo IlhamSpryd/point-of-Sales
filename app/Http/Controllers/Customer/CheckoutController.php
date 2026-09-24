@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Enums\OrderStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\StoreCheckoutRequest;
+use App\Models\Customer;
 use App\Models\Modifier;
 use App\Models\Order;
 use App\Models\Product;
@@ -142,6 +143,16 @@ class CheckoutController extends Controller
                 ->with('error', 'Pembayaran sedang diproses, mohon tunggu sebentar.');
         }
 
+        $customerId = null;
+        if ($phone = $request->validated('customer_phone')) {
+            $customer = Customer::where('phone', $phone)->where('is_active', true)->first();
+            if ($customer) {
+                $customerId = $customer->id;
+            } else {
+                return back()->with('error', 'Nomor HP tidak terdaftar sebagai member.');
+            }
+        }
+
         try {
             $order = $this->transactionService->createTransaction([
                 'items' => $transactionItems,
@@ -149,6 +160,7 @@ class CheckoutController extends Controller
                 'cash_received' => null,
                 'is_self_order_cash' => $request->validated('payment_method') === 'cash',
                 'table_id' => $tableId,
+                'customer_id' => $customerId,
                 'idempotency_key' => $idempotencyKey,
             ], $systemUserId);
         } catch (ValidationException $e) {
@@ -237,11 +249,16 @@ class CheckoutController extends Controller
             }
         }
 
+        // PATCH FOR F-11: ETA Tracking
+        $etaPerItem = (int) config('pos.eta_per_item', 3);
+        $etaMinutes = ($prep['pending'] * $etaPerItem) + ceil($prep['brewing'] * ($etaPerItem / 2));
+
         return response()->json([
             'order_status' => $status->value,
             'is_paid' => $status === OrderStatus::Paid,
             'is_final' => $status->isFinal(),
             'prep' => $prep,
+            'eta_minutes' => $etaMinutes,
         ]);
     }
 

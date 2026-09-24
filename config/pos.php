@@ -19,4 +19,7 @@ return [
     'auto_open_drawer' => env('POS_AUTO_OPEN_DRAWER', false),
     'qz_cert_path' => env('QZ_CERT_PATH', storage_path('app/private/qz/digital-certificate.txt')),
     'qz_private_key_path' => env('QZ_PRIVATE_KEY_PATH', storage_path('app/private/qz/private-key.pem')),
+
+    // PATCH FOR F-11: estimasi menit per item untuk ETA pelanggan self-order.
+    'eta_per_item' => env('POS_ETA_PER_ITEM', 3),
 ];

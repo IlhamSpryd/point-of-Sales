@@ -27,9 +27,13 @@ use Illuminate\Support\Facades\Log;
  * Strategi yang dipakai di sini adalah KEY EKSPLISIT + INVALIDASI
  * EKSPLISIT/EVENT-DRIVEN, yang kompatibel dengan SEMUA driver cache
  * Laravel termasuk 'database' yang sedang aktif sekarang. Lihat
- * rekomendasi migrasi ke Redis di laporan (bagian Config & Throughput)
- * untuk membuka opsi tag-based invalidation yang lebih granular di masa
- * depan tanpa perlu menulis ulang service ini.
+ *
+ * PATCH FOR F-08: Tag-based invalidation (Redis).
+ * Sekarang di-upgrade untuk mendukung Cache::tags() secara elegan:
+ * menggunakan getCache() helper yang akan otomatis menggunakan tag
+ * ['menu'] jika CACHE_STORE mendukungnya (Redis), atau fallback ke store
+ * bawaan jika tidak. Ini sangat meningkatkan performa saat flush()
+ * karena satu operasi tags()->flush() akan membersihkan semua key.
  */
 class MenuCacheService
 {
@@ -66,9 +70,14 @@ class MenuCacheService
      * toggle modifier, setiap perubahan qty memicu render ulang). Ini
      * adalah temuan N+1/beban-DB paling signifikan pada audit Node 3.
      */
+    private function getCache()
+    {
+        return Cache::supportsTags() ? Cache::tags(['menu']) : Cache::store();
+    }
+
     public function getCatalog()
     {
-        return Cache::remember(self::KEY_CATALOG, self::TTL_SECONDS, function () {
+        return $this->getCache()->remember(self::KEY_CATALOG, self::TTL_SECONDS, function () {
             return Category::with([
                 'products' => fn ($q) => $q->availableForOrder()->with('modifierGroups.modifiers'),
             ])->get();
@@ -77,14 +86,14 @@ class MenuCacheService
 
     public function getAllCategories()
     {
-        return Cache::remember(self::KEY_CATEGORIES, self::TTL_SECONDS, function () {
+        return $this->getCache()->remember(self::KEY_CATEGORIES, self::TTL_SECONDS, function () {
             return Category::all();
         });
     }
 
     public function getActiveProductsWithCategory()
     {
-        return Cache::remember(self::KEY_ACTIVE_PRODUCTS, self::TTL_SECONDS, function () {
+        return $this->getCache()->remember(self::KEY_ACTIVE_PRODUCTS, self::TTL_SECONDS, function () {
             return Product::where('is_active', true)->with('category')->get();
         });
     }
@@ -107,7 +116,7 @@ class MenuCacheService
      */
     public function getMenuDisplayData(): array
     {
-        $cached = Cache::get(self::KEY_MENU_DISPLAY);
+        $cached = $this->getCache()->get(self::KEY_MENU_DISPLAY);
 
         if ($cached !== null) {
             return $cached;
@@ -116,7 +125,7 @@ class MenuCacheService
         try {
             return Cache::lock(self::REBUILD_LOCK_KEY, 10)
                 ->block(self::REBUILD_LOCK_WAIT_SECONDS, function () {
-                    return Cache::remember(
+                    return $this->getCache()->remember(
                         self::KEY_MENU_DISPLAY,
                         self::TTL_SECONDS,
                         fn () => $this->buildMenuDisplayData()
@@ -163,6 +172,12 @@ class MenuCacheService
      */
     public function flush(): void
     {
+        if (Cache::supportsTags()) {
+            Cache::tags(['menu'])->flush();
+
+            return;
+        }
+
         Cache::forget(self::KEY_CATALOG);
         Cache::forget(self::KEY_CATEGORIES);
         Cache::forget(self::KEY_ACTIVE_PRODUCTS);

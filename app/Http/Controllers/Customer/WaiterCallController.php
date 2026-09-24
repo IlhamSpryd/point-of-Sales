@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Customer;
 
+use App\Events\WaiterCalled;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
@@ -33,7 +34,8 @@ class WaiterCallController extends Controller
 
         Log::channel('stack')->info("[WAITER-CALL] Pelanggan di {$tableName} (ID:{$tableId}) memanggil staf.");
 
-        // TODO: Dispatch event/notification ke KDS/Pusher/Firebase di sini.
+        // PATCH FOR P-09: Dispatch event push notification ke KDS/Kasir
+        WaiterCalled::dispatch($tableId, $tableName);
 
         return response()->json(['message' => "Panggilan terkirim. Staf sedang menuju {$tableName}."]);
     }
