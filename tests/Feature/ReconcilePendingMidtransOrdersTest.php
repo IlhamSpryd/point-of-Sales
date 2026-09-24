@@ -40,11 +40,12 @@ class ReconcilePendingMidtransOrdersTest extends TestCase
 
     public function test_skips_recently_created_orders()
     {
-        $order = Order::create([
+        $order = Order::forceCreate([
             'order_code' => 'ORD-RECENT-1',
+            'idempotency_key' => \Illuminate\Support\Str::uuid()->toString(),
             'order_status' => OrderStatus::Pending,
             'order_amount' => 100000,
-            'sub_total' => 100000,
+            'subtotal_amount' => 100000,
             'tax_amount' => 0,
             'discount_amount' => 0,
             'payment_method' => 'qris',
@@ -66,11 +67,12 @@ class ReconcilePendingMidtransOrdersTest extends TestCase
 
     public function test_skips_cash_orders()
     {
-        $order = Order::create([
+        $order = Order::forceCreate([
             'order_code' => 'ORD-CASH-1',
+            'idempotency_key' => \Illuminate\Support\Str::uuid()->toString(),
             'order_status' => OrderStatus::Pending,
             'order_amount' => 100000,
-            'sub_total' => 100000,
+            'subtotal_amount' => 100000,
             'tax_amount' => 0,
             'discount_amount' => 0,
             'payment_method' => 'cash',
