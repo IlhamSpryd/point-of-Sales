@@ -1,15 +1,15 @@
 <x-app-layout>
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h4 class="text-xl font-bold text-gray-900 tracking-tight">Ubah Produk</h4>
-            <p class="text-sm font-medium text-gray-500 mt-1">Perbarui detail produk #{{ $product->id }}</p>
+            <h4 class="text-xl font-bold text-[#37352F] tracking-tight">Ubah Produk</h4>
+            <p class="text-sm font-medium text-[#787774] mt-1">Perbarui detail produk #{{ $product->id }}</p>
         </div>
-        <a href="{{ route('products.index') }}" class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-gray-50 border border-gray-200 text-gray-900 text-sm font-medium rounded-lg transition-all duration-200 shadow-sm active:scale-95" wire:navigate>
+        <a href="{{ route('products.index') }}" class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#F7F7F5] border border-[#E9E9E7] text-[#37352F] text-sm font-medium rounded-xl transition-all duration-200 shadow-sm active:scale-95" wire:navigate>
             <span class="material-symbols-rounded text-[18px]">arrow_back</span> Kembali
         </a>
     </div>
 
-    <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden w-full shrink-0">
+    <div class="bg-white border border-[#E9E9E7] rounded-xl shadow-sm overflow-hidden w-full shrink-0">
         <form action="{{ route('products.update', $product->id) }}" method="POST" enctype="multipart/form-data" x-data="{ submitting: false }" @submit="submitting = true" class="p-6 md:p-8 space-y-6">
             @csrf
             @method('PUT')
@@ -31,7 +31,7 @@
                     <x-form-label for="category_id">Kategori</x-form-label>
                     <div class="relative">
                         <select id="category_id" name="category_id" 
-                                class="form-input w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-900 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 shadow-sm {{ $errors->has('category_id') ? 'input-error' : '' }}" required>
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-[#37352F] appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] transition-all duration-200 shadow-sm {{ $errors->has('category_id') ? 'input-error' : '' }}" required>
                             <option value="">Pilih Kategori</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}" {{ old('category_id', $product->category_id) == $category->id ? 'selected' : '' }}>
@@ -39,7 +39,7 @@
                                 </option>
                             @endforeach
                         </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-400">
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
                             <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
                         </div>
                     </div>
@@ -79,14 +79,14 @@
                 <label class="flex items-center cursor-pointer">
                     <div class="relative">
                         <input type="checkbox" name="is_active" value="1" class="sr-only" {{ old('is_active', $product->is_active) ? 'checked' : '' }}>
-                        <div class="block bg-gray-200 w-10 h-6 rounded-full transition-colors duration-300"></div>
+                        <div class="block bg-primary-200 w-10 h-6 rounded-full transition-colors duration-300"></div>
                         <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 shadow-sm"></div>
                     </div>
                     <style>
                         input:checked ~ .block { background-color: #10b981; }
                         input:checked ~ .dot { transform: translateX(100%); }
                     </style>
-                    <div class="ml-3 text-sm font-semibold text-gray-900">
+                    <div class="ml-3 text-sm font-semibold text-[#37352F]">
                         Produk Aktif
                     </div>
                 </label>
@@ -96,7 +96,7 @@
             <div>
                 <x-form-label for="product_description">Deskripsi</x-form-label>
                 <textarea id="product_description" name="product_description" rows="3"
-                          class="form-input w-full px-4 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-gray-900 transition-all duration-200 shadow-sm {{ $errors->has('product_description') ? 'input-error' : '' }}" 
+                          class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-[#37352F] placeholder-primary-400 focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] transition-all duration-200 shadow-sm {{ $errors->has('product_description') ? 'input-error' : '' }}" 
                           placeholder="Masukkan deskripsi produk (opsional)">{{ old('product_description', $product->product_description) }}</textarea>
                 @error('product_description')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
@@ -121,13 +121,13 @@
                 removeItem(index) {
                     this.items.splice(index, 1);
                 }
-            }" class="pt-4 border-t border-gray-200">
+            }" class="pt-4 border-t border-[#E9E9E7]">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h5 class="text-sm font-bold text-gray-900">Bahan Baku (Bill of Materials)</h5>
-                        <p class="text-xs text-gray-500 mt-0.5">Tentukan bahan baku yang akan memotong stok otomatis saat produk ini terjual.</p>
+                        <h5 class="text-sm font-bold text-[#37352F]">Bahan Baku (Bill of Materials)</h5>
+                        <p class="text-xs text-[#787774] mt-0.5">Tentukan bahan baku yang akan memotong stok otomatis saat produk ini terjual.</p>
                     </div>
-                    <button type="button" @click="addItem" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
+                    <button type="button" @click="addItem" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-[#E9E9E7] rounded-xl hover:bg-[#F7F7F5] transition-colors shadow-sm">
                         <span class="material-symbols-rounded text-[16px]">add</span> Tambah Bahan
                     </button>
                 </div>
@@ -136,7 +136,7 @@
                     <template x-for="(item, index) in items" :key="index">
                         <div class="flex items-start gap-3">
                             <div class="flex-1">
-                                <select x-model="item.id" :name="'ingredients['+index+'][id]'" class="form-select w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-900 text-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 shadow-sm" required>
+                                <select x-model="item.id" :name="'ingredients['+index+'][id]'" class="form-select w-full px-3 py-2 rounded-xl border border-[#E9E9E7] bg-white text-[#37352F] text-sm focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] shadow-sm" required>
                                     <option value="">-- Pilih Bahan --</option>
                                     <template x-for="ing in ingredients" :key="ing.id">
                                         <option :value="ing.id" x-text="ing.name + ' (' + ing.unit + ')'" :selected="item.id == ing.id"></option>
@@ -144,7 +144,7 @@
                                 </select>
                             </div>
                             <div class="w-32">
-                                <input type="number" step="0.0001" x-model="item.quantity" :name="'ingredients['+index+'][quantity]'" placeholder="Kuantitas" class="form-input w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-900 text-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 shadow-sm" required>
+                                <input type="number" step="0.0001" x-model="item.quantity" :name="'ingredients['+index+'][quantity]'" placeholder="Kuantitas" class="form-input w-full px-3 py-2 rounded-xl border border-[#E9E9E7] bg-white text-[#37352F] text-sm focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] shadow-sm" required>
                             </div>
                             <button type="button" @click="removeItem(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors" title="Hapus baris">
                                 <span class="material-symbols-rounded text-[18px]">close</span>
@@ -152,8 +152,8 @@
                         </div>
                     </template>
                     
-                    <div x-show="items.length === 0" class="text-center py-6 bg-gray-50 rounded-lg border border-gray-200 border-dashed">
-                        <p class="text-sm text-gray-400">Belum ada bahan baku. Klik "Tambah Bahan" untuk menyusun resep.</p>
+                    <div x-show="items.length === 0" class="text-center py-6 bg-[#F7F7F5] rounded-xl border border-[#E9E9E7] border-dashed">
+                        <p class="text-sm text-primary-400">Belum ada bahan baku. Klik "Tambah Bahan" untuk menyusun resep.</p>
                     </div>
                 </div>
             </div>
@@ -171,13 +171,13 @@
                 removeGroup(index) {
                     this.selectedGroups.splice(index, 1);
                 }
-            }" class="pt-4 border-t border-gray-200">
+            }" class="pt-4 border-t border-[#E9E9E7]">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h5 class="text-sm font-bold text-gray-900">Grup Varian & Modifier</h5>
-                        <p class="text-xs text-gray-500 mt-0.5">Tautkan grup modifier (seperti Pilihan Susu, Suhu) yang tersedia untuk produk ini.</p>
+                        <h5 class="text-sm font-bold text-[#37352F]">Grup Varian & Modifier</h5>
+                        <p class="text-xs text-[#787774] mt-0.5">Tautkan grup modifier (seperti Pilihan Susu, Suhu) yang tersedia untuk produk ini.</p>
                     </div>
-                    <button type="button" @click="addGroup" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
+                    <button type="button" @click="addGroup" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-[#E9E9E7] rounded-xl hover:bg-[#F7F7F5] transition-colors shadow-sm">
                         <span class="material-symbols-rounded text-[16px]">add</span> Tambah Grup Varian
                     </button>
                 </div>
@@ -186,7 +186,7 @@
                     <template x-for="(groupId, index) in selectedGroups" :key="index">
                         <div class="flex items-start gap-3">
                             <div class="flex-1">
-                                <select x-model="selectedGroups[index]" :name="'modifier_groups['+index+']'" class="form-select w-full px-3 py-2 rounded-lg border border-gray-200 bg-white text-gray-900 text-sm focus:ring-2 focus:ring-gray-900 focus:border-gray-900 shadow-sm" required>
+                                <select x-model="selectedGroups[index]" :name="'modifier_groups['+index+']'" class="form-select w-full px-3 py-2 rounded-xl border border-[#E9E9E7] bg-white text-[#37352F] text-sm focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] shadow-sm" required>
                                     <option value="">-- Pilih Grup Varian --</option>
                                     <template x-for="g in groups" :key="g.id">
                                         <option :value="g.id" x-text="g.name" :selected="groupId == g.id"></option>
@@ -199,8 +199,8 @@
                         </div>
                     </template>
                     
-                    <div x-show="selectedGroups.length === 0" class="text-center py-6 bg-gray-50 rounded-lg border border-gray-200 border-dashed">
-                        <p class="text-sm text-gray-400">Belum ada grup varian. Klik "Tambah Grup Varian" jika diperlukan.</p>
+                    <div x-show="selectedGroups.length === 0" class="text-center py-6 bg-[#F7F7F5] rounded-xl border border-[#E9E9E7] border-dashed">
+                        <p class="text-sm text-primary-400">Belum ada grup varian. Klik "Tambah Grup Varian" jika diperlukan.</p>
                     </div>
                 </div>
             </div>
@@ -210,21 +210,21 @@
                 <x-form-label for="product_photo">Foto Produk</x-form-label>
                 @if($product->product_photo)
                     <div class="mb-3">
-                        <p class="text-xs text-gray-500 mb-2">Foto Saat Ini:</p>
-                        <img src="{{ asset('storage/' . $product->product_photo) }}" class="h-24 w-24 object-cover rounded-lg border border-gray-200 shadow-sm" alt="Foto yang ada">
+                        <p class="text-xs text-[#787774] mb-2">Foto Saat Ini:</p>
+                        <img src="{{ asset('storage/' . $product->product_photo) }}" class="h-24 w-24 object-cover rounded-xl border border-[#E9E9E7] shadow-sm" alt="Foto yang ada">
                     </div>
                 @endif
-                <div class="mt-1 flex items-center justify-center px-6 pt-5 pb-6 border-2 border-gray-200 border-dashed rounded-lg transition-colors duration-200 hover:border-[#C4C3C0] bg-gray-50">
+                <div class="mt-1 flex items-center justify-center px-6 pt-5 pb-6 border-2 border-[#E9E9E7] border-dashed rounded-xl transition-colors duration-200 hover:border-[#C4C3C0] bg-[#F7F7F5]">
                     <div class="space-y-1 text-center">
-                        <span class="material-symbols-rounded text-[32px] text-gray-300">image</span>
-                        <div class="flex flex-col sm:flex-row text-sm text-gray-500 justify-center gap-1 mt-3">
-                            <label for="product_photo" class="relative cursor-pointer bg-white rounded-lg font-medium text-gray-900 hover:text-black focus-within:outline-none px-3 py-1 shadow-sm border border-gray-200 transition-all duration-200 active:scale-95">
+                        <span class="material-symbols-rounded text-[32px] text-primary-300">image</span>
+                        <div class="flex flex-col sm:flex-row text-sm text-[#787774] justify-center gap-1 mt-3">
+                            <label for="product_photo" class="relative cursor-pointer bg-white rounded-xl font-medium text-[#37352F] hover:text-black focus-within:outline-none px-3 py-1 shadow-sm border border-[#E9E9E7] transition-all duration-200 active:scale-95">
                                 <span>Unggah untuk mengganti</span>
                                 <input id="product_photo" name="product_photo" type="file" class="sr-only" accept="image/jpeg,image/png,image/jpg" onchange="document.getElementById('file-name').textContent = this.files[0].name">
                             </label>
                             <p class="pl-1 shrink-0 pt-1">atau seret dan lepas</p>
                         </div>
-                        <p class="text-xs text-gray-400 mt-2" id="file-name">Opsional. PNG, JPG hingga 2MB</p>
+                        <p class="text-xs text-primary-400 mt-2" id="file-name">Opsional. PNG, JPG hingga 2MB</p>
                     </div>
                 </div>
                 @error('product_photo')
@@ -232,7 +232,7 @@
                 @enderror
             </div>
 
-            <div class="pt-4 border-t border-gray-200 flex justify-end">
+            <div class="pt-4 border-t border-[#E9E9E7] flex justify-end">
                 <x-button type="submit" variant="primary" :disabled="false" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''">
                     <span x-show="!submitting">
                         <span class="material-symbols-rounded text-[18px]">save</span> Perbarui Produk

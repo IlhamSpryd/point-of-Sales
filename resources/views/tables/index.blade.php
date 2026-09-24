@@ -55,12 +55,6 @@
                                     </div>
                                     <div>
                                         @php
-                                            $opColors = [
-                                                'available' => 'bg-emerald-100 text-emerald-800 border-emerald-200',
-                                                'occupied' => 'bg-rose-100 text-rose-800 border-rose-200',
-                                                'cleaning' => 'bg-amber-100 text-amber-800 border-amber-200',
-                                                'reserved' => 'bg-blue-100 text-blue-800 border-blue-200',
-                                            ];
                                             $opLabels = [
                                                 'available' => 'Kosong',
                                                 'occupied' => 'Terisi',
@@ -68,9 +62,9 @@
                                                 'reserved' => 'Dipesan',
                                             ];
                                         @endphp
-                                        <span class="inline-flex px-2 py-0.5 text-xs font-medium border rounded-full {{ $opColors[$table->operational_status] }}">
-                                            {{ $opLabels[$table->operational_status] }}
-                                        </span>
+                                        <x-badge :type="match($table->operational_status) {
+                                            'available' => 'success', 'occupied' => 'danger', 'cleaning' => 'warning', 'reserved' => 'info',
+                                        }">{{ $opLabels[$table->operational_status] }}</x-badge>
                                     </div>
                                 </div>
                             </td>
@@ -80,11 +74,15 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-right space-x-2">
-                                <a href="{{ route('tables.edit', $table->secure_token) }}" class="p-1.5 text-[#9B9A97] hover:text-[#37352F] transition-colors duration-200 inline-block" wire:navigate><span class="material-symbols-rounded">edit</span></a>
+                                <a href="{{ route('tables.edit', $table->secure_token) }}" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200 active:scale-90" aria-label="Ubah meja" wire:navigate>
+                                    <span class="material-symbols-rounded text-[20px]">edit</span>
+                                </a>
                                 <form id="delete-form-{{ $table->id }}" action="{{ route('tables.destroy', $table->secure_token) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" onclick="confirmDelete('delete-form-{{ $table->id }}', '{{ $table->table_name }}')" class="p-1.5 text-[#9B9A97] hover:text-rose-600 transition-colors duration-200"><span class="material-symbols-rounded">delete</span></button>
+                                    <button type="button" onclick="confirmDelete('delete-form-{{ $table->id }}', '{{ $table->table_name }}')" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90" aria-label="Hapus">
+                                        <span class="material-symbols-rounded text-[20px]">delete</span>
+                                    </button>
                                 </form>
                             </td>
                         </tr>

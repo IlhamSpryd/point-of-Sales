@@ -4,11 +4,12 @@ namespace Tests\Feature;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 use Tests\TestCase;
-use Database\Seeders\RolesAndPermissionsSeeder;
 
 class MidtransWebhookTest extends TestCase
 {
@@ -19,11 +20,11 @@ class MidtransWebhookTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Setup config and seeders
         Config::set('services.midtrans.server_key', 'test_server_key');
-        
-        $role = \App\Models\Role::firstOrCreate(
+
+        $role = Role::firstOrCreate(
             ['role_code' => 'ROL-001'],
             [
                 'name' => 'Admin',
@@ -31,7 +32,7 @@ class MidtransWebhookTest extends TestCase
                 'is_active' => true,
             ]
         );
-        
+
         $this->systemUser = User::factory()->create([
             'email' => config('pos.self_order_system_email', 'system@yovel.com'),
             'role_id' => $role->id,
@@ -41,7 +42,7 @@ class MidtransWebhookTest extends TestCase
 
     private function generateSignature($orderId, $statusCode, $grossAmount)
     {
-        return hash('sha512', $orderId . $statusCode . $grossAmount . 'test_server_key');
+        return hash('sha512', $orderId.$statusCode.$grossAmount.'test_server_key');
     }
 
     public function test_rejects_webhook_if_payload_incomplete()
@@ -89,7 +90,7 @@ class MidtransWebhookTest extends TestCase
     {
         $order = Order::forceCreate([
             'order_code' => 'ORD-MISMATCH-1',
-            'idempotency_key' => \Illuminate\Support\Str::uuid()->toString(),
+            'idempotency_key' => Str::uuid()->toString(),
             'order_status' => OrderStatus::Pending,
             'order_amount' => 50000,
             'subtotal_amount' => 50000,
@@ -111,7 +112,7 @@ class MidtransWebhookTest extends TestCase
         ]);
 
         $response->assertStatus(200); // Controller returns 200 OK
-        
+
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
             'order_status' => OrderStatus::Pending->value, // Tidak berubah
@@ -122,7 +123,7 @@ class MidtransWebhookTest extends TestCase
     {
         $order = Order::forceCreate([
             'order_code' => 'ORD-SETTLEMENT-1',
-            'idempotency_key' => \Illuminate\Support\Str::uuid()->toString(),
+            'idempotency_key' => Str::uuid()->toString(),
             'order_status' => OrderStatus::Pending,
             'order_amount' => 100000,
             'subtotal_amount' => 100000,
@@ -144,22 +145,23 @@ class MidtransWebhookTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        
+
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
             'order_status' => OrderStatus::Paid->value,
         ]);
-        
+
         $this->assertDatabaseHas('payments', [
             'order_id' => $order->id,
             'payment_method' => 'qris',
         ]);
     }
+
     public function test_successfully_processes_expire()
     {
         $order = Order::forceCreate([
             'order_code' => 'ORD-EXPIRE-1',
-            'idempotency_key' => \Illuminate\Support\Str::uuid()->toString(),
+            'idempotency_key' => Str::uuid()->toString(),
             'order_status' => OrderStatus::Pending,
             'order_amount' => 100000,
             'subtotal_amount' => 100000,
@@ -181,7 +183,7 @@ class MidtransWebhookTest extends TestCase
         ]);
 
         $response->assertStatus(200);
-        
+
         $this->assertDatabaseHas('orders', [
             'id' => $order->id,
             'order_status' => OrderStatus::Expired->value,

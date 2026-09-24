@@ -11,6 +11,7 @@ use App\Models\Table;
 use App\Models\User;
 use App\Services\CartService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -88,8 +89,8 @@ class CheckoutGuardTest extends TestCase
         Session::put('customer_orders', ['ORD-001', 'ORD-002']);
 
         // Create 2 pending orders
-        Order::forceCreate(['idempotency_key' => \Illuminate\Support\Str::uuid()->toString(), 'user_id' => $this->systemUser->id, 'order_type' => 'dine_in', 'order_date' => now(), 'subtotal_amount' => 0, 'discount_amount' => 0, 'tax_amount' => 0, 'service_charge_amount' => 0, 'order_amount' => 0, 'order_change' => 0, 'payment_method' => 'cash', 'order_code' => 'ORD-001', 'order_status' => OrderStatus::Pending, 'table_id' => $table->id]);
-        Order::forceCreate(['idempotency_key' => \Illuminate\Support\Str::uuid()->toString(), 'user_id' => $this->systemUser->id, 'order_type' => 'dine_in', 'order_date' => now(), 'subtotal_amount' => 0, 'discount_amount' => 0, 'tax_amount' => 0, 'service_charge_amount' => 0, 'order_amount' => 0, 'order_change' => 0, 'payment_method' => 'cash', 'order_code' => 'ORD-002', 'order_status' => OrderStatus::Pending, 'table_id' => $table->id]);
+        Order::forceCreate(['idempotency_key' => Str::uuid()->toString(), 'user_id' => $this->systemUser->id, 'order_type' => 'dine_in', 'order_date' => now(), 'subtotal_amount' => 0, 'discount_amount' => 0, 'tax_amount' => 0, 'service_charge_amount' => 0, 'order_amount' => 0, 'order_change' => 0, 'payment_method' => 'cash', 'order_code' => 'ORD-001', 'order_status' => OrderStatus::Pending, 'table_id' => $table->id]);
+        Order::forceCreate(['idempotency_key' => Str::uuid()->toString(), 'user_id' => $this->systemUser->id, 'order_type' => 'dine_in', 'order_date' => now(), 'subtotal_amount' => 0, 'discount_amount' => 0, 'tax_amount' => 0, 'service_charge_amount' => 0, 'order_amount' => 0, 'order_change' => 0, 'payment_method' => 'cash', 'order_code' => 'ORD-002', 'order_status' => OrderStatus::Pending, 'table_id' => $table->id]);
 
         $this->mock(CartService::class, function ($mock) {
             $mock->shouldReceive('getItems')->andReturn([
@@ -123,7 +124,7 @@ class CheckoutGuardTest extends TestCase
         // Create 5 pending orders for the table, but NOT in this session
         for ($i = 0; $i < 5; $i++) {
             Order::forceCreate([
-                'idempotency_key' => \Illuminate\Support\Str::uuid()->toString(),
+                'idempotency_key' => Str::uuid()->toString(),
                 'user_id' => $this->systemUser->id,
                 'order_code' => 'ORD-TB-'.$i,
                 'order_type' => 'dine_in', 'order_date' => now(), 'subtotal_amount' => 0, 'discount_amount' => 0, 'tax_amount' => 0, 'service_charge_amount' => 0, 'order_amount' => 0, 'order_change' => 0, 'payment_method' => 'cash',
@@ -197,9 +198,9 @@ class CheckoutGuardTest extends TestCase
             'area' => 'Indoor',
             'is_active' => true,
             'operational_status' => 'available',
-            'secure_token' => \Illuminate\Support\Str::uuid()->toString(),
+            'secure_token' => Str::uuid()->toString(),
         ]);
-        
+
         Session::put('current_table_id', $table->id);
         Session::put('checkout_idempotency_key', 'valid_key');
 
@@ -220,19 +221,19 @@ class CheckoutGuardTest extends TestCase
             'area' => 'Indoor',
             'is_active' => true,
             'operational_status' => 'available',
-            'secure_token' => \Illuminate\Support\Str::uuid()->toString(),
+            'secure_token' => Str::uuid()->toString(),
         ]);
-        
+
         Session::put('current_table_id', $table->id);
         Session::put('checkout_idempotency_key', 'concurrent_key');
-        
+
         // Simulasikan race condition dengan mengambil lock duluan
-        $lock = \Illuminate\Support\Facades\Cache::lock('checkout_idempotency_concurrent_key', 15);
+        $lock = Cache::lock('checkout_idempotency_concurrent_key', 15);
         $lock->get();
 
         $this->mock(CartService::class, function ($mock) {
             $mock->shouldReceive('getItems')->andReturn([
-                ['product_id' => 1, 'qty' => 1, 'unit_price' => 10000, 'options' => []]
+                ['product_id' => 1, 'qty' => 1, 'unit_price' => 10000, 'options' => []],
             ]);
             $mock->shouldReceive('getTotalQty')->andReturn(1);
         });
@@ -244,9 +245,10 @@ class CheckoutGuardTest extends TestCase
 
         $response->assertRedirect(route('customer.checkout.create'));
         $response->assertSessionHas('error', 'Pembayaran sedang diproses, mohon tunggu sebentar.');
-        
+
         $lock->release();
     }
+
     public function test_blocks_checkout_if_product_is_inactive()
     {
         $table = Table::create([
@@ -255,9 +257,9 @@ class CheckoutGuardTest extends TestCase
             'area' => 'Indoor',
             'is_active' => true,
             'operational_status' => 'available',
-            'secure_token' => \Illuminate\Support\Str::uuid()->toString(),
+            'secure_token' => Str::uuid()->toString(),
         ]);
-        
+
         Session::put('current_table_id', $table->id);
         Session::put('checkout_idempotency_key', 'test_key_inactive');
 
@@ -273,7 +275,7 @@ class CheckoutGuardTest extends TestCase
         $this->mock(CartService::class, function ($mock) use ($product) {
             $mock->shouldReceive('refreshCartPrices');
             $mock->shouldReceive('getItems')->andReturn([
-                ['product_id' => $product->id, 'qty' => 1, 'unit_price' => 10000, 'options' => []]
+                ['product_id' => $product->id, 'qty' => 1, 'unit_price' => 10000, 'options' => []],
             ]);
             $mock->shouldReceive('getTotalQty')->andReturn(1);
             $mock->shouldReceive('getSubtotal')->andReturn(10000);

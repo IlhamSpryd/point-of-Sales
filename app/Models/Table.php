@@ -51,9 +51,11 @@ class Table extends Model
                 $table->table_code = 'YVL-TBL-'.str_pad($nextId, 3, '0', STR_PAD_LEFT);
             }
 
-            // KUNCI PERMANEN: Auto-generate Secure Token (UUID) jika kosong
+            // KUNCI PERMANEN: Auto-generate Secure Token secara deterministik
+            // Kita menggunakan md5 dari nama meja agar token tidak berubah
+            // jika meja dihapus dan dibuat ulang, sehingga QR code fisik tidak perlu dicetak ulang.
             if (empty($table->secure_token)) {
-                $table->secure_token = (string) Str::uuid();
+                $table->secure_token = md5('yovel-pos-qr-' . strtolower(trim($table->table_name)));
             }
         });
     }

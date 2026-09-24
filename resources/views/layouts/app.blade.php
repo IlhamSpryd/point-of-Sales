@@ -45,7 +45,7 @@
     </style>
 </head>
 
-<body class="font-sans antialiased bg-[#F7F7F5] text-[#37352F] flex h-dvh overflow-hidden pos-layout-locked">
+<body class="font-sans antialiased bg-yovel-bg text-yovel-ink flex h-dvh overflow-hidden pos-layout-locked">
 
     <div x-data="{ sidebarMobileOpen: false, expanded: localStorage.getItem('sidebarExpanded') !== 'false' }" x-init="$watch('expanded', val => localStorage.setItem('sidebarExpanded', val))" class="flex w-full h-full">
         <!-- Sidebar Navigation -->
@@ -56,10 +56,10 @@
 
             <!-- Topbar Header (Mobile Only) -->
             <header
-                class="bg-white/80 backdrop-blur-xl border-b border-[#E9E9E7] h-14 flex items-center justify-between px-4 sm:px-6 shrink-0 lg:hidden">
+                class="bg-yovel-surface/80 backdrop-blur-xl border-b border-yovel-border h-14 flex items-center justify-between px-4 sm:px-6 shrink-0 lg:hidden">
                 <div class="flex items-center ml-10">
                     <span class="text-lg tracking-tight whitespace-nowrap font-brand">
-                        <span class="font-bold text-[#37352F]">Yovel</span><span class="font-normal text-[#787774] ml-1">Coffee</span>
+                        <span class="font-bold text-yovel-ink">Yovel</span><span class="font-normal text-yovel-muted ml-1">Coffee</span>
                     </span>
                 </div>
             </header>
@@ -87,6 +87,7 @@
     
     <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.2.4/qz-tray.js"></script>
     <x-qz-print />
+    <x-toast />
 </body>
 
 </html>

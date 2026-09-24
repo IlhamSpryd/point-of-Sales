@@ -17,6 +17,7 @@ use App\Models\StockMovement;
 use App\Models\User;
 use App\Services\TransactionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class);
@@ -55,7 +56,7 @@ it('mengembalikan stok tepat satu kali walau webhook expire dikirim dua kali', f
     $order = Order::forceCreate([
         'user_id' => $kasir->id,
         'order_code' => 'POS-TEST-EXP-001',
-        'idempotency_key' => \Illuminate\Support\Str::uuid()->toString(),
+        'idempotency_key' => Str::uuid()->toString(),
         'order_date' => now()->toDateString(),
         'subtotal_amount' => 60000,
         'tax_amount' => 6600,
@@ -109,7 +110,7 @@ it('TIDAK mengembalikan stok saat order menjadi paid', function () {
     $order = Order::forceCreate([
         'user_id' => $kasir->id,
         'order_code' => 'POS-TEST-PAID-001',
-        'idempotency_key' => \Illuminate\Support\Str::uuid()->toString(),
+        'idempotency_key' => Str::uuid()->toString(),
         'order_date' => now()->toDateString(),
         'subtotal_amount' => 40000,
         'tax_amount' => 4400,
@@ -144,7 +145,7 @@ it('menolak transaksi kasir baru jika belum membuka shift', function () {
     $product = omegaMakeProduct(stock: 5);
 
     $response = test()->actingAs($kasir)->postJson(route('transaction.store'), [
-        'idempotency_key' => \Illuminate\Support\Str::uuid()->toString(),
+        'idempotency_key' => Str::uuid()->toString(),
         'items' => [['product_id' => $product->id, 'quantity' => 1]],
         'payment_method' => 'cash',
         'cash_received' => 25000,
@@ -167,7 +168,7 @@ it('mengisi shift_id otomatis saat kasir memiliki shift terbuka', function () {
     ]);
 
     $response = test()->actingAs($kasir)->postJson(route('transaction.store'), [
-        'idempotency_key' => \Illuminate\Support\Str::uuid()->toString(),
+        'idempotency_key' => Str::uuid()->toString(),
         'items' => [['product_id' => $product->id, 'quantity' => 1]],
         'payment_method' => 'cash',
         'cash_received' => 25000,

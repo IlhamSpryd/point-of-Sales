@@ -4,11 +4,11 @@
 
 @php
     $variants = [
-        'success' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        'danger' => 'bg-rose-50 text-rose-700 border-rose-200',
-        'warning' => 'bg-[#FBF3E7] text-[#8A5A16] border-[#EFD8AE]',
-        'info' => 'bg-blue-50 text-blue-700 border-blue-200',
-        'secondary' => 'bg-[#F1F1EF] text-[#787774] border-[#E9E9E7]',
+        'success' => 'bg-success-50 text-success-700 border-success-600/20',
+        'danger'  => 'bg-danger-50 text-danger-700 border-danger-600/20',
+        'warning' => 'bg-warning-50 text-warning-600 border-warning-600/20',
+        'info'    => 'bg-info-50 text-info-600 border-info-600/20',
+        'secondary' => 'bg-primary-100 text-primary-500 border-primary-200',
     ];
 
     $classes = "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-semibold tracking-wide uppercase border " . ($variants[$type] ?? $variants['secondary']);

@@ -8,31 +8,201 @@
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
             
+            @if($showGroupForm)
+                <!-- Full Page Group Form -->
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h4 class="text-xl font-bold text-yovel-ink tracking-tight">
+                            {{ $editingGroupId ? 'Edit Grup Varian' : 'Tambah Grup Varian' }}
+                        </h4>
+                        <p class="text-sm font-medium text-yovel-muted mt-1">
+                            {{ $editingGroupId ? 'Perbarui informasi grup varian' : 'Buat grup varian baru untuk produk' }}
+                        </p>
+                    </div>
+                    <x-button type="button" variant="secondary" wire:click="resetGroupForm">
+                        <span class="material-symbols-rounded text-[18px]">arrow_back</span> Kembali
+                    </x-button>
+                </div>
+
+                <div class="card-surface overflow-hidden w-full shrink-0">
+                    <form wire:submit.prevent="saveGroup" class="p-6 md:p-8 space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <x-form-label for="group_name">Nama Grup <span class="text-rose-500">*</span></x-form-label>
+                                <x-form-input type="text" id="group_name" wire:model="groupForm.name" placeholder="Misal: Pilihan Susu" required class="{{ $errors->has('groupForm.name') ? 'input-error' : '' }}" />
+                                @error('groupForm.name') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                            </div>
+                            
+                            <div>
+                                <x-form-label for="selection_type">Tipe Pemilihan <span class="text-rose-500">*</span></x-form-label>
+                                <div class="relative">
+                                    <select id="selection_type" wire:model="groupForm.selection_type" class="form-input w-full px-4 py-2.5 rounded-xl border border-yovel-border bg-white text-yovel-ink appearance-none focus:outline-none focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink transition-all duration-200 shadow-sm {{ $errors->has('groupForm.selection_type') ? 'input-error' : '' }}" required>
+                                        <option value="single">Single (Hanya 1 pilihan)</option>
+                                        <option value="multiple">Multiple (Bisa lebih dari 1)</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-yovel-muted">
+                                        <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                                    </div>
+                                </div>
+                                @error('groupForm.selection_type') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+
+                        <div class="flex items-center">
+                            <label class="flex items-center cursor-pointer">
+                                <div class="relative">
+                                    <input type="checkbox" wire:model="groupForm.is_required" class="sr-only">
+                                    <div class="block bg-primary-200 w-10 h-6 rounded-full transition-colors duration-300"></div>
+                                    <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 shadow-sm"></div>
+                                </div>
+                                <div class="ml-3 text-sm font-semibold text-yovel-ink">
+                                    Wajib Dipilih (Required)
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="pt-4 border-t border-yovel-border flex justify-end gap-3">
+                            <x-button type="button" variant="secondary" wire:click="resetGroupForm">
+                                Batal
+                            </x-button>
+                            <x-button type="submit" variant="primary">
+                                <span class="material-symbols-rounded text-[18px]">save</span> Simpan Grup
+                            </x-button>
+                        </div>
+                    </form>
+                </div>
+
+            @elseif($showModifierForm)
+                <!-- Full Page Modifier Form -->
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h4 class="text-xl font-bold text-yovel-ink tracking-tight">
+                            {{ $editingModifierId ? 'Edit Varian' : 'Tambah Varian' }}
+                        </h4>
+                        <p class="text-sm font-medium text-yovel-muted mt-1">
+                            {{ $editingModifierId ? 'Perbarui informasi varian' : 'Tambahkan opsi varian baru ke dalam grup' }}
+                        </p>
+                    </div>
+                    <x-button type="button" variant="secondary" wire:click="resetModifierForm">
+                        <span class="material-symbols-rounded text-[18px]">arrow_back</span> Kembali
+                    </x-button>
+                </div>
+
+                <div class="card-surface overflow-hidden w-full shrink-0">
+                    <form wire:submit.prevent="saveModifier" class="p-6 md:p-8 space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <x-form-label for="modifier_name">Nama Varian <span class="text-rose-500">*</span></x-form-label>
+                                <x-form-input type="text" id="modifier_name" wire:model="modifierForm.name" placeholder="Misal: Oat Milk" required class="{{ $errors->has('modifierForm.name') ? 'input-error' : '' }}" />
+                                @error('modifierForm.name') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                            </div>
+                            
+                            <div>
+                                <x-form-label for="extra_price">Harga Tambahan (Rp) <span class="text-rose-500">*</span></x-form-label>
+                                <x-form-input type="number" id="extra_price" wire:model="modifierForm.extra_price" placeholder="0" required class="{{ $errors->has('modifierForm.extra_price') ? 'input-error' : '' }}" />
+                                @error('modifierForm.extra_price') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                            </div>
+                        </div>
+
+                        <div class="flex items-center">
+                            <label class="flex items-center cursor-pointer">
+                                <div class="relative">
+                                    <input type="checkbox" wire:model="modifierForm.is_default" class="sr-only">
+                                    <div class="block bg-primary-200 w-10 h-6 rounded-full transition-colors duration-300"></div>
+                                    <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 shadow-sm"></div>
+                                </div>
+                                <div class="ml-3 text-sm font-semibold text-yovel-ink">
+                                    Jadikan Pilihan Default
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- BOM Setup for Modifier -->
+                        <div x-data="{ 
+                            ingredients: @entangle('modifierForm.ingredients'),
+                            addIngredient() {
+                                this.ingredients.push({ id: '', quantity: 1 });
+                            },
+                            removeIngredient(index) {
+                                this.ingredients.splice(index, 1);
+                            }
+                        }" class="pt-4 border-t border-[#E9E9E7]">
+                            <div class="flex items-center justify-between mb-4">
+                                <div>
+                                    <h5 class="text-sm font-bold text-[#37352F]">Bahan Baku Tambahan (BOM Opsional)</h5>
+                                    <p class="text-xs text-[#787774] mt-0.5">Tentukan bahan baku yang memotong stok otomatis saat varian ini dipilih.</p>
+                                </div>
+                                <button type="button" @click="addIngredient" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-[#E9E9E7] rounded-xl hover:bg-[#F7F7F5] transition-colors shadow-sm">
+                                    <span class="material-symbols-rounded text-[16px]">add</span> Tambah Bahan
+                                </button>
+                            </div>
+
+                            <div class="space-y-3">
+                                <template x-for="(ing, index) in ingredients" :key="index">
+                                    <div class="flex items-start gap-3">
+                                        <div class="flex-1 relative">
+                                            <select x-model="ing.id" class="form-input w-full px-4 py-2.5 rounded-xl border border-yovel-border bg-white text-yovel-ink appearance-none focus:outline-none focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink transition-all duration-200 shadow-sm" required>
+                                                <option value="">-- Pilih Bahan --</option>
+                                                @foreach($this->ingredients as $i)
+                                                    <option value="{{ $i->id }}">{{ $i->name }} ({{ $i->unit }})</option>
+                                                @endforeach
+                                            </select>
+                                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-yovel-muted">
+                                                <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                                            </div>
+                                        </div>
+                                        <div class="w-32">
+                                            <input type="number" step="0.0001" x-model="ing.quantity" placeholder="Kuantitas" class="form-input w-full px-4 py-2.5 rounded-xl border border-yovel-border bg-white text-yovel-ink focus:outline-none focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink transition-all duration-200 shadow-sm" required>
+                                        </div>
+                                        <button type="button" @click="removeIngredient(index)" class="inline-flex items-center justify-center w-[46px] h-[46px] rounded-xl text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors" title="Hapus baris">
+                                            <span class="material-symbols-rounded text-[18px]">close</span>
+                                        </button>
+                                    </div>
+                                </template>
+                                
+                                <div x-show="ingredients.length === 0" class="text-center py-6 bg-yovel-surface rounded-xl border border-yovel-border border-dashed">
+                                    <p class="text-sm text-yovel-muted">Belum ada bahan baku tambahan.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-4 border-t border-yovel-border flex justify-end gap-3">
+                            <x-button type="button" variant="secondary" wire:click="resetModifierForm">
+                                Batal
+                            </x-button>
+                            <x-button type="submit" variant="primary">
+                                <span class="material-symbols-rounded text-[18px]">save</span> Simpan Varian
+                            </x-button>
+                        </div>
+                    </form>
+                </div>
+
+            @else
             <!-- Toolbar -->
             <x-list-toolbar>
                 <x-slot name="actions">
-                    <button wire:click="createGroup" class="bg-[#37352F] text-[#F7F7F5] px-4 py-2 rounded-xl text-sm font-medium hover:bg-[#2F2D28] transition-colors">
-                        + Tambah Grup Modifier
-                    </button>
+                    <x-button wire:click="createGroup" variant="primary">
+                        <span class="material-symbols-rounded text-[18px]">add</span> Tambah Grup Modifier
+                    </x-button>
                 </x-slot>
             </x-list-toolbar>
 
             <!-- Loop Groups -->
-            @foreach($groups as $group)
-            <div class="card-surface p-6 rounded-2xl border border-[#E9E9E7]">
-                <div class="flex items-center justify-between mb-4 pb-4 border-b border-[#E9E9E7]">
+            @forelse($groups as $group)
+            <div class="card-surface p-6">
+                <div class="flex items-center justify-between mb-4 pb-4 border-b border-yovel-border">
                     <div>
-                        <h3 class="text-lg font-bold text-[#37352F]">{{ $group->name }}</h3>
-                        <p class="text-sm text-[#9C9A94]">
+                        <h3 class="text-lg font-bold text-yovel-ink">{{ $group->name }}</h3>
+                        <p class="text-sm text-yovel-muted mt-0.5">
                             Tipe: {{ ucfirst($group->selection_type) }} | {{ $group->is_required ? 'Wajib Dipilih' : 'Opsional' }}
                         </p>
                     </div>
                     <div class="flex space-x-2">
-                        <button wire:click="editGroup({{ $group->id }})" class="text-[#37352F] hover:text-[#2F2D28] p-2 bg-[#F7F7F5] rounded-xl transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                        <button wire:click="editGroup({{ $group->id }})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors" title="Ubah Grup">
+                            <span class="material-symbols-rounded text-[18px]">edit</span>
                         </button>
-                        <button wire:click="deleteGroup({{ $group->id }})" class="text-red-600 hover:text-red-800 p-2 bg-red-50 rounded-xl transition-colors" onclick="confirm('Yakin ingin menghapus grup ini?') || event.stopImmediatePropagation()">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                        <button wire:click="deleteGroup({{ $group->id }})" wire:confirm="Yakin ingin menghapus grup ini beserta seluruh opsi variannya?" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus Grup">
+                            <span class="material-symbols-rounded text-[18px]">delete</span>
                         </button>
                     </div>
                 </div>
@@ -40,155 +210,48 @@
                 <!-- Modifiers inside Group -->
                 <div class="space-y-3">
                     @forelse($group->modifiers as $modifier)
-                    <div class="flex items-center justify-between p-3 bg-[#F7F7F5] rounded-xl border border-[#E9E9E7]">
+                    <div class="flex items-center justify-between p-3 bg-yovel-surface rounded-xl border border-yovel-border">
                         <div class="flex items-center space-x-4">
                             <div>
-                                <span class="font-medium text-[#37352F]">{{ $modifier->name }}</span>
+                                <span class="font-medium text-yovel-ink">{{ $modifier->name }}</span>
                                 @if($modifier->is_default)
-                                    <span class="ml-2 text-xs bg-[#E9E9E7] text-[#37352F] px-2 py-0.5 rounded-full">Default</span>
+                                    <span class="ml-2 text-[10px] font-bold bg-primary-100 text-primary-700 px-2 py-0.5 rounded uppercase tracking-wider">Default</span>
                                 @endif
                             </div>
-                            <span class="text-sm font-semibold text-[#8A5A16]">+Rp {{ number_format($modifier->extra_price, 0, ',', '.') }}</span>
+                            <span class="text-sm font-semibold text-emerald-600">+Rp {{ number_format($modifier->extra_price, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex items-center space-x-4">
                             @if($modifier->ingredients->isNotEmpty())
-                                <span class="text-xs text-[#9C9A94]">BOM: {{ $modifier->ingredients->count() }} Bahan</span>
+                                <span class="text-xs text-yovel-muted flex items-center gap-1">
+                                    <span class="material-symbols-rounded text-[14px]">inventory_2</span> {{ $modifier->ingredients->count() }} Bahan
+                                </span>
                             @endif
-                            <button wire:click="editModifier({{ $modifier->id }})" class="text-[#37352F] hover:underline text-sm font-medium">Ubah</button>
-                            <button wire:click="deleteModifier({{ $modifier->id }})" class="text-red-600 hover:underline text-sm font-medium" onclick="confirm('Hapus modifier ini?') || event.stopImmediatePropagation()">Hapus</button>
+                            <button wire:click="editModifier({{ $modifier->id }})" class="text-yovel-muted hover:text-yovel-ink text-sm font-medium transition-colors">Ubah</button>
+                            <button wire:click="deleteModifier({{ $modifier->id }})" wire:confirm="Yakin ingin menghapus opsi varian ini?" class="text-rose-500 hover:text-rose-700 text-sm font-medium transition-colors">Hapus</button>
                         </div>
                     </div>
                     @empty
-                    <div class="text-sm text-[#9C9A94] italic p-3">Belum ada varian di grup ini.</div>
+                    <div class="text-sm text-yovel-muted italic p-3 text-center">Belum ada varian di grup ini.</div>
                     @endforelse
                 </div>
 
                 <div class="mt-4">
-                    <button wire:click="createModifier({{ $group->id }})" class="text-sm text-[#37352F] font-medium flex items-center space-x-1 hover:underline">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                    <button wire:click="createModifier({{ $group->id }})" class="text-sm text-primary-600 font-medium flex items-center space-x-1 hover:text-primary-800 transition-colors">
+                        <span class="material-symbols-rounded text-[18px]">add</span>
                         <span>Tambah Opsi Varian</span>
                     </button>
                 </div>
             </div>
-            @endforeach
+            @empty
+            <x-empty-state 
+                icon="tune" 
+                title="Belum Ada Modifier" 
+                description="Tambahkan grup modifier seperti 'Ukuran Gelas' atau 'Topping' untuk membuat variasi produk." 
+            />
+            @endforelse
+            
+            @endif
 
-        </div>
-    </div>
-
-    <!-- Modal Group -->
-    <div x-data="{ show: @entangle('showGroupForm') }" x-show="show" x-cloak class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
-        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div x-show="show" class="fixed inset-0 transition-opacity" aria-hidden="true">
-                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div x-show="show" class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full border border-[#E9E9E7]">
-                <div class="card-surface px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <h3 class="text-lg leading-6 font-bold text-[#37352F] mb-4">
-                        {{ $editingGroupId ? 'Edit Grup Varian' : 'Tambah Grup Varian' }}
-                    </h3>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-[#37352F]">Nama Grup</label>
-                            <input type="text" wire:model="groupForm.name" class="mt-1 block w-full rounded-xl border-[#E9E9E7] shadow-sm focus:border-[#37352F] focus:ring focus:ring-[#37352F] focus:ring-opacity-20" placeholder="Misal: Pilihan Susu">
-                            @error('groupForm.name') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-[#37352F]">Tipe Pemilihan</label>
-                            <select wire:model="groupForm.selection_type" class="mt-1 block w-full rounded-xl border-[#E9E9E7] shadow-sm focus:border-[#37352F] focus:ring focus:ring-[#37352F] focus:ring-opacity-20">
-                                <option value="single">Single (Hanya 1 pilihan)</option>
-                                <option value="multiple">Multiple (Bisa lebih dari 1)</option>
-                            </select>
-                            @error('groupForm.selection_type') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" wire:model="groupForm.is_required" class="rounded border-[#E9E9E7] text-[#37352F] shadow-sm focus:border-[#37352F] focus:ring focus:ring-[#37352F] focus:ring-opacity-20">
-                            <label class="ml-2 block text-sm text-[#37352F]">Wajib Dipilih (Required)</label>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-[#F7F7F5] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-[#E9E9E7]">
-                    <button wire:click="saveGroup" type="button" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-[#37352F] text-base font-medium text-[#F7F7F5] hover:bg-[#2F2D28] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#37352F] sm:ml-3 sm:w-auto sm:text-sm">
-                        Simpan
-                    </button>
-                    <button wire:click="resetGroupForm" type="button" class="mt-3 w-full inline-flex justify-center rounded-xl border border-[#E9E9E7] shadow-sm px-4 py-2 bg-white text-base font-medium text-[#37352F] hover:bg-[#F7F7F5] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#37352F] sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                        Batal
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Modifier -->
-    <div x-data="{ 
-            show: @entangle('showModifierForm'),
-            ingredients: @entangle('modifierForm.ingredients'),
-            addIngredient() {
-                this.ingredients.push({ id: '', quantity: 1 });
-            },
-            removeIngredient(index) {
-                this.ingredients.splice(index, 1);
-            }
-        }" x-show="show" x-cloak class="fixed inset-0 z-50 overflow-y-auto" style="display: none;">
-        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div x-show="show" class="fixed inset-0 transition-opacity" aria-hidden="true">
-                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
-            </div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div x-show="show" class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-xl sm:w-full border border-[#E9E9E7]">
-                <div class="card-surface px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <h3 class="text-lg leading-6 font-bold text-[#37352F] mb-4">
-                        {{ $editingModifierId ? 'Edit Varian' : 'Tambah Varian' }}
-                    </h3>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-[#37352F]">Nama Varian</label>
-                            <input type="text" wire:model="modifierForm.name" class="mt-1 block w-full rounded-xl border-[#E9E9E7] shadow-sm focus:border-[#37352F] focus:ring focus:ring-[#37352F] focus:ring-opacity-20" placeholder="Misal: Oat Milk">
-                            @error('modifierForm.name') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-[#37352F]">Harga Tambahan (Rp)</label>
-                            <input type="number" wire:model="modifierForm.extra_price" class="mt-1 block w-full rounded-xl border-[#E9E9E7] shadow-sm focus:border-[#37352F] focus:ring focus:ring-[#37352F] focus:ring-opacity-20" placeholder="0">
-                            @error('modifierForm.extra_price') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                        </div>
-                        <div class="flex items-center">
-                            <input type="checkbox" wire:model="modifierForm.is_default" class="rounded border-[#E9E9E7] text-[#37352F] shadow-sm focus:border-[#37352F] focus:ring focus:ring-[#37352F] focus:ring-opacity-20">
-                            <label class="ml-2 block text-sm text-[#37352F]">Jadikan Pilihan Default</label>
-                        </div>
-
-                        <!-- BOM Setup for Modifier -->
-                        <div class="mt-6 border-t border-[#E9E9E7] pt-4">
-                            <label class="block text-sm font-medium text-[#37352F] mb-2">Bahan Baku Tambahan (BOM Opsional)</label>
-                            <template x-for="(ing, index) in ingredients" :key="index">
-                                <div class="flex space-x-2 mb-2 items-center">
-                                    <select x-model="ing.id" class="flex-1 rounded-xl border-[#E9E9E7] text-sm shadow-sm focus:border-[#37352F] focus:ring focus:ring-[#37352F] focus:ring-opacity-20">
-                                        <option value="">Pilih Bahan</option>
-                                        @foreach($this->ingredients as $i)
-                                            <option value="{{ $i->id }}">{{ $i->name }} ({{ $i->unit }})</option>
-                                        @endforeach
-                                    </select>
-                                    <input type="number" step="0.01" x-model="ing.quantity" class="w-24 rounded-xl border-[#E9E9E7] text-sm shadow-sm focus:border-[#37352F] focus:ring focus:ring-[#37352F] focus:ring-opacity-20" placeholder="Qty">
-                                    <button @click="removeIngredient(index)" type="button" class="text-red-500 hover:text-red-700 p-2">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                                    </button>
-                                </div>
-                            </template>
-                            <button @click="addIngredient" type="button" class="mt-2 text-sm text-[#37352F] hover:underline flex items-center space-x-1">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
-                                <span>Tambah Bahan Baku</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="bg-[#F7F7F5] px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t border-[#E9E9E7]">
-                    <button wire:click="saveModifier" type="button" class="w-full inline-flex justify-center rounded-xl border border-transparent shadow-sm px-4 py-2 bg-[#37352F] text-base font-medium text-[#F7F7F5] hover:bg-[#2F2D28] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#37352F] sm:ml-3 sm:w-auto sm:text-sm">
-                        Simpan
-                    </button>
-                    <button wire:click="resetModifierForm" type="button" class="mt-3 w-full inline-flex justify-center rounded-xl border border-[#E9E9E7] shadow-sm px-4 py-2 bg-white text-base font-medium text-[#37352F] hover:bg-[#F7F7F5] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#37352F] sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                        Batal
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 </div>

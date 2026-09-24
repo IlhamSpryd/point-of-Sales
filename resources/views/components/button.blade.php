@@ -1,6 +1,7 @@
 @props([
     'variant' => 'primary', // primary, secondary, danger, ghost
     'size' => 'md',         // sm, md, lg
+    'hotkey' => null,
 ])
 
 @php
@@ -24,4 +25,7 @@
 
 <button {{ $attributes->merge(['class' => $classes]) }}>
     {{ $slot }}
+    @if($hotkey)
+        <kbd class="ml-auto inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded bg-black/10 text-[10px] font-bold tracking-widest text-inherit border border-black/5 uppercase shadow-sm whitespace-nowrap">{{ $hotkey }}</kbd>
+    @endif
 </button>

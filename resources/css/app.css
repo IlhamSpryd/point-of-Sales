@@ -59,11 +59,39 @@
     --color-yovel-amber-200: #EFD8AE;
     --color-yovel-amber-500: #C88A2E;
     --color-yovel-amber-700: #8A5A16;
+
+    /* --- TAMBAHAN P0: token semantik yang belum ada --- */
+    --color-success-50:  #ECFDF5;
+    --color-success-600: #059669;
+    --color-success-700: #047857;
+    --color-danger-50:   #FFF1F2;
+    --color-danger-600:  #E11D48;
+    --color-danger-700:  #BE123C;
+    --color-warning-50:  #FBF3E7;
+    --color-warning-600: #C88A2E;
+    --color-info-50:     #EFF6FF;
+    --color-info-600:    #2563EB;
+}
+
+/* --- TAMBAHAN P1: varian KDS gelap --- */
+[data-theme="kds-dark"] {
+    --color-yovel-bg: #14140F;
+    --color-yovel-ink: #F5F4F0;
+    --color-yovel-muted: #A9A79E;
+    --color-yovel-border: #2A2A22;
+    --color-yovel-surface: #1F1F18;
 }
 
 /* ═══════════════════════════════════════════════════════
    GLOBAL BASE
    ═══════════════════════════════════════════════════════ */
+@layer base {
+    :focus-visible {
+        outline: 2px solid var(--color-yovel-ink);
+        outline-offset: 2px;
+    }
+}
+
 body {
     font-family: 'Plus Jakarta Sans', sans-serif;
     background-color: var(--color-yovel-bg);

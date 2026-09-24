@@ -19,6 +19,7 @@ use App\Services\TransactionService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Component;
@@ -64,7 +65,7 @@ class CreateOrder extends Component
 
     public function mount(): void
     {
-        $this->idempotencyKey = (string) \Illuminate\Support\Str::uuid();
+        $this->idempotencyKey = (string) Str::uuid();
     }
 
     public function updatedOrderType(): void
@@ -133,7 +134,7 @@ class CreateOrder extends Component
         $this->customerId = null;
         $this->customerId = null;
         $this->customerName = null;
-        $this->idempotencyKey = (string) \Illuminate\Support\Str::uuid();
+        $this->idempotencyKey = (string) Str::uuid();
     }
 
     #[Computed]
@@ -472,7 +473,7 @@ class CreateOrder extends Component
             $this->dispatch('transaction-success', orderCode: $order->order_code, isCash: collect($normalizedLegs)->contains('method', 'cash'));
 
             // Reset idempotency key for next transaction
-            $this->idempotencyKey = (string) \Illuminate\Support\Str::uuid();
+            $this->idempotencyKey = (string) Str::uuid();
 
             return;
 

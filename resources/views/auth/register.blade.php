@@ -44,9 +44,9 @@
                 {{ __('Already registered?') }}
             </a>
 
-            <x-zinc-button class="ms-4">
+            <x-button variant="primary" class="ms-4">
                 {{ __('Register') }}
-            </x-zinc-button>
+            </x-button>
         </div>
     </form>
 </x-guest-layout>

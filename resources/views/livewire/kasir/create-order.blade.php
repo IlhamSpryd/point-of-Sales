@@ -1,7 +1,19 @@
 {{-- [OMEGA-NODE2] Tambah pemilihan pelanggan (Loyalty) + modal Split Payment
      (Alpine.js murni, exact-sum ke TransactionService). Skenario Tarik
      Pesanan sengaja TIDAK diubah -- lihat SYNC ALERT Node 1. | 2026-09-22 --}}
-<div id="livewire-pos-root" data-testid="lw-pos-root" dusk="lw-pos-root">
+<div id="livewire-pos-root" data-testid="lw-pos-root" dusk="lw-pos-root"
+     x-data="{
+         focusSearch() {
+             const input = document.getElementById('search-input');
+             if (input) input.focus();
+         },
+         triggerPay() {
+             const btn = document.getElementById('btn-bayar');
+             if (btn && !btn.disabled) btn.click();
+         }
+     }"
+     @keydown.window.f2.prevent="focusSearch()"
+     @keydown.window.f4.prevent="triggerPay()">
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-5rem)]">
         {{-- KOLOM KIRI: pilih order type + produk --}}
         <div class="lg:col-span-2 flex flex-col overflow-hidden">
@@ -159,7 +171,7 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-yovel-muted">
                             <span class="material-symbols-rounded text-[18px]">qr_code_scanner</span>
                         </span>
-                        <input type="text" wire:model.live.debounce.300ms="search" placeholder="Scan QR Pesanan..." class="bg-yovel-bg border border-yovel-border text-yovel-ink text-sm rounded-xl focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink block w-full pl-9 pr-3 py-2 shadow-sm transition-all duration-200 min-h-[44px]" autofocus>
+                        <input type="text" id="search-input" wire:model.live.debounce.300ms="search" placeholder="Scan QR Pesanan (F2)..." class="bg-yovel-bg border border-yovel-border text-yovel-ink text-sm rounded-xl focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink block w-full pl-9 pr-3 py-2 shadow-sm transition-all duration-200 min-h-[44px]" autofocus>
                     </div>
 
                     {{-- [OMEGA-NODE2] Pemilihan Pelanggan (Loyalty) -- hanya untuk
@@ -223,13 +235,7 @@
 
                 <div class="p-4 flex-1 overflow-y-auto bg-yovel-bg custom-scrollbar">
                     @if(count($this->cartLines) === 0)
-                        <div class="text-center text-primary-400 py-16 text-sm flex flex-col items-center">
-                            <div class="w-16 h-16 rounded-2xl bg-yovel-surface flex items-center justify-center mb-4">
-                                <span class="material-symbols-rounded text-[32px] text-yovel-border">shopping_cart</span>
-                            </div>
-                            <p class="font-medium">Belum ada item.</p>
-                            <p class="text-xs text-primary-300 mt-1">Pilih produk dari menu di sebelah kiri</p>
-                        </div>
+                        <x-empty-state icon="shopping_cart" title="Belum ada item." description="Pilih produk dari menu di sebelah kiri" class="py-16 border-none bg-transparent" />
                     @else
                         <div class="space-y-3">
                             @foreach ($this->cartLines as $line)
@@ -303,12 +309,12 @@
                             </div>
                         @enderror
 
-                        <button wire:click="submitOrder"
-                                class="w-full min-h-[56px] bg-primary-700 hover:bg-primary-900 text-white py-3.5 px-4 rounded-xl mt-5 font-medium shadow-md transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97] text-lg"
+                        <x-button wire:click="submitOrder" id="btn-bayar" variant="primary" size="lg" hotkey="F4"
+                                class="w-full min-h-[56px] mt-5"
                                 @if(count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId)) disabled @endif>
                             <span class="material-symbols-rounded text-[22px]">payments</span>
                             Proses Pembayaran
-                        </button>
+                        </x-button>
                     @else
                         @error('cart')
                             <div class="mb-4 p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-sm font-medium flex items-start gap-2">
@@ -317,16 +323,16 @@
                             </div>
                         @enderror
 
-                        <button type="button"
+                        <x-button type="button" id="btn-bayar" variant="primary" size="lg" hotkey="F4"
                                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }} }); $dispatch('open-modal', 'checkout-payment')"
-                                class="w-full min-h-[56px] bg-primary-700 hover:bg-primary-900 text-white py-3.5 px-4 rounded-xl font-medium shadow-md transition-all duration-200 flex items-center justify-between gap-2 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.97] text-lg"
+                                class="w-full min-h-[56px] flex items-center justify-between"
                                 @if(count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId)) disabled @endif>
                             <span class="flex items-center gap-2">
                                 <span class="material-symbols-rounded text-[22px]">payments</span>
                                 Bayar Sekarang
                             </span>
                             <span class="tabular-nums">Rp {{ number_format($this->totalAmount, 0, ',', '.') }}</span>
-                        </button>
+                        </x-button>
                     @endif
                 </div>
             </div>

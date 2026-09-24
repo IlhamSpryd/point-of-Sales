@@ -58,11 +58,15 @@
                             <td class="px-6 py-4 text-sm text-[#787774]">{{ $category->created_at?->format('M d, Y') ?? '—' }}</td>
                             @if($canManage)
                                 <td class="px-6 py-4 text-right space-x-2">
-                                    <a href="{{ route('categories.edit', $category->id) }}" class="p-1.5 text-[#9B9A97] hover:text-[#37352F] transition-colors duration-200 inline-block" wire:navigate><span class="material-symbols-rounded">edit</span></a>
+                                    <a href="{{ route('categories.edit', $category->id) }}" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200 active:scale-90" aria-label="Ubah kategori" wire:navigate>
+                                        <span class="material-symbols-rounded text-[20px]">edit</span>
+                                    </a>
                                     <form id="delete-form-{{ $category->id }}" action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline-block">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="button" onclick="confirmDelete('delete-form-{{ $category->id }}', '{{ addslashes($category->category_name) }}')" class="p-1.5 text-[#9B9A97] hover:text-rose-600 transition-colors duration-200"><span class="material-symbols-rounded">delete</span></button>
+                                        <button type="button" onclick="confirmDelete('delete-form-{{ $category->id }}', '{{ addslashes($category->category_name) }}')" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90" aria-label="Hapus">
+                                            <span class="material-symbols-rounded text-[20px]">delete</span>
+                                        </button>
                                     </form>
                                 </td>
                             @endif

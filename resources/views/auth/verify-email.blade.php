@@ -14,9 +14,9 @@
             @csrf
 
             <div>
-                <x-zinc-button>
+                <x-button variant="primary">
                     {{ __('Resend Verification Email') }}
-                </x-zinc-button>
+                </x-button>
             </div>
         </form>
 

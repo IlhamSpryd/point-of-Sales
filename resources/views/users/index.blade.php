@@ -66,19 +66,23 @@
                                         <x-badge type="secondary">Belum Ditentukan</x-badge>
                                     @endif
                                     
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium {{ $user->is_active ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200' }}">
+                                    <x-badge :type="$user->is_active ? 'success' : 'danger'">
                                         {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
-                                    </span>
+                                    </x-badge>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-sm text-[#787774]">{{ $user->join_date ? $user->join_date->format('M d, Y') : ($user->created_at?->format('M d, Y') ?? '—') }}</td>
                             <td class="px-6 py-4 text-right space-x-2">
-                                <a href="{{ route('users.edit', $user->id) }}" class="p-1.5 text-[#9B9A97] hover:text-[#37352F] transition-colors duration-200 inline-block" wire:navigate><span class="material-symbols-rounded">edit</span></a>
+                                <a href="{{ route('users.edit', $user->id) }}" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200 active:scale-90" aria-label="Ubah pengguna" wire:navigate>
+                                    <span class="material-symbols-rounded text-[20px]">edit</span>
+                                </a>
                                 @if(auth()->id() !== $user->id)
                                 <form id="delete-form-{{ $user->id }}" action="{{ route('users.destroy', $user->id) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" onclick="confirmDelete('delete-form-{{ $user->id }}', '{{ addslashes($user->name) }}')" class="p-1.5 text-[#9B9A97] hover:text-rose-600 transition-colors duration-200"><span class="material-symbols-rounded">delete</span></button>
+                                    <button type="button" onclick="confirmDelete('delete-form-{{ $user->id }}', '{{ addslashes($user->name) }}')" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90" aria-label="Hapus">
+                                        <span class="material-symbols-rounded text-[20px]">delete</span>
+                                    </button>
                                 </form>
                                 @endif
                             </td>
