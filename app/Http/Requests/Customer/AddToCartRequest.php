@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Customer;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Validasi input saat pelanggan menekan tombol "Tambah ke Keranjang"
@@ -19,12 +20,16 @@ class AddToCartRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'product_id' => ['required', 'exists:products,id'],
+            // PATCH FOR S-12: hanya produk aktif dan tidak soft-deleted.
+            'product_id' => ['required', Rule::exists('products', 'id')
+                ->where(fn ($q) => $q->where('is_active', true)->whereNull('deleted_at'))],
             'qty' => ['required', 'integer', 'min:1', 'max:20'],
             // modifier_ids boleh kosong (array kosong) jika produk tidak punya varian sama sekali,
-            // tapi kalau ada isinya, setiap ID wajib benar-benar ada di tabel modifiers.
+            // tapi kalau ada isinya, setiap ID wajib benar-benar ada dan aktif.
             'modifier_ids' => ['nullable', 'array'],
-            'modifier_ids.*' => ['integer', 'exists:modifiers,id'],
+            // PATCH FOR S-12: hanya modifier aktif dan tidak soft-deleted.
+            'modifier_ids.*' => ['integer', Rule::exists('modifiers', 'id')
+                ->where(fn ($q) => $q->where('is_active', true)->whereNull('deleted_at'))],
             'notes' => ['nullable', 'string', 'max:255'],
         ];
     }

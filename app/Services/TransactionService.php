@@ -470,41 +470,26 @@ class TransactionService
                 $this->grantLoyaltyPoints((int) $data['customer_id'], $order, $subtotalAmount);
             }
 
-            // Snap Token Midtrans HANYA untuk jalur LEGACY non-cash TANPA
-            // split payment (UNCHANGED dari revisi sebelumnya).
+            // PATCH FOR S-02/S-14: Snap Token Midtrans HANYA untuk jalur LEGACY non-cash TANPA
+            // split payment. Panggilan HTTP Snap DIPINDAH ke afterCommit agar lock
+            // Product/Ingredient dilepas saat COMMIT (bukan ditahan selama latensi jaringan).
             if (empty($finalPaymentLegs) && $dominantPaymentMethod !== 'cash') {
-                Config::$serverKey = config('services.midtrans.server_key');
-                Config::$isProduction = config('services.midtrans.is_production', false);
-                Config::$isSanitized = config('services.midtrans.is_sanitized', true);
-                Config::$is3ds = config('services.midtrans.is_3ds', true);
-
-                if (! config('services.midtrans.is_production', false)) {
-                    Config::$curlOptions = [
-                        CURLOPT_SSL_VERIFYHOST => 0,
-                        CURLOPT_SSL_VERIFYPEER => false,
-                        CURLOPT_HTTPHEADER => [],
-                    ];
+                // PATCH FOR S-02: hitung adjustment agar sum(item_details) == gross_amount.
+                $roundingAdjustment = (int) $totalAmount - (int) $subtotalAmount - (int) $taxAmount;
+                $itemDetails = [
+                    ['id' => 'ORDER-'.$order->id, 'price' => (int) $subtotalAmount, 'quantity' => 1, 'name' => 'Pesanan POS'],
+                    ['id' => 'TAX-PPN',           'price' => (int) $taxAmount,      'quantity' => 1, 'name' => 'Pajak'],
+                ];
+                if ($roundingAdjustment !== 0) {
+                    $itemDetails[] = ['id' => 'ROUNDING', 'price' => $roundingAdjustment, 'quantity' => 1, 'name' => 'Pembulatan'];
                 }
 
-                $params = [
+                $snapParams = [
                     'transaction_details' => [
                         'order_id' => $order->order_code,
                         'gross_amount' => (int) $totalAmount,
                     ],
-                    'item_details' => [
-                        [
-                            'id' => 'ORDER-'.$order->id,
-                            'price' => (int) $subtotalAmount,
-                            'quantity' => 1,
-                            'name' => 'Pesanan POS',
-                        ],
-                        [
-                            'id' => 'TAX-PPN',
-                            'price' => (int) $taxAmount,
-                            'quantity' => 1,
-                            'name' => 'Pajak',
-                        ],
-                    ],
+                    'item_details' => $itemDetails,
                     'customer_details' => [
                         'first_name' => 'Pelanggan Walk-in',
                     ],
@@ -521,15 +506,41 @@ class TransactionService
                 };
 
                 if (! empty($enabledPayments)) {
-                    $params['enabled_payments'] = $enabledPayments;
+                    $snapParams['enabled_payments'] = $enabledPayments;
                 }
 
-                try {
-                    $snapToken = Snap::getSnapToken($params);
-                    $order->forceFill(['snap_token' => $snapToken])->save();
-                } catch (\Exception $e) {
-                    throw new \Exception('Gagal mendapatkan Snap Token Midtrans: '.$e->getMessage());
-                }
+                // PATCH FOR S-14: afterCommit agar lock dilepas lebih cepat.
+                $capturedOrder = $order;
+                $capturedParams = $snapParams;
+                DB::afterCommit(function () use ($capturedOrder, $capturedParams) {
+                    try {
+                        Config::$serverKey = config('services.midtrans.server_key');
+                        Config::$isProduction = config('services.midtrans.is_production', false);
+                        Config::$isSanitized = config('services.midtrans.is_sanitized', true);
+                        Config::$is3ds = config('services.midtrans.is_3ds', true);
+
+                        if (! config('services.midtrans.is_production', false)) {
+                            Config::$curlOptions = [
+                                CURLOPT_SSL_VERIFYHOST => 0,
+                                CURLOPT_SSL_VERIFYPEER => false,
+                                CURLOPT_HTTPHEADER => [],
+                            ];
+                        }
+
+                        $capturedOrder->forceFill(['snap_token' => Snap::getSnapToken($capturedParams)])->save();
+                    } catch (\Throwable $e) {
+                        Log::error('[SNAP] gagal membuat token', ['order' => $capturedOrder->order_code, 'error' => $e->getMessage()]);
+                        // Lepas reservasi stok. Butuh P-01 agar transisi 'cancel' lolos CHECK.
+                        try {
+                            app(self::class)->updateStatusFromMidtransNotification($capturedOrder->order_code, 'cancel', null);
+                        } catch (\Throwable $inner) {
+                            Log::critical('[SNAP] gagal membatalkan order setelah Snap gagal', [
+                                'order' => $capturedOrder->order_code,
+                                'error' => $inner->getMessage(),
+                            ]);
+                        }
+                    }
+                });
             }
 
             return $order;
@@ -1030,7 +1041,7 @@ class TransactionService
             throw new \Exception('Hanya pesanan yang sudah lunas (Paid) yang dapat di-void.');
         }
 
-        \DB::transaction(function () use ($order, $reason, $userId) {
+        DB::transaction(function () use ($order, $reason, $userId) {
             // 1. Lock and Update Order Status
             $lockedOrder = Order::where('id', $order->id)->lockForUpdate()->first();
             $lockedOrder->update([

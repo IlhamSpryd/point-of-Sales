@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureTableSession;
 use App\Http\Middleware\ResolveTableFromToken;
 use App\Http\Middleware\RoleMiddleware;
+use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\VerifyWebhookSignature;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,8 +17,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Percayakan semua proxy (seperti Ngrok) agar Vite memuat CSS menggunakan HTTPS
-        $middleware->trustProxies(at: '*');
+        // PATCH FOR S-04: jangan percaya semua proxy. Isi TRUSTED_PROXIES=IP_LB di produksi.
+        $middleware->trustProxies(
+            at: env('TRUSTED_PROXIES', '*'),
+            headers: Request::HEADER_X_FORWARDED_FOR | Request::HEADER_X_FORWARDED_HOST
+                   | Request::HEADER_X_FORWARDED_PORT | Request::HEADER_X_FORWARDED_PROTO,
+        );
+
+        // PATCH FOR P-11: security headers global.
+        $middleware->append(SecurityHeaders::class);
 
         // Daftarkan alias middleware 'role' untuk RoleMiddleware RBAC UjiKom
         $middleware->alias([

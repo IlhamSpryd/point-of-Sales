@@ -45,17 +45,28 @@
         <h1 class="font-brand font-bold text-lg tracking-tight truncate">Yovel Coffee</h1>
         
         <div class="flex items-center gap-2">
+            {{-- PATCH FOR S-08/P-09: panggil waiter yang nyata, XSS-safe via @js() --}}
             @if ($tableName)
-                <button type="button" @click="notify('Memanggil staf menuju {{ $tableName }}...')" 
-                        class="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-yovel-border text-yovel-muted hover:text-yovel-ink active:scale-90 transition-all shadow-sm" aria-label="Panggil Waiter">
+                <button type="button" x-data="{ busy: false }" :disabled="busy" aria-label="Panggil Waiter"
+                        @click="busy = true;
+                          fetch(@js(route('customer.waiter.call')), { method: 'POST', headers: { 'Accept': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content } })
+                            .then(r => r.json()).then(d => notify(d.message))
+                            .catch(() => notify('Koneksi bermasalah. Silakan lambaikan tangan ke staf.'))
+                            .finally(() => busy = false)"
+                        class="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-yovel-border text-yovel-muted hover:text-yovel-ink active:scale-90 transition-all shadow-sm">
                     <span class="material-symbols-rounded text-[18px]">room_service</span>
                 </button>
             @endif
 
-            <button type="button" @click="notify('Cek riwayat pesanan Anda di sini.')" 
-                    class="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-yovel-border text-yovel-muted hover:text-yovel-ink active:scale-90 transition-all shadow-sm" aria-label="Status Pesanan">
-                <span class="material-symbols-rounded text-[18px]">receipt_long</span>
-            </button>
+            {{-- PATCH FOR P-09: Status Pesanan — link ke pesanan aktif jika ada --}}
+            @php $activeOrders = session('customer_orders', []); @endphp
+            @if (! empty($activeOrders))
+                <a href="{{ route('customer.checkout.success', end($activeOrders)) }}"
+                   class="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-yovel-border text-yovel-muted hover:text-yovel-ink active:scale-90 transition-all shadow-sm" aria-label="Status Pesanan">
+                    <span class="material-symbols-rounded text-[18px]">receipt_long</span>
+                </a>
+            @endif
 
             @if ($tableName)
                 <span class="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-yovel-border bg-white px-3 py-1.5 text-xs font-semibold text-yovel-muted shadow-sm">
@@ -130,9 +141,10 @@
             <ul class="grid grid-cols-2 gap-3">
                 @foreach ($products as $product)
                     @php 
-                        $soldOut = $product->stock <= 0; 
-                        // Fallback deskripsi jika kosong di DB
-                        $desc = $product->description ?? 'Racikan pilihan terbaik khas Yovel Coffee.'; 
+                        // PATCH FOR S-18: gunakan sellableQuantity() jika tersedia, fallback ke stock.
+                        $soldOut = method_exists($product, 'sellableQuantity') ? $product->sellableQuantity() <= 0 : $product->stock <= 0;
+                        // PATCH FOR U-08: gunakan kolom yang benar (product_description, bukan description).
+                        $desc = $product->product_description ?: 'Racikan pilihan terbaik khas Yovel Coffee.'; 
                     @endphp
                     
                     {{-- Logic Alpine: Tampilkan jika kategori cocok ATAU sedang mencari nama produk --}}

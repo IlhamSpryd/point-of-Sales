@@ -6,9 +6,11 @@ namespace App\Livewire\Kasir;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Models\User;
 use App\Services\TransactionService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Url;
 use Livewire\Component;
@@ -86,8 +88,10 @@ class OrderHistory extends Component
 
     public function voidOrder(): void
     {
-        // Validasi otoritas (bisa disesuaikan dengan gate/permission yg sesungguhnya di sistem)
-        if (! auth()->user()->role->hasPermission('can_void_order') && ! auth()->user()->role->is_admin) {
+        /** @var User $user */
+        $user = auth()->user();
+
+        if (! $user->role->hasPermission('can_void_order') && ! $user->role->is_admin) {
             abort(403, 'Anda tidak memiliki izin untuk membatalkan (void) pesanan.');
         }
 
@@ -103,7 +107,7 @@ class OrderHistory extends Component
         }
 
         try {
-            app(TransactionService::class)->voidOrder($order, $this->voidReason, auth()->id());
+            app(TransactionService::class)->voidOrder($order, $this->voidReason, Auth::id());
             session()->flash('success', 'Pesanan berhasil di-void dan stok dikembalikan.');
         } catch (\Exception $e) {
             session()->flash('error', $e->getMessage());

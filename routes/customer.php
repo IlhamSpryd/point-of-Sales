@@ -1,6 +1,9 @@
 <?php
 
+use App\Http\Controllers\Customer\CartController;
+use App\Http\Controllers\Customer\CheckoutController;
 use App\Http\Controllers\Customer\MenuController;
+use App\Http\Controllers\Customer\WaiterCallController;
 use Illuminate\Support\Facades\Route;
 
 /**
@@ -8,26 +11,20 @@ use Illuminate\Support\Facades\Route;
  * SENGAJA tidak memakai middleware 'auth' — pelanggan tidak perlu login sama sekali,
  * cukup scan QR code di meja lalu langsung memesan.
  *
- * throttle:60,1 = pembatasan 60 request per menit per IP, sebagai pengaman dasar
- * karena rute ini terbuka untuk publik (rawan disalahgunakan bot/spam jika tanpa batas).
+ * PATCH FOR S-04: ganti throttle numerik bersama dengan limiter bernama (bucket TERPISAH per nama).
  */
-Route::middleware(['throttle:60,1'])
+Route::middleware(['throttle:customer-menu'])
     ->prefix('menu')
     ->name('customer.menu.')
     ->group(function () {
-        // PERUBAHAN: sekarang WAJIB membawa {token} dari hasil scan QR Code meja.
         Route::get('/{token}', [MenuController::class, 'index'])
             ->middleware('table.token')
             ->name('index');
 
-        // Endpoint JSON: mengambil daftar grup varian + opsi untuk SATU produk,
-        // dipanggil via fetch() oleh Alpine.js saat pelanggan klik kartu produk.
         Route::get('/{product}/modifiers', [MenuController::class, 'modifiers'])->name('modifiers');
     });
 
-use App\Http\Controllers\Customer\CartController;
-
-Route::middleware(['throttle:60,1', 'table.session'])
+Route::middleware(['throttle:customer-cart', 'table.session'])
     ->prefix('cart')
     ->name('customer.cart.')
     ->group(function () {
@@ -37,9 +34,7 @@ Route::middleware(['throttle:60,1', 'table.session'])
         Route::delete('/{lineId}', [CartController::class, 'destroy'])->name('destroy');
     });
 
-use App\Http\Controllers\Customer\CheckoutController;
-
-Route::middleware(['throttle:30,1', 'table.session'])  // Diperlonggar menjadi 30 agar tidak cepat kena 429 saat test
+Route::middleware(['throttle:customer-checkout', 'table.session'])
     ->prefix('checkout')
     ->name('customer.checkout.')
     ->group(function () {
@@ -48,11 +43,20 @@ Route::middleware(['throttle:30,1', 'table.session'])  // Diperlonggar menjadi 3
         Route::get('/{orderCode}/success', [CheckoutController::class, 'success'])->name('success');
     });
 
-// Polling status pesanan, dipisah agar tidak kena limit 5/menit dari checkout.
-// 60 per menit = 1 request per detik (cukup untuk polling 3 detik sekali).
-Route::middleware(['throttle:60,1', 'table.session'])
+// Polling status pesanan, dipisah agar bucket terpisah dari checkout.
+Route::middleware(['throttle:customer-poll', 'table.session'])
     ->prefix('checkout')
     ->name('customer.checkout.')
     ->group(function () {
         Route::get('/{orderCode}/status', [CheckoutController::class, 'status'])->name('status');
     });
+
+// PATCH FOR U-02/P-09: Panggil waiter yang nyata (bukan toast palsu).
+Route::post('/waiter-call', [WaiterCallController::class, 'store'])
+    ->middleware(['throttle:customer-cart', 'table.session'])
+    ->name('customer.waiter.call');
+
+// PATCH FOR U-03/P-19: Pemulihan keranjang (pesan ulang dari snapshot).
+Route::post('/checkout/reorder', [CheckoutController::class, 'reorder'])
+    ->middleware(['throttle:customer-checkout', 'table.session'])
+    ->name('customer.checkout.reorder');

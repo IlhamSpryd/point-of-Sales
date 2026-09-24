@@ -30,6 +30,13 @@ class ResolveTableFromToken
             abort(404, 'QR Code tidak valid atau meja sedang tidak aktif. Silakan panggil staf kami.');
         }
 
+        // PATCH FOR S-10: cegah session fixation — regenerasi ID sesi
+        // saat pelanggan memulai sesi baru (scan QR meja beda ATAU pertama).
+        $oldTableId = $request->session()->get('current_table_id');
+        if ($oldTableId !== $table->id) {
+            $request->session()->regenerate();
+        }
+
         // Simpan ke session agar halaman Cart & Checkout (yang URL-nya TIDAK
         // membawa token) tetap tahu pelanggan ini duduk di meja mana.
         $request->session()->put('current_table_id', $table->id);

@@ -1,5 +1,12 @@
 <?php
 
+use App\Models\Category;
+use App\Models\Ingredient;
+use App\Models\Modifier;
+use App\Models\ModifierGroup;
+use App\Models\Product;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Str;
 
 return [
@@ -131,6 +138,17 @@ return [
     |
     */
 
-    'serializable_classes' => false,
+    // PATCH FOR S-03: Whitelist Eloquent models cached by MenuCacheService.
+    // 'false' blocks ALL class unserialization → __PHP_Incomplete_Class on cache HIT.
+    // Long-term: cache ->toArray() scalars instead of live models.
+    'serializable_classes' => [
+        Collection::class,
+        Pivot::class,
+        Category::class,
+        Product::class,
+        ModifierGroup::class,
+        Modifier::class,
+        Ingredient::class,
+    ],
 
 ];

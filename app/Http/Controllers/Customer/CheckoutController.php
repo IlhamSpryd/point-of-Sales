@@ -11,8 +11,13 @@ use App\Models\Product;
 use App\Models\User;
 use App\Services\CartService;
 use App\Services\TransactionService;
+use Illuminate\Database\QueryException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -64,8 +69,6 @@ class CheckoutController extends Controller
         }
 
         // === IDEMPOTENCY GUARD ===
-        // Gunakan token unik per sesi checkout. Jika token sudah dipakai,
-        // berarti form ini sudah pernah di-submit → tolak duplikasi.
         $idempotencyKey = $request->session()->pull('checkout_idempotency_key');
         if (! $idempotencyKey || $idempotencyKey !== $request->input('_idempotency_key')) {
             return redirect()->route('customer.cart.index')
@@ -78,11 +81,21 @@ class CheckoutController extends Controller
             return redirect()->route('customer.cart.index')->with('error', 'Keranjang Anda masih kosong.');
         }
 
+        // PATCH FOR S-05: cap order Pending per sesi dan per meja.
+        $mine = session('customer_orders', []);
+        $openPending = $mine === [] ? 0 : Order::whereIn('order_code', $mine)->where('order_status', OrderStatus::Pending)->count();
+        $tablePending = Order::where('table_id', $tableId)->where('order_status', OrderStatus::Pending)
+            ->where('created_at', '>=', now()->subMinutes(30))->count();
+        if ($openPending >= 2 || $tablePending >= 5) {
+            return back()->with('error', 'Masih ada pesanan yang belum dibayar. Selesaikan atau tunggu kedaluwarsa sebelum memesan lagi.');
+        }
+
         $transactionItems = array_map(function (array $item) {
             // SECURITY: Hitung ulang extra_price dari database, jangan percaya
             // nilai yang sudah dihitung di session (bisa dimanipulasi via devtools).
             $modifierIds = collect($item['options'] ?? [])->pluck('modifier_id')->all();
-            $serverExtraPrice = Modifier::whereIn('id', $modifierIds)->sum('extra_price');
+            // PATCH FOR S-15: hanya modifier aktif.
+            $serverExtraPrice = Modifier::whereIn('id', $modifierIds)->where('is_active', true)->sum('extra_price');
 
             $product = Product::find($item['product_id']);
 
@@ -96,14 +109,19 @@ class CheckoutController extends Controller
             ];
         }, $items);
 
+        // PATCH FOR S-07: guard system user dengan pesan aman.
         $systemUserId = User::where('email', config('pos.self_order_system_email'))->value('id');
+        if (! $systemUserId) {
+            Log::critical('[SELF-ORDER] akun sistem self-order belum di-seed.');
+
+            return back()->with('error', 'Layanan pemesanan mandiri sedang tidak tersedia. Silakan panggil staf.');
+        }
 
         if (empty($transactionItems)) {
             return back()->with('error', 'Keranjang belanja Anda kosong.');
         }
 
         // [OMEGA-NODE9] PATCH FOR M-05: Stale Price Protection.
-        // Hitung ulang harga *live* dari database dan pastikan cocok dengan harga di session cart.
         $liveSubtotal = 0;
         foreach ($transactionItems as $item) {
             $liveSubtotal += ($item['unit_price'] * $item['quantity']);
@@ -111,11 +129,17 @@ class CheckoutController extends Controller
 
         $sessionSubtotal = $this->cartService->getSubtotal();
 
-        if (abs($liveSubtotal - $sessionSubtotal) > 1) { // Toleransi Rp 1
-            // Harga berubah! Paksa update session cart dengan harga live.
+        if (abs($liveSubtotal - $sessionSubtotal) > 1) {
             $this->cartService->refreshCartPrices();
 
             return back()->with('error', 'Harga beberapa item telah berubah. Silakan periksa kembali keranjang Anda dan coba lagi.');
+        }
+
+        // PATCH FOR S-13: gunakan Cache::lock untuk idempotensi yang sesungguhnya.
+        $lock = Cache::lock('checkout_idempotency_'.$idempotencyKey, 15);
+        if (! $lock->get()) {
+            return redirect()->route('customer.checkout.create')
+                ->with('error', 'Pembayaran sedang diproses, mohon tunggu sebentar.');
         }
 
         try {
@@ -124,13 +148,35 @@ class CheckoutController extends Controller
                 'payment_method' => $request->validated('payment_method'),
                 'cash_received' => null,
                 'is_self_order_cash' => $request->validated('payment_method') === 'cash',
-                'table_id' => $tableId, // BARU: masukkan ke dalam payload
-                'idempotency_key' => $idempotencyKey, // [OMEGA-NODE1] PATCH FOR M-13: Teruskan idempotency key ke layer DB.
+                'table_id' => $tableId,
+                'idempotency_key' => $idempotencyKey,
             ], $systemUserId);
+        } catch (ValidationException $e) {
+            // Pesan bisnis (stok/varian/harga): aman ditampilkan.
+            return back()->with('error', collect($e->errors())->flatten()->first());
+        } catch (QueryException $e) {
+            // PATCH FOR S-13: double-submit → order sudah ada, redirect ke success.
+            if (str_contains($e->getMessage(), 'idempotency_key')
+                && ($existing = Order::where('idempotency_key', $idempotencyKey)->first())) {
+                return redirect()->route('customer.checkout.success', $existing->order_code);
+            }
+            Log::error('[SELF-ORDER] DB error', ['table_id' => $tableId, 'key' => $idempotencyKey, 'error' => $e->getMessage()]);
+
+            return back()->with('error', 'Terjadi gangguan sistem. Pesanan Anda belum dibuat, silakan coba lagi.');
         } catch (\Throwable $e) {
-            return back()->with('error', $e->getMessage());
+            // PATCH FOR S-07: JANGAN PERNAH tampilkan $e->getMessage() ke pelanggan.
+            Log::error('[SELF-ORDER] checkout gagal', ['table_id' => $tableId, 'error' => $e->getMessage()]);
+
+            return back()->with('error', 'Pesanan gagal diproses. Silakan coba lagi atau panggil staf.');
+        } finally {
+            $lock->release();
         }
 
+        // PATCH FOR P-09: track order per sesi untuk otorisasi dan riwayat.
+        session()->push('customer_orders', $order->order_code);
+
+        // PATCH FOR U-03/P-19: snapshot keranjang sebelum clear.
+        $this->cartService->snapshot();
         $this->cartService->clear();
 
         return redirect()->route('customer.checkout.success', $order->order_code);
@@ -142,19 +188,19 @@ class CheckoutController extends Controller
      */
     public function success(string $orderCode): View
     {
+        // PATCH FOR S-09: otorisasi order per SESI, bukan per meja saja.
+        abort_unless(in_array($orderCode, session('customer_orders', []), true), 404);
+
         $tableId = session('current_table_id');
 
         $query = Order::where('order_code', $orderCode);
 
-        // Jika ada sesi meja aktif, paksa hanya tampilkan order milik meja itu.
-        // Tanpa ini, siapapun bisa menebak order_code dan melihat snap_token orang lain.
+        // Lapis kedua: filter per meja jika ada.
         if ($tableId) {
             $query->where('table_id', $tableId);
         }
 
         $order = $query->firstOrFail();
-
-        // Eager-load relasi table agar view bisa akses $order->table->table_number
         $order->load('table');
 
         return view('customer.checkout.success', compact('order'));
@@ -162,9 +208,13 @@ class CheckoutController extends Controller
 
     /**
      * Polling endpoint untuk melihat status pesanan terbaru dari KDS/Midtrans.
+     * PATCH FOR S-19: tambah data prep dan hentikan jika sesi hilang.
      */
-    public function status(string $orderCode)
+    public function status(string $orderCode): JsonResponse
     {
+        // PATCH FOR S-09: otorisasi per sesi.
+        abort_unless(in_array($orderCode, session('customer_orders', []), true), 404);
+
         $tableId = session('current_table_id');
 
         $query = Order::where('order_code', $orderCode);
@@ -175,12 +225,35 @@ class CheckoutController extends Controller
 
         $order = $query->firstOrFail();
 
-        $status = $order->order_status; // sudah instance OrderStatus (cast di model Order)
+        $status = $order->order_status;
+
+        // PATCH FOR S-19/U-05: kirim data preparation_status agar pelanggan bisa lihat progress.
+        $order->load('orderItems:id,order_id,preparation_status');
+        $prep = ['total' => $order->orderItems->count(), 'pending' => 0, 'brewing' => 0, 'ready' => 0];
+        foreach ($order->orderItems as $i) {
+            $key = $i->preparation_status->value ?? $i->preparation_status;
+            if (isset($prep[$key])) {
+                $prep[$key]++;
+            }
+        }
 
         return response()->json([
             'order_status' => $status->value,
             'is_paid' => $status === OrderStatus::Paid,
             'is_final' => $status->isFinal(),
+            'prep' => $prep,
         ]);
+    }
+
+    /**
+     * PATCH FOR U-03/P-19: Pulihkan keranjang dari snapshot terakhir (pesan ulang).
+     */
+    public function reorder(): RedirectResponse
+    {
+        if ($this->cartService->restoreSnapshot()) {
+            return redirect()->route('customer.cart.index')->with('success', 'Keranjang berhasil dipulihkan.');
+        }
+
+        return redirect()->route('customer.cart.index')->with('error', 'Tidak ada keranjang sebelumnya untuk dipulihkan.');
     }
 }

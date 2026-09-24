@@ -41,12 +41,20 @@ class MidtransNotificationController extends Controller
             return response()->json(['message' => 'invalid payload'], 400);
         }
 
+        // PATCH FOR S-06: Fail-closed jika server key kosong.
+        $serverKey = (string) config('services.midtrans.server_key');
+        if ($serverKey === '') {
+            Log::critical('Midtrans notification DITOLAK: MIDTRANS_SERVER_KEY kosong.');
+
+            return response()->json(['message' => 'server misconfigured'], 500);
+        }
+
         // Zero-Trust: JANGAN PERNAH percaya transaction_status dari payload
         // sebelum signature terverifikasi -- siapa pun bisa POST payload
         // palsu ke endpoint publik ini mengklaim status "settlement".
         $expectedSignature = hash(
             'sha512',
-            $orderId.$statusCode.$grossAmount.config('services.midtrans.server_key')
+            $orderId.$statusCode.$grossAmount.$serverKey
         );
 
         if (! hash_equals($expectedSignature, (string) $signatureKey)) {

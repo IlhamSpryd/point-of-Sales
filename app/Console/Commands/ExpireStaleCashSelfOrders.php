@@ -26,6 +26,7 @@ class ExpireStaleCashSelfOrders extends Command
                 orderCode: $order->order_code,
                 transactionStatus: 'expire',
                 fraudStatus: null,
+                grossAmount: (int) $order->order_amount,
             );
         }
 
