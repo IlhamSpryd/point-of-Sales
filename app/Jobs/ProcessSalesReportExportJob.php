@@ -12,6 +12,7 @@ use App\Models\ExportTask;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
@@ -19,13 +20,18 @@ use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use Throwable;
 
-class ProcessSalesReportExportJob implements ShouldQueue
+class ProcessSalesReportExportJob implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 1;
 
     public function __construct(public ExportTask $exportTask) {}
+
+    public function uniqueId(): string
+    {
+        return $this->exportTask->requested_by . '_' . md5(json_encode($this->exportTask->parameters));
+    }
 
     public function handle(): void
     {

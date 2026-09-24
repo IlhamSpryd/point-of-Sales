@@ -6,7 +6,7 @@ use App\Enums\OrderStatus;
 use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -16,17 +16,16 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class SalesExport implements FromCollection, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
+class SalesExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
 {
     public function __construct(protected Carbon $start, protected Carbon $end) {}
 
-    public function collection(): Collection
+    public function query()
     {
         return Order::with('user')
             ->whereBetween('order_date', [$this->start, $this->end])
             ->where('order_status', OrderStatus::Paid->value)
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->orderBy('created_at', 'desc');
     }
 
     public function headings(): array
