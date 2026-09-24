@@ -16,13 +16,14 @@ class Modifier extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['modifier_group_id', 'name', 'extra_price', 'is_default'];
+    protected $fillable = ['modifier_group_id', 'name', 'extra_price', 'is_default', 'is_active'];
 
     protected function casts(): array
     {
         return [
             'extra_price' => 'integer',
             'is_default' => 'boolean',
+            'is_active' => 'boolean',
         ];
     }
 
