@@ -29,16 +29,27 @@ class RestockForecastControllerTest extends TestCase
             'reorder_level' => 20,
         ]);
 
-        // Create some sale deductions within the last 30 days
+        // Create some sale deductions within the last 14 days (split to ensure stable trend)
         IngredientStockMovement::create([
             'ingredient_id' => $ingredient->id,
             'type' => IngredientStockMovementTypeEnum::SaleDeduction->value,
-            'quantity' => -60,
+            'quantity' => -14,
             'created_at' => Carbon::now()->subDays(10),
             'order_id' => null,
             'order_item_id' => null,
             'idempotency_key' => uniqid('test_'),
         ]);
+        IngredientStockMovement::create([
+            'ingredient_id' => $ingredient->id,
+            'type' => IngredientStockMovementTypeEnum::SaleDeduction->value,
+            'quantity' => -14,
+            'created_at' => Carbon::now()->subDays(3),
+            'order_id' => null,
+            'order_item_id' => null,
+            'idempotency_key' => uniqid('test_'),
+        ]);
+
+        app(\App\Services\Analytics\RestockPredictionService::class)->recomputeAll();
 
         $response = $this->actingAs($user)->getJson(route('analytics.restock-forecasts'));
 
@@ -61,13 +72,13 @@ class RestockForecastControllerTest extends TestCase
         ]);
 
         // Math validation:
-        // Total consumption in last 30 days: 60.
-        // avg_daily_consumption = 60 / 30 = 2.
+        // Total consumption in last 14 days: 28.
+        // avg_daily_consumption = 28 / 14 = 2.
         // projected_days_remaining = current_stock (100) / 2 = 50.
         $data = $response->json('data.0');
         $this->assertEquals(2, $data['avg_daily_consumption']);
         $this->assertEquals(50, $data['projected_days_remaining']);
-        // Because days remaining is > 7, suggested reorder qty should be max(0, reorder_level - current_stock) -> max(0, 20 - 100) = 0
+        // forwardNeed = 2 * 14 = 28. buffer = 100 - 20 = 80. suggested = max(0, 28 - 80) = 0.
         $this->assertEquals(0, $data['suggested_reorder_qty']);
         $this->assertEquals('stable', $data['trend']);
     }
@@ -86,16 +97,18 @@ class RestockForecastControllerTest extends TestCase
             'reorder_level' => 20,
         ]);
 
-        // Consume 60 in last 30 days -> 2/day
+        // Consume 28 in last 14 days -> 2/day
         IngredientStockMovement::create([
             'ingredient_id' => $ingredient->id,
             'type' => IngredientStockMovementTypeEnum::SaleDeduction->value,
-            'quantity' => -60,
-            'created_at' => Carbon::now()->subDays(10),
+            'quantity' => -28,
+            'created_at' => Carbon::now()->subDays(5),
             'order_id' => null,
             'order_item_id' => null,
             'idempotency_key' => uniqid('test_'),
         ]);
+
+        app(\App\Services\Analytics\RestockPredictionService::class)->recomputeAll();
 
         $response = $this->actingAs($user)->getJson(route('analytics.restock-forecasts'));
 
@@ -104,10 +117,9 @@ class RestockForecastControllerTest extends TestCase
         // Math validation:
         // avg_daily = 2.
         // days remaining = 10 / 2 = 5 days.
-        // because 5 <= 7, suggested reorder qty = max(reorder_level - current_stock, avg_daily * 14 - current_stock)
-        // max(20 - 10, 2 * 14 - 10) = max(10, 28 - 10) = max(10, 18) = 18.
+        // forwardNeed = 2 * 14 = 28. buffer = 10 - 20 = -10. suggested = max(0, 28 - (-10)) = 38.
         $data = $response->json('data.0');
         $this->assertEquals(5, $data['projected_days_remaining']);
-        $this->assertEquals(18, $data['suggested_reorder_qty']);
+        $this->assertEquals(38, $data['suggested_reorder_qty']);
     }
 }

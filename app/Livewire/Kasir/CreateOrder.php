@@ -23,8 +23,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+// Layar POS kasir memakai noPadding agar tidak membawa padding admin generik
+// yang membuang ruang di layar yang sudah sempit dipecah 3 kolom (§5.4 audit).
+#[Layout('layouts.app', ['noPadding' => true])]
 class CreateOrder extends Component
 {
     public ?string $orderType = null;   // 'dine_in' | 'takeaway'

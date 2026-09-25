@@ -9,11 +9,15 @@ use App\Enums\PreparationStatus;
 use App\Models\OrderItem;
 use App\Services\KdsService;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Component;
 
+#[Layout('kds.index')]
 class Board extends Component
 {
     public function claim(int $itemId): void
@@ -35,6 +39,15 @@ class Board extends Component
         ));
     }
 
+    public function recall(int $itemId): void
+    {
+        $this->guard(fn () => app(KdsService::class)->recall(
+            $itemId,
+            (int) Auth::id(),
+            canManage: in_array(Auth::user()->role?->name, ['Owner', 'Manager'], true),
+        ));
+    }
+
     public function dismissError(): void
     {
         $this->resetErrorBag('kds');
@@ -49,6 +62,15 @@ class Board extends Component
             $action();
         } catch (ValidationException $e) {
             $this->addError('kds', collect($e->errors())->flatten()->first());
+        } catch (ModelNotFoundException) {
+            // Item sudah dihapus/ID sudah tidak valid saat aksi diproses.
+            $this->addError('kds', 'Item ini sudah tidak ada. Layar akan diperbarui otomatis.');
+        } catch (QueryException $e) {
+            // Pola yang SAMA sudah terbukti terjadi di TransactionConcurrencyTest
+            // untuk lockForUpdate() lain di codebase ini -- lock wait timeout NYATA
+            // bisa terjadi di beban concurrent tinggi, bukan hipotesis.
+            report($e);
+            $this->addError('kds', 'Sistem sedang sibuk, silakan coba lagi dalam beberapa detik.');
         }
     }
 
@@ -77,8 +99,9 @@ class Board extends Component
         return $this->baseQuery()
             ->with('processedBy')
             ->where('preparation_status', PreparationStatus::Ready->value)
-            // whereBetween tetap sargable dan memakai index (preparation_status, updated_at).
-            ->whereBetween('order_items.updated_at', [today(), today()->endOfDay()])
+            // Menggunakan rolling window 12 jam. Menyelesaikan bug blind window UTC/WIB
+            // untuk shift tengah malam tanpa membebani query planner.
+            ->where('order_items.updated_at', '>=', now()->subHours(12))
             ->orderByDesc('order_items.updated_at')
             ->limit(12)
             ->get();

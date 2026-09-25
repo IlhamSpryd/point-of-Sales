@@ -8,6 +8,7 @@
     $sla = $showSla ? $item->slaLevel() : 'ok';
     $isMine = (int) $item->processed_by === (int) auth()->id();
     $canOverride = in_array(auth()->user()?->role?->name, ['Owner', 'Manager'], true);
+    $canProcess = in_array(auth()->user()?->role?->name, ['Owner', 'Manager', 'Barista', 'Cook'], true);
 @endphp
 
 <article wire:key="{{ $variant }}-{{ $item->id }}"
@@ -74,15 +75,17 @@
     </div>
 
     @if ($variant === 'pending')
-        <button type="button" wire:click="claim({{ $item->id }})" wire:loading.attr="disabled" wire:target="claim({{ $item->id }})"
-                class="mt-4 flex min-h-11 w-full items-center justify-center rounded-xl bg-yovel-ink text-sm font-bold text-yovel-bg shadow-sm transition-all duration-200 hover:opacity-80 active:scale-[0.97] disabled:cursor-wait disabled:opacity-60">
-            <span wire:loading.remove wire:target="claim({{ $item->id }})" class="flex items-center gap-2">
-                <span class="material-symbols-rounded text-[18px]">skillet</span> Mulai Racik
-            </span>
-            <span wire:loading wire:target="claim({{ $item->id }})" class="flex items-center gap-2">
-                <span class="h-4 w-4 animate-spin rounded-full border-2 border-yovel-bg/30 border-t-yovel-bg"></span> Memproses…
-            </span>
-        </button>
+        @if ($canProcess)
+            <button type="button" wire:click="claim({{ $item->id }})" wire:loading.attr="disabled" wire:target="claim({{ $item->id }})"
+                    class="mt-4 flex min-h-11 w-full items-center justify-center rounded-xl bg-yovel-ink text-sm font-bold text-yovel-bg shadow-sm transition-all duration-200 hover:opacity-80 active:scale-[0.97] disabled:cursor-wait disabled:opacity-60">
+                <span wire:loading.remove wire:target="claim({{ $item->id }})" class="flex items-center gap-2">
+                    <span class="material-symbols-rounded text-[18px]">skillet</span> Mulai Racik
+                </span>
+                <span wire:loading wire:target="claim({{ $item->id }})" class="flex items-center gap-2">
+                    <span class="h-4 w-4 animate-spin rounded-full border-2 border-yovel-bg/30 border-t-yovel-bg"></span> Memproses…
+                </span>
+            </button>
+        @endif
     @elseif ($variant === 'brewing')
         @if ($isMine || $canOverride)
             <div class="mt-4 flex gap-2">
@@ -109,6 +112,16 @@
             </div>
         @else
             <p class="mt-4 text-center text-xs font-medium text-yovel-muted">Sedang dikerjakan {{ $item->processedBy->name ?? 'staf lain' }}</p>
+        @endif
+    @elseif ($variant === 'ready')
+        @if ($canProcess && ($isMine || $canOverride))
+            <button type="button" wire:click="recall({{ $item->id }})" wire:loading.attr="disabled" wire:target="recall({{ $item->id }})"
+                    class="mt-4 flex min-h-11 w-full items-center justify-center rounded-xl border border-yovel-border bg-yovel-surface shadow-sm transition-all duration-200 hover:bg-yovel-bg active:scale-[0.97] disabled:cursor-wait disabled:opacity-60 text-sm font-bold text-yovel-ink">
+                <span wire:loading.remove wire:target="recall({{ $item->id }})" class="flex items-center gap-2">
+                    <span class="material-symbols-rounded text-[20px]">undo</span> Tarik Kembali (Recall)
+                </span>
+                <span wire:loading wire:target="recall({{ $item->id }})" class="h-4 w-4 animate-spin rounded-full border-2 border-yovel-ink/30 border-t-yovel-ink"></span>
+            </button>
         @endif
     @endif
 </article>

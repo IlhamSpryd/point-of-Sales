@@ -13,8 +13,9 @@
          }
      }"
      @keydown.window.f2.prevent="focusSearch()"
-     @keydown.window.f4.prevent="triggerPay()">
-    <div class="flex flex-col lg:grid lg:grid-cols-3 gap-0 lg:h-[calc(100vh-5rem)] overflow-y-auto lg:overflow-visible">
+     @keydown.window.f4.prevent="triggerPay()"
+     class="p-4 sm:p-6 lg:p-6 h-full">
+    <div class="flex flex-col lg:grid lg:grid-cols-3 gap-0 lg:h-full overflow-y-auto lg:overflow-visible">
         {{-- KOLOM KIRI: pilih order type + produk --}}
         <div class="lg:col-span-2 flex flex-col lg:overflow-hidden lg:pr-6">
             <!-- Tipe Pesanan & Meja -->

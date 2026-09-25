@@ -8,6 +8,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Models\Order;
+use App\Services\Printing\KitchenPrinterService;
 use App\Services\Printing\ReceiptPrinterService;
 use App\Services\TransactionService;
 use Illuminate\Contracts\Cache\LockTimeoutException;
@@ -210,6 +211,20 @@ class TransactionController extends Controller
     public function printPayload(string $orderNumber, ReceiptPrinterService $printerService): JsonResponse
     {
         $order = Order::with(['orderItems.product', 'user', 'table'])
+            ->where('order_code', $orderNumber)
+            ->firstOrFail();
+
+        $payload = $printerService->generatePayload($order);
+
+        return response()->json($payload);
+    }
+
+    /**
+     * Endpoint untuk mendapatkan payload raw ESC/POS (QZ Tray) untuk dapur.
+     */
+    public function printKitchenPayload(string $orderNumber, KitchenPrinterService $printerService): JsonResponse
+    {
+        $order = Order::with(['orderItems.product', 'table'])
             ->where('order_code', $orderNumber)
             ->firstOrFail();
 

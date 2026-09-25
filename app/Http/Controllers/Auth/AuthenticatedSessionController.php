@@ -28,17 +28,11 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        // Arahkan sesuai role — Kasir TIDAK PERNAH menyentuh dashboard finansial,
-        // Manager langsung ke laporan, Owner ke dashboard.
-        $user = $request->user();
-
-        return match ($user->role?->name) {
-            'Kasir' => redirect()->route('transaction.create'),
-            'Manager' => redirect()->route('reports.sales'),
-            'Barista', 'Waiter' => redirect()->route('kds.index'),
-            'Inventory' => redirect()->route('products.index'),
-            default => redirect()->intended(route('dashboard', absolute: false)),
-        };
+        // Satu sumber kebenaran untuk redirect per-role: HomeController.
+        // Tidak ada lagi duplikasi mapping di sini. Semua role (termasuk
+        // Supervisor, Cook, dan role custom) aman — tidak pernah 403.
+        // @see §2.1 audit navigasi, App\Http\Controllers\HomeController
+        return redirect()->intended(route('home', absolute: false));
     }
 
     /**

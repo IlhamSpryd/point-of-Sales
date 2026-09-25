@@ -23,7 +23,7 @@
     <!-- KDS Header / Nav -->
     <header class="flex items-center justify-between mb-6 shrink-0">
         <div class="flex items-center gap-4">
-            <a href="{{ route('dashboard') }}" class="flex h-11 w-11 items-center justify-center rounded-xl bg-yovel-surface border border-yovel-border shadow-sm hover:bg-yovel-bg transition-colors" wire:navigate>
+            <a href="{{ route('home') }}" class="flex h-11 w-11 items-center justify-center rounded-xl bg-yovel-surface border border-yovel-border shadow-sm hover:bg-yovel-bg transition-colors" wire:navigate>
                 <span class="material-symbols-rounded text-[20px]">arrow_back</span>
             </a>
             <div>
@@ -45,7 +45,7 @@
 
     <!-- KDS Board Container -->
     <main class="flex-1 overflow-hidden min-h-0">
-        <livewire:kds.board />
+        {{ $slot }}
     </main>
 
     <!-- Livewire Scripts -->

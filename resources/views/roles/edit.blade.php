@@ -41,6 +41,15 @@
                     <h5 class="text-base font-semibold text-[#37352F]">Hak Akses Modul (RBAC)</h5>
                     <p class="text-sm text-[#787774]">Pilih modul dan izin spesifik yang diberikan kepada peran ini.</p>
                 </div>
+
+                {{-- Disclaimer jujur — @see §2.4 audit navigasi --}}
+                <div class="mb-5 flex items-start gap-3 rounded-xl bg-amber-50 border border-amber-200 px-4 py-3" role="alert">
+                    <span class="material-symbols-rounded text-[20px] text-amber-600 shrink-0 mt-0.5">info</span>
+                    <div>
+                        <p class="text-sm font-medium text-amber-800">Izin granular belum ditegakkan secara otomatis</p>
+                        <p class="text-xs text-amber-700 mt-0.5">Izin yang dicentang di bawah akan tersimpan di database, namun akses modul saat ini masih ditentukan berdasarkan <strong>nama peran</strong> bawaan (Owner, Manager, Kasir, dll). Fitur penegakan otomatis izin per-modul sedang dalam pengembangan.</p>
+                    </div>
+                </div>
                 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8">
                     @php $perms = $role->permissions ?? []; @endphp

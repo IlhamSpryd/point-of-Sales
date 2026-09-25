@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\ExportTaskController;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MidtransNotificationController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
@@ -20,7 +21,6 @@ use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
-use App\Http\Controllers\KdsController;
 use App\Livewire\ChannelMappingManager;
 use App\Livewire\Inventory\IngredientLedger;
 use App\Livewire\Inventory\IngredientManager;
@@ -54,6 +54,11 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
+    // Pendaratan netral-role — TIDAK pernah 403 untuk siapa pun yang login.
+    // Menggantikan redirect langsung ke 'dashboard' yang 403 untuk non-Owner/Manager.
+    // @see §2.1, §2.3 audit navigasi
+    Route::get('/home', [HomeController::class, 'index'])->name('home');
+
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])->name('password.confirm');
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
     Route::put('password', [PasswordController::class, 'update'])->name('password.update');
@@ -75,14 +80,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/transaction/receipt/{orderCode}', [TransactionController::class, 'receipt'])->name('transaction.receipt');
         Route::post('/api/orders/{order_number}/sync-status', [TransactionController::class, 'syncMidtrans'])->name('api.order.sync-status');
         Route::get('/api/orders/{order_number}/print-payload', [TransactionController::class, 'printPayload'])->name('api.order.print-payload');
+        Route::get('/api/orders/{order_number}/print-kitchen-payload', [TransactionController::class, 'printKitchenPayload'])->name('api.order.print-kitchen-payload');
 
         Route::get('/qz/certificate', [QzTraySigningController::class, 'certificate'])->name('qz.certificate');
         Route::post('/qz/sign', [QzTraySigningController::class, 'sign'])->name('qz.sign');
     });
 
-    // Dapur (KDS)
-    Route::middleware('role:Owner,Manager,Kasir,Barista,Waiter')->group(function () {
-        Route::get('/kds', [KdsController::class, 'index'])->name('kds.index');
+    // Dapur (KDS) — Cook ditambahkan (§2.2 audit: role Cook di-seed dengan izin kds.* tapi tidak bisa akses KDS)
+    Route::middleware('role:Owner,Manager,Kasir,Barista,Waiter,Cook')->group(function () {
+        Route::get('/kds', Board::class)->name('kds.index');
     });
 
     // Katalog (Produk & Kategori)
@@ -111,8 +117,8 @@ Route::middleware('auth')->group(function () {
 
     // --- MODUL ENTERPRISE BARU ---
 
-    // Shift Kasir
-    Route::middleware('role:Owner,Manager,Kasir')->group(function () {
+    // Shift Kasir — Supervisor ditambahkan (§7.3 audit: Supervisor memiliki izin shifts.*)
+    Route::middleware('role:Owner,Manager,Kasir,Supervisor')->group(function () {
         Route::get('/shifts', [ShiftController::class, 'index'])->name('shifts.index');
     });
 

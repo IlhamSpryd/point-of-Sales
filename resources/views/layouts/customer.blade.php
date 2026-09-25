@@ -40,13 +40,17 @@
                 {{ $title ?? config('app.name') }}
             </span>
 
-            @if (session('current_table_name'))
-                <span
-                    class="ml-auto shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold text-yovel-muted bg-white border border-yovel-border rounded-full px-3 py-1.5 shadow-sm">
-                    <span class="material-symbols-rounded text-[16px]">table_restaurant</span>
-                    {{ session('current_table_name') }}
-                </span>
-            @endif
+            <div class="ml-auto flex items-center gap-2">
+                {{-- Tombol Panggil Waiter — hadir di Cart & Checkout juga, bukan hanya Menu (§5.2 audit) --}}
+                <x-waiter-call-button />
+                @if (session('current_table_name'))
+                    <span
+                        class="shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold text-yovel-muted bg-white border border-yovel-border rounded-full px-3 py-1.5 shadow-sm">
+                        <span class="material-symbols-rounded text-[16px]">table_restaurant</span>
+                        {{ session('current_table_name') }}
+                    </span>
+                @endif
+            </div>
         </header>
 
         <main class="px-4 pt-5 pb-8">

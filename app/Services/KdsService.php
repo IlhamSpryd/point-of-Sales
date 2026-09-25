@@ -25,7 +25,13 @@ final class KdsService
     public function claim(int $orderItemId, int $staffId): OrderItem
     {
         return DB::transaction(function () use ($orderItemId, $staffId) {
-            $item = OrderItem::lockForUpdate()->findOrFail($orderItemId);
+            $item = OrderItem::with('order')->lockForUpdate()->findOrFail($orderItemId);
+
+            if ($item->order->order_status !== \App\Enums\OrderStatus::Paid) {
+                throw ValidationException::withMessages([
+                    'kds' => 'Hanya pesanan LUNAS yang boleh diproses di dapur.',
+                ]);
+            }
 
             if ($item->preparation_status !== PreparationStatus::Pending) {
                 throw ValidationException::withMessages([
@@ -50,7 +56,13 @@ final class KdsService
     public function markReady(int $orderItemId, int $staffId): OrderItem
     {
         return DB::transaction(function () use ($orderItemId, $staffId) {
-            $item = OrderItem::lockForUpdate()->findOrFail($orderItemId);
+            $item = OrderItem::with('order')->lockForUpdate()->findOrFail($orderItemId);
+
+            if ($item->order->order_status !== \App\Enums\OrderStatus::Paid) {
+                throw ValidationException::withMessages([
+                    'kds' => 'Hanya pesanan LUNAS yang boleh diproses di dapur.',
+                ]);
+            }
 
             if ($item->preparation_status !== PreparationStatus::Brewing) {
                 throw ValidationException::withMessages([
@@ -78,7 +90,13 @@ final class KdsService
     public function release(int $orderItemId, int $staffId, bool $canManage): OrderItem
     {
         return DB::transaction(function () use ($orderItemId, $staffId, $canManage) {
-            $item = OrderItem::lockForUpdate()->findOrFail($orderItemId);
+            $item = OrderItem::with('order')->lockForUpdate()->findOrFail($orderItemId);
+
+            if ($item->order->order_status !== \App\Enums\OrderStatus::Paid) {
+                throw ValidationException::withMessages([
+                    'kds' => 'Hanya pesanan LUNAS yang boleh diproses di dapur.',
+                ]);
+            }
 
             if (! $canManage && $item->processed_by !== $staffId) {
                 throw ValidationException::withMessages([
@@ -90,6 +108,39 @@ final class KdsService
                 'preparation_status' => PreparationStatus::Pending,
                 'processed_by' => null,
             ]);
+
+            return $item;
+        });
+    }
+
+    /**
+     * Recall: Menarik kembali item yang sudah "Ready" ke status "Brewing".
+     * Hanya bisa dilakukan oleh staf yang menyelesaikannya atau oleh Owner/Manager.
+     */
+    public function recall(int $orderItemId, int $staffId, bool $canManage): OrderItem
+    {
+        return DB::transaction(function () use ($orderItemId, $staffId, $canManage) {
+            $item = OrderItem::with('order')->lockForUpdate()->findOrFail($orderItemId);
+
+            if ($item->order->order_status !== \App\Enums\OrderStatus::Paid) {
+                throw ValidationException::withMessages([
+                    'kds' => 'Hanya pesanan LUNAS yang boleh diproses di dapur.',
+                ]);
+            }
+
+            if ($item->preparation_status !== PreparationStatus::Ready) {
+                throw ValidationException::withMessages([
+                    'kds' => 'Hanya item yang sudah Selesai (Ready) yang dapat ditarik kembali.',
+                ]);
+            }
+
+            if (! $canManage && $item->processed_by !== $staffId) {
+                throw ValidationException::withMessages([
+                    'kds' => 'Hanya staf yang menyelesaikan item ini atau Manager yang bisa menariknya kembali.',
+                ]);
+            }
+
+            $item->update(['preparation_status' => PreparationStatus::Brewing]);
 
             return $item;
         });
