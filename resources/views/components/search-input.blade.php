@@ -3,13 +3,13 @@
     'icon' => 'search',
 ])
 
-<div class="relative w-full group">
-    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
-        <span class="material-symbols-rounded text-[20px] text-yovel-muted group-focus-within:text-yovel-ink transition-colors duration-300">{{ $icon }}</span>
+<div class="flex items-center w-full bg-gray-50 border border-gray-200 rounded-xl focus-within:border-gray-900 focus-within:ring-1 focus-within:ring-gray-900 focus-within:bg-white transition-colors overflow-hidden h-11 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]">
+    <div class="pl-3 pr-2 text-gray-400 flex items-center justify-center">
+        <span class="material-symbols-rounded text-[20px]">{{ $icon }}</span>
     </div>
     <input 
         type="search"
         placeholder="{{ $placeholder }}"
-        {{ $attributes->merge(['class' => 'block w-full h-10 pl-10 pr-4 bg-white border border-yovel-border rounded-xl text-sm text-yovel-ink placeholder-yovel-muted focus:outline-none focus:border-yovel-ink focus:ring-4 focus:ring-yovel-surface shadow-sm transition-all duration-300 ease-out']) }}
+        {{ $attributes->merge(['class' => 'flex-1 w-full h-full pr-3 bg-transparent outline-none text-gray-900 text-[14px] font-medium placeholder:text-gray-400 placeholder:font-normal']) }}
     >
 </div>

@@ -1,39 +1,37 @@
-<div class="space-y-6">
-    <div class="flex justify-between items-center">
-        <h2 class="text-2xl font-bold text-gray-800">Manajemen Diskon & Promo</h2>
-        <button wire:click="create()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg shadow flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
-            </svg>
-            Tambah Diskon
-        </button>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <h4 class="text-xl font-bold text-yovel-ink tracking-tight">Manajemen Diskon & Promo</h4>
+            <p class="text-sm font-medium text-yovel-muted mt-1">Kelola diskon dan kode promo sistem</p>
+        </div>
+        
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+            <div class="w-full sm:w-64">
+                <x-search-input wire:model.live.debounce.300ms="search" placeholder="Cari Diskon..." />
+            </div>
+            <x-button variant="primary" type="button" wire:click="create" class="w-full sm:w-auto">
+                <span class="material-symbols-rounded text-[18px]">add</span> Tambah Diskon
+            </x-button>
+        </div>
     </div>
 
     @if (session()->has('message'))
-        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded" role="alert">
-            <p>{{ session('message') }}</p>
-        </div>
+        <x-alert type="success">{{ session('message') }}</x-alert>
     @endif
 
-    <div class="bg-white shadow rounded-lg overflow-hidden border border-gray-200">
-        <div class="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-            <div class="w-72">
-                <x-search-input wire:model.live.debounce.300ms="search" placeholder="Cari Diskon..." />
-            </div>
-        </div>
+    <div class="card-surface flex flex-col flex-1 min-h-0">
 
-        <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama & Kode</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe & Nilai</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Syarat</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status & Masa Aktif</th>
-                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+        <div class="hidden lg:block overflow-auto flex-1 table-scroll-shadow">
+            <table class="data-table relative w-full">
+                <thead class="sticky top-0 z-10 shadow-sm">
+                    <tr class="bg-yovel-surface">
+                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-left">Nama & Kode</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-left">Tipe & Nilai</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-left">Syarat</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-left">Status & Masa Aktif</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-right">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="divide-y divide-yovel-border bg-white">
                     @forelse($discounts as $discount)
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap">
