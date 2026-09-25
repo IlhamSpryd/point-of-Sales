@@ -248,7 +248,7 @@
                 </div>
             @endforelse
         </div>
-        <div class="p-4 border-t border-[#E9E9E7] shrink-0">
+        <div class="p-4 border-t border-yovel-border shrink-0">
             {{ $this->orders->links() }}
         </div>
     </div>

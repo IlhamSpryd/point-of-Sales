@@ -98,7 +98,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="px-6 py-4 border-t border-[#E9E9E7]">
+            <div class="p-4 border-t border-yovel-border shrink-0">
                 {{ $mappings->links() }}
             </div>
         </div>

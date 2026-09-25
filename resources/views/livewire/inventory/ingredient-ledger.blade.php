@@ -105,7 +105,7 @@
             </table>
         </div>
         @if($movements->hasPages())
-            <div class="px-6 py-4 border-t border-yovel-border">
+            <div class="p-4 border-t border-yovel-border shrink-0">
                 {{ $movements->links() }}
             </div>
         @endif

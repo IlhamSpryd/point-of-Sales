@@ -81,7 +81,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="px-6 py-3 border-t border-gray-200">
+        <div class="p-4 border-t border-yovel-border shrink-0">
             {{ $discounts->links() }}
         </div>
     </div>

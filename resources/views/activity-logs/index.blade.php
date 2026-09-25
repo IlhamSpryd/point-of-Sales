@@ -62,7 +62,7 @@
             </div>
             
             @if($logs->hasPages())
-                <div class="p-4 border-t border-yovel-border bg-[#F9F9F8]">
+                <div class="p-4 border-t border-yovel-border shrink-0">
                     {{ $logs->links() }}
                 </div>
             @endif

@@ -221,7 +221,7 @@
             @endforelse
         </div>
         @if($ingredients->hasPages())
-            <div class="px-6 py-4 border-t border-yovel-border shrink-0">
+            <div class="p-4 border-t border-yovel-border shrink-0">
                 {{ $ingredients->links() }}
             </div>
         @endif

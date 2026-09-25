@@ -95,7 +95,7 @@
                 </tbody>
             </table>
         </div>
-        <div class="p-4 border-t border-[#E9E9E7]">
+        <div class="p-4 border-t border-yovel-border shrink-0">
             {{ $recentOrders->links() }}
         </div>
     </div>
