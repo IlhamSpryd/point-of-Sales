@@ -15,10 +15,10 @@
      @keydown.window.f2.prevent="focusSearch()"
      @keydown.window.f4.prevent="triggerPay()"
      class="p-4 sm:p-6 lg:p-6 h-full">
-    <div class="flex flex-col lg:grid lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-0 lg:h-[calc(100vh-100px)] overflow-hidden rounded-2xl bg-white border border-yovel-border shadow-sm">
+    <div class="flex flex-col md:flex-row gap-0 h-[calc(100vh-110px)] min-h-[600px] overflow-hidden rounded-2xl bg-white border border-yovel-border shadow-sm">
         
         {{-- KOLOM KIRI: pilih order type + produk --}}
-        <div class="flex flex-col h-full bg-[#f8f9fa] overflow-hidden">
+        <div class="flex-1 flex flex-col h-full bg-[#f8f9fa] overflow-hidden">
             <!-- Tipe Pesanan & Meja (Sticky Header) -->
             <div class="p-5 border-b border-yovel-border bg-white flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 z-10">
                 <div class="flex gap-1 p-1 bg-yovel-bg rounded-xl border border-yovel-border">
@@ -162,7 +162,7 @@
         </div>
 
         {{-- KOLOM KANAN: keranjang + pembayaran --}}
-        <div class="h-full bg-white flex flex-col shadow-xl z-10 relative">
+        <div class="w-full md:w-[350px] lg:w-[380px] xl:w-[420px] h-full bg-white flex flex-col shadow-xl z-10 relative border-t md:border-t-0 md:border-l border-yovel-border shrink-0">
             <div class="p-5 border-b border-yovel-border shrink-0 space-y-4">
                 <div class="flex items-center justify-between">
                     <h3 class="font-bold text-[17px] text-yovel-ink flex items-center gap-2">
