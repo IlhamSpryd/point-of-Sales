@@ -15,59 +15,64 @@
      @keydown.window.f2.prevent="focusSearch()"
      @keydown.window.f4.prevent="triggerPay()"
      class="p-4 sm:p-6 lg:p-6 h-full">
-    <div class="flex flex-col lg:grid lg:grid-cols-3 gap-0 lg:h-full overflow-y-auto lg:overflow-visible">
+    <div class="flex flex-col lg:grid lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_420px] gap-0 lg:h-[calc(100vh-100px)] overflow-hidden rounded-2xl bg-white border border-yovel-border shadow-sm">
+        
         {{-- KOLOM KIRI: pilih order type + produk --}}
-        <div class="lg:col-span-2 flex flex-col lg:overflow-hidden lg:pr-6">
-            <!-- Tipe Pesanan & Meja -->
-            <div class="card-surface p-5 mb-6 flex flex-col sm:flex-row items-center gap-6 bg-white shrink-0">
-                <div class="flex gap-1 p-1 bg-yovel-surface rounded-xl">
+        <div class="flex flex-col h-full bg-[#f8f9fa] overflow-hidden">
+            <!-- Tipe Pesanan & Meja (Sticky Header) -->
+            <div class="p-5 border-b border-yovel-border bg-white flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 z-10">
+                <div class="flex gap-1 p-1 bg-yovel-bg rounded-xl border border-yovel-border">
                     <label class="flex items-center cursor-pointer">
                         <input type="radio" wire:model.live="orderType" value="dine_in" class="peer sr-only">
-                        <span class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-yovel-ink text-yovel-muted hover:text-yovel-ink active:scale-95">
+                        <span class="px-5 py-2 rounded-lg text-[13px] font-bold transition-all duration-200 peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-yovel-ink text-yovel-muted hover:text-yovel-ink active:scale-95">
                             Dine-In
                         </span>
                     </label>
                     <label class="flex items-center cursor-pointer">
                         <input type="radio" wire:model.live="orderType" value="takeaway" class="peer sr-only">
-                        <span class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-yovel-ink text-yovel-muted hover:text-yovel-ink active:scale-95">
+                        <span class="px-5 py-2 rounded-lg text-[13px] font-bold transition-all duration-200 peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-yovel-ink text-yovel-muted hover:text-yovel-ink active:scale-95">
                             Takeaway
                         </span>
                     </label>
                 </div>
 
                 @if ($orderType === 'dine_in')
-                    <div class="flex-1 w-full sm:w-auto">
-                        <select wire:model="tableId" class="bg-white border border-yovel-border text-yovel-ink text-sm rounded-xl focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink block w-full p-2.5 shadow-sm transition-all duration-200 min-h-[44px]">
+                    <div class="w-full sm:w-64">
+                        <select wire:model="tableId" class="bg-white border border-yovel-border text-yovel-ink text-sm rounded-xl focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink block w-full px-4 py-2.5 shadow-sm transition-all duration-200 min-h-[44px] appearance-none cursor-pointer">
                             <option value="">-- Pilih Meja --</option>
                             @foreach ($this->activeTables as $table)
                                 <option value="{{ $table->id }}">Meja {{ $table->table_name }}</option>
                             @endforeach
                         </select>
-                        @error('tableId') <p class="text-rose-500 text-xs mt-1 font-medium">{{ $message }}</p> @enderror
+                        @error('tableId') <p class="text-rose-500 text-xs mt-1.5 font-medium">{{ $message }}</p> @enderror
                     </div>
                 @endif
             </div>
 
-            <!-- List Kategori & Produk (scrollable) -->
-            <div class="flex-1 overflow-y-auto space-y-8 pr-1 custom-scrollbar">
+            <!-- List Kategori & Produk (scrollable independently) -->
+            <div class="flex-1 overflow-y-auto p-5 custom-scrollbar space-y-8">
                 @foreach ($this->categories as $category)
                     @if($category->products->count() > 0)
                         <div>
-                            <h3 class="text-base font-bold text-yovel-ink mb-4 flex items-center gap-2">
-                                <span class="w-1.5 h-1.5 rounded-full bg-yovel-ink"></span>
+                            <h3 class="text-sm font-bold tracking-wider uppercase text-yovel-muted mb-4 flex items-center gap-2">
                                 {{ $category->category_name }}
                             </h3>
-                            <div class="grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-3">
+                            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                 @foreach ($category->products as $product)
                                     @if($product->modifierGroups->count() > 0)
                                         <button wire:click="openModifierPicker({{ $product->id }})"
-                                                class="card-surface p-4 text-left hover:shadow-md transition-all duration-200 hover:border-primary-300 active:scale-[0.97] flex flex-col justify-between h-full bg-white group min-h-[44px]">
+                                                class="text-left bg-white rounded-2xl border border-yovel-border p-4 hover:shadow-lg hover:-translate-y-1 hover:border-yovel-ink transition-all duration-300 active:scale-95 flex flex-col justify-between h-full group">
                                     @else
                                         <button wire:click="addToCartDirectly({{ $product->id }})"
-                                                class="card-surface p-4 text-left hover:shadow-md transition-all duration-200 hover:border-primary-300 active:scale-[0.97] flex flex-col justify-between h-full bg-white group min-h-[44px]">
+                                                class="text-left bg-white rounded-2xl border border-yovel-border p-4 hover:shadow-lg hover:-translate-y-1 hover:border-yovel-ink transition-all duration-300 active:scale-95 flex flex-col justify-between h-full group">
                                     @endif
-                                        <div class="font-semibold text-sm text-yovel-ink leading-snug group-hover:text-primary-900 transition-colors duration-200">{{ $product->product_name }}</div>
-                                        <div class="text-yovel-ink font-bold mt-3 text-sm tracking-tight">Rp {{ number_format($product->product_price, 0, ',', '.') }}</div>
+                                        <div class="font-bold text-[14px] text-yovel-ink leading-snug">{{ $product->product_name }}</div>
+                                        <div class="mt-4 flex items-center justify-between w-full">
+                                            <div class="text-yovel-ink font-semibold text-[13px]">Rp {{ number_format($product->product_price, 0, ',', '.') }}</div>
+                                            <div class="w-7 h-7 rounded-full bg-yovel-bg flex items-center justify-center group-hover:bg-yovel-ink group-hover:text-white transition-colors duration-300">
+                                                <span class="material-symbols-rounded text-[16px]">add</span>
+                                            </div>
+                                        </div>
                                     </button>
                                 @endforeach
                             </div>
@@ -157,198 +162,186 @@
         </div>
 
         {{-- KOLOM KANAN: keranjang + pembayaran --}}
-        <div class="lg:sticky lg:top-0 lg:col-span-1 h-full border-l border-yovel-border bg-white shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)]">
-            <div class="flex flex-col h-full lg:overflow-hidden">
-                <div class="p-4 border-b border-yovel-border bg-white shrink-0 flex flex-col gap-3">
-                    <div class="flex items-center justify-between">
-                        <h3 class="font-bold text-lg text-yovel-ink flex items-center gap-2">
-                            <span class="material-symbols-rounded text-[20px]">shopping_cart</span>
-                            Detail Pesanan
-                        </h3>
-                        <span class="bg-yovel-ink text-white text-xs font-bold px-2.5 py-1 rounded-full">{{ count($this->cartLines) }}</span>
-                    </div>
+        <div class="h-full bg-white flex flex-col shadow-xl z-10 relative">
+            <div class="p-5 border-b border-yovel-border shrink-0 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-[17px] text-yovel-ink flex items-center gap-2">
+                        Pesanan Saat Ini
+                    </h3>
+                    <div class="bg-yovel-ink text-white text-[11px] font-bold px-2.5 py-1 rounded-full leading-none">{{ count($this->cartLines) }}</div>
+                </div>
 
-                    <x-search-input id="search-input" wire:model.live.debounce.300ms="search" placeholder="Scan QR Pesanan (F2)..." icon="qr_code_scanner" autofocus />
+                <x-search-input id="search-input" wire:model.live.debounce.300ms="search" placeholder="Scan QR Pesanan (F2)..." icon="qr_code_scanner" autofocus />
 
-                    {{-- [OMEGA-NODE2] Pemilihan Pelanggan (Loyalty) -- hanya untuk
-                         mode Walk-in Baru, lihat SYNC ALERT #3 untuk mode Tarik Pesanan. --}}
-                    @unless ($pendingOrderId)
-                        <div class="relative" x-data="{ showResults: false }">
-                            @if ($customerId)
-                                <div class="flex items-center justify-between gap-2 bg-white border border-yovel-border rounded-xl px-3 py-2.5 min-h-[44px] shadow-sm">
-                                    <span class="flex items-center gap-2 text-sm font-semibold text-yovel-ink truncate">
-                                        <span class="material-symbols-rounded text-[18px] text-primary-400">person</span>
-                                        {{ $customerName }}
-                                    </span>
-                                    <button type="button" wire:click="clearCustomer" aria-label="Hapus pelanggan"
-                                            class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-rose-500 hover:bg-rose-50 transition-all duration-200 active:scale-90">
-                                        <span class="material-symbols-rounded text-[18px]">close</span>
-                                    </button>
-                                </div>
-                            @else
-                                <x-search-input wire:model.live.debounce.300ms="customerSearch"
-                                       x-on:focus="showResults = true"
-                                       x-on:click.outside="showResults = false"
-                                       placeholder="Cari pelanggan (opsional, untuk poin loyalti)..."
-                                       icon="person_search" />
-
-                                @if (mb_strlen(trim($customerSearch)) >= 2)
-                                    <div x-show="showResults" x-cloak wire:loading.class="opacity-50" wire:target="customerSearch"
-                                         class="absolute z-40 mt-1 w-full bg-white rounded-xl border border-yovel-border shadow-lg overflow-hidden max-h-56 overflow-y-auto custom-scrollbar">
-                                        @forelse ($this->customerResults as $c)
-                                            <button type="button" wire:key="customer-result-{{ $c->id }}"
-                                                    wire:click="selectCustomer({{ $c->id }}, '{{ addslashes($c->name) }}')"
-                                                    x-on:click="showResults = false"
-                                                    class="w-full min-h-[44px] flex items-center justify-between gap-2 px-3.5 py-2 text-left hover:bg-yovel-bg transition-colors duration-150">
-                                                <span class="text-sm font-semibold text-yovel-ink truncate">{{ $c->name }}</span>
-                                                <span class="text-xs text-yovel-muted shrink-0">{{ $c->phone ?? '-' }}</span>
-                                            </button>
-                                        @empty
-                                            <div class="px-3.5 py-3 text-xs text-yovel-muted text-center">Pelanggan tidak ditemukan.</div>
-                                        @endforelse
-                                    </div>
-                                @endif
-                            @endif
-                        </div>
-                    @endunless
-
-                    {{-- Alert Mode Tarik Pesanan --}}
-                    @if($pendingOrderCode)
-                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex justify-between items-center">
-                            <div>
-                                <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600 block">Membayar Pesanan Self-Order</span>
-                                <span class="font-mono font-bold text-yovel-ink">{{ $pendingOrderCode }}</span>
+                {{-- [OMEGA-NODE2] Pemilihan Pelanggan (Loyalty) -- hanya untuk
+                     mode Walk-in Baru, lihat SYNC ALERT #3 untuk mode Tarik Pesanan. --}}
+                @unless ($pendingOrderId)
+                    <div class="relative" x-data="{ showResults: false }">
+                        @if ($customerId)
+                            <div class="flex items-center justify-between gap-2 bg-yovel-bg rounded-xl px-4 py-2.5 min-h-[44px]">
+                                <span class="flex items-center gap-2 text-[13px] font-bold text-yovel-ink truncate">
+                                    <span class="material-symbols-rounded text-[18px] text-primary-500">person</span>
+                                    {{ $customerName }}
+                                </span>
+                                <button type="button" wire:click="clearCustomer" aria-label="Hapus pelanggan"
+                                        class="text-primary-400 hover:text-rose-500 transition-colors duration-200">
+                                    <span class="material-symbols-rounded text-[18px]">close</span>
+                                </button>
                             </div>
-                            <button wire:click="cancelPendingOrderMode" class="text-rose-500 hover:text-rose-700 p-1 bg-white rounded-lg border border-amber-100 shadow-sm active:scale-90 transition-all duration-200 min-w-[44px] min-h-[44px]">
-                                <span class="material-symbols-rounded text-[20px]">close</span>
-                            </button>
-                        </div>
-                    @endif
-                </div>
+                        @else
+                            <x-search-input wire:model.live.debounce.300ms="customerSearch"
+                                   x-on:focus="showResults = true"
+                                   x-on:click.outside="showResults = false"
+                                   placeholder="Tambah pelanggan (opsional)..."
+                                   icon="person_search" />
 
-                <div class="flex-1 overflow-y-auto bg-white custom-scrollbar">
-                    @if(count($this->cartLines) === 0)
-                        <x-empty-state icon="shopping_cart" title="Belum ada item." description="Pilih produk dari menu di sebelah kiri" class="py-16 border-none bg-transparent" />
-                    @else
-                        <div class="flex flex-col">
-                            @foreach ($this->cartLines as $line)
-                                <div class="px-4 py-3 border-b border-yovel-border hover:bg-yovel-bg/50 transition-colors duration-200 relative group">
+                            @if (mb_strlen(trim($customerSearch)) >= 2)
+                                <div x-show="showResults" x-cloak wire:loading.class="opacity-50" wire:target="customerSearch"
+                                     class="absolute z-40 mt-1 w-full bg-white rounded-xl border border-yovel-border shadow-lg overflow-hidden max-h-56 overflow-y-auto custom-scrollbar">
+                                    @forelse ($this->customerResults as $c)
+                                        <button type="button" wire:key="customer-result-{{ $c->id }}"
+                                                wire:click="selectCustomer({{ $c->id }}, '{{ addslashes($c->name) }}')"
+                                                x-on:click="showResults = false"
+                                                class="w-full min-h-[44px] flex items-center justify-between gap-2 px-4 py-2 text-left hover:bg-yovel-bg transition-colors duration-150">
+                                            <span class="text-[13px] font-bold text-yovel-ink truncate">{{ $c->name }}</span>
+                                            <span class="text-[11px] font-medium text-yovel-muted shrink-0">{{ $c->phone ?? '-' }}</span>
+                                        </button>
+                                    @empty
+                                        <div class="px-4 py-3 text-[13px] text-yovel-muted text-center">Pelanggan tidak ditemukan.</div>
+                                    @endforelse
+                                </div>
+                            @endif
+                        @endif
+                    </div>
+                @endunless
+
+                {{-- Alert Mode Tarik Pesanan --}}
+                @if($pendingOrderCode)
+                    <div class="bg-amber-50 rounded-xl p-3 flex justify-between items-center border border-amber-100">
+                        <div>
+                            <span class="text-[10px] font-bold uppercase tracking-wider text-amber-600 block mb-0.5">Membayar Pesanan Self-Order</span>
+                            <span class="font-bold text-[14px] text-yovel-ink">{{ $pendingOrderCode }}</span>
+                        </div>
+                        <button wire:click="cancelPendingOrderMode" class="text-amber-600 hover:text-amber-800 transition-colors duration-200">
+                            <span class="material-symbols-rounded text-[20px]">close</span>
+                        </button>
+                    </div>
+                @endif
+            </div>
+
+            <div class="flex-1 overflow-y-auto bg-white custom-scrollbar px-5">
+                @if(count($this->cartLines) === 0)
+                    <x-empty-state icon="shopping_bag" title="Keranjang kosong" description="Pesanan akan muncul di sini" class="py-16 border-none bg-transparent shadow-none" />
+                @else
+                    <div class="flex flex-col py-2 gap-4 mt-2">
+                        @foreach ($this->cartLines as $line)
+                            <div class="flex gap-3 group relative">
+                                <div class="w-8 h-8 rounded-lg bg-yovel-bg flex items-center justify-center text-yovel-ink font-bold text-[13px] shrink-0 mt-0.5">
+                                    {{ $line['qty'] }}x
+                                </div>
+                                <div class="flex-1 min-w-0 pb-4 {{ !$loop->last ? 'border-b border-yovel-border/60' : '' }}">
                                     <div class="flex justify-between items-start gap-2">
-                                        <div class="flex-1">
-                                            <div class="font-bold text-sm text-yovel-ink leading-tight">{{ $line['product_name'] }}</div>
-                                            <div class="text-xs text-yovel-muted mt-1 space-y-0.5">
-                                                @foreach($line['options'] as $opt)
-                                                    <div class="flex items-center gap-1">
-                                                        <span class="w-1 h-1 rounded-full bg-primary-300"></span>
-                                                        {{ $opt['name'] }}
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                            @if($line['notes'])
-                                                <div class="text-xs font-medium text-yovel-ink bg-yovel-surface px-2 py-1 rounded-lg mt-1.5 inline-block">📝 {{ $line['notes'] }}</div>
+                                        <div class="pr-2">
+                                            <h4 class="text-[14px] font-bold text-yovel-ink leading-tight">{{ $line['product_name'] }}</h4>
+                                            @if(count($line['options']) > 0 || $line['notes'])
+                                                <p class="text-[12px] text-yovel-muted mt-1 leading-snug">
+                                                    {{ collect($line['options'])->pluck('name')->join(', ') }}
+                                                    @if($line['notes'])
+                                                        <span class="block text-primary-500 mt-0.5 font-medium">{{ $line['notes'] }}</span>
+                                                    @endif
+                                                </p>
                                             @endif
-                                            <div class="text-sm font-bold text-yovel-ink mt-2">
-                                                Rp {{ number_format($line['order_price'], 0, ',', '.') }} <span class="text-primary-400 font-normal text-xs ml-1">×{{ $line['qty'] }}</span>
-                                            </div>
                                         </div>
-                                        <div class="flex flex-col items-end justify-between h-full">
-                                            <button wire:click="removeFromCart({{ $line['index'] }})" class="text-primary-300 hover:text-rose-500 p-1.5 bg-transparent rounded-lg hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-all duration-200 active:scale-90 min-w-[44px] min-h-[44px] flex items-center justify-center">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                        <div class="flex flex-col items-end shrink-0">
+                                            <div class="text-[14px] font-bold text-yovel-ink whitespace-nowrap">Rp {{ number_format($line['order_price'], 0, ',', '.') }}</div>
+                                            <button wire:click="removeFromCart({{ $line['index'] }})" class="mt-1 text-yovel-muted hover:text-rose-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <span class="material-symbols-rounded text-[18px]">delete</span>
                                             </button>
                                         </div>
                                     </div>
                                 </div>
-                            @endforeach
-                        </div>
-                    @endif
-                </div>
-
-                <div class="p-4 border-t border-yovel-border bg-white space-y-2 shrink-0">
-                    {{-- Diskon Selector --}}
-                    @if(count($this->activeDiscounts) > 0)
-                    <div class="mb-3 border-b border-gray-100 pb-3">
-                        <label class="block text-xs font-semibold text-yovel-muted mb-1.5 uppercase tracking-wider flex items-center gap-1">
-                            <span class="material-symbols-rounded text-[14px]">sell</span> Diskon & Promo
-                        </label>
-                        <select wire:model.live="selectedDiscountId" class="bg-yovel-bg border border-yovel-border text-yovel-ink text-sm rounded-xl focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink block w-full px-3 py-2 shadow-sm transition-all duration-200">
-                            <option value="">-- Tidak Ada Diskon --</option>
-                            @foreach($this->activeDiscounts as $d)
-                                <option value="{{ $d->id }}">{{ $d->name }} ({{ $d->type === 'percentage' ? $d->value . '%' : 'Rp ' . number_format($d->value, 0, ',', '.') }})</option>
-                            @endforeach
-                        </select>
+                            </div>
+                        @endforeach
                     </div>
-                    @endif
+                @endif
+            </div>
 
-                    <div class="flex justify-between text-sm text-yovel-muted">
+            <div class="p-5 border-t border-yovel-border bg-white shrink-0">
+                {{-- Diskon Selector --}}
+                @if(count($this->activeDiscounts) > 0)
+                <div class="mb-4">
+                    <select wire:model.live="selectedDiscountId" class="bg-yovel-bg text-yovel-ink text-[13px] font-semibold rounded-xl focus:ring-2 focus:ring-yovel-ink focus:outline-none block w-full px-4 py-2.5 transition-all duration-200 cursor-pointer appearance-none">
+                        <option value="">+ Tambah Diskon (Opsional)</option>
+                        @foreach($this->activeDiscounts as $d)
+                            <option value="{{ $d->id }}">{{ $d->name }} ({{ $d->type === 'percentage' ? $d->value . '%' : 'Rp ' . number_format($d->value, 0, ',', '.') }})</option>
+                        @endforeach
+                    </select>
+                </div>
+                @endif
+
+                <div class="space-y-2.5 mb-5">
+                    <div class="flex justify-between text-[13px] text-yovel-muted font-medium">
                         <span>Subtotal</span>
-                        <span class="text-yovel-ink font-medium">Rp {{ number_format($this->subtotal, 0, ',', '.') }}</span>
+                        <span class="text-yovel-ink font-semibold">Rp {{ number_format($this->subtotal, 0, ',', '.') }}</span>
                     </div>
                     @if($this->discountAmount > 0)
-                    <div class="flex justify-between text-sm text-rose-500 font-semibold">
-                        <span>Diskon ({{ $this->selectedDiscount->name ?? 'Promo' }})</span>
+                    <div class="flex justify-between text-[13px] text-rose-500 font-semibold">
+                        <span>Diskon</span>
                         <span>- Rp {{ number_format($this->discountAmount, 0, ',', '.') }}</span>
                     </div>
                     @endif
-                    <div class="flex justify-between text-sm text-yovel-muted">
+                    <div class="flex justify-between text-[13px] text-yovel-muted font-medium">
                         <span>Pajak ({{ rtrim(rtrim(number_format(config('pos.tax_rate', 0.11) * 100, 1), '0'), '.') }}%)</span>
-                        <span class="text-yovel-ink font-medium">Rp {{ number_format($this->taxAmount, 0, ',', '.') }}</span>
-                    </div>
-                    <div class="flex justify-between font-bold text-lg text-yovel-ink border-t border-yovel-border pt-3 mt-3">
-                        <span>Total Tagihan</span>
-                        <span>Rp {{ number_format($this->totalAmount, 0, ',', '.') }}</span>
+                        <span class="text-yovel-ink font-semibold">Rp {{ number_format($this->taxAmount, 0, ',', '.') }}</span>
                     </div>
                 </div>
 
                 {{-- [OMEGA-NODE2] Dua jalur pembayaran: Tarik Pesanan (tunggal, UNCHANGED)
                      vs Walk-in Baru (Split Payment via modal). --}}
-                <div class="p-4 border-t border-yovel-border bg-yovel-bg shrink-0">
-                    @if ($pendingOrderId)
-                        <label class="block text-xs font-semibold text-yovel-muted mb-1.5 uppercase tracking-wider">Uang Diterima (Cash)</label>
+                @if ($pendingOrderId)
+                    <div class="flex items-center justify-between mb-4 pt-4 border-t border-yovel-border">
+                        <span class="text-[15px] font-black text-yovel-ink">Total</span>
+                        <span class="text-[20px] font-black text-yovel-ink tracking-tight">Rp {{ number_format($this->totalAmount, 0, ',', '.') }}</span>
+                    </div>
+
+                    <div class="space-y-3 mb-4">
                         <div class="relative">
-                            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-primary-400 font-medium text-sm">Rp</span>
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-yovel-muted font-bold text-[14px]">Rp</span>
                             <input type="number" wire:model.live="cashReceived"
-                                   class="bg-white border border-yovel-border text-yovel-ink text-base rounded-xl focus:outline-none focus:border-yovel-ink focus:ring-0 block w-full pl-10 pr-3 py-2.5 shadow-sm transition-all duration-200 font-bold min-h-[52px]"
-                                   placeholder="0">
+                                   class="bg-yovel-bg text-yovel-ink text-base rounded-xl focus:outline-none focus:bg-white focus:ring-2 focus:ring-yovel-ink block w-full pl-11 pr-4 py-3 transition-all duration-200 font-bold"
+                                   placeholder="0 (Uang Diterima)">
                         </div>
 
-                        <div class="flex justify-between items-center mt-3 p-3 bg-white rounded-xl border border-yovel-border shadow-sm">
-                            <span class="text-sm font-medium text-yovel-muted">Kembalian</span>
-                            <span class="font-bold text-yovel-ink text-lg">Rp {{ number_format($this->changeAmount, 0, ',', '.') }}</span>
+                        <div class="flex justify-between items-center px-4 py-3 bg-yovel-bg rounded-xl">
+                            <span class="text-[13px] font-bold text-yovel-muted">Kembalian</span>
+                            <span class="font-bold text-yovel-ink text-[15px]">Rp {{ number_format($this->changeAmount, 0, ',', '.') }}</span>
                         </div>
+                    </div>
 
-                        @error('cart')
-                            <div class="mt-4 p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-sm font-medium flex items-start gap-2">
-                                <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                                {{ $message }}
-                            </div>
-                        @enderror
+                    @error('cart')
+                        <div class="mb-4 p-3 bg-rose-50 text-rose-700 rounded-xl text-[13px] font-bold flex items-start gap-2">
+                            <span class="material-symbols-rounded text-[18px]">error</span> {{ $message }}
+                        </div>
+                    @enderror
 
-                        <x-button wire:click="submitOrder" id="btn-bayar" variant="primary" size="lg" hotkey="F4"
-                                class="w-full min-h-[56px] mt-5"
-                                :disabled="count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId)">
-                            <span class="material-symbols-rounded text-[22px]">payments</span>
-                            Proses Pembayaran
-                        </x-button>
-                    @else
-                        @error('cart')
-                            <div class="mb-4 p-3 bg-rose-50 text-rose-700 border border-rose-200 rounded-xl text-sm font-medium flex items-start gap-2">
-                                <svg class="w-5 h-5 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                                {{ $message }}
-                            </div>
-                        @enderror
+                    <button wire:click="submitOrder" id="btn-bayar" class="w-full h-[52px] bg-yovel-ink hover:bg-opacity-90 text-white rounded-xl font-bold text-[15px] shadow-lg transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            :disabled="count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId)">
+                        Bayar Sekarang
+                    </button>
+                @else
+                    @error('cart')
+                        <div class="mb-4 p-3 bg-rose-50 text-rose-700 rounded-xl text-[13px] font-bold flex items-start gap-2">
+                            <span class="material-symbols-rounded text-[18px]">error</span> {{ $message }}
+                        </div>
+                    @enderror
 
-                        <x-button type="button" id="btn-bayar" variant="primary" size="lg" hotkey="F4"
-                                @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }} }); $dispatch('open-modal', 'checkout-payment')"
-                                class="w-full min-h-[56px] flex items-center justify-between"
-                                :disabled="count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId)">
-                            <span class="flex items-center gap-2">
-                                <span class="material-symbols-rounded text-[22px]">payments</span>
-                                Bayar Sekarang
-                            </span>
-                            <span class="tabular-nums">Rp {{ number_format($this->totalAmount, 0, ',', '.') }}</span>
-                        </x-button>
-                    @endif
-                </div>
+                    <button type="button" id="btn-bayar" class="w-full h-[60px] bg-yovel-ink hover:bg-opacity-90 text-white rounded-xl font-bold shadow-lg transition-all duration-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed px-5 flex items-center justify-between"
+                            @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }} }); $dispatch('open-modal', 'checkout-payment')"
+                            :disabled="count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId)">
+                        <span class="text-[15px]">Bayar</span>
+                        <span class="text-[18px] tracking-tight">Rp {{ number_format($this->totalAmount, 0, ',', '.') }}</span>
+                    </button>
+                @endif
             </div>
         </div>
     </div>
