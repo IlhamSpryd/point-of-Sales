@@ -519,65 +519,70 @@
 
     {{-- MODAL pemilihan modifier --}}
     @if ($selectingProductId && isset($selectingProduct))
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-yovel-ink/50 backdrop-blur-sm"
+        <div x-data="{
+                localMods: @entangle('pendingModifierIds'),
+                localQty: @entangle('pendingQty'),
+                toggleMod(modId, type, allGroupModIds) {
+                    if (type === 'single') {
+                        this.localMods = this.localMods.filter(id => !allGroupModIds.includes(id));
+                        this.localMods.push(modId);
+                    } else {
+                        if (this.localMods.includes(modId)) {
+                            this.localMods = this.localMods.filter(id => id !== modId);
+                        } else {
+                            this.localMods.push(modId);
+                        }
+                    }
+                }
+            }"
+            class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-yovel-ink/20 backdrop-blur-sm"
             wire:transition>
             <div
-                class="bg-white rounded-3xl p-0 w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl border border-gray-200 overflow-hidden">
+                class="bg-white sm:rounded-3xl rounded-t-3xl p-0 w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
                 <!-- Header Modal -->
-                <div
-                    class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-white z-10 shrink-0">
+                <div class="px-6 py-5 flex justify-between items-start bg-white z-10 shrink-0">
                     <div>
-                        <h3 class="font-black text-lg text-yovel-ink tracking-tight">
+                        <h3 class="font-black text-[22px] leading-tight text-yovel-ink tracking-tight">
                             {{ $selectingProduct->product_name }}</h3>
-                        <p class="text-sm font-semibold text-gray-500 mt-0.5">Rp
+                        <p class="text-[15px] font-semibold text-gray-500 mt-1">Rp
                             {{ number_format($selectingProduct->product_price, 0, ',', '.') }}</p>
                     </div>
                     <button wire:click="closeModifierPicker"
-                        class="p-2 bg-gray-50 rounded-xl text-gray-400 hover:text-yovel-ink hover:bg-gray-100 transition-all duration-200 active:scale-90 min-w-[44px] min-h-[44px]">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M6 18L18 6M6 6l12 12"></path>
+                        class="p-2 rounded-full text-gray-400 hover:text-yovel-ink hover:bg-gray-100 transition-all duration-200 active:scale-95 -mr-2 -mt-1">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
                 </div>
 
                 <!-- Body Modal (Modifiers) -->
-                <div class="p-5 overflow-y-auto flex-1 bg-gray-50/50 space-y-5 custom-scrollbar">
+                <div class="px-6 overflow-y-auto flex-1 bg-white space-y-6 pb-6 custom-scrollbar">
                     @foreach ($selectingProduct->modifierGroups as $group)
-                        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
-                            <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
-                                <h4 class="font-bold text-sm text-yovel-ink">{{ $group->name }}</h4>
-                                <span
-                                    class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-bold border border-gray-200">
+                        <div class="py-1">
+                            <div class="flex justify-between items-baseline mb-3">
+                                <h4 class="font-bold text-[15px] text-yovel-ink">{{ $group->name }}</h4>
+                                <span class="text-[12px] text-gray-400 font-semibold">
                                     {{ $group->is_required ? ($group->selection_type === 'single' ? 'Wajib pilih 1' : 'Wajib pilih') : 'Opsional' }}
                                 </span>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-2 gap-2.5">
+                                @php
+                                    $allModIds = $group->modifiers->pluck('id')->toJson();
+                                @endphp
                                 @foreach ($group->modifiers as $mod)
-                                    @php
-                                        $isSelected = in_array($mod->id, $pendingModifierIds);
-                                    @endphp
-                                    <label
-                                        class="modifier-box flex-col min-h-[64px] border rounded-xl p-3 flex justify-center items-center cursor-pointer transition-all duration-200 {{ $isSelected ? 'border-yovel-ink bg-yovel-ink ring-1 ring-gray-900 shadow-md shadow-yovel-ink/20' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 shadow-sm' }}">
-                                        @if ($group->selection_type === 'single')
-                                            <input type="radio"
-                                                wire:click="toggleModifier({{ $group->id }}, {{ $mod->id }}, 'single')"
-                                                name="group_{{ $group->id }}" {{ $isSelected ? 'checked' : '' }}
-                                                class="sr-only">
-                                        @else
-                                            <input type="checkbox"
-                                                wire:click="toggleModifier({{ $group->id }}, {{ $mod->id }}, 'multiple')"
-                                                {{ $isSelected ? 'checked' : '' }} class="sr-only">
-                                        @endif
-                                        <span
-                                            class="font-bold text-[13px] leading-tight text-center {{ $isSelected ? 'text-white' : 'text-gray-700' }}">
+                                    <label :class="localMods.includes({{ $mod->id }}) ? 'bg-yovel-ink border-yovel-ink shadow-md shadow-yovel-ink/10' : 'bg-gray-50/80 border-transparent hover:bg-gray-100'"
+                                           class="flex-col min-h-[56px] rounded-2xl p-3 flex justify-center items-center cursor-pointer transition-all duration-200 border">
+                                        <input type="button"
+                                            x-on:click="toggleMod({{ $mod->id }}, '{{ $group->selection_type }}', {{ $allModIds }})"
+                                            class="sr-only">
+                                        <span :class="localMods.includes({{ $mod->id }}) ? 'text-white' : 'text-gray-700'"
+                                              class="font-bold text-[14px] leading-tight text-center">
                                             {{ $mod->name }}
                                         </span>
                                         @if ($mod->extra_price > 0)
-                                            <span
-                                                class="text-[11px] font-bold {{ $isSelected ? 'text-gray-300' : 'text-gray-500' }} mt-1">+Rp
-                                                {{ number_format($mod->extra_price, 0, ',', '.') }}</span>
+                                            <span :class="localMods.includes({{ $mod->id }}) ? 'text-gray-400' : 'text-gray-400'"
+                                                  class="text-[12px] font-bold mt-0.5">+Rp {{ number_format($mod->extra_price, 0, ',', '.') }}</span>
                                         @endif
                                     </label>
                                 @endforeach
@@ -585,27 +590,29 @@
                         </div>
                     @endforeach
 
-                    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
-                        <label
-                            class="block font-bold text-[13px] text-yovel-ink mb-3 border-b border-gray-100 pb-2">Catatan
-                            Tambahan</label>
+                    <div class="pt-2">
+                        <label class="block font-bold text-[15px] text-yovel-ink mb-3">Catatan Tambahan</label>
                         <textarea wire:model="pendingNotes"
-                            class="w-full bg-gray-50 border border-gray-200 rounded-xl text-[13px] font-medium focus:border-yovel-ink focus:ring-1 focus:ring-gray-900 focus:bg-white transition-all duration-200 px-4 py-3 resize-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]"
-                            rows="2" placeholder="Contoh: Kurangi es, jangan pakai sedotan"></textarea>
+                            class="w-full bg-gray-50/80 border-transparent rounded-2xl text-[14px] font-medium focus:border-gray-200 focus:bg-white focus:ring-4 focus:ring-gray-100 transition-all duration-200 px-4 py-3.5 resize-none placeholder:text-gray-400"
+                            rows="2" placeholder="Contoh: Kurangi es, jangan pakai sedotan..."></textarea>
                     </div>
                 </div>
 
                 <!-- Footer Modal -->
-                <div class="p-5 border-t border-gray-200 bg-white flex items-center justify-between gap-4 shrink-0">
-                    <div class="flex items-center gap-2 bg-gray-50 rounded-xl p-1.5 border border-gray-200 shadow-sm">
-                        <button type="button" wire:click="$set('pendingQty', {{ max(1, $pendingQty - 1) }})"
-                            class="w-10 h-10 bg-white rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1)] text-yovel-ink font-black hover:bg-gray-100 active:scale-95 transition-all duration-200">−</button>
-                        <span class="w-8 text-center font-black text-yovel-ink">{{ $pendingQty }}</span>
-                        <button type="button" wire:click="$set('pendingQty', {{ $pendingQty + 1 }})"
-                            class="w-10 h-10 bg-white rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1)] text-yovel-ink font-black hover:bg-gray-100 active:scale-95 transition-all duration-200">+</button>
+                <div class="px-6 py-5 bg-white flex items-center justify-between gap-4 shrink-0 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]">
+                    <div class="flex items-center gap-3 bg-gray-50/80 rounded-2xl p-1.5 border border-gray-100">
+                        <button type="button" x-on:click="localQty = Math.max(1, localQty - 1)"
+                            class="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm text-yovel-ink font-bold hover:bg-gray-50 active:scale-95 transition-all duration-200">
+                            <span class="material-symbols-rounded text-[20px]">remove</span>
+                        </button>
+                        <span class="w-6 text-center font-black text-[15px] text-yovel-ink" x-text="localQty"></span>
+                        <button type="button" x-on:click="localQty++"
+                            class="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm text-yovel-ink font-bold hover:bg-gray-50 active:scale-95 transition-all duration-200">
+                            <span class="material-symbols-rounded text-[20px]">add</span>
+                        </button>
                     </div>
                     <button wire:click="confirmAddToCart"
-                        class="flex-1 min-h-[52px] bg-yovel-ink hover:bg-yovel-ink text-white rounded-xl font-black shadow-lg shadow-yovel-ink/20 transition-all duration-200 active:scale-[0.98]">
+                        class="flex-1 min-h-[52px] bg-yovel-ink hover:bg-[#2A2823] text-white rounded-2xl font-black text-[15px] shadow-lg shadow-yovel-ink/20 transition-all duration-200 active:scale-[0.98]">
                         Tambahkan
                     </button>
                 </div>
