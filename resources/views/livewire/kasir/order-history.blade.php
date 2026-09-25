@@ -27,11 +27,8 @@
     {{-- ==================== TOOLBAR FILTER ==================== --}}
     <div class="card-surface p-4 lg:p-5 mb-6 flex flex-col gap-4">
         <div class="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
-            <div class="relative w-full lg:max-w-xs">
-                <span
-                    class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-[#9B9A97] text-[20px]">search</span>
-                <input type="search" wire:model.live.debounce.400ms="search" placeholder="Cari kode pesanan."
-                    class="w-full min-h-[44px] pl-10 pr-4 rounded-xl border border-[#E9E9E7] bg-white text-sm text-[#37352F] placeholder-[#9B9A97] focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] transition-all duration-200 shadow-sm">
+            <div class="w-full lg:max-w-xs">
+                <x-search-input wire:model.live.debounce.400ms="search" placeholder="Cari kode pesanan." />
             </div>
 
             <div class="relative w-full lg:w-64">

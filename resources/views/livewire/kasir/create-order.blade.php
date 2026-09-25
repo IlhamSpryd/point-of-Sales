@@ -168,12 +168,7 @@
                         <span class="bg-yovel-ink text-white text-xs font-bold px-2.5 py-1 rounded-full">{{ count($this->cartLines) }}</span>
                     </div>
 
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-yovel-muted">
-                            <span class="material-symbols-rounded text-[18px]">qr_code_scanner</span>
-                        </span>
-                        <input type="text" id="search-input" wire:model.live.debounce.300ms="search" placeholder="Scan QR Pesanan (F2)..." class="bg-yovel-bg border border-yovel-border text-yovel-ink text-sm rounded-xl focus:outline-none focus:border-yovel-ink focus:ring-0 block w-full pl-9 pr-3 py-2 shadow-sm transition-all duration-200 min-h-[44px]" autofocus>
-                    </div>
+                    <x-search-input id="search-input" wire:model.live.debounce.300ms="search" placeholder="Scan QR Pesanan (F2)..." icon="qr_code_scanner" autofocus />
 
                     {{-- [OMEGA-NODE2] Pemilihan Pelanggan (Loyalty) -- hanya untuk
                          mode Walk-in Baru, lihat SYNC ALERT #3 untuk mode Tarik Pesanan. --}}
@@ -191,14 +186,11 @@
                                     </button>
                                 </div>
                             @else
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-yovel-muted z-10">
-                                    <span class="material-symbols-rounded text-[18px]">person_search</span>
-                                </span>
-                                <input type="text" wire:model.live.debounce.300ms="customerSearch"
+                                <x-search-input wire:model.live.debounce.300ms="customerSearch"
                                        x-on:focus="showResults = true"
                                        x-on:click.outside="showResults = false"
                                        placeholder="Cari pelanggan (opsional, untuk poin loyalti)..."
-                                       class="bg-yovel-bg border border-yovel-border text-yovel-ink text-sm rounded-xl focus:outline-none focus:border-yovel-ink focus:ring-0 block w-full pl-9 pr-3 py-2.5 shadow-sm transition-all duration-200 min-h-[44px]">
+                                       icon="person_search" />
 
                                 @if (mb_strlen(trim($customerSearch)) >= 2)
                                     <div x-show="showResults" x-cloak wire:loading.class="opacity-50" wire:target="customerSearch"

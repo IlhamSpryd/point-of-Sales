@@ -107,17 +107,7 @@
             </div>
 
             {{-- Search Bar (Realtime dengan Alpine) --}}
-            <div class="relative">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-yovel-muted pointer-events-none">
-                    <span class="material-symbols-rounded text-[20px]">search</span>
-                </span>
-                <input type="text" x-model="searchQuery" placeholder="Cari minuman atau hidangan..."
-                    class="w-full pl-12 pr-10 py-3.5 bg-white border border-yovel-border rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-yovel-ink transition-all shadow-sm placeholder:text-gray-400 font-medium">
-                <button type="button" x-show="searchQuery.length > 0" @click="searchQuery = ''" x-cloak
-                    class="absolute inset-y-0 right-0 flex items-center pr-4 text-yovel-muted hover:text-yovel-ink">
-                    <span class="material-symbols-rounded text-[18px]">close</span>
-                </button>
-            </div>
+            <x-search-input x-model="searchQuery" placeholder="Cari minuman atau hidangan..." />
         </div>
 
         {{-- Kategori Dinamis --}}

@@ -82,12 +82,8 @@
             <p class="text-sm font-medium text-yovel-muted mt-1">Kelola data bahan baku dan sesuaikan stok (Bill of Materials)</p>
         </div>
         <div class="flex items-center gap-3 w-full sm:w-auto">
-            <div class="relative w-full sm:w-64">
-                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-yovel-muted">
-                    <span class="material-symbols-rounded text-[18px]">search</span>
-                </span>
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari bahan baku..." 
-                       class="form-input w-full pl-10 pr-4 py-2.5 rounded-xl border border-yovel-border bg-white text-yovel-ink placeholder-yovel-muted focus:outline-none focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink transition-all duration-200 shadow-sm">
+            <div class="w-full sm:w-64">
+                <x-search-input wire:model.live.debounce.300ms="search" placeholder="Cari bahan baku..." />
             </div>
             <x-button type="button" variant="primary" wire:click="create">
                 <span class="material-symbols-rounded text-[18px]">add</span> Tambah
