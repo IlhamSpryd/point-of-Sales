@@ -1,9 +1,9 @@
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-            <h4 class="text-xl font-bold text-yovel-ink tracking-tight">Manajemen Diskon & Promo</h4>
+            <h4 class="text-xl font-bold text-yovel-ink tracking-tight">Manajemen Diskon &amp; Promo</h4>
             <p class="text-sm font-medium text-yovel-muted mt-1">Kelola diskon dan kode promo sistem</p>
         </div>
-        
+
         <div class="flex items-center gap-3 w-full sm:w-auto">
             <div class="w-full sm:w-64">
                 <x-search-input wire:model.live.debounce.300ms="search" placeholder="Cari Diskon..." />
@@ -24,10 +24,10 @@
             <table class="data-table relative w-full">
                 <thead class="sticky top-0 z-10 shadow-sm">
                     <tr class="bg-yovel-surface">
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-left">Nama & Kode</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-left">Tipe & Nilai</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-left">Nama &amp; Kode</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-left">Tipe &amp; Nilai</th>
                         <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-left">Syarat</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-left">Status & Masa Aktif</th>
+                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-left">Status &amp; Masa Aktif</th>
                         <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-right">Aksi</th>
                     </tr>
                 </thead>
@@ -35,39 +35,54 @@
                     @forelse($discounts as $discount)
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $discount->name }}</div>
-                                <div class="text-sm text-gray-500 font-mono">{{ $discount->code ?? 'Tanpa Kode' }}</div>
+                                <div class="text-sm font-semibold text-yovel-ink">{{ $discount->name }}</div>
+                                <div class="text-xs text-yovel-muted font-mono mt-0.5">{{ $discount->code ?? 'Tanpa Kode' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">
+                                <div class="text-sm font-semibold text-yovel-ink">
                                     {{ $discount->type === 'percentage' ? $discount->value . '%' : 'Rp ' . number_format($discount->value, 0, ',', '.') }}
                                 </div>
-                                <div class="text-xs text-gray-500">
+                                <div class="text-xs text-yovel-muted mt-0.5">
                                     {{ $discount->type === 'percentage' && $discount->max_discount_amount ? 'Maks: Rp ' . number_format($discount->max_discount_amount, 0, ',', '.') : '' }}
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">Min. Beli: Rp {{ number_format($discount->min_purchase_amount, 0, ',', '.') }}</div>
+                                <div class="text-sm text-yovel-ink">Min. Beli: Rp {{ number_format($discount->min_purchase_amount, 0, ',', '.') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $discount->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                <x-badge :type="$discount->is_active ? 'success' : 'secondary'">
                                     {{ $discount->is_active ? 'Aktif' : 'Nonaktif' }}
-                                </span>
+                                </x-badge>
                                 @if($discount->valid_from || $discount->valid_until)
-                                <div class="text-xs text-gray-500 mt-1">
-                                    {{ $discount->valid_from ? $discount->valid_from->format('d M y') : 'Seterusnya' }} - {{ $discount->valid_until ? $discount->valid_until->format('d M y') : 'Seterusnya' }}
-                                </div>
+                                    <div class="text-xs text-yovel-muted mt-1.5">
+                                        {{ $discount->valid_from ? $discount->valid_from->format('d M y') : 'Seterusnya' }} – {{ $discount->valid_until ? $discount->valid_until->format('d M y') : 'Seterusnya' }}
+                                    </div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button wire:click="edit({{ $discount->id }})" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
-                                <button wire:click="delete({{ $discount->id }})" wire:confirm="Yakin ingin menghapus diskon ini?" class="text-red-600 hover:text-red-900">Hapus</button>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <div class="flex items-center justify-end gap-1">
+                                    <button type="button"
+                                        wire:click="edit({{ $discount->id }})"
+                                        title="Edit Diskon"
+                                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-yovel-muted hover:bg-primary-50 hover:text-yovel-ink transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700">
+                                        <span class="material-symbols-rounded text-[18px]">edit</span>
+                                    </button>
+                                    <button type="button"
+                                        data-swal-delete
+                                        data-swal-title="Hapus Diskon?"
+                                        data-swal-text="Diskon &quot;{{ $discount->name }}&quot; akan dihapus secara permanen."
+                                        data-wire-action="delete({{ $discount->id }})"
+                                        title="Hapus Diskon"
+                                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-yovel-muted hover:bg-danger-50 hover:text-danger-700 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-600">
+                                        <span class="material-symbols-rounded text-[18px]">delete</span>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-500">
-                                Belum ada diskon yang ditambahkan.
+                            <td colspan="5">
+                                <x-empty-state icon="local_offer" title="Belum ada diskon." description="Tambahkan diskon atau kode promo untuk mulai mengelola program diskon." />
                             </td>
                         </tr>
                     @endforelse
@@ -79,107 +94,110 @@
         </div>
     </div>
 
-    <!-- Modal Form -->
-    @if($isModalOpen)
-    <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="closeModal()"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
-                <form wire:submit.prevent="store">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="modal-title">
-                            {{ $discountId ? 'Edit Diskon' : 'Tambah Diskon Baru' }}
-                        </h3>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Nama Diskon -->
-                            <div class="col-span-1 md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-700">Nama Diskon <span class="text-red-500">*</span></label>
-                                <input type="text" wire:model="name" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-
-                            <!-- Kode Diskon -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Kode Voucher</label>
-                                <input type="text" wire:model="code" placeholder="Kosongkan jika bukan voucher" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                @error('code') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                <p class="text-xs text-gray-500 mt-1">Biarkan kosong untuk diskon manual.</p>
-                            </div>
-
-                            <!-- Tipe Diskon -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Tipe Diskon <span class="text-red-500">*</span></label>
-                                <select wire:model.live="type" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                    <option value="percentage">Persentase (%)</option>
-                                    <option value="fixed">Nominal Tetap (Rp)</option>
-                                </select>
-                                @error('type') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-
-                            <!-- Nilai Diskon -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Nilai Diskon <span class="text-red-500">*</span></label>
-                                <input type="number" wire:model="value" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                @error('value') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-
-                            <!-- Maksimal Potongan (Hanya untuk Percentage) -->
-                            @if($type === 'percentage')
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Maksimal Potongan (Rp)</label>
-                                <input type="number" wire:model="max_discount_amount" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                @error('max_discount_amount') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-                            @endif
-
-                            <!-- Minimal Pembelian -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Minimal Pembelian (Rp)</label>
-                                <input type="number" wire:model="min_purchase_amount" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                @error('min_purchase_amount') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-
-                            <!-- Tanggal Mulai -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Berlaku Mulai</label>
-                                <input type="datetime-local" wire:model="valid_from" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                @error('valid_from') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-
-                            <!-- Tanggal Selesai -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Berlaku Sampai</label>
-                                <input type="datetime-local" wire:model="valid_until" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
-                                @error('valid_until') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-                            
-                            <!-- Status Aktif -->
-                            <div class="col-span-1 md:col-span-2">
-                                <div class="flex items-start mt-2">
-                                    <div class="flex items-center h-5">
-                                        <input wire:model="is_active" id="is_active" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                                    </div>
-                                    <div class="ml-3 text-sm">
-                                        <label for="is_active" class="font-medium text-gray-700">Diskon Aktif</label>
-                                        <p class="text-gray-500">Diskon ini dapat digunakan di kasir.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm">
-                            Simpan
-                        </button>
-                        <button type="button" wire:click="closeModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                            Batal
-                        </button>
-                    </div>
-                </form>
+    {{-- Modal Form menggunakan x-modal (focus-trap + bottom-sheet mobile gratis) --}}
+    <x-modal name="discount-form" :show="$isModalOpen" max-width="2xl" sheet focusable>
+        <form wire:submit.prevent="store">
+            {{-- Header --}}
+            <div class="px-6 py-5 border-b border-yovel-border flex items-center justify-between bg-white">
+                <h3 class="text-lg font-bold text-yovel-ink tracking-tight" id="discount-modal-title">
+                    {{ $discountId ? 'Edit Diskon' : 'Tambah Diskon Baru' }}
+                </h3>
+                <button type="button" x-on:click="$dispatch('close')" aria-label="Tutup"
+                    class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-yovel-muted hover:bg-yovel-surface hover:text-yovel-ink transition-all duration-200 active:scale-90">
+                    <span class="material-symbols-rounded text-[22px]">close</span>
+                </button>
             </div>
-        </div>
-    </div>
-    @endif
+
+            {{-- Body --}}
+            <div class="px-6 py-5 bg-yovel-bg overflow-y-auto max-h-[70vh]">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {{-- Nama Diskon --}}
+                    <div class="col-span-1 md:col-span-2">
+                        <x-form-label for="discount-name">Nama Diskon <span class="text-danger-600">*</span></x-form-label>
+                        <x-form-input id="discount-name" type="text" wire:model="name" class="mt-1" />
+                        @error('name') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                    </div>
+
+                    {{-- Kode Diskon --}}
+                    <div>
+                        <x-form-label for="discount-code">Kode Voucher</x-form-label>
+                        <x-form-input id="discount-code" type="text" wire:model="code" placeholder="Kosongkan jika bukan voucher" class="mt-1" />
+                        @error('code') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                        <p class="text-xs text-yovel-muted mt-1.5">Biarkan kosong untuk diskon manual.</p>
+                    </div>
+
+                    {{-- Tipe Diskon --}}
+                    <div>
+                        <x-form-label for="discount-type">Tipe Diskon <span class="text-danger-600">*</span></x-form-label>
+                        <select id="discount-type" wire:model.live="type"
+                            class="mt-1 block w-full border border-yovel-border bg-white rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-700 text-sm text-yovel-ink px-3 py-2.5 transition-all">
+                            <option value="percentage">Persentase (%)</option>
+                            <option value="fixed">Nominal Tetap (Rp)</option>
+                        </select>
+                        @error('type') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                    </div>
+
+                    {{-- Nilai Diskon --}}
+                    <div>
+                        <x-form-label for="discount-value">Nilai Diskon <span class="text-danger-600">*</span></x-form-label>
+                        <x-form-input id="discount-value" type="number" wire:model="value" class="mt-1" />
+                        @error('value') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                    </div>
+
+                    {{-- Maksimal Potongan --}}
+                    @if($type === 'percentage')
+                    <div>
+                        <x-form-label for="discount-max">Maksimal Potongan (Rp)</x-form-label>
+                        <x-form-input id="discount-max" type="number" wire:model="max_discount_amount" class="mt-1" />
+                        @error('max_discount_amount') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                    </div>
+                    @endif
+
+                    {{-- Minimal Pembelian --}}
+                    <div>
+                        <x-form-label for="discount-min">Minimal Pembelian (Rp)</x-form-label>
+                        <x-form-input id="discount-min" type="number" wire:model="min_purchase_amount" class="mt-1" />
+                        @error('min_purchase_amount') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                    </div>
+
+                    {{-- Tanggal Mulai --}}
+                    <div>
+                        <x-form-label for="discount-from">Berlaku Mulai</x-form-label>
+                        <x-form-input id="discount-from" type="datetime-local" wire:model="valid_from" class="mt-1" />
+                        @error('valid_from') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                    </div>
+
+                    {{-- Tanggal Selesai --}}
+                    <div>
+                        <x-form-label for="discount-until">Berlaku Sampai</x-form-label>
+                        <x-form-input id="discount-until" type="datetime-local" wire:model="valid_until" class="mt-1" />
+                        @error('valid_until') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                    </div>
+
+                    {{-- Status Aktif --}}
+                    <div class="col-span-1 md:col-span-2">
+                        <label class="flex items-center gap-3 p-4 bg-white rounded-xl border border-yovel-border cursor-pointer hover:bg-yovel-surface transition-colors">
+                            <input wire:model="is_active" id="is_active" type="checkbox"
+                                class="w-4 h-4 rounded border-yovel-border text-primary-700 focus:ring-primary-700">
+                            <div>
+                                <span class="block text-sm font-semibold text-yovel-ink">Diskon Aktif</span>
+                                <span class="block text-xs text-yovel-muted mt-0.5">Diskon ini dapat digunakan di kasir.</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Footer --}}
+            <div class="px-6 py-4 border-t border-yovel-border bg-white flex flex-row-reverse gap-3">
+                <x-button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="store">
+                    <span wire:loading wire:target="store" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                    Simpan
+                </x-button>
+                <x-button type="button" variant="secondary" x-on:click="$dispatch('close')">
+                    Batal
+                </x-button>
+            </div>
+        </form>
+    </x-modal>
 </div>

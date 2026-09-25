@@ -458,8 +458,11 @@
                             Kembali
                         </button>
                         <button type="submit"
-                            class="px-4 py-2 rounded-xl bg-rose-600 text-white text-sm font-bold hover:bg-rose-700 shadow-sm disabled:opacity-50">
-                            Konfirmasi Void
+                            wire:loading.attr="disabled" wire:target="voidOrder"
+                            class="px-4 py-2 rounded-xl bg-rose-600 text-white text-sm font-bold hover:bg-rose-700 shadow-sm disabled:opacity-50 flex items-center gap-2">
+                            <span wire:loading wire:target="voidOrder" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                            <span wire:loading.remove wire:target="voidOrder">Konfirmasi Void</span>
+                            <span wire:loading wire:target="voidOrder">Memproses...</span>
                         </button>
                     </div>
                 </form>

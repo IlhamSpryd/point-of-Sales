@@ -42,7 +42,8 @@
     /* ── Yovel Brand Tokens ── */
     --color-yovel-bg:  #F7F7F5;
     --color-yovel-ink: #37352F;
-    --color-yovel-muted: #787774;
+    --color-yovel-muted: #787774;           /* decorative: borders, placeholders */
+    --color-yovel-muted-700: #6B6A66;       /* WCAG AA text-small ≈5.1:1 on white */
     --color-yovel-border: #E9E9E7;
     --color-yovel-surface: #F1F1EF;
 
@@ -75,15 +76,23 @@
     /* NEW — large-display tiers for KDS TV (currently absent from the codebase) */
     --breakpoint-3xl: 1920px;
     --breakpoint-4xl: 2560px;
+
+    /* ── Yovel Brand Tokens (in @theme for Tailwind v4 utility generation) ── */
+    --color-yovel-bg:        #F7F7F5;
+    --color-yovel-ink:       #37352F;
+    --color-yovel-muted:     #787774;    /* decorative use only */
+    --color-yovel-muted-700: #6B6A66;   /* WCAG AA ≈5.1:1 — use for small/body text */
+    --color-yovel-border:    #E9E9E7;
+    --color-yovel-surface:   #F1F1EF;
 }
 
 /* --- TAMBAHAN P1: varian KDS gelap --- */
 [data-theme="kds-dark"] {
-    --color-yovel-bg: #14140F;
+    --color-yovel-bg: #0A0A08;       /* Lebih gelap pekat untuk contrast maksimal dengan border */
     --color-yovel-ink: #F5F4F0;
     --color-yovel-muted: #A9A79E;
-    --color-yovel-border: #2A2A22;
-    --color-yovel-surface: #1F1F18;
+    --color-yovel-border: #383830;    /* Border lebih terang agar card/kolom terlihat jelas di TV */
+    --color-yovel-surface: #171714;   /* Beda kontras yang cukup dari bg */
 }
 
 @media (min-width: 1920px) {
@@ -600,3 +609,54 @@ option {
     -ms-user-select: none;
     user-select: none;
 }
+
+/* ═══════════════════════════════════════════════════════
+   TYPE SCALE — Finding #10 (Audit UI/UX)
+   Ganti semua text-[Xpx] ad-hoc dengan class semantik ini.
+   Skala: caption < label < body < subheading < heading < display
+   ═══════════════════════════════════════════════════════ */
+@layer utilities {
+    /* Dipakai untuk chip/badge status, meta-info ringan */
+    .text-caption {
+        font-size: 0.6875rem;    /* 11px */
+        line-height: 1rem;
+        letter-spacing: 0.01em;
+    }
+
+    /* Dipakai untuk label form, secondary info di tabel */
+    .text-label {
+        font-size: 0.75rem;      /* 12px — setara text-xs Tailwind */
+        line-height: 1.25rem;
+    }
+
+    /* Body / row tabel utama — default teks konten */
+    .text-body-pos {
+        font-size: 0.8125rem;    /* 13px */
+        line-height: 1.375rem;
+    }
+
+    /* Subheading kartu, nama produk di POS */
+    .text-subheading {
+        font-size: 0.875rem;     /* 14px — setara text-sm Tailwind */
+        line-height: 1.5rem;
+        font-weight: 600;
+    }
+
+    /* Page section heading */
+    .text-heading {
+        font-size: 1.125rem;     /* 18px — setara text-lg Tailwind */
+        line-height: 1.75rem;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+    }
+
+    /* Total/highlight numerik besar */
+    .text-display {
+        font-size: 1.5rem;       /* 24px — setara text-2xl Tailwind */
+        line-height: 2rem;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+    }
+}
+

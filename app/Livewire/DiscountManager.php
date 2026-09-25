@@ -57,14 +57,16 @@ class DiscountManager extends Component
         $this->openModal();
     }
 
-    public function openModal()
+    public function openModal(): void
     {
         $this->isModalOpen = true;
+        $this->dispatch('open-modal', 'discount-form');
     }
 
-    public function closeModal()
+    public function closeModal(): void
     {
         $this->isModalOpen = false;
+        $this->dispatch('close-modal', 'discount-form');
         $this->resetInputFields();
     }
 
@@ -116,6 +118,7 @@ class DiscountManager extends Component
 
         session()->flash('message', $this->discountId ? 'Diskon berhasil diperbarui.' : 'Diskon berhasil dibuat.');
         $this->closeModal();
+        $this->dispatch('close-modal', 'discount-form');
     }
 
     public function edit($id)

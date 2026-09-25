@@ -1,95 +1,98 @@
 <div>
     <div class="mb-6 flex flex-col items-start gap-1">
-        <h1 class="text-2xl font-bold text-[#37352F] tracking-tight">Integrasi Channel</h1>
-        <p class="text-sm font-medium text-[#787774]">Kelola pemetaan SKU dari platform eksternal ke produk internal.</p>
+        <h1 class="text-xl font-bold text-yovel-ink tracking-tight">Integrasi Channel</h1>
+        <p class="text-sm font-medium text-yovel-muted">Kelola pemetaan SKU dari platform eksternal ke produk internal.</p>
     </div>
 
     @if (session()->has('message'))
-        <div class="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-2xl text-sm shadow-sm flex items-center gap-2">
-            <span class="material-symbols-rounded text-[18px]">check_circle</span>
-            {{ session('message') }}
-        </div>
+        <x-alert type="success" class="mb-6">{{ session('message') }}</x-alert>
     @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Form mapping -->
+        {{-- Form mapping --}}
         <div class="card-surface p-6 lg:col-span-1 h-fit">
-            <h2 class="text-sm font-semibold text-[#37352F] mb-5 tracking-tight border-b border-yovel-surface pb-3">Tambah Pemetaan Baru</h2>
-            
+            <h2 class="text-sm font-semibold text-yovel-ink mb-5 tracking-tight border-b border-yovel-border pb-3">Tambah Pemetaan Baru</h2>
+
             <form wire:submit="saveMapping" class="flex flex-col gap-4">
                 <div>
-                    <label class="block text-xs font-medium text-[#787774] mb-1.5 uppercase tracking-wide">Provider</label>
-                    <select wire:model="provider" class="w-full border-[#C4C3C0] focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink rounded-xl text-sm shadow-sm">
+                    <x-form-label for="mapping-provider">Provider</x-form-label>
+                    <select id="mapping-provider" wire:model="provider"
+                        class="mt-1 block w-full border border-yovel-border bg-white rounded-xl text-sm text-yovel-ink px-3 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-700 transition-all">
                         <option value="grabfood">GrabFood</option>
                         <option value="gofood">GoFood</option>
                     </select>
                 </div>
-                
+
                 <div>
-                    <label class="block text-xs font-medium text-[#787774] mb-1.5 uppercase tracking-wide">SKU Provider (External ID)</label>
-                    <input type="text" wire:model="externalProductId" placeholder="Misal: GF-1234" class="w-full border-[#C4C3C0] focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink rounded-xl text-sm shadow-sm">
-                    @error('externalProductId') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    <x-form-label for="mapping-external-id">SKU Provider (External ID)</x-form-label>
+                    <x-form-input id="mapping-external-id" type="text" wire:model="externalProductId" placeholder="Misal: GF-1234" class="mt-1" name="externalProductId" />
+                    @error('externalProductId') <x-input-error :messages="$message" class="mt-1" /> @enderror
                 </div>
-                
+
                 <div>
-                    <label class="block text-xs font-medium text-[#787774] mb-1.5 uppercase tracking-wide">Produk Internal</label>
-                    <select wire:model="productId" class="w-full border-[#C4C3C0] focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink rounded-xl text-sm shadow-sm">
+                    <x-form-label for="mapping-product">Produk Internal</x-form-label>
+                    <select id="mapping-product" wire:model="productId"
+                        class="mt-1 block w-full border border-yovel-border bg-white rounded-xl text-sm text-yovel-ink px-3 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-700 transition-all">
                         <option value="">-- Pilih Produk --</option>
                         @foreach($products as $product)
                             <option value="{{ $product->id }}">{{ $product->product_name }}</option>
                         @endforeach
                     </select>
-                    @error('productId') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                    @error('productId') <x-input-error :messages="$message" class="mt-1" /> @enderror
                 </div>
-                
-                <button type="submit" class="mt-4 w-full bg-yovel-ink text-white hover:bg-gray-800 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors shadow-sm">
+
+                <x-button type="submit" variant="primary" class="mt-2 w-full"
+                    wire:loading.attr="disabled" wire:target="saveMapping">
+                    <span wire:loading wire:target="saveMapping" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
                     Simpan Pemetaan
-                </button>
+                </x-button>
             </form>
         </div>
 
-        <!-- Tabel mapping -->
+        {{-- Tabel mapping --}}
         <div class="card-surface overflow-hidden lg:col-span-2 flex flex-col">
-            <div class="px-6 py-4 border-b border-[#E9E9E7] bg-[#F1F1EF]">
-                <h2 class="text-sm font-semibold text-[#37352F] tracking-tight">Daftar Pemetaan Aktif</h2>
+            <div class="px-6 py-4 border-b border-yovel-border bg-yovel-surface">
+                <h2 class="text-sm font-semibold text-yovel-ink tracking-tight">Daftar Pemetaan Aktif</h2>
             </div>
             <div class="overflow-x-auto flex-1">
                 <table class="w-full text-left border-collapse">
                     <thead>
-                        <tr class="bg-[#F1F1EF] border-b border-[#E9E9E7]">
-                            <th class="px-6 py-3 text-xs font-medium text-[#787774] uppercase tracking-wider">Provider</th>
-                            <th class="px-6 py-3 text-xs font-medium text-[#787774] uppercase tracking-wider">SKU Eksternal</th>
-                            <th class="px-6 py-3 text-xs font-medium text-[#787774] uppercase tracking-wider">Produk Internal</th>
-                            <th class="px-6 py-3 text-xs font-medium text-[#787774] uppercase tracking-wider text-right">Aksi</th>
+                        <tr class="bg-yovel-surface border-b border-yovel-border">
+                            <th class="px-6 py-3 text-xs font-semibold text-yovel-muted uppercase tracking-wider">Provider</th>
+                            <th class="px-6 py-3 text-xs font-semibold text-yovel-muted uppercase tracking-wider">SKU Eksternal</th>
+                            <th class="px-6 py-3 text-xs font-semibold text-yovel-muted uppercase tracking-wider">Produk Internal</th>
+                            <th class="px-6 py-3 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-yovel-surface">
+                    <tbody class="divide-y divide-yovel-border">
                         @forelse($mappings as $mapping)
-                            <tr class="hover:bg-[#F1F1EF] transition-colors">
+                            <tr class="hover:bg-yovel-surface transition-colors">
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#F7F7F5] text-[#787774] capitalize border border-[#E9E9E7]">
-                                        {{ $mapping->provider }}
-                                    </span>
+                                    <x-badge type="secondary">{{ $mapping->provider }}</x-badge>
                                 </td>
-                                <td class="px-6 py-4 text-sm font-medium text-[#37352F]">
+                                <td class="px-6 py-4 text-sm font-semibold text-yovel-ink">
                                     {{ $mapping->external_product_id }}
                                 </td>
-                                <td class="px-6 py-4 text-sm text-[#787774]">
+                                <td class="px-6 py-4 text-sm text-yovel-muted">
                                     {{ $mapping->product->product_name ?? 'Produk Dihapus' }}
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <button wire:click="deleteMapping({{ $mapping->id }})"
-                                            wire:confirm="Yakin hapus pemetaan SKU {{ $mapping->external_product_id }}? Order baru dengan SKU ini akan gagal sampai dipetakan ulang."
-                                            class="text-red-600 hover:text-red-800 text-sm font-medium transition-colors">
-                                        Hapus
+                                    <button type="button"
+                                        data-swal-delete
+                                        data-swal-title="Hapus Pemetaan?"
+                                        data-swal-text="SKU {{ $mapping->external_product_id }} akan dihapus. Order baru dengan SKU ini akan gagal sampai dipetakan ulang."
+                                        data-wire-action="deleteMapping({{ $mapping->id }})"
+                                        title="Hapus Pemetaan"
+                                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-yovel-muted hover:bg-danger-50 hover:text-danger-700 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-600">
+                                        <span class="material-symbols-rounded text-[18px]">delete</span>
                                     </button>
                                 </td>
                             </tr>
                         @empty
                             <tr>
                                 <td colspan="4" class="px-6 py-12 text-center">
-                                    <div class="flex flex-col items-center justify-center text-[#787774]">
-                                        <span class="material-symbols-rounded text-4xl text-primary-300 mb-3">link_off</span>
+                                    <div class="flex flex-col items-center justify-center text-yovel-muted">
+                                        <span class="material-symbols-rounded text-4xl mb-3 opacity-40">link_off</span>
                                         <p class="text-sm font-medium">Belum ada pemetaan sku channel.</p>
                                     </div>
                                 </td>

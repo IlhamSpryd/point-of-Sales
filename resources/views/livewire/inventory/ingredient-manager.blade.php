@@ -155,7 +155,12 @@
                                 <button wire:click="edit({{ $item->id }})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors" title="Ubah">
                                     <span class="material-symbols-rounded text-[18px]">edit</span>
                                 </button>
-                                <button wire:click="delete({{ $item->id }})" wire:confirm="Yakin ingin menghapus bahan baku ini?" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus">
+                                <button type="button"
+                                    data-swal-delete
+                                    data-swal-title="Hapus Bahan Baku?"
+                                    data-swal-text="Bahan baku &quot;{{ $item->name }}&quot; akan dihapus permanen."
+                                    data-wire-action="delete({{ $item->id }})"
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus">
                                     <span class="material-symbols-rounded text-[18px]">delete</span>
                                 </button>
                             </td>
@@ -204,7 +209,12 @@
                             <button wire:click="edit({{ $item->id }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-blue-600 hover:bg-blue-50 transition-colors" title="Ubah">
                                 <span class="material-symbols-rounded text-[18px]">edit</span>
                             </button>
-                            <button wire:click="delete({{ $item->id }})" wire:confirm="Yakin ingin menghapus bahan baku ini?" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus">
+                            <button type="button"
+                                data-swal-delete
+                                data-swal-title="Hapus Bahan Baku?"
+                                data-swal-text="Bahan baku &quot;{{ $item->name }}&quot; akan dihapus permanen."
+                                data-wire-action="delete({{ $item->id }})"
+                                class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus">
                                 <span class="material-symbols-rounded text-[18px]">delete</span>
                             </button>
                         </div>

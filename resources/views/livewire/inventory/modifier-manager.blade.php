@@ -201,7 +201,12 @@
                         <button wire:click="editGroup({{ $group->id }})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors" title="Ubah Grup">
                             <span class="material-symbols-rounded text-[18px]">edit</span>
                         </button>
-                        <button wire:click="deleteGroup({{ $group->id }})" wire:confirm="Yakin ingin menghapus grup ini beserta seluruh opsi variannya?" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus Grup">
+                        <button type="button"
+                            data-swal-delete
+                            data-swal-title="Hapus Grup Varian?"
+                            data-swal-text="Grup ini dan seluruh opsi variannya akan dihapus permanen."
+                            data-wire-action="deleteGroup({{ $group->id }})"
+                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus Grup">
                             <span class="material-symbols-rounded text-[18px]">delete</span>
                         </button>
                     </div>
@@ -227,7 +232,12 @@
                                 </span>
                             @endif
                             <button wire:click="editModifier({{ $modifier->id }})" class="text-yovel-muted hover:text-yovel-ink text-sm font-medium transition-colors">Ubah</button>
-                            <button wire:click="deleteModifier({{ $modifier->id }})" wire:confirm="Yakin ingin menghapus opsi varian ini?" class="text-rose-500 hover:text-rose-700 text-sm font-medium transition-colors">Hapus</button>
+                            <button type="button"
+                                data-swal-delete
+                                data-swal-title="Hapus Opsi Varian?"
+                                data-swal-text="Opsi &quot;{{ $modifier->name }}&quot; akan dihapus permanen."
+                                data-wire-action="deleteModifier({{ $modifier->id }})"
+                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus"><span class="material-symbols-rounded text-[18px]">delete</span></button>
                         </div>
                     </div>
                     @empty

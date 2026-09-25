@@ -77,8 +77,22 @@
                         <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Keterangan / Selisih (Opsional)</label>
                         <textarea wire:model="notes" rows="3" class="w-full px-4 py-3 bg-gray-50 border border-[#E9E9E7] rounded-2xl focus:ring-2 focus:ring-[#37352F] transition-all text-sm" placeholder="Contoh: Ada selisih kurang Rp 2.000 karena tidak ada receh..."></textarea>
                     </div>
-                    <button type="submit" wire:loading.attr="disabled" wire:target="closeShift" onclick="return confirm('Tutup shift sekarang? Data tidak dapat diubah setelah ditutup.')" class="w-full bg-white border-2 border-[#37352F] text-[#37352F] font-bold py-4 disabled:opacity-60 disabled:cursor-wait rounded-2xl shadow-sm hover:bg-gray-50 active:scale-[0.98] transition-all flex justify-center items-center gap-2 mt-2">
-                        <span wire:loading wire:target="closeShift" class="h-4 w-4 animate-spin rounded-full border-2 border-[#37352F]/30 border-t-[#37352F]"></span>
+                    <button type="button"
+                        x-on:click="
+                            Swal.fire({
+                                title: 'Akhiri Sesi Kasir?',
+                                text: 'Data shift tidak dapat diubah setelah ditutup.',
+                                icon: 'warning',
+                                showCancelButton: true,
+                                confirmButtonColor: '#37352F',
+                                cancelButtonColor: '#6B7280',
+                                confirmButtonText: 'Ya, Tutup Shift',
+                                cancelButtonText: 'Batal',
+                                reverseButtons: true,
+                                customClass: { popup: 'rounded-2xl' },
+                            }).then((result) => { if (result.isConfirmed) $el.closest('form').requestSubmit(); })
+                        "
+                        class="w-full bg-white border-2 border-[#37352F] text-[#37352F] font-bold py-4 disabled:opacity-60 disabled:cursor-wait rounded-2xl shadow-sm hover:bg-gray-50 active:scale-[0.98] transition-all flex justify-center items-center gap-2 mt-2">
                         Akhiri Sesi Kasir
                     </button>
                 </form>

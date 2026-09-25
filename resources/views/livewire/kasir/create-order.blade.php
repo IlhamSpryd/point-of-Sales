@@ -54,7 +54,20 @@
                                         class="bg-gray-100/80 border border-gray-200/50 text-gray-700 font-bold text-[13px] rounded-xl hover:bg-gray-200/50 hover:text-gray-900 focus:bg-white focus:border-gray-300 focus:ring-0 block pl-4 pr-9 py-1.5 transition-all duration-200 min-h-[36px] appearance-none cursor-pointer">
                                         <option value="">-- Pilih Meja --</option>
                                         @foreach ($this->activeTables as $table)
-                                            <option value="{{ $table->id }}">Meja {{ $table->table_name }}</option>
+                                            @php
+                                                $isAvailable = in_array($table->operational_status, ['available', 'reserved']);
+                                                $statusLabel = match($table->operational_status) {
+                                                    'occupied'   => ' (Terisi)',
+                                                    'cleaning'   => ' (Dibersihkan)',
+                                                    'reserved'   => ' (Reservasi)',
+                                                    'available'  => '',
+                                                    default      => ' (' . ucfirst($table->operational_status) . ')',
+                                                };
+                                            @endphp
+                                            <option value="{{ $table->id }}"
+                                                @disabled(! $isAvailable)>
+                                                Meja {{ $table->table_name }}{{ $statusLabel }}
+                                            </option>
                                         @endforeach
                                     </select>
                                     <div
@@ -72,7 +85,7 @@
                     <!-- Search Bar -->
                     <div class="flex-1 sm:flex-none sm:w-64 xl:w-72">
                         <x-search-input wire:model.live.debounce.300ms="search" id="search-input"
-                            placeholder="Cari atau scan barcode... (F2)" />
+                            placeholder="Cari produk / scan / kode POS-... (Tarik Pesanan)" />
                     </div>
                 </header>
 
@@ -100,7 +113,20 @@
                                 class="w-full bg-gray-100/80 border border-gray-200/50 text-gray-700 font-bold text-[13px] rounded-xl hover:bg-gray-200/50 hover:text-gray-900 focus:bg-white focus:border-gray-300 focus:ring-0 block pl-4 pr-9 py-2 transition-all duration-200 min-h-[40px] appearance-none cursor-pointer">
                                 <option value="">-- Pilih Meja --</option>
                                 @foreach ($this->activeTables as $table)
-                                    <option value="{{ $table->id }}">Meja {{ $table->table_name }}</option>
+                                    @php
+                                        $isAvailable = in_array($table->operational_status, ['available', 'reserved']);
+                                        $statusLabel = match($table->operational_status) {
+                                            'occupied'   => ' (Terisi)',
+                                            'cleaning'   => ' (Dibersihkan)',
+                                            'reserved'   => ' (Reservasi)',
+                                            'available'  => '',
+                                            default      => ' (' . ucfirst($table->operational_status) . ')',
+                                        };
+                                    @endphp
+                                    <option value="{{ $table->id }}"
+                                        @disabled(! $isAvailable)>
+                                        Meja {{ $table->table_name }}{{ $statusLabel }}
+                                    </option>
                                 @endforeach
                             </select>
                             <div
@@ -222,7 +248,7 @@
 
         <!-- PANEL KANAN: Daftar Keranjang Belanja -->
         <section
-            class="w-full lg:w-96 xl:w-[400px] bg-white flex flex-col shrink-0 h-[50vh] lg:h-full lg:border-l border-gray-200 z-30 shadow-[inset_1px_0_10px_rgba(0,0,0,0.02)]">
+            class="w-full lg:w-96 xl:w-[400px] bg-white flex flex-col shrink-0 h-[42vh] sm:h-[46vh] md:h-[52vh] lg:h-full lg:border-l border-gray-200 z-30 shadow-[inset_1px_0_10px_rgba(0,0,0,0.02)]">
             <!-- Judul Keranjang & Customer Selection -->
             <div class="p-4 lg:p-5 border-b border-gray-200 flex flex-col shrink-0 bg-white">
                 <div class="flex items-center justify-between mb-4">
@@ -243,8 +269,22 @@
                             </span>
                         @endif
 
-                        <button type="button" wire:click="clearCart"
-                            wire:confirm="Kosongkan semua item di keranjang?" title="Kosongkan Keranjang"
+                        <button type="button"
+                            x-on:click="
+                                Swal.fire({
+                                    title: 'Kosongkan Keranjang?',
+                                    text: 'Semua item akan dihapus dari keranjang.',
+                                    icon: 'warning',
+                                    showCancelButton: true,
+                                    confirmButtonColor: '#BE123C',
+                                    cancelButtonColor: '#6B7280',
+                                    confirmButtonText: 'Ya, Kosongkan',
+                                    cancelButtonText: 'Batal',
+                                    reverseButtons: true,
+                                    customClass: { popup: 'rounded-2xl' },
+                                }).then((result) => { if (result.isConfirmed) $wire.clearCart(); })
+                            "
+                            title="Kosongkan Keranjang"
                             @if (count($this->cartLines) === 0) disabled @endif
                             class="{{ count($this->cartLines) === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-rose-50 hover:text-rose-600 cursor-pointer' }} text-gray-400 p-2 rounded-lg transition-colors flex items-center justify-center outline-none">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -380,46 +420,63 @@
                             </div>
                         @endif
 
-                        <div
-                            class="flex flex-col gap-1.5 p-3 rounded-xl border border-gray-100 bg-gray-50/60 shadow-inner">
+                            <div class="flex flex-col gap-1.5 p-3 rounded-xl border border-gray-100 bg-gray-50/60 shadow-inner">
                             <div class="flex justify-between items-center">
-                                <span class="text-[12px] text-gray-500 font-medium">Subtotal</span>
-                                <span class="text-[12px] font-medium text-gray-600 tabular-nums">Rp
+                                <span class="text-xs text-gray-500 font-medium">Subtotal</span>
+                                <span class="text-xs font-medium text-gray-600 tabular-nums">Rp
                                     {{ number_format($this->subtotal, 0, ',', '.') }}</span>
                             </div>
                             @if ($this->discountAmount > 0)
                                 <div class="flex justify-between items-center">
-                                    <span class="text-[12px] text-gray-500 font-medium">Diskon</span>
-                                    <span class="text-[12px] font-medium text-rose-600 tabular-nums">- Rp
+                                    <span class="text-xs text-gray-500 font-medium">Diskon</span>
+                                    <span class="text-xs font-medium text-rose-600 tabular-nums">- Rp
                                         {{ number_format($this->discountAmount, 0, ',', '.') }}</span>
                                 </div>
                             @endif
                             <div class="flex justify-between items-center">
-                                <span class="text-[12px] text-gray-500 font-medium">Pajak
+                                <span class="text-xs text-gray-500 font-medium">Pajak
                                     ({{ rtrim(rtrim(number_format(config('pos.tax_rate', 0.11) * 100, 1), '0'), '.') }}%)</span>
-                                <span class="text-[12px] font-medium text-gray-600 tabular-nums">Rp
+                                <span class="text-xs font-medium text-gray-600 tabular-nums">Rp
                                     {{ number_format($this->taxAmount, 0, ',', '.') }}</span>
                             </div>
                         </div>
 
                         <div class="flex justify-between items-baseline px-1 pt-1">
-                            <span class="text-[13px] font-semibold text-gray-700">Total Pembayaran</span>
-                            <span class="text-[24px] font-black text-gray-900 tabular-nums tracking-tight">Rp
+                            <span class="text-sm font-semibold text-gray-700">Total Pembayaran</span>
+                            <span class="text-2xl font-black text-gray-900 tabular-nums tracking-tight">Rp
                                 {{ number_format($this->totalAmount, 0, ',', '.') }}</span>
                         </div>
 
                         @if ($pendingOrderId)
                             <div class="relative mt-2">
                                 <span
-                                    class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-800 text-[14px] font-bold">Rp</span>
+                                    class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-800 text-sm font-bold">Rp</span>
                                 <input type="number" wire:model.live="cashReceived"
                                     class="bg-white border border-gray-200 text-gray-900 rounded-xl focus:outline-none focus:ring-1 focus:ring-gray-900 w-full pl-11 pr-4 py-3 font-black text-lg transition-all shadow-sm"
                                     placeholder="Uang diterima (Tunai)">
                             </div>
+                            {{-- Shortcut Tunai Pas (Finding #11) --}}
+                            <div class="flex gap-2 mt-1.5">
+                                <button type="button"
+                                    x-on:click="$wire.set('cashReceived', {{ (int) $this->totalAmount }})"
+                                    class="flex-1 h-9 text-xs font-bold rounded-lg bg-gray-900 text-white hover:bg-black transition-all active:scale-95 shadow-sm">
+                                    Tunai Pas
+                                </button>
+                                <button type="button"
+                                    x-on:click="$wire.set('cashReceived', 50000 * Math.ceil({{ (int) $this->totalAmount }} / 50000))"
+                                    class="flex-1 h-9 text-xs font-bold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all active:scale-95 border border-gray-200">
+                                    Bulatkan 50K
+                                </button>
+                                <button type="button"
+                                    x-on:click="$wire.set('cashReceived', 100000 * Math.ceil({{ (int) $this->totalAmount }} / 100000))"
+                                    class="flex-1 h-9 text-xs font-bold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all active:scale-95 border border-gray-200">
+                                    Bulatkan 100K
+                                </button>
+                            </div>
                             <div class="flex justify-between items-center px-1 mt-1 mb-1">
-                                <span class="text-[12px] font-semibold text-gray-500">Kembalian</span>
+                                <span class="text-xs font-semibold text-gray-500">Kembalian</span>
                                 <span
-                                    class="font-bold text-[14px] {{ $this->changeAmount >= 0 ? 'text-emerald-600' : 'text-gray-900' }}">
+                                    class="font-bold text-sm {{ $this->changeAmount >= 0 ? 'text-emerald-600' : 'text-gray-900' }}">
                                     Rp {{ number_format($this->changeAmount, 0, ',', '.') }}
                                 </span>
                             </div>
@@ -432,9 +489,12 @@
                             @enderror
 
                             <button wire:click="submitOrder" id="btn-bayar"
-                                class="w-full h-12 bg-gray-900 hover:bg-black text-white rounded-xl font-black text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                                wire:loading.attr="disabled" wire:target="submitOrder"
+                                class="w-full h-12 bg-gray-900 hover:bg-black text-white rounded-xl font-black text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 :disabled="count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId)">
-                                Bayar Sekarang
+                                <span wire:loading wire:target="submitOrder" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                                <span wire:loading.remove wire:target="submitOrder">Bayar Sekarang</span>
+                                <span wire:loading wire:target="submitOrder">Memproses...</span>
                             </button>
                         @else
                             @error('cart')

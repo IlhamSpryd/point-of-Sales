@@ -29,8 +29,8 @@
                     @include('livewire.kds.partials.ticket', ['item' => $item, 'variant' => 'pending'])
                 @empty
                     <div class="flex flex-col items-center py-16 text-center">
-                        <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-yovel-surface">
-                            <span class="material-symbols-rounded text-[32px] text-primary-300">pending_actions</span>
+                        <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-yovel-bg border border-yovel-border shadow-sm">
+                            <span class="material-symbols-rounded text-[32px] text-primary-400">pending_actions</span>
                         </div>
                         <p class="text-sm font-medium text-yovel-muted">Tidak ada pesanan menunggu.</p>
                     </div>
@@ -51,8 +51,8 @@
                     @include('livewire.kds.partials.ticket', ['item' => $item, 'variant' => 'brewing'])
                 @empty
                     <div class="flex flex-col items-center py-16 text-center">
-                        <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-yovel-surface">
-                            <span class="material-symbols-rounded text-[32px] text-primary-300">coffee_maker</span>
+                        <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-yovel-bg border border-yovel-border shadow-sm">
+                            <span class="material-symbols-rounded text-[32px] text-amber-500">coffee_maker</span>
                         </div>
                         <p class="text-sm font-medium text-yovel-muted">Tidak ada item sedang diracik.</p>
                     </div>
@@ -73,8 +73,8 @@
                     @include('livewire.kds.partials.ticket', ['item' => $item, 'variant' => 'ready'])
                 @empty
                     <div class="flex flex-col items-center py-16 text-center">
-                        <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-yovel-surface">
-                            <span class="material-symbols-rounded text-[32px] text-primary-300">check_circle</span>
+                        <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-yovel-bg border border-yovel-border shadow-sm">
+                            <span class="material-symbols-rounded text-[32px] text-green-500">check_circle</span>
                         </div>
                         <p class="text-sm font-medium text-yovel-muted">Belum ada item selesai hari ini.</p>
                     </div>
