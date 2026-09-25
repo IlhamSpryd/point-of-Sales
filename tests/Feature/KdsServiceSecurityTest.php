@@ -1,12 +1,12 @@
 <?php
 
 use App\Enums\PreparationStatus;
+use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\Role;
 use App\Models\User;
-use App\Models\Category;
 use App\Services\KdsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;

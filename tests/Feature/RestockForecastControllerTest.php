@@ -7,6 +7,7 @@ use App\Models\Ingredient;
 use App\Models\IngredientStockMovement;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\Analytics\RestockPredictionService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -49,7 +50,7 @@ class RestockForecastControllerTest extends TestCase
             'idempotency_key' => uniqid('test_'),
         ]);
 
-        app(\App\Services\Analytics\RestockPredictionService::class)->recomputeAll();
+        app(RestockPredictionService::class)->recomputeAll();
 
         $response = $this->actingAs($user)->getJson(route('analytics.restock-forecasts'));
 
@@ -108,7 +109,7 @@ class RestockForecastControllerTest extends TestCase
             'idempotency_key' => uniqid('test_'),
         ]);
 
-        app(\App\Services\Analytics\RestockPredictionService::class)->recomputeAll();
+        app(RestockPredictionService::class)->recomputeAll();
 
         $response = $this->actingAs($user)->getJson(route('analytics.restock-forecasts'));
 

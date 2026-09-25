@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\OrderStatus;
 use App\Enums\PreparationStatus;
 use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
@@ -27,7 +28,7 @@ final class KdsService
         return DB::transaction(function () use ($orderItemId, $staffId) {
             $item = OrderItem::with('order')->lockForUpdate()->findOrFail($orderItemId);
 
-            if ($item->order->order_status !== \App\Enums\OrderStatus::Paid) {
+            if ($item->order->order_status !== OrderStatus::Paid) {
                 throw ValidationException::withMessages([
                     'kds' => 'Hanya pesanan LUNAS yang boleh diproses di dapur.',
                 ]);
@@ -58,7 +59,7 @@ final class KdsService
         return DB::transaction(function () use ($orderItemId, $staffId) {
             $item = OrderItem::with('order')->lockForUpdate()->findOrFail($orderItemId);
 
-            if ($item->order->order_status !== \App\Enums\OrderStatus::Paid) {
+            if ($item->order->order_status !== OrderStatus::Paid) {
                 throw ValidationException::withMessages([
                     'kds' => 'Hanya pesanan LUNAS yang boleh diproses di dapur.',
                 ]);
@@ -92,7 +93,7 @@ final class KdsService
         return DB::transaction(function () use ($orderItemId, $staffId, $canManage) {
             $item = OrderItem::with('order')->lockForUpdate()->findOrFail($orderItemId);
 
-            if ($item->order->order_status !== \App\Enums\OrderStatus::Paid) {
+            if ($item->order->order_status !== OrderStatus::Paid) {
                 throw ValidationException::withMessages([
                     'kds' => 'Hanya pesanan LUNAS yang boleh diproses di dapur.',
                 ]);
@@ -122,7 +123,7 @@ final class KdsService
         return DB::transaction(function () use ($orderItemId, $staffId, $canManage) {
             $item = OrderItem::with('order')->lockForUpdate()->findOrFail($orderItemId);
 
-            if ($item->order->order_status !== \App\Enums\OrderStatus::Paid) {
+            if ($item->order->order_status !== OrderStatus::Paid) {
                 throw ValidationException::withMessages([
                     'kds' => 'Hanya pesanan LUNAS yang boleh diproses di dapur.',
                 ]);

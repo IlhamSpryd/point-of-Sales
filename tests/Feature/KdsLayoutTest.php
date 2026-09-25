@@ -2,6 +2,7 @@
 
 use App\Models\Role;
 use App\Models\User;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -12,6 +13,7 @@ class KdsLayoutTest extends TestCase
     public function test_kds_route_renders_kds_dark_theme_layout_not_admin_layout(): void
     {
         $role = Role::firstOrCreate(['name' => 'Barista']);
+        /** @var Authenticatable $user */
         $user = User::factory()->create(['role_id' => $role->id]);
 
         $response = $this->actingAs($user)->get(route('kds.index'));
