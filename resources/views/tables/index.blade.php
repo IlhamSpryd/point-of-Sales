@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-            <h4 class="text-xl font-bold text-[#37352F] tracking-tight">Manajemen Meja</h4>
+            <h4 class="text-xl font-bold text-yovel-ink tracking-tight">Manajemen Meja</h4>
             <p class="text-sm font-medium text-[#787774] mt-1">Kelola meja & QR Code self-order</p>
         </div>
         <x-list-toolbar search-action="{{ route('tables.index') }}" search-placeholder="Cari meja...">
@@ -38,9 +38,9 @@
                 <tbody class="divide-y divide-[#E9E9E7]">
                     @forelse($tables as $table)
                         <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
-                            <td class="px-6 py-4 font-medium text-[#37352F] text-sm whitespace-nowrap">{{ $table->table_code }}</td>
+                            <td class="px-6 py-4 font-medium text-yovel-ink text-sm whitespace-nowrap">{{ $table->table_code }}</td>
                             <td class="px-6 py-4">
-                                <div class="font-bold text-[#37352F] text-sm">{{ $table->table_name }}</div>
+                                <div class="font-bold text-yovel-ink text-sm">{{ $table->table_name }}</div>
                                 <div class="text-xs text-[#787774] mt-1 flex items-center gap-2">
                                     <span class="inline-flex items-center gap-1"><span class="material-symbols-rounded text-[14px]">chair</span> {{ $table->capacity }} pax</span>
                                     <span>&bull;</span>
@@ -109,7 +109,7 @@
                 <div class="card-surface p-4">
                     <div class="flex justify-between items-start mb-3">
                         <div class="flex flex-col">
-                            <span class="font-bold text-[#37352F] text-sm">{{ $table->table_name }}</span>
+                            <span class="font-bold text-yovel-ink text-sm">{{ $table->table_name }}</span>
                             <span class="text-xs text-[#787774]">{{ $table->table_code }}</span>
                         </div>
                         <div class="flex flex-col items-end gap-1">
@@ -135,8 +135,8 @@
                             {!! Cache::remember('pos:qr:table:'.$table->id, 86400, fn() => (string) QrCode::size(60)->generate(rtrim(config('app.url'), '/') . route('customer.menu.index', ['token' => $table->secure_token], false))) !!}
                         </div>
                         <div class="flex-1 min-w-0">
-                            <div class="text-sm font-medium text-[#37352F] flex items-center gap-1.5 mb-1"><span class="material-symbols-rounded text-[16px] text-[#787774]">chair</span> {{ $table->capacity }} pax</div>
-                            <div class="text-sm font-medium text-[#37352F] flex items-center gap-1.5"><span class="material-symbols-rounded text-[16px] text-[#787774]">map</span> {{ $table->area }}</div>
+                            <div class="text-sm font-medium text-yovel-ink flex items-center gap-1.5 mb-1"><span class="material-symbols-rounded text-[16px] text-[#787774]">chair</span> {{ $table->capacity }} pax</div>
+                            <div class="text-sm font-medium text-yovel-ink flex items-center gap-1.5"><span class="material-symbols-rounded text-[16px] text-[#787774]">map</span> {{ $table->area }}</div>
                         </div>
                         <div class="flex flex-col gap-1 shrink-0">
                             <a href="{{ route('tables.edit', $table->secure_token) }}" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200" aria-label="Ubah meja" wire:navigate>

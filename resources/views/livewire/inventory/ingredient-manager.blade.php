@@ -59,7 +59,7 @@
                         input[type="checkbox"]:checked ~ .block { background-color: #10b981; }
                         input[type="checkbox"]:checked ~ .dot { transform: translateX(100%); }
                     </style>
-                    <div class="ml-3 text-sm font-semibold text-[#37352F]">
+                    <div class="ml-3 text-sm font-semibold text-yovel-ink">
                         Bahan Baku Aktif
                     </div>
                 </label>
@@ -238,7 +238,7 @@
     @if($showAdjustModal)
     <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-900/40 backdrop-blur-sm transition-opacity" aria-hidden="true" wire:click="$set('showAdjustModal', false)"></div>
+            <div class="fixed inset-0 bg-yovel-ink/40 backdrop-blur-sm transition-opacity" aria-hidden="true" wire:click="$set('showAdjustModal', false)"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             <div class="relative z-10 inline-block align-bottom bg-white rounded-xl text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full border border-yovel-border max-h-[90vh] overflow-y-auto">
                 <form wire:submit.prevent="saveAdjustment">

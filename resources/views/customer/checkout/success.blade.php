@@ -35,7 +35,7 @@
             {{-- Tombol Snap Fallback (Pastikan ini selalu ada di HTML jika token tersedia) --}}
             @if ($snapToken)
                 <button type="button" x-show="isPending" @click="pay()" x-cloak
-                        class="mt-6 flex min-h-12 w-full max-w-[200px] items-center justify-center gap-2 rounded-xl bg-yovel-ink font-semibold text-white shadow-md transition-all hover:bg-black active:scale-[0.98]">
+                        class="mt-6 flex min-h-12 w-full max-w-[200px] items-center justify-center gap-2 rounded-xl bg-yovel-ink font-semibold text-white shadow-md transition-all hover:bg-yovel-ink active:scale-[0.98]">
                     <span class="material-symbols-rounded text-[18px]">payments</span> <span class="text-[15px]">Bayar Sekarang</span>
                 </button>
             @endif

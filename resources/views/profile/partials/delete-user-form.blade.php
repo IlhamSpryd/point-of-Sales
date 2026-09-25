@@ -1,6 +1,6 @@
 <section class="space-y-6">
     <header>
-        <h2 class="text-lg font-bold text-[#37352F]">
+        <h2 class="text-lg font-bold text-yovel-ink">
             {{ __('Hapus Akun') }}
         </h2>
 
@@ -20,7 +20,7 @@
             @csrf
             @method('delete')
 
-            <h2 class="text-lg font-bold text-[#37352F]">
+            <h2 class="text-lg font-bold text-yovel-ink">
                 {{ __('Apakah Anda yakin ingin menghapus akun Anda?') }}
             </h2>
 

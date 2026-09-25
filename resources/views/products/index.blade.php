@@ -5,7 +5,7 @@
 <x-app-layout>
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-            <h4 class="text-xl font-bold text-[#37352F] tracking-tight">Produk</h4>
+            <h4 class="text-xl font-bold text-yovel-ink tracking-tight">Produk</h4>
             <p class="text-sm font-medium text-[#787774] mt-1">Kelola inventaris produk Anda</p>
         </div>
         
@@ -64,12 +64,12 @@
                                         </div>
                                     @endif
                                     <div>
-                                        <div class="font-medium text-[#37352F] text-sm">{{ $product->product_name }}</div>
+                                        <div class="font-medium text-yovel-ink text-sm">{{ $product->product_name }}</div>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-sm text-[#787774]">{{ $product->category ? $product->category->category_name : '-' }}</td>
-                            <td class="px-6 py-4 text-sm font-semibold text-[#37352F]">Rp {{ number_format($product->product_price, 0, ',', '.') }}</td>
+                            <td class="px-6 py-4 text-sm font-semibold text-yovel-ink">Rp {{ number_format($product->product_price, 0, ',', '.') }}</td>
                             <td class="px-6 py-4 text-sm text-[#787774]">{{ $product->stock }}</td>
                             <td class="px-6 py-4">
                                 @if($product->is_active)
@@ -123,7 +123,7 @@
                         @endif
                         <div class="flex-1 min-w-0">
                             <div class="flex justify-between items-start">
-                                <span class="font-bold text-[#37352F] text-sm truncate pr-2">{{ $product->product_name }}</span>
+                                <span class="font-bold text-yovel-ink text-sm truncate pr-2">{{ $product->product_name }}</span>
                                 @if($product->is_active)
                                     <x-badge type="success">Aktif</x-badge>
                                 @else
@@ -132,8 +132,8 @@
                             </div>
                             <span class="text-xs text-[#787774] block mb-1">{{ $product->category ? $product->category->category_name : '-' }}</span>
                             <div class="flex justify-between items-center">
-                                <span class="text-sm font-semibold text-[#37352F]">Rp {{ number_format($product->product_price, 0, ',', '.') }}</span>
-                                <span class="text-xs text-[#787774]">Stok: <span class="font-bold text-[#37352F]">{{ $product->stock }}</span></span>
+                                <span class="text-sm font-semibold text-yovel-ink">Rp {{ number_format($product->product_price, 0, ',', '.') }}</span>
+                                <span class="text-xs text-[#787774]">Stok: <span class="font-bold text-yovel-ink">{{ $product->stock }}</span></span>
                             </div>
                         </div>
                     </div>

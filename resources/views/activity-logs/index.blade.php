@@ -1,13 +1,13 @@
 <x-app-layout>
     <div class="flex flex-col gap-6">
         <div>
-            <h1 class="text-2xl font-bold text-[#37352F] tracking-tight">Audit Log</h1>
+            <h1 class="text-2xl font-bold text-yovel-ink tracking-tight">Audit Log</h1>
             <p class="text-sm font-medium text-[#787774] mt-1">Lacak dan pantau semua aktivitas pengguna di sistem Anda.</p>
         </div>
 
         <div class="card-surface bg-white rounded-2xl border border-yovel-border shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-[#37352F]">
+                <table class="w-full text-left text-sm text-yovel-ink">
                     <thead class="bg-[#F1F1EF] text-[#787774] font-bold text-xs uppercase tracking-wider">
                         <tr>
                             <th class="px-6 py-4 border-b border-yovel-border">Waktu</th>

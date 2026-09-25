@@ -20,7 +20,7 @@
 
 </head>
 
-<body class="font-sans antialiased text-[#37352F] bg-[#F7F7F5]">
+<body class="font-sans antialiased text-yovel-ink bg-[#F7F7F5]">
 
     <div id="swup" class="transition-fade min-h-screen grid lg:grid-cols-2 w-full">
         <!-- KIRI: KONTEN SLOT -->

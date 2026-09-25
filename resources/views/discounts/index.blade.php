@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-bold text-xl text-[#37352F] leading-tight">
+        <h2 class="font-bold text-xl text-yovel-ink leading-tight">
             {{ __('Diskon & Promo') }}
         </h2>
     </x-slot>

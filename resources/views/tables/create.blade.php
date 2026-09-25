@@ -1,10 +1,10 @@
 <x-app-layout>
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h4 class="text-xl font-bold text-[#37352F] tracking-tight">Tambah Meja</h4>
+            <h4 class="text-xl font-bold text-yovel-ink tracking-tight">Tambah Meja</h4>
             <p class="text-sm font-medium text-[#787774] mt-1">Tambah meja & QR Code baru</p>
         </div>
-        <a href="{{ route('tables.index') }}" class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#F7F7F5] border border-[#E9E9E7] text-[#37352F] text-sm font-medium rounded-xl transition-all duration-200 shadow-sm active:scale-95" wire:navigate>
+        <a href="{{ route('tables.index') }}" class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#F7F7F5] border border-[#E9E9E7] text-yovel-ink text-sm font-medium rounded-xl transition-all duration-200 shadow-sm active:scale-95" wire:navigate>
             <span class="material-symbols-rounded text-[18px]">arrow_back</span> Kembali
         </a>
     </div>
@@ -34,7 +34,7 @@
                 <div>
                     <x-form-label for="area">Area / Lokasi</x-form-label>
                     <div class="relative">
-                        <select id="area" name="area" class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-[#37352F] text-sm appearance-none focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] transition-all duration-200 outline-none shadow-sm {{ $errors->has('area') ? 'border-rose-300 focus:ring-rose-500' : '' }}">
+                        <select id="area" name="area" class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-yovel-ink text-sm appearance-none focus:ring-2 focus:ring-[#37352F] focus:border-yovel-ink transition-all duration-200 outline-none shadow-sm {{ $errors->has('area') ? 'border-rose-300 focus:ring-rose-500' : '' }}">
                             <option value="Indoor" {{ old('area') === 'Indoor' ? 'selected' : '' }}>Indoor</option>
                             <option value="Outdoor" {{ old('area') === 'Outdoor' ? 'selected' : '' }}>Outdoor</option>
                             <option value="Rooftop" {{ old('area') === 'Rooftop' ? 'selected' : '' }}>Rooftop</option>
@@ -52,7 +52,7 @@
                 <div>
                     <x-form-label for="operational_status">Status Operasional</x-form-label>
                     <div class="relative">
-                        <select id="operational_status" name="operational_status" class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-[#37352F] text-sm appearance-none focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] transition-all duration-200 outline-none shadow-sm {{ $errors->has('operational_status') ? 'border-rose-300 focus:ring-rose-500' : '' }}">
+                        <select id="operational_status" name="operational_status" class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-yovel-ink text-sm appearance-none focus:ring-2 focus:ring-[#37352F] focus:border-yovel-ink transition-all duration-200 outline-none shadow-sm {{ $errors->has('operational_status') ? 'border-rose-300 focus:ring-rose-500' : '' }}">
                             <option value="available" {{ old('operational_status') === 'available' ? 'selected' : '' }}>Available (Kosong)</option>
                             <option value="occupied" {{ old('operational_status') === 'occupied' ? 'selected' : '' }}>Occupied (Terisi)</option>
                             <option value="cleaning" {{ old('operational_status') === 'cleaning' ? 'selected' : '' }}>Cleaning (Pembersihan)</option>
@@ -71,8 +71,8 @@
             <div>
                 <label class="flex items-center gap-3 cursor-pointer">
                     <input type="hidden" name="is_active" value="0">
-                    <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="w-5 h-5 rounded border-[#E9E9E7] text-[#37352F] focus:ring-[#37352F] transition-colors">
-                    <span class="text-sm font-medium text-[#37352F]">Meja Aktif (Tersedia untuk digunakan)</span>
+                    <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="w-5 h-5 rounded border-[#E9E9E7] text-yovel-ink focus:ring-[#37352F] transition-colors">
+                    <span class="text-sm font-medium text-yovel-ink">Meja Aktif (Tersedia untuk digunakan)</span>
                 </label>
             </div>
 

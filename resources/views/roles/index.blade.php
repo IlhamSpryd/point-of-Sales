@@ -1,7 +1,7 @@
 <x-app-layout>
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-            <h4 class="text-xl font-bold text-[#37352F] tracking-tight">Peran</h4>
+            <h4 class="text-xl font-bold text-yovel-ink tracking-tight">Peran</h4>
             <p class="text-sm font-medium text-[#787774] mt-1">Kelola peran sistem</p>
         </div>
         
@@ -45,10 +45,10 @@
                 <tbody class="divide-y divide-[#E9E9E7]">
                     @forelse($roles as $role)
                         <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
-                            <td class="px-6 py-4 font-medium text-[#37352F] text-sm">{{ $role->role_code }}</td>
+                            <td class="px-6 py-4 font-medium text-yovel-ink text-sm">{{ $role->role_code }}</td>
                             <td class="px-6 py-4">
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-medium text-[#37352F]">{{ $role->name }}</span>
+                                    <span class="text-sm font-medium text-yovel-ink">{{ $role->name }}</span>
                                     <span class="text-xs text-[#787774]">{{ $role->description ?: '—' }}</span>
                                 </div>
                             </td>
@@ -102,7 +102,7 @@
                 <div class="card-surface p-4">
                     <div class="flex justify-between items-start mb-2">
                         <div class="flex flex-col">
-                            <span class="font-bold text-[#37352F] text-sm">{{ $role->name }}</span>
+                            <span class="font-bold text-yovel-ink text-sm">{{ $role->name }}</span>
                             <span class="text-xs text-[#787774]">{{ $role->role_code }}</span>
                         </div>
                         <div class="flex flex-col items-end gap-1">
@@ -118,7 +118,7 @@
                     <div class="flex items-center justify-between mt-3 pt-3 border-t border-[#E9E9E7]">
                         <div class="flex-1">
                             <span class="text-[11px] font-semibold text-[#9B9A97] uppercase tracking-wider block mb-0.5">Pengguna</span>
-                            <span class="text-xs text-[#37352F]">{{ $role->users_count ?? 0 }} Terdaftar</span>
+                            <span class="text-xs text-yovel-ink">{{ $role->users_count ?? 0 }} Terdaftar</span>
                         </div>
                         <div class="flex items-center gap-1 shrink-0">
                             <a href="{{ route('roles.edit', $role->id) }}" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200" aria-label="Ubah peran" wire:navigate>

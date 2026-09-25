@@ -1,10 +1,10 @@
 <x-app-layout>
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h4 class="text-xl font-bold text-[#37352F] tracking-tight">Tambah Produk</h4>
+            <h4 class="text-xl font-bold text-yovel-ink tracking-tight">Tambah Produk</h4>
             <p class="text-sm font-medium text-[#787774] mt-1">Tambahkan produk baru ke dalam inventaris</p>
         </div>
-        <a href="{{ route('products.index') }}" class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#F7F7F5] border border-[#E9E9E7] text-[#37352F] text-sm font-medium rounded-xl transition-all duration-200 shadow-sm active:scale-95" wire:navigate>
+        <a href="{{ route('products.index') }}" class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#F7F7F5] border border-[#E9E9E7] text-yovel-ink text-sm font-medium rounded-xl transition-all duration-200 shadow-sm active:scale-95" wire:navigate>
             <span class="material-symbols-rounded text-[18px]">arrow_back</span> Kembali
         </a>
     </div>
@@ -28,7 +28,7 @@
                     <x-form-label for="category_id">Kategori</x-form-label>
                     <div class="relative">
                         <select id="category_id" name="category_id" 
-                                class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-[#37352F] appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] transition-all duration-200 shadow-sm {{ $errors->has('category_id') ? 'input-error' : '' }}" required>
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-yovel-ink appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-yovel-ink transition-all duration-200 shadow-sm {{ $errors->has('category_id') ? 'input-error' : '' }}" required>
                             <option value="">Pilih Kategori</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
@@ -79,7 +79,7 @@
                         input:checked ~ .block { background-color: #10b981; }
                         input:checked ~ .dot { transform: translateX(100%); }
                     </style>
-                    <div class="ml-3 text-sm font-semibold text-[#37352F]">
+                    <div class="ml-3 text-sm font-semibold text-yovel-ink">
                         Produk Aktif
                     </div>
                 </label>
@@ -89,7 +89,7 @@
             <div>
                 <x-form-label for="product_description">Deskripsi</x-form-label>
                 <textarea id="product_description" name="product_description" rows="3"
-                          class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-[#37352F] placeholder-primary-400 focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] transition-all duration-200 shadow-sm {{ $errors->has('product_description') ? 'input-error' : '' }}" 
+                          class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-yovel-ink placeholder-primary-400 focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-yovel-ink transition-all duration-200 shadow-sm {{ $errors->has('product_description') ? 'input-error' : '' }}" 
                           placeholder="Masukkan deskripsi produk (opsional)">{{ old('product_description') }}</textarea>
                 @error('product_description')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
@@ -109,7 +109,7 @@
             }" class="pt-4 border-t border-[#E9E9E7]">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h5 class="text-sm font-bold text-[#37352F]">Bahan Baku (Bill of Materials)</h5>
+                        <h5 class="text-sm font-bold text-yovel-ink">Bahan Baku (Bill of Materials)</h5>
                         <p class="text-xs text-[#787774] mt-0.5">Tentukan bahan baku yang akan memotong stok otomatis saat produk ini terjual.</p>
                     </div>
                     <button type="button" @click="addItem" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-[#E9E9E7] rounded-xl hover:bg-[#F7F7F5] transition-colors shadow-sm">
@@ -121,7 +121,7 @@
                     <template x-for="(item, index) in items" :key="index">
                         <div class="flex items-start gap-3">
                             <div class="flex-1">
-                                <select x-model="item.id" :name="'ingredients['+index+'][id]'" class="form-select w-full px-3 py-2 rounded-xl border border-[#E9E9E7] bg-white text-[#37352F] text-sm focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] shadow-sm" required>
+                                <select x-model="item.id" :name="'ingredients['+index+'][id]'" class="form-select w-full px-3 py-2 rounded-xl border border-[#E9E9E7] bg-white text-yovel-ink text-sm focus:ring-2 focus:ring-[#37352F] focus:border-yovel-ink shadow-sm" required>
                                     <option value="">-- Pilih Bahan --</option>
                                     <template x-for="ing in ingredients" :key="ing.id">
                                         <option :value="ing.id" x-text="ing.name + ' (' + ing.unit + ')'" :selected="item.id == ing.id"></option>
@@ -129,7 +129,7 @@
                                 </select>
                             </div>
                             <div class="w-32">
-                                <input type="number" step="0.0001" x-model="item.quantity" :name="'ingredients['+index+'][quantity]'" placeholder="Kuantitas" class="form-input w-full px-3 py-2 rounded-xl border border-[#E9E9E7] bg-white text-[#37352F] text-sm focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] shadow-sm" required>
+                                <input type="number" step="0.0001" x-model="item.quantity" :name="'ingredients['+index+'][quantity]'" placeholder="Kuantitas" class="form-input w-full px-3 py-2 rounded-xl border border-[#E9E9E7] bg-white text-yovel-ink text-sm focus:ring-2 focus:ring-[#37352F] focus:border-yovel-ink shadow-sm" required>
                             </div>
                             <button type="button" @click="removeItem(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors" title="Hapus baris">
                                 <span class="material-symbols-rounded text-[18px]">close</span>
@@ -156,7 +156,7 @@
             }" class="pt-4 border-t border-[#E9E9E7]">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h5 class="text-sm font-bold text-[#37352F]">Grup Varian & Modifier</h5>
+                        <h5 class="text-sm font-bold text-yovel-ink">Grup Varian & Modifier</h5>
                         <p class="text-xs text-[#787774] mt-0.5">Tautkan grup modifier (seperti Pilihan Susu, Suhu) yang tersedia untuk produk ini.</p>
                     </div>
                     <button type="button" @click="addGroup" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-[#E9E9E7] rounded-xl hover:bg-[#F7F7F5] transition-colors shadow-sm">
@@ -168,7 +168,7 @@
                     <template x-for="(groupId, index) in selectedGroups" :key="index">
                         <div class="flex items-start gap-3">
                             <div class="flex-1">
-                                <select x-model="selectedGroups[index]" :name="'modifier_groups['+index+']'" class="form-select w-full px-3 py-2 rounded-xl border border-[#E9E9E7] bg-white text-[#37352F] text-sm focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] shadow-sm" required>
+                                <select x-model="selectedGroups[index]" :name="'modifier_groups['+index+']'" class="form-select w-full px-3 py-2 rounded-xl border border-[#E9E9E7] bg-white text-yovel-ink text-sm focus:ring-2 focus:ring-[#37352F] focus:border-yovel-ink shadow-sm" required>
                                     <option value="">-- Pilih Grup Varian --</option>
                                     <template x-for="g in groups" :key="g.id">
                                         <option :value="g.id" x-text="g.name" :selected="groupId == g.id"></option>
@@ -194,7 +194,7 @@
                     <div class="space-y-1 text-center">
                         <span class="material-symbols-rounded text-[32px] text-primary-300">image</span>
                         <div class="flex flex-col sm:flex-row text-sm text-[#787774] justify-center gap-1 mt-3">
-                            <label for="product_photo" class="relative cursor-pointer bg-white rounded-xl font-medium text-[#37352F] hover:text-black focus-within:outline-none px-3 py-1 shadow-sm border border-[#E9E9E7] transition-all duration-200 active:scale-95">
+                            <label for="product_photo" class="relative cursor-pointer bg-white rounded-xl font-medium text-yovel-ink hover:text-yovel-ink focus-within:outline-none px-3 py-1 shadow-sm border border-[#E9E9E7] transition-all duration-200 active:scale-95">
                                 <span>Unggah file</span>
                                 <input id="product_photo" name="product_photo" type="file" class="sr-only" accept="image/jpeg,image/png,image/jpg" onchange="document.getElementById('file-name').textContent = this.files[0].name">
                             </label>

@@ -140,7 +140,7 @@
                 </div>
 
                 <button type="button" @click="submit()" :disabled="!canSubmit"
-                        class="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl bg-yovel-ink px-5 font-bold text-white shadow-lg transition-all duration-200 hover:bg-black active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yovel-ink">
+                        class="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl bg-yovel-ink px-5 font-bold text-white shadow-lg transition-all duration-200 hover:bg-yovel-ink active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yovel-ink">
                     <span class="flex items-center gap-2 text-[15px]">
                         <span x-show="submitting" x-cloak class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
                         <span x-text="submitting ? 'Menambahkan…' : 'Tambah ke Pesanan'"></span>

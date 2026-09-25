@@ -116,7 +116,7 @@
             <div class="flex gap-2.5 overflow-x-auto scrollbar-hide px-4 py-2 items-center">
                 <button type="button" @click="activeCategory = 'all'"
                     :aria-pressed="(activeCategory === 'all').toString()"
-                    :class="activeCategory === 'all' ? 'bg-[#37352F] text-white border-[#37352F] shadow-md' :
+                    :class="activeCategory === 'all' ? 'bg-yovel-ink text-white border-yovel-ink shadow-md' :
                         'bg-white text-gray-500 border-[#E9E9E7] hover:bg-gray-50'"
                     class="shrink-0 flex items-center justify-center h-11 px-5 rounded-full border text-sm font-semibold whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
                     Semua Menu
@@ -125,7 +125,7 @@
                     <button type="button" @click="activeCategory = '{{ $cat->id }}'"
                         :aria-pressed="(activeCategory === '{{ $cat->id }}').toString()"
                         :class="activeCategory === '{{ $cat->id }}' ?
-                            'bg-[#37352F] text-white border-[#37352F] shadow-md' :
+                            'bg-yovel-ink text-white border-yovel-ink shadow-md' :
                             'bg-white text-gray-500 border-[#E9E9E7] hover:bg-gray-50'"
                         class="shrink-0 flex items-center justify-center h-11 px-5 rounded-full border text-sm font-semibold whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
                         {{ $cat->category_name }}
@@ -196,7 +196,7 @@
                                         {{ number_format($product->product_price, 0, ',', '.') }}</span>
                                     @unless ($soldOut)
                                         <span
-                                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#37352F] text-white shadow-sm transition-colors group-hover:bg-black">
+                                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-yovel-ink text-white shadow-sm transition-colors group-hover:bg-yovel-ink">
                                             <span class="material-symbols-rounded text-[18px]">add</span>
                                         </span>
                                     @endunless
@@ -226,7 +226,7 @@
             x-transition:leave-end="translate-y-full opacity-0"
             class="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] z-40 mx-auto max-w-md">
             <a href="{{ route('customer.cart.index') }}"
-                class="flex min-h-14 w-full items-center justify-between rounded-2xl bg-yovel-ink px-5 font-semibold text-white shadow-xl transition-all hover:bg-black active:scale-[0.98]"
+                class="flex min-h-14 w-full items-center justify-between rounded-2xl bg-yovel-ink px-5 font-semibold text-white shadow-xl transition-all hover:bg-yovel-ink active:scale-[0.98]"
                 wire:navigate>
                 <span class="rounded-lg bg-white/20 px-3 py-1 text-sm" x-text="count + ' Item'"></span>
                 <span>Lihat Keranjang</span>

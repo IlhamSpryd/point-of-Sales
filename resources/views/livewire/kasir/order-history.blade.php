@@ -9,7 +9,7 @@
                     <span class="material-symbols-rounded text-[18px] text-blue-600">receipt_long</span>
                 </span>
             </div>
-            <h3 class="text-2xl font-extrabold text-[#37352F] tracking-tight">
+            <h3 class="text-2xl font-extrabold text-yovel-ink tracking-tight">
                 {{ number_format($this->summary->total_count) }}</h3>
         </div>
         <div class="card-surface p-6">
@@ -19,7 +19,7 @@
                     <span class="material-symbols-rounded text-[18px] text-emerald-600">payments</span>
                 </span>
             </div>
-            <h3 class="text-2xl font-extrabold text-[#37352F] tracking-tight">Rp
+            <h3 class="text-2xl font-extrabold text-yovel-ink tracking-tight">Rp
                 {{ number_format($this->summary->total_paid_amount, 0, ',', '.') }}</h3>
         </div>
     </div>
@@ -33,7 +33,7 @@
 
             <div class="relative w-full lg:w-64">
                 <select wire:model.live="statusFilter"
-                    class="w-full min-h-[44px] px-4 pr-10 rounded-xl border border-[#E9E9E7] bg-white text-sm text-[#37352F] appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-[#37352F] transition-all duration-200 shadow-sm cursor-pointer">
+                    class="w-full min-h-[44px] px-4 pr-10 rounded-xl border border-[#E9E9E7] bg-white text-sm text-yovel-ink appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-yovel-ink transition-all duration-200 shadow-sm cursor-pointer">
                     <option value="all">Semua Status</option>
                     @foreach ($this->statusOptions as $value => $label)
                         <option value="{{ $value }}">{{ $label }}</option>
@@ -47,7 +47,7 @@
             <div wire:loading.flex wire:target="search,statusFilter,datePreset,startDate,endDate"
                 class="hidden items-center gap-2 text-xs text-[#9B9A97] shrink-0">
                 <span
-                    class="h-3.5 w-3.5 rounded-full border-2 border-[#37352F]/30 border-t-[#37352F] animate-spin"></span>
+                    class="h-3.5 w-3.5 rounded-full border-2 border-yovel-ink/30 border-t-[#37352F] animate-spin"></span>
                 Memuat...
             </div>
 
@@ -69,7 +69,7 @@
         'custom' => 'Kustom',
     ] as $value => $label)
                 <button type="button" wire:click="$set('datePreset', '{{ $value }}')"
-                    class="min-h-[44px] px-4 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 {{ $datePreset === $value ? 'bg-[#37352F] text-white shadow-sm' : 'bg-[#F7F7F5] text-[#787774] hover:bg-[#F1F1EF] hover:text-[#37352F]' }}">
+                    class="min-h-[44px] px-4 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 {{ $datePreset === $value ? 'bg-yovel-ink text-white shadow-sm' : 'bg-[#F7F7F5] text-[#787774] hover:bg-[#F1F1EF] hover:text-yovel-ink' }}">
                     {{ $label }}
                 </button>
             @endforeach
@@ -77,10 +77,10 @@
             @if ($datePreset === 'custom')
                 <div class="flex items-center gap-2 ml-1">
                     <input type="date" wire:model.live="startDate"
-                        class="min-h-[44px] px-3 rounded-xl border border-[#E9E9E7] bg-white text-sm text-[#37352F] focus:outline-none focus:ring-2 focus:ring-[#37352F] shadow-sm">
+                        class="min-h-[44px] px-3 rounded-xl border border-[#E9E9E7] bg-white text-sm text-yovel-ink focus:outline-none focus:ring-2 focus:ring-[#37352F] shadow-sm">
                     <span class="text-[#9B9A97] text-sm">s/d</span>
                     <input type="date" wire:model.live="endDate"
-                        class="min-h-[44px] px-3 rounded-xl border border-[#E9E9E7] bg-white text-sm text-[#37352F] focus:outline-none focus:ring-2 focus:ring-[#37352F] shadow-sm">
+                        class="min-h-[44px] px-3 rounded-xl border border-[#E9E9E7] bg-white text-sm text-yovel-ink focus:outline-none focus:ring-2 focus:ring-[#37352F] shadow-sm">
                 </div>
             @else
                 <span class="text-xs font-medium text-[#9B9A97] ml-1">({{ $this->dateRangeLabel }})</span>
@@ -116,12 +116,12 @@
                         <tr wire:key="order-{{ $order->id }}"
                             class="hover:bg-[#F7F7F5] transition-colors duration-200">
                             <td class="px-6 py-4">
-                                <div class="font-mono font-bold text-[#37352F] text-sm">{{ $order->order_code }}</div>
+                                <div class="font-mono font-bold text-yovel-ink text-sm">{{ $order->order_code }}</div>
                                 <div class="text-xs text-[#9B9A97] mt-0.5">
                                     {{ $order->created_at->format('d M Y, H:i') }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-sm font-medium text-[#37352F]">
+                                <div class="text-sm font-medium text-yovel-ink">
                                     {{ $order->user->name ?? 'Self-Order' }}</div>
                                 <div class="text-xs text-[#787774] mt-0.5 flex items-center gap-1">
                                     <span class="material-symbols-rounded text-[13px]">
@@ -147,7 +147,7 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-sm text-[#37352F] max-w-[220px] truncate">
+                                <div class="text-sm text-yovel-ink max-w-[220px] truncate">
                                     {{ $order->orderItems->pluck('product.product_name')->filter()->take(2)->implode(', ') }}
                                     @if ($order->order_items_count > 2)
                                         <span class="text-[#9B9A97]">+{{ $order->order_items_count - 2 }}
@@ -161,7 +161,7 @@
                             </td>
                             <td class="px-6 py-4">
                                 <span
-                                    class="inline-flex items-center gap-1 text-xs font-semibold text-[#37352F] bg-[#F1F1EF] border border-[#E9E9E7] rounded-lg px-2 py-1 whitespace-nowrap">
+                                    class="inline-flex items-center gap-1 text-xs font-semibold text-yovel-ink bg-[#F1F1EF] border border-[#E9E9E7] rounded-lg px-2 py-1 whitespace-nowrap">
                                     <span
                                         class="material-symbols-rounded text-[13px]">{{ $order->payment_method?->value === 'cash' ? 'payments' : 'qr_code_2' }}</span>
                                     {{ $order->payment_method?->label() ?? '-' }}
@@ -173,7 +173,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <span class="text-sm font-bold text-[#37352F] tabular-nums">Rp
+                                <span class="text-sm font-bold text-yovel-ink tabular-nums">Rp
                                     {{ number_format($order->order_amount, 0, ',', '.') }}</span>
                             </td>
                             <td class="px-6 py-4">
@@ -185,13 +185,13 @@
                                 <div class="flex items-center justify-end gap-1">
                                     <button type="button" wire:click="viewDetail({{ $order->id }})"
                                         title="Lihat Detail"
-                                        class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[#9B9A97] hover:text-[#37352F] hover:bg-[#F1F1EF] transition-colors duration-200 active:scale-90">
+                                        class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[#9B9A97] hover:text-yovel-ink hover:bg-[#F1F1EF] transition-colors duration-200 active:scale-90">
                                         <span class="material-symbols-rounded text-[20px]">visibility</span>
                                     </button>
                                     @if (in_array($order->order_status->value, ['paid', 'completed'], true))
                                         <a href="{{ route('transaction.receipt', $order->order_code) }}"
                                             target="_blank" rel="noopener" title="Cetak Ulang Struk"
-                                            class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[#9B9A97] hover:text-[#37352F] hover:bg-[#F1F1EF] transition-colors duration-200 active:scale-90">
+                                            class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-[#9B9A97] hover:text-yovel-ink hover:bg-[#F1F1EF] transition-colors duration-200 active:scale-90">
                                             <span class="material-symbols-rounded text-[20px]">print</span>
                                         </a>
                                     @endif
@@ -253,19 +253,19 @@
     {{-- ==================== MODAL DETAIL ==================== --}}
     @if ($this->selectedOrder)
         @php $detail = $this->selectedOrder; @endphp
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-[#37352F]/40 backdrop-blur-sm p-4"
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-yovel-ink/40 backdrop-blur-sm p-4"
             wire:click.self="closeDetail">
             <div
                 class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl border border-[#E9E9E7]">
 
                 <div class="px-6 py-4 border-b border-[#E9E9E7] flex justify-between items-start shrink-0">
                     <div>
-                        <h3 class="font-bold text-lg text-[#37352F] font-mono">{{ $detail->order_code }}</h3>
+                        <h3 class="font-bold text-lg text-yovel-ink font-mono">{{ $detail->order_code }}</h3>
                         <p class="text-sm text-[#787774] mt-0.5">{{ $detail->created_at->format('d F Y, H:i') }} WIB
                         </p>
                     </div>
                     <button type="button" wire:click="closeDetail"
-                        class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-[#9B9A97] hover:text-[#37352F] hover:bg-[#F7F7F5] transition-all duration-200 active:scale-90">
+                        class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-[#9B9A97] hover:text-yovel-ink hover:bg-[#F7F7F5] transition-all duration-200 active:scale-90">
                         <span class="material-symbols-rounded text-[22px]">close</span>
                     </button>
                 </div>
@@ -274,12 +274,12 @@
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
                             <p class="text-xs font-semibold text-[#9B9A97] uppercase tracking-wider mb-1">Kasir</p>
-                            <p class="font-medium text-[#37352F]">{{ $detail->user->name ?? 'Self-Order' }}</p>
+                            <p class="font-medium text-yovel-ink">{{ $detail->user->name ?? 'Self-Order' }}</p>
                         </div>
                         <div>
                             <p class="text-xs font-semibold text-[#9B9A97] uppercase tracking-wider mb-1">Tipe Pesanan
                             </p>
-                            <p class="font-medium text-[#37352F]">
+                            <p class="font-medium text-yovel-ink">
                                 @if ($detail->order_type?->value === 'takeaway')
                                     Takeaway
                                 @elseif($detail->order_type?->value === 'delivery')
@@ -316,7 +316,7 @@
                                 Loyalty</p>
                             <div class="flex items-center justify-between gap-3">
                                 <div class="min-w-0">
-                                    <p class="font-semibold text-sm text-[#37352F] truncate">
+                                    <p class="font-semibold text-sm text-yovel-ink truncate">
                                         {{ $detail->customer->name }}</p>
                                     <p class="text-xs text-[#787774]">{{ $detail->customer->phone ?? '-' }}</p>
                                 </div>
@@ -324,7 +324,7 @@
                                     <div class="text-right shrink-0">
                                         <p class="text-xs font-semibold text-[#787774]">
                                             {{ $detail->customer->loyaltyAccount->currentTier->name ?? 'Reguler' }}</p>
-                                        <p class="text-sm font-bold text-[#37352F]">
+                                        <p class="text-sm font-bold text-yovel-ink">
                                             {{ number_format($detail->customer->loyaltyAccount->current_points ?? 0) }}
                                             poin</p>
                                     </div>
@@ -339,7 +339,7 @@
                             @foreach ($detail->orderItems as $item)
                                 <li class="p-3 flex justify-between items-start gap-3 bg-white">
                                     <div class="min-w-0">
-                                        <p class="text-sm font-semibold text-[#37352F]">{{ $item->qty }}×
+                                        <p class="text-sm font-semibold text-yovel-ink">{{ $item->qty }}×
                                             {{ $item->product->product_name ?? 'Produk Dihapus' }}</p>
                                         @if (!empty($item->options))
                                             <p class="text-xs text-[#787774] mt-0.5">
@@ -351,7 +351,7 @@
                                                 {{ $item->notes }}</p>
                                         @endif
                                     </div>
-                                    <span class="text-sm font-bold text-[#37352F] tabular-nums shrink-0">Rp
+                                    <span class="text-sm font-bold text-yovel-ink tabular-nums shrink-0">Rp
                                         {{ number_format($item->order_subtotal, 0, ',', '.') }}</span>
                                 </li>
                             @endforeach
@@ -370,7 +370,7 @@
                                             <span
                                                 class="material-symbols-rounded text-[18px] text-[#787774] shrink-0">{{ $payment->payment_method->value === 'cash' ? 'payments' : 'credit_card' }}</span>
                                             <div class="min-w-0">
-                                                <p class="text-sm font-semibold text-[#37352F]">
+                                                <p class="text-sm font-semibold text-yovel-ink">
                                                     {{ $payment->payment_method->label() }}</p>
                                                 @if ($payment->reference_number)
                                                     <p class="text-[11px] text-[#9B9A97] font-mono truncate">Ref:
@@ -379,7 +379,7 @@
                                             </div>
                                         </div>
                                         <div class="text-right shrink-0">
-                                            <p class="text-sm font-bold text-[#37352F] tabular-nums">Rp
+                                            <p class="text-sm font-bold text-yovel-ink tabular-nums">Rp
                                                 {{ number_format((float) $payment->amount, 0, ',', '.') }}</p>
                                             <p
                                                 class="text-[11px] font-medium {{ $payment->status->value === 'captured' ? 'text-emerald-600' : 'text-[#9B9A97]' }}">
@@ -407,7 +407,7 @@
                                 class="tabular-nums">Rp {{ number_format($detail->tax_amount, 0, ',', '.') }}</span>
                         </div>
                         <div
-                            class="flex justify-between font-bold text-[#37352F] text-base pt-2 mt-1 border-t border-[#E9E9E7]">
+                            class="flex justify-between font-bold text-yovel-ink text-base pt-2 mt-1 border-t border-[#E9E9E7]">
                             <span>Total Tagihan</span><span class="tabular-nums">Rp
                                 {{ number_format($detail->order_amount, 0, ',', '.') }}</span></div>
                     </div>
@@ -430,7 +430,7 @@
                     @if (in_array($detail->order_status->value, ['paid', 'completed'], true))
                         <a href="{{ route('transaction.receipt', $detail->order_code) }}" target="_blank"
                             rel="noopener"
-                            class="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl bg-[#37352F] text-white text-sm font-bold hover:bg-black transition-all duration-200 active:scale-95 shadow-sm">
+                            class="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl bg-yovel-ink text-white text-sm font-bold hover:bg-yovel-ink transition-all duration-200 active:scale-95 shadow-sm">
                             <span class="material-symbols-rounded text-[18px]">print</span> Cetak Ulang Struk
                         </a>
                     @endif
@@ -441,7 +441,7 @@
 
     {{-- ==================== MODAL VOID ==================== --}}
     @if ($this->voidingOrderId)
-        <div class="fixed inset-0 z-[60] flex items-center justify-center bg-[#37352F]/40 backdrop-blur-sm p-4">
+        <div class="fixed inset-0 z-[60] flex items-center justify-center bg-yovel-ink/40 backdrop-blur-sm p-4">
             <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-[#E9E9E7]">
                 <h3 class="font-bold text-lg text-rose-600 mb-2">Batalkan (Void) Pesanan</h3>
                 <p class="text-sm text-[#787774] mb-4">Aksi ini akan mengubah status pesanan menjadi Void dan

@@ -12,14 +12,14 @@
         </div>
     </div>
 
-    <div id="receipt" class="receipt-area mx-auto bg-white text-black">
+    <div id="receipt" class="receipt-area mx-auto bg-white text-yovel-ink">
         <div class="text-center mb-2">
             <p class="font-bold text-base">YOVEL COFFEE & CAFE</p>
             <p class="text-[10px]">Jl. Contoh No. 123, Jakarta</p>
             <p class="text-[10px]">{{ $order->created_at->format('d/m/Y H:i') }}</p>
         </div>
 
-        <div class="border-t border-b border-dashed border-black py-1 text-[11px]">
+        <div class="border-t border-b border-dashed border-yovel-ink py-1 text-[11px]">
             <div class="flex justify-between"><span>No. Order</span><span>{{ $order->order_code }}</span></div>
             <div class="flex justify-between"><span>Kasir</span><span>{{ $order->user->name ?? '-' }}</span></div>
             <div class="flex justify-between">
@@ -66,7 +66,7 @@
             @endforeach
         </div>
 
-        <div class="border-t border-dashed border-black pt-1 text-[11px]">
+        <div class="border-t border-dashed border-yovel-ink pt-1 text-[11px]">
             <div class="flex justify-between">
                 <span>Subtotal</span><span>{{ number_format($order->subtotal_amount, 0, ',', '.') }}</span>
             </div>
@@ -95,7 +95,7 @@
             @endif
         </div>
 
-        <div class="text-center text-[10px] mt-2 border-t border-dashed border-black pt-1">
+        <div class="text-center text-[10px] mt-2 border-t border-dashed border-yovel-ink pt-1">
             <p>Terima kasih!</p>
             <p>Selamat menikmati ☕</p>
         </div>

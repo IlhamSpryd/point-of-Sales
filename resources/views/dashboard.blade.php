@@ -2,7 +2,7 @@
     <!-- PAGE HEADER -->
     <div class="flex items-center justify-between mb-8">
         <div>
-            <h1 class="text-2xl font-bold text-[#37352F] tracking-tight">Dashboard</h1>
+            <h1 class="text-2xl font-bold text-yovel-ink tracking-tight">Dashboard</h1>
             <p class="text-sm font-medium text-[#787774] mt-1">Cara mudah mengelola penjualan dengan teliti dan presisi.
             </p>
         </div>
@@ -17,7 +17,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
         <!-- 1. Promo Card -->
         <div
-            class="bg-[#37352F] rounded-2xl p-6 text-white relative overflow-hidden flex flex-col shadow-md min-h-40 group">
+            class="bg-yovel-ink rounded-2xl p-6 text-white relative overflow-hidden flex flex-col shadow-md min-h-40 group">
             <div class="relative z-10 flex-1">
                 <span
                     class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 border border-white/20 text-[11px] font-bold tracking-wider uppercase text-white/90 mb-4 backdrop-blur-sm">
@@ -50,7 +50,7 @@
                     <span class="material-symbols-rounded text-[18px] text-emerald-600">trending_up</span>
                 </span>
             </div>
-            <h3 class="text-[28px] font-extrabold text-[#37352F] mb-2 tracking-tight relative z-10">Rp
+            <h3 class="text-[28px] font-extrabold text-yovel-ink mb-2 tracking-tight relative z-10">Rp
                 {{ number_format($totalEarnings, 0, ',', '.') }}</h3>
             <span class="inline-flex items-center text-xs font-bold text-emerald-600 gap-1 relative z-10">
                 <span class="material-symbols-rounded text-[14px]">north_east</span> Akumulasi seluruh waktu
@@ -68,7 +68,7 @@
                     <span class="material-symbols-rounded text-[18px] text-blue-600">receipt_long</span>
                 </span>
             </div>
-            <h3 class="text-[28px] font-extrabold text-[#37352F] mb-2 tracking-tight relative z-10">
+            <h3 class="text-[28px] font-extrabold text-yovel-ink mb-2 tracking-tight relative z-10">
                 {{ number_format($totalOrders) }}</h3>
             <span class="inline-flex items-center text-xs font-bold text-emerald-600 gap-1 relative z-10">
                 <span class="material-symbols-rounded text-[14px]">north_east</span> Akumulasi seluruh waktu
@@ -88,10 +88,10 @@
             <!-- Revenue Chart Area -->
             <div class="card-surface px-6 pt-6 pb-2 relative overflow-hidden">
                 <div class="flex flex-wrap justify-between items-start mb-2 gap-4">
-                    <h2 class="text-lg font-bold text-[#37352F]">Pendapatan</h2>
+                    <h2 class="text-lg font-bold text-yovel-ink">Pendapatan</h2>
                     <div class="flex items-center gap-4 text-sm font-medium">
                         <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-[#37352F]"></span> <span
+                            <span class="w-2.5 h-2.5 rounded-full bg-yovel-ink"></span> <span
                                 class="text-[#787774]">Pendapatan</span>
                         </div>
                         <div class="flex items-center gap-2">
@@ -101,7 +101,7 @@
                     </div>
                 </div>
                 <div class="flex items-baseline gap-2 mb-4 relative z-10">
-                    <span class="text-[28px] font-extrabold text-[#37352F] tracking-tight">Rp
+                    <span class="text-[28px] font-extrabold text-yovel-ink tracking-tight">Rp
                         {{ number_format($totalEarnings, 0, ',', '.') }}</span>
                     <div class="text-[11px] font-medium text-[#787774]">Akumulasi seluruh waktu</div>
                 </div>
@@ -113,7 +113,7 @@
                 <!-- Transaction List -->
                 <div class="lg:col-span-12 xl:col-span-7 card-surface p-6 flex flex-col h-full">
                     <div class="flex justify-between items-center mb-5">
-                        <h2 class="text-lg font-bold text-[#37352F]">Transaksi</h2>
+                        <h2 class="text-lg font-bold text-yovel-ink">Transaksi</h2>
                     </div>
 
                     <div class="flex-1 flex flex-col gap-4">
@@ -128,7 +128,7 @@
                                         </span>
                                     </div>
                                     <div>
-                                        <h4 class="text-sm font-bold text-[#37352F]">
+                                        <h4 class="text-sm font-bold text-yovel-ink">
                                             {{ $order->user->name ?? 'Pelanggan Ritel' }}</h4>
                                         <p class="text-xs font-medium text-[#9B9A97] mt-0.5">
                                             {{ $order->created_at?->format('F d, Y • h:i A') ?? now()->format('F d, Y') }}
@@ -156,17 +156,17 @@
                 <!-- Product Overview Progress -->
                 <div class="lg:col-span-12 xl:col-span-5 card-surface p-6 flex flex-col h-full">
                     <div class="flex justify-between items-center mb-5">
-                        <h2 class="text-lg font-bold text-[#37352F]">Ringkasan Produk</h2>
+                        <h2 class="text-lg font-bold text-yovel-ink">Ringkasan Produk</h2>
                     </div>
 
                     <div class="flex-1 flex flex-col gap-5">
                         <div>
                             <div class="flex justify-between items-center mb-2">
                                 <span class="text-xs font-semibold text-[#787774]">Total Produk</span>
-                                <span class="text-xs font-bold text-[#37352F]">{{ $productsCount }}</span>
+                                <span class="text-xs font-bold text-yovel-ink">{{ $productsCount }}</span>
                             </div>
                             <div class="w-full h-1.5 bg-[#F1F1EF] rounded-full overflow-hidden">
-                                <div class="h-full bg-[#37352F] rounded-full transition-all duration-700"
+                                <div class="h-full bg-yovel-ink rounded-full transition-all duration-700"
                                     style="width: {{ $productsCount > 0 ? 100 : 0 }}%"></div>
                             </div>
                         </div>
@@ -194,7 +194,7 @@
                         <div>
                             <div class="flex justify-between items-center mb-2">
                                 <span class="text-xs font-semibold text-[#787774]">Produk Dikembalikan</span>
-                                <span class="text-xs font-bold text-[#37352F]">{{ $returnedProducts }}</span>
+                                <span class="text-xs font-bold text-yovel-ink">{{ $returnedProducts }}</span>
                             </div>
                             <div class="w-full h-1.5 bg-[#F1F1EF] rounded-full overflow-hidden">
                                 <div class="h-full bg-rose-400 rounded-full transition-all duration-700"
@@ -210,7 +210,7 @@
         <div class="lg:col-span-4 flex flex-col gap-6">
             <!-- Payment Methods Chart -->
             <div class="card-surface p-6 flex flex-col flex-1">
-                <h2 class="text-lg font-bold text-[#37352F] mb-2">Ringkasan Metode Pembayaran</h2>
+                <h2 class="text-lg font-bold text-yovel-ink mb-2">Ringkasan Metode Pembayaran</h2>
 
                 <div class="flex-1 flex items-center justify-center my-4 min-h-55">
                     <div id="performance-chart" class="w-full max-h-60 flex justify-center"></div>
@@ -222,7 +222,7 @@
                         <span class="text-xs font-semibold text-[#787774]">Cash</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-[#37352F]"></span>
+                        <span class="w-2.5 h-2.5 rounded-full bg-yovel-ink"></span>
                         <span class="text-xs font-semibold text-[#787774]">QRIS</span>
                     </div>
                     <div class="flex items-center gap-2">
@@ -234,7 +234,7 @@
 
             <!-- Promo Banner -->
             <div
-                class="bg-[#37352F] rounded-2xl p-8 text-white relative overflow-hidden shadow-md flex flex-col justify-center min-h-45 group">
+                class="bg-yovel-ink rounded-2xl p-8 text-white relative overflow-hidden shadow-md flex flex-col justify-center min-h-45 group">
                 <div class="absolute -right-6 -bottom-6 opacity-[0.06]">
                     <span
                         class="material-symbols-rounded text-[180px] text-white group-hover:rotate-12 transition-transform duration-700">storefront</span>
@@ -246,7 +246,7 @@
                     <p class="text-white/50 text-xs font-medium leading-relaxed mb-6">Cara mudah mengelola penjualan
                         dengan teliti dan presisi.</p>
                     <button
-                        class="bg-white text-[#37352F] px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 hover:bg-[#F7F7F5] hover:-translate-y-0.5 active:scale-95 shadow-sm whitespace-nowrap">
+                        class="bg-white text-yovel-ink px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 hover:bg-[#F7F7F5] hover:-translate-y-0.5 active:scale-95 shadow-sm whitespace-nowrap">
                         Cek pembaruan sekarang
                     </button>
                 </div>
@@ -305,7 +305,7 @@
                 }
             }">
                 <div class="flex justify-between items-center mb-5">
-                    <h2 class="text-lg font-bold text-[#37352F]">Prakiraan Restock AI</h2>
+                    <h2 class="text-lg font-bold text-yovel-ink">Prakiraan Restock AI</h2>
                     <span class="material-symbols-rounded text-[18px] text-[#9B9A97]">auto_awesome</span>
                 </div>
 
@@ -331,9 +331,9 @@
                         <div
                             class="flex items-center justify-between border-b border-[#F1F1EF] pb-3 last:border-0 last:pb-0">
                             <div>
-                                <h4 class="text-sm font-bold text-[#37352F]" x-text="item.name"></h4>
+                                <h4 class="text-sm font-bold text-yovel-ink" x-text="item.name"></h4>
                                 <div class="flex items-center gap-2 mt-0.5">
-                                    <span class="text-[11px] text-[#787774]">Sisa: <strong class="text-[#37352F]"
+                                    <span class="text-[11px] text-[#787774]">Sisa: <strong class="text-yovel-ink"
                                             x-text="item.projected_days_remaining ? item.projected_days_remaining + ' hari' : '-'"></strong></span>
                                 </div>
                             </div>

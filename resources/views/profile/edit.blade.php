@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h4 class="text-xl font-bold text-[#37352F] tracking-tight">Profil</h4>
+            <h4 class="text-xl font-bold text-yovel-ink tracking-tight">Profil</h4>
             <p class="text-sm font-medium text-[#787774] mt-1">Kelola pengaturan dan preferensi akun Anda</p>
         </div>
     </div>

@@ -1,7 +1,7 @@
 <x-app-layout>
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-            <h4 class="text-xl font-bold text-[#37352F] tracking-tight">Pengguna</h4>
+            <h4 class="text-xl font-bold text-yovel-ink tracking-tight">Pengguna</h4>
             <p class="text-sm font-medium text-[#787774] mt-1">Kelola pengguna dan akses sistem</p>
         </div>
         
@@ -46,19 +46,19 @@
                 <tbody class="divide-y divide-[#E9E9E7]">
                     @forelse($users as $user)
                         <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
-                            <td class="px-6 py-4 font-medium text-[#37352F] text-sm">{{ $user->employee_id }}</td>
+                            <td class="px-6 py-4 font-medium text-yovel-ink text-sm">{{ $user->employee_id }}</td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-[#F1F1EF] text-[#37352F] flex items-center justify-center font-bold text-xs border border-[#E9E9E7] shrink-0">
+                                    <div class="w-8 h-8 rounded-full bg-[#F1F1EF] text-yovel-ink flex items-center justify-center font-bold text-xs border border-[#E9E9E7] shrink-0">
                                         {{ strtoupper(substr($user->name, 0, 1)) }}
                                     </div>
                                     <div class="flex flex-col">
-                                        <span class="text-sm font-medium text-[#37352F]">{{ $user->name }}</span>
+                                        <span class="text-sm font-medium text-yovel-ink">{{ $user->name }}</span>
                                         <span class="text-xs text-[#787774]">{{ $user->email }}</span>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-sm text-[#37352F]">{{ $user->phone_number ?: '—' }}</td>
+                            <td class="px-6 py-4 text-sm text-yovel-ink">{{ $user->phone_number ?: '—' }}</td>
                             <td class="px-6 py-4">
                                 <div class="flex flex-col items-start gap-1.5">
                                     @if($user->role)
@@ -110,11 +110,11 @@
                 <div class="card-surface p-4">
                     <div class="flex justify-between items-start mb-2">
                         <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-[#F1F1EF] text-[#37352F] flex items-center justify-center font-bold text-sm border border-[#E9E9E7] shrink-0">
+                            <div class="w-10 h-10 rounded-full bg-[#F1F1EF] text-yovel-ink flex items-center justify-center font-bold text-sm border border-[#E9E9E7] shrink-0">
                                 {{ strtoupper(substr($user->name, 0, 1)) }}
                             </div>
                             <div class="flex flex-col">
-                                <span class="font-bold text-[#37352F] text-sm">{{ $user->name }}</span>
+                                <span class="font-bold text-yovel-ink text-sm">{{ $user->name }}</span>
                                 <span class="text-xs text-[#787774]">{{ $user->employee_id }}</span>
                             </div>
                         </div>
@@ -132,8 +132,8 @@
                     <div class="flex items-center gap-4 mt-3 pt-3 border-t border-[#E9E9E7]">
                         <div class="flex-1">
                             <span class="text-[11px] font-semibold text-[#9B9A97] uppercase tracking-wider block mb-0.5">Kontak</span>
-                            <span class="text-xs text-[#37352F] block truncate">{{ $user->email }}</span>
-                            <span class="text-xs text-[#37352F]">{{ $user->phone_number ?: '—' }}</span>
+                            <span class="text-xs text-yovel-ink block truncate">{{ $user->email }}</span>
+                            <span class="text-xs text-yovel-ink">{{ $user->phone_number ?: '—' }}</span>
                         </div>
                         <div class="flex items-center gap-1 shrink-0">
                             <a href="{{ route('users.edit', $user->id) }}" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200" aria-label="Ubah pengguna" wire:navigate>

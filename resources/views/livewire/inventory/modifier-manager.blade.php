@@ -1,6 +1,6 @@
 <div>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-[#37352F] leading-tight">
+        <h2 class="font-semibold text-xl text-yovel-ink leading-tight">
             {{ __('Manajemen Modifier & Add-ons') }}
         </h2>
     </x-slot>
@@ -129,7 +129,7 @@
                         }" class="pt-4 border-t border-[#E9E9E7]">
                             <div class="flex items-center justify-between mb-4">
                                 <div>
-                                    <h5 class="text-sm font-bold text-[#37352F]">Bahan Baku Tambahan (BOM Opsional)</h5>
+                                    <h5 class="text-sm font-bold text-yovel-ink">Bahan Baku Tambahan (BOM Opsional)</h5>
                                     <p class="text-xs text-[#787774] mt-0.5">Tentukan bahan baku yang memotong stok otomatis saat varian ini dipilih.</p>
                                 </div>
                                 <button type="button" @click="addIngredient" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-[#E9E9E7] rounded-xl hover:bg-[#F7F7F5] transition-colors shadow-sm">

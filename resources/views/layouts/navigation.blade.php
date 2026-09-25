@@ -23,12 +23,12 @@
 
 {{-- Overlay drawer mobile. Menutup drawer cukup lewat overlay ini. --}}
 <div x-show="sidebarMobileOpen" @click="sidebarMobileOpen = false" x-transition.opacity.duration.200ms
-    class="fixed inset-0 bg-[#37352F]/40 backdrop-blur-sm z-40 lg:hidden" x-cloak aria-hidden="true"></div>
+    class="fixed inset-0 bg-yovel-ink/40 backdrop-blur-sm z-40 lg:hidden" x-cloak aria-hidden="true"></div>
 
 {{-- Tombol buka drawer (mobile). Touch target 44px. --}}
 <button type="button" x-show="!sidebarMobileOpen" @click="sidebarMobileOpen = true" aria-controls="main-sidebar"
     :aria-expanded="sidebarMobileOpen.toString()" aria-label="Buka menu"
-    class="lg:hidden fixed top-1.5 left-2 z-40 w-[44px] h-[44px] flex items-center justify-center text-[#37352F] hover:bg-[#F7F7F5] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#37352F] transition-all duration-200 rounded-xl">
+    class="lg:hidden fixed top-1.5 left-2 z-40 w-[44px] h-[44px] flex items-center justify-center text-yovel-ink hover:bg-[#F7F7F5] active:scale-95 focus-visible:ring-2 focus-visible:ring-[#37352F] transition-all duration-200 rounded-xl">
     <span class="material-symbols-rounded text-[26px]">menu</span>
 </button>
 
@@ -42,7 +42,7 @@
         sidebarMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         wide ? 'w-72 lg:w-64' : 'w-18'
     ]"
-    class="fixed lg:relative z-40 h-full flex flex-col bg-white/80 backdrop-blur-xl border-r border-[#E9E9E7] text-[#37352F] select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+    class="fixed lg:relative z-40 h-full flex flex-col bg-white/80 backdrop-blur-xl border-r border-[#E9E9E7] text-yovel-ink select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
 
     {{-- Logo + tombol lipat --}}
     <div class="h-15 flex items-center shrink-0 px-4 gap-3" :class="wide ? 'justify-between' : 'justify-center'">
@@ -52,7 +52,7 @@
             <span
                 class="flex items-center justify-center shrink-0 w-10 h-10 rounded-full group-hover:bg-[#F7F7F5] transition-colors">
                 <svg :class="!wide ? 'group-hover:hidden' : ''" width="18" height="18" viewBox="0 0 16 16"
-                    fill="currentColor" class="text-[#37352F] transition-transform duration-500 group-hover:rotate-180"
+                    fill="currentColor" class="text-yovel-ink transition-transform duration-500 group-hover:rotate-180"
                     aria-hidden="true">
                     <path
                         d="M8 0a1 1 0 0 1 1 1v5.268l4.562-2.634a1 1 0 1 1 1 1.732L10 8l4.562 2.634a1 1 0 1 1-1 1.732L9 9.732V15a1 1 0 1 1-2 0V9.732l-4.562 2.634a1 1 0 1 1-1-1.732L6 8 1.438 5.366a1 1 0 0 1 1-1.732L7 6.268V1a1 1 0 0 1 1-1z" />
@@ -74,7 +74,7 @@
         {{-- Lipat sidebar (desktop) --}}
         <button type="button" @click="expanded = false" x-show="expanded" x-cloak title="Lipat sidebar"
             aria-label="Lipat sidebar"
-            class="hidden lg:flex w-9 h-9 items-center justify-center rounded-lg text-[#9B9A97] hover:text-[#37352F] hover:bg-[#F7F7F5] active:scale-95 transition-all duration-200">
+            class="hidden lg:flex w-9 h-9 items-center justify-center rounded-lg text-[#9B9A97] hover:text-yovel-ink hover:bg-[#F7F7F5] active:scale-95 transition-all duration-200">
             <span class="material-symbols-rounded text-[20px]">left_panel_close</span>
         </button>
         {{-- Tutup drawer (mobile) --}}
@@ -110,10 +110,10 @@
                                 <a href="{{ route($item['route']) }}" wire:navigate
                                     @if ($isActive) aria-current="page" @endif
                                     title="{{ $item['label'] }}" :class="wide ? 'px-3' : 'justify-center px-0'"
-                                    class="{{ $rowBase }} {{ $isActive ? 'bg-[#F1F1EF] text-[#37352F]' : 'text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5] active:scale-[0.98]' }}">
+                                    class="{{ $rowBase }} {{ $isActive ? 'bg-[#F1F1EF] text-yovel-ink' : 'text-[#787774] hover:text-yovel-ink hover:bg-[#F7F7F5] active:scale-[0.98]' }}">
                                     @if ($isActive)
                                         <span
-                                            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-[#37352F] rounded-r-full"></span>
+                                            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-yovel-ink rounded-r-full"></span>
                                     @endif
                                     <span
                                         class="material-symbols-rounded text-[20px] shrink-0 w-5 text-center">{{ $item['icon'] }}</span>
@@ -148,7 +148,7 @@
             ]"
             title="{{ auth()->user()->name ?? 'Profil' }}">
             <div
-                class="w-8 h-8 rounded-lg bg-[#F1F1EF] text-[#37352F] border border-[#E9E9E7] flex items-center justify-center font-semibold text-[13px] shrink-0">
+                class="w-8 h-8 rounded-lg bg-[#F1F1EF] text-yovel-ink border border-[#E9E9E7] flex items-center justify-center font-semibold text-[13px] shrink-0">
                 {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
             </div>
             <div :class="wide ? 'opacity-100 ml-3 flex-1 text-left' : 'opacity-0 w-0 ml-0 hidden'"
@@ -183,12 +183,12 @@
             </div>
             <div class="p-1.5">
                 <a href="{{ route('profile.edit') }}" wire:navigate
-                    class="flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-[13px] font-medium text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5] active:scale-[0.98] transition-all duration-150">
+                    class="flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-[13px] font-medium text-[#787774] hover:text-yovel-ink hover:bg-[#F7F7F5] active:scale-[0.98] transition-all duration-150">
                     <span class="material-symbols-rounded text-[18px]">person</span> Profil Saya
                 </a>
                 @if(auth()->user()->role?->name === 'Owner')
                 <a href="{{ route('settings.index') }}" wire:navigate
-                    class="flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-[13px] font-medium text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5] active:scale-[0.98] transition-all duration-150">
+                    class="flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-[13px] font-medium text-[#787774] hover:text-yovel-ink hover:bg-[#F7F7F5] active:scale-[0.98] transition-all duration-150">
                     <span class="material-symbols-rounded text-[18px]">tune</span> Pengaturan
                 </a>
                 @endif

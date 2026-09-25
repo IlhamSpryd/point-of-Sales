@@ -34,7 +34,7 @@
                                     <input type="radio" wire:model.live="orderType" value="dine_in"
                                         class="peer sr-only">
                                     <span
-                                        class="px-4 py-1.5 rounded-lg text-[13px] font-bold transition-all duration-200 peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-gray-900 text-gray-500 hover:text-gray-800">
+                                        class="px-4 py-1.5 rounded-lg text-[13px] font-bold transition-all duration-200 peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-yovel-ink text-gray-500 hover:text-yovel-ink">
                                         Dine-In
                                     </span>
                                 </label>
@@ -42,7 +42,7 @@
                                     <input type="radio" wire:model.live="orderType" value="takeaway"
                                         class="peer sr-only">
                                     <span
-                                        class="px-4 py-1.5 rounded-lg text-[13px] font-bold transition-all duration-200 peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-gray-900 text-gray-500 hover:text-gray-800">
+                                        class="px-4 py-1.5 rounded-lg text-[13px] font-bold transition-all duration-200 peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-yovel-ink text-gray-500 hover:text-yovel-ink">
                                         Takeaway
                                     </span>
                                 </label>
@@ -51,7 +51,7 @@
                             @if ($orderType === 'dine_in')
                                 <div class="relative">
                                     <select wire:model="tableId"
-                                        class="bg-gray-100/80 border border-gray-200/50 text-gray-700 font-bold text-[13px] rounded-xl hover:bg-gray-200/50 hover:text-gray-900 focus:bg-white focus:border-gray-300 focus:ring-0 block pl-4 pr-9 py-1.5 transition-all duration-200 min-h-[36px] appearance-none cursor-pointer">
+                                        class="bg-gray-100/80 border border-gray-200/50 text-gray-700 font-bold text-[13px] rounded-xl hover:bg-gray-200/50 hover:text-yovel-ink focus:bg-white focus:border-gray-300 focus:ring-0 block pl-4 pr-9 py-1.5 transition-all duration-200 min-h-[36px] appearance-none cursor-pointer">
                                         <option value="">-- Pilih Meja --</option>
                                         @foreach ($this->activeTables as $table)
                                             @php
@@ -95,14 +95,14 @@
                         <label class="flex-1 flex items-center cursor-pointer">
                             <input type="radio" wire:model.live="orderType" value="dine_in" class="peer sr-only">
                             <span
-                                class="w-full text-center px-4 py-2 rounded-lg text-[13px] font-bold transition-all duration-200 peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-gray-900 text-gray-500 hover:text-gray-800">
+                                class="w-full text-center px-4 py-2 rounded-lg text-[13px] font-bold transition-all duration-200 peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-yovel-ink text-gray-500 hover:text-yovel-ink">
                                 Dine-In
                             </span>
                         </label>
                         <label class="flex-1 flex items-center cursor-pointer">
                             <input type="radio" wire:model.live="orderType" value="takeaway" class="peer sr-only">
                             <span
-                                class="w-full text-center px-4 py-2 rounded-lg text-[13px] font-bold transition-all duration-200 peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-gray-900 text-gray-500 hover:text-gray-800">
+                                class="w-full text-center px-4 py-2 rounded-lg text-[13px] font-bold transition-all duration-200 peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-yovel-ink text-gray-500 hover:text-yovel-ink">
                                 Takeaway
                             </span>
                         </label>
@@ -110,7 +110,7 @@
                     @if ($orderType === 'dine_in')
                         <div class="relative">
                             <select wire:model="tableId"
-                                class="w-full bg-gray-100/80 border border-gray-200/50 text-gray-700 font-bold text-[13px] rounded-xl hover:bg-gray-200/50 hover:text-gray-900 focus:bg-white focus:border-gray-300 focus:ring-0 block pl-4 pr-9 py-2 transition-all duration-200 min-h-[40px] appearance-none cursor-pointer">
+                                class="w-full bg-gray-100/80 border border-gray-200/50 text-gray-700 font-bold text-[13px] rounded-xl hover:bg-gray-200/50 hover:text-yovel-ink focus:bg-white focus:border-gray-300 focus:ring-0 block pl-4 pr-9 py-2 transition-all duration-200 min-h-[40px] appearance-none cursor-pointer">
                                 <option value="">-- Pilih Meja --</option>
                                 @foreach ($this->activeTables as $table)
                                     @php
@@ -148,8 +148,8 @@
                             x-data="{ activeCategory: 'all' }">
                             <!-- Tombol Semua -->
                             <a href="#top-products" @click="activeCategory = 'all'"
-                                :class="activeCategory === 'all' ? 'bg-gray-900 text-white hover:bg-gray-800' :
-                                    'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900'"
+                                :class="activeCategory === 'all' ? 'bg-yovel-ink text-white hover:bg-yovel-ink' :
+                                    'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-yovel-ink'"
                                 class="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-[13px] font-medium transition-[transform,background-color,color] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 active:scale-95 shadow-sm border border-transparent">
                                 <span class="tracking-tight">Semua</span>
                                 <span
@@ -163,8 +163,8 @@
                                 @if ($category->products->count() > 0)
                                     <a href="#cat-{{ $category->id }}" @click="activeCategory = {{ $category->id }}"
                                         :class="activeCategory === {{ $category->id }} ?
-                                            'bg-gray-900 text-white hover:bg-gray-800' :
-                                            'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-gray-900'"
+                                            'bg-yovel-ink text-white hover:bg-yovel-ink' :
+                                            'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-yovel-ink'"
                                         class="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-[13px] font-medium transition-[transform,background-color,color] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 active:scale-95 shadow-sm border border-transparent">
                                         <span class="tracking-tight">{{ $category->category_name }}</span>
                                         <span
@@ -196,12 +196,12 @@
                                         @endphp
                                         <div wire:click="{{ $product->modifierGroups->count() > 0 ? "openModifierPicker({$product->id})" : "addToCartDirectly({$product->id})" }}"
                                             role="button" tabindex="0"
-                                            class="group bg-white rounded-2xl border border-gray-200 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:border-gray-900 hover:shadow-md hover:-translate-y-1 cursor-pointer active:scale-[0.98] transition-all duration-200 flex flex-col h-full relative outline-none focus-visible:ring-2 focus-visible:ring-gray-900">
+                                            class="group bg-white rounded-2xl border border-gray-200 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:border-yovel-ink hover:shadow-md hover:-translate-y-1 cursor-pointer active:scale-[0.98] transition-all duration-200 flex flex-col h-full relative outline-none focus-visible:ring-2 focus-visible:ring-gray-900">
 
                                             @if ($inCartQty > 0)
                                                 <div class="absolute -top-2 -right-2 z-20 flex">
                                                     <span
-                                                        class="bg-white border-2 border-white text-gray-900 text-[11px] font-bold min-w-[24px] h-6 px-1 rounded-full flex items-center justify-center shadow-md shadow-gray-900/30">
+                                                        class="bg-white border-2 border-white text-yovel-ink text-[11px] font-bold min-w-[24px] h-6 px-1 rounded-full flex items-center justify-center shadow-md shadow-yovel-ink/30">
                                                         {{ $inCartQty }}
                                                     </span>
                                                 </div>
@@ -226,13 +226,13 @@
 
                                             <div class="p-3 lg:p-4 flex flex-col flex-1 relative rounded-b-2xl">
                                                 <h3
-                                                    class="text-[13px] lg:text-[14px] font-bold text-gray-900 mb-3 leading-tight truncate">
+                                                    class="text-[13px] lg:text-[14px] font-bold text-yovel-ink mb-3 leading-tight truncate">
                                                     {{ $product->product_name }}</h3>
 
                                                 <div class="mt-auto flex flex-col gap-3">
                                                     <div class="flex items-end justify-between">
                                                         <span
-                                                            class="block text-[14px] lg:text-[15px] font-black text-gray-900">Rp
+                                                            class="block text-[14px] lg:text-[15px] font-black text-yovel-ink">Rp
                                                             {{ number_format($product->product_price, 0, ',', '.') }}</span>
                                                     </div>
                                                 </div>
@@ -253,9 +253,9 @@
             <div class="p-4 lg:p-5 border-b border-gray-200 flex flex-col shrink-0 bg-white">
                 <div class="flex items-center justify-between mb-4">
                     <div class="flex items-center gap-3">
-                        <h2 class="text-xl font-bold text-gray-900 leading-none">Keranjang</h2>
+                        <h2 class="text-xl font-bold text-yovel-ink leading-none">Keranjang</h2>
                         <span
-                            class="bg-gray-900 text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full transition-all duration-300 transform">{{ count($this->cartLines) }}</span>
+                            class="bg-yovel-ink text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full transition-all duration-300 transform">{{ count($this->cartLines) }}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         @if ($pendingOrderCode)
@@ -323,7 +323,7 @@
                                             wire:click="selectCustomer({{ $c->id }}, '{{ addslashes($c->name) }}')"
                                             x-on:click="showResults = false"
                                             class="w-full flex items-center justify-between gap-2 px-4 py-3 text-left hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0">
-                                            <span class="text-[13px] font-bold text-gray-800">{{ $c->name }}</span>
+                                            <span class="text-[13px] font-bold text-yovel-ink">{{ $c->name }}</span>
                                             <span
                                                 class="text-[11px] font-medium text-gray-400">{{ $c->phone ?? '-' }}</span>
                                         </button>
@@ -348,7 +348,7 @@
                             <div class="h-full flex flex-col justify-center items-center opacity-70">
                                 <span
                                     class="material-symbols-rounded text-[56px] text-gray-300 mb-3 block">local_mall</span>
-                                <p class="text-[14px] font-semibold text-gray-900">Keranjang Kosong</p>
+                                <p class="text-[14px] font-semibold text-yovel-ink">Keranjang Kosong</p>
                             </div>
                         @else
                             @foreach ($this->cartLines as $line)
@@ -365,7 +365,7 @@
                                     <div class="flex-1 flex flex-col justify-between">
                                         <div class="flex justify-between items-start">
                                             <h4
-                                                class="text-[13.5px] font-semibold text-gray-900 line-clamp-2 pr-2 leading-tight">
+                                                class="text-[13.5px] font-semibold text-yovel-ink line-clamp-2 pr-2 leading-tight">
                                                 {{ $line['product_name'] }}</h4>
                                         </div>
                                         @if (count($line['options']) > 0 || $line['notes'])
@@ -380,7 +380,7 @@
                                         <div
                                             class="flex items-end justify-between mt-2 pt-1.5 border-t border-gray-50">
                                             <div>
-                                                <span class="text-[14px] font-black text-gray-900 whitespace-nowrap">Rp
+                                                <span class="text-[14px] font-black text-yovel-ink whitespace-nowrap">Rp
                                                     {{ number_format($line['order_price'], 0, ',', '.') }}</span>
                                             </div>
                                             <div
@@ -402,7 +402,7 @@
                         @if (count($this->activeDiscounts) > 0)
                             <div class="relative">
                                 <select wire:model.live="selectedDiscountId"
-                                    class="w-full h-10 pl-4 pr-9 bg-gray-100/80 border border-gray-200/50 rounded-xl outline-none text-[13px] font-bold text-gray-700 hover:bg-gray-200/50 hover:text-gray-900 focus:bg-white focus:border-gray-300 focus:ring-0 appearance-none transition-all duration-200 cursor-pointer">
+                                    class="w-full h-10 pl-4 pr-9 bg-gray-100/80 border border-gray-200/50 rounded-xl outline-none text-[13px] font-bold text-gray-700 hover:bg-gray-200/50 hover:text-yovel-ink focus:bg-white focus:border-gray-300 focus:ring-0 appearance-none transition-all duration-200 cursor-pointer">
                                     <option value="">+ Tambah Diskon (Opsional)</option>
                                     @foreach ($this->activeDiscounts as $d)
                                         <option value="{{ $d->id }}">{{ $d->name }}
@@ -443,23 +443,23 @@
 
                         <div class="flex justify-between items-baseline px-1 pt-1">
                             <span class="text-sm font-semibold text-gray-700">Total Pembayaran</span>
-                            <span class="text-2xl font-black text-gray-900 tabular-nums tracking-tight">Rp
+                            <span class="text-2xl font-black text-yovel-ink tabular-nums tracking-tight">Rp
                                 {{ number_format($this->totalAmount, 0, ',', '.') }}</span>
                         </div>
 
                         @if ($pendingOrderId)
                             <div class="relative mt-2">
                                 <span
-                                    class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-800 text-sm font-bold">Rp</span>
+                                    class="absolute inset-y-0 left-0 flex items-center pl-4 text-yovel-ink text-sm font-bold">Rp</span>
                                 <input type="number" wire:model.live="cashReceived"
-                                    class="bg-white border border-gray-200 text-gray-900 rounded-xl focus:outline-none focus:ring-1 focus:ring-gray-900 w-full pl-11 pr-4 py-3 font-black text-lg transition-all shadow-sm"
+                                    class="bg-white border border-gray-200 text-yovel-ink rounded-xl focus:outline-none focus:ring-1 focus:ring-gray-900 w-full pl-11 pr-4 py-3 font-black text-lg transition-all shadow-sm"
                                     placeholder="Uang diterima (Tunai)">
                             </div>
                             {{-- Shortcut Tunai Pas (Finding #11) --}}
                             <div class="flex gap-2 mt-1.5">
                                 <button type="button"
                                     x-on:click="$wire.set('cashReceived', {{ (int) $this->totalAmount }})"
-                                    class="flex-1 h-9 text-xs font-bold rounded-lg bg-gray-900 text-white hover:bg-black transition-all active:scale-95 shadow-sm">
+                                    class="flex-1 h-9 text-xs font-bold rounded-lg bg-yovel-ink text-white hover:bg-yovel-ink transition-all active:scale-95 shadow-sm">
                                     Tunai Pas
                                 </button>
                                 <button type="button"
@@ -476,7 +476,7 @@
                             <div class="flex justify-between items-center px-1 mt-1 mb-1">
                                 <span class="text-xs font-semibold text-gray-500">Kembalian</span>
                                 <span
-                                    class="font-bold text-sm {{ $this->changeAmount >= 0 ? 'text-emerald-600' : 'text-gray-900' }}">
+                                    class="font-bold text-sm {{ $this->changeAmount >= 0 ? 'text-emerald-600' : 'text-yovel-ink' }}">
                                     Rp {{ number_format($this->changeAmount, 0, ',', '.') }}
                                 </span>
                             </div>
@@ -490,7 +490,7 @@
 
                             <button wire:click="submitOrder" id="btn-bayar"
                                 wire:loading.attr="disabled" wire:target="submitOrder"
-                                class="w-full h-12 bg-gray-900 hover:bg-black text-white rounded-xl font-black text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                class="w-full h-12 bg-yovel-ink hover:bg-yovel-ink text-white rounded-xl font-black text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 :disabled="count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId)">
                                 <span wire:loading wire:target="submitOrder" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
                                 <span wire:loading.remove wire:target="submitOrder">Bayar Sekarang</span>
@@ -505,7 +505,7 @@
                             @enderror
 
                             <button type="button" id="btn-bayar"
-                                class="w-full h-12 bg-gray-900 hover:bg-black text-white rounded-xl font-black text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                class="w-full h-12 bg-yovel-ink hover:bg-yovel-ink text-white rounded-xl font-black text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }} }); $dispatch('open-modal', 'checkout-payment')"
                                 :disabled="count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId)">
                                 Proses Pembayaran
@@ -519,7 +519,7 @@
 
     {{-- MODAL pemilihan modifier --}}
     @if ($selectingProductId && isset($selectingProduct))
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/50 backdrop-blur-sm"
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-yovel-ink/50 backdrop-blur-sm"
             wire:transition>
             <div
                 class="bg-white rounded-3xl p-0 w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl border border-gray-200 overflow-hidden">
@@ -527,13 +527,13 @@
                 <div
                     class="px-5 py-4 border-b border-gray-100 flex justify-between items-center bg-white z-10 shrink-0">
                     <div>
-                        <h3 class="font-black text-lg text-gray-900 tracking-tight">
+                        <h3 class="font-black text-lg text-yovel-ink tracking-tight">
                             {{ $selectingProduct->product_name }}</h3>
                         <p class="text-sm font-semibold text-gray-500 mt-0.5">Rp
                             {{ number_format($selectingProduct->product_price, 0, ',', '.') }}</p>
                     </div>
                     <button wire:click="closeModifierPicker"
-                        class="p-2 bg-gray-50 rounded-xl text-gray-400 hover:text-gray-900 hover:bg-gray-100 transition-all duration-200 active:scale-90 min-w-[44px] min-h-[44px]">
+                        class="p-2 bg-gray-50 rounded-xl text-gray-400 hover:text-yovel-ink hover:bg-gray-100 transition-all duration-200 active:scale-90 min-w-[44px] min-h-[44px]">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M6 18L18 6M6 6l12 12"></path>
@@ -546,7 +546,7 @@
                     @foreach ($selectingProduct->modifierGroups as $group)
                         <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
                             <div class="flex justify-between items-center mb-4 pb-3 border-b border-gray-100">
-                                <h4 class="font-bold text-sm text-gray-900">{{ $group->name }}</h4>
+                                <h4 class="font-bold text-sm text-yovel-ink">{{ $group->name }}</h4>
                                 <span
                                     class="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-bold border border-gray-200">
                                     {{ $group->is_required ? ($group->selection_type === 'single' ? 'Wajib pilih 1' : 'Wajib pilih') : 'Opsional' }}
@@ -559,7 +559,7 @@
                                         $isSelected = in_array($mod->id, $pendingModifierIds);
                                     @endphp
                                     <label
-                                        class="modifier-box flex-col min-h-[64px] border rounded-xl p-3 flex justify-center items-center cursor-pointer transition-all duration-200 {{ $isSelected ? 'border-gray-900 bg-gray-900 ring-1 ring-gray-900 shadow-md shadow-gray-900/20' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 shadow-sm' }}">
+                                        class="modifier-box flex-col min-h-[64px] border rounded-xl p-3 flex justify-center items-center cursor-pointer transition-all duration-200 {{ $isSelected ? 'border-yovel-ink bg-yovel-ink ring-1 ring-gray-900 shadow-md shadow-yovel-ink/20' : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50 shadow-sm' }}">
                                         @if ($group->selection_type === 'single')
                                             <input type="radio"
                                                 wire:click="toggleModifier({{ $group->id }}, {{ $mod->id }}, 'single')"
@@ -587,10 +587,10 @@
 
                     <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
                         <label
-                            class="block font-bold text-[13px] text-gray-900 mb-3 border-b border-gray-100 pb-2">Catatan
+                            class="block font-bold text-[13px] text-yovel-ink mb-3 border-b border-gray-100 pb-2">Catatan
                             Tambahan</label>
                         <textarea wire:model="pendingNotes"
-                            class="w-full bg-gray-50 border border-gray-200 rounded-xl text-[13px] font-medium focus:border-gray-900 focus:ring-1 focus:ring-gray-900 focus:bg-white transition-all duration-200 px-4 py-3 resize-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]"
+                            class="w-full bg-gray-50 border border-gray-200 rounded-xl text-[13px] font-medium focus:border-yovel-ink focus:ring-1 focus:ring-gray-900 focus:bg-white transition-all duration-200 px-4 py-3 resize-none shadow-[inset_0_1px_2px_rgba(0,0,0,0.03)]"
                             rows="2" placeholder="Contoh: Kurangi es, jangan pakai sedotan"></textarea>
                     </div>
                 </div>
@@ -599,13 +599,13 @@
                 <div class="p-5 border-t border-gray-200 bg-white flex items-center justify-between gap-4 shrink-0">
                     <div class="flex items-center gap-2 bg-gray-50 rounded-xl p-1.5 border border-gray-200 shadow-sm">
                         <button type="button" wire:click="$set('pendingQty', {{ max(1, $pendingQty - 1) }})"
-                            class="w-10 h-10 bg-white rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1)] text-gray-900 font-black hover:bg-gray-100 active:scale-95 transition-all duration-200">−</button>
-                        <span class="w-8 text-center font-black text-gray-900">{{ $pendingQty }}</span>
+                            class="w-10 h-10 bg-white rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1)] text-yovel-ink font-black hover:bg-gray-100 active:scale-95 transition-all duration-200">−</button>
+                        <span class="w-8 text-center font-black text-yovel-ink">{{ $pendingQty }}</span>
                         <button type="button" wire:click="$set('pendingQty', {{ $pendingQty + 1 }})"
-                            class="w-10 h-10 bg-white rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1)] text-gray-900 font-black hover:bg-gray-100 active:scale-95 transition-all duration-200">+</button>
+                            class="w-10 h-10 bg-white rounded-lg shadow-[0_1px_3px_rgba(0,0,0,0.1)] text-yovel-ink font-black hover:bg-gray-100 active:scale-95 transition-all duration-200">+</button>
                     </div>
                     <button wire:click="confirmAddToCart"
-                        class="flex-1 min-h-[52px] bg-gray-900 hover:bg-black text-white rounded-xl font-black shadow-lg shadow-gray-900/20 transition-all duration-200 active:scale-[0.98]">
+                        class="flex-1 min-h-[52px] bg-yovel-ink hover:bg-yovel-ink text-white rounded-xl font-black shadow-lg shadow-yovel-ink/20 transition-all duration-200 active:scale-[0.98]">
                         Tambahkan
                     </button>
                 </div>
@@ -618,11 +618,11 @@
         <div x-data="checkoutPayment()" x-init="init()" class="flex flex-col max-h-[90vh]">
             <div
                 class="px-6 py-5 border-b border-gray-100 flex items-center justify-between shrink-0 bg-white rounded-t-3xl relative z-10 shadow-sm">
-                <h3 class="font-black text-xl text-gray-900 tracking-tight flex items-center gap-2">
+                <h3 class="font-black text-xl text-yovel-ink tracking-tight flex items-center gap-2">
                     <span class="material-symbols-rounded text-[24px]">payments</span> Pembayaran
                 </h3>
                 <button type="button" x-on:click="$dispatch('close')" aria-label="Tutup"
-                    class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-gray-900 transition-all duration-200 active:scale-90">
+                    class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-gray-400 hover:bg-gray-100 hover:text-yovel-ink transition-all duration-200 active:scale-90">
                     <span class="material-symbols-rounded text-[24px]">close</span>
                 </button>
             </div>
@@ -635,7 +635,7 @@
 
                     <div class="flex justify-between text-sm">
                         <span class="text-gray-500 font-semibold">Total Tagihan</span>
-                        <span class="font-bold text-gray-900 tabular-nums"
+                        <span class="font-bold text-yovel-ink tabular-nums"
                             x-text="'Rp ' + formatRupiah(total)"></span>
                     </div>
                     <div class="flex justify-between text-sm">
@@ -644,7 +644,7 @@
                             x-text="'Rp ' + formatRupiah(paidTotal)"></span>
                     </div>
                     <div class="flex justify-between items-baseline pt-3 border-t border-gray-100 mt-1">
-                        <span class="font-bold text-gray-900">Sisa Tagihan</span>
+                        <span class="font-bold text-yovel-ink">Sisa Tagihan</span>
                         <span class="text-3xl font-black tabular-nums tracking-tighter"
                             :class="remaining > 0 ? 'text-rose-600' : 'text-emerald-600'"
                             x-text="'Rp ' + formatRupiah(remaining)"></span>
@@ -669,7 +669,7 @@
                                             class="material-symbols-rounded text-[20px]">credit_card</span></template>
                                 </div>
                                 <div>
-                                    <span class="block text-[14px] font-bold text-gray-900 mb-0.5"
+                                    <span class="block text-[14px] font-bold text-yovel-ink mb-0.5"
                                         x-text="leg.label"></span>
                                     <span class="block text-[12px] font-medium text-gray-500 tabular-nums"
                                         x-text="'Rp ' + formatRupiah(leg.amount) + (leg.changeShown > 0 ? ' · Kembali Rp ' + formatRupiah(leg.changeShown) : '')"></span>
@@ -692,21 +692,21 @@
                         <div class="grid grid-cols-4 gap-2.5">
                             <button type="button" x-on:click="method = 'cash'"
                                 :class="method === 'cash' ?
-                                    'bg-gray-900 text-white border-gray-900 shadow-md shadow-gray-900/20' :
+                                    'bg-yovel-ink text-white border-yovel-ink shadow-md shadow-yovel-ink/20' :
                                     'bg-white text-gray-500 border-gray-200 hover:bg-gray-50 shadow-sm'"
                                 class="min-h-[64px] rounded-xl border-[1.5px] flex flex-col items-center justify-center gap-1.5 text-[11px] font-bold transition-all duration-200 active:scale-95">
                                 <span class="material-symbols-rounded text-[24px]">payments</span> Tunai
                             </button>
                             <button type="button" x-on:click="method = 'qris'"
                                 :class="method === 'qris' ?
-                                    'bg-gray-900 text-white border-gray-900 shadow-md shadow-gray-900/20' :
+                                    'bg-yovel-ink text-white border-yovel-ink shadow-md shadow-yovel-ink/20' :
                                     'bg-white text-gray-500 border-gray-200 hover:bg-gray-50 shadow-sm'"
                                 class="min-h-[64px] rounded-xl border-[1.5px] flex flex-col items-center justify-center gap-1.5 text-[11px] font-bold transition-all duration-200 active:scale-95">
                                 <span class="material-symbols-rounded text-[24px]">qr_code_2</span> QRIS
                             </button>
                             <button type="button" x-on:click="method = 'ewallet'"
                                 :class="method === 'ewallet' ?
-                                    'bg-gray-900 text-white border-gray-900 shadow-md shadow-gray-900/20' :
+                                    'bg-yovel-ink text-white border-yovel-ink shadow-md shadow-yovel-ink/20' :
                                     'bg-white text-gray-500 border-gray-200 hover:bg-gray-50 shadow-sm'"
                                 class="min-h-[64px] rounded-xl border-[1.5px] flex flex-col items-center justify-center gap-1.5 text-[11px] font-bold transition-all duration-200 active:scale-95">
                                 <span class="material-symbols-rounded text-[24px]">account_balance_wallet</span>
@@ -714,7 +714,7 @@
                             </button>
                             <button type="button" x-on:click="method = 'card'"
                                 :class="method === 'card' ?
-                                    'bg-gray-900 text-white border-gray-900 shadow-md shadow-gray-900/20' :
+                                    'bg-yovel-ink text-white border-yovel-ink shadow-md shadow-yovel-ink/20' :
                                     'bg-white text-gray-500 border-gray-200 hover:bg-gray-50 shadow-sm'"
                                 class="min-h-[64px] rounded-xl border-[1.5px] flex flex-col items-center justify-center gap-1.5 text-[11px] font-bold transition-all duration-200 active:scale-95">
                                 <span class="material-symbols-rounded text-[24px]">credit_card</span> Kartu
@@ -730,7 +730,7 @@
                                 class="absolute inset-y-0 left-0 flex items-center pl-5 font-bold text-gray-400 text-xl">Rp</span>
                             <input type="text" inputmode="numeric" :value="amountFormatted"
                                 x-on:input="setAmountInput($event)"
-                                class="w-full min-h-[64px] pl-14 pr-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-1 focus:ring-gray-900 focus:border-gray-900 focus:bg-white outline-none text-2xl font-black text-gray-900 transition-all duration-200 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]"
+                                class="w-full min-h-[64px] pl-14 pr-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-1 focus:ring-gray-900 focus:border-yovel-ink focus:bg-white outline-none text-2xl font-black text-yovel-ink transition-all duration-200 shadow-[inset_0_1px_2px_rgba(0,0,0,0.05)]"
                                 placeholder="0">
                         </div>
                         <p x-show="method === 'cash' && changePreview > 0" x-cloak
@@ -741,7 +741,7 @@
 
                     <div class="flex gap-2.5">
                         <button type="button" x-on:click="fillRemaining()"
-                            class="flex-1 min-h-[48px] text-[13px] font-black rounded-xl bg-gray-900 text-white hover:bg-black shadow-md shadow-gray-900/20 transition-all duration-200 active:scale-95">PAS</button>
+                            class="flex-1 min-h-[48px] text-[13px] font-black rounded-xl bg-yovel-ink text-white hover:bg-yovel-ink shadow-md shadow-yovel-ink/20 transition-all duration-200 active:scale-95">PAS</button>
                         <template x-if="method === 'cash'">
                             <button type="button" x-on:click="addQuick(50000)"
                                 class="flex-1 min-h-[48px] text-[13px] font-bold rounded-xl bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm transition-all duration-200 active:scale-95">+50K</button>
@@ -757,7 +757,7 @@
                         x-text="errorMsg"></p>
 
                     <button type="button" x-on:click="addLeg()"
-                        class="w-full min-h-[56px] rounded-xl bg-gray-50 text-gray-900 font-bold text-[14px] border border-gray-200 hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm">
+                        class="w-full min-h-[56px] rounded-xl bg-gray-50 text-yovel-ink font-bold text-[14px] border border-gray-200 hover:bg-gray-100 hover:border-gray-300 transition-all duration-200 active:scale-[0.98] flex items-center justify-center gap-2 shadow-sm">
                         <span class="material-symbols-rounded text-[20px]">add_circle</span> Tambah Metode Pembayaran
                     </button>
                 </div>
@@ -774,7 +774,7 @@
             <div class="p-6 border-t border-gray-200 bg-white shrink-0 rounded-b-3xl">
                 <button type="button" x-on:click="submit()"
                     :disabled="remaining > 0 || legs.length === 0 || submitting"
-                    class="w-full min-h-[64px] rounded-2xl bg-gray-900 hover:bg-black text-white font-black text-lg shadow-xl shadow-gray-900/20 transition-all duration-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    class="w-full min-h-[64px] rounded-2xl bg-yovel-ink hover:bg-yovel-ink text-white font-black text-lg shadow-xl shadow-yovel-ink/20 transition-all duration-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                     <span x-show="submitting"
                         class="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"
                         aria-hidden="true"></span>
