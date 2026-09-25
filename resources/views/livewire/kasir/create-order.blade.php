@@ -15,13 +15,13 @@
      @keydown.window.f2.prevent="focusSearch()"
      @keydown.window.f4.prevent="triggerPay()"
      class="p-4 sm:p-6 lg:p-6 h-full">
-    <div class="flex flex-col md:flex-row gap-0 h-[calc(100vh-110px)] min-h-[600px] overflow-hidden rounded-2xl bg-white border border-yovel-border shadow-sm">
+    <div class="flex flex-col md:flex-row gap-6 h-[calc(100vh-110px)] min-h-[600px]">
         
         {{-- KOLOM KIRI: pilih order type + produk --}}
-        <div class="flex-1 flex flex-col h-full bg-[#f8f9fa] overflow-hidden">
-            <!-- Tipe Pesanan & Meja (Sticky Header) -->
-            <div class="p-5 border-b border-yovel-border bg-white flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 z-10">
-                <div class="flex gap-1 p-1 bg-yovel-bg rounded-xl border border-yovel-border">
+        <div class="flex-1 flex flex-col h-full overflow-hidden">
+            <!-- Tipe Pesanan & Meja -->
+            <div class="mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 shrink-0 z-10">
+                <div class="flex gap-1 p-1 bg-white shadow-sm rounded-xl border border-yovel-border">
                     <label class="flex items-center cursor-pointer">
                         <input type="radio" wire:model.live="orderType" value="dine_in" class="peer sr-only">
                         <span class="px-5 py-2 rounded-lg text-[13px] font-bold transition-all duration-200 peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-yovel-ink text-yovel-muted hover:text-yovel-ink active:scale-95">
@@ -50,7 +50,7 @@
             </div>
 
             <!-- List Kategori & Produk (scrollable independently) -->
-            <div class="flex-1 overflow-y-auto p-5 custom-scrollbar space-y-8">
+            <div class="flex-1 overflow-y-auto custom-scrollbar space-y-8 pr-2 pb-6">
                 @foreach ($this->categories as $category)
                     @if($category->products->count() > 0)
                         <div>
@@ -162,7 +162,7 @@
         </div>
 
         {{-- KOLOM KANAN: keranjang + pembayaran --}}
-        <div class="w-full md:w-[350px] lg:w-[380px] xl:w-[420px] h-full bg-white flex flex-col shadow-xl z-10 relative border-t md:border-t-0 md:border-l border-yovel-border shrink-0">
+        <div class="w-full md:w-[350px] lg:w-[380px] xl:w-[420px] h-full bg-white flex flex-col shadow-sm rounded-2xl border border-yovel-border shrink-0 overflow-hidden">
             <div class="p-5 border-b border-yovel-border shrink-0 space-y-4">
                 <div class="flex items-center justify-between">
                     <h3 class="font-bold text-[17px] text-yovel-ink flex items-center gap-2">
