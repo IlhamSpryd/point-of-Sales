@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class StockMovement extends Model
 {
     protected $fillable = [
+        'tenant_id',
+        'store_id',
         'product_id',
         'order_id',
         'order_item_id',

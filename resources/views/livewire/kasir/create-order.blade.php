@@ -142,19 +142,19 @@
 
                 <!-- Navigasi Bar Lengket (Sticky) untuk Cari & Filter -->
                 <div class="px-4 pb-4 lg:px-6 lg:pb-5 shrink-0">
-                    <!-- Filter Categories (Seamless Google Chip Style) -->
+                    <!-- Filter Categories (Seamless Google Chip Style -> Minimalist Notion Style) -->
                     <div class="w-full overflow-hidden">
-                        <div class="flex gap-2 overflow-x-auto pb-2 pt-1 px-1 scrollbar-hide items-center relative"
+                        <div class="flex gap-2.5 overflow-x-auto pb-2 pt-1 px-1 scrollbar-hide items-center relative snap-x snap-mandatory"
                             x-data="{ activeCategory: 'all' }">
                             <!-- Tombol Semua -->
                             <a href="#top-products" @click="activeCategory = 'all'"
-                                :class="activeCategory === 'all' ? 'bg-yovel-ink text-white hover:bg-yovel-ink' :
-                                    'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-yovel-ink'"
-                                class="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-[13px] font-medium transition-[transform,background-color,color] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 active:scale-95 shadow-sm border border-transparent">
+                                :class="activeCategory === 'all' ? 'bg-yovel-ink text-white shadow-md' :
+                                    'bg-white text-gray-500 hover:bg-gray-50 hover:text-yovel-ink border border-gray-200'"
+                                class="snap-start shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-[13px] font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yovel-ink active:scale-95">
                                 <span class="tracking-tight">Semua</span>
                                 <span
-                                    :class="activeCategory === 'all' ? 'bg-white/20 text-white' : 'bg-white text-gray-500'"
-                                    class="px-1.5 py-0.5 rounded-full text-[10px] font-bold shadow-sm transition-colors">
+                                    :class="activeCategory === 'all' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'"
+                                    class="px-1.5 py-0.5 rounded-md text-[10px] font-black transition-colors">
                                     {{ $this->categories->sum(fn($cat) => $cat->products->count()) }}
                                 </span>
                             </a>
@@ -163,14 +163,14 @@
                                 @if ($category->products->count() > 0)
                                     <a href="#cat-{{ $category->id }}" @click="activeCategory = {{ $category->id }}"
                                         :class="activeCategory === {{ $category->id }} ?
-                                            'bg-yovel-ink text-white hover:bg-yovel-ink' :
-                                            'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:text-yovel-ink'"
-                                        class="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full text-[13px] font-medium transition-[transform,background-color,color] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 active:scale-95 shadow-sm border border-transparent">
+                                            'bg-yovel-ink text-white shadow-md' :
+                                            'bg-white text-gray-500 hover:bg-gray-50 hover:text-yovel-ink border border-gray-200'"
+                                        class="snap-start shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-[13px] font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yovel-ink active:scale-95">
                                         <span class="tracking-tight">{{ $category->category_name }}</span>
                                         <span
                                             :class="activeCategory === {{ $category->id }} ? 'bg-white/20 text-white' :
-                                                'bg-white text-gray-500'"
-                                            class="px-1.5 py-0.5 rounded-full text-[10px] font-bold shadow-sm transition-colors">
+                                                'bg-gray-100 text-gray-500'"
+                                            class="px-1.5 py-0.5 rounded-md text-[10px] font-black transition-colors">
                                             {{ $category->products->count() }}
                                         </span>
                                     </a>
@@ -517,7 +517,7 @@
         </section>
     </div>
 
-    {{-- MODAL pemilihan modifier --}}
+    {{-- MODAL pemilihan modifier (Minimalist Notion Style) --}}
     @if ($selectingProductId && isset($selectingProduct))
         <div x-data="{
                 localMods: @entangle('pendingModifierIds'),
@@ -535,54 +535,53 @@
                     }
                 }
             }"
-            class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-yovel-ink/20 backdrop-blur-sm"
+            class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-gray-900/40"
             wire:transition>
             <div
-                class="bg-white sm:rounded-3xl rounded-t-3xl p-0 w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
+                class="bg-white sm:rounded-2xl rounded-t-3xl p-0 w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
                 <!-- Header Modal -->
-                <div class="px-6 py-5 flex justify-between items-start bg-white z-10 shrink-0">
+                <div class="px-6 py-5 flex justify-between items-start bg-white z-10 shrink-0 border-b border-gray-100">
                     <div>
-                        <h3 class="font-black text-[22px] leading-tight text-yovel-ink tracking-tight">
+                        <h3 class="font-black text-xl leading-tight text-yovel-ink tracking-tight">
                             {{ $selectingProduct->product_name }}</h3>
-                        <p class="text-[15px] font-semibold text-gray-500 mt-1">Rp
+                        <p class="text-[14px] font-semibold text-gray-500 mt-1">Rp
                             {{ number_format($selectingProduct->product_price, 0, ',', '.') }}</p>
                     </div>
                     <button wire:click="closeModifierPicker"
-                        class="p-2 rounded-full text-gray-400 hover:text-yovel-ink hover:bg-gray-100 transition-all duration-200 active:scale-95 -mr-2 -mt-1">
-                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="p-2 rounded-xl text-gray-400 hover:text-yovel-ink hover:bg-gray-100 transition-colors duration-200 -mr-2 -mt-1">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
                 </div>
 
                 <!-- Body Modal (Modifiers) -->
-                <div class="px-6 overflow-y-auto flex-1 bg-white space-y-6 pb-6 custom-scrollbar">
+                <div class="px-6 overflow-y-auto flex-1 bg-white space-y-6 py-6 custom-scrollbar">
                     @foreach ($selectingProduct->modifierGroups as $group)
                         <div class="py-1">
                             <div class="flex justify-between items-baseline mb-3">
-                                <h4 class="font-bold text-[15px] text-yovel-ink">{{ $group->name }}</h4>
-                                <span class="text-[12px] text-gray-400 font-semibold">
-                                    {{ $group->is_required ? ($group->selection_type === 'single' ? 'Wajib pilih 1' : 'Wajib pilih') : 'Opsional' }}
+                                <h4 class="font-bold text-[14px] text-yovel-ink">{{ $group->name }}</h4>
+                                <span class="text-[11px] text-gray-400 font-bold uppercase tracking-wider">
+                                    {{ $group->is_required ? ($group->selection_type === 'single' ? 'Pilih 1' : 'Wajib') : 'Opsional' }}
                                 </span>
                             </div>
 
-                            <div class="grid grid-cols-2 gap-2.5">
+                            <div class="grid grid-cols-2 gap-2">
                                 @php
                                     $allModIds = $group->modifiers->pluck('id')->toJson();
                                 @endphp
                                 @foreach ($group->modifiers as $mod)
-                                    <label :class="localMods.includes({{ $mod->id }}) ? 'bg-yovel-ink border-yovel-ink shadow-md shadow-yovel-ink/10' : 'bg-gray-50/80 border-transparent hover:bg-gray-100'"
-                                           class="flex-col min-h-[56px] rounded-2xl p-3 flex justify-center items-center cursor-pointer transition-all duration-200 border">
+                                    <label :class="localMods.includes({{ $mod->id }}) ? 'bg-yovel-ink border-yovel-ink text-white shadow-sm' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'"
+                                           class="flex-col min-h-[50px] rounded-xl p-3 flex justify-center items-center cursor-pointer transition-colors duration-150 border">
                                         <input type="button"
                                             x-on:click="toggleMod({{ $mod->id }}, '{{ $group->selection_type }}', {{ $allModIds }})"
                                             class="sr-only">
-                                        <span :class="localMods.includes({{ $mod->id }}) ? 'text-white' : 'text-gray-700'"
-                                              class="font-bold text-[14px] leading-tight text-center">
+                                        <span class="font-bold text-[13px] leading-tight text-center">
                                             {{ $mod->name }}
                                         </span>
                                         @if ($mod->extra_price > 0)
-                                            <span :class="localMods.includes({{ $mod->id }}) ? 'text-gray-400' : 'text-gray-400'"
-                                                  class="text-[12px] font-bold mt-0.5">+Rp {{ number_format($mod->extra_price, 0, ',', '.') }}</span>
+                                            <span :class="localMods.includes({{ $mod->id }}) ? 'text-gray-300' : 'text-gray-400'"
+                                                  class="text-[11px] font-bold mt-0.5">+Rp {{ number_format($mod->extra_price, 0, ',', '.') }}</span>
                                         @endif
                                     </label>
                                 @endforeach
@@ -591,9 +590,9 @@
                     @endforeach
 
                     <div class="pt-2">
-                        <label class="block font-bold text-[15px] text-yovel-ink mb-3">Catatan Tambahan</label>
+                        <label class="block font-bold text-[14px] text-yovel-ink mb-2">Catatan Tambahan</label>
                         <textarea wire:model="pendingNotes"
-                            class="w-full bg-gray-50/80 border-transparent rounded-2xl text-[14px] font-medium focus:border-gray-200 focus:bg-white focus:ring-4 focus:ring-gray-100 transition-all duration-200 px-4 py-3.5 resize-none placeholder:text-gray-400"
+                            class="w-full bg-gray-50 border-gray-200 rounded-xl text-[13px] font-medium focus:border-yovel-ink focus:bg-white focus:ring-1 focus:ring-yovel-ink transition-colors duration-200 px-4 py-3 resize-none placeholder:text-gray-400"
                             rows="2" placeholder="Contoh: Kurangi es, jangan pakai sedotan..."></textarea>
                     </div>
                 </div>

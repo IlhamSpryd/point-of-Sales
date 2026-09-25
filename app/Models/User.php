@@ -16,8 +16,8 @@ class User extends Authenticatable
         'name',
         'email',
         'phone_number',
-        'password',
-        'pin_code',
+        'password_hash',
+        'pin_hash',
         'join_date',
         'role_id',
         'is_active',
@@ -25,8 +25,8 @@ class User extends Authenticatable
     ];
 
     protected $hidden = [
-        'password',
-        'pin_code',
+        'password_hash',
+        'pin_hash',
         'remember_token',
     ];
 
@@ -34,12 +34,17 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'pin_code' => 'hashed', // Amankan PIN seperti password
+            'password_hash' => 'hashed',
+            'pin_hash' => 'hashed', // Amankan PIN seperti password
             'join_date' => 'date',
             'last_login_at' => 'datetime',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function getAuthPassword()
+    {
+        return $this->password_hash;
     }
 
     // Otomatis buat Employee ID saat user baru ditambahkan

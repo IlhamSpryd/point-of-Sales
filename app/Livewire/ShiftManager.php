@@ -59,6 +59,8 @@ class ShiftManager extends Component
                 'opening_balance' => (int) $this->opening_balance,
                 'status' => 'open',
                 'opened_at' => now(),
+                'tenant_id' => auth()->user()->tenant_id ?? 1,
+                'store_id' => 1, // To be injected dynamically later
             ]);
         } catch (QueryException $e) {
             if (! str_contains($e->getMessage(), 'shifts_one_open_per_user_unique')) {

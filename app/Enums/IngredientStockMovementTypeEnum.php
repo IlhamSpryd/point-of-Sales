@@ -11,4 +11,5 @@ enum IngredientStockMovementTypeEnum: string
     case Waste = 'waste';
     case Adjustment = 'adjustment';
     case RestoreCompensation = 'restore_compensation';
+    case InitialSync = 'initial_sync';
 }

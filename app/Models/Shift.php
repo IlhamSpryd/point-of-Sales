@@ -17,6 +17,7 @@ class Shift extends Model
     protected $fillable = [
         'user_id', 'opening_balance', 'closing_balance', 'expected_cash',
         'cash_difference', 'status', 'opened_at', 'closed_at', 'notes',
+        'tenant_id', 'store_id',
     ];
 
     protected function casts(): array

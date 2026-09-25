@@ -225,6 +225,7 @@ class TransactionService
                     'product_id' => $product->id,
                     'options' => $verifiedOptions,
                     'notes' => $item['notes'] ?? null,
+                    'needs_stock_deduction' => !$hasBom,
                 ];
                 $bomBreakdownByLineIndex[$lineIndex] = [];
 
@@ -241,8 +242,6 @@ class TransactionService
                             'qty' => $qtyNeeded,
                         ];
                     }
-                } else {
-                    $product->decrement('stock', $item['quantity']);
                 }
 
                 if (! empty($item['options'])) {
@@ -316,7 +315,21 @@ class TransactionService
                 // integer tervalidasi x quantity_required master data),
                 // TIDAK PERNAH berasal dari string input mentah pengguna.
                 foreach ($ingredientIds as $ingredientId) {
-                    $lockedIngredients->get($ingredientId)->decrement('current_stock', $ingredientRequirements[$ingredientId]);
+                    // Phase 4: Use ledger instead of direct decrement
+                    $needed = $ingredientRequirements[$ingredientId];
+                    DB::table('ingredient_stock_movements')->insert([
+                        'tenant_id' => $shift->tenant_id ?? 1,
+                        'store_id' => $shift->store_id ?? 1,
+                        'ingredient_id' => $ingredientId,
+                        'order_id' => $order->id,
+                        'order_item_id' => $orderItemId,
+                        'type' => 'sale_deduction',
+                        'quantity' => -$needed,
+                        'unit_cost' => null, // Leave null or fetch from ingredient
+                        'reason' => 'Checkout via POS',
+                        'idempotency_key' => "sale_bom:{$order->id}:{$orderItemId}:{$ingredientId}",
+                        'created_at' => now(),
+                    ]);
                 }
             }
 
@@ -437,8 +450,28 @@ class TransactionService
             // Buat order items (UNCHANGED bentuknya).
             $createdItems = [];
             foreach ($lines as $line) {
-                $orderItem = OrderItem::create(array_merge($line, ['order_id' => $order->id]));
+                $orderItem = OrderItem::create(array_merge(\Illuminate\Support\Arr::except($line, ['needs_stock_deduction']), [
+                    'order_id' => $order->id,
+                    'tenant_id' => $shift->tenant_id ?? 1,
+                    'store_id' => $shift->store_id ?? 1,
+                ]));
                 $createdItems[] = $orderItem;
+                
+                if ($line['needs_stock_deduction'] ?? false) {
+                    DB::table('stock_movements')->insert([
+                        'tenant_id' => $shift->tenant_id ?? 1,
+                        'store_id' => $shift->store_id ?? 1,
+                        'product_id' => $line['product_id'],
+                        'order_id' => $order->id,
+                        'order_item_id' => $orderItem->id,
+                        'type' => 'sale_deduction',
+                        'quantity' => -$line['qty'],
+                        'reason' => 'Checkout via POS',
+                        'idempotency_key' => "sale:{$order->id}:{$orderItem->id}",
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
 
                 if (! empty($line['options'])) {
                     $modifierSync = [];
@@ -447,6 +480,8 @@ class TransactionService
                             $modifierSync[$opt['modifier_id']] = [
                                 'price_at_time' => $opt['extra_price'] ?? 0,
                                 'qty' => $line['qty'],
+                                'tenant_id' => $shift->tenant_id ?? 1,
+                                'store_id' => $shift->store_id ?? 1,
                             ];
                         }
                     }
@@ -488,6 +523,8 @@ class TransactionService
             if (! empty($finalPaymentLegs)) {
                 foreach ($finalPaymentLegs as $i => $leg) {
                     Payment::create([
+                        'tenant_id' => $order->tenant_id ?? 1,
+                        'store_id' => $order->store_id ?? 1,
                         'order_id' => $order->id,
                         'payment_method' => $leg['method'],
                         'amount' => $leg['amount'],
@@ -509,6 +546,8 @@ class TransactionService
                 // updateStatusFromMidtransNotification() saat transisi ke
                 // Paid, agar `payments` lengkap untuk SEMUA metode.
                 Payment::create([
+                    'tenant_id' => $order->tenant_id ?? 1,
+                    'store_id' => $order->store_id ?? 1,
                     'order_id' => $order->id,
                     'payment_method' => PaymentMethodEnum::from($dominantPaymentMethod),
                     'amount' => $totalAmount,
@@ -707,6 +746,8 @@ class TransactionService
             'balance_after' => $currentPoints + $pointsEarned,
             'reference' => 'Perolehan poin otomatis dari order '.$order->order_code.'.',
             'created_by' => null,
+            'tenant_id' => $order->tenant_id,
+            'store_id' => $order->store_id,
         ]);
     }
 
@@ -802,7 +843,24 @@ class TransactionService
                 'user_id' => null,
             ]);
 
-            $order->orderItems()->createMany($orderItemsData);
+            $orderItems = $order->orderItems()->createMany($orderItemsData);
+            
+            // Phase 4: Use ledger instead of direct decrement for WalkIn/SelfOrder
+            foreach ($orderItems as $item) {
+                DB::table('stock_movements')->insert([
+                    'tenant_id' => $order->orderItems->first()->product->tenant_id ?? 1, // Fallback if no shift
+                    'store_id' => $order->orderItems->first()->product->store_id ?? 1,
+                    'product_id' => $item->product_id,
+                    'order_id' => $order->id,
+                    'order_item_id' => $item->id,
+                    'type' => 'sale_deduction',
+                    'quantity' => -$item->qty,
+                    'reason' => 'Self order checkout',
+                    'idempotency_key' => "sale:{$order->id}:{$item->id}",
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
             return $order;
         });
@@ -923,7 +981,24 @@ class TransactionService
                 'order_change' => max(0, $cashReceived - $totalAmount),
             ]);
 
-            $order->orderItems()->createMany($orderItemsData);
+            $orderItems = $order->orderItems()->createMany($orderItemsData);
+            
+            // Phase 4: Use ledger instead of direct decrement for WalkIn/SelfOrder
+            foreach ($orderItems as $item) {
+                DB::table('stock_movements')->insert([
+                    'tenant_id' => $shift->tenant_id ?? 1,
+                    'store_id' => $shift->store_id ?? 1,
+                    'product_id' => $item->product_id,
+                    'order_id' => $order->id,
+                    'order_item_id' => $item->id,
+                    'type' => 'sale_deduction',
+                    'quantity' => -$item->qty,
+                    'reason' => 'Walk-in order checkout',
+                    'idempotency_key' => "sale:{$order->id}:{$item->id}",
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
             return $order->load('orderItems.product');
         });
@@ -949,14 +1024,19 @@ class TransactionService
                     'items' => "Stok {$product->product_name} tidak cukup.",
                 ]);
             }
-            $product->decrement('stock', $itemInput['qty']);
 
             $line = $this->resolveOrderItemLine($product, $itemInput['modifier_ids'] ?? [], $itemInput['qty'], $itemInput['notes'] ?? null);
 
             unset($line['product_name']);
 
             $subtotal += $line['order_subtotal'];
-            $orderItemsData[] = [...$line, 'created_at' => now(), 'updated_at' => now()];
+            $orderItemsData[] = [
+                ...$line, 
+                'created_at' => now(), 
+                'updated_at' => now(),
+                'tenant_id' => $shift->tenant_id ?? 1,
+                'store_id' => $shift->store_id ?? 1,
+            ];
         }
 
         return [$orderItemsData, $subtotal];
@@ -1011,6 +1091,8 @@ class TransactionService
 
             foreach ($parsedPaymentLegs as $i => $leg) {
                 Payment::create([
+                    'tenant_id' => $order->tenant_id ?? 1,
+                    'store_id' => $order->store_id ?? 1,
                     'order_id' => $order->id,
                     'payment_method' => $leg['method'],
                     'amount' => $leg['amount'],
@@ -1225,6 +1307,8 @@ class TransactionService
             'balance_after' => $newBalance,
             'reference' => "Pembalikan poin: order {$order->order_code} di-void.",
             'created_by' => $userId,
+            'tenant_id' => $order->tenant_id,
+            'store_id' => $order->store_id,
         ]);
     }
 
@@ -1285,7 +1369,7 @@ class TransactionService
             );
 
             if ($movement->wasRecentlyCreated) {
-                $product->increment('stock', $item->qty);
+                // Phase 4: Stop direct writes to stock column
             }
         }
 
@@ -1328,9 +1412,7 @@ class TransactionService
                 );
 
                 if ($movement->wasRecentlyCreated) {
-                    // Karena quantity di IngredientStockMovement berupa decimal/string,
-                    // increment dengan string bcmul/abs. Model->increment support decimal.
-                    $ingredient->increment('current_stock', abs((float) $deduction->quantity));
+                    // Phase 4: Stop direct writes to current_stock
                 }
             }
         }

@@ -28,16 +28,16 @@ class UserSeeder extends Seeder
 
         // Existing users (id 1–4) — update with employee_id, pin, etc. but don't duplicate
         $existingUpdates = [
-            ['email' => 'admin@pos.test', 'employee_id' => 'KSN-EMP-0001', 'pin_code' => $generatePin(), 'phone_number' => '081200000001', 'join_date' => now()->subYears(3)->format('Y-m-d'), 'last_login_at' => $now],
-            ['email' => 'kasir@pos.test', 'employee_id' => 'KSN-EMP-0002', 'pin_code' => $generatePin(), 'phone_number' => '081200000002', 'join_date' => now()->subYears(2)->format('Y-m-d'), 'last_login_at' => $now->copy()->subHours(2)],
-            ['email' => 'manager@pos.test', 'employee_id' => 'KSN-EMP-0003', 'pin_code' => $generatePin(), 'phone_number' => '081200000003', 'join_date' => now()->subYears(2)->subMonths(6)->format('Y-m-d'), 'last_login_at' => $now->copy()->subHour()],
-            ['email' => 'selforder@system.local', 'employee_id' => 'KSN-EMP-0004', 'pin_code' => $generatePin(), 'phone_number' => null, 'join_date' => now()->subYear()->format('Y-m-d'), 'last_login_at' => null],
+            ['email' => 'admin@pos.test', 'employee_id' => 'KSN-EMP-0001', 'pin_hash' => Hash::make($generatePin()), 'phone_number' => '081200000001', 'join_date' => now()->subYears(3)->format('Y-m-d'), 'last_login_at' => $now],
+            ['email' => 'kasir@pos.test', 'employee_id' => 'KSN-EMP-0002', 'pin_hash' => Hash::make($generatePin()), 'phone_number' => '081200000002', 'join_date' => now()->subYears(2)->format('Y-m-d'), 'last_login_at' => $now->copy()->subHours(2)],
+            ['email' => 'manager@pos.test', 'employee_id' => 'KSN-EMP-0003', 'pin_hash' => Hash::make($generatePin()), 'phone_number' => '081200000003', 'join_date' => now()->subYears(2)->subMonths(6)->format('Y-m-d'), 'last_login_at' => $now->copy()->subHour()],
+            ['email' => 'selforder@system.local', 'employee_id' => 'KSN-EMP-0004', 'pin_hash' => Hash::make($generatePin()), 'phone_number' => null, 'join_date' => now()->subYear()->format('Y-m-d'), 'last_login_at' => null],
         ];
 
         foreach ($existingUpdates as $u) {
             DB::table('users')->where('email', $u['email'])->update([
                 'employee_id' => $u['employee_id'],
-                'pin_code' => $u['pin_code'],
+                'pin_hash' => $u['pin_hash'],
                 'phone_number' => $u['phone_number'],
                 'join_date' => $u['join_date'],
                 'last_login_at' => $u['last_login_at'],

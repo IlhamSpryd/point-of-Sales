@@ -16,7 +16,7 @@ class OrderItem extends Model
     /**
      * Kumpulan atribut pembentuk rincian pesanan.
      */
-    protected $fillable = ['order_id', 'product_id', 'qty', 'order_price', 'order_subtotal', 'options', 'notes', 'preparation_status'];
+    protected $fillable = ['order_id', 'product_id', 'qty', 'order_price', 'order_subtotal', 'options', 'notes', 'preparation_status', 'tenant_id', 'store_id'];
 
     /**
      * BARU: "options" disimpan sebagai JSON di database, tapi otomatis
@@ -52,7 +52,7 @@ class OrderItem extends Model
     public function modifiers(): BelongsToMany
     {
         return $this->belongsToMany(Modifier::class, 'order_item_modifiers')
-            ->withPivot('price_at_time', 'qty')
+            ->withPivot('price_at_time', 'qty', 'tenant_id', 'store_id')
             ->withTimestamps();
     }
 

@@ -51,6 +51,15 @@ class UserService
      */
     public function store(array $data): User
     {
+        if (isset($data['password'])) {
+            $data['password_hash'] = $data['password'];
+            unset($data['password']);
+        }
+        if (isset($data['pin_code'])) {
+            $data['pin_hash'] = $data['pin_code'];
+            unset($data['pin_code']);
+        }
+
         return DB::transaction(function () use ($data) {
             return User::create($data);
         });
@@ -64,8 +73,15 @@ class UserService
         return DB::transaction(function () use ($user, $data) {
             if (empty($data['password'])) {
                 unset($data['password']);
+            } else {
+                $data['password_hash'] = $data['password'];
+                unset($data['password']);
             }
+
             if (empty($data['pin_code'])) {
+                unset($data['pin_code']);
+            } else {
+                $data['pin_hash'] = $data['pin_code'];
                 unset($data['pin_code']);
             }
 
