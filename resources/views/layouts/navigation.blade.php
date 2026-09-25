@@ -27,7 +27,7 @@
                 'icon' => 'point_of_sale',
                 'route' => 'transaction.create',
                 'active' => 'transaction.*',
-                'roles' => ['Kasir'],
+                'roles' => ['Owner', 'Manager', 'Kasir'],
             ],
             [
                 'label' => 'Shift Kasir',
@@ -41,7 +41,7 @@
                 'icon' => 'file_download',
                 'route' => 'export-tasks',
                 'active' => request()->routeIs('export-tasks'),
-                'roles' => ['Owner', 'Manager', 'Cashier'],
+                'roles' => ['Owner', 'Manager', 'Kasir'],
             ],
             [
                 'label' => 'Dapur (KDS)',
@@ -133,13 +133,6 @@
                 'icon' => 'admin_panel_settings',
                 'route' => 'roles.index',
                 'active' => 'roles.*',
-                'roles' => ['Owner'],
-            ],
-            [
-                'label' => 'Pengaturan',
-                'icon' => 'tune',
-                'route' => 'settings.index',
-                'active' => 'settings.*',
                 'roles' => ['Owner'],
             ],
             [
@@ -340,6 +333,12 @@
                     class="flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-[13px] font-medium text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5] active:scale-[0.98] transition-all duration-150">
                     <span class="material-symbols-rounded text-[18px]">person</span> Profil Saya
                 </a>
+                @if(auth()->user()->role?->name === 'Owner')
+                <a href="{{ route('settings.index') }}" wire:navigate
+                    class="flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-[13px] font-medium text-[#787774] hover:text-[#37352F] hover:bg-[#F7F7F5] active:scale-[0.98] transition-all duration-150">
+                    <span class="material-symbols-rounded text-[18px]">tune</span> Pengaturan
+                </a>
+                @endif
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit"

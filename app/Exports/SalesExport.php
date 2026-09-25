@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Exports;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use Carbon\Carbon;
-use Illuminate\Support\Collection;
+use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
@@ -16,27 +19,40 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class SalesExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMapping, WithStyles
+/**
+ * CRITICAL FIX (M6-B-001): FromCollection -> FromQuery + WithChunkReading.
+ * The previous version called ->get() and hydrated every matching Order
+ * (plus its `user` relation) into memory at once. On a full-year export
+ * for a busy outlet (tens of thousands of paid orders) that risks a fatal
+ * "Allowed memory size exhausted" error PHP cannot reliably route through
+ * a catch(Throwable) block, leaving the ExportTask stuck at 'processing'
+ * forever. FromQuery + WithChunkReading makes Maatwebsite Excel pull and
+ * write rows in small batches instead of one giant array.
+ */
+class SalesExport implements FromQuery, ShouldAutoSize, WithChunkReading, WithHeadings, WithMapping, WithStyles
 {
+    private const CHUNK_SIZE = 1000;
+
     public function __construct(protected Carbon $start, protected Carbon $end) {}
 
-    public function query()
+    public function query(): Builder
     {
-        return Order::with('user')
+        return Order::query()
+            ->select(['id', 'user_id', 'order_code', 'payment_method', 'order_amount', 'created_at'])
+            ->with('user:id,name')
             ->whereBetween('order_date', [$this->start, $this->end])
             ->where('order_status', OrderStatus::Paid->value)
             ->orderBy('created_at', 'desc');
     }
 
+    public function chunkSize(): int
+    {
+        return self::CHUNK_SIZE;
+    }
+
     public function headings(): array
     {
-        return [
-            'Tanggal',
-            'Kode Pesanan',
-            'Kasir',
-            'Metode Pembayaran',
-            'Total Nilai (Rp)',
-        ];
+        return ['Tanggal', 'Kode Pesanan', 'Kasir', 'Metode Pembayaran', 'Total Nilai (Rp)'];
     }
 
     public function map($order): array
@@ -55,33 +71,16 @@ class SalesExport implements FromQuery, ShouldAutoSize, WithHeadings, WithMappin
         $lastRow = $sheet->getHighestRow();
         $lastCol = $sheet->getHighestColumn();
 
-        // Style the Header Row
         $sheet->getStyle("A1:{$lastCol}1")->applyFromArray([
-            'font' => [
-                'bold' => true,
-                'color' => ['argb' => 'FFFFFFFF'], // White text
-            ],
-            'fill' => [
-                'fillType' => Fill::FILL_SOLID,
-                'startColor' => ['argb' => 'FF09090B'], // Zinc 950 Dark theme
-            ],
-            'alignment' => [
-                'horizontal' => Alignment::HORIZONTAL_CENTER,
-                'vertical' => Alignment::VERTICAL_CENTER,
-            ],
+            'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
+            'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['argb' => 'FF09090B']],
+            'alignment' => ['horizontal' => Alignment::HORIZONTAL_CENTER, 'vertical' => Alignment::VERTICAL_CENTER],
         ]);
 
-        // Add borders to all cells
         $sheet->getStyle("A1:{$lastCol}{$lastRow}")->applyFromArray([
-            'borders' => [
-                'allBorders' => [
-                    'borderStyle' => Border::BORDER_THIN,
-                    'color' => ['argb' => 'FFE4E4E7'], // Zinc 200 border
-                ],
-            ],
+            'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFE4E4E7']]],
         ]);
 
-        // Specific column alignments for readability
         $sheet->getStyle("E2:E{$lastRow}")->getNumberFormat()->setFormatCode('#,##0');
 
         return [];

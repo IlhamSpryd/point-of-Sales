@@ -20,11 +20,13 @@ use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\KdsController;
 use App\Livewire\ChannelMappingManager;
 use App\Livewire\Inventory\IngredientLedger;
 use App\Livewire\Inventory\IngredientManager;
 use App\Livewire\Inventory\ModifierManager;
 use App\Livewire\Kasir\CreateOrder;
+use App\Livewire\Kasir\OrderHistory;
 use App\Livewire\Kds\Board;
 use Illuminate\Support\Facades\Route;
 
@@ -67,7 +69,7 @@ Route::middleware('auth')->group(function () {
     });
 
     // Kasir POS
-    Route::middleware('role:Kasir')->group(function () {
+    Route::middleware('role:Owner,Manager,Kasir')->group(function () {
         Route::get('/transaction', CreateOrder::class)->name('transaction.create');
         Route::post('/transaction', [TransactionController::class, 'store'])->name('transaction.store');
         Route::get('/transaction/receipt/{orderCode}', [TransactionController::class, 'receipt'])->name('transaction.receipt');
@@ -80,7 +82,7 @@ Route::middleware('auth')->group(function () {
 
     // Dapur (KDS)
     Route::middleware('role:Owner,Manager,Kasir,Barista,Waiter')->group(function () {
-        Route::get('/kds', Board::class)->name('kds.index');
+        Route::get('/kds', [KdsController::class, 'index'])->name('kds.index');
     });
 
     // Katalog (Produk & Kategori)
@@ -116,8 +118,7 @@ Route::middleware('auth')->group(function () {
 
     // Riwayat Pesanan
     Route::middleware('role:Owner,Manager,Kasir,Waiter')->group(function () {
-        // Fallback sementara agar sidebar aktif. Nanti diganti Controller beneran.
-        Route::get('/orders', fn () => view('orders.index'))->name('orders.index');
+        Route::get('/orders', OrderHistory::class)->name('orders.index');
     });
 
     // Diskon & Promo

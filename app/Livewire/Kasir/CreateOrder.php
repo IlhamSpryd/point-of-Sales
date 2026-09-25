@@ -10,6 +10,7 @@ namespace App\Livewire\Kasir;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentMethodEnum;
 use App\Models\Customer;
+use App\Models\Discount;
 use App\Models\Modifier;
 use App\Models\Order;
 use App\Models\Product;
@@ -60,6 +61,8 @@ class CreateOrder extends Component
     public ?string $customerName = null;
 
     public string $customerSearch = '';
+
+    public ?int $selectedDiscountId = null;
 
     public string $idempotencyKey;
 
@@ -132,8 +135,8 @@ class CreateOrder extends Component
         // [OMEGA-NODE2] Hygiene fix (lihat Phase 1 self-adversarial review):
         // customer terpilih tidak boleh ikut terbawa ke pesanan berikutnya.
         $this->customerId = null;
-        $this->customerId = null;
         $this->customerName = null;
+        $this->selectedDiscountId = null;
         $this->idempotencyKey = (string) Str::uuid();
     }
 
@@ -327,15 +330,78 @@ class CreateOrder extends Component
     }
 
     #[Computed]
+    public function activeDiscounts()
+    {
+        return Discount::where('is_active', true)
+            ->where(function ($q) {
+                $q->whereNull('valid_from')->orWhere('valid_from', '<=', now());
+            })
+            ->where(function ($q) {
+                $q->whereNull('valid_until')->orWhere('valid_until', '>=', now());
+            })
+            ->get();
+    }
+
+    #[Computed]
+    public function selectedDiscount(): ?Discount
+    {
+        if (! $this->selectedDiscountId) {
+            return null;
+        }
+
+        return Discount::find($this->selectedDiscountId);
+    }
+
+    #[Computed]
+    public function discountAmount(): int
+    {
+        $discount = $this->selectedDiscount;
+        if (! $discount || ! $discount->is_active) {
+            return 0;
+        }
+
+        $subtotal = $this->subtotal;
+        if ($subtotal < $discount->min_purchase_amount) {
+            return 0;
+        }
+
+        if ($discount->type === 'percentage') {
+            $calc = (int) round($subtotal * ($discount->value / 100));
+            if ($discount->max_discount_amount) {
+                $calc = min($calc, $discount->max_discount_amount);
+            }
+
+            return $calc;
+        }
+
+        return min($subtotal, $discount->value);
+    }
+
+    #[Computed]
     public function taxAmount(): int
     {
-        return (int) round($this->subtotal * config('pos.tax_rate', 0.11));
+        $discountedSubtotal = max(0, $this->subtotal - $this->discountAmount);
+
+        return (int) round($discountedSubtotal * config('pos.tax_rate', 0.11));
     }
 
     #[Computed]
     public function totalAmount(): int
     {
-        return $this->subtotal + $this->taxAmount;
+        $discountedSubtotal = max(0, $this->subtotal - $this->discountAmount);
+
+        $totalAmount = $discountedSubtotal + $this->taxAmount;
+
+        // Aplikasikan rounding sesuai setting
+        $roundingValue = config('pos.rounding_value', 100);
+        $roundingBehavior = config('pos.rounding_behavior', 'ROUND_NEAREST');
+
+        return (int) match ($roundingBehavior) {
+            'ROUND_NEAREST' => round($totalAmount / $roundingValue) * $roundingValue,
+            'ROUND_UP' => ceil($totalAmount / $roundingValue) * $roundingValue,
+            'ROUND_DOWN' => floor($totalAmount / $roundingValue) * $roundingValue,
+            default => round($totalAmount),
+        };
     }
 
     #[Computed]
@@ -464,6 +530,7 @@ class CreateOrder extends Component
                     'table_id' => $this->tableId,
                     'order_type' => $this->orderType,
                     'shift_id' => $shiftId,
+                    'discount_id' => $this->selectedDiscountId,
                     'idempotency_key' => $idempotencyKey,
                 ], (int) Auth::id());
             }

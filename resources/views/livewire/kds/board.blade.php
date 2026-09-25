@@ -1,10 +1,7 @@
 @php $pollMs = random_int(4500, 5700); @endphp
 <div wire:poll.{{ $pollMs }}ms.visible="$refresh" class="space-y-6">
 
-    <div>
-        <h4 class="text-xl font-bold tracking-tight text-yovel-ink">Kitchen Display System</h4>
-        <p class="mt-1 text-sm font-medium text-yovel-muted">Pantau dan proses pesanan yang masuk secara real-time</p>
-    </div>
+
 
     @error('kds')
         <div role="alert" class="flex items-center justify-between rounded-2xl border border-rose-200 bg-rose-50 p-4 text-sm font-medium text-rose-700">
@@ -20,12 +17,12 @@
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 3xl:gap-8 4xl:grid-cols-4">
 
         {{-- KOLOM 1: MENUNGGU --}}
-        <section aria-labelledby="kds-pending" class="card-surface flex flex-col overflow-hidden">
-            <header class="flex items-center justify-between border-b border-yovel-border bg-yovel-bg px-5 py-4">
+        <section aria-labelledby="kds-pending" class="bg-yovel-surface border border-yovel-border rounded-2xl flex flex-col overflow-hidden">
+            <header class="flex items-center justify-between border-b border-yovel-border bg-yovel-bg/50 px-5 py-4">
                 <h3 id="kds-pending" class="flex items-center gap-2.5 font-bold">
                     <span class="h-2.5 w-2.5 rounded-full border-2 border-yovel-ink"></span> Menunggu
                 </h3>
-                <span class="rounded-lg border border-yovel-border bg-white px-2.5 py-1 text-xs font-bold tabular-nums">{{ $this->pendingItems->count() }}</span>
+                <span class="rounded-lg border border-yovel-border bg-yovel-ink px-2.5 py-1 text-xs font-bold text-yovel-bg tabular-nums">{{ $this->pendingItems->count() }}</span>
             </header>
             <div class="custom-scrollbar max-h-[70vh] flex-1 space-y-3 overflow-y-auto p-4">
                 @forelse ($this->pendingItems as $item)
@@ -42,12 +39,12 @@
         </section>
 
         {{-- KOLOM 2: SEDANG DIRACIK --}}
-        <section aria-labelledby="kds-brewing" class="card-surface flex flex-col overflow-hidden">
-            <header class="flex items-center justify-between border-b border-yovel-border bg-yovel-bg px-5 py-4">
+        <section aria-labelledby="kds-brewing" class="bg-yovel-surface border border-yovel-border rounded-2xl flex flex-col overflow-hidden">
+            <header class="flex items-center justify-between border-b border-yovel-border bg-yovel-bg/50 px-5 py-4">
                 <h3 id="kds-brewing" class="flex items-center gap-2.5 font-bold">
-                    <span class="h-2.5 w-2.5 animate-pulse rounded-full bg-yovel-ink"></span> Sedang Diracik
+                    <span class="h-2.5 w-2.5 animate-pulse rounded-full bg-amber-500"></span> Sedang Diracik
                 </h3>
-                <span class="rounded-lg border border-yovel-border bg-white px-2.5 py-1 text-xs font-bold tabular-nums">{{ $this->brewingItems->count() }}</span>
+                <span class="rounded-lg border border-yovel-border bg-yovel-ink px-2.5 py-1 text-xs font-bold text-yovel-bg tabular-nums">{{ $this->brewingItems->count() }}</span>
             </header>
             <div class="custom-scrollbar max-h-[70vh] flex-1 space-y-3 overflow-y-auto p-4">
                 @forelse ($this->brewingItems as $item)
@@ -64,12 +61,12 @@
         </section>
 
         {{-- KOLOM 3: SIAP DIANTAR --}}
-        <section aria-labelledby="kds-ready" class="card-surface flex flex-col overflow-hidden">
-            <header class="flex items-center justify-between border-b border-yovel-border bg-yovel-bg px-5 py-4">
-                <h3 id="kds-ready" class="flex items-center gap-2.5 font-bold">
+        <section aria-labelledby="kds-ready" class="bg-yovel-surface border border-yovel-border rounded-2xl flex flex-col overflow-hidden">
+            <header class="flex items-center justify-between border-b border-yovel-border bg-yovel-bg/50 px-5 py-4">
+                <h3 id="kds-ready" class="flex items-center gap-2.5 font-bold text-green-500">
                     <span class="material-symbols-rounded text-[16px]">check_circle</span> Siap Diantar
                 </h3>
-                <span class="rounded-lg border border-yovel-border bg-white px-2.5 py-1 text-xs font-bold tabular-nums">{{ $this->readyItems->count() }}</span>
+                <span class="rounded-lg border border-yovel-border bg-yovel-ink px-2.5 py-1 text-xs font-bold text-yovel-bg tabular-nums">{{ $this->readyItems->count() }}</span>
             </header>
             <div class="custom-scrollbar max-h-[70vh] flex-1 space-y-3 overflow-y-auto p-4">
                 @forelse ($this->readyItems as $item)

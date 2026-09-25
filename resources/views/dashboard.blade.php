@@ -262,6 +262,41 @@
                         .then(data => {
                             this.forecasts = data.data.slice(0, 5); // top 5
                             this.loading = false;
+
+                            if (this.forecasts.length > 0) {
+                                setTimeout(() => {
+                                    const chartData = this.forecasts.map(f => f.projected_days_remaining || 0);
+                                    const chartLabels = this.forecasts.map(f => f.name);
+                                    
+                                    const options = {
+                                        series: [{
+                                            name: 'Sisa Hari',
+                                            data: chartData
+                                        }],
+                                        chart: {
+                                            type: 'bar',
+                                            height: 220,
+                                            toolbar: { show: false },
+                                            fontFamily: 'Plus Jakarta Sans, Inter, sans-serif'
+                                        },
+                                        plotOptions: {
+                                            bar: {
+                                                borderRadius: 4,
+                                                horizontal: true,
+                                                barHeight: '60%'
+                                            }
+                                        },
+                                        colors: ['#37352F'],
+                                        dataLabels: { enabled: false },
+                                        xaxis: { categories: chartLabels },
+                                        grid: {
+                                            borderColor: '#E9E9E7',
+                                            strokeDashArray: 4,
+                                        }
+                                    };
+                                    new ApexCharts(document.querySelector('#restock-forecast-chart'), options).render();
+                                }, 100);
+                            }
                         })
                         .catch(err => {
                             console.error(err);
@@ -290,6 +325,8 @@
                 </div>
 
                 <div x-show="!loading && forecasts.length > 0" class="flex flex-col gap-4">
+                    <!-- Bagian Bagan / Chart -->
+                    <div id="restock-forecast-chart" class="w-full mb-2"></div>
                     <template x-for="item in forecasts" :key="item.ingredient_id">
                         <div
                             class="flex items-center justify-between border-b border-[#F1F1EF] pb-3 last:border-0 last:pb-0">

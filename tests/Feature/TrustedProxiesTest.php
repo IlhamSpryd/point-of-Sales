@@ -3,13 +3,14 @@
 namespace Tests\Feature;
 
 use Illuminate\Support\Facades\Request;
+use Illuminate\Support\Facades\Route;
 use Tests\TestCase;
 
 class TrustedProxiesTest extends TestCase
 {
     public function test_it_trusts_local_proxy_by_default(): void
     {
-        \Illuminate\Support\Facades\Route::get('/_test_ip', function (\Illuminate\Http\Request $req) {
+        Route::get('/_test_ip', function (\Illuminate\Http\Request $req) {
             return $req->ip();
         });
 
@@ -24,7 +25,7 @@ class TrustedProxiesTest extends TestCase
 
     public function test_it_does_not_trust_arbitrary_proxy_by_default(): void
     {
-        \Illuminate\Support\Facades\Route::get('/_test_ip', function (\Illuminate\Http\Request $req) {
+        Route::get('/_test_ip', function (\Illuminate\Http\Request $req) {
             return $req->ip();
         });
 

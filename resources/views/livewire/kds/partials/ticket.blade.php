@@ -11,7 +11,7 @@
 @endphp
 
 <article wire:key="{{ $variant }}-{{ $item->id }}"
-         class="animate-slide-up-fade rounded-2xl border border-yovel-border bg-white p-4 shadow-sm transition-shadow duration-200 hover:shadow-md">
+         class="animate-slide-up-fade rounded-2xl border border-yovel-border bg-yovel-bg p-4 shadow-sm transition-shadow duration-200 hover:shadow-md">
 
     <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
@@ -20,13 +20,13 @@
         </div>
         <span @class([
             'shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider',
-            'bg-yovel-ink text-white' => $isTakeaway,
+            'bg-yovel-ink text-yovel-bg' => $isTakeaway,
             'border border-yovel-border text-yovel-muted' => ! $isTakeaway,
         ])>{{ $isTakeaway ? 'Takeaway' : 'Dine-in' }}</span>
     </div>
 
     <div class="mt-3 flex items-baseline gap-2">
-        <span class="rounded-lg border border-yovel-border bg-yovel-bg px-2 py-0.5 text-sm font-extrabold tabular-nums">{{ $item->qty }}×</span>
+        <span class="rounded-lg border border-yovel-border bg-yovel-surface px-2 py-0.5 text-sm font-extrabold tabular-nums">{{ $item->qty }}×</span>
         <span class="text-base 3xl:text-xl font-bold leading-snug">{{ $item->product->product_name }}</span>
     </div>
 
@@ -39,8 +39,8 @@
     @endif
 
     @if ($variant !== 'ready' && $item->notes)
-        <p class="mt-2 flex gap-1.5 rounded-xl border border-yovel-ink/15 bg-yovel-bg px-3 py-2 text-xs font-medium">
-            <span class="material-symbols-rounded mt-px text-[14px]">sticky_note_2</span>
+        <p class="mt-2 flex gap-1.5 rounded-xl border border-yovel-border bg-yovel-surface px-3 py-2 text-xs font-medium">
+            <span class="material-symbols-rounded mt-px text-[14px] text-yovel-muted">sticky_note_2</span>
             <span>{{ $item->notes }}</span>
         </p>
     @endif
@@ -49,9 +49,9 @@
         @if ($showSla)
             <span @class([
                 'inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 font-bold',
-                'border-yovel-border bg-yovel-bg text-yovel-muted' => $sla === 'ok',
-                'border-amber-200 bg-amber-50 text-amber-700' => $sla === 'warning',
-                'animate-pulse border-rose-200 bg-rose-50 text-rose-700' => $sla === 'critical',
+                'border-yovel-border bg-yovel-surface text-yovel-muted' => $sla === 'ok',
+                'border-amber-500/30 bg-amber-500/10 text-amber-500' => $sla === 'warning',
+                'animate-pulse border-rose-500/30 bg-rose-500/10 text-rose-500' => $sla === 'critical',
             ])>
                 <span class="material-symbols-rounded text-[14px]">schedule</span>
                 {{ $item->slaMinutesElapsed() }} menit
@@ -75,12 +75,12 @@
 
     @if ($variant === 'pending')
         <button type="button" wire:click="claim({{ $item->id }})" wire:loading.attr="disabled" wire:target="claim({{ $item->id }})"
-                class="mt-4 flex min-h-11 w-full items-center justify-center rounded-xl bg-yovel-ink text-sm font-bold text-white shadow-sm transition-all duration-200 hover:bg-black active:scale-[0.97] disabled:cursor-wait disabled:opacity-60">
+                class="mt-4 flex min-h-11 w-full items-center justify-center rounded-xl bg-yovel-ink text-sm font-bold text-yovel-bg shadow-sm transition-all duration-200 hover:opacity-80 active:scale-[0.97] disabled:cursor-wait disabled:opacity-60">
             <span wire:loading.remove wire:target="claim({{ $item->id }})" class="flex items-center gap-2">
                 <span class="material-symbols-rounded text-[18px]">skillet</span> Mulai Racik
             </span>
             <span wire:loading wire:target="claim({{ $item->id }})" class="flex items-center gap-2">
-                <span class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span> Memproses…
+                <span class="h-4 w-4 animate-spin rounded-full border-2 border-yovel-bg/30 border-t-yovel-bg"></span> Memproses…
             </span>
         </button>
     @elseif ($variant === 'brewing')
@@ -88,18 +88,18 @@
             <div class="mt-4 flex gap-2">
                 @if ($isMine)
                     <button type="button" wire:click="markReady({{ $item->id }})" wire:loading.attr="disabled" wire:target="markReady({{ $item->id }})"
-                            class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-yovel-ink text-sm font-bold text-white shadow-sm transition-all duration-200 hover:bg-black active:scale-[0.97] disabled:cursor-wait disabled:opacity-60">
+                            class="flex min-h-11 flex-1 items-center justify-center rounded-xl bg-yovel-ink text-sm font-bold text-yovel-bg shadow-sm transition-all duration-200 hover:opacity-80 active:scale-[0.97] disabled:cursor-wait disabled:opacity-60">
                         <span wire:loading.remove wire:target="markReady({{ $item->id }})" class="flex items-center gap-2">
                             <span class="material-symbols-rounded text-[18px]">check_circle</span> Selesai
                         </span>
                         <span wire:loading wire:target="markReady({{ $item->id }})" class="flex items-center gap-2">
-                            <span class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span> Memproses…
+                            <span class="h-4 w-4 animate-spin rounded-full border-2 border-yovel-bg/30 border-t-yovel-bg"></span> Memproses…
                         </span>
                     </button>
                 @endif
                 <button type="button" wire:click="release({{ $item->id }})" wire:loading.attr="disabled" wire:target="release({{ $item->id }})"
                         title="Lepaskan item ini" aria-label="Lepaskan item ini"
-                        class="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-yovel-border bg-white shadow-sm transition-all duration-200 hover:bg-yovel-bg active:scale-[0.97] disabled:cursor-wait disabled:opacity-60 {{ $isMine ? '' : 'flex-1 gap-2 text-sm font-bold' }}">
+                        class="flex min-h-11 min-w-11 items-center justify-center rounded-xl border border-yovel-border bg-yovel-surface shadow-sm transition-all duration-200 hover:opacity-80 active:scale-[0.97] disabled:cursor-wait disabled:opacity-60 {{ $isMine ? '' : 'flex-1 gap-2 text-sm font-bold' }}">
                     <span wire:loading.remove wire:target="release({{ $item->id }})" class="flex items-center gap-2">
                         <span class="material-symbols-rounded text-[20px]">undo</span>
                         @unless ($isMine) Lepaskan @endunless

@@ -24,7 +24,7 @@ class SalesExportJobTest extends TestCase
     {
         $user = User::factory()->create();
         $params = ['start' => '2023-01-01', 'end' => '2023-01-31'];
-        
+
         $task = ExportTask::create([
             'requested_by' => $user->id,
             'type' => 'sales_report',
@@ -33,8 +33,8 @@ class SalesExportJobTest extends TestCase
         ]);
 
         $job = new ProcessSalesReportExportJob($task);
-        
-        $expectedUniqueId = $user->id . '_' . md5(json_encode($params));
+
+        $expectedUniqueId = $user->id.'_'.md5(json_encode($params));
         $this->assertEquals($expectedUniqueId, $job->uniqueId());
     }
 }

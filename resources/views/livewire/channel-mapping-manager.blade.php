@@ -78,7 +78,9 @@
                                     {{ $mapping->product->product_name ?? 'Produk Dihapus' }}
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <button wire:click="deleteMapping({{ $mapping->id }})" class="text-red-600 hover:text-red-800 text-sm font-medium transition-colors">
+                                    <button wire:click="deleteMapping({{ $mapping->id }})"
+                                            wire:confirm="Yakin hapus pemetaan SKU {{ $mapping->external_product_id }}? Order baru dengan SKU ini akan gagal sampai dipetakan ulang."
+                                            class="text-red-600 hover:text-red-800 text-sm font-medium transition-colors">
                                         Hapus
                                     </button>
                                 </td>

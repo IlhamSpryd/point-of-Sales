@@ -4,72 +4,37 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Enums\IngredientStockMovementTypeEnum;
-use Carbon\Carbon;
+use App\Models\IngredientRestockForecast;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\DB;
 
 class RestockForecastController extends Controller
 {
     public function index(): JsonResponse
     {
-        $days = 30;
-        $startDate = Carbon::now()->subDays($days)->startOfDay();
-
-        $consumptionSub = DB::table('ingredient_stock_movements')
-            ->select(
-                'ingredient_id',
-                DB::raw('ABS(SUM(quantity)) as total_consumption')
-            )
-            ->where('type', IngredientStockMovementTypeEnum::SaleDeduction->value)
-            ->where('created_at', '>=', $startDate)
-            ->groupBy('ingredient_id');
-
-        $forecasts = DB::table('ingredients as i')
-            ->leftJoinSub($consumptionSub, 'c', 'i.id', '=', 'c.ingredient_id')
-            ->select(
-                'i.id as ingredient_id',
-                'i.name',
-                'i.unit',
-                'i.current_stock',
-                'i.reorder_level',
-                'c.total_consumption'
-            )
-            ->where('i.is_active', true)
+        $forecasts = IngredientRestockForecast::query()
+            // Exclude forecasts left behind for ingredients that were
+            // deactivated/soft-deleted after their last recompute -- these
+            // never get cleaned up by RestockPredictionService::recomputeAll().
+            ->whereHas('ingredient', fn ($q) => $q->where('is_active', true))
+            ->with('ingredient:id,name,unit,current_stock,reorder_level')
+            // CRITICAL FIX: MySQL puts NULL first on ASC sort, so
+            // ingredients with NO sales history (projected_days_remaining
+            // = null) were ranking ABOVE ingredients that are genuinely
+            // about to run out. Push NULLs to the end explicitly.
+            ->orderByRaw('projected_days_remaining IS NULL, projected_days_remaining ASC')
             ->get()
-            ->map(function ($row) use ($days) {
-                $avgDailyConsumption = ($row->total_consumption ?? 0) / $days;
-                
-                $projectedDaysRemaining = null;
-                $projectedStockoutAt = null;
-                
-                if ($avgDailyConsumption > 0) {
-                    $projectedDaysRemaining = $row->current_stock / $avgDailyConsumption;
-                    $projectedStockoutAt = Carbon::now()->addDays((int) round($projectedDaysRemaining))->toDateString();
-                }
-
-                $suggestedReorderQty = max(0, $row->reorder_level - $row->current_stock);
-                if ($projectedDaysRemaining !== null && $projectedDaysRemaining <= 7) {
-                    $suggestedReorderQty = max($suggestedReorderQty, ($avgDailyConsumption * 14) - $row->current_stock);
-                }
-
-                $trend = $avgDailyConsumption > 0 ? 'stable' : 'none';
-                
-                return [
-                    'ingredient_id' => $row->ingredient_id,
-                    'name' => $row->name,
-                    'unit' => $row->unit,
-                    'current_stock' => (float) $row->current_stock,
-                    'avg_daily_consumption' => (float) round($avgDailyConsumption, 4),
-                    'projected_days_remaining' => $projectedDaysRemaining !== null ? (float) round($projectedDaysRemaining, 1) : null,
-                    'projected_stockout_at' => $projectedStockoutAt,
-                    'suggested_reorder_qty' => (float) round($suggestedReorderQty, 2),
-                    'trend' => $trend,
-                    'computed_at' => Carbon::now()->toIso8601String(),
-                ];
-            })
-            ->sortBy('projected_days_remaining')
-            ->values();
+            ->map(fn (IngredientRestockForecast $f) => [
+                'ingredient_id' => $f->ingredient_id,
+                'name' => $f->ingredient?->name ?? '-',
+                'unit' => $f->ingredient?->unit ?? '',
+                'current_stock' => (float) ($f->ingredient?->current_stock ?? 0),
+                'avg_daily_consumption' => (float) $f->avg_daily_consumption,
+                'projected_days_remaining' => $f->projected_days_remaining !== null ? (float) $f->projected_days_remaining : null,
+                'projected_stockout_at' => $f->projected_stockout_at?->toDateString(),
+                'suggested_reorder_qty' => (float) $f->suggested_reorder_qty,
+                'trend' => $f->trend,
+                'computed_at' => $f->computed_at?->toIso8601String(),
+            ]);
 
         return response()->json(['data' => $forecasts]);
     }

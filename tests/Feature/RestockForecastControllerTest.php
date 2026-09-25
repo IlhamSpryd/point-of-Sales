@@ -56,8 +56,8 @@ class RestockForecastControllerTest extends TestCase
                     'suggested_reorder_qty',
                     'trend',
                     'computed_at',
-                ]
-            ]
+                ],
+            ],
         ]);
 
         // Math validation:
@@ -100,7 +100,7 @@ class RestockForecastControllerTest extends TestCase
         $response = $this->actingAs($user)->getJson(route('analytics.restock-forecasts'));
 
         $response->assertStatus(200);
-        
+
         // Math validation:
         // avg_daily = 2.
         // days remaining = 10 / 2 = 5 days.

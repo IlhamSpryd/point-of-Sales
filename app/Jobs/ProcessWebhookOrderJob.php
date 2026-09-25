@@ -41,7 +41,10 @@ class ProcessWebhookOrderJob implements ShouldQueue
     /** Satu percobaan -- kegagalan dicatat 'failed', BUKAN auto-retry (idempotency ditegakkan manual di bawah + unique constraint DB). */
     public int $tries = 1;
 
-    public function __construct(public ChannelOrderLog $log) {}
+    public function __construct(public ChannelOrderLog $log)
+    {
+        $this->onQueue('webhooks');
+    }
 
     public function handle(TransactionService $transactionService): void
     {
@@ -128,41 +131,19 @@ class ProcessWebhookOrderJob implements ShouldQueue
             );
         }
 
+        ['total_amount' => $totalAmount] = $transactionService->calculateOrderTotals($subtotal);
+
         return $transactionService->createTransaction([
             'items' => $items,
             'payments' => [[
                 'method' => PaymentMethodEnum::Ewallet->value,
-                'amount' => $this->replicateTotalAmount($subtotal),
+                'amount' => $totalAmount,
                 'reference_number' => strtoupper($this->log->provider).'-'.$normalized->externalOrderId,
             ]],
             'table_id' => null,
             'order_type' => OrderType::Takeaway->value,
             'idempotency_key' => $idempotencyKey,
         ], (int) $systemUserId);
-    }
-
-    /**
-     * REPLIKASI SENGAJA dari TransactionService::calculateOrderTotals()
-     * (private, tak bisa dipanggil dari luar). Jika Node 1 mengubah rumus
-     * tanpa mengabarkan Node 5, dua formula ini drift dan SETIAP order
-     * channel gagal dengan pesan "Total pembayaran tidak sama dengan
-     * tagihan" -- risiko ini didokumentasikan di SYNC ALERT NODE 1.
-     */
-    private function replicateTotalAmount(int $subtotalAmount): int
-    {
-        $taxRate = config('pos.tax_rate', 0.11);
-        $taxAmount = (int) round($subtotalAmount * $taxRate);
-        $totalAmount = (int) ($subtotalAmount + $taxAmount);
-
-        $roundingValue = config('pos.rounding_value', 100);
-        $roundingBehavior = config('pos.rounding_behavior', 'ROUND_NEAREST');
-
-        return (int) match ($roundingBehavior) {
-            'ROUND_NEAREST' => round($totalAmount / $roundingValue) * $roundingValue,
-            'ROUND_UP' => ceil($totalAmount / $roundingValue) * $roundingValue,
-            'ROUND_DOWN' => floor($totalAmount / $roundingValue) * $roundingValue,
-            default => round($totalAmount),
-        };
     }
 
     private function deterministicIdempotencyKey(): string

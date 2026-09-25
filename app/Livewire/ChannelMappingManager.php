@@ -1,9 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire;
 
 use App\Models\ChannelProductMapping;
 use App\Models\Product;
+use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -20,7 +23,7 @@ class ChannelMappingManager extends Component
     public function saveMapping()
     {
         $this->validate([
-            'provider' => 'required|string',
+            'provider' => ['required', 'string', Rule::in(['grabfood', 'gofood'])],
             'externalProductId' => 'required|string|max:255',
             'productId' => 'required|exists:products,id',
         ]);

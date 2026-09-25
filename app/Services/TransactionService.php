@@ -21,6 +21,7 @@ use App\Enums\StockMovementType;
 use App\Models\ActivityLog;
 use App\Models\Customer;
 use App\Models\CustomerLoyaltyAccount;
+use App\Models\Discount;
 use App\Models\Ingredient;
 use App\Models\IngredientStockMovement;
 use App\Models\LoyaltyLedger;
@@ -319,7 +320,27 @@ class TransactionService
                 }
             }
 
-            ['tax_amount' => $taxAmount, 'total_amount' => $totalAmount] = $this->calculateOrderTotals($subtotalAmount);
+            // Validasi & Hitung Diskon
+            $discountAmount = 0;
+            $discountId = $data['discount_id'] ?? null;
+            if ($discountId) {
+                $discount = Discount::find($discountId);
+                if ($discount && $discount->is_active && $subtotalAmount >= $discount->min_purchase_amount) {
+                    if ($discount->type === 'percentage') {
+                        $calc = (int) round($subtotalAmount * ($discount->value / 100));
+                        if ($discount->max_discount_amount) {
+                            $calc = min($calc, $discount->max_discount_amount);
+                        }
+                        $discountAmount = $calc;
+                    } else {
+                        $discountAmount = min((int) $subtotalAmount, $discount->value);
+                    }
+                } else {
+                    $discountId = null; // Batalkan diskon jika tidak valid/tidak memenuhi syarat
+                }
+            }
+
+            ['tax_amount' => $taxAmount, 'total_amount' => $totalAmount] = $this->calculateOrderTotals($subtotalAmount, $discountAmount);
 
             // [OMEGA-NODE7] RESOLUSI METODE PEMBAYARAN.
             $dominantPaymentMethod = 'cash';
@@ -400,6 +421,8 @@ class TransactionService
                 'idempotency_key' => $data['idempotency_key'] ?? (string) Str::uuid(),
                 'order_date' => now()->toDateString(),
                 'subtotal_amount' => $subtotalAmount,
+                'discount_id' => $discountId,
+                'discount_amount' => $discountAmount,
                 'tax_amount' => $taxAmount,
                 'order_amount' => $totalAmount,
                 'cash_received' => $cashReceivedForReceipt,
@@ -691,11 +714,12 @@ class TransactionService
      * Method ini adalah SATU-SATUNYA tempat menghitung total transaksi.
      * (UNCHANGED)
      */
-    private function calculateOrderTotals(float $subtotalAmount): array
+    public function calculateOrderTotals(float $subtotalAmount, float $discountAmount = 0): array
     {
+        $discountedSubtotal = max(0, $subtotalAmount - $discountAmount);
         $taxRate = config('pos.tax_rate', 0.11);
-        $taxAmount = (int) round($subtotalAmount * $taxRate);
-        $totalAmount = (int) ($subtotalAmount + $taxAmount);
+        $taxAmount = (int) round($discountedSubtotal * $taxRate);
+        $totalAmount = (int) ($discountedSubtotal + $taxAmount);
 
         $roundingValue = config('pos.rounding_value', 100);
         $roundingBehavior = config('pos.rounding_behavior', 'ROUND_NEAREST');
