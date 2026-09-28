@@ -39,17 +39,14 @@
 
     <div class="card-surface overflow-hidden w-full shrink-0">
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="border-b border-yovel-border bg-yovel-surface">
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider">Waktu</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider">Bahan Baku</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider">Tipe</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-right">Kuantitas</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider">Keterangan</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-yovel-border bg-white">
+            <x-data-table>
+                <x-slot:head>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Waktu</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Bahan Baku</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Tipe</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Kuantitas</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Keterangan</th>
+                </x-slot:head>
                     @forelse ($movements as $movement)
                         <tr class="hover:bg-yovel-surface transition-colors duration-150">
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -81,7 +78,7 @@
                                     {{ $typeStr }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                            <td class="px-6 py-4 whitespace-nowrap text-right tabular-nums">
                                 @if($movement->quantity > 0)
                                     <span class="text-sm font-semibold text-emerald-600">+{{ number_format($movement->quantity, 2) }} {{ $movement->ingredient->unit ?? '' }}</span>
                                 @else
@@ -101,8 +98,7 @@
                             </td>
                         </tr>
                     @endforelse
-                </tbody>
-            </table>
+            </x-data-table>
         </div>
         @if($movements->hasPages())
             <div class="p-4 border-t border-yovel-border shrink-0">

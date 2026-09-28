@@ -59,41 +59,38 @@
             <h2 class="text-lg font-bold text-yovel-ink">Daftar Transaksi Terbaru</h2>
         </header>
         <div class="overflow-x-auto">
-            <table class="data-table">
-                <thead>
-                    <tr class="bg-[#F7F7F5]">
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kode Pesanan</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Tanggal</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kasir</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Nilai Transaksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-[#E9E9E7]">
-                    @forelse ($recentOrders as $order)
-                    <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
-                        <td class="px-6 py-4">
-                            <span class="text-sm font-medium text-yovel-ink">{{ $order->order_code }}</span>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-[#787774]">{{ \Carbon\Carbon::parse($order->created_at)->format('d-m-Y H:i') }}</td>
-                        <td class="px-6 py-4 text-sm text-[#787774]">{{ $order->user->name ?? 'Kasir' }}</td>
-                        <td class="px-6 py-4 text-right">
-                            <span class="text-sm font-bold text-yovel-ink">Rp {{ number_format($order->order_amount, 0, ',', '.') }}</span>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="4" class="px-6 py-12 text-center text-[#9B9A97] text-sm">
-                            <div class="flex flex-col items-center justify-center">
-                                <div class="w-14 h-14 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
-                                    <span class="material-symbols-rounded text-[28px] text-[#C4C3C0]">receipt_long</span>
-                                </div>
-                                <p class="font-medium">Belum ada transaksi di periode ini.</p>
+            <x-data-table>
+                <x-slot:head>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kode Pesanan</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Tanggal</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kasir</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Nilai Transaksi</th>
+                </x-slot:head>
+                
+                @forelse ($recentOrders as $order)
+                <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
+                    <td class="px-6 py-4">
+                        <span class="text-sm font-medium text-yovel-ink">{{ $order->order_code }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-[#787774]">{{ \Carbon\Carbon::parse($order->created_at)->format('d-m-Y H:i') }}</td>
+                    <td class="px-6 py-4 text-sm text-[#787774]">{{ $order->user->name ?? 'Kasir' }}</td>
+                    <td class="px-6 py-4 text-right">
+                        <span class="text-sm font-bold text-yovel-ink">Rp {{ number_format($order->order_amount, 0, ',', '.') }}</span>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="4" class="px-6 py-12 text-center text-[#9B9A97] text-sm">
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="w-14 h-14 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
+                                <span class="material-symbols-rounded text-[28px] text-[#C4C3C0]">receipt_long</span>
                             </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                            <p class="font-medium">Belum ada transaksi di periode ini.</p>
+                        </div>
+                    </td>
+                </tr>
+                @endforelse
+            </x-data-table>
         </div>
         <div class="p-4 border-t border-yovel-border shrink-0">
             {{ $recentOrders->links() }}

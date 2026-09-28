@@ -84,6 +84,7 @@
     --color-yovel-muted-700: #6B6A66;   /* WCAG AA ≈5.1:1 — use for small/body text */
     --color-yovel-border:    #E9E9E7;
     --color-yovel-surface:   #F1F1EF;
+    --color-table-header-bg: #F7F7F5;
 }
 
 /* --- TAMBAHAN P1: varian KDS gelap --- */
@@ -93,6 +94,7 @@
     --color-yovel-muted: #A9A79E;
     --color-yovel-border: #383830;    /* Border lebih terang agar card/kolom terlihat jelas di TV */
     --color-yovel-surface: #171714;   /* Beda kontras yang cukup dari bg */
+    --color-table-header-bg: #0A0A08;
 }
 
 @media (min-width: 1920px) {

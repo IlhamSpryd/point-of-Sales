@@ -55,51 +55,50 @@
                 <h2 class="text-sm font-semibold text-yovel-ink tracking-tight">Daftar Pemetaan Aktif</h2>
             </div>
             <div class="overflow-x-auto flex-1">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-yovel-surface border-b border-yovel-border">
-                            <th class="px-6 py-3 text-xs font-semibold text-yovel-muted uppercase tracking-wider">Provider</th>
-                            <th class="px-6 py-3 text-xs font-semibold text-yovel-muted uppercase tracking-wider">SKU Eksternal</th>
-                            <th class="px-6 py-3 text-xs font-semibold text-yovel-muted uppercase tracking-wider">Produk Internal</th>
-                            <th class="px-6 py-3 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-right">Aksi</th>
+                <x-data-table>
+                    <x-slot:head>
+                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Provider</th>
+                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">SKU Eksternal</th>
+                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Produk Internal</th>
+                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
+                    </x-slot:head>
+                    
+                    @forelse($mappings as $mapping)
+                        <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
+                            <td class="px-6 py-4">
+                                <x-badge type="secondary">{{ $mapping->provider }}</x-badge>
+                            </td>
+                            <td class="px-6 py-4 text-sm font-semibold text-yovel-ink">
+                                {{ $mapping->external_product_id }}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-[#787774]">
+                                {{ $mapping->product->product_name ?? 'Produk Dihapus' }}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <button type="button"
+                                    data-swal-delete
+                                    data-swal-title="Hapus Pemetaan?"
+                                    data-swal-text="SKU {{ $mapping->external_product_id }} akan dihapus. Order baru dengan SKU ini akan gagal sampai dipetakan ulang."
+                                    data-wire-action="deleteMapping({{ $mapping->id }})"
+                                    title="Hapus Pemetaan"
+                                    class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90">
+                                    <span class="material-symbols-rounded text-[20px]">delete</span>
+                                </button>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody class="divide-y divide-yovel-border">
-                        @forelse($mappings as $mapping)
-                            <tr class="hover:bg-yovel-surface transition-colors">
-                                <td class="px-6 py-4">
-                                    <x-badge type="secondary">{{ $mapping->provider }}</x-badge>
-                                </td>
-                                <td class="px-6 py-4 text-sm font-semibold text-yovel-ink">
-                                    {{ $mapping->external_product_id }}
-                                </td>
-                                <td class="px-6 py-4 text-sm text-yovel-muted">
-                                    {{ $mapping->product->product_name ?? 'Produk Dihapus' }}
-                                </td>
-                                <td class="px-6 py-4 text-right">
-                                    <button type="button"
-                                        data-swal-delete
-                                        data-swal-title="Hapus Pemetaan?"
-                                        data-swal-text="SKU {{ $mapping->external_product_id }} akan dihapus. Order baru dengan SKU ini akan gagal sampai dipetakan ulang."
-                                        data-wire-action="deleteMapping({{ $mapping->id }})"
-                                        title="Hapus Pemetaan"
-                                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-yovel-muted hover:bg-danger-50 hover:text-danger-700 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-600">
-                                        <span class="material-symbols-rounded text-[18px]">delete</span>
-                                    </button>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="4" class="px-6 py-12 text-center">
-                                    <div class="flex flex-col items-center justify-center text-yovel-muted">
-                                        <span class="material-symbols-rounded text-4xl mb-3 opacity-40">link_off</span>
-                                        <p class="text-sm font-medium">Belum ada pemetaan sku channel.</p>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="px-6 py-12 text-center text-[#9B9A97] text-sm">
+                                <div class="flex flex-col items-center justify-center">
+                                    <div class="w-14 h-14 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
+                                        <span class="material-symbols-rounded text-[28px] text-[#C4C3C0]">link_off</span>
                                     </div>
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                                    <p class="font-medium">Belum ada pemetaan sku channel.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </x-data-table>
             </div>
             <div class="p-4 border-t border-yovel-border shrink-0">
                 {{ $mappings->links() }}

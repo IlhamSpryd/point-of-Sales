@@ -65,7 +65,7 @@ it('mengembalikan stok tepat satu kali walau webhook expire dikirim dua kali', f
         'payment_method' => 'qris',
     ]);
 
-    OrderItem::create([
+    $item = OrderItem::create([
         'order_id' => $order->id,
         'product_id' => $product->id,
         'qty' => 3,
@@ -73,17 +73,19 @@ it('mengembalikan stok tepat satu kali walau webhook expire dikirim dua kali', f
         'order_subtotal' => 60000,
     ]);
 
+    $product->decrement('stock', 3);
+
     // Phase 4: stock is now ledger-based, test will just check ledger sum
     DB::table('stock_movements')->insert([
         'tenant_id' => 1,
         'store_id' => 1,
         'product_id' => $product->id,
         'order_id' => $order->id,
-        'order_item_id' => 1,
+        'order_item_id' => $item->id,
         'type' => 'sale_deduction',
         'quantity' => -3,
         'reason' => 'sale',
-        'idempotency_key' => "sale:{$order->id}:1",
+        'idempotency_key' => "sale:{$order->id}:{$item->id}",
         'created_at' => now(),
         'updated_at' => now(),
     ]);

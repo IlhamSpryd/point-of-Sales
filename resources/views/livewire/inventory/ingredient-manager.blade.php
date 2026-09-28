@@ -104,17 +104,14 @@
     <div class="card-surface flex flex-col flex-1 min-h-0 w-full shrink-0">
         {{-- Desktop/tablet-landscape: existing table --}}
         <div class="hidden lg:block overflow-x-auto flex-1 table-scroll-shadow">
-            <table class="data-table relative w-full text-left">
-                <thead class="sticky top-0 z-10 shadow-sm">
-                    <tr class="bg-yovel-surface">
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider">Bahan Baku</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider">Stok Saat Ini</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider">Harga/Unit</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-right">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-yovel-border bg-white">
+            <x-data-table>
+                <x-slot:head>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Bahan Baku</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Stok Saat Ini</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Harga/Unit</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
+                </x-slot:head>
                     @forelse ($ingredients as $item)
                         <tr class="hover:bg-yovel-surface/50 transition-colors duration-150">
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -123,19 +120,19 @@
                                     <span class="text-xs text-yovel-muted">{{ $item->ingredient_code ?? '-' }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm font-medium {{ $item->current_stock <= $item->reorder_level ? 'text-rose-600' : 'text-yovel-ink' }}">
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <div class="flex items-center justify-end gap-2">
+                                    <span class="text-sm font-medium tabular-nums {{ $item->current_stock <= $item->reorder_level ? 'text-rose-600' : 'text-yovel-ink' }}">
                                         {{ number_format($item->current_stock, 2) }} {{ $item->unit }}
                                     </span>
                                     @if($item->current_stock <= $item->reorder_level)
                                         <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700" title="Stok Menipis">!</span>
                                     @endif
                                 </div>
-                                <div class="text-[10px] text-yovel-muted mt-0.5">Min: {{ number_format($item->reorder_level, 2) }}</div>
+                                <div class="text-[10px] text-yovel-muted mt-0.5 tabular-nums">Min: {{ number_format($item->reorder_level, 2) }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm text-yovel-ink">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }}</span>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <span class="text-sm text-yovel-ink tabular-nums">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($item->is_active)
@@ -149,19 +146,19 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right space-x-2">
-                                <button wire:click="adjustStock({{ $item->id }})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Sesuaikan Stok">
-                                    <span class="material-symbols-rounded text-[18px]">inventory</span>
+                                <button wire:click="adjustStock({{ $item->id }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-colors duration-200 active:scale-90" title="Sesuaikan Stok">
+                                    <span class="material-symbols-rounded text-[20px]">inventory</span>
                                 </button>
-                                <button wire:click="edit({{ $item->id }})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors" title="Ubah">
-                                    <span class="material-symbols-rounded text-[18px]">edit</span>
+                                <button wire:click="edit({{ $item->id }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-colors duration-200 active:scale-90" title="Ubah">
+                                    <span class="material-symbols-rounded text-[20px]">edit</span>
                                 </button>
                                 <button type="button"
                                     data-swal-delete
                                     data-swal-title="Hapus Bahan Baku?"
                                     data-swal-text="Bahan baku &quot;{{ $item->name }}&quot; akan dihapus permanen."
                                     data-wire-action="delete({{ $item->id }})"
-                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus">
-                                    <span class="material-symbols-rounded text-[18px]">delete</span>
+                                    class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90" title="Hapus">
+                                    <span class="material-symbols-rounded text-[20px]">delete</span>
                                 </button>
                             </td>
                         </tr>
@@ -172,8 +169,7 @@
                             </td>
                         </tr>
                     @endforelse
-                </tbody>
-            </table>
+            </x-data-table>
         </div>
 
         {{-- Mobile/tablet-portrait: card list --}}

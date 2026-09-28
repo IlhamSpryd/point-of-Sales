@@ -7,17 +7,14 @@
 
         <div class="card-surface bg-white rounded-2xl border border-yovel-border shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-yovel-ink">
-                    <thead class="bg-[#F1F1EF] text-[#787774] font-bold text-xs uppercase tracking-wider">
-                        <tr>
-                            <th class="px-6 py-4 border-b border-yovel-border">Waktu</th>
-                            <th class="px-6 py-4 border-b border-yovel-border">Pengguna</th>
-                            <th class="px-6 py-4 border-b border-yovel-border">Aktivitas</th>
-                            <th class="px-6 py-4 border-b border-yovel-border">Deskripsi</th>
-                            <th class="px-6 py-4 border-b border-yovel-border">IP / Browser</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-yovel-border">
+                <x-data-table>
+                    <x-slot:head>
+                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Waktu</th>
+                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Pengguna</th>
+                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Aktivitas</th>
+                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Deskripsi</th>
+                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">IP / Browser</th>
+                    </x-slot:head>
                         @forelse ($logs as $log)
                             <tr class="hover:bg-[#F9F9F8] transition-colors">
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -56,9 +53,8 @@
                                     <p>Belum ada catatan aktivitas.</p>
                                 </td>
                             </tr>
-                        @endforelse
-                    </tbody>
-                </table>
+                    @endforelse
+                </x-data-table>
             </div>
             
             @if($logs->hasPages())

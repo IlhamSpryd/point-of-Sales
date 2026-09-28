@@ -92,26 +92,17 @@
     <div class="card-surface flex flex-col flex-1 min-h-0">
         {{-- Desktop/tablet-landscape: existing table --}}
         <div class="hidden lg:block overflow-auto flex-1 table-scroll-shadow">
-            <table class="data-table relative">
-                <thead class="sticky top-0 z-10 shadow-sm">
-                    <tr class="bg-[#F7F7F5]">
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kode Pesanan
-                        </th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kasir &amp;
-                            Tipe</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Item</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Pelanggan
-                        </th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Pembayaran
-                        </th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">
-                            Total Tagihan</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">
-                            Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-[#E9E9E7]">
+            <x-data-table>
+                <x-slot:head>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kode Pesanan</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kasir &amp; Tipe</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Item</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Pelanggan</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Pembayaran</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Total Tagihan</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
+                </x-slot:head>
                     @forelse ($this->orders as $order)
                         <tr wire:key="order-{{ $order->id }}"
                             class="hover:bg-[#F7F7F5] transition-colors duration-200">
@@ -212,8 +203,7 @@
                             </td>
                         </tr>
                     @endforelse
-                </tbody>
-            </table>
+            </x-data-table>
         </div>
 
         {{-- Mobile/tablet-portrait: card list --}}

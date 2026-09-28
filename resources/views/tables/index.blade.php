@@ -24,18 +24,14 @@
 
     <div class="card-surface flex flex-col flex-1 min-h-0">
         {{-- Desktop/tablet-landscape: existing table --}}
-        <div class="hidden lg:block overflow-auto flex-1 table-scroll-shadow">
-            <table class="data-table relative w-full">
-                <thead class="sticky top-0 z-10 shadow-sm">
-                    <tr class="bg-[#F7F7F5]">
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">ID Meja</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">Info Meja</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">Status</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">QR Code</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-[#E9E9E7]">
+        <x-data-table>
+            <x-slot:head>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">ID Meja</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">Info Meja</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">Status</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">QR Code</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
+            </x-slot:head>
                     @forelse($tables as $table)
                         <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
                             <td class="px-6 py-4 font-medium text-yovel-ink text-sm whitespace-nowrap">{{ $table->table_code }}</td>
@@ -99,9 +95,7 @@
                             </td>
                         </tr>
                     @endforelse
-                </tbody>
-            </table>
-        </div>
+        </x-data-table>
 
         {{-- Mobile/tablet-portrait: card list --}}
         <div class="lg:hidden flex flex-col gap-3 p-4 overflow-y-auto flex-1">

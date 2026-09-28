@@ -34,6 +34,7 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'password' => 'hashed',
             'password_hash' => 'hashed',
             'pin_hash' => 'hashed', // Amankan PIN seperti password
             'join_date' => 'date',
@@ -44,7 +45,7 @@ class User extends Authenticatable
 
     public function getAuthPassword()
     {
-        return $this->password_hash;
+        return $this->password_hash ?? $this->password;
     }
 
     // Otomatis buat Employee ID saat user baru ditambahkan

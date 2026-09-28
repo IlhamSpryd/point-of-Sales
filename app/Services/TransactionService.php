@@ -177,10 +177,14 @@ class TransactionService
                 // divalidasi di sini juga seperti sebelumnya). Produk yang
                 // SUDAH punya resep TIDAK PERNAH lagi menyentuh
                 // products.stock -- lihat SYNC ALERT staleness di Fase 1.
-                if (! $hasBom && $product->stock < $item['quantity']) {
-                    throw ValidationException::withMessages([
-                        'items' => 'Stok produk "'.$product->product_name.'" tidak mencukupi. (Sisa: '.$product->stock.')',
-                    ]);
+                if (! $hasBom) {
+                    if ($product->stock < $item['quantity']) {
+                        throw ValidationException::withMessages([
+                            'items' => 'Stok produk "'.$product->product_name.'" tidak mencukupi. (Sisa: '.$product->stock.')',
+                        ]);
+                    }
+                    $product->stock -= $item['quantity'];
+                    $product->save();
                 }
 
                 // [OMEGA-NODE9] SEC FIX CRITICAL: extra_price & options[].
@@ -306,31 +310,12 @@ class TransactionService
                                 .'(Dibutuhkan: '.$needed.' '.$ingredient->unit.', Tersedia: '.$ingredient->current_stock.' '.$ingredient->unit.')',
                         ]);
                     }
+
+                    $ingredient->current_stock = bcsub((string) $ingredient->current_stock, $needed, 4);
+                    $ingredient->save();
                 }
 
-                // [OMEGA-NODE1] PERLU VERIFIKASI DOCS: Model::decrement()
-                // menyisipkan $amount sebagai literal SQL mentah ("column -
-                // $amount"), bukan parameter ter-bind -- aman di sini karena
-                // $needed murni hasil bcmath dari sumber terpercaya (qty
-                // integer tervalidasi x quantity_required master data),
-                // TIDAK PERNAH berasal dari string input mentah pengguna.
-                foreach ($ingredientIds as $ingredientId) {
-                    // Phase 4: Use ledger instead of direct decrement
-                    $needed = $ingredientRequirements[$ingredientId];
-                    DB::table('ingredient_stock_movements')->insert([
-                        'tenant_id' => $shift->tenant_id ?? 1,
-                        'store_id' => $shift->store_id ?? 1,
-                        'ingredient_id' => $ingredientId,
-                        'order_id' => $order->id,
-                        'order_item_id' => $orderItemId,
-                        'type' => 'sale_deduction',
-                        'quantity' => -$needed,
-                        'unit_cost' => null, // Leave null or fetch from ingredient
-                        'reason' => 'Checkout via POS',
-                        'idempotency_key' => "sale_bom:{$order->id}:{$orderItemId}:{$ingredientId}",
-                        'created_at' => now(),
-                    ]);
-                }
+
             }
 
             // Validasi & Hitung Diskon
@@ -1370,6 +1355,8 @@ class TransactionService
 
             if ($movement->wasRecentlyCreated) {
                 // Phase 4: Stop direct writes to stock column
+                $product->stock += $item->qty;
+                $product->save();
             }
         }
 
@@ -1413,6 +1400,8 @@ class TransactionService
 
                 if ($movement->wasRecentlyCreated) {
                     // Phase 4: Stop direct writes to current_stock
+                    $ingredient->current_stock = bcadd((string) $ingredient->current_stock, (string) abs((float) $deduction->quantity), 4);
+                    $ingredient->save();
                 }
             }
         }

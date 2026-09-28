@@ -31,78 +31,73 @@
 
     <div class="card-surface flex flex-col flex-1 min-h-0">
         {{-- Desktop/tablet-landscape: existing table --}}
-        <div class="hidden lg:block overflow-auto flex-1 table-scroll-shadow">
-            <table class="data-table relative">
-                <thead class="sticky top-0 z-10 shadow-sm">
-                    <tr class="bg-[#F7F7F5]">
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">ID Karyawan</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Karyawan</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kontak</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Peran & Status</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Bergabung Pada</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-[#E9E9E7]">
-                    @forelse($users as $user)
-                        <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
-                            <td class="px-6 py-4 font-medium text-yovel-ink text-sm">{{ $user->employee_id }}</td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-8 h-8 rounded-full bg-[#F1F1EF] text-yovel-ink flex items-center justify-center font-bold text-xs border border-[#E9E9E7] shrink-0">
-                                        {{ strtoupper(substr($user->name, 0, 1)) }}
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-sm font-medium text-yovel-ink">{{ $user->name }}</span>
-                                        <span class="text-xs text-[#787774]">{{ $user->email }}</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-yovel-ink">{{ $user->phone_number ?: '—' }}</td>
-                            <td class="px-6 py-4">
-                                <div class="flex flex-col items-start gap-1.5">
-                                    @if($user->role)
-                                        <x-badge type="info">{{ $user->role->name }}</x-badge>
-                                    @else
-                                        <x-badge type="secondary">Belum Ditentukan</x-badge>
-                                    @endif
-                                    
-                                    <x-badge :type="$user->is_active ? 'success' : 'danger'">
-                                        {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
-                                    </x-badge>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-[#787774]">{{ $user->join_date ? $user->join_date->format('M d, Y') : ($user->created_at?->format('M d, Y') ?? '—') }}</td>
-                            <td class="px-6 py-4 text-right space-x-2">
-                                <a href="{{ route('users.edit', $user->id) }}" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200 active:scale-90" aria-label="Ubah pengguna" wire:navigate>
-                                    <span class="material-symbols-rounded text-[20px]">edit</span>
-                                </a>
-                                @if(auth()->id() !== $user->id)
-                                <form id="delete-form-{{ $user->id }}" action="{{ route('users.destroy', $user->id) }}" method="POST" class="inline-block">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button" onclick="confirmDelete('delete-form-{{ $user->id }}', '{{ addslashes($user->name) }}')" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90" aria-label="Hapus">
-                                        <span class="material-symbols-rounded text-[20px]">delete</span>
-                                    </button>
-                                </form>
-                                @endif
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-[#9B9A97] text-sm">
-                                <div class="flex flex-col items-center justify-center">
-                                    <div class="w-14 h-14 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
-                                        <span class="material-symbols-rounded text-[28px] text-[#C4C3C0]">group</span>
-                                    </div>
-                                    <p class="font-medium">Pengguna tidak ditemukan.</p>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
+        <x-data-table>
+            <x-slot:head>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">ID Karyawan</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Karyawan</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kontak</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Peran & Status</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Bergabung Pada</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
+            </x-slot:head>
+            
+            @forelse($users as $user)
+                <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
+                    <td class="px-6 py-4 font-medium text-yovel-ink text-sm">{{ $user->employee_id }}</td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-[#F1F1EF] text-yovel-ink flex items-center justify-center font-bold text-xs border border-[#E9E9E7] shrink-0">
+                                {{ strtoupper(substr($user->name, 0, 1)) }}
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-sm font-medium text-yovel-ink">{{ $user->name }}</span>
+                                <span class="text-xs text-[#787774]">{{ $user->email }}</span>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-yovel-ink">{{ $user->phone_number ?: '—' }}</td>
+                    <td class="px-6 py-4">
+                        <div class="flex flex-col items-start gap-1.5">
+                            @if($user->role)
+                                <x-badge type="info">{{ $user->role->name }}</x-badge>
+                            @else
+                                <x-badge type="secondary">Belum Ditentukan</x-badge>
+                            @endif
+                            
+                            <x-badge :type="$user->is_active ? 'success' : 'danger'">
+                                {{ $user->is_active ? 'Aktif' : 'Nonaktif' }}
+                            </x-badge>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-[#787774]">{{ $user->join_date ? $user->join_date->format('M d, Y') : ($user->created_at?->format('M d, Y') ?? '—') }}</td>
+                    <td class="px-6 py-4 text-right space-x-2">
+                        <a href="{{ route('users.edit', $user->id) }}" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200 active:scale-90" aria-label="Ubah pengguna" wire:navigate>
+                            <span class="material-symbols-rounded text-[20px]">edit</span>
+                        </a>
+                        @if(auth()->id() !== $user->id)
+                        <form id="delete-form-{{ $user->id }}" action="{{ route('users.destroy', $user->id) }}" method="POST" class="inline-block">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" onclick="confirmDelete('delete-form-{{ $user->id }}', '{{ addslashes($user->name) }}')" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90" aria-label="Hapus">
+                                <span class="material-symbols-rounded text-[20px]">delete</span>
+                            </button>
+                        </form>
+                        @endif
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="6" class="px-6 py-12 text-center text-[#9B9A97] text-sm">
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="w-14 h-14 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
+                                <span class="material-symbols-rounded text-[28px] text-[#C4C3C0]">group</span>
+                            </div>
+                            <p class="font-medium">Pengguna tidak ditemukan.</p>
+                        </div>
+                    </td>
+                </tr>
+            @endforelse
+        </x-data-table>
 
         {{-- Mobile/tablet-portrait: card list --}}
         <div class="lg:hidden flex flex-col gap-3 p-4 overflow-y-auto flex-1">

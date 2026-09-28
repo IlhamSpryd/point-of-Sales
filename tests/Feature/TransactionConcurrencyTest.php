@@ -208,7 +208,6 @@ it('overselling mustahil: stok N direbutkan M proses OS paralel', function (int 
     $results = collect(chaosRace(array_fill(0, $requests, chaosPayload([$product->id => 1])), $user->id));
     $succeeded = $results->where('ok', true);
     $rejected = $results->where('ok', false);
-
     expect($succeeded)->toHaveCount($stock);
     expect($rejected)->toHaveCount($requests - $stock);
     expect(chaosStock($product->id))->toBe(0);

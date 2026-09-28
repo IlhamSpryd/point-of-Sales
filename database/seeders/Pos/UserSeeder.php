@@ -87,7 +87,7 @@ class UserSeeder extends Seeder
                     'email' => $email,
                     'email_verified_at' => $now,
                     'password' => $hashedPassword,
-                    'pin_code' => $generatePin(),
+                    'pin_hash' => \Illuminate\Support\Facades\Hash::make($generatePin()),
                     'join_date' => $joinDate->format('Y-m-d'),
                     'role_id' => $group['role_id'],
                     'is_active' => 1,

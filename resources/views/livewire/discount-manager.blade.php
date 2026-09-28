@@ -21,33 +21,30 @@
     <div class="card-surface flex flex-col flex-1 min-h-0">
 
         <div class="hidden lg:block overflow-auto flex-1 table-scroll-shadow">
-            <table class="data-table relative w-full">
-                <thead class="sticky top-0 z-10 shadow-sm">
-                    <tr class="bg-yovel-surface">
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-left">Nama &amp; Kode</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-left">Tipe &amp; Nilai</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-left">Syarat</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-left">Status &amp; Masa Aktif</th>
-                        <th class="px-6 py-4 text-xs font-semibold text-yovel-muted uppercase tracking-wider text-right">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-yovel-border bg-white">
+            <x-data-table>
+                <x-slot:head>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">Nama &amp; Kode</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Tipe &amp; Nilai</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Syarat</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">Status &amp; Masa Aktif</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
+                </x-slot:head>
                     @forelse($discounts as $discount)
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-semibold text-yovel-ink">{{ $discount->name }}</div>
                                 <div class="text-xs text-yovel-muted font-mono mt-0.5">{{ $discount->code ?? 'Tanpa Kode' }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-semibold text-yovel-ink">
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <div class="text-sm font-semibold text-yovel-ink tabular-nums">
                                     {{ $discount->type === 'percentage' ? $discount->value . '%' : 'Rp ' . number_format($discount->value, 0, ',', '.') }}
                                 </div>
-                                <div class="text-xs text-yovel-muted mt-0.5">
+                                <div class="text-xs text-[#787774] mt-0.5 tabular-nums">
                                     {{ $discount->type === 'percentage' && $discount->max_discount_amount ? 'Maks: Rp ' . number_format($discount->max_discount_amount, 0, ',', '.') : '' }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-yovel-ink">Min. Beli: Rp {{ number_format($discount->min_purchase_amount, 0, ',', '.') }}</div>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <div class="text-sm text-yovel-ink tabular-nums">Min. Beli: Rp {{ number_format($discount->min_purchase_amount, 0, ',', '.') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <x-badge :type="$discount->is_active ? 'success' : 'secondary'">
@@ -60,12 +57,12 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <div class="flex items-center justify-end gap-1">
+                                <div class="flex items-center justify-end gap-2">
                                     <button type="button"
                                         wire:click="edit({{ $discount->id }})"
                                         title="Edit Diskon"
-                                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-yovel-muted hover:bg-primary-50 hover:text-yovel-ink transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-700">
-                                        <span class="material-symbols-rounded text-[18px]">edit</span>
+                                        class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-colors duration-200 active:scale-90">
+                                        <span class="material-symbols-rounded text-[20px]">edit</span>
                                     </button>
                                     <button type="button"
                                         data-swal-delete
@@ -73,8 +70,8 @@
                                         data-swal-text="Diskon &quot;{{ $discount->name }}&quot; akan dihapus secara permanen."
                                         data-wire-action="delete({{ $discount->id }})"
                                         title="Hapus Diskon"
-                                        class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-yovel-muted hover:bg-danger-50 hover:text-danger-700 transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger-600">
-                                        <span class="material-symbols-rounded text-[18px]">delete</span>
+                                        class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90">
+                                        <span class="material-symbols-rounded text-[20px]">delete</span>
                                     </button>
                                 </div>
                             </td>
@@ -86,8 +83,7 @@
                             </td>
                         </tr>
                     @endforelse
-                </tbody>
-            </table>
+            </x-data-table>
         </div>
         <div class="p-4 border-t border-yovel-border shrink-0">
             {{ $discounts->links() }}
