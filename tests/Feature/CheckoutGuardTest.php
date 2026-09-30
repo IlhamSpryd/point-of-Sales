@@ -37,7 +37,7 @@ class CheckoutGuardTest extends TestCase
         );
 
         $this->systemUser = User::factory()->create([
-            'email' => config('pos.self_order_system_email', 'system@yovel.com'),
+            'email' => config('pos.self_order_system_email', 'system@apeiron.com'),
             'role_id' => $role->id,
         ]);
     }

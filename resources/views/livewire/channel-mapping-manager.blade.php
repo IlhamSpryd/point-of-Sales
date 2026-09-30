@@ -1,7 +1,7 @@
 <div>
     <div class="mb-6 flex flex-col items-start gap-1">
-        <h1 class="text-xl font-bold text-yovel-ink tracking-tight">Integrasi Channel</h1>
-        <p class="text-sm font-medium text-yovel-muted">Kelola pemetaan SKU dari platform eksternal ke produk internal.</p>
+        <h1 class="text-xl font-bold text-apeiron-ink tracking-tight">Integrasi Channel</h1>
+        <p class="text-sm font-medium text-apeiron-muted">Kelola pemetaan SKU dari platform eksternal ke produk internal.</p>
     </div>
 
     @if (session()->has('message'))
@@ -11,13 +11,13 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {{-- Form mapping --}}
         <div class="card-surface p-6 lg:col-span-1 h-fit">
-            <h2 class="text-sm font-semibold text-yovel-ink mb-5 tracking-tight border-b border-yovel-border pb-3">Tambah Pemetaan Baru</h2>
+            <h2 class="text-sm font-semibold text-apeiron-ink mb-5 tracking-tight border-b border-apeiron-border pb-3">Tambah Pemetaan Baru</h2>
 
             <form wire:submit="saveMapping" class="flex flex-col gap-4">
                 <div>
                     <x-form-label for="mapping-provider">Provider</x-form-label>
                     <select id="mapping-provider" wire:model="provider"
-                        class="mt-1 block w-full border border-yovel-border bg-white rounded-xl text-sm text-yovel-ink px-3 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-700 transition-all">
+                        class="mt-1 block w-full border border-apeiron-border bg-white rounded-xl text-sm text-apeiron-ink px-3 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-700 transition-all">
                         <option value="grabfood">GrabFood</option>
                         <option value="gofood">GoFood</option>
                     </select>
@@ -32,7 +32,7 @@
                 <div>
                     <x-form-label for="mapping-product">Produk Internal</x-form-label>
                     <select id="mapping-product" wire:model="productId"
-                        class="mt-1 block w-full border border-yovel-border bg-white rounded-xl text-sm text-yovel-ink px-3 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-700 transition-all">
+                        class="mt-1 block w-full border border-apeiron-border bg-white rounded-xl text-sm text-apeiron-ink px-3 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-700 transition-all">
                         <option value="">-- Pilih Produk --</option>
                         @foreach($products as $product)
                             <option value="{{ $product->id }}">{{ $product->product_name }}</option>
@@ -51,8 +51,8 @@
 
         {{-- Tabel mapping --}}
         <div class="card-surface overflow-hidden lg:col-span-2 flex flex-col">
-            <div class="px-6 py-4 border-b border-yovel-border bg-yovel-surface">
-                <h2 class="text-sm font-semibold text-yovel-ink tracking-tight">Daftar Pemetaan Aktif</h2>
+            <div class="px-6 py-4 border-b border-apeiron-border bg-apeiron-surface">
+                <h2 class="text-sm font-semibold text-apeiron-ink tracking-tight">Daftar Pemetaan Aktif</h2>
             </div>
             <div class="overflow-x-auto flex-1">
                 <x-data-table>
@@ -68,7 +68,7 @@
                             <td class="px-6 py-4">
                                 <x-badge type="secondary">{{ $mapping->provider }}</x-badge>
                             </td>
-                            <td class="px-6 py-4 text-sm font-semibold text-yovel-ink">
+                            <td class="px-6 py-4 text-sm font-semibold text-apeiron-ink">
                                 {{ $mapping->external_product_id }}
                             </td>
                             <td class="px-6 py-4 text-sm text-[#787774]">
@@ -100,7 +100,7 @@
                     @endforelse
                 </x-data-table>
             </div>
-            <div class="p-4 border-t border-yovel-border shrink-0">
+            <div class="p-4 border-t border-apeiron-border shrink-0">
                 {{ $mappings->links() }}
             </div>
         </div>

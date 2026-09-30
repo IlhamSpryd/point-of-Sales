@@ -74,7 +74,7 @@ class UserSeeder extends Seeder
                 $empId = sprintf('KSN-EMP-%04d', $empCounter);
 
                 do {
-                    $email = strtolower(str_replace(' ', '.', $faker->unique()->firstName())).$empCounter.'@yovelcafe.test';
+                    $email = strtolower(str_replace(' ', '.', $faker->unique()->firstName())).$empCounter.'@apeironpos.test';
                 } while (in_array($email, $usedEmails, true));
                 $usedEmails[] = $email;
 

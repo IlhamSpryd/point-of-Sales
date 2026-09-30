@@ -5,13 +5,13 @@
     'action' => null
 ])
 
-<div {{ $attributes->merge(['class' => 'flex flex-col items-center justify-center p-8 text-center rounded-2xl border border-dashed border-yovel-border bg-yovel-bg']) }}>
-    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4 border border-yovel-border">
-        <span class="material-symbols-rounded text-3xl text-yovel-muted">{{ $icon }}</span>
+<div {{ $attributes->merge(['class' => 'flex flex-col items-center justify-center p-8 text-center rounded-2xl border border-dashed border-apeiron-border bg-apeiron-bg']) }}>
+    <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm mb-4 border border-apeiron-border">
+        <span class="material-symbols-rounded text-3xl text-apeiron-muted">{{ $icon }}</span>
     </div>
-    <h3 class="text-lg font-bold text-yovel-ink">{{ $title }}</h3>
+    <h3 class="text-lg font-bold text-apeiron-ink">{{ $title }}</h3>
     @if($description)
-        <p class="text-sm text-yovel-muted mt-1 max-w-sm mx-auto">{{ $description }}</p>
+        <p class="text-sm text-apeiron-muted mt-1 max-w-sm mx-auto">{{ $description }}</p>
     @endif
     @if($action)
         <div class="mt-4">

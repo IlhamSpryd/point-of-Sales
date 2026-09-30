@@ -31,7 +31,7 @@ class ProductIngredientSeeder extends Seeder
 
         $recipes = [
             // Kopi Signature (1-15) - all espresso-based
-            1 => [[1, 18], [5, 200], [9, 30]],           // Yovel Signature Latte
+            1 => [[1, 18], [5, 200], [9, 30]],           // Apeiron Signature Latte
             2 => [[1, 18], [5, 200], [13, 20]],          // Caramel Macchiato
             3 => [[1, 18], [12, 15], [5, 100]],          // Hazelnut Affogato
             4 => [[1, 18], [14, 25], [22, 30]],          // Butterscotch Coffee

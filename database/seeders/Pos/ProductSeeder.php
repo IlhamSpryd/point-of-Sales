@@ -18,8 +18,8 @@ class ProductSeeder extends Seeder
 
         $products = [
             // === Kopi Signature (cat 1) — 15 items ===
-            ['code' => 'KSN-SIG-001', 'cat' => 1, 'name' => 'Yovel Signature Latte', 'price' => 38000, 'desc' => 'Espresso blend house dengan susu creamy dan sentuhan gula aren'],
-            ['code' => 'KSN-SIG-002', 'cat' => 1, 'name' => 'Caramel Macchiato Yovel', 'price' => 42000, 'desc' => 'Espresso doppio, steamed milk, caramel drizzle'],
+            ['code' => 'KSN-SIG-001', 'cat' => 1, 'name' => 'Apeiron Signature Latte', 'price' => 38000, 'desc' => 'Espresso blend house dengan susu creamy dan sentuhan gula aren'],
+            ['code' => 'KSN-SIG-002', 'cat' => 1, 'name' => 'Caramel Macchiato Apeiron', 'price' => 42000, 'desc' => 'Espresso doppio, steamed milk, caramel drizzle'],
             ['code' => 'KSN-SIG-003', 'cat' => 1, 'name' => 'Hazelnut Affogato', 'price' => 45000, 'desc' => 'Gelato vanilla disiram espresso hazelnut'],
             ['code' => 'KSN-SIG-004', 'cat' => 1, 'name' => 'Butterscotch Coffee', 'price' => 40000, 'desc' => 'Cold brew dengan sirup butterscotch dan cream float'],
             ['code' => 'KSN-SIG-005', 'cat' => 1, 'name' => 'Pandan Latte', 'price' => 38000, 'desc' => 'Espresso bertemu aroma pandan khas nusantara'],

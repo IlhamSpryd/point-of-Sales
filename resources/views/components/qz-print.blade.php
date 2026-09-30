@@ -1,5 +1,5 @@
 <script>
-    window.YovelPrint = (function () {
+    window.ApeironPrint = (function () {
         let connecting = null;
 
         function ensureConnected() {

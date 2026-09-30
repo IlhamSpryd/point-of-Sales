@@ -1,8 +1,8 @@
-# 🏪 Yovel Coffee & Cafe — POS Data Seeder
+# 🏪 Apeiron POS — POS Data Seeder
 
 ## Deskripsi
 
-Seeder ini menghasilkan **data realistis 12 bulan penuh** untuk sistem POS "Yovel Coffee & Cafe", sebuah cafe & resto modern di Jakarta Selatan yang menyajikan specialty coffee, Indonesian comfort food, dan dessert.
+Seeder ini menghasilkan **data realistis 12 bulan penuh** untuk sistem POS "Apeiron POS", sebuah cafe & resto modern di Jakarta Selatan yang menyajikan specialty coffee, Indonesian comfort food, dan dessert.
 
 ### Volume Data yang Dihasilkan
 

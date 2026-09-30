@@ -1,14 +1,14 @@
 <x-app-layout>
     <div class="flex flex-col gap-6 max-w-5xl mx-auto">
         <div>
-            <h1 class="text-2xl font-bold text-yovel-ink tracking-tight">Pengaturan Sistem</h1>
+            <h1 class="text-2xl font-bold text-apeiron-ink tracking-tight">Pengaturan Sistem</h1>
             <p class="text-sm font-medium text-[#787774] mt-1">Konfigurasi preferensi Point of Sales dan Enterprise Features.</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- Sidebar -->
             <div class="md:col-span-1 space-y-2">
-                <a href="#" class="block px-4 py-3 bg-yovel-ink text-white rounded-xl font-bold text-sm shadow-sm transition-all">
+                <a href="#" class="block px-4 py-3 bg-apeiron-ink text-white rounded-xl font-bold text-sm shadow-sm transition-all">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-rounded text-[20px]">storefront</span>
                         Informasi Toko
@@ -36,33 +36,33 @@
 
             <!-- Content -->
             <div class="md:col-span-2">
-                <div class="card-surface bg-white rounded-2xl border border-yovel-border p-6 shadow-sm">
-                    <h2 class="text-lg font-bold text-yovel-ink mb-6">Informasi Toko</h2>
+                <div class="card-surface bg-white rounded-2xl border border-apeiron-border p-6 shadow-sm">
+                    <h2 class="text-lg font-bold text-apeiron-ink mb-6">Informasi Toko</h2>
                     
                     <form class="space-y-5">
                         <div class="space-y-1.5">
-                            <label class="block text-sm font-bold text-yovel-ink">Nama Toko</label>
-                            <input type="text" class="w-full bg-[#F9F9F8] border border-[#E9E9E7] rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#37352F] focus:border-yovel-ink transition-all" value="Yovel Coffee POS">
+                            <label class="block text-sm font-bold text-apeiron-ink">Nama Toko</label>
+                            <input type="text" class="w-full bg-[#F9F9F8] border border-[#E9E9E7] rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all" value="Apeiron POS">
                         </div>
 
                         <div class="space-y-1.5">
-                            <label class="block text-sm font-bold text-yovel-ink">Alamat Lengkap</label>
-                            <textarea rows="3" class="w-full bg-[#F9F9F8] border border-[#E9E9E7] rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#37352F] focus:border-yovel-ink transition-all">Jl. Kopi Harapan No. 99, Jakarta Selatan</textarea>
+                            <label class="block text-sm font-bold text-apeiron-ink">Alamat Lengkap</label>
+                            <textarea rows="3" class="w-full bg-[#F9F9F8] border border-[#E9E9E7] rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all">Jl. Kopi Harapan No. 99, Jakarta Selatan</textarea>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div class="space-y-1.5">
-                                <label class="block text-sm font-bold text-yovel-ink">Nomor Telepon</label>
-                                <input type="text" class="w-full bg-[#F9F9F8] border border-[#E9E9E7] rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#37352F] focus:border-yovel-ink transition-all" value="081234567890">
+                                <label class="block text-sm font-bold text-apeiron-ink">Nomor Telepon</label>
+                                <input type="text" class="w-full bg-[#F9F9F8] border border-[#E9E9E7] rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all" value="081234567890">
                             </div>
                             <div class="space-y-1.5">
-                                <label class="block text-sm font-bold text-yovel-ink">Email</label>
-                                <input type="email" class="w-full bg-[#F9F9F8] border border-[#E9E9E7] rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#37352F] focus:border-yovel-ink transition-all" value="hello@yovelcoffee.com">
+                                <label class="block text-sm font-bold text-apeiron-ink">Email</label>
+                                <input type="email" class="w-full bg-[#F9F9F8] border border-[#E9E9E7] rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all" value="hello@apeironpos.com">
                             </div>
                         </div>
 
                         <div class="pt-4 mt-6 border-t border-[#E9E9E7] flex justify-end">
-                            <button type="button" class="bg-yovel-ink text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-sm hover:-translate-y-0.5 transition-transform">
+                            <button type="button" class="bg-apeiron-ink text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-sm hover:-translate-y-0.5 transition-transform">
                                 Simpan Perubahan
                             </button>
                         </div>

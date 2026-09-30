@@ -54,7 +54,7 @@ class Table extends Model
             // Kita menggunakan md5 dari nama meja agar token tidak berubah
             // jika meja dihapus dan dibuat ulang, sehingga QR code fisik tidak perlu dicetak ulang.
             if (empty($table->secure_token)) {
-                $table->secure_token = md5('yovel-pos-qr-'.strtolower(trim($table->table_name)));
+                $table->secure_token = md5('apeiron-pos-qr-'.strtolower(trim($table->table_name)));
             }
         });
     }

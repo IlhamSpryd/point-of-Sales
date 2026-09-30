@@ -26,7 +26,7 @@ class ReceiptPrinterService
 
         $printer->setJustification(Printer::JUSTIFY_CENTER);
         $printer->setEmphasis(true);
-        $printer->text("YOVEL COFFEE & CAFE\n");
+        $printer->text("Apeiron POS\n");
         $printer->setEmphasis(false);
         $printer->text("Jl. Mawar No. 123, Jakarta\n");
         $printer->text(str_repeat('-', 32)."\n");

@@ -2,10 +2,10 @@
     @if($showModal)
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h4 class="text-xl font-bold text-yovel-ink tracking-tight">
+            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">
                 {{ $isEditing ? 'Ubah Bahan Baku' : 'Tambah Bahan Baku' }}
             </h4>
-            <p class="text-sm font-medium text-yovel-muted mt-1">
+            <p class="text-sm font-medium text-apeiron-muted mt-1">
                 {{ $isEditing ? 'Perbarui informasi data bahan baku' : 'Tambahkan bahan baku baru ke dalam inventaris' }}
             </p>
         </div>
@@ -59,13 +59,13 @@
                         input[type="checkbox"]:checked ~ .block { background-color: #10b981; }
                         input[type="checkbox"]:checked ~ .dot { transform: translateX(100%); }
                     </style>
-                    <div class="ml-3 text-sm font-semibold text-yovel-ink">
+                    <div class="ml-3 text-sm font-semibold text-apeiron-ink">
                         Bahan Baku Aktif
                     </div>
                 </label>
             </div>
 
-            <div class="pt-4 border-t border-yovel-border flex justify-end gap-3">
+            <div class="pt-4 border-t border-apeiron-border flex justify-end gap-3">
                 <x-button type="button" variant="secondary" wire:click="$set('showModal', false)">
                     Batal
                 </x-button>
@@ -78,8 +78,8 @@
     @else
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
-            <h4 class="text-xl font-bold text-yovel-ink tracking-tight">Manajemen Bahan Baku</h4>
-            <p class="text-sm font-medium text-yovel-muted mt-1">Kelola data bahan baku dan sesuaikan stok (Bill of Materials)</p>
+            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Manajemen Bahan Baku</h4>
+            <p class="text-sm font-medium text-apeiron-muted mt-1">Kelola data bahan baku dan sesuaikan stok (Bill of Materials)</p>
         </div>
         <div class="flex items-center gap-3 w-full sm:w-auto">
             <div class="w-full sm:w-64">
@@ -113,26 +113,26 @@
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
                 </x-slot:head>
                     @forelse ($ingredients as $item)
-                        <tr class="hover:bg-yovel-surface/50 transition-colors duration-150">
+                        <tr class="hover:bg-apeiron-surface/50 transition-colors duration-150">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-semibold text-yovel-ink">{{ $item->name }}</span>
-                                    <span class="text-xs text-yovel-muted">{{ $item->ingredient_code ?? '-' }}</span>
+                                    <span class="text-sm font-semibold text-apeiron-ink">{{ $item->name }}</span>
+                                    <span class="text-xs text-apeiron-muted">{{ $item->ingredient_code ?? '-' }}</span>
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
                                 <div class="flex items-center justify-end gap-2">
-                                    <span class="text-sm font-medium tabular-nums {{ $item->current_stock <= $item->reorder_level ? 'text-rose-600' : 'text-yovel-ink' }}">
+                                    <span class="text-sm font-medium tabular-nums {{ $item->current_stock <= $item->reorder_level ? 'text-rose-600' : 'text-apeiron-ink' }}">
                                         {{ number_format($item->current_stock, 2) }} {{ $item->unit }}
                                     </span>
                                     @if($item->current_stock <= $item->reorder_level)
                                         <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700" title="Stok Menipis">!</span>
                                     @endif
                                 </div>
-                                <div class="text-[10px] text-yovel-muted mt-0.5 tabular-nums">Min: {{ number_format($item->reorder_level, 2) }}</div>
+                                <div class="text-[10px] text-apeiron-muted mt-0.5 tabular-nums">Min: {{ number_format($item->reorder_level, 2) }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <span class="text-sm text-yovel-ink tabular-nums">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }}</span>
+                                <span class="text-sm text-apeiron-ink tabular-nums">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($item->is_active)
@@ -140,8 +140,8 @@
                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Aktif
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-yovel-surface text-yovel-muted border border-yovel-border">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-yovel-muted"></span> Nonaktif
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-apeiron-surface text-apeiron-muted border border-apeiron-border">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-apeiron-muted"></span> Nonaktif
                                     </span>
                                 @endif
                             </td>
@@ -178,8 +178,8 @@
                 <div class="card-surface p-4">
                     <div class="flex justify-between items-start mb-2">
                         <div class="flex flex-col">
-                            <span class="font-bold text-yovel-ink text-sm">{{ $item->name }}</span>
-                            <span class="text-xs text-yovel-muted">{{ $item->ingredient_code ?? '-' }}</span>
+                            <span class="font-bold text-apeiron-ink text-sm">{{ $item->name }}</span>
+                            <span class="text-xs text-apeiron-muted">{{ $item->ingredient_code ?? '-' }}</span>
                         </div>
                         <div class="flex flex-col items-end gap-1">
                             @if($item->is_active)
@@ -187,16 +187,16 @@
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Aktif
                                 </span>
                             @else
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-yovel-surface text-yovel-muted border border-yovel-border">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-yovel-muted"></span> Nonaktif
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-apeiron-surface text-apeiron-muted border border-apeiron-border">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-apeiron-muted"></span> Nonaktif
                                 </span>
                             @endif
                         </div>
                     </div>
-                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-yovel-border">
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-apeiron-border">
                         <div class="flex-1">
-                            <span class="text-[11px] font-semibold text-yovel-muted uppercase tracking-wider block mb-0.5">Stok: <span class="{{ $item->current_stock <= $item->reorder_level ? 'text-rose-600' : 'text-yovel-ink' }}">{{ number_format($item->current_stock, 2) }} {{ $item->unit }}</span></span>
-                            <span class="text-xs text-yovel-ink">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }} / {{ $item->unit }}</span>
+                            <span class="text-[11px] font-semibold text-apeiron-muted uppercase tracking-wider block mb-0.5">Stok: <span class="{{ $item->current_stock <= $item->reorder_level ? 'text-rose-600' : 'text-apeiron-ink' }}">{{ number_format($item->current_stock, 2) }} {{ $item->unit }}</span></span>
+                            <span class="text-xs text-apeiron-ink">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }} / {{ $item->unit }}</span>
                         </div>
                         <div class="flex items-center gap-1 shrink-0">
                             <button wire:click="adjustStock({{ $item->id }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Sesuaikan Stok">
@@ -223,7 +223,7 @@
             @endforelse
         </div>
         @if($ingredients->hasPages())
-            <div class="p-4 border-t border-yovel-border shrink-0">
+            <div class="p-4 border-t border-apeiron-border shrink-0">
                 {{ $ingredients->links() }}
             </div>
         @endif
@@ -234,16 +234,16 @@
     @if($showAdjustModal)
     <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-yovel-ink/40 backdrop-blur-sm transition-opacity" aria-hidden="true" wire:click="$set('showAdjustModal', false)"></div>
+            <div class="fixed inset-0 bg-apeiron-ink/40 backdrop-blur-sm transition-opacity" aria-hidden="true" wire:click="$set('showAdjustModal', false)"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="relative z-10 inline-block align-bottom bg-white rounded-xl text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full border border-yovel-border max-h-[90vh] overflow-y-auto">
+            <div class="relative z-10 inline-block align-bottom bg-white rounded-xl text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full border border-apeiron-border max-h-[90vh] overflow-y-auto">
                 <form wire:submit.prevent="saveAdjustment">
                     <div class="bg-white px-6 pt-6 pb-6">
                         <div class="mb-5 flex justify-between items-center">
-                            <h3 class="text-lg leading-6 font-bold text-yovel-ink" id="modal-title">
+                            <h3 class="text-lg leading-6 font-bold text-apeiron-ink" id="modal-title">
                                 Sesuaikan Stok
                             </h3>
-                            <button type="button" wire:click="$set('showAdjustModal', false)" class="text-yovel-muted hover:text-yovel-ink">
+                            <button type="button" wire:click="$set('showAdjustModal', false)" class="text-apeiron-muted hover:text-apeiron-ink">
                                 <span class="material-symbols-rounded text-[20px]">close</span>
                             </button>
                         </div>
@@ -252,12 +252,12 @@
                             <div>
                                 <x-form-label for="adjustType">Tipe Mutasi <span class="text-rose-500">*</span></x-form-label>
                                 <div class="relative">
-                                    <select id="adjustType" wire:model="adjustType" class="form-input w-full px-4 py-2.5 rounded-xl border border-yovel-border bg-white text-yovel-ink appearance-none focus:outline-none focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink transition-all duration-200 shadow-sm {{ $errors->has('adjustType') ? 'input-error' : '' }}">
+                                    <select id="adjustType" wire:model="adjustType" class="form-input w-full px-4 py-2.5 rounded-xl border border-apeiron-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('adjustType') ? 'input-error' : '' }}">
                                         <option value="purchase_receipt">Barang Masuk (Pembelian)</option>
                                         <option value="adjustment">Koreksi Manual (+ / -)</option>
                                         <option value="waste">Barang Rusak / Waste (-)</option>
                                     </select>
-                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-yovel-muted">
+                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-apeiron-muted">
                                         <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
                                     </div>
                                 </div>
@@ -272,12 +272,12 @@
 
                             <div>
                                 <x-form-label for="adjustReason">Keterangan / Alasan (Opsional)</x-form-label>
-                                <textarea id="adjustReason" wire:model="adjustReason" rows="3" class="form-input w-full px-4 py-2.5 rounded-xl border border-yovel-border bg-white text-yovel-ink placeholder-yovel-muted focus:outline-none focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink transition-all duration-200 shadow-sm {{ $errors->has('adjustReason') ? 'input-error' : '' }}" placeholder="Catatan tambahan..."></textarea>
+                                <textarea id="adjustReason" wire:model="adjustReason" rows="3" class="form-input w-full px-4 py-2.5 rounded-xl border border-apeiron-border bg-white text-apeiron-ink placeholder-apeiron-muted focus:outline-none focus:ring-2 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('adjustReason') ? 'input-error' : '' }}" placeholder="Catatan tambahan..."></textarea>
                                 @error('adjustReason') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
                             </div>
                         </div>
                     </div>
-                    <div class="bg-yovel-surface px-6 py-4 border-t border-yovel-border flex justify-end gap-3 rounded-b-xl">
+                    <div class="bg-apeiron-surface px-6 py-4 border-t border-apeiron-border flex justify-end gap-3 rounded-b-xl">
                         <x-button type="button" variant="secondary" wire:click="$set('showAdjustModal', false)">
                             Batal
                         </x-button>

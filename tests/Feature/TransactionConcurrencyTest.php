@@ -38,7 +38,7 @@ beforeAll(function () {
 
     if (! in_array($connection, ['mysql', 'mariadb'], true)) {
         Assert::markTestSkipped(
-            'Uji chaos butuh MySQL/MariaDB nyata. Contoh: DB_CONNECTION=mysql DB_DATABASE=yovel_pos_test php artisan test --group=chaos'
+            'Uji chaos butuh MySQL/MariaDB nyata. Contoh: DB_CONNECTION=mysql DB_DATABASE=apeiron_pos_test php artisan test --group=chaos'
         );
     }
 });

@@ -1,6 +1,6 @@
 <section>
     <header>
-        <h2 class="text-lg font-bold text-yovel-ink">
+        <h2 class="text-lg font-bold text-apeiron-ink">
             {{ __('Perbarui Kata Sandi') }}
         </h2>
 

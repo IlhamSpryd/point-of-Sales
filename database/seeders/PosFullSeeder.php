@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
- * PosFullSeeder: Orchestrator seeder for the full Yovel Coffee & Cafe POS dataset.
+ * PosFullSeeder: Orchestrator seeder for the full Apeiron POS dataset.
  *
  * Generates a realistic 12-month dataset with ~50,000 orders, 35 employees,
  * 133 menu items, 1000 customers, and all supporting transactional data.
@@ -25,7 +25,7 @@ class PosFullSeeder extends Seeder
 
         $this->command->info('');
         $this->command->info('╔══════════════════════════════════════════════════════╗');
-        $this->command->info('║   🏪 Yovel Coffee & Cafe — Full POS Data Seeder     ║');
+        $this->command->info('║   🏪 Apeiron POS — Full POS Data Seeder     ║');
         $this->command->info('║   Target: 12 months, ~50K orders, 133 menu items    ║');
         $this->command->info('╚══════════════════════════════════════════════════════╝');
         $this->command->info('');

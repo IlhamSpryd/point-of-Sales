@@ -24,14 +24,14 @@
       </x-customer-layout>
 --}}
 
-<body class="antialiased bg-gray-50 text-yovel-ink font-sans">
+<body class="antialiased bg-gray-50 text-apeiron-ink font-sans">
     <div
-        class="mx-auto max-w-md min-h-screen bg-yovel-bg relative shadow-2xl sm:border-x sm:border-yovel-border pt-safe">
+        class="mx-auto max-w-md min-h-screen bg-apeiron-bg relative shadow-2xl sm:border-x sm:border-apeiron-border pt-safe">
         <header
-            class="sticky top-0 z-30 h-14 flex items-center gap-1 px-3 bg-yovel-bg/80 backdrop-blur-xl border-b border-yovel-border">
+            class="sticky top-0 z-30 h-14 flex items-center gap-1 px-3 bg-apeiron-bg/80 backdrop-blur-xl border-b border-apeiron-border">
             @if ($backUrl = $attributes->get('back-url'))
                 <a href="{{ $backUrl }}" aria-label="Kembali"
-                    class="w-11 h-11 -ml-1 flex items-center justify-center rounded-full hover:bg-yovel-surface active:scale-95 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-yovel-ink">
+                    class="w-11 h-11 -ml-1 flex items-center justify-center rounded-full hover:bg-apeiron-surface active:scale-95 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-apeiron-ink">
                     <span class="material-symbols-rounded">arrow_back</span>
                 </a>
             @endif
@@ -45,7 +45,7 @@
                 <x-waiter-call-button />
                 @if (session('current_table_name'))
                     <span
-                        class="shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold text-yovel-muted bg-white border border-yovel-border rounded-full px-3 py-1.5 shadow-sm">
+                        class="shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold text-apeiron-muted bg-white border border-apeiron-border rounded-full px-3 py-1.5 shadow-sm">
                         <span class="material-symbols-rounded text-[16px]">table_restaurant</span>
                         {{ session('current_table_name') }}
                     </span>
@@ -64,7 +64,7 @@
             x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
             x-transition:leave-end="opacity-0 translate-y-4"
-            class="fixed inset-x-4 bottom-32 z-50 max-w-sm mx-auto rounded-2xl bg-yovel-ink text-white text-sm font-medium px-4 py-3 shadow-xl text-center">
+            class="fixed inset-x-4 bottom-32 z-50 max-w-sm mx-auto rounded-2xl bg-apeiron-ink text-white text-sm font-medium px-4 py-3 shadow-xl text-center">
             <span x-text="message"></span>
         </div>
     </div>

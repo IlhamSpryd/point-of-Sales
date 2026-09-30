@@ -17,66 +17,66 @@
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 3xl:gap-8 4xl:grid-cols-4">
 
         {{-- KOLOM 1: MENUNGGU --}}
-        <section aria-labelledby="kds-pending" class="bg-yovel-surface border border-yovel-border rounded-2xl flex flex-col overflow-hidden">
-            <header class="flex items-center justify-between border-b border-yovel-border bg-yovel-bg/50 px-5 py-4">
+        <section aria-labelledby="kds-pending" class="bg-apeiron-surface border border-apeiron-border rounded-2xl flex flex-col overflow-hidden">
+            <header class="flex items-center justify-between border-b border-apeiron-border bg-apeiron-bg/50 px-5 py-4">
                 <h3 id="kds-pending" class="flex items-center gap-2.5 font-bold">
-                    <span class="h-2.5 w-2.5 rounded-full border-2 border-yovel-ink"></span> Menunggu
+                    <span class="h-2.5 w-2.5 rounded-full border-2 border-apeiron-ink"></span> Menunggu
                 </h3>
-                <span class="rounded-lg border border-yovel-border bg-yovel-ink px-2.5 py-1 text-xs font-bold text-yovel-bg tabular-nums">{{ $this->pendingItems->count() }}</span>
+                <span class="rounded-lg border border-apeiron-border bg-apeiron-ink px-2.5 py-1 text-xs font-bold text-apeiron-bg tabular-nums">{{ $this->pendingItems->count() }}</span>
             </header>
             <div class="custom-scrollbar max-h-[70vh] flex-1 space-y-3 overflow-y-auto p-4">
                 @forelse ($this->pendingItems as $item)
                     @include('livewire.kds.partials.ticket', ['item' => $item, 'variant' => 'pending'])
                 @empty
                     <div class="flex flex-col items-center py-16 text-center">
-                        <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-yovel-bg border border-yovel-border shadow-sm">
+                        <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-apeiron-bg border border-apeiron-border shadow-sm">
                             <span class="material-symbols-rounded text-[32px] text-primary-400">pending_actions</span>
                         </div>
-                        <p class="text-sm font-medium text-yovel-muted">Tidak ada pesanan menunggu.</p>
+                        <p class="text-sm font-medium text-apeiron-muted">Tidak ada pesanan menunggu.</p>
                     </div>
                 @endforelse
             </div>
         </section>
 
         {{-- KOLOM 2: SEDANG DIRACIK --}}
-        <section aria-labelledby="kds-brewing" class="bg-yovel-surface border border-yovel-border rounded-2xl flex flex-col overflow-hidden">
-            <header class="flex items-center justify-between border-b border-yovel-border bg-yovel-bg/50 px-5 py-4">
+        <section aria-labelledby="kds-brewing" class="bg-apeiron-surface border border-apeiron-border rounded-2xl flex flex-col overflow-hidden">
+            <header class="flex items-center justify-between border-b border-apeiron-border bg-apeiron-bg/50 px-5 py-4">
                 <h3 id="kds-brewing" class="flex items-center gap-2.5 font-bold">
                     <span class="h-2.5 w-2.5 animate-pulse rounded-full bg-amber-500"></span> Sedang Diracik
                 </h3>
-                <span class="rounded-lg border border-yovel-border bg-yovel-ink px-2.5 py-1 text-xs font-bold text-yovel-bg tabular-nums">{{ $this->brewingItems->count() }}</span>
+                <span class="rounded-lg border border-apeiron-border bg-apeiron-ink px-2.5 py-1 text-xs font-bold text-apeiron-bg tabular-nums">{{ $this->brewingItems->count() }}</span>
             </header>
             <div class="custom-scrollbar max-h-[70vh] flex-1 space-y-3 overflow-y-auto p-4">
                 @forelse ($this->brewingItems as $item)
                     @include('livewire.kds.partials.ticket', ['item' => $item, 'variant' => 'brewing'])
                 @empty
                     <div class="flex flex-col items-center py-16 text-center">
-                        <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-yovel-bg border border-yovel-border shadow-sm">
+                        <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-apeiron-bg border border-apeiron-border shadow-sm">
                             <span class="material-symbols-rounded text-[32px] text-amber-500">coffee_maker</span>
                         </div>
-                        <p class="text-sm font-medium text-yovel-muted">Tidak ada item sedang diracik.</p>
+                        <p class="text-sm font-medium text-apeiron-muted">Tidak ada item sedang diracik.</p>
                     </div>
                 @endforelse
             </div>
         </section>
 
         {{-- KOLOM 3: SIAP DIANTAR --}}
-        <section aria-labelledby="kds-ready" class="bg-yovel-surface border border-yovel-border rounded-2xl flex flex-col overflow-hidden">
-            <header class="flex items-center justify-between border-b border-yovel-border bg-yovel-bg/50 px-5 py-4">
+        <section aria-labelledby="kds-ready" class="bg-apeiron-surface border border-apeiron-border rounded-2xl flex flex-col overflow-hidden">
+            <header class="flex items-center justify-between border-b border-apeiron-border bg-apeiron-bg/50 px-5 py-4">
                 <h3 id="kds-ready" class="flex items-center gap-2.5 font-bold text-green-500">
                     <span class="material-symbols-rounded text-[16px]">check_circle</span> Siap Diantar
                 </h3>
-                <span class="rounded-lg border border-yovel-border bg-yovel-ink px-2.5 py-1 text-xs font-bold text-yovel-bg tabular-nums">{{ $this->readyItems->count() }}</span>
+                <span class="rounded-lg border border-apeiron-border bg-apeiron-ink px-2.5 py-1 text-xs font-bold text-apeiron-bg tabular-nums">{{ $this->readyItems->count() }}</span>
             </header>
             <div class="custom-scrollbar max-h-[70vh] flex-1 space-y-3 overflow-y-auto p-4">
                 @forelse ($this->readyItems as $item)
                     @include('livewire.kds.partials.ticket', ['item' => $item, 'variant' => 'ready'])
                 @empty
                     <div class="flex flex-col items-center py-16 text-center">
-                        <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-yovel-bg border border-yovel-border shadow-sm">
+                        <div class="mb-3 flex h-16 w-16 items-center justify-center rounded-2xl bg-apeiron-bg border border-apeiron-border shadow-sm">
                             <span class="material-symbols-rounded text-[32px] text-green-500">check_circle</span>
                         </div>
-                        <p class="text-sm font-medium text-yovel-muted">Belum ada item selesai hari ini.</p>
+                        <p class="text-sm font-medium text-apeiron-muted">Belum ada item selesai hari ini.</p>
                     </div>
                 @endforelse
             </div>

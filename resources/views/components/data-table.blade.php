@@ -7,7 +7,7 @@
                 </tr>
             </thead>
         @endif
-        <tbody class="divide-y divide-yovel-border bg-white" {{ $attributes }}>
+        <tbody class="divide-y divide-apeiron-border bg-white" {{ $attributes }}>
             {{ $slot }}
         </tbody>
     </table>

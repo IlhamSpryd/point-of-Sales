@@ -5,7 +5,7 @@
 <x-app-layout>
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-            <h4 class="text-xl font-bold text-yovel-ink tracking-tight">Kategori</h4>
+            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Kategori</h4>
             <p class="text-sm font-medium text-[#787774] mt-1">Kelola kategori produk</p>
         </div>
         
@@ -49,9 +49,9 @@
             
             @forelse($categories as $category)
                 <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
-                    <td class="px-6 py-4 font-medium text-yovel-ink text-sm">{{ $category->category_code }}</td>
+                    <td class="px-6 py-4 font-medium text-apeiron-ink text-sm">{{ $category->category_code }}</td>
                     <td class="px-6 py-4">
-                        <div class="font-medium text-yovel-ink text-sm">{{ $category->category_name }}</div>
+                        <div class="font-medium text-apeiron-ink text-sm">{{ $category->category_name }}</div>
                     </td>
                     <td class="px-6 py-4 text-sm text-[#787774]">{{ $category->created_at?->format('M d, Y') ?? '—' }}</td>
                     @if($canManage)
@@ -89,7 +89,7 @@
                 <div class="card-surface p-4">
                     <div class="flex justify-between items-start">
                         <div class="flex flex-col">
-                            <span class="font-bold text-yovel-ink text-sm">{{ $category->category_name }}</span>
+                            <span class="font-bold text-apeiron-ink text-sm">{{ $category->category_name }}</span>
                             <span class="text-xs text-[#787774]">{{ $category->category_code }}</span>
                         </div>
                         <span class="text-[11px] font-medium text-[#9B9A97]">{{ $category->created_at?->format('d M Y') ?? '—' }}</span>
@@ -118,7 +118,7 @@
                 </div>
             @endforelse
         </div>
-        <div class="p-4 border-t border-yovel-border shrink-0">
+        <div class="p-4 border-t border-apeiron-border shrink-0">
             {{ $categories->links() }}
         </div>
     </div>

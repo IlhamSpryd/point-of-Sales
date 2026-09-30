@@ -11,15 +11,15 @@
 
     <div class="mb-8 js-anim" id="anim-heading">
         <div class="flex items-center gap-2 mb-6">
-            <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" class="text-yovel-ink">
+            <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor" class="text-apeiron-ink">
                 <path
                     d="M8 0a1 1 0 0 1 1 1v5.268l4.562-2.634a1 1 0 1 1 1 1.732L10 8l4.562 2.634a1 1 0 1 1-1 1.732L9 9.732V15a1 1 0 1 1-2 0V9.732l-4.562 2.634a1 1 0 1 1-1-1.732L6 8 1.438 5.366a1 1 0 0 1 1-1.732L7 6.268V1a1 1 0 0 1 1-1z" />
             </svg>
             <span class="text-lg tracking-tight font-brand">
-                <span class="font-bold">Yovel Coffee</span><span class="font-normal text-[#787774] ml-0.5"> & Cafe</span>
+                <span class="font-bold">Apeiron POS</span><span class="font-normal text-[#787774] ml-0.5"> & Cafe</span>
             </span>
         </div>
-        <h1 class="text-2xl text-yovel-ink tracking-tight">{{ __('Halo,') }} <span
+        <h1 class="text-2xl text-apeiron-ink tracking-tight">{{ __('Halo,') }} <span
                 class="font-semibold">{{ __('Selamat Datang Kembali!') }}</span></h1>
         <p class="text-[#787774] text-sm mt-2">{{ __('Masuk untuk mengelola dashboard Anda.') }}</p>
     </div>
@@ -32,28 +32,28 @@
 
         {{-- Email --}}
         <div class="js-anim" id="anim-field-email">
-            <label for="email" class="block text-sm font-medium mb-1.5 text-yovel-ink"
+            <label for="email" class="block text-sm font-medium mb-1.5 text-apeiron-ink"
                 :class="hasError ? 'text-rose-600' : ''">{{ __('Email') }}</label>
             <input type="email" name="email" id="email" required value="{{ old('email') }}" autocomplete="email"
-                class="block w-full px-3.5 py-2.5 border border-[#E9E9E7] rounded-xl leading-5 bg-[#F7F7F5] placeholder-[#9B9A97] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-yovel-ink text-sm transition-all duration-200 {{ $errors->has('email') ? 'border-rose-300 ring-1 ring-rose-300' : '' }}"
+                class="block w-full px-3.5 py-2.5 border border-[#E9E9E7] rounded-xl leading-5 bg-[#F7F7F5] placeholder-[#9B9A97] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink text-sm transition-all duration-200 {{ $errors->has('email') ? 'border-rose-300 ring-1 ring-rose-300' : '' }}"
                 placeholder="{{ __('Masukkan email anda') }}">
         </div>
 
         {{-- Password + Toggle --}}
         <div class="js-anim" id="anim-field-password" x-data="{ show: false }">
             <div class="flex items-center justify-between mb-1.5">
-                <label for="password" class="block text-sm font-medium text-yovel-ink">{{ __('Kata Sandi') }}</label>
+                <label for="password" class="block text-sm font-medium text-apeiron-ink">{{ __('Kata Sandi') }}</label>
                 <button type="button" disabled class="text-sm font-medium text-[#C4C3C0] cursor-not-allowed"
                     aria-disabled="true">{{ __('Lupa Password?') }}</button>
             </div>
             <div class="relative">
                 <input :type="show ? 'text' : 'password'" name="password" id="password" required
                     autocomplete="current-password"
-                    class="block w-full pl-3.5 pr-10 py-2.5 border border-[#E9E9E7] rounded-xl leading-5 bg-[#F7F7F5] placeholder-[#9B9A97] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-yovel-ink text-sm transition-all duration-200"
+                    class="block w-full pl-3.5 pr-10 py-2.5 border border-[#E9E9E7] rounded-xl leading-5 bg-[#F7F7F5] placeholder-[#9B9A97] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink text-sm transition-all duration-200"
                     placeholder="••••••••">
 
                 <button type="button" @click="show = !show"
-                    class="absolute inset-y-0 right-3 flex items-center text-[#9B9A97] hover:text-yovel-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F] rounded transition-colors duration-200"
+                    class="absolute inset-y-0 right-3 flex items-center text-[#9B9A97] hover:text-apeiron-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F] rounded transition-colors duration-200"
                     :aria-label="show ? '{{ __('Sembunyikan kata sandi') }}' : '{{ __('Tampilkan kata sandi') }}'">
                     <span class="eye-icon-wrapper" aria-hidden="true">
                         <svg :class="show ? 'eye-icon hidden' : 'eye-icon visible'" fill="none" viewBox="0 0 24 24"
@@ -74,7 +74,7 @@
 
         <div class="pt-2 js-anim" id="anim-submit">
             <button type="submit" id="btn-masuk"
-                class="w-full flex justify-center items-center gap-2 bg-yovel-ink text-white text-sm font-medium py-3 px-5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:ring-offset-2 hover:bg-yovel-ink transition-all duration-200 active:scale-[0.98] shadow-sm"
+                class="w-full flex justify-center items-center gap-2 bg-apeiron-ink text-white text-sm font-medium py-3 px-5 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:ring-offset-2 hover:bg-apeiron-ink transition-all duration-200 active:scale-[0.98] shadow-sm"
                 :disabled="isLoading" :class="{ 'opacity-70 cursor-not-allowed': isLoading }" :aria-busy="isLoading">
                 <span class="spinner" x-show="isLoading" x-cloak aria-hidden="true"></span>
                 <span x-text="isLoading ? '{{ __('Memproses...') }}' : '{{ __('Masuk') }}'"></span>
@@ -94,9 +94,9 @@
 @endsection
 
 @section('panel')
-    <div class="hidden lg:flex flex-col justify-between p-12 text-white bg-cover bg-center relative overflow-hidden bg-yovel-ink"
+    <div class="hidden lg:flex flex-col justify-between p-12 text-white bg-cover bg-center relative overflow-hidden bg-apeiron-ink"
         style="background-image: url('{{ asset('assets/images/auth/panelKananLogin.avif') }}');" id="anim-panel-right">
-        <div class="absolute inset-0 bg-yovel-ink/70 mix-blend-multiply"></div>
+        <div class="absolute inset-0 bg-apeiron-ink/70 mix-blend-multiply"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-[#37352F]/90 via-transparent to-transparent"></div>
 
         <!-- Brand -->
@@ -106,7 +106,7 @@
                     d="M8 0a1 1 0 0 1 1 1v5.268l4.562-2.634a1 1 0 1 1 1 1.732L10 8l4.562 2.634a1 1 0 1 1-1 1.732L9 9.732V15a1 1 0 1 1-2 0V9.732l-4.562 2.634a1 1 0 1 1-1-1.732L6 8 1.438 5.366a1 1 0 0 1 1-1.732L7 6.268V1a1 1 0 0 1 1-1z" />
             </svg>
             <span class="text-xl tracking-tight font-brand">
-                <span class="font-bold">Yovel Coffee</span><span class="font-normal text-white/60 ml-0.5"> & Cafe</span>
+                <span class="font-bold">Apeiron POS</span><span class="font-normal text-white/60 ml-0.5"> & Cafe</span>
             </span>
         </div>
 

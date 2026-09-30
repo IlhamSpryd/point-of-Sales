@@ -1,7 +1,7 @@
 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-            <h4 class="text-xl font-bold text-yovel-ink tracking-tight">Manajemen Diskon &amp; Promo</h4>
-            <p class="text-sm font-medium text-yovel-muted mt-1">Kelola diskon dan kode promo sistem</p>
+            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Manajemen Diskon &amp; Promo</h4>
+            <p class="text-sm font-medium text-apeiron-muted mt-1">Kelola diskon dan kode promo sistem</p>
         </div>
 
         <div class="flex items-center gap-3 w-full sm:w-auto">
@@ -32,11 +32,11 @@
                     @forelse($discounts as $discount)
                         <tr>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-semibold text-yovel-ink">{{ $discount->name }}</div>
-                                <div class="text-xs text-yovel-muted font-mono mt-0.5">{{ $discount->code ?? 'Tanpa Kode' }}</div>
+                                <div class="text-sm font-semibold text-apeiron-ink">{{ $discount->name }}</div>
+                                <div class="text-xs text-apeiron-muted font-mono mt-0.5">{{ $discount->code ?? 'Tanpa Kode' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <div class="text-sm font-semibold text-yovel-ink tabular-nums">
+                                <div class="text-sm font-semibold text-apeiron-ink tabular-nums">
                                     {{ $discount->type === 'percentage' ? $discount->value . '%' : 'Rp ' . number_format($discount->value, 0, ',', '.') }}
                                 </div>
                                 <div class="text-xs text-[#787774] mt-0.5 tabular-nums">
@@ -44,14 +44,14 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <div class="text-sm text-yovel-ink tabular-nums">Min. Beli: Rp {{ number_format($discount->min_purchase_amount, 0, ',', '.') }}</div>
+                                <div class="text-sm text-apeiron-ink tabular-nums">Min. Beli: Rp {{ number_format($discount->min_purchase_amount, 0, ',', '.') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <x-badge :type="$discount->is_active ? 'success' : 'secondary'">
                                     {{ $discount->is_active ? 'Aktif' : 'Nonaktif' }}
                                 </x-badge>
                                 @if($discount->valid_from || $discount->valid_until)
-                                    <div class="text-xs text-yovel-muted mt-1.5">
+                                    <div class="text-xs text-apeiron-muted mt-1.5">
                                         {{ $discount->valid_from ? $discount->valid_from->format('d M y') : 'Seterusnya' }} – {{ $discount->valid_until ? $discount->valid_until->format('d M y') : 'Seterusnya' }}
                                     </div>
                                 @endif
@@ -85,7 +85,7 @@
                     @endforelse
             </x-data-table>
         </div>
-        <div class="p-4 border-t border-yovel-border shrink-0">
+        <div class="p-4 border-t border-apeiron-border shrink-0">
             {{ $discounts->links() }}
         </div>
     </div>
@@ -94,18 +94,18 @@
     <x-modal name="discount-form" :show="$isModalOpen" max-width="2xl" sheet focusable>
         <form wire:submit.prevent="store">
             {{-- Header --}}
-            <div class="px-6 py-5 border-b border-yovel-border flex items-center justify-between bg-white">
-                <h3 class="text-lg font-bold text-yovel-ink tracking-tight" id="discount-modal-title">
+            <div class="px-6 py-5 border-b border-apeiron-border flex items-center justify-between bg-white">
+                <h3 class="text-lg font-bold text-apeiron-ink tracking-tight" id="discount-modal-title">
                     {{ $discountId ? 'Edit Diskon' : 'Tambah Diskon Baru' }}
                 </h3>
                 <button type="button" x-on:click="$dispatch('close')" aria-label="Tutup"
-                    class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-yovel-muted hover:bg-yovel-surface hover:text-yovel-ink transition-all duration-200 active:scale-90">
+                    class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-apeiron-muted hover:bg-apeiron-surface hover:text-apeiron-ink transition-all duration-200 active:scale-90">
                     <span class="material-symbols-rounded text-[22px]">close</span>
                 </button>
             </div>
 
             {{-- Body --}}
-            <div class="px-6 py-5 bg-yovel-bg overflow-y-auto max-h-[70vh]">
+            <div class="px-6 py-5 bg-apeiron-bg overflow-y-auto max-h-[70vh]">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                     {{-- Nama Diskon --}}
                     <div class="col-span-1 md:col-span-2">
@@ -119,14 +119,14 @@
                         <x-form-label for="discount-code">Kode Voucher</x-form-label>
                         <x-form-input id="discount-code" type="text" wire:model="code" placeholder="Kosongkan jika bukan voucher" class="mt-1" />
                         @error('code') <x-input-error :messages="$message" class="mt-1" /> @enderror
-                        <p class="text-xs text-yovel-muted mt-1.5">Biarkan kosong untuk diskon manual.</p>
+                        <p class="text-xs text-apeiron-muted mt-1.5">Biarkan kosong untuk diskon manual.</p>
                     </div>
 
                     {{-- Tipe Diskon --}}
                     <div>
                         <x-form-label for="discount-type">Tipe Diskon <span class="text-danger-600">*</span></x-form-label>
                         <select id="discount-type" wire:model.live="type"
-                            class="mt-1 block w-full border border-yovel-border bg-white rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-700 text-sm text-yovel-ink px-3 py-2.5 transition-all">
+                            class="mt-1 block w-full border border-apeiron-border bg-white rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-700 text-sm text-apeiron-ink px-3 py-2.5 transition-all">
                             <option value="percentage">Persentase (%)</option>
                             <option value="fixed">Nominal Tetap (Rp)</option>
                         </select>
@@ -172,12 +172,12 @@
 
                     {{-- Status Aktif --}}
                     <div class="col-span-1 md:col-span-2">
-                        <label class="flex items-center gap-3 p-4 bg-white rounded-xl border border-yovel-border cursor-pointer hover:bg-yovel-surface transition-colors">
+                        <label class="flex items-center gap-3 p-4 bg-white rounded-xl border border-apeiron-border cursor-pointer hover:bg-apeiron-surface transition-colors">
                             <input wire:model="is_active" id="is_active" type="checkbox"
-                                class="w-4 h-4 rounded border-yovel-border text-primary-700 focus:ring-primary-700">
+                                class="w-4 h-4 rounded border-apeiron-border text-primary-700 focus:ring-primary-700">
                             <div>
-                                <span class="block text-sm font-semibold text-yovel-ink">Diskon Aktif</span>
-                                <span class="block text-xs text-yovel-muted mt-0.5">Diskon ini dapat digunakan di kasir.</span>
+                                <span class="block text-sm font-semibold text-apeiron-ink">Diskon Aktif</span>
+                                <span class="block text-xs text-apeiron-muted mt-0.5">Diskon ini dapat digunakan di kasir.</span>
                             </div>
                         </label>
                     </div>
@@ -185,7 +185,7 @@
             </div>
 
             {{-- Footer --}}
-            <div class="px-6 py-4 border-t border-yovel-border bg-white flex flex-row-reverse gap-3">
+            <div class="px-6 py-4 border-t border-apeiron-border bg-white flex flex-row-reverse gap-3">
                 <x-button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="store">
                     <span wire:loading wire:target="store" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
                     Simpan

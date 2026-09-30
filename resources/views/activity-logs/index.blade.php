@@ -1,11 +1,11 @@
 <x-app-layout>
     <div class="flex flex-col gap-6">
         <div>
-            <h1 class="text-2xl font-bold text-yovel-ink tracking-tight">Audit Log</h1>
+            <h1 class="text-2xl font-bold text-apeiron-ink tracking-tight">Audit Log</h1>
             <p class="text-sm font-medium text-[#787774] mt-1">Lacak dan pantau semua aktivitas pengguna di sistem Anda.</p>
         </div>
 
-        <div class="card-surface bg-white rounded-2xl border border-yovel-border shadow-sm overflow-hidden">
+        <div class="card-surface bg-white rounded-2xl border border-apeiron-border shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
                 <x-data-table>
                     <x-slot:head>
@@ -31,7 +31,7 @@
                                     <div class="text-xs text-[#787774] ml-9">{{ $log->user->role->name ?? '-' }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-yovel-bg border border-yovel-border text-xs font-bold tracking-wide uppercase text-yovel-ink">
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-apeiron-bg border border-apeiron-border text-xs font-bold tracking-wide uppercase text-apeiron-ink">
                                         {{ $log->action }}
                                     </span>
                                 </td>
@@ -58,7 +58,7 @@
             </div>
             
             @if($logs->hasPages())
-                <div class="p-4 border-t border-yovel-border shrink-0">
+                <div class="p-4 border-t border-apeiron-border shrink-0">
                     {{ $logs->links() }}
                 </div>
             @endif

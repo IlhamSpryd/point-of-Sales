@@ -1,8 +1,8 @@
 <div>
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
-            <h4 class="text-xl font-bold text-yovel-ink tracking-tight">Riwayat Stok Bahan Baku</h4>
-            <p class="text-sm font-medium text-yovel-muted mt-1">Laporan mutasi pergerakan stok secara historis (Ledger Immutable)</p>
+            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Riwayat Stok Bahan Baku</h4>
+            <p class="text-sm font-medium text-apeiron-muted mt-1">Laporan mutasi pergerakan stok secara historis (Ledger Immutable)</p>
         </div>
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
             <x-button type="button" variant="secondary" wire:navigate href="{{ route('inventory.ingredients') }}">
@@ -10,19 +10,19 @@
             </x-button>
 
             <div class="relative w-full sm:w-48">
-                <select wire:model.live="ingredient_id" class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-yovel-border bg-white text-yovel-ink focus:outline-none focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink transition-all duration-200 shadow-sm appearance-none">
+                <select wire:model.live="ingredient_id" class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-apeiron-border bg-white text-apeiron-ink focus:outline-none focus:ring-2 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all duration-200 shadow-sm appearance-none">
                     <option value="">Semua Bahan Baku</option>
                     @foreach($ingredients as $ing)
                         <option value="{{ $ing->id }}">{{ $ing->name }}</option>
                     @endforeach
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-yovel-muted">
+                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-apeiron-muted">
                     <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
                 </div>
             </div>
             
             <div class="relative w-full sm:w-48">
-                <select wire:model.live="type" class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-yovel-border bg-white text-yovel-ink focus:outline-none focus:ring-2 focus:ring-yovel-ink focus:border-yovel-ink transition-all duration-200 shadow-sm appearance-none">
+                <select wire:model.live="type" class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-apeiron-border bg-white text-apeiron-ink focus:outline-none focus:ring-2 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all duration-200 shadow-sm appearance-none">
                     <option value="">Semua Tipe Mutasi</option>
                     <option value="sale_deduction">Penjualan (Keluar)</option>
                     <option value="purchase_receipt">Pembelian (Masuk)</option>
@@ -30,7 +30,7 @@
                     <option value="adjustment">Koreksi Manual</option>
                     <option value="restore_compensation">Pembatalan (Masuk)</option>
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-yovel-muted">
+                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-apeiron-muted">
                     <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
                 </div>
             </div>
@@ -48,13 +48,13 @@
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Keterangan</th>
                 </x-slot:head>
                     @forelse ($movements as $movement)
-                        <tr class="hover:bg-yovel-surface transition-colors duration-150">
+                        <tr class="hover:bg-apeiron-surface transition-colors duration-150">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-yovel-ink">{{ $movement->created_at->format('d M Y') }}</div>
-                                <div class="text-xs text-yovel-muted">{{ $movement->created_at->format('H:i') }}</div>
+                                <div class="text-sm text-apeiron-ink">{{ $movement->created_at->format('d M Y') }}</div>
+                                <div class="text-xs text-apeiron-muted">{{ $movement->created_at->format('H:i') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-semibold text-yovel-ink">{{ $movement->ingredient->name ?? '-' }}</span>
+                                <span class="text-sm font-semibold text-apeiron-ink">{{ $movement->ingredient->name ?? '-' }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php
@@ -71,7 +71,7 @@
                                         'purchase_receipt', 'restore_compensation' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
                                         'sale_deduction', 'waste' => 'bg-rose-50 text-rose-700 border-rose-200',
                                         'adjustment' => 'bg-amber-50 text-amber-700 border-amber-200',
-                                        default => 'bg-yovel-surface text-yovel-muted border-yovel-border'
+                                        default => 'bg-apeiron-surface text-apeiron-muted border-apeiron-border'
                                     };
                                 @endphp
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-medium border {{ $typeColor }}">
@@ -86,7 +86,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4">
-                                <span class="text-sm text-yovel-muted truncate max-w-xs block" title="{{ $movement->reason }}">
+                                <span class="text-sm text-apeiron-muted truncate max-w-xs block" title="{{ $movement->reason }}">
                                     {{ $movement->reason ?: '-' }}
                                 </span>
                             </td>
@@ -101,7 +101,7 @@
             </x-data-table>
         </div>
         @if($movements->hasPages())
-            <div class="p-4 border-t border-yovel-border shrink-0">
+            <div class="p-4 border-t border-apeiron-border shrink-0">
                 {{ $movements->links() }}
             </div>
         @endif

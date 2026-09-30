@@ -34,13 +34,13 @@
         {{-- Empty state --}}
         <div x-show="lines.length === 0" x-cloak
              class="card-surface flex flex-col items-center text-center px-6 py-16">
-            <div class="w-16 h-16 rounded-3xl bg-yovel-surface flex items-center justify-center mb-4">
+            <div class="w-16 h-16 rounded-3xl bg-apeiron-surface flex items-center justify-center mb-4">
                 <span class="material-symbols-rounded text-[32px] text-primary-300">shopping_bag</span>
             </div>
             <h1 class="text-[17px] font-bold">Keranjang masih kosong</h1>
-            <p class="text-[14px] text-yovel-muted mt-1 mb-6">Pilih menu favorit Anda untuk mulai memesan.</p>
+            <p class="text-[14px] text-apeiron-muted mt-1 mb-6">Pilih menu favorit Anda untuk mulai memesan.</p>
             <template x-if="menuUrl">
-                <a :href="menuUrl" class="inline-flex items-center gap-2 rounded-2xl bg-yovel-ink text-white px-6 min-h-12 font-semibold active:scale-95 hover:bg-yovel-ink transition-all duration-200">
+                <a :href="menuUrl" class="inline-flex items-center gap-2 rounded-2xl bg-apeiron-ink text-white px-6 min-h-12 font-semibold active:scale-95 hover:bg-apeiron-ink transition-all duration-200">
                     <span class="material-symbols-rounded text-[20px]">restaurant_menu</span> Lihat Menu
                 </a>
             </template>
@@ -49,7 +49,7 @@
         {{-- Daftar item --}}
         <div x-show="lines.length > 0" x-cloak>
             <div class="mb-3">
-                <p class="text-[13px] font-semibold text-yovel-muted" x-text="totalQty + ' item di keranjang'"></p>
+                <p class="text-[13px] font-semibold text-apeiron-muted" x-text="totalQty + ' item di keranjang'"></p>
             </div>
 
             <ul class="space-y-3">
@@ -60,7 +60,7 @@
                         x-transition:leave-end="opacity-0 scale-95"
                         class="card-surface p-4 flex gap-4">
 
-                        <div class="w-20 h-20 rounded-2xl bg-yovel-surface overflow-hidden shrink-0 flex items-center justify-center">
+                        <div class="w-20 h-20 rounded-2xl bg-apeiron-surface overflow-hidden shrink-0 flex items-center justify-center">
                             <template x-if="line.photo">
                                 <img :src="line.photo" :alt="line.name" loading="lazy" class="w-full h-full object-cover">
                             </template>
@@ -74,28 +74,28 @@
 
                             <div class="flex flex-wrap gap-1.5 mt-2" x-show="line.options.length > 0">
                                 <template x-for="(opt, i) in line.options" :key="i">
-                                    <span class="inline-flex items-center rounded-lg bg-yovel-surface border border-yovel-border px-2 py-0.5 text-[12px] font-medium text-yovel-muted">
+                                    <span class="inline-flex items-center rounded-lg bg-apeiron-surface border border-apeiron-border px-2 py-0.5 text-[12px] font-medium text-apeiron-muted">
                                         <span x-text="opt.name"></span>
                                         <span x-show="opt.extra > 0" class="ml-1 opacity-70" x-text="'+' + rupiah(opt.extra)"></span>
                                     </span>
                                 </template>
                             </div>
 
-                            <p x-show="line.notes" class="mt-2 text-[12px] italic text-yovel-muted" x-text="'Catatan: ' + line.notes"></p>
+                            <p x-show="line.notes" class="mt-2 text-[12px] italic text-apeiron-muted" x-text="'Catatan: ' + line.notes"></p>
 
                             <div class="mt-auto pt-3 flex items-center justify-between gap-3">
                                 <span class="text-[15px] font-extrabold tabular-nums" x-text="rupiah(line.unitPrice * line.qty)"></span>
 
-                                <div class="flex items-center rounded-full bg-yovel-surface border border-yovel-border p-0.5" role="group" :aria-label="'Jumlah ' + line.name">
+                                <div class="flex items-center rounded-full bg-apeiron-surface border border-apeiron-border p-0.5" role="group" :aria-label="'Jumlah ' + line.name">
                                     <button type="button" @click="change(line, -1)" :disabled="busy"
                                             :aria-label="line.qty === 1 ? 'Hapus ' + line.name : 'Kurangi jumlah'"
-                                            class="w-11 h-11 rounded-full flex items-center justify-center bg-white shadow-sm text-yovel-ink hover:bg-yovel-bg active:scale-90 disabled:opacity-50 transition-all duration-200">
+                                            class="w-11 h-11 rounded-full flex items-center justify-center bg-white shadow-sm text-apeiron-ink hover:bg-apeiron-bg active:scale-90 disabled:opacity-50 transition-all duration-200">
                                         <span class="material-symbols-rounded text-[20px]" x-text="line.qty === 1 ? 'delete' : 'remove'"></span>
                                     </button>
                                     <span class="w-9 text-center font-bold text-[15px] tabular-nums" x-text="line.qty" aria-live="polite"></span>
                                     <button type="button" @click="change(line, 1)" :disabled="busy || line.qty >= 20"
                                             aria-label="Tambah jumlah"
-                                            class="w-11 h-11 rounded-full flex items-center justify-center bg-white shadow-sm text-yovel-ink hover:bg-yovel-bg active:scale-90 disabled:opacity-40 transition-all duration-200">
+                                            class="w-11 h-11 rounded-full flex items-center justify-center bg-white shadow-sm text-apeiron-ink hover:bg-apeiron-bg active:scale-90 disabled:opacity-40 transition-all duration-200">
                                         <span class="material-symbols-rounded text-[20px]">add</span>
                                     </button>
                                 </div>
@@ -106,7 +106,7 @@
             </ul>
 
             <template x-if="menuUrl">
-                <a :href="menuUrl" class="mt-4 inline-flex items-center gap-1.5 text-[14px] font-semibold text-yovel-muted hover:text-yovel-ink active:scale-95 transition-all duration-200 min-h-11">
+                <a :href="menuUrl" class="mt-4 inline-flex items-center gap-1.5 text-[14px] font-semibold text-apeiron-muted hover:text-apeiron-ink active:scale-95 transition-all duration-200 min-h-11">
                     <span class="material-symbols-rounded text-[18px]">add_circle</span> Tambah menu lain
                 </a>
             </template>
@@ -116,18 +116,18 @@
 
         {{-- Bar ringkasan + CTA (fixed) --}}
         <div x-show="lines.length > 0" x-cloak
-             class="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md bg-white/90 backdrop-blur-xl border-t border-yovel-border sm:border-x">
+             class="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md bg-white/90 backdrop-blur-xl border-t border-apeiron-border sm:border-x">
             <div class="px-4 pt-4 pb-safe">
                 <dl class="text-[14px] space-y-1.5 mb-4" aria-live="polite">
-                    <div class="flex justify-between text-yovel-muted"><dt>Subtotal</dt><dd class="tabular-nums" x-text="rupiah(subtotal)"></dd></div>
-                    <div class="flex justify-between text-yovel-muted"><dt x-text="'Pajak (' + taxPercent + '%)'"></dt><dd class="tabular-nums" x-text="rupiah(tax)"></dd></div>
+                    <div class="flex justify-between text-apeiron-muted"><dt>Subtotal</dt><dd class="tabular-nums" x-text="rupiah(subtotal)"></dd></div>
+                    <div class="flex justify-between text-apeiron-muted"><dt x-text="'Pajak (' + taxPercent + '%)'"></dt><dd class="tabular-nums" x-text="rupiah(tax)"></dd></div>
                 </dl>
                 <a :href="checkoutUrl" :class="busy ? 'pointer-events-none opacity-60' : ''"
-                   class="flex items-center justify-between w-full rounded-2xl bg-yovel-ink text-white px-5 min-h-14 font-semibold shadow-lg hover:bg-yovel-ink active:scale-[0.98] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-yovel-ink focus-visible:ring-offset-2">
+                   class="flex items-center justify-between w-full rounded-2xl bg-apeiron-ink text-white px-5 min-h-14 font-semibold shadow-lg hover:bg-apeiron-ink active:scale-[0.98] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2">
                     <span class="text-[15px]">Lanjut ke Pembayaran</span>
                     <span class="tabular-nums text-[15px]" x-text="rupiah(total)"></span>
                 </a>
-                <p class="text-[11px] text-yovel-muted text-center mt-2">Total sudah termasuk pajak. Nominal final tampil di layar pembayaran.</p>
+                <p class="text-[11px] text-apeiron-muted text-center mt-2">Total sudah termasuk pajak. Nominal final tampil di layar pembayaran.</p>
             </div>
         </div>
     </div>

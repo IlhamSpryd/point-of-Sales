@@ -80,7 +80,7 @@ $panelEnterEndClasses = $sheet
     {{-- Panel --}}
     <div
         x-show="show"
-        class="relative bg-white {{ $panelShapeClasses }} overflow-hidden shadow-[0_-12px_40px_-10px_rgba(0,0,0,0.12)] sm:shadow-xl border border-yovel-border transform transition-all w-full sm:w-full {{ $maxWidth }} mx-auto"
+        class="relative bg-white {{ $panelShapeClasses }} overflow-hidden shadow-[0_-12px_40px_-10px_rgba(0,0,0,0.12)] sm:shadow-xl border border-apeiron-border transform transition-all w-full sm:w-full {{ $maxWidth }} mx-auto"
         x-transition:enter="ease-[cubic-bezier(0.16,1,0.3,1)] duration-300"
         x-transition:enter-start="{{ $panelEnterClasses }}"
         x-transition:enter-end="{{ $panelEnterEndClasses }}"

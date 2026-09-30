@@ -39,13 +39,13 @@
     --color-primary-900: #1F1E1C;
     --color-primary-950: #141413;
 
-    /* ── Yovel Brand Tokens ── */
-    --color-yovel-bg:  #F7F7F5;
-    --color-yovel-ink: #37352F;
-    --color-yovel-muted: #787774;           /* decorative: borders, placeholders */
-    --color-yovel-muted-700: #6B6A66;       /* WCAG AA text-small ≈5.1:1 on white */
-    --color-yovel-border: #E9E9E7;
-    --color-yovel-surface: #F1F1EF;
+    /* ── Apeiron Brand Tokens ── */
+    --color-apeiron-bg:  #F7F7F5;
+    --color-apeiron-ink: #37352F;
+    --color-apeiron-muted: #787774;           /* decorative: borders, placeholders */
+    --color-apeiron-muted-700: #6B6A66;       /* WCAG AA text-small ≈5.1:1 on white */
+    --color-apeiron-border: #E9E9E7;
+    --color-apeiron-surface: #F1F1EF;
 
     /* ── Radius Scale — consistent premium rounding ── */
     --radius-card: 1rem;      /* rounded-2xl equivalent, used by .card-surface */
@@ -56,10 +56,10 @@
        sorotan progres, ikon "perlu perhatian", badge warning. Bukan warna
        brand kedua — hanya satu titik penekanan, menggantikan tebakan
        amber-50/500/600/700 mentah yang berbeda di setiap file. ── */
-    --color-yovel-amber-50:  #FBF3E7;
-    --color-yovel-amber-200: #EFD8AE;
-    --color-yovel-amber-500: #C88A2E;
-    --color-yovel-amber-700: #8A5A16;
+    --color-apeiron-amber-50:  #FBF3E7;
+    --color-apeiron-amber-200: #EFD8AE;
+    --color-apeiron-amber-500: #C88A2E;
+    --color-apeiron-amber-700: #8A5A16;
 
     /* --- TAMBAHAN P0: token semantik yang belum ada --- */
     --color-success-50:  #ECFDF5;
@@ -77,23 +77,23 @@
     --breakpoint-3xl: 1920px;
     --breakpoint-4xl: 2560px;
 
-    /* ── Yovel Brand Tokens (in @theme for Tailwind v4 utility generation) ── */
-    --color-yovel-bg:        #F7F7F5;
-    --color-yovel-ink:       #37352F;
-    --color-yovel-muted:     #787774;    /* decorative use only */
-    --color-yovel-muted-700: #6B6A66;   /* WCAG AA ≈5.1:1 — use for small/body text */
-    --color-yovel-border:    #E9E9E7;
-    --color-yovel-surface:   #F1F1EF;
+    /* ── Apeiron Brand Tokens (in @theme for Tailwind v4 utility generation) ── */
+    --color-apeiron-bg:        #F7F7F5;
+    --color-apeiron-ink:       #37352F;
+    --color-apeiron-muted:     #787774;    /* decorative use only */
+    --color-apeiron-muted-700: #6B6A66;   /* WCAG AA ≈5.1:1 — use for small/body text */
+    --color-apeiron-border:    #E9E9E7;
+    --color-apeiron-surface:   #F1F1EF;
     --color-table-header-bg: #F7F7F5;
 }
 
 /* --- TAMBAHAN P1: varian KDS gelap --- */
 [data-theme="kds-dark"] {
-    --color-yovel-bg: #0A0A08;       /* Lebih gelap pekat untuk contrast maksimal dengan border */
-    --color-yovel-ink: #F5F4F0;
-    --color-yovel-muted: #A9A79E;
-    --color-yovel-border: #383830;    /* Border lebih terang agar card/kolom terlihat jelas di TV */
-    --color-yovel-surface: #171714;   /* Beda kontras yang cukup dari bg */
+    --color-apeiron-bg: #0A0A08;       /* Lebih gelap pekat untuk contrast maksimal dengan border */
+    --color-apeiron-ink: #F5F4F0;
+    --color-apeiron-muted: #A9A79E;
+    --color-apeiron-border: #383830;    /* Border lebih terang agar card/kolom terlihat jelas di TV */
+    --color-apeiron-surface: #171714;   /* Beda kontras yang cukup dari bg */
     --color-table-header-bg: #0A0A08;
 }
 
@@ -109,15 +109,15 @@
    ═══════════════════════════════════════════════════════ */
 @layer base {
     :focus-visible {
-        outline: 2px solid var(--color-yovel-ink);
+        outline: 2px solid var(--color-apeiron-ink);
         outline-offset: 2px;
     }
 }
 
 body {
     font-family: 'Plus Jakarta Sans', sans-serif;
-    background-color: var(--color-yovel-bg);
-    color: var(--color-yovel-ink);
+    background-color: var(--color-apeiron-bg);
+    color: var(--color-apeiron-ink);
 }
 
 input[type="number"]::-webkit-inner-spin-button,
@@ -171,7 +171,7 @@ input[type="number"]::-webkit-outer-spin-button {
    ═══════════════════════════════════════════════════════ */
 .card-surface {
     background-color: #ffffff;
-    border: 1px solid var(--color-yovel-border);
+    border: 1px solid var(--color-apeiron-border);
     border-radius: var(--radius-card);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     transition:
@@ -191,22 +191,22 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .data-table thead th {
-    background-color: var(--color-yovel-bg);
-    color: var(--color-yovel-muted);
+    background-color: var(--color-apeiron-bg);
+    color: var(--color-apeiron-muted);
     font-weight: 600;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--color-yovel-border);
+    border-bottom: 1px solid var(--color-apeiron-border);
     text-align: left;
     white-space: nowrap;
 }
 
 .data-table tbody td {
     padding: 0.875rem 1rem;
-    border-bottom: 1px solid var(--color-yovel-border);
-    color: var(--color-yovel-ink);
+    border-bottom: 1px solid var(--color-apeiron-border);
+    color: var(--color-apeiron-ink);
     vertical-align: middle;
 }
 
@@ -215,7 +215,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .data-table tbody tr:hover {
-    background-color: var(--color-yovel-bg);
+    background-color: var(--color-apeiron-bg);
 }
 
 .data-table tbody tr:last-child td {
@@ -236,11 +236,11 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .sheet-panel {
-    background-color: var(--color-yovel-bg);
+    background-color: var(--color-apeiron-bg);
     border-top-left-radius: var(--radius-sheet);
     border-top-right-radius: var(--radius-sheet);
     box-shadow: 0 -12px 40px -10px rgba(0, 0, 0, 0.12);
-    border-top: 1px solid var(--color-yovel-border);
+    border-top: 1px solid var(--color-apeiron-border);
 }
 
 

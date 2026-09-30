@@ -9,7 +9,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Menu — {{ config('app.name', 'Yovel Coffee & Cafe') }}</title>
+    <title>Menu — {{ config('app.name', 'Apeiron POS') }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,8 +29,8 @@
     </style>
 </head>
 
-<body class="antialiased bg-yovel-bg text-yovel-ink font-sans pt-safe">
-    <div class="mx-auto min-h-screen max-w-md pb-32 sm:border-x sm:border-yovel-border" x-data="{
+<body class="antialiased bg-apeiron-bg text-apeiron-ink font-sans pt-safe">
+    <div class="mx-auto min-h-screen max-w-md pb-32 sm:border-x sm:border-apeiron-border" x-data="{
         activeCategory: 'all',
         searchQuery: '',
         toastMsg: '',
@@ -47,8 +47,8 @@
 
         {{-- Header (Menambahkan Tombol Panggil Waiter & Riwayat) --}}
         <header
-            class="sticky top-0 z-40 h-14 flex items-center justify-between gap-3 px-4 bg-yovel-bg/90 backdrop-blur-xl border-b border-yovel-border">
-            <h1 class="font-brand font-bold text-lg tracking-tight truncate">Yovel Coffee</h1>
+            class="sticky top-0 z-40 h-14 flex items-center justify-between gap-3 px-4 bg-apeiron-bg/90 backdrop-blur-xl border-b border-apeiron-border">
+            <h1 class="font-brand font-bold text-lg tracking-tight truncate">Apeiron POS</h1>
 
             <div class="flex items-center gap-2">
                 {{-- PATCH FOR S-08/P-09: panggil waiter yang nyata, XSS-safe via @js() --}}
@@ -60,7 +60,7 @@
                             .then(r => r.json()).then(d => notify(d.message))
                             .catch(() => notify('Koneksi bermasalah. Silakan lambaikan tangan ke staf.'))
                             .finally(() => busy = false)"
-                        class="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-yovel-border text-yovel-muted hover:text-yovel-ink active:scale-90 transition-all shadow-sm">
+                        class="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-apeiron-border text-apeiron-muted hover:text-apeiron-ink active:scale-90 transition-all shadow-sm">
                         <span class="material-symbols-rounded text-[18px]">room_service</span>
                     </button>
                 @endif
@@ -69,7 +69,7 @@
                 @php $activeOrders = session('customer_orders', []); @endphp
                 @if (!empty($activeOrders))
                     <a href="{{ route('customer.checkout.success', end($activeOrders)) }}"
-                        class="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-yovel-border text-yovel-muted hover:text-yovel-ink active:scale-90 transition-all shadow-sm"
+                        class="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-apeiron-border text-apeiron-muted hover:text-apeiron-ink active:scale-90 transition-all shadow-sm"
                         aria-label="Status Pesanan">
                         <span class="material-symbols-rounded text-[18px]">receipt_long</span>
                     </a>
@@ -77,7 +77,7 @@
 
                 @if ($tableName)
                     <span
-                        class="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-yovel-border bg-white px-3 py-1.5 text-xs font-semibold text-yovel-muted shadow-sm">
+                        class="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-apeiron-border bg-white px-3 py-1.5 text-xs font-semibold text-apeiron-muted shadow-sm">
                         <span class="material-symbols-rounded text-[14px]">table_restaurant</span>
                         {{ $tableName }}
                     </span>
@@ -87,7 +87,7 @@
 
         <div class="px-4 pt-5 pb-2 space-y-4">
             {{-- Promo Banner --}}
-            <div class="relative overflow-hidden rounded-3xl bg-yovel-ink text-white p-6 shadow-md mb-4">
+            <div class="relative overflow-hidden rounded-3xl bg-apeiron-ink text-white p-6 shadow-md mb-4">
                 <div class="relative z-10">
                     <span
                         class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/20 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider mb-3 shadow-sm border border-white/10">
@@ -112,11 +112,11 @@
 
         {{-- Kategori Dinamis --}}
         <nav aria-label="Kategori menu"
-            class="sticky top-14 z-30 bg-yovel-bg/95 backdrop-blur-md pb-2 pt-1 border-b border-yovel-border/60 shadow-sm">
+            class="sticky top-14 z-30 bg-apeiron-bg/95 backdrop-blur-md pb-2 pt-1 border-b border-apeiron-border/60 shadow-sm">
             <div class="flex gap-2.5 overflow-x-auto scrollbar-hide px-4 py-2 items-center">
                 <button type="button" @click="activeCategory = 'all'"
                     :aria-pressed="(activeCategory === 'all').toString()"
-                    :class="activeCategory === 'all' ? 'bg-yovel-ink text-white border-yovel-ink shadow-md' :
+                    :class="activeCategory === 'all' ? 'bg-apeiron-ink text-white border-apeiron-ink shadow-md' :
                         'bg-white text-gray-500 border-[#E9E9E7] hover:bg-gray-50'"
                     class="shrink-0 flex items-center justify-center h-11 px-5 rounded-full border text-sm font-semibold whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
                     Semua Menu
@@ -125,7 +125,7 @@
                     <button type="button" @click="activeCategory = '{{ $cat->id }}'"
                         :aria-pressed="(activeCategory === '{{ $cat->id }}').toString()"
                         :class="activeCategory === '{{ $cat->id }}' ?
-                            'bg-yovel-ink text-white border-yovel-ink shadow-md' :
+                            'bg-apeiron-ink text-white border-apeiron-ink shadow-md' :
                             'bg-white text-gray-500 border-[#E9E9E7] hover:bg-gray-50'"
                         class="shrink-0 flex items-center justify-center h-11 px-5 rounded-full border text-sm font-semibold whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
                         {{ $cat->category_name }}
@@ -138,11 +138,11 @@
         <main class="px-4 pt-4">
             @if ($products->isEmpty())
                 <div class="card-surface flex flex-col items-center px-6 py-16 text-center">
-                    <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-yovel-surface">
+                    <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-apeiron-surface">
                         <span class="material-symbols-rounded text-[32px] text-primary-300">coffee</span>
                     </div>
                     <h2 class="text-lg font-bold">Menu belum tersedia</h2>
-                    <p class="mt-1 text-sm text-yovel-muted">Silakan panggil staf kami untuk bantuan.</p>
+                    <p class="mt-1 text-sm text-apeiron-muted">Silakan panggil staf kami untuk bantuan.</p>
                 </div>
             @else
                 <ul class="grid grid-cols-2 gap-3">
@@ -153,7 +153,7 @@
                                 ? $product->sellableQuantity() <= 0
                                 : $product->stock <= 0;
                             // PATCH FOR U-08: gunakan kolom yang benar (product_description, bukan description).
-                            $desc = $product->product_description ?: 'Racikan pilihan terbaik khas Yovel Coffee.';
+                            $desc = $product->product_description ?: 'Racikan pilihan terbaik khas Apeiron POS.';
                         @endphp
 
                         {{-- Logic Alpine: Tampilkan jika kategori cocok ATAU sedang mencari nama produk --}}
@@ -163,8 +163,8 @@
                             x-transition:enter-end="opacity-100 scale-100">
                             <button type="button"
                                 @if ($soldOut) disabled @else @click="$dispatch('open-variant', { id: {{ $product->id }} })" @endif
-                                class="group flex h-full w-full flex-col rounded-3xl border border-yovel-border bg-white p-3 text-left shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100">
-                                <span class="relative mb-3 block aspect-square overflow-hidden rounded-2xl bg-yovel-bg">
+                                class="group flex h-full w-full flex-col rounded-3xl border border-apeiron-border bg-white p-3 text-left shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100">
+                                <span class="relative mb-3 block aspect-square overflow-hidden rounded-2xl bg-apeiron-bg">
                                     @if ($product->product_photo)
                                         <img src="{{ asset('storage/' . $product->product_photo) }}" alt=""
                                             loading="lazy"
@@ -177,13 +177,13 @@
                                     @endif
                                     @if ($soldOut)
                                         <span
-                                            class="absolute left-2 top-2 rounded-lg bg-yovel-ink px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md">Habis</span>
+                                            class="absolute left-2 top-2 rounded-lg bg-apeiron-ink px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md">Habis</span>
                                     @endif
                                 </span>
 
                                 {{-- Nama Produk --}}
                                 <span
-                                    class="mb-1 line-clamp-2 text-sm font-bold leading-tight {{ $soldOut ? 'text-yovel-muted' : '' }}">{{ $product->product_name }}</span>
+                                    class="mb-1 line-clamp-2 text-sm font-bold leading-tight {{ $soldOut ? 'text-apeiron-muted' : '' }}">{{ $product->product_name }}</span>
 
                                 {{-- Deskripsi Singkat --}}
                                 <span
@@ -192,11 +192,11 @@
                                 {{-- Harga & Tombol --}}
                                 <span class="mt-auto flex items-center justify-between pt-1 w-full">
                                     <span
-                                        class="text-sm font-bold tracking-tight tabular-nums {{ $soldOut ? 'text-yovel-muted' : '' }}">Rp
+                                        class="text-sm font-bold tracking-tight tabular-nums {{ $soldOut ? 'text-apeiron-muted' : '' }}">Rp
                                         {{ number_format($product->product_price, 0, ',', '.') }}</span>
                                     @unless ($soldOut)
                                         <span
-                                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-yovel-ink text-white shadow-sm transition-colors group-hover:bg-yovel-ink">
+                                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-apeiron-ink text-white shadow-sm transition-colors group-hover:bg-apeiron-ink">
                                             <span class="material-symbols-rounded text-[18px]">add</span>
                                         </span>
                                     @endunless
@@ -208,7 +208,7 @@
 
                 {{-- Pesan jika pencarian tidak ditemukan --}}
                 <div x-show="searchQuery.length > 0 && !$el.previousElementSibling.innerText.toLowerCase().includes(searchQuery.toLowerCase())"
-                    x-cloak class="col-span-full py-12 text-center text-yovel-muted text-sm mt-8">
+                    x-cloak class="col-span-full py-12 text-center text-apeiron-muted text-sm mt-8">
                     Menu tidak ditemukan. Coba kata kunci lain.
                 </div>
             @endif
@@ -226,7 +226,7 @@
             x-transition:leave-end="translate-y-full opacity-0"
             class="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] z-40 mx-auto max-w-md">
             <a href="{{ route('customer.cart.index') }}"
-                class="flex min-h-14 w-full items-center justify-between rounded-2xl bg-yovel-ink px-5 font-semibold text-white shadow-xl transition-all hover:bg-yovel-ink active:scale-[0.98]"
+                class="flex min-h-14 w-full items-center justify-between rounded-2xl bg-apeiron-ink px-5 font-semibold text-white shadow-xl transition-all hover:bg-apeiron-ink active:scale-[0.98]"
                 wire:navigate>
                 <span class="rounded-lg bg-white/20 px-3 py-1 text-sm" x-text="count + ' Item'"></span>
                 <span>Lihat Keranjang</span>
@@ -239,7 +239,7 @@
             x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
             x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
             x-transition:leave-end="opacity-0 translate-y-4"
-            class="fixed inset-x-4 bottom-28 z-[60] mx-auto max-w-sm rounded-2xl bg-yovel-ink px-4 py-3 text-center text-sm font-medium text-white shadow-xl">
+            class="fixed inset-x-4 bottom-28 z-[60] mx-auto max-w-sm rounded-2xl bg-apeiron-ink px-4 py-3 text-center text-sm font-medium text-white shadow-xl">
             <span x-text="toastMsg"></span>
         </div>
 

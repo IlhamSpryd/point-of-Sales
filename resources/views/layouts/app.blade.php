@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $title ?? 'Yovel Coffee & Cafe' }}</title>
+    <title>{{ $title ?? 'Apeiron POS' }}</title>
 
     <link rel="icon" href="{{ asset('spark-admin-1.0.0/assets/images/favicon.ico') }}">
 
@@ -45,7 +45,7 @@
     </style>
 </head>
 
-<body class="font-sans antialiased bg-yovel-bg text-yovel-ink flex h-dvh overflow-hidden pos-layout-locked">
+<body class="font-sans antialiased bg-apeiron-bg text-apeiron-ink flex h-dvh overflow-hidden pos-layout-locked">
 
     <div x-data="{ sidebarMobileOpen: false, expanded: localStorage.getItem('sidebarExpanded') !== 'false' }" x-init="$watch('expanded', val => localStorage.setItem('sidebarExpanded', val))" class="flex w-full h-full">
         <!-- Sidebar Navigation -->

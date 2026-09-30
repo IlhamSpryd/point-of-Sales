@@ -39,7 +39,7 @@ class EnterpriseBackupCommand extends Command
             return self::FAILURE;
         }
 
-        $filename = sprintf('yovel-pos_%s_%s.sql.gz', $connection, now()->format('Y-m-d_His'));
+        $filename = sprintf('apeiron-pos_%s_%s.sql.gz', $connection, now()->format('Y-m-d_His'));
         $filepath = "{$this->backupDir}/{$filename}";
 
         try {
