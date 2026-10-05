@@ -1,4 +1,5 @@
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+<div>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
             <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Manajemen Diskon &amp; Promo</h4>
             <p class="text-sm font-medium text-apeiron-muted mt-1">Kelola diskon dan kode promo sistem</p>

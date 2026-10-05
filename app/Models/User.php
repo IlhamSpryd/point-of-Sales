@@ -20,6 +20,7 @@ class User extends Authenticatable
         'pin_hash',
         'join_date',
         'role_id',
+        'tenant_id',
         'is_active',
         'last_login_at',
     ];
@@ -64,5 +65,15 @@ class User extends Authenticatable
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function tenant()
+    {
+        return $this->belongsTo(Tenant::class);
+    }
+
+    public function stores()
+    {
+        return $this->belongsToMany(Store::class, 'user_stores');
     }
 }

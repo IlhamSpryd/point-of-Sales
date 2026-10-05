@@ -403,7 +403,7 @@
                             <div class="relative">
                                 <select wire:model.live="selectedDiscountId"
                                     class="w-full h-10 pl-4 pr-9 bg-gray-100/80 border border-gray-200/50 rounded-xl outline-none text-[13px] font-bold text-gray-700 hover:bg-gray-200/50 hover:text-apeiron-ink focus:bg-white focus:border-gray-300 focus:ring-0 appearance-none transition-all duration-200 cursor-pointer">
-                                    <option value="">+ Tambah Diskon (Opsional)</option>
+                                    <option value="">+ Tambah Diskon</option>
                                     @foreach ($this->activeDiscounts as $d)
                                         <option value="{{ $d->id }}">{{ $d->name }}
                                             ({{ $d->type === 'percentage' ? $d->value . '%' : 'Rp ' . number_format($d->value, 0, ',', '.') }})

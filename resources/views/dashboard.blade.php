@@ -234,21 +234,23 @@
 
             <!-- Promo Banner -->
             <div
-                class="bg-apeiron-ink rounded-2xl p-8 text-white relative overflow-hidden shadow-md flex flex-col justify-center min-h-45 group">
-                <div class="absolute -right-6 -bottom-6 opacity-[0.06]">
+                class="bg-apeiron-ink rounded-2xl p-8 lg:p-10 text-white relative overflow-hidden shadow-md flex flex-col justify-center min-h-[240px] shrink-0 group">
+                <div class="absolute -right-4 -bottom-4 opacity-[0.08]">
                     <span
-                        class="material-symbols-rounded text-[180px] text-white group-hover:rotate-12 transition-transform duration-700">storefront</span>
+                        class="material-symbols-rounded text-[200px] text-white group-hover:rotate-12 transition-transform duration-700">storefront</span>
                 </div>
 
-                <div class="relative z-10 w-4/5">
-                    <h3 class="text-xl font-extrabold leading-tight text-white mb-3 tracking-tight">Tingkatkan
+                <div class="relative z-10 w-full sm:w-11/12 pr-4">
+                    <h3 class="text-2xl font-extrabold leading-tight text-white mb-3 tracking-tight">Tingkatkan
                         pengelolaan penjualan Anda ke level berikutnya.</h3>
-                    <p class="text-white/50 text-xs font-medium leading-relaxed mb-6">Cara mudah mengelola penjualan
+                    <p class="text-white/60 text-sm font-medium leading-relaxed mb-8">Cara mudah mengelola penjualan
                         dengan teliti dan presisi.</p>
-                    <button
-                        class="bg-white text-apeiron-ink px-5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 hover:bg-[#F7F7F5] hover:-translate-y-0.5 active:scale-95 shadow-sm whitespace-nowrap">
-                        Cek pembaruan sekarang
-                    </button>
+                    <div>
+                        <button
+                            class="bg-white text-apeiron-ink px-6 py-3 rounded-xl text-sm font-bold transition-all duration-200 hover:bg-[#F7F7F5] hover:-translate-y-0.5 active:scale-95 shadow-sm whitespace-nowrap">
+                            Cek pembaruan sekarang
+                        </button>
+                    </div>
                 </div>
             </div>
 

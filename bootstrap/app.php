@@ -34,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'table.token' => ResolveTableFromToken::class,
             'table.session' => EnsureTableSession::class,
             'verify.webhook' => VerifyWebhookSignature::class,
+            'tenant.context' => \App\Http\Middleware\SetTenantContext::class,
         ]);
 
         // Midtrans mengirim notifikasi webhook server-to-server TANPA cookie
