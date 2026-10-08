@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AssignsTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Table extends Model
 {
+    use \App\Models\Concerns\AssignsStore, AssignsTenant;
     use HasFactory, SoftDeletes;
 
     protected $table = 'tables'; // eksplisit, agar tidak ambigu dengan nama class 'Table'

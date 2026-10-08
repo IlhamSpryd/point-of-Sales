@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\AssignsTenant;
 use App\Services\MenuCacheService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -12,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 
 class Ingredient extends Model
 {
+    use AssignsTenant;
     use SoftDeletes;
 
     protected $guarded = ['id'];

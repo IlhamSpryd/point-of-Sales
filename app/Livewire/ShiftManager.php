@@ -6,6 +6,7 @@ namespace App\Livewire;
 // constraint DB (shifts_one_open_per_user_unique) sebagai sinyal otoritatif
 // "shift sudah open", bukan lagi sekadar pengecekan aplikasi | 2026-09-21
 use App\Enums\OrderStatus;
+use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Order;
 use App\Models\Shift;
 use Illuminate\Database\QueryException;
@@ -14,6 +15,8 @@ use Livewire\Component;
 
 class ShiftManager extends Component
 {
+    use RequiresTenantContext;
+
     public $activeShift;
 
     public $opening_balance = 0;
@@ -59,8 +62,6 @@ class ShiftManager extends Component
                 'opening_balance' => (int) $this->opening_balance,
                 'status' => 'open',
                 'opened_at' => now(),
-                'tenant_id' => auth()->user()->tenant_id ?? 1,
-                'store_id' => 1, // To be injected dynamically later
             ]);
         } catch (QueryException $e) {
             if (! str_contains($e->getMessage(), 'shifts_one_open_per_user_unique')) {

@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AssignsTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ChannelOrderLog extends Model
 {
+    use AssignsTenant;
+
     protected $fillable = [
         'provider', 'external_order_id', 'status', 'payload', 'error_message', 'order_id',
     ];

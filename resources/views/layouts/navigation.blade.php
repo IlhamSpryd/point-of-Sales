@@ -51,12 +51,7 @@
             class="group flex items-center min-w-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
             <span
                 class="flex items-center justify-center shrink-0 w-10 h-10 rounded-full group-hover:bg-[#F7F7F5] transition-colors">
-                <svg :class="!wide ? 'group-hover:hidden' : ''" width="18" height="18" viewBox="0 0 16 16"
-                    fill="currentColor" class="text-apeiron-ink transition-transform duration-500 group-hover:rotate-180"
-                    aria-hidden="true">
-                    <path
-                        d="M8 0a1 1 0 0 1 1 1v5.268l4.562-2.634a1 1 0 1 1 1 1.732L10 8l4.562 2.634a1 1 0 1 1-1 1.732L9 9.732V15a1 1 0 1 1-2 0V9.732l-4.562 2.634a1 1 0 1 1-1-1.732L6 8 1.438 5.366a1 1 0 0 1 1-1.732L7 6.268V1a1 1 0 0 1 1-1z" />
-                </svg>
+                <img src="{{ asset('assets/images/logo.png') }}" alt="Apeiron POS Logo" :class="!wide ? 'group-hover:hidden' : ''" class="h-8 w-auto object-contain transition-transform duration-500 group-hover:scale-110">
                 <svg :class="!wide ? 'hidden group-hover:block' : 'hidden'" width="18" height="18"
                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                     stroke-linejoin="round" class="text-[#787774]" aria-hidden="true">

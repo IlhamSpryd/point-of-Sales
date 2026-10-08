@@ -8,7 +8,7 @@ use App\DataTransferObjects\NormalizedChannelOrder;
 use App\DataTransferObjects\NormalizedChannelOrderItem;
 
 /**
- * [OMEGA-NODE5] PERLU VERIFIKASI DOCS: nama field di bawah ASUMSI mengikuti
+ * PERLU VERIFIKASI DOCS: nama field di bawah ASUMSI mengikuti
  * pola umum payload GrabFood Merchant API (order_id, items[].id/quantity,
  * customer.name/phone). Field salah nama = null diam-diam, BUKAN error
  * eksplisit -- WAJIB divalidasi dengan sample payload RESMI sebelum

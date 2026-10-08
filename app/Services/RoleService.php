@@ -4,6 +4,8 @@ namespace App\Services;
 
 use App\Exports\RolesExport;
 use App\Models\Role;
+use App\Models\Tenant;
+use App\Services\Context\TenantContext;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -22,7 +24,11 @@ class RoleService
      */
     public function getFilteredQuery(Request $request): Builder
     {
-        $query = Role::query()->withCount('users')->latest('id');
+        // Role punya TenantScope global — query otomatis di-scope ke tenant konteks aktif.
+        // Hanya hitung user milik tenant yang sama.
+        $query = Role::query()->withCount([
+            'users' => fn ($q) => $q->where('users.tenant_id', app(TenantContext::class)->requireTenantId()),
+        ])->latest('id');
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where('name', 'like', "%{$search}%");
@@ -68,16 +74,48 @@ class RoleService
     }
 
     /**
-     * Menghapus jabatan/peran. Ditolak jika masih ada akun staf yang menempati jabatan ini.
+     * Menghapus jabatan/peran. Ditolak jika masih ada akun staf TENANT INI yang menempati jabatan ini.
      */
     public function delete(Role $role): bool
     {
         return DB::transaction(function () use ($role) {
-            if ($role->users()->count() > 0) {
-                throw new Exception('Tidak dapat menghapus role "'.$role->name.'" karena '.$role->users()->count().' pengguna masih menggunakan role ini.');
+            $usersCount = $role->users()->where('users.tenant_id', app(TenantContext::class)->requireTenantId())->count();
+            if ($usersCount > 0) {
+                throw new Exception('Tidak dapat menghapus role "'.$role->name." karena {$usersCount} pengguna masih menggunakan role ini.");
             }
 
             return $role->delete();
+        });
+    }
+
+    /**
+     * Provisioning: salin 8 role standar Pos\RoleSeeder (nama + permissions) ke tenant tertentu.
+     * Dipanggil saat tenant baru dibuat atau via artisan tenant:provision-roles {tenant}.
+     */
+    public function provisionDefaultRoles(Tenant $tenant): void
+    {
+        $defaults = [
+            ['name' => 'Owner', 'description' => 'Pemilik bisnis — akses penuh', 'permissions' => ['*']],
+            ['name' => 'Manager', 'description' => 'Manajer operasional', 'permissions' => ['dashboard', 'reports', 'orders.*', 'users.view', 'shifts.*', 'inventory.*', 'discounts.*']],
+            ['name' => 'Kasir', 'description' => 'Kasir point of sale', 'permissions' => ['orders.create', 'orders.view', 'payments.create', 'shifts.own']],
+            ['name' => 'Waiter', 'description' => 'Pelayan restoran', 'permissions' => ['orders.create', 'orders.view', 'tables.view']],
+            ['name' => 'Barista', 'description' => 'Barista pembuat minuman', 'permissions' => ['orders.view', 'kds.view', 'kds.update']],
+            ['name' => 'Inventory', 'description' => 'Staff inventaris gudang', 'permissions' => ['inventory.*', 'ingredients.*']],
+            ['name' => 'Supervisor', 'description' => 'Supervisor shift', 'permissions' => ['orders.*', 'shifts.*', 'reports.daily', 'void.approve']],
+            ['name' => 'Cook', 'description' => 'Koki dapur', 'permissions' => ['orders.view', 'kds.view', 'kds.update']],
+        ];
+
+        app(TenantContext::class)->runAs($tenant->id, null, function () use ($defaults, $tenant) {
+            foreach ($defaults as $default) {
+                Role::firstOrCreate(
+                    ['name' => $default['name'], 'tenant_id' => $tenant->id],
+                    [
+                        'description' => $default['description'],
+                        'permissions' => $default['permissions'],
+                        'is_active' => true,
+                    ]
+                );
+            }
         });
     }
 }

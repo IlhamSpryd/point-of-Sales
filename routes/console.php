@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('backup:run')->dailyAt('02:00');
 
-// [OMEGA-NODE5] Recompute SETELAH jam operasional biasa agar agregasi
-// 14-hari tidak bersaing dengan jam sibuk kafe. | 2026-09-23
+// Recompute SETELAH jam operasional biasa agar agregasi
+// 14-hari tidak bersaing dengan jam sibuk kafe.
 Schedule::command('analytics:recompute-restock-forecasts')->dailyAt('03:30');
 
 // [SPRINT-0] Kedaluwarsakan self-order cash yang belum dibayar di kasir

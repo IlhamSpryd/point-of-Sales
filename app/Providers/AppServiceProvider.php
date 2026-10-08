@@ -2,10 +2,13 @@
 
 namespace App\Providers;
 
+use App\Http\Middleware\SetTenantContext;
+use App\Services\Context\TenantContext;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
+use Livewire\Livewire;
 
 /**
  * AppServiceProvider merupakan pusat pengaturan awal aplikasi
@@ -18,8 +21,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->scoped(\App\Services\Context\TenantContext::class, function () {
-            return new \App\Services\Context\TenantContext();
+        $this->app->scoped(TenantContext::class, function () {
+            return new TenantContext;
         });
     }
 
@@ -28,6 +31,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Livewire::addPersistentMiddleware([
+            SetTenantContext::class,
+            'tenant.context',
+            'role',
+        ]);
+
         // PATCH FOR S-06: gagal cepat saat boot produksi jika server key kosong.
         if ($this->app->isProduction() && blank(config('services.midtrans.server_key'))) {
             throw new \RuntimeException('MIDTRANS_SERVER_KEY wajib diisi di produksi.');

@@ -7,11 +7,14 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\StockMovementType;
+use App\Models\Concerns\AssignsTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class StockMovement extends Model
 {
+    use \App\Models\Concerns\AssignsStore, AssignsTenant;
+
     protected $fillable = [
         'tenant_id',
         'store_id',

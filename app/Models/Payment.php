@@ -6,11 +6,14 @@ namespace App\Models;
 
 use App\Enums\PaymentMethodEnum;
 use App\Enums\PaymentStatusEnum;
+use App\Models\Concerns\AssignsTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Payment extends Model
 {
+    use \App\Models\Concerns\AssignsStore, AssignsTenant;
+
     public const UPDATED_AT = null;
 
     protected $guarded = ['id'];

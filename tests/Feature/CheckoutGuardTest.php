@@ -10,6 +10,8 @@ use App\Models\Role;
 use App\Models\Table;
 use App\Models\User;
 use App\Services\CartService;
+use App\Services\Context\TenantContext;
+use App\Services\SystemUserResolver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Session;
@@ -26,20 +28,28 @@ class CheckoutGuardTest extends TestCase
     {
         parent::setUp();
 
+        $tenantId = app(TenantContext::class)->requireTenantId();
+
         // Seed the system role and user for self order
         $role = Role::firstOrCreate(
-            ['role_code' => 'ROL-001'],
+            ['name' => 'Admin', 'tenant_id' => $tenantId],
             [
-                'name' => 'Admin',
+                'role_code' => 'ROL-001',
                 'permissions' => [],
                 'is_active' => true,
             ]
         );
 
-        $this->systemUser = User::factory()->create([
-            'email' => config('pos.self_order_system_email', 'system@apeiron.com'),
-            'role_id' => $role->id,
-        ]);
+        $this->systemUser = User::firstOrCreate(
+            ['email' => SystemUserResolver::selfOrder($tenantId)->email],
+            [
+                'name' => 'System Order',
+                'password' => bcrypt('password'),
+                'role_id' => $role->id,
+                'is_active' => true,
+                'tenant_id' => $tenantId,
+            ]
+        );
     }
 
     public function test_blocks_checkout_if_cart_exceeds_40_items()

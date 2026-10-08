@@ -33,14 +33,16 @@ use App\Models\Product;
 use App\Models\Shift;
 use App\Models\StockMovement;
 use App\Models\Table;
+use App\Services\Context\StoreResolver;
+use App\Services\Context\TenantContext;
 use Carbon\Carbon;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Midtrans\Config;
 use Midtrans\Snap;
-use Midtrans\Transaction;
 
 class TransactionService
 {
@@ -229,7 +231,7 @@ class TransactionService
                     'product_id' => $product->id,
                     'options' => $verifiedOptions,
                     'notes' => $item['notes'] ?? null,
-                    'needs_stock_deduction' => !$hasBom,
+                    'needs_stock_deduction' => ! $hasBom,
                 ];
                 $bomBreakdownByLineIndex[$lineIndex] = [];
 
@@ -314,7 +316,6 @@ class TransactionService
                     $ingredient->current_stock = bcsub((string) $ingredient->current_stock, $needed, 4);
                     $ingredient->save();
                 }
-
 
             }
 
@@ -435,17 +436,17 @@ class TransactionService
             // Buat order items (UNCHANGED bentuknya).
             $createdItems = [];
             foreach ($lines as $line) {
-                $orderItem = OrderItem::create(array_merge(\Illuminate\Support\Arr::except($line, ['needs_stock_deduction']), [
+                $orderItem = OrderItem::create(array_merge(Arr::except($line, ['needs_stock_deduction']), [
                     'order_id' => $order->id,
-                    'tenant_id' => $shift->tenant_id ?? 1,
-                    'store_id' => $shift->store_id ?? 1,
+                    'tenant_id' => app(TenantContext::class)->requireTenantId(),
+                    'store_id' => app(TenantContext::class)->getStoreId() ?? StoreResolver::forTenant(app(TenantContext::class)->requireTenantId()),
                 ]));
                 $createdItems[] = $orderItem;
-                
+
                 if ($line['needs_stock_deduction'] ?? false) {
                     DB::table('stock_movements')->insert([
-                        'tenant_id' => $shift->tenant_id ?? 1,
-                        'store_id' => $shift->store_id ?? 1,
+                        'tenant_id' => app(TenantContext::class)->requireTenantId(),
+                        'store_id' => app(TenantContext::class)->getStoreId() ?? StoreResolver::forTenant(app(TenantContext::class)->requireTenantId()),
                         'product_id' => $line['product_id'],
                         'order_id' => $order->id,
                         'order_item_id' => $orderItem->id,
@@ -465,8 +466,8 @@ class TransactionService
                             $modifierSync[$opt['modifier_id']] = [
                                 'price_at_time' => $opt['extra_price'] ?? 0,
                                 'qty' => $line['qty'],
-                                'tenant_id' => $shift->tenant_id ?? 1,
-                                'store_id' => $shift->store_id ?? 1,
+                                'tenant_id' => app(TenantContext::class)->requireTenantId(),
+                                'store_id' => app(TenantContext::class)->getStoreId() ?? StoreResolver::forTenant(app(TenantContext::class)->requireTenantId()),
                             ];
                         }
                     }
@@ -508,8 +509,8 @@ class TransactionService
             if (! empty($finalPaymentLegs)) {
                 foreach ($finalPaymentLegs as $i => $leg) {
                     Payment::create([
-                        'tenant_id' => $order->tenant_id ?? 1,
-                        'store_id' => $order->store_id ?? 1,
+                        'tenant_id' => $order->tenant_id,
+                        'store_id' => $order->store_id,
                         'order_id' => $order->id,
                         'payment_method' => $leg['method'],
                         'amount' => $leg['amount'],
@@ -531,8 +532,8 @@ class TransactionService
                 // updateStatusFromMidtransNotification() saat transisi ke
                 // Paid, agar `payments` lengkap untuk SEMUA metode.
                 Payment::create([
-                    'tenant_id' => $order->tenant_id ?? 1,
-                    'store_id' => $order->store_id ?? 1,
+                    'tenant_id' => $order->tenant_id,
+                    'store_id' => $order->store_id,
                     'order_id' => $order->id,
                     'payment_method' => PaymentMethodEnum::from($dominantPaymentMethod),
                     'amount' => $totalAmount,
@@ -829,12 +830,12 @@ class TransactionService
             ]);
 
             $orderItems = $order->orderItems()->createMany($orderItemsData);
-            
+
             // Phase 4: Use ledger instead of direct decrement for WalkIn/SelfOrder
             foreach ($orderItems as $item) {
                 DB::table('stock_movements')->insert([
-                    'tenant_id' => $order->orderItems->first()->product->tenant_id ?? 1, // Fallback if no shift
-                    'store_id' => $order->orderItems->first()->product->store_id ?? 1,
+                    'tenant_id' => $order->tenant_id, // Fallback if no shift
+                    'store_id' => $order->store_id,
                     'product_id' => $item->product_id,
                     'order_id' => $order->id,
                     'order_item_id' => $item->id,
@@ -967,12 +968,12 @@ class TransactionService
             ]);
 
             $orderItems = $order->orderItems()->createMany($orderItemsData);
-            
+
             // Phase 4: Use ledger instead of direct decrement for WalkIn/SelfOrder
             foreach ($orderItems as $item) {
                 DB::table('stock_movements')->insert([
-                    'tenant_id' => $shift->tenant_id ?? 1,
-                    'store_id' => $shift->store_id ?? 1,
+                    'tenant_id' => app(TenantContext::class)->requireTenantId(),
+                    'store_id' => app(TenantContext::class)->getStoreId() ?? StoreResolver::forTenant(app(TenantContext::class)->requireTenantId()),
                     'product_id' => $item->product_id,
                     'order_id' => $order->id,
                     'order_item_id' => $item->id,
@@ -1016,11 +1017,11 @@ class TransactionService
 
             $subtotal += $line['order_subtotal'];
             $orderItemsData[] = [
-                ...$line, 
-                'created_at' => now(), 
+                ...$line,
+                'created_at' => now(),
                 'updated_at' => now(),
-                'tenant_id' => $shift->tenant_id ?? 1,
-                'store_id' => $shift->store_id ?? 1,
+                'tenant_id' => app(TenantContext::class)->requireTenantId(),
+                'store_id' => app(TenantContext::class)->getStoreId() ?? StoreResolver::forTenant(app(TenantContext::class)->requireTenantId()),
             ];
         }
 
@@ -1076,8 +1077,8 @@ class TransactionService
 
             foreach ($parsedPaymentLegs as $i => $leg) {
                 Payment::create([
-                    'tenant_id' => $order->tenant_id ?? 1,
-                    'store_id' => $order->store_id ?? 1,
+                    'tenant_id' => $order->tenant_id,
+                    'store_id' => $order->store_id,
                     'order_id' => $order->id,
                     'payment_method' => $leg['method'],
                     'amount' => $leg['amount'],
@@ -1178,6 +1179,28 @@ class TransactionService
             throw new \Exception('Hanya pesanan yang sudah lunas (Paid) yang dapat di-void.');
         }
 
+        $capturedPayments = Payment::where('order_id', $order->id)->where('status', PaymentStatusEnum::Captured)->get();
+        $hasNonCash = false;
+
+        if ($capturedPayments->isNotEmpty()) {
+            foreach ($capturedPayments as $payment) {
+                $pm = is_string($payment->payment_method) ? $payment->payment_method : ($payment->payment_method->value ?? null);
+                if ($pm !== 'cash') {
+                    $hasNonCash = true;
+                    break;
+                }
+            }
+        } else {
+            $pm = is_string($order->payment_method) ? $order->payment_method : ($order->payment_method->value ?? null);
+            if ($pm !== 'cash') {
+                $hasNonCash = true;
+            }
+        }
+
+        if ($hasNonCash) {
+            throw new \DomainException('Void pesanan non-tunai belum didukung. Gunakan prosedur refund manual.');
+        }
+
         DB::transaction(function () use ($order, $reason, $userId) {
             // 1. Lock dan RE-VALIDASI di dalam transaksi (F-01 fix).
             $lockedOrder = Order::where('id', $order->id)->lockForUpdate()->first();
@@ -1195,23 +1218,6 @@ class TransactionService
                 'voided_at' => now(),
             ]);
 
-            // [OMEGA-NODE9] SEC FIX HIGH (Missing Refund): Jika order non-tunai
-            // di-void, otomatis panggil Refund API Midtrans. | 2026-09-25
-            $pm = is_string($lockedOrder->payment_method) ? $lockedOrder->payment_method : ($lockedOrder->payment_method->value ?? null);
-            if (in_array($pm, ['qris', 'ewallet'])) {
-                try {
-                    Config::$serverKey = config('services.midtrans.server_key');
-                    Config::$isProduction = config('services.midtrans.is_production');
-                    Transaction::refund($lockedOrder->order_code, [
-                        'refund_key' => 'refund-'.$lockedOrder->order_code,
-                        'amount' => $lockedOrder->order_amount,
-                        'reason' => 'Voided: '.$reason,
-                    ]);
-                } catch (\Exception $e) {
-                    throw new \Exception('Gagal melakukan refund Midtrans: '.$e->getMessage());
-                }
-            }
-
             // 2. Restore all BOM & Product Stocks
             $this->restoreStockForOrder($lockedOrder);
 
@@ -1224,6 +1230,8 @@ class TransactionService
 
             foreach ($existingPayments as $i => $payment) {
                 Payment::forceCreate([
+                    'tenant_id' => $lockedOrder->tenant_id,
+                    'store_id' => $lockedOrder->store_id,
                     'order_id' => $lockedOrder->id,
                     'payment_method' => $payment->payment_method,
                     'amount' => $payment->amount,

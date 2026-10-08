@@ -3,7 +3,6 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -13,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         // 1. Create tenants table
-        if (!Schema::hasTable('tenants')) {
+        if (! Schema::hasTable('tenants')) {
             Schema::create('tenants', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -23,7 +22,7 @@ return new class extends Migration
         }
 
         // 2. Create stores table
-        if (!Schema::hasTable('stores')) {
+        if (! Schema::hasTable('stores')) {
             Schema::create('stores', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('tenant_id');
@@ -37,7 +36,7 @@ return new class extends Migration
         // 3. Add tenant_id to specific tables
         $tenantTables = ['users', 'products', 'categories', 'ingredients'];
         foreach ($tenantTables as $tbl) {
-            if (Schema::hasTable($tbl) && !Schema::hasColumn($tbl, 'tenant_id')) {
+            if (Schema::hasTable($tbl) && ! Schema::hasColumn($tbl, 'tenant_id')) {
                 Schema::table($tbl, function (Blueprint $table) {
                     $table->unsignedBigInteger('tenant_id')->nullable();
                 });
@@ -47,7 +46,7 @@ return new class extends Migration
         // 4. Add store_id to specific tables
         $storeTables = ['shifts'];
         foreach ($storeTables as $tbl) {
-            if (Schema::hasTable($tbl) && !Schema::hasColumn($tbl, 'store_id')) {
+            if (Schema::hasTable($tbl) && ! Schema::hasColumn($tbl, 'store_id')) {
                 Schema::table($tbl, function (Blueprint $table) {
                     $table->unsignedBigInteger('store_id')->nullable();
                 });
@@ -59,10 +58,10 @@ return new class extends Migration
         foreach ($bothTables as $tbl) {
             if (Schema::hasTable($tbl)) {
                 Schema::table($tbl, function (Blueprint $table) {
-                    if (!Schema::hasColumn($table->getTable(), 'tenant_id')) {
+                    if (! Schema::hasColumn($table->getTable(), 'tenant_id')) {
                         $table->unsignedBigInteger('tenant_id')->nullable();
                     }
-                    if (!Schema::hasColumn($table->getTable(), 'store_id')) {
+                    if (! Schema::hasColumn($table->getTable(), 'store_id')) {
                         $table->unsignedBigInteger('store_id')->nullable();
                     }
                 });

@@ -49,8 +49,8 @@ class UserController extends Controller
      */
     public function create(): View
     {
-        // Mengambil semua hak akses peran dari database
-        $roles = Role::all();
+        // Hanya role milik tenant pada konteks aktif (TenantScope global).
+        $roles = Role::orderBy('name')->get();
 
         return view('users.create', compact('roles'));
     }
@@ -73,7 +73,8 @@ class UserController extends Controller
      */
     public function edit(User $user): View
     {
-        $roles = Role::all();
+        // Hanya role milik tenant pada konteks aktif (TenantScope global).
+        $roles = Role::orderBy('name')->get();
 
         return view('users.edit', compact('user', 'roles'));
     }

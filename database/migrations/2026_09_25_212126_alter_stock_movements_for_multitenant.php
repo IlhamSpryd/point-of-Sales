@@ -15,7 +15,7 @@ return new class extends Migration
         Schema::table('stock_movements', function (Blueprint $table) {
             $table->unsignedBigInteger('tenant_id')->default(1)->after('id');
             $table->unsignedBigInteger('store_id')->default(1)->after('tenant_id');
-            
+
             // Make order_id and order_item_id nullable for non-order movements
             $table->unsignedBigInteger('order_id')->nullable()->change();
             $table->unsignedBigInteger('order_item_id')->nullable()->change();

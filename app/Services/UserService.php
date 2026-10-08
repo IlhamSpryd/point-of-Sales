@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exports\UsersExport;
 use App\Models\User;
+use App\Services\Context\TenantContext;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -23,7 +24,11 @@ class UserService
      */
     public function getFilteredQuery(Request $request): Builder
     {
-        $query = User::query()->with('role')->latest('id');
+        // User TIDAK punya global scope tenant (BD-7: login menemukan user hanya via email),
+        // jadi scoping dilakukan secara eksplisit di sini.
+        $query = User::query()
+            ->where('tenant_id', app(TenantContext::class)->requireTenantId())
+            ->with('role')->latest('id');
         if ($request->has('search') && $request->search) {
             $search = $request->search;
             $query->where(function ($q) use ($search) {
@@ -61,7 +66,11 @@ class UserService
         }
 
         return DB::transaction(function () use ($data) {
-            return User::create($data);
+            $user = new User($data);
+            $user->tenant_id = app(TenantContext::class)->requireTenantId();
+            $user->save();
+
+            return $user;
         });
     }
 

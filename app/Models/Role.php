@@ -2,13 +2,17 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AssignsTenant;
+use App\Models\Concerns\ScopedToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Role extends Model
 {
+    use AssignsTenant;
     use HasFactory, SoftDeletes;
+    use ScopedToTenant;
 
     protected $fillable = [
         'role_code',
@@ -32,7 +36,7 @@ class Role extends Model
     {
         static::creating(function ($model) {
             if (empty($model->role_code)) {
-                $latest = static::latest('id')->first();
+                $latest = static::withoutTenantScope()->latest('id')->first();
                 $nextId = $latest ? $latest->id + 1 : 1;
                 $model->role_code = 'ROL-'.str_pad($nextId, 3, '0', STR_PAD_LEFT);
             }

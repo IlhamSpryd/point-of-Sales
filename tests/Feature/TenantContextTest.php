@@ -13,11 +13,13 @@ class TenantContextTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected bool $optOutFromDefaultTenant = true;
+
     public function test_context_can_store_tenant_id_for_current_lifecycle()
     {
         $context = $this->app->make(TenantContext::class);
         $context->setTenantId(10);
-        
+
         $this->assertTrue($context->hasTenant());
         $this->assertEquals(10, $context->getTenantId());
         $this->assertEquals(10, $context->requireTenantId());
@@ -26,7 +28,7 @@ class TenantContextTest extends TestCase
     public function test_has_tenant_is_false_before_context_is_set()
     {
         $context = $this->app->make(TenantContext::class);
-        
+
         $this->assertFalse($context->hasTenant());
         $this->assertNull($context->getTenantId());
     }
@@ -34,23 +36,23 @@ class TenantContextTest extends TestCase
     public function test_require_tenant_id_fails_appropriately_when_context_is_empty()
     {
         $context = $this->app->make(TenantContext::class);
-        
+
         $this->expectException(RuntimeException::class);
         $this->expectExceptionMessage('Tenant context has not been set for this request.');
-        
+
         $context->requireTenantId();
     }
 
     public function test_middleware_sets_tenant_from_authenticated_user()
     {
         $tenant = Tenant::create(['name' => 'Test Tenant']);
-        $user = User::factory()->create(['tenant_id' => $tenant->id]);
+        $user = User::factory()->create(['tenant_id' => $tenant->id, 'is_active' => true]);
 
         $this->actingAs($user);
 
         // Accessing a route that uses the tenant.context middleware
         $response = $this->get('/home');
-        
+
         $response->assertStatus(200);
 
         // Verify context is set
@@ -61,7 +63,9 @@ class TenantContextTest extends TestCase
 
     public function test_authenticated_user_without_tenant_is_rejected()
     {
-        $user = User::factory()->create(['tenant_id' => null]);
+        $user = User::withoutEvents(function () {
+            return User::factory()->create(['tenant_id' => null]);
+        });
 
         $this->actingAs($user);
 
@@ -95,7 +99,7 @@ class TenantContextTest extends TestCase
     public function test_context_isolation_between_requests()
     {
         $tenantA = Tenant::create(['name' => 'Test Tenant A']);
-        $userA = User::factory()->create(['tenant_id' => $tenantA->id]);
+        $userA = User::factory()->create(['tenant_id' => $tenantA->id, 'is_active' => true]);
 
         // First request sets context to A
         $this->actingAs($userA);

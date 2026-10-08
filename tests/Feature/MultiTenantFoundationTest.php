@@ -5,20 +5,22 @@ namespace Tests\Feature;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Database\QueryException;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class MultiTenantFoundationTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected bool $optOutFromDefaultTenant = true;
+
     public function test_tenant_has_stores()
     {
         $tenant = Tenant::create(['name' => 'HQ Corp']);
         $store = Store::create([
             'tenant_id' => $tenant->id,
-            'name' => 'Main Branch'
+            'name' => 'Main Branch',
         ]);
 
         $this->assertEquals(1, $tenant->stores()->count());
@@ -30,7 +32,7 @@ class MultiTenantFoundationTest extends TestCase
         $tenant = Tenant::create(['name' => 'HQ Corp']);
         $store = Store::create([
             'tenant_id' => $tenant->id,
-            'name' => 'Main Branch'
+            'name' => 'Main Branch',
         ]);
 
         $this->assertEquals('HQ Corp', $store->tenant->name);
@@ -52,7 +54,7 @@ class MultiTenantFoundationTest extends TestCase
         $tenant = Tenant::create(['name' => 'HQ Corp']);
         $store1 = Store::create(['tenant_id' => $tenant->id, 'name' => 'Store 1']);
         $store2 = Store::create(['tenant_id' => $tenant->id, 'name' => 'Store 2']);
-        
+
         $user = User::factory()->create(['tenant_id' => $tenant->id]);
 
         $user->stores()->attach([$store1->id, $store2->id]);
@@ -69,7 +71,7 @@ class MultiTenantFoundationTest extends TestCase
         $user = User::factory()->create(['tenant_id' => $tenant->id]);
 
         $user->stores()->attach($store->id);
-        
+
         $this->expectException(QueryException::class);
         $this->expectExceptionCode('23000'); // Integrity constraint violation
 

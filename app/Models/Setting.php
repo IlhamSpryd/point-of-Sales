@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\AssignsTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
 class Setting extends Model
 {
+    use AssignsTenant;
+
     protected $fillable = ['key', 'value', 'type', 'description'];
 
     private const CACHE_TTL = 3600;

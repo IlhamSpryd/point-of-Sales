@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Inventory;
 
+use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Ingredient;
 use App\Models\IngredientStockMovement;
 use Livewire\Attributes\Layout;
@@ -11,6 +12,7 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class IngredientLedger extends Component
 {
+    use RequiresTenantContext;
     use WithPagination;
 
     public string $ingredient_id = '';

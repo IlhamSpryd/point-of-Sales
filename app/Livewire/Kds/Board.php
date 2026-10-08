@@ -6,6 +6,7 @@ namespace App\Livewire\Kds;
 
 use App\Enums\OrderStatus;
 use App\Enums\PreparationStatus;
+use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\OrderItem;
 use App\Services\KdsService;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,6 +21,8 @@ use Livewire\Component;
 #[Layout('kds.index')]
 class Board extends Component
 {
+    use RequiresTenantContext;
+
     public function claim(int $itemId): void
     {
         $this->guard(fn () => app(KdsService::class)->claim($itemId, (int) Auth::id()));

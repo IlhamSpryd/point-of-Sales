@@ -7,8 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
     <title>@yield('title', config('app.name'))</title>
-    <link rel="icon" href="{{ asset('spark-admin-1.0.0/assets/images/favicon.ico') }}">
-    
+    <link rel="icon" href="{{ asset('assets/images/logo.png') }}" type="image/png">    
 
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])

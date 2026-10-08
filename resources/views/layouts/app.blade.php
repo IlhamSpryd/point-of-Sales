@@ -8,7 +8,7 @@
 
     <title>{{ $title ?? 'Apeiron POS' }}</title>
 
-    <link rel="icon" href="{{ asset('spark-admin-1.0.0/assets/images/favicon.ico') }}">
+    <link rel="icon" href="{{ asset('assets/images/logo.png') }}" type="image/png">
 
     <!-- Google Material Symbols (Rounded) -->
     <link

@@ -11,6 +11,8 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\CartService;
+use App\Services\Context\TenantContext;
+use App\Services\SystemUserResolver;
 use App\Services\TransactionService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
@@ -131,7 +133,8 @@ class CheckoutController extends Controller
             }, $items);
 
             // PATCH FOR S-07: guard system user dengan pesan aman.
-            $systemUserId = User::where('email', config('pos.self_order_system_email'))->value('id');
+            $tenantId = app(TenantContext::class)->requireTenantId();
+            $systemUserId = SystemUserResolver::selfOrder($tenantId)->id;
             if (! $systemUserId) {
                 Log::critical('[SELF-ORDER] akun sistem self-order belum di-seed.');
 

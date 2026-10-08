@@ -15,10 +15,10 @@ return new class extends Migration
         foreach ($bothTables as $tbl) {
             if (Schema::hasTable($tbl)) {
                 Schema::table($tbl, function (Blueprint $table) use ($tbl) {
-                    if (!Schema::hasColumn($tbl, 'tenant_id')) {
+                    if (! Schema::hasColumn($tbl, 'tenant_id')) {
                         $table->unsignedBigInteger('tenant_id')->nullable();
                     }
-                    if (!Schema::hasColumn($tbl, 'store_id')) {
+                    if (! Schema::hasColumn($tbl, 'store_id')) {
                         $table->unsignedBigInteger('store_id')->nullable();
                     }
                 });
@@ -27,7 +27,7 @@ return new class extends Migration
 
         if (Schema::hasTable('shifts')) {
             Schema::table('shifts', function (Blueprint $table) {
-                if (!Schema::hasColumn('shifts', 'tenant_id')) {
+                if (! Schema::hasColumn('shifts', 'tenant_id')) {
                     $table->unsignedBigInteger('tenant_id')->nullable();
                 }
             });

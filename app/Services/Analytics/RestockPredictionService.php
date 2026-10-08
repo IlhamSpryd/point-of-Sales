@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-// [OMEGA-NODE5] Forecasting statistik murni (moving average + tren
+// Forecasting statistik murni (moving average + tren
 // dua-mingguan), TANPA API AI eksternal berbayar. | 2026-09-23
 
 namespace App\Services\Analytics;

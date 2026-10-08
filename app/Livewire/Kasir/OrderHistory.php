@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Kasir;
 
 use App\Enums\OrderStatus;
+use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\TransactionService;
@@ -18,6 +19,7 @@ use Livewire\WithPagination;
 
 class OrderHistory extends Component
 {
+    use RequiresTenantContext;
     use WithPagination;
 
     #[Url(as: 'q', history: true)]
@@ -109,8 +111,10 @@ class OrderHistory extends Component
         try {
             app(TransactionService::class)->voidOrder($order, $this->voidReason, Auth::id());
             session()->flash('success', 'Pesanan berhasil di-void dan stok dikembalikan.');
-        } catch (\Exception $e) {
+        } catch (\DomainException $e) {
             session()->flash('error', $e->getMessage());
+        } catch (\Exception $e) {
+            session()->flash('error', 'Terjadi kesalahan sistem saat membatalkan pesanan.');
         }
 
         $this->voidingOrderId = null;

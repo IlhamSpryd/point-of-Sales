@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\IngredientStockMovementTypeEnum;
+use App\Models\Concerns\AssignsTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class IngredientStockMovement extends Model
 {
+    use \App\Models\Concerns\AssignsStore, AssignsTenant;
+
     public const UPDATED_AT = null;
 
     protected $guarded = ['id'];

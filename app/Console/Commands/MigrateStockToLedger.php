@@ -29,8 +29,8 @@ class MigrateStockToLedger extends Command
             foreach ($products as $product) {
                 // Determine tenant_id and store_id
                 // Use the product's tenant_id and store_id if they exist
-                $tenantId = $product->tenant_id ?? 1;
-                $storeId = $product->store_id ?? 1;
+                $tenantId = $product->tenant_id;
+                $storeId = $product->store_id;
 
                 $productMovements[] = [
                     'tenant_id' => $tenantId,
@@ -44,9 +44,9 @@ class MigrateStockToLedger extends Command
                 ];
             }
 
-            if (!empty($productMovements)) {
+            if (! empty($productMovements)) {
                 DB::table('stock_movements')->insert($productMovements);
-                $this->info('Successfully migrated ' . count($productMovements) . ' product stocks.');
+                $this->info('Successfully migrated '.count($productMovements).' product stocks.');
             } else {
                 $this->info('No product stocks to migrate.');
             }
@@ -57,8 +57,8 @@ class MigrateStockToLedger extends Command
 
             foreach ($ingredients as $ingredient) {
                 // Determine tenant_id and store_id
-                $tenantId = $ingredient->tenant_id ?? 1;
-                $storeId = $ingredient->store_id ?? 1;
+                $tenantId = $ingredient->tenant_id;
+                $storeId = $ingredient->store_id;
 
                 $ingredientMovements[] = [
                     'tenant_id' => $tenantId,
@@ -72,9 +72,9 @@ class MigrateStockToLedger extends Command
                 ];
             }
 
-            if (!empty($ingredientMovements)) {
+            if (! empty($ingredientMovements)) {
                 DB::table('ingredient_stock_movements')->insert($ingredientMovements);
-                $this->info('Successfully migrated ' . count($ingredientMovements) . ' ingredient stocks.');
+                $this->info('Successfully migrated '.count($ingredientMovements).' ingredient stocks.');
             } else {
                 $this->info('No ingredient stocks to migrate.');
             }
@@ -83,7 +83,7 @@ class MigrateStockToLedger extends Command
             $this->info('Stock ledger migration completed successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->error('Failed to migrate stock to ledger: ' . $e->getMessage());
+            $this->error('Failed to migrate stock to ledger: '.$e->getMessage());
         }
     }
 }

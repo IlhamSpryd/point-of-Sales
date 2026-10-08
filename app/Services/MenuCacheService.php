@@ -8,6 +8,7 @@ namespace App\Services;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\Context\TenantContext;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -77,7 +78,9 @@ class MenuCacheService
 
     public function getCatalog()
     {
-        return $this->getCache()->remember(self::KEY_CATALOG, self::TTL_SECONDS, function () {
+        $key = $this->getTenantKey(self::KEY_CATALOG);
+
+        return $this->getCache()->remember($key, self::TTL_SECONDS, function () {
             return Category::with([
                 'products' => fn ($q) => $q->availableForOrder()->with('modifierGroups.modifiers'),
             ])->get();
@@ -86,14 +89,18 @@ class MenuCacheService
 
     public function getAllCategories()
     {
-        return $this->getCache()->remember(self::KEY_CATEGORIES, self::TTL_SECONDS, function () {
+        $key = $this->getTenantKey(self::KEY_CATEGORIES);
+
+        return $this->getCache()->remember($key, self::TTL_SECONDS, function () {
             return Category::all();
         });
     }
 
     public function getActiveProductsWithCategory()
     {
-        return $this->getCache()->remember(self::KEY_ACTIVE_PRODUCTS, self::TTL_SECONDS, function () {
+        $key = $this->getTenantKey(self::KEY_ACTIVE_PRODUCTS);
+
+        return $this->getCache()->remember($key, self::TTL_SECONDS, function () {
             return Product::where('is_active', true)->with('category')->get();
         });
     }
@@ -116,17 +123,18 @@ class MenuCacheService
      */
     public function getMenuDisplayData(): array
     {
-        $cached = $this->getCache()->get(self::KEY_MENU_DISPLAY);
+        $key = $this->getTenantKey(self::KEY_MENU_DISPLAY);
+        $cached = $this->getCache()->get($key);
 
         if ($cached !== null) {
             return $cached;
         }
 
         try {
-            return Cache::lock(self::REBUILD_LOCK_KEY, 10)
-                ->block(self::REBUILD_LOCK_WAIT_SECONDS, function () {
+            return Cache::lock($this->getTenantKey(self::REBUILD_LOCK_KEY), 10)
+                ->block(self::REBUILD_LOCK_WAIT_SECONDS, function () use ($key) {
                     return $this->getCache()->remember(
-                        self::KEY_MENU_DISPLAY,
+                        $key,
                         self::TTL_SECONDS,
                         fn () => $this->buildMenuDisplayData()
                     );
@@ -178,9 +186,16 @@ class MenuCacheService
             return;
         }
 
-        Cache::forget(self::KEY_CATALOG);
-        Cache::forget(self::KEY_CATEGORIES);
-        Cache::forget(self::KEY_ACTIVE_PRODUCTS);
-        Cache::forget(self::KEY_MENU_DISPLAY);
+        $this->getCache()->forget($this->getTenantKey(self::KEY_CATALOG));
+        $this->getCache()->forget($this->getTenantKey(self::KEY_CATEGORIES));
+        $this->getCache()->forget($this->getTenantKey(self::KEY_ACTIVE_PRODUCTS));
+        $this->getCache()->forget($this->getTenantKey(self::KEY_MENU_DISPLAY));
+    }
+
+    private function getTenantKey(string $key): string
+    {
+        $tenantId = app(TenantContext::class)->getTenantId();
+
+        return $tenantId ? "tenant_{$tenantId}:{$key}" : $key;
     }
 }

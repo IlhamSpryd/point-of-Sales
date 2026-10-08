@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Models\Table;
+use App\Services\Context\TenantContext;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -32,7 +33,7 @@ class EnsureTableSession
 
         // PATCH FOR S-10: validasi meja masih aktif di SETIAP request, bukan
         // hanya saat scan QR awal — mencegah sesi basi mengakses meja nonaktif.
-        $table = Table::where('id', $tableId)->where('is_active', true)->first();
+        $table = Table::withoutGlobalScopes()->where('id', $tableId)->where('is_active', true)->first();
         if (! $table) {
             $request->session()->forget(['current_table_id', 'current_table_name']);
 
@@ -44,6 +45,14 @@ class EnsureTableSession
             }
             abort(403, 'Meja ini sudah tidak aktif. Silakan scan ulang QR Code.');
         }
+
+        if (! $table->tenant_id) {
+            abort(403, 'Meja tidak terhubung dengan tenant mana pun.');
+        }
+
+        $context = app(TenantContext::class);
+        $context->setTenantId($table->tenant_id);
+        $context->setStoreId($table->store_id);
 
         return $next($request);
     }

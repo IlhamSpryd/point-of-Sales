@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\ExportTaskStatus;
+use App\Models\Concerns\AssignsTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ExportTask extends Model
 {
+    use AssignsTenant;
+
     protected $fillable = [
         'requested_by', 'type', 'parameters', 'status',
         'file_path', 'file_size_bytes', 'error_message', 'completed_at',

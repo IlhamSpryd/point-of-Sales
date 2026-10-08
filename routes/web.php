@@ -137,19 +137,19 @@ Route::middleware(['auth', 'tenant.context'])->group(function () {
         Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     });
 
-    // [OMEGA-NODE5] Ekspor laporan asinkron (polling status + download)
+    // Ekspor laporan asinkron (polling status + download)
     Route::middleware('role:Owner,Manager')->group(function () {
         Route::get('/exports/{exportTask}/status', [ExportTaskController::class, 'status'])->name('exports.status');
         Route::get('/exports/{exportTask}/download', [ExportTaskController::class, 'download'])->name('exports.download');
     });
 
-    // [OMEGA-NODE5] BI restock forecast (JSON read-only, dikonsumsi widget Node 2)
+    // BI restock forecast (JSON read-only, dikonsumsi widget Node 2)
     Route::middleware('role:Owner,Manager,Inventory')->group(function () {
         Route::get('/api/analytics/restock-forecasts', [RestockForecastController::class, 'index'])
             ->name('analytics.restock-forecasts');
     });
 
-    // [OMEGA-NODE5] Channel Mapping Manager
+    // Channel Mapping Manager
     Route::middleware('role:Owner,Manager')->group(function () {
         Route::get('/integrations/channel-mapping', ChannelMappingManager::class)->name('integrations.channel-mapping');
     });

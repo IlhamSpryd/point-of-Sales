@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\LoyaltyLedgerTypeEnum;
+use App\Models\Concerns\AssignsTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LoyaltyLedger extends Model
 {
+    use AssignsTenant;
+
     public const UPDATED_AT = null;
 
     protected $table = 'loyalty_ledger';

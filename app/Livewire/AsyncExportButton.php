@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\RequiresTenantContext;
 use App\Services\ReportService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -12,6 +13,8 @@ use Livewire\Component;
 
 class AsyncExportButton extends Component
 {
+    use RequiresTenantContext;
+
     public string $startDate;
 
     public string $endDate;

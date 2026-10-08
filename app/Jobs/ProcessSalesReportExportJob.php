@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-// [OMEGA-NODE5] Ekspor laporan besar tanpa memblokir request HTTP. | 2026-09-23
+// Ekspor laporan besar tanpa memblokir request HTTP. | 2026-09-23
 
 namespace App\Jobs;
 

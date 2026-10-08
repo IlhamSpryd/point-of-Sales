@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\ChannelProductMapping;
 use App\Models\Product;
 use Illuminate\Validation\Rule;
@@ -12,6 +13,7 @@ use Livewire\WithPagination;
 
 class ChannelMappingManager extends Component
 {
+    use RequiresTenantContext;
     use WithPagination;
 
     public string $provider = 'grabfood';

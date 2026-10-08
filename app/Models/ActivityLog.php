@@ -4,11 +4,14 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\AssignsTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ActivityLog extends Model
 {
+    use AssignsTenant;
+
     protected $fillable = [
         'user_id', 'action', 'subject_type', 'subject_id',
         'description', 'old_values', 'new_values', 'ip_address',

@@ -28,23 +28,23 @@ class MigrateRbacPermissions extends Command
             foreach ($roles as $role) {
                 // Decode JSON permissions if it exists
                 $permissions = is_string($role->permissions) ? json_decode($role->permissions, true) : $role->permissions;
-                
-                if (empty($permissions) || !is_array($permissions)) {
+
+                if (empty($permissions) || ! is_array($permissions)) {
                     continue;
                 }
 
                 foreach ($permissions as $permissionCode) {
                     // Create permission if it doesn't exist yet in our map
-                    if (!isset($permissionsMap[$permissionCode])) {
+                    if (! isset($permissionsMap[$permissionCode])) {
                         // Check if it already exists in DB to prevent duplicates on rerun
                         $existing = DB::table('permissions')->where('permission_code', $permissionCode)->first();
-                        
+
                         if ($existing) {
                             $permissionsMap[$permissionCode] = $existing->id;
                         } else {
                             $permissionId = DB::table('permissions')->insertGetId([
                                 'permission_code' => $permissionCode,
-                                'description' => 'Migrated from JSON for code: ' . $permissionCode
+                                'description' => 'Migrated from JSON for code: '.$permissionCode,
                             ]);
                             $permissionsMap[$permissionCode] = $permissionId;
                         }
@@ -54,7 +54,7 @@ class MigrateRbacPermissions extends Command
                     DB::table('role_permissions')->updateOrInsert(
                         [
                             'role_id' => $role->id,
-                            'permission_id' => $permissionsMap[$permissionCode]
+                            'permission_id' => $permissionsMap[$permissionCode],
                         ]
                     );
                 }
@@ -62,10 +62,10 @@ class MigrateRbacPermissions extends Command
 
             DB::commit();
             $this->info("Successfully migrated permissions for {$totalRoles} roles.");
-            $this->info("Total unique permissions created/mapped: " . count($permissionsMap));
+            $this->info('Total unique permissions created/mapped: '.count($permissionsMap));
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->error('Failed to migrate permissions: ' . $e->getMessage());
+            $this->error('Failed to migrate permissions: '.$e->getMessage());
         }
     }
 }

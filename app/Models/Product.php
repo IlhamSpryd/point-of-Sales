@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\AssignsTenant;
 use App\Services\MenuCacheService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\DB;
  */
 class Product extends Model
 {
+    use AssignsTenant;
     use SoftDeletes;
 
     /**
@@ -32,7 +34,7 @@ class Product extends Model
     {
         static::creating(function ($model) {
             if (empty($model->product_code)) {
-                $latest = static::latest('id')->first();
+                $latest = static::withoutGlobalScopes()->latest('id')->first();
                 $nextId = $latest ? $latest->id + 1 : 1;
                 $model->product_code = 'PRD-'.str_pad((string) $nextId, 4, '0', STR_PAD_LEFT);
             }

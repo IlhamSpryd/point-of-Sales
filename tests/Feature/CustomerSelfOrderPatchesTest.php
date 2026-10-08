@@ -40,15 +40,15 @@ class CustomerSelfOrderPatchesTest extends TestCase
 
     public function test_waiter_call_dispatches_event_and_is_rate_limited(): void
     {
-        Event::fake();
+        Event::fake([WaiterCalled::class]);
         $table = $this->createTable();
-
         // 1. Call waiter first time
         $response1 = $this->withSession([
             'current_table_id' => $table->id,
             'current_table_name' => $table->table_name,
         ])->postJson(route('customer.waiter.call'));
 
+        $response1->dump();
         $response1->assertStatus(200);
         $response1->assertJson(['message' => "Panggilan terkirim. Staf sedang menuju {$table->table_name}."]);
 

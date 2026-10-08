@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// [OMEGA-NODE5] Omnichannel Gateway -- pemetaan SKU eksternal -> produk internal | 2026-09-23
+// Omnichannel Gateway -- pemetaan SKU eksternal -> produk internal | 2026-09-23
 return new class extends Migration
 {
     public function up(): void

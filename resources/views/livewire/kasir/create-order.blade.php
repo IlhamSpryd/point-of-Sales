@@ -209,9 +209,9 @@
 
                                             <div
                                                 class="w-full aspect-square sm:aspect-[4/3] bg-gray-50 relative overflow-hidden group-hover:opacity-95 transition-opacity rounded-t-2xl shrink-0 border-b border-gray-100 flex items-center justify-center">
-                                                @if ($product->image)
+                                                @if ($product->product_photo)
                                                     <!-- Jika ada foto produk -->
-                                                    <img src="{{ Storage::url($product->image) }}"
+                                                    <img src="{{ Storage::url($product->product_photo) }}"
                                                         class="w-full h-full object-cover">
                                                 @else
                                                     <svg class="h-12 w-12 text-gray-300" fill="none"

@@ -2,12 +2,14 @@
 
 namespace App\Livewire;
 
+use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Discount;
 use Livewire\Component;
 use Livewire\WithPagination;
 
 class DiscountManager extends Component
 {
+    use RequiresTenantContext;
     use WithPagination;
 
     public $search = '';

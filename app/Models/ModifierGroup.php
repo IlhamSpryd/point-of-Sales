@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AssignsTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -18,6 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 // biasa (ModifierManager::deleteGroup()). | 2026-09-24
 class ModifierGroup extends Model
 {
+    use AssignsTenant;
     use SoftDeletes;
 
     protected $fillable = ['name', 'selection_type', 'is_required', 'min_select', 'max_select'];

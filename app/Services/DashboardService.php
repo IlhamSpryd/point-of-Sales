@@ -6,6 +6,7 @@ use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Services\Context\TenantContext;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
@@ -21,7 +22,10 @@ class DashboardService
      */
     public function getDashboardMetrics(): array
     {
-        $metrics = Cache::remember('pos:dashboard:metrics', 90, function () {
+        $tenantId = app(TenantContext::class)->getTenantId();
+        $cacheKey = $tenantId ? "pos:dashboard:metrics:tenant_{$tenantId}" : 'pos:dashboard:metrics';
+
+        $metrics = Cache::remember($cacheKey, 90, function () {
             // 1. Core KPIs
             $now = Carbon::now();
             $thisMonth = $now->month;

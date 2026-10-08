@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Table;
+use App\Services\Context\TenantContext;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -20,27 +21,32 @@ class ResolveTableFromToken
     {
         $token = $request->route('token');
 
-        $table = Table::where('secure_token', $token)
+        $table = Table::withoutGlobalScopes()
+            ->where('secure_token', $token)
             ->where('is_active', true)
             ->first();
 
         if (! $table) {
-            // Token salah, meja nonaktif, atau QR palsu — tolak dengan pesan ramah,
-            // BUKAN error 404 teknis yang membingungkan pelanggan awam.
             abort(404, 'QR Code tidak valid atau meja sedang tidak aktif. Silakan panggil staf kami.');
         }
 
-        // PATCH FOR S-10: cegah session fixation — regenerasi ID sesi
-        // saat pelanggan memulai sesi baru (scan QR meja beda ATAU pertama).
+        if (! $table->tenant_id) {
+            abort(404, 'Meja tidak terhubung dengan tenant mana pun.');
+        }
+
+        $context = app(TenantContext::class);
+        $context->setTenantId($table->tenant_id);
+        $context->setStoreId($table->store_id);
+
         $oldTableId = $request->session()->get('current_table_id');
         if ($oldTableId !== $table->id) {
             $request->session()->regenerate();
         }
 
-        // Simpan ke session agar halaman Cart & Checkout (yang URL-nya TIDAK
-        // membawa token) tetap tahu pelanggan ini duduk di meja mana.
         $request->session()->put('current_table_id', $table->id);
         $request->session()->put('current_table_name', $table->table_name);
+        $request->session()->put('current_tenant_id', $table->tenant_id);
+        $request->session()->put('current_store_id', $table->store_id);
 
         return $next($request);
     }

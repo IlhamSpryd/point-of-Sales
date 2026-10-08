@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Inventory;
 
+use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Ingredient;
 use App\Models\IngredientStockMovement;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +15,7 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class IngredientManager extends Component
 {
+    use RequiresTenantContext;
     use WithPagination;
 
     public string $search = '';

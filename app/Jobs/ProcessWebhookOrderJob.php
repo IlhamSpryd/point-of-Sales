@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-// [OMEGA-NODE5] Implementasi nyata: sebelumnya method ini hanya berisi
+// Implementasi nyata: sebelumnya method ini hanya berisi
 // komentar TODO, tidak pernah membuat Order. Sekarang menjembatani payload
 // GrabFood/GoFood ke TransactionService::createTransaction() -- SATU
 // titik masuk checkout yang sama dipakai Kasir & Self-Order.
@@ -21,8 +21,8 @@ use App\Models\ChannelOrderLog;
 use App\Models\ChannelProductMapping;
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\User;
 use App\Services\Omnichannel\ChannelOrderNormalizerFactory;
+use App\Services\SystemUserResolver;
 use App\Services\TransactionService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -123,7 +123,7 @@ class ProcessWebhookOrderJob implements ShouldQueue
             $items[] = ['product_id' => $productId, 'quantity' => $qty, 'extra_price' => 0, 'options' => null];
         }
 
-        $systemUserId = User::where('email', config('pos.channel_order_system_email'))->value('id');
+        $systemUserId = SystemUserResolver::channel($this->log->tenant_id)->id;
         if (! $systemUserId) {
             throw new InvalidArgumentException(
                 'Akun sistem channel order ("'.config('pos.channel_order_system_email').'") belum terdaftar. '.
@@ -161,7 +161,7 @@ class ProcessWebhookOrderJob implements ShouldQueue
             'message' => $message,
         ];
 
-        $warning ? Log::warning('[OMEGA-NODE5] Webhook order gagal (validasi).', $context)
-                 : Log::error('[OMEGA-NODE5] Webhook order gagal (sistem).', $context);
+        $warning ? Log::warning('Webhook order gagal (validasi).', $context)
+                 : Log::error('Webhook order gagal (sistem).', $context);
     }
 }

@@ -9,6 +9,7 @@ namespace App\Livewire\Kasir;
 
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentMethodEnum;
+use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\Modifier;
@@ -31,6 +32,8 @@ use Livewire\Component;
 #[Layout('layouts.app', ['noPadding' => true])]
 class CreateOrder extends Component
 {
+    use RequiresTenantContext;
+
     public ?string $orderType = null;   // 'dine_in' | 'takeaway'
 
     public ?int $tableId = null;

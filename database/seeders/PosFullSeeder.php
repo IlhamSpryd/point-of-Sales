@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\Role;
+use App\Models\Tenant;
+use App\Services\Context\TenantContext;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -38,7 +41,33 @@ class PosFullSeeder extends Seeder
         // ══════════════════════════════════════════════════════
         $this->command->info('━━━ Phase 1: Master Data ━━━');
 
-        $this->call(Pos\RoleSeeder::class);
+        // Role berada di tenant konteks aktif — seed via provisioning service,
+        // dijalankan tanpa TenantScope karena ini operasi sistem di luar request.
+        $roles = Role::withoutTenantScope()->get();
+        if ($roles->isEmpty()) {
+            $seedRoles = [
+                ['name' => 'Owner', 'description' => 'Pemilik bisnis — akses penuh', 'permissions' => ['*']],
+                ['name' => 'Manager', 'description' => 'Manajer operasional', 'permissions' => ['dashboard', 'reports', 'orders.*', 'users.view', 'shifts.*', 'inventory.*', 'discounts.*']],
+                ['name' => 'Kasir', 'description' => 'Kasir point of sale', 'permissions' => ['orders.create', 'orders.view', 'payments.create', 'shifts.own']],
+                ['name' => 'Waiter', 'description' => 'Pelayan restoran', 'permissions' => ['orders.create', 'orders.view', 'tables.view']],
+                ['name' => 'Barista', 'description' => 'Barista pembuat minuman', 'permissions' => ['orders.view', 'kds.view', 'kds.update']],
+                ['name' => 'Inventory', 'description' => 'Staff inventaris gudang', 'permissions' => ['inventory.*', 'ingredients.*']],
+                ['name' => 'Supervisor', 'description' => 'Supervisor shift', 'permissions' => ['orders.*', 'shifts.*', 'reports.daily', 'void.approve']],
+                ['name' => 'Cook', 'description' => 'Koki dapur', 'permissions' => ['orders.view', 'kds.view', 'kds.update']],
+            ];
+
+            $tenantId = Tenant::first()?->id ?? Tenant::create(['name' => 'Default Tenant'])->id;
+
+            app(TenantContext::class)->runAs($tenantId, null, function () use ($seedRoles) {
+                foreach ($seedRoles as $seedRole) {
+                    Role::firstOrCreate(['name' => $seedRole['name']], [
+                        'description' => $seedRole['description'],
+                        'permissions' => $seedRole['permissions'],
+                        'is_active' => true,
+                    ]);
+                }
+            });
+        }
         $this->call(Pos\UserSeeder::class);
         $this->call(Pos\CategorySeeder::class);
         $this->call(Pos\ProductSeeder::class);

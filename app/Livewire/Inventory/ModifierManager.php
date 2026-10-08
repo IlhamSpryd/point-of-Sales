@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Inventory;
 
+use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Ingredient;
 use App\Models\Modifier;
 use App\Models\ModifierGroup;
@@ -10,6 +11,8 @@ use Livewire\Component;
 
 class ModifierManager extends Component
 {
+    use RequiresTenantContext;
+
     public $groups = [];
 
     public $ingredients = [];

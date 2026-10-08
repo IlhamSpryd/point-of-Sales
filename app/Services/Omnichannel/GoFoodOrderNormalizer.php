@@ -8,7 +8,7 @@ use App\DataTransferObjects\NormalizedChannelOrder;
 use App\DataTransferObjects\NormalizedChannelOrderItem;
 
 /**
- * [OMEGA-NODE5] PERLU VERIFIKASI DOCS: sama seperti adapter GrabFood --
+ * PERLU VERIFIKASI DOCS: sama seperti adapter GrabFood --
  * nama field ASUMSI pola umum GoBiz API (order_number, order_items[].
  * item_id/qty, customer_detail.name/phone_number). WAJIB dicocokkan ke
  * dokumentasi resmi sebelum production. | 2026-09-23

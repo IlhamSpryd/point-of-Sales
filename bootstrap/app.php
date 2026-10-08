@@ -4,11 +4,20 @@ use App\Http\Middleware\EnsureTableSession;
 use App\Http\Middleware\ResolveTableFromToken;
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetTenantContext;
 use App\Http\Middleware\VerifyWebhookSignature;
+use Illuminate\Auth\Middleware\Authorize;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
+use Illuminate\Contracts\Session\Middleware\AuthenticatesSessions;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Routing\Middleware\ThrottleRequestsWithRedis;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -34,7 +43,19 @@ return Application::configure(basePath: dirname(__DIR__))
             'table.token' => ResolveTableFromToken::class,
             'table.session' => EnsureTableSession::class,
             'verify.webhook' => VerifyWebhookSignature::class,
-            'tenant.context' => \App\Http\Middleware\SetTenantContext::class,
+            'tenant.context' => SetTenantContext::class,
+        ]);
+
+        $middleware->priority([
+            StartSession::class,
+            ShareErrorsFromSession::class,
+            AuthenticatesRequests::class,
+            ThrottleRequests::class,
+            ThrottleRequestsWithRedis::class,
+            AuthenticatesSessions::class,
+            SetTenantContext::class,
+            SubstituteBindings::class,
+            Authorize::class,
         ]);
 
         // Midtrans mengirim notifikasi webhook server-to-server TANPA cookie

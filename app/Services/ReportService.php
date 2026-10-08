@@ -62,7 +62,7 @@ class ReportService
     }
 
     /**
-     * [OMEGA-NODE5] Versi ASINKRON exportCsv() untuk rentang besar --
+     * Versi ASINKRON exportCsv() untuk rentang besar --
      * exportCsv() (sinkron) SENGAJA TIDAK diubah, UI existing (Node 2)
      * masih memakainya untuk rentang kecil. Lihat SYNC ALERT NODE 2.
      */

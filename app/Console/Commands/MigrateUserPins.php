@@ -26,7 +26,7 @@ class MigrateUserPins extends Command
             $updates = [];
 
             // 1. PIN Hash
-            if (!empty($user->pin_code)) {
+            if (! empty($user->pin_code)) {
                 if (str_starts_with($user->pin_code, '$2y$') || str_starts_with($user->pin_code, '$argon')) {
                     $updates['pin_hash'] = $user->pin_code;
                 } else {
@@ -35,11 +35,11 @@ class MigrateUserPins extends Command
             }
 
             // 2. Password Hash
-            if (!empty($user->password)) {
+            if (! empty($user->password)) {
                 $updates['password_hash'] = $user->password;
             }
 
-            if (!empty($updates)) {
+            if (! empty($updates)) {
                 DB::table('users')->where('id', $user->id)->update($updates);
                 $migratedCount++;
             }

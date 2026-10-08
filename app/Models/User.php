@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AssignsTenant;
+use App\Services\Context\TenantContext;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -9,6 +11,7 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
+    use AssignsTenant;
     use HasFactory, Notifiable, SoftDeletes;
 
     protected $fillable = [
@@ -20,7 +23,6 @@ class User extends Authenticatable
         'pin_hash',
         'join_date',
         'role_id',
-        'tenant_id',
         'is_active',
         'last_login_at',
     ];
@@ -75,5 +77,20 @@ class User extends Authenticatable
     public function stores()
     {
         return $this->belongsToMany(Store::class, 'user_stores');
+    }
+
+    /**
+     * Route binding di-scope ke tenant pada konteks aktif (404 bila lintas tenant).
+     * Login tidak melewati route binding, sehingga tidak terpengaruh (BD-7 aman).
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $query = static::query();
+
+        if (app(TenantContext::class)->hasTenant()) {
+            $query->where('tenant_id', app(TenantContext::class)->requireTenantId());
+        }
+
+        return $query->where($field ?? $this->getRouteKeyName(), $value)->first();
     }
 }

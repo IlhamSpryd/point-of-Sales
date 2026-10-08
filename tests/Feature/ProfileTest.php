@@ -18,6 +18,7 @@ class ProfileTest extends TestCase
             ->actingAs($user)
             ->get('/profile');
 
+        $response->dump();
         $response->assertOk();
     }
 

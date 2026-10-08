@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 /**
@@ -19,8 +21,9 @@ class UpdateUserRequest extends FormRequest
     {
         $rules = [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$this->user->id],
-            'role_id' => ['required', 'exists:roles,id'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$this->user->id], // Email unik GLOBAL
+            // role_id HARUS milik tenant pada konteks aktif — role lintas tenant ditolak.
+            'role_id' => ['required', Rule::exists('roles', 'id')->where('tenant_id', app(TenantContext::class)->requireTenantId())],
             'phone_number' => ['nullable', 'string', 'max:20'],
             'pin_code' => ['nullable', 'string', 'digits_between:4,6'],
             'join_date' => ['nullable', 'date'],
