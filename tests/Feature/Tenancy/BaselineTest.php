@@ -4,9 +4,12 @@ namespace Tests\Feature\Tenancy;
 
 use App\Livewire\Kasir\OrderHistory;
 use App\Livewire\Kds\Board;
+use App\Models\OrderItem;
 use App\Models\Payment;
+use App\Models\Scopes\TenantScope;
 use App\Services\Context\TenantContext;
 use App\Services\DashboardService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -23,23 +26,22 @@ class BaselineTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
         $dbName = DB::connection()->getDatabaseName();
         if (! str_contains($dbName, 'test')) {
             $this->markTestSkipped('Not test database');
         }
-
-        $this->setupTwoTenants();
+        app(TenantContext::class)->runWithoutTenant(function () {
+            $this->setupTwoTenants();
+        });
     }
 
     // T1: OrderHistory::viewDetail with a tenant-B order id as a tenant-A user shows nothing/denied.
     public function test_t1_order_history_view_detail_cross_tenant_denied()
     {
+        $this->expectException(ModelNotFoundException::class);
         Livewire::actingAs($this->userAOwner)
             ->test(OrderHistory::class)
-            ->call('viewDetail', $this->orderB->id)
-            ->assertSet('selectedOrderId', $this->orderB->id)
-            ->assertSet('selectedOrder', null);
+            ->call('viewDetail', $this->orderB->id);
     }
 
     // T2: UserController index/edit/update across tenants.
@@ -78,12 +80,15 @@ class BaselineTest extends TestCase
     // T5: Kds Board::claim on a tenant-B order item is denied.
     public function test_t5_kds_board_claim_cross_tenant_denied()
     {
-        $orderItemB = $this->orderB->orderItems()->withoutGlobalScope('tenant')->first();
+        $orderItemB = OrderItem::withoutGlobalScope(TenantScope::class)->where('order_id', $this->orderB->id)->first();
+        if (! $orderItemB) {
+            $this->markTestSkipped('Order B has no items');
+        }
 
+        $this->expectException(ModelNotFoundException::class);
         Livewire::actingAs($this->userAOwner)
             ->test(Board::class)
             ->call('claim', $orderItemB->id);
-        // It will safely abort or ignore the claim because the order item won't be found
     }
 
     // T6: a deactivated user is denied on the next HTTP request and the next Livewire action.
@@ -101,6 +106,8 @@ class BaselineTest extends TestCase
     public function test_t7_voiding_paid_cash_order_writes_voided_payment()
     {
         $context = app(TenantContext::class);
+        $context->setTenantId($this->tenantA->id);
+        $context->setStoreId($this->storeA->id);
         dump("T7 Start. tenantA->id: {$this->tenantA->id}, context_tenant: ".$context->getTenantId());
 
         app(TenantContext::class)->runWithoutTenant(function () {
@@ -121,11 +128,14 @@ class BaselineTest extends TestCase
             ]);
         });
 
-        Livewire::actingAs($this->userAOwner)
+        $component = Livewire::actingAs($this->userAOwner)
             ->test(OrderHistory::class)
-            ->set('voidingOrderId', $this->orderA->id)
-            ->set('voidReason', 'Test void')
-            ->call('voidOrder');
+            ->call('voidOrder', $this->orderA->id, 'Test void')
+            ->assertHasNoErrors();
+
+        if (session()->has('error')) {
+            dump('Session error: '.session('error'));
+        }
 
         $this->assertDatabaseHas('payments', [
             'order_id' => $this->orderA->id,

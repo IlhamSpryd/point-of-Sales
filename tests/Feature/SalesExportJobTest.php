@@ -5,7 +5,10 @@ namespace Tests\Feature;
 use App\Enums\ExportTaskStatus;
 use App\Jobs\ProcessSalesReportExportJob;
 use App\Models\ExportTask;
+use App\Models\Store;
+use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Context\TenantContext;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -13,6 +16,18 @@ use Tests\TestCase;
 class SalesExportJobTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected bool $optOutFromDefaultTenant = true;
+
+    private function bootstrapTenantWithStore(): array
+    {
+        $tenant = Tenant::create(['name' => 'Export Tenant']);
+        $store = Store::create(['tenant_id' => $tenant->id, 'name' => 'Main']);
+        app(TenantContext::class)->setTenantId($tenant->id);
+        app(TenantContext::class)->setStoreId($store->id);
+
+        return [$tenant, $store];
+    }
 
     public function test_job_implements_should_be_unique()
     {
@@ -22,11 +37,14 @@ class SalesExportJobTest extends TestCase
 
     public function test_unique_id_is_based_on_user_and_parameters()
     {
-        $user = User::factory()->create();
+        [$tenant, $store] = $this->bootstrapTenantWithStore();
+        $user = User::factory()->create(['tenant_id' => $tenant->id]);
         $params = ['start' => '2023-01-01', 'end' => '2023-01-31'];
 
         $task = ExportTask::create([
             'requested_by' => $user->id,
+            'tenant_id' => $tenant->id,
+            'store_id' => $store->id,
             'type' => 'sales_report',
             'parameters' => $params,
             'status' => ExportTaskStatus::Pending->value,

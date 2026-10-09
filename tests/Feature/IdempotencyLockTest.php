@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\Shift;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -37,6 +38,13 @@ class IdempotencyLockTest extends TestCase
             'category_id' => $cat->id,
             'is_active' => true,
         ]);
+
+        // Phase 14: saat balance otoritatif, stok awal harus tercermin di baris
+        // balance store aktif (bukan hanya kolom legacy products.stock).
+        DB::table('product_stock_balances')
+            ->where('tenant_id', $this->product->tenant_id)
+            ->where('product_id', $this->product->id)
+            ->update(['quantity' => 10, 'baseline_quantity' => 10]);
     }
 
     public function test_rejects_missing_idempotency_key()

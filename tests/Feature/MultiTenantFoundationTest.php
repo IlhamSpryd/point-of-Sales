@@ -57,7 +57,11 @@ class MultiTenantFoundationTest extends TestCase
 
         $user = User::factory()->create(['tenant_id' => $tenant->id]);
 
-        $user->stores()->attach([$store1->id, $store2->id]);
+        // user_stores kini NOT NULL tenant_id (Phase 9) — stamp tenant di pivot.
+        $user->stores()->attach([
+            $store1->id => ['tenant_id' => $tenant->id],
+            $store2->id => ['tenant_id' => $tenant->id],
+        ]);
 
         $this->assertEquals(2, $user->stores()->count());
         $this->assertContains('Store 1', $user->stores->pluck('name')->toArray());
@@ -70,12 +74,12 @@ class MultiTenantFoundationTest extends TestCase
         $store = Store::create(['tenant_id' => $tenant->id, 'name' => 'Store 1']);
         $user = User::factory()->create(['tenant_id' => $tenant->id]);
 
-        $user->stores()->attach($store->id);
+        $user->stores()->attach($store->id, ['tenant_id' => $tenant->id]);
 
         $this->expectException(QueryException::class);
         $this->expectExceptionCode('23000'); // Integrity constraint violation
 
         // Attempting to attach the same store again should fail due to unique constraint
-        $user->stores()->attach($store->id);
+        $user->stores()->attach($store->id, ['tenant_id' => $tenant->id]);
     }
 }

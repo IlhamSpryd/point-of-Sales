@@ -27,6 +27,8 @@ trait TwoTenantFixture
 
     public $storeB;
 
+    public $storeA2;
+
     public $userAOwner;
 
     public $userBBarista;
@@ -50,6 +52,8 @@ trait TwoTenantFixture
 
             $this->storeA = Store::create(['tenant_id' => $this->tenantA->id, 'name' => 'Store A']);
             $this->storeB = Store::create(['tenant_id' => $this->tenantB->id, 'name' => 'Store B']);
+            // Cabang kedua untuk Tenant A — dipakai menguji isolasi antar-store.
+            $this->storeA2 = Store::create(['tenant_id' => $this->tenantA->id, 'name' => 'Store A2']);
 
             // Role kini tenant-scoped (TenantScope melempar exception tanpa konteks) —
             // fixture menggunakan escape hatch eksplisit karena ini setup sistem dua tenant.
@@ -63,6 +67,7 @@ trait TwoTenantFixture
                 'role_id' => $roleOwner->id,
                 'is_active' => 1,
             ]);
+
             $this->userBBarista = User::create([
                 'name' => 'Barista B',
                 'email' => 'baristaB@test.com',
@@ -71,19 +76,24 @@ trait TwoTenantFixture
                 'is_active' => 1,
             ]);
 
+            // Phase 11: Kasir A hanya ditugaskan ke Store A (bukan Store A2).
+            $this->userAOwner->stores()->attach($this->storeA->id, ['tenant_id' => $this->tenantA->id]);
+            $this->userBBarista->stores()->attach($this->storeB->id, ['tenant_id' => $this->tenantB->id]);
+
             Artisan::call('tenant:provision-system-users', ['tenant' => $this->tenantA->id]);
             Artisan::call('tenant:provision-system-users', ['tenant' => $this->tenantB->id]);
 
-            $catA = Category::create(['category_name' => 'Cat A', 'tenant_id' => $this->tenantA->id]);
-            $catB = Category::create(['category_name' => 'Cat B', 'tenant_id' => $this->tenantB->id]);
+            $catA = Category::withoutTenantScope()->create(['category_name' => 'Cat A', 'tenant_id' => $this->tenantA->id]);
+            $catB = Category::withoutTenantScope()->create(['category_name' => 'Cat B', 'tenant_id' => $this->tenantB->id]);
 
-            $this->productA = Product::create([
+            $this->productA = Product::withoutTenantScope()->create([
                 'product_name' => 'Prod A',
                 'tenant_id' => $this->tenantA->id,
                 'category_id' => $catA->id,
                 'is_active' => 1,
             ]);
-            $this->productB = Product::create([
+
+            $this->productB = Product::withoutTenantScope()->create([
                 'product_name' => 'Prod B',
                 'tenant_id' => $this->tenantB->id,
                 'category_id' => $catB->id,
