@@ -11,4 +11,5 @@ enum StockMovementType: string
     case RestoreCompensation = 'restore_compensation';
     case SaleDeduction = 'sale_deduction';
     case InitialSync = 'initial_sync';
+    case Adjustment = 'adjustment';
 }

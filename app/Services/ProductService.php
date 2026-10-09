@@ -2,13 +2,16 @@
 
 namespace App\Services;
 
+use App\Enums\StockMovementType;
 use App\Exports\ProductsExport;
 use App\Models\Product;
+use App\Services\Context\TenantContext;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
 
 /**
@@ -57,24 +60,32 @@ class ProductService
             }
 
             $product = Product::create($data);
+            $tenantId = app(TenantContext::class)->requireTenantId();
 
             if (isset($data['ingredients']) && is_array($data['ingredients'])) {
                 $ingredientsSync = [];
                 foreach ($data['ingredients'] as $ing) {
                     if (isset($ing['id']) && isset($ing['quantity'])) {
-                        $ingredientsSync[$ing['id']] = ['quantity_required' => $ing['quantity']];
+                        $ingredientsSync[$ing['id']] = [
+                            'quantity_required' => $ing['quantity'],
+                            'tenant_id' => $tenantId,
+                        ];
                     }
                 }
                 $product->ingredients()->sync($ingredientsSync);
             }
 
             if (isset($data['modifier_groups']) && is_array($data['modifier_groups'])) {
-                $product->modifierGroups()->sync($data['modifier_groups']);
+                $modifierGroupsSync = [];
+                foreach ($data['modifier_groups'] as $groupId) {
+                    $modifierGroupsSync[$groupId] = ['tenant_id' => $tenantId];
+                }
+                $product->modifierGroups()->sync($modifierGroupsSync);
             }
 
             // PENTING: invalidasi cache katalog menu setiap ada produk baru,
             // agar Kasir/Self-Order langsung melihat produk baru tanpa delay 1 jam.
-            $this->menuCache->flush();
+            $this->menuCache->flush($tenantId);
 
             return $product;
         });
@@ -95,13 +106,33 @@ class ProductService
                 $data['product_photo'] = $file->store('products', 'public');
             }
 
+            // [PHASE 14] Saat balance otoritatif, perubahan `stock` TIDAK boleh
+            // menulis kolom langsung -- dirutekan lewat ledger adjustment + balance.
+            $stockEdit = null;
+            if ((bool) config('pos.stock_balances_authoritative', false) && array_key_exists('stock', $data)) {
+                $newStock = (float) $data['stock'];
+                unset($data['stock']);
+
+                if ($newStock !== (float) $product->stock) {
+                    $stockEdit = $newStock;
+                }
+            }
+
             $product->update($data);
+            $tenantId = app(TenantContext::class)->requireTenantId();
+
+            if ($stockEdit !== null) {
+                $this->applyStockAdjustment($product, $stockEdit, $tenantId);
+            }
 
             if (isset($data['ingredients']) && is_array($data['ingredients'])) {
                 $ingredientsSync = [];
                 foreach ($data['ingredients'] as $ing) {
                     if (isset($ing['id']) && isset($ing['quantity'])) {
-                        $ingredientsSync[$ing['id']] = ['quantity_required' => $ing['quantity']];
+                        $ingredientsSync[$ing['id']] = [
+                            'quantity_required' => $ing['quantity'],
+                            'tenant_id' => $tenantId,
+                        ];
                     }
                 }
                 $product->ingredients()->sync($ingredientsSync);
@@ -115,14 +146,18 @@ class ProductService
             }
 
             if (isset($data['modifier_groups']) && is_array($data['modifier_groups'])) {
-                $product->modifierGroups()->sync($data['modifier_groups']);
+                $modifierGroupsSync = [];
+                foreach ($data['modifier_groups'] as $groupId) {
+                    $modifierGroupsSync[$groupId] = ['tenant_id' => $tenantId];
+                }
+                $product->modifierGroups()->sync($modifierGroupsSync);
             } else {
                 if (request()->has('modifier_groups') || request()->isMethod('PUT') || request()->isMethod('PATCH')) {
                     $product->modifierGroups()->sync([]);
                 }
             }
 
-            $this->menuCache->flush();
+            $this->menuCache->flush($tenantId);
 
             return $product;
         });
@@ -143,10 +178,47 @@ class ProductService
             }
 
             $result = $product->delete();
-
-            $this->menuCache->flush();
+            $this->menuCache->flush($product->tenant_id);
 
             return $result;
         });
+    }
+
+    /**
+     * [PHASE 14] Edit stok manual lewat form produk menjadi ledger adjustment
+     * (append-only) + pembaruan baris balance store aktif. Kolom legacy
+     * products.stock hanya ditulis sebagai MIRROR, bukan sumber kebenaran.
+     */
+    private function applyStockAdjustment(Product $product, float $newStock, int $tenantId): void
+    {
+        $storeId = app(TenantContext::class)->getStoreId();
+
+        if ($storeId === null) {
+            throw new Exception('Store aktif tidak tersedia untuk penyesuaian stok produk.');
+        }
+
+        $delta = $newStock - (float) $product->stock;
+
+        // 1. Ledger append-only (auditable).
+        DB::table('stock_movements')->insert([
+            'tenant_id' => $tenantId,
+            'store_id' => $storeId,
+            'product_id' => $product->id,
+            'order_id' => null,
+            'order_item_id' => null,
+            'type' => StockMovementType::Adjustment->value,
+            'quantity' => $delta,
+            'reason' => 'Penyesuaian stok manual via form produk.',
+            'idempotency_key' => 'adjust:product:'.$product->id.':'.Str::uuid()->toString(),
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        // 3. Mirror kolom legacy.
+        //     Hook `Product::saved()` (Phase 13) akan meneruskan perubahan
+        //     kolom ini ke baris balance store aktif, sehingga TIDAK ditulis
+        //     dua kali di sini.
+        $product->stock = $newStock;
+        $product->save();
     }
 }

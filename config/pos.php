@@ -19,8 +19,10 @@ return [
 
     // PATCH FOR F-11: estimasi menit per item untuk ETA pelanggan self-order.
     'eta_per_item' => env('POS_ETA_PER_ITEM', 3),
-
     // KDS SLA Configuration
     'kds_sla_warning_minutes' => env('KDS_SLA_WARNING_MINUTES', 10),
     'kds_sla_critical_minutes' => env('KDS_SLA_CRITICAL_MINUTES', 15),
+
+    // Phase 14: Shadow balances authority flag
+    'stock_balances_authoritative' => env('POS_STOCK_BALANCES_AUTHORITATIVE', false),
 ];

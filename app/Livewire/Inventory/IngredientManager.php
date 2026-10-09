@@ -5,10 +5,13 @@ namespace App\Livewire\Inventory;
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Ingredient;
 use App\Models\IngredientStockMovement;
+use App\Services\Context\TenantContext;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -21,6 +24,7 @@ class IngredientManager extends Component
     public string $search = '';
 
     // Form properties
+    #[Locked]
     public ?int $ingredientId = null;
 
     public ?string $ingredient_code = null;
@@ -36,6 +40,7 @@ class IngredientManager extends Component
     public bool $is_active = true;
 
     // Adjust Stock properties
+    #[Locked]
     public ?int $adjustIngredientId = null;
 
     public ?float $adjustQuantity = null;
@@ -94,9 +99,9 @@ class IngredientManager extends Component
 
         if ($this->isEditing) {
             $ingredient = Ingredient::findOrFail($this->ingredientId);
-            // validate unique ingredient_code ignoring current
+            // validate unique ingredient_code ignoring current (per tenant)
             $this->validate([
-                'ingredient_code' => 'nullable|string|max:255|unique:ingredients,ingredient_code,'.$ingredient->id,
+                'ingredient_code' => ['nullable', 'string', 'max:255', Rule::unique('ingredients', 'ingredient_code')->where('tenant_id', app(TenantContext::class)->requireTenantId())->ignore($ingredient->id)],
             ]);
             $ingredient->update([
                 'ingredient_code' => $this->ingredient_code,
@@ -109,7 +114,7 @@ class IngredientManager extends Component
             session()->flash('success', 'Bahan baku berhasil diperbarui.');
         } else {
             $this->validate([
-                'ingredient_code' => 'nullable|string|max:255|unique:ingredients,ingredient_code',
+                'ingredient_code' => ['nullable', 'string', 'max:255', Rule::unique('ingredients', 'ingredient_code')->where('tenant_id', app(TenantContext::class)->requireTenantId())],
             ]);
             Ingredient::create([
                 'ingredient_code' => $this->ingredient_code,
@@ -172,6 +177,31 @@ class IngredientManager extends Component
                 'idempotency_key' => 'adj_'.Str::uuid()->toString(),
                 'created_by' => Auth::id(),
             ]);
+
+            // [PHASE 14] Penyesuaian manual juga memperbarui baris balance
+            // store aktif (otoritas) -- kolom legacy tetap jadi mirror.
+            $storeId = app(TenantContext::class)->getStoreId();
+            if (config('pos.stock_balances_authoritative', false) && $storeId) {
+                DB::table('ingredient_stock_balances')->insertOrIgnore([
+                    'tenant_id' => app(TenantContext::class)->requireTenantId(),
+                    'store_id' => $storeId,
+                    'ingredient_id' => $ingredient->id,
+                    'quantity' => 0,
+                    'baseline_quantity' => 0,
+                    'baseline_movement_id' => 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                DB::table('ingredient_stock_balances')
+                    ->where('tenant_id', app(TenantContext::class)->requireTenantId())
+                    ->where('store_id', $storeId)
+                    ->where('ingredient_id', $ingredient->id)
+                    ->update([
+                        'quantity' => DB::raw('quantity + ('.(float) $qty.')'),
+                        'updated_at' => now(),
+                    ]);
+            }
 
             $ingredient->current_stock += $qty;
             $ingredient->save();
