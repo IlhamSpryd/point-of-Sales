@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Customer;
 
+use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -22,14 +23,14 @@ class AddToCartRequest extends FormRequest
         return [
             // PATCH FOR S-12: hanya produk aktif dan tidak soft-deleted.
             'product_id' => ['required', Rule::exists('products', 'id')
-                ->where(fn ($q) => $q->where('is_active', true)->whereNull('deleted_at'))],
+                ->where(fn ($q) => $q->where('is_active', true)->whereNull('deleted_at')->where('tenant_id', app(TenantContext::class)->requireTenantId()))],
             'qty' => ['required', 'integer', 'min:1', 'max:20'],
             // modifier_ids boleh kosong (array kosong) jika produk tidak punya varian sama sekali,
             // tapi kalau ada isinya, setiap ID wajib benar-benar ada dan aktif.
             'modifier_ids' => ['nullable', 'array'],
             // PATCH FOR S-12: hanya modifier aktif dan tidak soft-deleted.
             'modifier_ids.*' => ['integer', Rule::exists('modifiers', 'id')
-                ->where(fn ($q) => $q->where('is_active', true)->whereNull('deleted_at'))],
+                ->where(fn ($q) => $q->where('is_active', true)->whereNull('deleted_at')->where('tenant_id', app(TenantContext::class)->requireTenantId()))],
             'notes' => ['nullable', 'string', 'max:255'],
         ];
     }

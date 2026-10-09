@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Order;
+use App\Services\Context\TenantContext;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -16,9 +17,25 @@ class ProcessMonthlyExportJob implements ShouldQueue
     // Batasi retries agar tidak menumpuk file rusak
     public $tries = 1;
 
-    public function __construct(public string $month, public string $year) {}
+    public function __construct(
+        public string $month,
+        public string $year,
+        public ?int $tenantId = null,
+        public ?int $storeId = null
+    ) {}
 
     public function handle(): void
+    {
+        if ($this->tenantId) {
+            app(TenantContext::class)->runAs($this->tenantId, $this->storeId, function () {
+                $this->processExport();
+            });
+        } else {
+            $this->processExport();
+        }
+    }
+
+    private function processExport(): void
     {
         $filename = "exports/sales_{$this->month}_{$this->year}_".time().'.csv';
         $handle = fopen(storage_path('app/'.$filename), 'w');

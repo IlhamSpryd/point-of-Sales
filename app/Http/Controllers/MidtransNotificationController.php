@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
+use App\Services\Context\TenantContext;
 use App\Services\TransactionService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -66,16 +68,22 @@ class MidtransNotificationController extends Controller
         }
 
         try {
-            // [SEC-006] gross_amount dari payload (yang keasliannya sudah
-            // terverifikasi lewat pengecekan signature di atas) diteruskan
-            // ke Service agar dicocokkan terhadap order_amount di database
-            // sebelum status benar-benar diubah menjadi Paid.
-            $this->transactionService->updateStatusFromMidtransNotification(
-                orderCode: (string) $orderId,
-                transactionStatus: (string) ($payload['transaction_status'] ?? ''),
-                fraudStatus: $payload['fraud_status'] ?? null,
-                grossAmount: (int) round((float) $grossAmount),
-            );
+            // Because webhooks run without an HTTP tenant context, we MUST fetch the order without
+            // global scope first, verify it exists, and then run the service logic INSIDE that tenant's context.
+            $order = Order::withoutTenantScope()->where('order_code', (string) $orderId)->firstOrFail();
+
+            app(TenantContext::class)->runAs($order->tenant_id, $order->store_id, function () use ($payload, $orderId, $grossAmount) {
+                // [SEC-006] gross_amount dari payload (yang keasliannya sudah
+                // terverifikasi lewat pengecekan signature di atas) diteruskan
+                // ke Service agar dicocokkan terhadap order_amount di database
+                // sebelum status benar-benar diubah menjadi Paid.
+                $this->transactionService->updateStatusFromMidtransNotification(
+                    orderCode: (string) $orderId,
+                    transactionStatus: (string) ($payload['transaction_status'] ?? ''),
+                    fraudStatus: $payload['fraud_status'] ?? null,
+                    grossAmount: (int) round((float) $grossAmount),
+                );
+            });
         } catch (ModelNotFoundException) {
             Log::warning('Midtrans notification: order tidak ditemukan.', ['order_id' => $orderId]);
 

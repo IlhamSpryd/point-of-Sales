@@ -10,6 +10,7 @@ use App\Exports\SalesExport;
 use App\Jobs\ProcessSalesReportExportJob;
 use App\Models\ExportTask;
 use App\Models\Order;
+use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Validation\ValidationException;
@@ -81,7 +82,8 @@ class ReportService
             'status' => ExportTaskStatus::Pending,
         ]);
 
-        ProcessSalesReportExportJob::dispatch($task);
+        $tenantContext = app(TenantContext::class);
+        ProcessSalesReportExportJob::dispatch($task, $tenantContext->getTenantId(), $tenantContext->getStoreId());
 
         return $task;
     }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\AssignsTenant;
+use App\Models\Concerns\ScopedToTenant;
+use App\Services\Context\TenantContext;
 use App\Services\MenuCacheService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,6 +22,7 @@ use Illuminate\Support\Facades\DB;
 class Product extends Model
 {
     use AssignsTenant;
+    use ScopedToTenant;
     use SoftDeletes;
 
     /**
@@ -32,11 +35,29 @@ class Product extends Model
 
     protected static function booted()
     {
+        static::created(function ($model) {
+            $stores = Store::where('tenant_id', $model->tenant_id)->orderBy('id')->get();
+            $defaultStore = $stores->first();
+            foreach ($stores as $store) {
+                $qty = ($defaultStore && $store->id === $defaultStore->id) ? $model->stock : 0;
+                DB::table('product_stock_balances')->insertOrIgnore([
+                    'tenant_id' => $model->tenant_id,
+                    'store_id' => $store->id,
+                    'product_id' => $model->id,
+                    'quantity' => $qty,
+                    'baseline_quantity' => $qty,
+                    'baseline_movement_id' => 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        });
+
         static::creating(function ($model) {
             if (empty($model->product_code)) {
-                $latest = static::withoutGlobalScopes()->latest('id')->first();
+                $latest = static::withoutTenantScope()->latest('id')->first();
                 $nextId = $latest ? $latest->id + 1 : 1;
-                $model->product_code = 'PRD-'.str_pad((string) $nextId, 4, '0', STR_PAD_LEFT);
+                $model->product_code = 'PRD-'.$model->tenant_id.'-'.str_pad((string) $nextId, 4, '0', STR_PAD_LEFT);
             }
         });
 
@@ -64,6 +85,23 @@ class Product extends Model
         // nama/harga/foto, dan agar penjualan normal (stok 50 -> 49) tidak
         // memicu invalidasi cache yang tidak perlu.
         static::saved(function (Product $product) {
+            if ($product->wasChanged('stock')) {
+                $context = app(TenantContext::class);
+                $storeId = $context->getStoreId() ?? Store::where('tenant_id', $product->tenant_id)->orderBy('id')->value('id');
+
+                if ($storeId) {
+                    $delta = $product->stock - $product->getOriginal('stock');
+                    DB::table('product_stock_balances')
+                        ->where('tenant_id', $product->tenant_id)
+                        ->where('store_id', $storeId)
+                        ->where('product_id', $product->id)
+                        ->update([
+                            'quantity' => DB::raw("quantity + ($delta)"),
+                            'updated_at' => now(),
+                        ]);
+                }
+            }
+
             $stockCrossedToZero = $product->wasChanged('stock')
                 && $product->stock <= 0
                 && (int) $product->getOriginal('stock') > 0;
@@ -88,7 +126,7 @@ class Product extends Model
                 // TEPAT setelah transaksi benar-benar commit (dan berjalan
                 // seketika jika model ini disimpan di luar transaksi sama
                 // sekali, misal lewat ProductController biasa).
-                DB::afterCommit(fn () => app(MenuCacheService::class)->flush());
+                DB::afterCommit(fn () => app(MenuCacheService::class)->flush($product->tenant_id));
             }
         });
     }

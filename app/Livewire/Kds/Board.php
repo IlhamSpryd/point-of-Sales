@@ -25,12 +25,22 @@ class Board extends Component
 
     public function claim(int $itemId): void
     {
+        $this->ensureCanProcess();
         $this->guard(fn () => app(KdsService::class)->claim($itemId, (int) Auth::id()));
     }
 
     public function markReady(int $itemId): void
     {
+        $this->ensureCanProcess();
         $this->guard(fn () => app(KdsService::class)->markReady($itemId, (int) Auth::id()));
+    }
+
+    private function ensureCanProcess(): void
+    {
+        $roleName = Auth::user()->role?->name;
+        if (! in_array($roleName, ['Owner', 'Manager', 'Barista', 'Cook'], true)) {
+            abort(403, 'Anda tidak memiliki akses untuk memproses pesanan di dapur.');
+        }
     }
 
     public function release(int $itemId): void

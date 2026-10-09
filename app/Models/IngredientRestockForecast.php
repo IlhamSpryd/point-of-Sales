@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\AssignsTenant;
+use App\Models\Concerns\ScopedToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class IngredientRestockForecast extends Model
 {
     use AssignsTenant;
+    use ScopedToTenant;
 
     protected $fillable = [
         'ingredient_id', 'avg_daily_consumption', 'projected_days_remaining',

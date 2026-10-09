@@ -161,9 +161,8 @@ class TransactionController extends Controller
      */
     public function syncMidtrans(string $orderNumber): JsonResponse
     {
-        $order = Order::where('order_code', $orderNumber)->first();
-
-        if (! $order || $order->order_status !== OrderStatus::Pending || $order->payment_method === PaymentMethod::Cash) {
+        $order = Order::where('order_code', $orderNumber)->firstOrFail();
+        if ($order->order_status !== OrderStatus::Pending || $order->payment_method === PaymentMethod::Cash) {
             return response()->json(['success' => true]);
         }
 

@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -37,10 +38,12 @@ class OrderHistory extends Component
     #[Url(as: 'sampai', history: true)]
     public ?string $endDate = null;
 
+    #[Locked]
     public ?int $selectedOrderId = null;
 
     public string $voidReason = '';
 
+    #[Locked]
     public ?int $voidingOrderId = null;
 
     public function updatedSearch(): void
@@ -80,7 +83,7 @@ class OrderHistory extends Component
 
     public function viewDetail(int $orderId): void
     {
-        $this->selectedOrderId = $orderId;
+        $this->selectedOrderId = Order::findOrFail($orderId)->id;
     }
 
     public function closeDetail(): void
@@ -88,20 +91,21 @@ class OrderHistory extends Component
         $this->selectedOrderId = null;
     }
 
-    public function voidOrder(): void
+    public function voidOrder(int $orderId, string $voidReason): void
     {
         /** @var User $user */
         $user = auth()->user();
-
         if (! $user->role->hasPermission('can_void_order') && ! $user->role->is_admin) {
             abort(403, 'Anda tidak memiliki izin untuk membatalkan (void) pesanan.');
         }
 
-        $this->validate([
-            'voidReason' => 'required|min:5',
-        ]);
+        if (strlen($voidReason) < 5) {
+            $this->addError('voidReason', 'Alasan void harus minimal 5 karakter.');
 
-        $order = Order::find($this->voidingOrderId);
+            return;
+        }
+
+        $order = Order::findOrFail($orderId);
         if (! $order || $order->order_status !== OrderStatus::Paid) {
             session()->flash('error', 'Pesanan tidak ditemukan atau tidak dalam status Lunas.');
 
@@ -114,7 +118,7 @@ class OrderHistory extends Component
         } catch (\DomainException $e) {
             session()->flash('error', $e->getMessage());
         } catch (\Exception $e) {
-            session()->flash('error', 'Terjadi kesalahan sistem saat membatalkan pesanan.');
+            session()->flash('error', 'Terjadi kesalahan sistem: '.$e->getMessage());
         }
 
         $this->voidingOrderId = null;

@@ -17,8 +17,11 @@ class TenantScope implements Scope
 {
     public function apply(Builder $builder, Model $model): void
     {
-        $tenantId = app(TenantContext::class)->requireTenantId();
-
+        $context = app(TenantContext::class);
+        if ($context->hasTenant() === false && $context->isBypassed()) {
+            return;
+        }
+        $tenantId = $context->requireTenantId();
         $builder->where($model->getTable().'.tenant_id', $tenantId);
     }
 }

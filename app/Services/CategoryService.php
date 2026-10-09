@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exports\CategoriesExport;
 use App\Models\Category;
+use App\Services\Context\TenantContext;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -41,8 +42,7 @@ class CategoryService
     {
         return DB::transaction(function () use ($data) {
             $category = Category::create($data);
-
-            $this->menuCache->flush();
+            $this->menuCache->flush(app(TenantContext::class)->requireTenantId());
 
             return $category;
         });
@@ -52,8 +52,7 @@ class CategoryService
     {
         return DB::transaction(function () use ($category, $data) {
             $category->update($data);
-
-            $this->menuCache->flush();
+            $this->menuCache->flush($category->tenant_id);
 
             return $category;
         });
@@ -65,10 +64,8 @@ class CategoryService
             if ($category->products()->exists()) {
                 throw new Exception('Tidak dapat menghapus kategori "'.$category->category_name.'" karena masih memiliki '.$category->products()->count().' produk.');
             }
-
             $result = $category->delete();
-
-            $this->menuCache->flush();
+            $this->menuCache->flush($category->tenant_id);
 
             return $result;
         });

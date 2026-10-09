@@ -47,6 +47,8 @@ return [
     'webhooks' => [
         'grabfood_secret' => env('WEBHOOK_GRABFOOD_SECRET'),
         'gofood_secret' => env('WEBHOOK_GOFOOD_SECRET'),
+        'default_tenant_id' => env('WEBHOOK_DEFAULT_TENANT_ID'),
+        'default_store_id' => env('WEBHOOK_DEFAULT_STORE_ID'),
     ],
 
 ];

@@ -6,12 +6,14 @@ namespace App\Models;
 
 use App\Enums\LoyaltyLedgerTypeEnum;
 use App\Models\Concerns\AssignsTenant;
+use App\Models\Concerns\ScopedToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LoyaltyLedger extends Model
 {
     use AssignsTenant;
+    use ScopedToTenant;
 
     public const UPDATED_AT = null;
 

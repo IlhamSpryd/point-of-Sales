@@ -21,6 +21,7 @@ use App\Models\ChannelOrderLog;
 use App\Models\ChannelProductMapping;
 use App\Models\Order;
 use App\Models\Product;
+use App\Services\Context\TenantContext;
 use App\Services\Omnichannel\ChannelOrderNormalizerFactory;
 use App\Services\SystemUserResolver;
 use App\Services\TransactionService;
@@ -41,8 +42,11 @@ class ProcessWebhookOrderJob implements ShouldQueue
     /** Satu percobaan -- kegagalan dicatat 'failed', BUKAN auto-retry (idempotency ditegakkan manual di bawah + unique constraint DB). */
     public int $tries = 1;
 
-    public function __construct(public ChannelOrderLog $log)
-    {
+    public function __construct(
+        public ChannelOrderLog $log,
+        public ?int $tenantId = null,
+        public ?int $storeId = null
+    ) {
         $this->onQueue('webhooks');
     }
 
@@ -54,9 +58,22 @@ class ProcessWebhookOrderJob implements ShouldQueue
 
         $this->log->update(['status' => 'processing']);
 
+        $tenantId = $this->tenantId ?? $this->log->tenant_id;
+        $storeId = $this->storeId ?? $this->log->store_id;
+
+        if ($tenantId) {
+            app(TenantContext::class)->runAs($tenantId, $storeId, function () use ($transactionService) {
+                $this->processInsideContext($transactionService);
+            });
+        } else {
+            $this->processInsideContext($transactionService);
+        }
+    }
+
+    private function processInsideContext(TransactionService $transactionService): void
+    {
         try {
             $order = $this->processOrder($transactionService);
-
             $this->log->update([
                 'status' => 'completed',
                 'order_id' => $order->id,

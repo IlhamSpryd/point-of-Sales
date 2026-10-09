@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\AssignsTenant;
+use App\Models\Concerns\ScopedToTenant;
+use App\Services\Context\TenantContext;
 use App\Services\MenuCacheService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -14,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 class Ingredient extends Model
 {
     use AssignsTenant;
+    use ScopedToTenant;
     use SoftDeletes;
 
     protected $guarded = ['id'];
@@ -26,6 +29,24 @@ class Ingredient extends Model
 
     protected static function booted(): void
     {
+        static::created(function ($model) {
+            $stores = Store::where('tenant_id', $model->tenant_id)->orderBy('id')->get();
+            $defaultStore = $stores->first();
+            foreach ($stores as $store) {
+                $qty = ($defaultStore && $store->id === $defaultStore->id) ? $model->current_stock : 0;
+                DB::table('ingredient_stock_balances')->insertOrIgnore([
+                    'tenant_id' => $model->tenant_id,
+                    'store_id' => $store->id,
+                    'ingredient_id' => $model->id,
+                    'quantity' => $qty,
+                    'baseline_quantity' => $qty,
+                    'baseline_movement_id' => 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        });
+
         // PATCH FOR F-07: BOM Cache Invalidation.
         //
         // Menutup celah yang didokumentasikan di Product::scopeAvailableForOrder():
@@ -42,6 +63,23 @@ class Ingredient extends Model
         // digunakan karena decrement() terjadi di dalam DB::transaction()
         // milik TransactionService::createTransaction().
         static::saved(function (Ingredient $ingredient) {
+            if ($ingredient->wasChanged('current_stock')) {
+                $context = app(TenantContext::class);
+                $storeId = $context->getStoreId() ?? Store::where('tenant_id', $ingredient->tenant_id)->orderBy('id')->value('id');
+
+                if ($storeId) {
+                    $delta = $ingredient->current_stock - $ingredient->getOriginal('current_stock');
+                    DB::table('ingredient_stock_balances')
+                        ->where('tenant_id', $ingredient->tenant_id)
+                        ->where('store_id', $storeId)
+                        ->where('ingredient_id', $ingredient->id)
+                        ->update([
+                            'quantity' => DB::raw("quantity + ($delta)"),
+                            'updated_at' => now(),
+                        ]);
+                }
+            }
+
             $stockCrossedToZero = $ingredient->wasChanged('current_stock')
                 && (float) $ingredient->current_stock <= 0
                 && (float) $ingredient->getOriginal('current_stock') > 0;
@@ -51,7 +89,7 @@ class Ingredient extends Model
                 && (float) $ingredient->getOriginal('current_stock') <= 0;
 
             if ($stockCrossedToZero || $stockCrossedFromZero) {
-                DB::afterCommit(fn () => app(MenuCacheService::class)->flush());
+                DB::afterCommit(fn () => app(MenuCacheService::class)->flush($ingredient->tenant_id));
             }
         });
     }

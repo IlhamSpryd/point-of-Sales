@@ -7,6 +7,7 @@ namespace App\Livewire;
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\ChannelProductMapping;
 use App\Models\Product;
+use App\Services\Context\TenantContext;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -27,7 +28,7 @@ class ChannelMappingManager extends Component
         $this->validate([
             'provider' => ['required', 'string', Rule::in(['grabfood', 'gofood'])],
             'externalProductId' => 'required|string|max:255',
-            'productId' => 'required|exists:products,id',
+            'productId' => ['required', Rule::exists('products', 'id')->where('tenant_id', app(TenantContext::class)->requireTenantId())],
         ]);
 
         ChannelProductMapping::updateOrCreate(

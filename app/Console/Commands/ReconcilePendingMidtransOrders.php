@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Services\Context\TenantContext;
 use App\Services\TransactionService;
 use Illuminate\Console\Command;
 use Midtrans\Config;
@@ -17,7 +18,7 @@ class ReconcilePendingMidtransOrders extends Command
 
     public function handle(TransactionService $service): int
     {
-        $stale = Order::where('order_status', OrderStatus::Pending)
+        $stale = Order::withoutTenantScope()->where('order_status', OrderStatus::Pending)
             ->where('payment_method', '!=', 'cash')
             ->whereNotNull('snap_token')
             ->where('created_at', '<=', now()->subMinutes(30))
@@ -30,21 +31,25 @@ class ReconcilePendingMidtransOrders extends Command
             try {
                 $status = Transaction::status($order->order_code);
 
-                $service->updateStatusFromMidtransNotification(
-                    orderCode: $order->order_code,
-                    transactionStatus: $status->transaction_status,
-                    fraudStatus: $status->fraud_status ?? null,
-                    grossAmount: (int) $status->gross_amount,
-                );
+                app(TenantContext::class)->runAs($order->tenant_id, $order->store_id, function () use ($service, $order, $status) {
+                    $service->updateStatusFromMidtransNotification(
+                        orderCode: $order->order_code,
+                        transactionStatus: $status->transaction_status,
+                        fraudStatus: $status->fraud_status ?? null,
+                        grossAmount: (int) $status->gross_amount,
+                    );
+                });
             } catch (\Exception $e) {
                 if (str_contains($e->getMessage(), '404')) {
                     // Order never created in midtrans (e.g. user abandoned snap before it fully loaded)
-                    $service->updateStatusFromMidtransNotification(
-                        orderCode: $order->order_code,
-                        transactionStatus: 'expire',
-                        fraudStatus: null,
-                        grossAmount: (int) $order->order_amount,
-                    );
+                    app(TenantContext::class)->runAs($order->tenant_id, $order->store_id, function () use ($service, $order) {
+                        $service->updateStatusFromMidtransNotification(
+                            orderCode: $order->order_code,
+                            transactionStatus: 'expire',
+                            fraudStatus: null,
+                            grossAmount: (int) $order->order_amount,
+                        );
+                    });
                 }
                 $this->error("Failed to reconcile {$order->order_code}: {$e->getMessage()}");
             }

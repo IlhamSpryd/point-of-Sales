@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\AssignsTenant;
+use App\Models\Concerns\ScopedToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Category extends Model
 {
     use AssignsTenant;
+    use ScopedToTenant;
     use SoftDeletes;
 
     /**
@@ -25,9 +27,9 @@ class Category extends Model
     {
         static::creating(function ($model) {
             if (empty($model->category_code)) {
-                $latest = static::latest('id')->first();
+                $latest = static::withoutTenantScope()->latest('id')->first();
                 $nextId = $latest ? $latest->id + 1 : 1;
-                $model->category_code = 'CAT-'.str_pad($nextId, 3, '0', STR_PAD_LEFT);
+                $model->category_code = 'CAT-'.$model->tenant_id.'-'.str_pad($nextId, 3, '0', STR_PAD_LEFT);
             }
         });
     }

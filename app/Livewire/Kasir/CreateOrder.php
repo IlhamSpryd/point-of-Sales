@@ -25,6 +25,7 @@ use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 // Layar POS kasir memakai noPadding agar tidak membawa padding admin generik
@@ -47,11 +48,14 @@ class CreateOrder extends Component
     public string $paymentMethod = 'cash'; // HANYA dipakai skenario Tarik Pesanan
 
     // Properti baru untuk mode "Retrieve Order"
+    #[Locked]
     public ?string $pendingOrderCode = null;
 
+    #[Locked]
     public ?int $pendingOrderId = null;
 
     // state modal pemilihan modifier
+    #[Locked]
     public ?int $selectingProductId = null;
 
     public array $pendingModifierIds = [];
@@ -63,12 +67,15 @@ class CreateOrder extends Component
     // [OMEGA-NODE2] Customer selection (Loyalty) -- HANYA berlaku untuk
     // skenario Walk-in Baru (lihat SYNC ALERT #3 di Phase 1 untuk alasan
     // skenario Tarik Pesanan belum mendukung ini).
+    #[Locked]
     public ?int $customerId = null;
 
+    #[Locked]
     public ?string $customerName = null;
 
     public string $customerSearch = '';
 
+    #[Locked]
     public ?int $selectedDiscountId = null;
 
     public string $idempotencyKey;
@@ -100,7 +107,7 @@ class CreateOrder extends Component
             ->where('order_code', $orderCode)
             ->where('order_status', 'pending')
             ->where('payment_method', 'cash')
-            ->first();
+            ->firstOrFail();
 
         if (! $order) {
             $this->dispatch('toast', message: 'Pesanan tidak ditemukan atau sudah dibayar.', type: 'error');
@@ -203,7 +210,7 @@ class CreateOrder extends Component
     // Modal state reset
     public function openModifierPicker(int $productId): void
     {
-        $this->selectingProductId = $productId;
+        $this->selectingProductId = Product::findOrFail($productId)->id;
         $this->pendingModifierIds = [];
 
         // Pre-select default modifiers
@@ -250,6 +257,23 @@ class CreateOrder extends Component
 
     public function confirmAddToCart(): void
     {
+        if ($this->selectingProductId) {
+            Product::findOrFail($this->selectingProductId);
+        }
+        if (! empty($this->pendingModifierIds)) {
+            Modifier::whereIn('id', $this->pendingModifierIds)->get()->each(function ($mod) {
+                // Ensure all modifiers belong to the current tenant via the global scope automatically.
+                // Implicit fail if count doesn't match happens implicitly by not finding them,
+                // but explicitly we could just check count.
+            });
+            $validCount = Modifier::whereIn('id', $this->pendingModifierIds)->count();
+            if ($validCount !== count($this->pendingModifierIds)) {
+                $this->addError('cart', 'Invalid modifiers selected.');
+
+                return;
+            }
+        }
+
         // Try to find an identical item to group with
         foreach ($this->cart as $index => $item) {
             if (
@@ -275,6 +299,8 @@ class CreateOrder extends Component
 
     public function addToCartDirectly(int $productId): void
     {
+        $productId = Product::findOrFail($productId)->id;
+
         // Group with identical item if exists
         foreach ($this->cart as $index => $item) {
             if (
@@ -437,6 +463,16 @@ class CreateOrder extends Component
 
         if ($this->pendingOrderId) {
             $rules['cashReceived'] = ['required', 'numeric', 'min:0'];
+        }
+
+        if ($this->customerId) {
+            Customer::findOrFail($this->customerId);
+        }
+        if ($this->selectedDiscountId) {
+            Discount::findOrFail($this->selectedDiscountId);
+        }
+        if ($this->tableId) {
+            Table::findOrFail($this->tableId);
         }
 
         // Jika bukan pending order, validasi meja diperlukan untuk dine_in

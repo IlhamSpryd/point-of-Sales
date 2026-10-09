@@ -4,6 +4,9 @@ namespace App\Livewire;
 
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Discount;
+use App\Services\Context\TenantContext;
+use Illuminate\Validation\Rule;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -16,6 +19,7 @@ class DiscountManager extends Component
 
     public $isModalOpen = false;
 
+    #[Locked]
     public $discountId;
 
     public $code = '';
@@ -38,7 +42,7 @@ class DiscountManager extends Component
 
     protected $rules = [
         'name' => 'required|string|max:255',
-        'code' => 'nullable|string|max:50|unique:discounts,code',
+        // 'code' divalidasi eksplisit di store() agar bisa tenant-scoped + ignore().
         'type' => 'required|in:percentage,fixed',
         'value' => 'required|integer|min:0',
         'max_discount_amount' => 'nullable|integer|min:0',
@@ -89,12 +93,26 @@ class DiscountManager extends Component
 
     public function store()
     {
-        $rules = $this->rules;
+        // Kode diskon unik PER TENANT (bukan global) — dua tenant boleh sama-sama
+        // memakai kode "PROMO10". Selaras dengan unique index
+        // discounts_tenant_id_code_unique.
+        $codeRule = Rule::unique('discounts', 'code')
+            ->where('tenant_id', app(TenantContext::class)->requireTenantId());
         if ($this->discountId) {
-            $rules['code'] = 'nullable|string|max:50|unique:discounts,code,'.$this->discountId;
+            $codeRule->ignore($this->discountId);
         }
 
-        $this->validate($rules);
+        $this->validate([
+            'code' => ['nullable', 'string', 'max:50', $codeRule],
+            'name' => 'required|string|max:255',
+            'type' => 'required|in:percentage,fixed',
+            'value' => 'required|integer|min:0',
+            'max_discount_amount' => 'nullable|integer|min:0',
+            'min_purchase_amount' => 'required|integer|min:0',
+            'is_active' => 'boolean',
+            'valid_from' => 'nullable|date',
+            'valid_until' => 'nullable|date|after_or_equal:valid_from',
+        ]);
 
         // Jika persentase, batas maksimal value adalah 100
         if ($this->type === 'percentage' && $this->value > 100) {
@@ -103,20 +121,24 @@ class DiscountManager extends Component
             return;
         }
 
-        Discount::updateOrCreate(
-            ['id' => $this->discountId],
-            [
-                'code' => $this->code ?: null,
-                'name' => $this->name,
-                'type' => $this->type,
-                'value' => $this->value,
-                'max_discount_amount' => $this->type === 'percentage' ? $this->max_discount_amount : null,
-                'min_purchase_amount' => $this->min_purchase_amount,
-                'is_active' => $this->is_active,
-                'valid_from' => $this->valid_from ?: null,
-                'valid_until' => $this->valid_until ?: null,
-            ]
-        );
+        $data = [
+            'code' => $this->code ?: null,
+            'name' => $this->name,
+            'type' => $this->type,
+            'value' => $this->value,
+            'max_discount_amount' => $this->type === 'percentage' ? $this->max_discount_amount : null,
+            'min_purchase_amount' => $this->min_purchase_amount,
+            'is_active' => $this->is_active,
+            'valid_from' => $this->valid_from ?: null,
+            'valid_until' => $this->valid_until ?: null,
+        ];
+
+        if ($this->discountId) {
+            $discount = Discount::findOrFail($this->discountId);
+            $discount->update($data);
+        } else {
+            Discount::create($data);
+        }
 
         session()->flash('message', $this->discountId ? 'Diskon berhasil diperbarui.' : 'Diskon berhasil dibuat.');
         $this->closeModal();

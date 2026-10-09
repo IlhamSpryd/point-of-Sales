@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -26,7 +27,8 @@ class StoreTransactionRequest extends FormRequest
                 // Ini mencegah produk yang sudah dinonaktifkan Admin tetap bisa "disundul"
                 // langsung lewat request API, meskipun sudah disembunyikan dari UI kasir.
                 Rule::exists('products', 'id')->where(function ($query) {
-                    $query->where('is_active', true);
+                    $query->where('is_active', true)
+                        ->where('tenant_id', app(TenantContext::class)->requireTenantId());
                 }),
             ],
             'items.*.quantity' => 'required|integer|min:1',
@@ -38,7 +40,7 @@ class StoreTransactionRequest extends FormRequest
             'items.*.options' => 'nullable|array',
             'items.*.options.*.modifier_id' => [
                 'required_with:items.*.options',
-                Rule::exists('modifiers', 'id')->where(fn ($q) => $q->where('is_active', true)),
+                Rule::exists('modifiers', 'id')->where(fn ($q) => $q->where('is_active', true)->where('tenant_id', app(TenantContext::class)->requireTenantId())),
             ],
             'items.*.options.*.extra_price' => 'nullable|numeric|min:0',
             // Hanya izinkan metode pembayaran yang benar-benar didukung sistem,

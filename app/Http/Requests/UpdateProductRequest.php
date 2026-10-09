@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Form Request penanggung jawab pembatasan input untuk suntingan (Update) Data Produk.
@@ -17,7 +19,7 @@ class UpdateProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'category_id' => 'required|exists:categories,id',
+            'category_id' => ['required', Rule::exists('categories', 'id')->where('tenant_id', app(TenantContext::class)->requireTenantId())],
             'product_name' => 'required|string|max:255',
             'product_price' => 'required|numeric|min:0',
             'stock' => 'required|integer|min:0',
@@ -27,12 +29,12 @@ class UpdateProductRequest extends FormRequest
 
             // BOM / Ingredients validation
             'ingredients' => 'nullable|array',
-            'ingredients.*.id' => 'required_with:ingredients|exists:ingredients,id',
+            'ingredients.*.id' => ['required_with:ingredients', Rule::exists('ingredients', 'id')->where('tenant_id', app(TenantContext::class)->requireTenantId())],
             'ingredients.*.quantity' => 'required_with:ingredients|numeric|min:0.0001',
 
             // Modifier Groups
             'modifier_groups' => 'nullable|array',
-            'modifier_groups.*' => 'exists:modifier_groups,id',
+            'modifier_groups.*' => [Rule::exists('modifier_groups', 'id')->where('tenant_id', app(TenantContext::class)->requireTenantId())],
         ];
     }
 }

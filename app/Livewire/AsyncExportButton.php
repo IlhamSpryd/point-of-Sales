@@ -9,6 +9,7 @@ use App\Services\ReportService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class AsyncExportButton extends Component
@@ -19,6 +20,7 @@ class AsyncExportButton extends Component
 
     public string $endDate;
 
+    #[Locked]
     public ?int $taskId = null;
 
     public function mount(string $startDate, string $endDate): void

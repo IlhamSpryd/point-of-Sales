@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\AssignsTenant;
+use App\Models\Concerns\ScopedToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -20,6 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ModifierGroup extends Model
 {
     use AssignsTenant;
+    use ScopedToTenant;
     use SoftDeletes;
 
     protected $fillable = ['name', 'selection_type', 'is_required', 'min_select', 'max_select'];

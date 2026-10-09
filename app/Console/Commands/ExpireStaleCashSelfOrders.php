@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Services\Context\TenantContext;
 use App\Services\TransactionService;
 use Illuminate\Console\Command;
 
@@ -19,12 +20,12 @@ class ExpireStaleCashSelfOrders extends Command
         // self-order CASH. Order QRIS/E-wallet yang macet karena Snap
         // gagal terbuat (snap_token tetap NULL) sebelumnya tidak PERNAH
         // disapu, membuat stok/BOM menggantung permanen. | 2026-09-25
-        $staleSelfOrderCash = Order::where('order_status', OrderStatus::Pending)
+        $staleSelfOrderCash = Order::withoutTenantScope()->where('order_status', OrderStatus::Pending)
             ->where('payment_method', 'cash')
             ->whereNotNull('table_id')
             ->where('created_at', '<=', now()->subMinutes(30));
 
-        $staleNonCashStuck = Order::where('order_status', OrderStatus::Pending)
+        $staleNonCashStuck = Order::withoutTenantScope()->where('order_status', OrderStatus::Pending)
             ->whereIn('payment_method', ['qris', 'ewallet'])
             ->whereNull('snap_token')
             ->where('created_at', '<=', now()->subMinutes(35));
@@ -33,15 +34,17 @@ class ExpireStaleCashSelfOrders extends Command
         $stale = $staleSelfOrderCash->union($staleNonCashStuck)->get();
 
         foreach ($stale as $order) {
-            $service->updateStatusFromMidtransNotification(
-                orderCode: $order->order_code,
-                transactionStatus: 'expire',
-                fraudStatus: null,
-                grossAmount: (int) $order->order_amount,
-            );
+            app(TenantContext::class)->runAs($order->tenant_id, $order->store_id, function () use ($service, $order) {
+                $service->updateStatusFromMidtransNotification(
+                    orderCode: $order->order_code,
+                    transactionStatus: 'expire',
+                    fraudStatus: null,
+                    grossAmount: (int) $order->order_amount,
+                );
+            });
         }
 
-        $this->info("{$stale->count()} self-order cash kedaluwarsa diproses.");
+        $this->info("{$stale->count()} self-order kedaluwarsa diproses.");
 
         return self::SUCCESS;
     }

@@ -9,6 +9,7 @@ namespace App\Jobs;
 use App\Enums\ExportTaskStatus;
 use App\Exports\SalesExport;
 use App\Models\ExportTask;
+use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -38,8 +39,11 @@ class ProcessSalesReportExportJob implements ShouldBeUnique, ShouldQueue
     // blocks time-sensitive omnichannel order jobs sharing the 'default'
     // queue (see ProcessWebhookOrderJob::$queue).
 
-    public function __construct(public ExportTask $exportTask)
-    {
+    public function __construct(
+        public ExportTask $exportTask,
+        public ?int $tenantId = null,
+        public ?int $storeId = null
+    ) {
         $this->onQueue('exports');
     }
 
@@ -49,6 +53,17 @@ class ProcessSalesReportExportJob implements ShouldBeUnique, ShouldQueue
     }
 
     public function handle(): void
+    {
+        if ($this->tenantId) {
+            app(TenantContext::class)->runAs($this->tenantId, $this->storeId, function () {
+                $this->processExport();
+            });
+        } else {
+            $this->processExport();
+        }
+    }
+
+    private function processExport(): void
     {
         if ($this->exportTask->status !== ExportTaskStatus::Pending) {
             return;

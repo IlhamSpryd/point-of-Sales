@@ -7,6 +7,7 @@ use App\Models\Ingredient;
 use App\Models\Modifier;
 use App\Models\ModifierGroup;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class ModifierManager extends Component
@@ -20,6 +21,7 @@ class ModifierManager extends Component
     // Form State untuk Group
     public $showGroupForm = false;
 
+    #[Locked]
     public $editingGroupId = null;
 
     public $groupForm = [
@@ -31,8 +33,10 @@ class ModifierManager extends Component
     // Form State untuk Modifier
     public $showModifierForm = false;
 
+    #[Locked]
     public $editingModifierId = null;
 
+    #[Locked]
     public $selectedGroupId = null;
 
     public $modifierForm = [
@@ -88,7 +92,7 @@ class ModifierManager extends Component
         ]);
 
         if ($this->editingGroupId) {
-            ModifierGroup::find($this->editingGroupId)->update($this->groupForm);
+            ModifierGroup::findOrFail($this->editingGroupId)->update($this->groupForm);
         } else {
             ModifierGroup::create($this->groupForm);
         }
@@ -165,7 +169,7 @@ class ModifierManager extends Component
         ];
 
         if ($this->editingModifierId) {
-            $modifier = Modifier::find($this->editingModifierId);
+            $modifier = Modifier::findOrFail($this->editingModifierId);
             $modifier->update($data);
         } else {
             $modifier = Modifier::create($data);

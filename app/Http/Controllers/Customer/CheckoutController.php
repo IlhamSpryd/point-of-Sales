@@ -165,7 +165,7 @@ class CheckoutController extends Controller
 
             $customerId = null;
             if ($phone = $request->validated('customer_phone')) {
-                $customer = Customer::where('phone', $phone)->where('is_active', true)->first();
+                $customer = Customer::where('phone', $phone)->where('tenant_id', $tenantId)->where('is_active', true)->first();
                 if ($customer) {
                     $customerId = $customer->id;
                 } else {

@@ -23,8 +23,7 @@ class DashboardService
     public function getDashboardMetrics(): array
     {
         $tenantId = app(TenantContext::class)->getTenantId();
-        $cacheKey = $tenantId ? "pos:dashboard:metrics:tenant_{$tenantId}" : 'pos:dashboard:metrics';
-
+        $cacheKey = $tenantId ? "pos:dashboard:{$tenantId}:metrics" : 'pos:dashboard:metrics';
         $metrics = Cache::remember($cacheKey, 90, function () {
             // 1. Core KPIs
             $now = Carbon::now();

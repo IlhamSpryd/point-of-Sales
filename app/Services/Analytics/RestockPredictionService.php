@@ -9,6 +9,8 @@ namespace App\Services\Analytics;
 
 use App\Models\Ingredient;
 use App\Models\IngredientRestockForecast;
+use App\Models\Tenant;
+use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -26,36 +28,39 @@ class RestockPredictionService
         $windowStart = Carbon::now()->subDays(self::TRAILING_WINDOW_DAYS)->startOfDay();
         $halfWindowDays = max(1, (int) (self::TRAILING_WINDOW_DAYS / 2));
         $midpoint = Carbon::now()->subDays($halfWindowDays)->startOfDay();
-
-        // SATU query agregat untuk SEMUA ingredient (bukan N+1) -- pure
-        // SELECT read-only di atas ledger append-only, aman dari kontensi
-        // lock dengan penulis (KDS/checkout) di isolation level default.
-        $consumption = DB::table('ingredient_stock_movements')
-            ->select('ingredient_id')
-            ->selectRaw('SUM(CASE WHEN created_at >= ? THEN -quantity ELSE 0 END) as recent_half', [$midpoint])
-            ->selectRaw('SUM(CASE WHEN created_at < ? THEN -quantity ELSE 0 END) as older_half', [$midpoint])
-            ->selectRaw('SUM(-quantity) as total_consumed')
-            ->where('type', 'sale_deduction')
-            ->where('created_at', '>=', $windowStart)
-            ->groupBy('ingredient_id')
-            ->get()
-            ->keyBy('ingredient_id');
-
-        $updated = 0;
         $now = Carbon::now();
+        $updated = 0;
 
-        Ingredient::where('is_active', true)
-            ->chunkById(200, function ($ingredients) use ($consumption, $halfWindowDays, $now, &$updated) {
-                foreach ($ingredients as $ingredient) {
-                    $this->upsertForecast($ingredient, $consumption->get($ingredient->id), $halfWindowDays, $now);
-                    $updated++;
-                }
+        $tenants = Tenant::all();
+
+        foreach ($tenants as $tenant) {
+            app(TenantContext::class)->runAs($tenant->id, null, function () use ($tenant, $windowStart, $midpoint, $halfWindowDays, $now, &$updated) {
+                $consumption = DB::table('ingredient_stock_movements')
+                    ->select('ingredient_id')
+                    ->selectRaw('SUM(CASE WHEN created_at >= ? THEN -quantity ELSE 0 END) as recent_half', [$midpoint])
+                    ->selectRaw('SUM(CASE WHEN created_at < ? THEN -quantity ELSE 0 END) as older_half', [$midpoint])
+                    ->selectRaw('SUM(-quantity) as total_consumed')
+                    ->where('type', 'sale_deduction')
+                    ->where('created_at', '>=', $windowStart)
+                    ->where('tenant_id', $tenant->id)
+                    ->groupBy('ingredient_id')
+                    ->get()
+                    ->keyBy('ingredient_id');
+
+                Ingredient::where('is_active', true)
+                    ->chunkById(200, function ($ingredients) use ($consumption, $halfWindowDays, $now, &$updated, $tenant) {
+                        foreach ($ingredients as $ingredient) {
+                            $this->upsertForecast($ingredient, $consumption->get($ingredient->id), $halfWindowDays, $now, $tenant->id);
+                            $updated++;
+                        }
+                    });
             });
+        }
 
         return $updated;
     }
 
-    private function upsertForecast(Ingredient $ingredient, $row, int $halfWindowDays, Carbon $now): void
+    private function upsertForecast(Ingredient $ingredient, $row, int $halfWindowDays, Carbon $now, int $tenantId): void
     {
         $totalConsumed = (float) ($row->total_consumed ?? 0);
         $recentAvg = (float) ($row->recent_half ?? 0) / $halfWindowDays;
@@ -71,6 +76,7 @@ class RestockPredictionService
         IngredientRestockForecast::updateOrCreate(
             ['ingredient_id' => $ingredient->id],
             [
+                'tenant_id' => $tenantId,
                 'avg_daily_consumption' => round($avgDaily, 4),
                 'projected_days_remaining' => $projectedDays,
                 'projected_stockout_at' => $stockoutAt,
