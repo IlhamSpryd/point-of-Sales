@@ -5,13 +5,18 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Enums\IngredientStockMovementTypeEnum;
+use App\Models\Concerns\AssignsStore;
 use App\Models\Concerns\AssignsTenant;
+use App\Models\Concerns\ScopedToStore;
+use App\Models\Concerns\ScopedToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class IngredientStockMovement extends Model
 {
-    use \App\Models\Concerns\AssignsStore, AssignsTenant;
+    use AssignsStore, AssignsTenant;
+    use ScopedToStore;
+    use ScopedToTenant;
 
     public const UPDATED_AT = null;
 

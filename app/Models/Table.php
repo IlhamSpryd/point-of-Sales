@@ -2,7 +2,10 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AssignsStore;
 use App\Models\Concerns\AssignsTenant;
+use App\Models\Concerns\ScopedToStore;
+use App\Models\Concerns\ScopedToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,8 +18,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  */
 class Table extends Model
 {
-    use \App\Models\Concerns\AssignsStore, AssignsTenant;
+    use AssignsStore, AssignsTenant;
     use HasFactory, SoftDeletes;
+    use ScopedToStore;
+    use ScopedToTenant;
 
     protected $table = 'tables'; // eksplisit, agar tidak ambigu dengan nama class 'Table'
 

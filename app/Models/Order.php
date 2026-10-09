@@ -7,7 +7,10 @@ namespace App\Models;
 use App\Enums\OrderStatus;
 use App\Enums\OrderType;
 use App\Enums\PaymentMethod;
+use App\Models\Concerns\AssignsStore;
 use App\Models\Concerns\AssignsTenant;
+use App\Models\Concerns\ScopedToStore;
+use App\Models\Concerns\ScopedToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -18,7 +21,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Order extends Model
 {
-    use \App\Models\Concerns\AssignsStore, AssignsTenant;
+    use AssignsStore, AssignsTenant;
+    use ScopedToStore;
+    use ScopedToTenant;
 
     /**
      * Data isian order yang diizinkan untuk disisipkan ke dalam basis data secara bersamaan.

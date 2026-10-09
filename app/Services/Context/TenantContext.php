@@ -12,6 +12,43 @@ class TenantContext
 
     private ?int $storeId = null;
 
+    private bool $isBypassed = false;
+
+    /** @var array<int, int> */
+    private array $allowedStoreIds = [];
+
+    public function isBypassed(): bool
+    {
+        return $this->isBypassed;
+    }
+
+    /**
+     * @param  array<int, int>  $storeIds
+     */
+    public function setAllowedStoreIds(array $storeIds): void
+    {
+        $this->allowedStoreIds = $storeIds;
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    public function getAllowedStoreIds(): array
+    {
+        return $this->allowedStoreIds;
+    }
+
+    /**
+     * True hanya bila pengguna boleh melihat seluruh cabang tenant
+     * (Owner). Dipakai oleh mode laporan lintas-cabang allStores().
+     */
+    public function isOwnerScope(): bool
+    {
+        return count($this->allowedStoreIds) > 1
+            || (bool) (auth()->user()?->role?->is_admin ?? false)
+            || auth()->user()?->role?->name === 'Owner';
+    }
+
     public function setTenantId(int $tenantId): void
     {
         $this->tenantId = $tenantId;
@@ -84,18 +121,18 @@ class TenantContext
             'previous_store_id' => $this->storeId,
             'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3),
         ]);
-
         $prevTenantId = $this->tenantId;
         $prevStoreId = $this->storeId;
-
+        $prevBypassed = $this->isBypassed;
         $this->tenantId = null;
         $this->storeId = null;
-
+        $this->isBypassed = true;
         try {
             return $cb();
         } finally {
             $this->tenantId = $prevTenantId;
             $this->storeId = $prevStoreId;
+            $this->isBypassed = $prevBypassed;
         }
     }
 }

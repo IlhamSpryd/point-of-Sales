@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Services\Context\StoreResolver;
 use App\Services\Context\TenantContext;
 use Closure;
 use Illuminate\Http\Request;
@@ -10,7 +11,10 @@ use Symfony\Component\HttpFoundation\Response;
 
 class SetTenantContext
 {
-    public function __construct(private TenantContext $tenantContext) {}
+    public function __construct(
+        private TenantContext $tenantContext,
+        private StoreResolver $storeResolver,
+    ) {}
 
     /**
      * Handle an incoming request.
@@ -59,12 +63,20 @@ class SetTenantContext
         // 6. Set TenantContext
         $this->tenantContext->setTenantId($tenantId);
 
-        // Also try to set storeId if user has an active shift or user_store
-        // The instructions don't strictly require extracting storeId from user,
-        // but it mentions nullable storeId (set/get)
-        // Wait, does the user have a default store?
-        // Let's just set the TenantId, and the application layer can set StoreId later if needed,
-        // or we can set it if there is a known property. I'll leave storeId null initially unless the request has it.
+        // 7. Resolve active store (cabang). TIDAK PERNAH dari input request.
+        $allowed = $this->storeResolver->allowedStoreIdsFor($user, $tenantId);
+        $sessionStoreId = $request->session()->get('active_store_id');
+        $activeStoreId = $this->storeResolver->resolve(
+            $allowed,
+            is_numeric($sessionStoreId) ? (int) $sessionStoreId : null,
+        );
+
+        $this->tenantContext->setStoreId($activeStoreId);
+        $request->session()->put('active_store_id', $activeStoreId);
+
+        // Himpunan store yang diizinkan disimpan agar lapisan laporan dapat
+        // mengecek izin all-stores tanpa query ulang.
+        $this->tenantContext->setAllowedStoreIds($allowed);
 
         return $next($request);
     }
