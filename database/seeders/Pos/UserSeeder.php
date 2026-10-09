@@ -2,6 +2,8 @@
 
 namespace Database\Seeders\Pos;
 
+use App\Models\Tenant;
+use App\Services\Context\TenantContext;
 use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -11,6 +13,22 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
+        // Tabel users kini NOT NULL tenant_id (Phase 9). Saat dipanggil dari
+        // DatabaseSeeder/PosFullSeeder konteks sudah aktif; saat dipanggil
+        // mandiri, fallback ke tenant pertama agar bulk insert tetap valid.
+        if (! app(TenantContext::class)->hasTenant()) {
+            $tenant = Tenant::query()->orderBy('id')->firstOrFail();
+            app(TenantContext::class)->runAs($tenant->id, null, fn () => $this->seedUsers());
+
+            return;
+        }
+
+        $this->seedUsers();
+    }
+
+    private function seedUsers(): void
+    {
+        $tenantId = app(TenantContext::class)->requireTenantId();
         $faker = Faker::create('id_ID');
         $hashedPassword = Hash::make('password');
 
@@ -81,6 +99,7 @@ class UserSeeder extends Seeder
                 $joinDate = now()->subDays($faker->numberBetween(180, 1095));
 
                 $rows[] = [
+                    'tenant_id' => $tenantId,
                     'employee_id' => $empId,
                     'name' => $name,
                     'phone_number' => '08'.$faker->numerify('##########'),

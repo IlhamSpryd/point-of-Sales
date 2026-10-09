@@ -3,10 +3,9 @@
 namespace Database\Seeders\Pos;
 
 use Carbon\Carbon;
+use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-
 /**
  * OrderSeeder: The heaviest seeder — generates all transactional data together.
  *
@@ -15,8 +14,12 @@ use Illuminate\Support\Str;
  *
  * Target: ~50,000 orders across 365 days.
  */
+use Illuminate\Support\Str;
+
 class OrderSeeder extends Seeder
 {
+    use StampsTenantOnBulkInsert;
+
     public function run(): void
     {
         set_time_limit(0);
@@ -112,11 +115,11 @@ class OrderSeeder extends Seeder
 
         // ---- Truncate all transactional tables ----
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
-        DB::table('order_item_modifiers')->delete();
-        DB::table('stock_movements')->delete();
-        DB::table('order_items')->delete();
-        DB::table('payments')->delete();
-        DB::table('orders')->delete();
+        DB::table('order_item_modifiers')->truncate();
+        DB::table('stock_movements')->truncate();
+        DB::table('order_items')->truncate();
+        DB::table('payments')->truncate();
+        DB::table('orders')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         // ---- Generate day by day ----
@@ -548,24 +551,24 @@ class OrderSeeder extends Seeder
     {
         DB::transaction(function () use ($orders, $items, $mods, $payments, $stockMov) {
             foreach (array_chunk($orders, 500) as $chunk) {
-                DB::table('orders')->insert($chunk);
+                DB::table('orders')->insert($this->withTenant($chunk, 'orders'));
             }
             foreach (array_chunk($items, 1000) as $chunk) {
-                DB::table('order_items')->insert($chunk);
+                DB::table('order_items')->insert($this->withTenant($chunk, 'order_items'));
             }
             if (! empty($mods)) {
                 foreach (array_chunk($mods, 1000) as $chunk) {
-                    DB::table('order_item_modifiers')->insert($chunk);
+                    DB::table('order_item_modifiers')->insert($this->withTenant($chunk, 'order_item_modifiers'));
                 }
             }
             if (! empty($payments)) {
                 foreach (array_chunk($payments, 1000) as $chunk) {
-                    DB::table('payments')->insert($chunk);
+                    DB::table('payments')->insert($this->withTenant($chunk, 'payments'));
                 }
             }
             if (! empty($stockMov)) {
                 foreach (array_chunk($stockMov, 1000) as $chunk) {
-                    DB::table('stock_movements')->insert($chunk);
+                    DB::table('stock_movements')->insert($this->withTenant($chunk, 'stock_movements'));
                 }
             }
         });

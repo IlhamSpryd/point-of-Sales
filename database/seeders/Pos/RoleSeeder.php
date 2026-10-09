@@ -2,11 +2,14 @@
 
 namespace Database\Seeders\Pos;
 
+use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class RoleSeeder extends Seeder
 {
+    use StampsTenantOnBulkInsert;
+
     public function run(): void
     {
         $now = now();

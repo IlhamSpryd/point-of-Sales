@@ -2,11 +2,14 @@
 
 namespace Database\Seeders\Pos;
 
+use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class ModifierIngredientSeeder extends Seeder
 {
+    use StampsTenantOnBulkInsert;
+
     public function run(): void
     {
         $now = now();
@@ -54,9 +57,9 @@ class ModifierIngredientSeeder extends Seeder
             }
         }
 
-        DB::table('modifier_ingredients')->delete();
+        DB::table('modifier_ingredients')->truncate();
         if (! empty($rows)) {
-            DB::table('modifier_ingredients')->insert($rows);
+            DB::table('modifier_ingredients')->insert($this->withTenant($rows, 'modifier_ingredients'));
         }
 
         $this->command->info('  ✓ Modifier ingredients seeded: '.count($rows));

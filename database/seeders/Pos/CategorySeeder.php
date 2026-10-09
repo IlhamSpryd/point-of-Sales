@@ -2,11 +2,14 @@
 
 namespace Database\Seeders\Pos;
 
+use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class CategorySeeder extends Seeder
 {
+    use StampsTenantOnBulkInsert;
+
     public function run(): void
     {
         $now = now();
@@ -27,8 +30,8 @@ class CategorySeeder extends Seeder
 
         foreach ($categories as $cat) {
             DB::table('categories')->updateOrInsert(
-                ['category_code' => $cat['category_code']],
-                array_merge($cat, ['created_at' => $now, 'updated_at' => $now])
+                ['tenant_id' => $this->tenantId(), 'category_code' => $cat['category_code']],
+                array_merge($cat, ['tenant_id' => $this->tenantId(), 'created_at' => $now, 'updated_at' => $now])
             );
         }
 

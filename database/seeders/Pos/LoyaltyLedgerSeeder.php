@@ -2,9 +2,8 @@
 
 namespace Database\Seeders\Pos;
 
+use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-
 /**
  * LoyaltyLedgerSeeder: Creates loyalty point earn/redeem entries.
  *
@@ -14,8 +13,12 @@ use Illuminate\Support\Facades\DB;
  * - trg_loyalty_ledger_sync_account auto-updates customer_loyalty_accounts.
  * - We must insert ONE ROW AT A TIME per customer to maintain hash chain order.
  */
+use Illuminate\Support\Facades\DB;
+
 class LoyaltyLedgerSeeder extends Seeder
 {
+    use StampsTenantOnBulkInsert;
+
     public function run(): void
     {
         set_time_limit(0);
@@ -28,8 +31,8 @@ class LoyaltyLedgerSeeder extends Seeder
         DB::unprepared('DROP TRIGGER IF EXISTS trg_loyalty_ledger_sync_account');
 
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
-        DB::table('loyalty_ledger')->delete();
-        DB::table('customer_loyalty_accounts')->delete();
+        DB::table('loyalty_ledger')->truncate();
+        DB::table('customer_loyalty_accounts')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         // Get completed orders with customers, ordered by date
@@ -150,7 +153,7 @@ class LoyaltyLedgerSeeder extends Seeder
 
             // Flush every 1000 rows
             if (count($ledgerRows) >= 1000) {
-                DB::table('loyalty_ledger')->insert($ledgerRows);
+                DB::table('loyalty_ledger')->insert($this->withTenant($ledgerRows, 'loyalty_ledger'));
                 $ledgerRows = [];
             }
 
@@ -159,7 +162,7 @@ class LoyaltyLedgerSeeder extends Seeder
 
         // Flush remaining
         if (! empty($ledgerRows)) {
-            DB::table('loyalty_ledger')->insert($ledgerRows);
+            DB::table('loyalty_ledger')->insert($this->withTenant($ledgerRows, 'loyalty_ledger'));
         }
 
         $bar->finish();
@@ -193,7 +196,7 @@ class LoyaltyLedgerSeeder extends Seeder
         }
 
         foreach (array_chunk($accountRows, 500) as $chunk) {
-            DB::table('customer_loyalty_accounts')->insert($chunk);
+            DB::table('customer_loyalty_accounts')->insert($this->withTenant($chunk, 'customer_loyalty_accounts'));
         }
 
         // Recreate triggers

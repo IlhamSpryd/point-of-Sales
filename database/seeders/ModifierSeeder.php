@@ -3,11 +3,30 @@
 namespace Database\Seeders;
 
 use App\Models\ModifierGroup;
+use App\Models\Tenant;
+use App\Services\Context\TenantContext;
 use Illuminate\Database\Seeder;
 
 class ModifierSeeder extends Seeder
 {
     public function run(): void
+    {
+        // ModifierGroup/Modifier bertraits ScopedToTenant + AssignsTenant, jadi
+        // seeding WAJIB berjalan di dalam konteks tenant yang eksplisit.
+        // Saat dipanggil dari DatabaseSeeder, context sudah diset oleh runAs();
+        // saat dipanggil mandiri (db:seed --class=ModifierSeeder) kita pakai
+        // tenant pertama sebagai fallback agar tetap deterministik.
+        if (app(TenantContext::class)->hasTenant()) {
+            $this->seedGroups();
+
+            return;
+        }
+
+        $tenant = Tenant::query()->orderBy('id')->firstOrFail();
+        app(TenantContext::class)->runAs($tenant->id, null, fn () => $this->seedGroups());
+    }
+
+    private function seedGroups(): void
     {
         // Grup 1: Pilihan Suhu (wajib diisi, hanya boleh pilih satu)
         $suhu = ModifierGroup::firstOrCreate(

@@ -2,11 +2,14 @@
 
 namespace Database\Seeders\Pos;
 
+use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class ModifierSeeder extends Seeder
 {
+    use StampsTenantOnBulkInsert;
+
     public function run(): void
     {
         $now = now();
@@ -24,8 +27,8 @@ class ModifierSeeder extends Seeder
 
         foreach ($newGroups as $g) {
             DB::table('modifier_groups')->updateOrInsert(
-                ['name' => $g['name']],
-                array_merge($g, ['created_at' => $now, 'updated_at' => $now])
+                ['tenant_id' => $this->tenantId(), 'name' => $g['name']],
+                array_merge($g, ['tenant_id' => $this->tenantId(), 'created_at' => $now, 'updated_at' => $now])
             );
         }
 
@@ -73,8 +76,9 @@ class ModifierSeeder extends Seeder
             }
 
             DB::table('modifiers')->updateOrInsert(
-                ['modifier_group_id' => $gid, 'name' => $m['name']],
+                ['tenant_id' => $this->tenantId(), 'modifier_group_id' => $gid, 'name' => $m['name']],
                 [
+                    'tenant_id' => $this->tenantId(),
                     'modifier_group_id' => $gid,
                     'name' => $m['name'],
                     'extra_price' => $m['extra_price'],

@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Role;
+use App\Models\Store;
 use App\Models\Tenant;
 use App\Services\Context\TenantContext;
 use Illuminate\Database\Seeder;
@@ -23,6 +24,31 @@ use Illuminate\Support\Facades\Schema;
 class PosFullSeeder extends Seeder
 {
     public function run(): void
+    {
+        if (! app()->environment(['local', 'testing'])) {
+            throw new \RuntimeException('Seeders cannot run in production. Use migrate:fresh.');
+        }
+        // Phase 9: tabel tenant-owned kini NOT NULL tenant_id, dan banyak
+        // sub-seeder memakai bulk DB::table(...)->insert() yang TIDAK memicu
+        // event model AssignsTenant. Karena itu seluruh seeding dijalankan di
+        // dalam konteks tenant eksplisit (runAs) agar stamping deterministik.
+        $tenantId = app(TenantContext::class)->getTenantId()
+            ?? (Tenant::query()->orderBy('id')->value('id'))
+            ?? Tenant::create(['name' => 'Default Tenant'])->id;
+
+        app(TenantContext::class)->runAs($tenantId, null, function () {
+            // Store (cabang) harus ada sebelum data branch-owned di-seed (Phase 11).
+            $store = Store::firstOrCreate(
+                ['tenant_id' => app(TenantContext::class)->requireTenantId(), 'name' => 'Main Store'],
+                ['address' => 'Default Address']
+            );
+            app(TenantContext::class)->setStoreId($store->id);
+
+            $this->seedAll();
+        });
+    }
+
+    private function seedAll(): void
     {
         $startTime = microtime(true);
 

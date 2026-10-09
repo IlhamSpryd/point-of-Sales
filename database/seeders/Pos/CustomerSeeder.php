@@ -2,12 +2,15 @@
 
 namespace Database\Seeders\Pos;
 
+use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class CustomerSeeder extends Seeder
 {
+    use StampsTenantOnBulkInsert;
+
     public function run(): void
     {
         $faker = Faker::create('id_ID');
@@ -47,9 +50,9 @@ class CustomerSeeder extends Seeder
             ];
         }
 
-        DB::table('customers')->delete();
+        DB::table('customers')->truncate();
         foreach (array_chunk($rows, 200) as $chunk) {
-            DB::table('customers')->insert($chunk);
+            DB::table('customers')->insert($this->withTenant($chunk, 'customers'));
         }
 
         $this->command->info('  ✓ Customers seeded: '.$totalCustomers.' ('.round($softDeleteRate * 100).'% soft-deleted)');

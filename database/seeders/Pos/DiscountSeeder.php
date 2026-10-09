@@ -2,11 +2,14 @@
 
 namespace Database\Seeders\Pos;
 
+use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class DiscountSeeder extends Seeder
 {
+    use StampsTenantOnBulkInsert;
+
     public function run(): void
     {
         $now = now();
@@ -32,8 +35,8 @@ class DiscountSeeder extends Seeder
 
         foreach ($discounts as $d) {
             DB::table('discounts')->updateOrInsert(
-                ['code' => $d['code']],
-                array_merge($d, ['is_active' => 1, 'created_at' => $now, 'updated_at' => $now])
+                ['tenant_id' => $this->tenantId(), 'code' => $d['code']],
+                array_merge($d, ['tenant_id' => $this->tenantId(), 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now])
             );
         }
 

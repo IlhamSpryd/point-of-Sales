@@ -2,11 +2,14 @@
 
 namespace Database\Seeders\Pos;
 
+use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class ModifierGroupProductSeeder extends Seeder
 {
+    use StampsTenantOnBulkInsert;
+
     public function run(): void
     {
         $now = now();
@@ -68,9 +71,9 @@ class ModifierGroupProductSeeder extends Seeder
             }
         }
 
-        DB::table('modifier_group_product')->delete();
+        DB::table('modifier_group_product')->truncate();
         foreach (array_chunk($rows, 200) as $chunk) {
-            DB::table('modifier_group_product')->insert($chunk);
+            DB::table('modifier_group_product')->insert($this->withTenant($chunk, 'modifier_group_product'));
         }
 
         $this->command->info('  ✓ Modifier-product links seeded: '.count($rows));

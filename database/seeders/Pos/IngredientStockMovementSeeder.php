@@ -3,10 +3,9 @@
 namespace Database\Seeders\Pos;
 
 use Carbon\Carbon;
+use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-
 /**
  * IngredientStockMovementSeeder: Generates ingredient-level stock movements.
  *
@@ -15,8 +14,12 @@ use Illuminate\Support\Str;
  *
  * IMPORTANT: ingredient_stock_movements is append-only — no UPDATE/DELETE.
  */
+use Illuminate\Support\Str;
+
 class IngredientStockMovementSeeder extends Seeder
 {
+    use StampsTenantOnBulkInsert;
+
     public function run(): void
     {
         set_time_limit(0);
@@ -38,7 +41,7 @@ class IngredientStockMovementSeeder extends Seeder
         // Drop append-only triggers temporarily
         DB::unprepared('DROP TRIGGER IF EXISTS trg_ingredient_stock_movements_no_delete');
         DB::unprepared('DROP TRIGGER IF EXISTS trg_ingredient_stock_movements_no_update');
-        DB::table('ingredient_stock_movements')->delete();
+        DB::table('ingredient_stock_movements')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         $totalMov = 0;
@@ -85,7 +88,7 @@ class IngredientStockMovementSeeder extends Seeder
                     $totalMov++;
 
                     if (count($batch) >= $batchSize) {
-                        DB::table('ingredient_stock_movements')->insert($batch);
+                        DB::table('ingredient_stock_movements')->insert($this->withTenant($batch, 'ingredient_stock_movements'));
                         $batch = [];
                     }
                 }
@@ -120,7 +123,7 @@ class IngredientStockMovementSeeder extends Seeder
                     $totalMov++;
 
                     if (count($batch) >= $batchSize) {
-                        DB::table('ingredient_stock_movements')->insert($batch);
+                        DB::table('ingredient_stock_movements')->insert($this->withTenant($batch, 'ingredient_stock_movements'));
                         $batch = [];
                     }
                 }
@@ -132,7 +135,7 @@ class IngredientStockMovementSeeder extends Seeder
 
         // Flush remaining
         if (! empty($batch)) {
-            DB::table('ingredient_stock_movements')->insert($batch);
+            DB::table('ingredient_stock_movements')->insert($this->withTenant($batch, 'ingredient_stock_movements'));
         }
 
         // Recreate triggers

@@ -2,11 +2,14 @@
 
 namespace Database\Seeders\Pos;
 
+use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class LoyaltyTierSeeder extends Seeder
 {
+    use StampsTenantOnBulkInsert;
+
     public function run(): void
     {
         $now = now();
@@ -21,8 +24,8 @@ class LoyaltyTierSeeder extends Seeder
 
         foreach ($tiers as $tier) {
             DB::table('loyalty_tiers')->updateOrInsert(
-                ['tier_code' => $tier['tier_code']],
-                array_merge($tier, ['is_active' => 1, 'created_at' => $now, 'updated_at' => $now])
+                ['tenant_id' => $this->tenantId(), 'tier_code' => $tier['tier_code']],
+                array_merge($tier, ['tenant_id' => $this->tenantId(), 'is_active' => 1, 'created_at' => $now, 'updated_at' => $now])
             );
         }
 

@@ -2,11 +2,14 @@
 
 namespace Database\Seeders\Pos;
 
+use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class ProductIngredientSeeder extends Seeder
 {
+    use StampsTenantOnBulkInsert;
+
     public function run(): void
     {
         $now = now();
@@ -199,9 +202,9 @@ class ProductIngredientSeeder extends Seeder
             }
         }
 
-        DB::table('product_ingredients')->delete();
+        DB::table('product_ingredients')->truncate();
         foreach (array_chunk($rows, 100) as $chunk) {
-            DB::table('product_ingredients')->insert($chunk);
+            DB::table('product_ingredients')->insert($this->withTenant($chunk, 'product_ingredients'));
         }
 
         $this->command->info('  ✓ Product ingredients seeded: '.count($rows).' recipe links');

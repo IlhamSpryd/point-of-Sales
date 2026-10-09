@@ -3,11 +3,14 @@
 namespace Database\Seeders\Pos;
 
 use Carbon\Carbon;
+use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class ShiftSeeder extends Seeder
 {
+    use StampsTenantOnBulkInsert;
+
     public function run(): void
     {
         $now = Carbon::now();
@@ -107,13 +110,13 @@ class ShiftSeeder extends Seeder
             }
         }
 
-        DB::table('shifts')->delete();
+        DB::table('shifts')->truncate();
 
         $bar = $this->command->getOutput()->createProgressBar(count($rows));
         $bar->setFormat(' Shifts: %current%/%max% [%bar%] %percent:3s%%');
 
         foreach (array_chunk($rows, 500) as $chunk) {
-            DB::table('shifts')->insert($chunk);
+            DB::table('shifts')->insert($this->withTenant($chunk, 'shifts'));
             $bar->advance(count($chunk));
         }
 

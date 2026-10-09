@@ -2,11 +2,14 @@
 
 namespace Database\Seeders\Pos;
 
+use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class IngredientSeeder extends Seeder
 {
+    use StampsTenantOnBulkInsert;
+
     public function run(): void
     {
         $now = now();
@@ -107,8 +110,8 @@ class IngredientSeeder extends Seeder
             ];
         }
 
-        DB::table('ingredients')->delete();
-        DB::table('ingredients')->insert($rows);
+        DB::table('ingredients')->truncate();
+        DB::table('ingredients')->insert($this->withTenant($rows, 'ingredients'));
 
         $this->command->info('  ✓ Ingredients seeded: '.count($rows));
     }

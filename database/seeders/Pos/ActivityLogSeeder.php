@@ -3,11 +3,14 @@
 namespace Database\Seeders\Pos;
 
 use Carbon\Carbon;
+use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
 class ActivityLogSeeder extends Seeder
 {
+    use StampsTenantOnBulkInsert;
+
     public function run(): void
     {
         set_time_limit(0);
@@ -70,7 +73,7 @@ class ActivityLogSeeder extends Seeder
         $totalWeight = array_sum(array_column($activities, 'weight'));
         $targetRows = 8000;
 
-        DB::table('activity_logs')->delete();
+        DB::table('activity_logs')->truncate();
         $rows = [];
         $total = 0;
 
@@ -115,7 +118,7 @@ class ActivityLogSeeder extends Seeder
             $total++;
 
             if (count($rows) >= 1000) {
-                DB::table('activity_logs')->insert($rows);
+                DB::table('activity_logs')->insert($this->withTenant($rows, 'activity_logs'));
                 $rows = [];
             }
 
@@ -123,7 +126,7 @@ class ActivityLogSeeder extends Seeder
         }
 
         if (! empty($rows)) {
-            DB::table('activity_logs')->insert($rows);
+            DB::table('activity_logs')->insert($this->withTenant($rows, 'activity_logs'));
         }
 
         $bar->finish();

@@ -2,12 +2,15 @@
 
 namespace Database\Seeders\Pos;
 
+use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class TableSeeder extends Seeder
 {
+    use StampsTenantOnBulkInsert;
+
     public function run(): void
     {
         $now = now();
@@ -71,8 +74,8 @@ class TableSeeder extends Seeder
             ];
         }
 
-        DB::table('tables')->delete();
-        DB::table('tables')->insert($rows);
+        DB::table('tables')->truncate();
+        DB::table('tables')->insert($this->withTenant($rows, 'tables'));
 
         $this->command->info('  ✓ Tables seeded: '.count($rows).' (6 areas)');
     }

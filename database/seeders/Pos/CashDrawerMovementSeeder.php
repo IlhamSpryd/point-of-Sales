@@ -3,12 +3,15 @@
 namespace Database\Seeders\Pos;
 
 use Carbon\Carbon;
+use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class CashDrawerMovementSeeder extends Seeder
 {
+    use StampsTenantOnBulkInsert;
+
     public function run(): void
     {
         set_time_limit(0);
@@ -30,7 +33,7 @@ class CashDrawerMovementSeeder extends Seeder
             ],
         ];
 
-        DB::table('cash_drawer_movements')->delete();
+        DB::table('cash_drawer_movements')->truncate();
         $rows = [];
         $total = 0;
 
@@ -113,7 +116,7 @@ class CashDrawerMovementSeeder extends Seeder
             }
 
             if (count($rows) >= 1000) {
-                DB::table('cash_drawer_movements')->insert($rows);
+                DB::table('cash_drawer_movements')->insert($this->withTenant($rows, 'cash_drawer_movements'));
                 $rows = [];
             }
 
@@ -121,7 +124,7 @@ class CashDrawerMovementSeeder extends Seeder
         }
 
         if (! empty($rows)) {
-            DB::table('cash_drawer_movements')->insert($rows);
+            DB::table('cash_drawer_movements')->insert($this->withTenant($rows, 'cash_drawer_movements'));
         }
 
         $bar->finish();

@@ -114,10 +114,10 @@ class DemoDataSeeder extends Seeder
 
             // Sync BOM for Kopi Susu
             $kopiSusu->ingredients()->sync([
-                $kopi->id => ['quantity_required' => 18], // 18g Kopi
-                $susu->id => ['quantity_required' => 150], // 150ml Susu
-                $gula->id => ['quantity_required' => 30], // 30ml Gula Aren
-                $cup->id => ['quantity_required' => 1], // 1 Cup
+                $kopi->id => ['quantity_required' => 18, 'tenant_id' => $tenant->id], // 18g Kopi
+                $susu->id => ['quantity_required' => 150, 'tenant_id' => $tenant->id], // 150ml Susu
+                $gula->id => ['quantity_required' => 30, 'tenant_id' => $tenant->id], // 30ml Gula Aren
+                $cup->id => ['quantity_required' => 1, 'tenant_id' => $tenant->id], // 1 Cup
             ]);
 
             // 3. Orders (to populate dashboard charts)

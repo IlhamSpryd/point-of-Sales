@@ -71,9 +71,11 @@ class MenuCacheService
      * toggle modifier, setiap perubahan qty memicu render ulang). Ini
      * adalah temuan N+1/beban-DB paling signifikan pada audit Node 3.
      */
-    private function getCache()
+    private function getCache(?int $tenantId = null)
     {
-        return Cache::supportsTags() ? Cache::tags(['menu']) : Cache::store();
+        $tenantId = $tenantId ?? app(TenantContext::class)->getTenantId();
+
+        return Cache::supportsTags() ? Cache::tags(["menu:tenant_{$tenantId}"]) : Cache::store();
     }
 
     public function getCatalog()
@@ -178,24 +180,26 @@ class MenuCacheService
      * detail celah yang ditutup dan alasan pemanggilannya lewat
      * DB::afterCommit() (bukan langsung) di dalam model event tersebut.
      */
-    public function flush(): void
+    public function flush(?int $tenantId = null): void
     {
+        $resolvedTenantId = $tenantId ?? app(TenantContext::class)->getTenantId();
+
         if (Cache::supportsTags()) {
-            Cache::tags(['menu'])->flush();
+            Cache::tags(["menu:tenant_{$resolvedTenantId}"])->flush();
 
             return;
         }
 
-        $this->getCache()->forget($this->getTenantKey(self::KEY_CATALOG));
-        $this->getCache()->forget($this->getTenantKey(self::KEY_CATEGORIES));
-        $this->getCache()->forget($this->getTenantKey(self::KEY_ACTIVE_PRODUCTS));
-        $this->getCache()->forget($this->getTenantKey(self::KEY_MENU_DISPLAY));
+        $this->getCache($resolvedTenantId)->forget($this->getTenantKey(self::KEY_CATALOG, $resolvedTenantId));
+        $this->getCache($resolvedTenantId)->forget($this->getTenantKey(self::KEY_CATEGORIES, $resolvedTenantId));
+        $this->getCache($resolvedTenantId)->forget($this->getTenantKey(self::KEY_ACTIVE_PRODUCTS, $resolvedTenantId));
+        $this->getCache($resolvedTenantId)->forget($this->getTenantKey(self::KEY_MENU_DISPLAY, $resolvedTenantId));
     }
 
-    private function getTenantKey(string $key): string
+    private function getTenantKey(string $key, ?int $tenantId = null): string
     {
-        $tenantId = app(TenantContext::class)->getTenantId();
+        $tenantId = $tenantId ?? app(TenantContext::class)->getTenantId();
 
-        return $tenantId ? "tenant_{$tenantId}:{$key}" : $key;
+        return $tenantId ? str_replace('pos:menu:', "pos:menu:{$tenantId}:", $key) : $key;
     }
 }
