@@ -25,4 +25,16 @@ return [
 
     // Phase 14: Shadow balances authority flag
     'stock_balances_authoritative' => env('POS_STOCK_BALANCES_AUTHORITATIVE', false),
+
+    /*
+    |------------------------------------------------------------------
+    | Domain 1 — Tenant provisioning
+    |------------------------------------------------------------------
+    */
+    'provisioning' => [
+        // Magic link onboarding Owner: masa berlaku token (jam).
+        'onboarding_token_ttl_hours' => env('POS_ONBOARDING_TOKEN_TTL_HOURS', 48),
+        // Batas retry pengiriman email outbox sebelum ditandai failed.
+        'outbox_max_attempts' => env('POS_OUTBOX_MAX_ATTEMPTS', 5),
+    ],
 ];

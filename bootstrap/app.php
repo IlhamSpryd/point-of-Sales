@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Middleware\EnforceEmailVerification;
 use App\Http\Middleware\EnsureTableSession;
 use App\Http\Middleware\ResolveTableFromToken;
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetTenantContext;
+use App\Http\Middleware\VerifyProvisioningSignature;
 use App\Http\Middleware\VerifyWebhookSignature;
 use Illuminate\Auth\Middleware\Authorize;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
@@ -44,6 +46,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'table.session' => EnsureTableSession::class,
             'verify.webhook' => VerifyWebhookSignature::class,
             'tenant.context' => SetTenantContext::class,
+            'enforce.email.verification' => EnforceEmailVerification::class,
+            'verify.provisioning' => VerifyProvisioningSignature::class,
         ]);
 
         $middleware->priority([
@@ -54,6 +58,8 @@ return Application::configure(basePath: dirname(__DIR__))
             ThrottleRequestsWithRedis::class,
             AuthenticatesSessions::class,
             SetTenantContext::class,
+            EnsureTableSession::class,
+            ResolveTableFromToken::class,
             SubstituteBindings::class,
             Authorize::class,
         ]);

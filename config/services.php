@@ -51,4 +51,20 @@ return [
         'default_store_id' => env('WEBHOOK_DEFAULT_STORE_ID'),
     ],
 
+    /*
+    |------------------------------------------------------------------
+    | Domain 1 — S2S provisioning dari website marketing
+    |------------------------------------------------------------------
+    | Dua secret aktif untuk rotasi tanpa downtime (D7):
+    |  - secret_current  : dipakai marketing untuk menandatangani request baru
+    |  - secret_previous : masih diterima selama masa transisi rotasi
+    | JANGAN pernah menggunakan APP_KEY sebagai provisioning secret.
+    */
+    'provisioning' => [
+        'secret_current' => env('PROVISIONING_SECRET'),
+        'secret_previous' => env('PROVISIONING_SECRET_PREVIOUS'),
+        'timestamp_window' => env('PROVISIONING_TIMESTAMP_WINDOW', 300),
+        'nonce_retention' => env('PROVISIONING_NONCE_RETENTION', 1800),
+    ],
+
 ];

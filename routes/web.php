@@ -3,13 +3,17 @@
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ConfirmablePasswordController;
+use App\Http\Controllers\Auth\EmailVerificationNotificationController;
+use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\ExportTaskController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MidtransNotificationController;
+use App\Http\Controllers\OwnerOnboardingController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\QzTraySigningController;
@@ -34,6 +38,37 @@ Route::get('/', function () {
     return redirect()->route('login');
 });
 
+/*
+| Domain 1 — Penukaran magic link onboarding Owner (D5).
+| Route ini TIDAK butuh auth (token = bukti otorisasi sekali-pakai),
+| rate limited ketat. Hanya tersedia via HTTPS di deployment (force HTTPS
+| ditegakkan di level web server/CDN — dokumentasi deployment).
+*/
+// Rute tidak menggunakan guest middleware: user yang sedang login dapat
+// menyelesaikan onboarding token yang valid tanpa membuat token bisa dipakai
+// sebagai jalur bypass tenant; controller mengikat token ke user_id/tenant_id.
+Route::get('/onboarding/set-password/{token}', [OwnerOnboardingController::class, 'show'])
+    ->middleware('throttle:6,1')
+    ->name('onboarding.set-password');
+Route::post('/onboarding/set-password/{token}', [OwnerOnboardingController::class, 'store'])
+    ->middleware('throttle:6,1')
+    ->name('onboarding.set-password.store');
+
+Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
+    ->middleware(['signed', 'throttle:6,1'])
+    ->name('verification.verify');
+Route::get('/verify-email', EmailVerificationPromptController::class)
+    ->middleware(['auth', 'tenant.context'])
+    ->name('verification.notice');
+Route::post('/email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+    ->middleware(['auth', 'tenant.context', 'throttle:6,1'])
+    ->name('verification.send');
+
+// Route:method/path yang sudah terverifikasi tidak bergantung pada kode verifikasi email.
+
+// Catatan: password.confirm route middleware di atas sengaja tidak diterapkan
+// (token sekali-pakai adalah bukti otorisasi); CSRF tetap aktif.
+
 // Rute publik untuk pelanggan self-order (TANPA login).
 // Diletakkan di luar grup 'auth' & 'verified' secara sengaja.
 require __DIR__.'/customer.php';
@@ -51,7 +86,7 @@ Route::middleware('guest')->group(function () {
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
 });
 
-Route::middleware(['auth', 'tenant.context'])->group(function () {
+Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
     // Pendaratan netral-role — TIDAK pernah 403 untuk siapa pun yang login.
