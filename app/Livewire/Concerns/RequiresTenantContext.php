@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Concerns;
 
+use App\Services\Context\StoreResolver;
 use App\Services\Context\TenantContext;
 use Illuminate\Support\Facades\Auth;
 
@@ -39,6 +40,18 @@ trait RequiresTenantContext
             abort(403, 'Your account is inactive or has been deleted.');
         }
 
-        app(TenantContext::class)->setTenantId($tenantId);
+        $tenantContext = app(TenantContext::class);
+        $tenantContext->setTenantId($tenantId);
+
+        $storeResolver = app(StoreResolver::class);
+        $allowed = $storeResolver->allowedStoreIdsFor($user, $tenantId);
+        $sessionStoreId = session('active_store_id');
+        $activeStoreId = $storeResolver->resolve(
+            $allowed,
+            is_numeric($sessionStoreId) ? (int) $sessionStoreId : null,
+        );
+        $tenantContext->setStoreId($activeStoreId);
+        session(['active_store_id' => $activeStoreId]);
+        $tenantContext->setAllowedStoreIds($allowed);
     }
 }

@@ -228,8 +228,10 @@ class IngredientManager extends Component
     {
         $ingredients = Ingredient::query()
             ->when($this->search, function ($query) {
-                $query->where('name', 'like', '%'.$this->search.'%')
-                    ->orWhere('ingredient_code', 'like', '%'.$this->search.'%');
+                $query->where(function ($q) {
+                    $q->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('ingredient_code', 'like', '%'.$this->search.'%');
+                });
             })
             ->latest()
             ->paginate(10);

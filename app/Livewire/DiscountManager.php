@@ -170,8 +170,10 @@ class DiscountManager extends Component
 
     public function render()
     {
-        $discounts = Discount::where('name', 'like', '%'.$this->search.'%')
-            ->orWhere('code', 'like', '%'.$this->search.'%')
+        $discounts = Discount::where(function ($q) {
+            $q->where('name', 'like', '%'.$this->search.'%')
+                ->orWhere('code', 'like', '%'.$this->search.'%');
+        })
             ->orderBy('id', 'desc')
             ->paginate(10);
 

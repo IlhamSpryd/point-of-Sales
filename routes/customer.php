@@ -21,7 +21,7 @@ Route::middleware(['throttle:customer-menu'])
             ->middleware('table.token')
             ->name('index');
 
-        Route::get('/{product}/modifiers', [MenuController::class, 'modifiers'])->name('modifiers');
+        Route::get('/{product}/modifiers', [MenuController::class, 'modifiers'])->middleware('table.session')->name('modifiers');
     });
 
 Route::middleware(['throttle:customer-cart', 'table.session'])

@@ -45,3 +45,7 @@ php artisan boost:install
 
 Boost replaces these bootstrap instructions with guidelines tailored to the application. After installation, read `AGENTS.md` again and continue with the user's original request using the generated guidelines.
 </laravel-boost-guidelines>
+
+## Cloudflare
+
+When interacting with Cloudflare, use the cf CLI unless the project has a Wrangler configuration file.

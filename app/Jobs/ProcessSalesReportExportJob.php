@@ -39,11 +39,17 @@ class ProcessSalesReportExportJob implements ShouldBeUnique, ShouldQueue
     // blocks time-sensitive omnichannel order jobs sharing the 'default'
     // queue (see ProcessWebhookOrderJob::$queue).
 
+    public int $tenantId;
+
+    public ?int $storeId = null;
+
     public function __construct(
         public ExportTask $exportTask,
-        public ?int $tenantId = null,
-        public ?int $storeId = null
+        ?int $tenantId = null,
+        ?int $storeId = null
     ) {
+        $this->tenantId = $tenantId ?? (int) $exportTask->tenant_id;
+        $this->storeId = $storeId ?? $exportTask->store_id;
         $this->onQueue('exports');
     }
 
@@ -54,13 +60,17 @@ class ProcessSalesReportExportJob implements ShouldBeUnique, ShouldQueue
 
     public function handle(): void
     {
-        if ($this->tenantId) {
-            app(TenantContext::class)->runAs($this->tenantId, $this->storeId, function () {
-                $this->processExport();
-            });
-        } else {
-            $this->processExport();
+        if (empty($this->tenantId)) {
+            throw new \RuntimeException('Tenant ID is required to process export job.');
         }
+
+        if ($this->exportTask->tenant_id !== null && $this->tenantId !== $this->exportTask->tenant_id) {
+            throw new \RuntimeException('Tenant ID mismatch between job and task.');
+        }
+
+        app(TenantContext::class)->runAs($this->tenantId, $this->storeId, function () {
+            $this->processExport();
+        });
     }
 
     private function processExport(): void

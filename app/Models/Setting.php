@@ -5,14 +5,17 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\AssignsTenant;
+use App\Models\Concerns\ScopedToTenant;
+use App\Services\Context\TenantContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Cache;
 
 class Setting extends Model
 {
     use AssignsTenant;
+    use ScopedToTenant;
 
-    protected $fillable = ['key', 'value', 'type', 'description'];
+    protected $fillable = ['tenant_id', 'key', 'value', 'type', 'description'];
 
     private const CACHE_TTL = 3600;
 
@@ -24,9 +27,10 @@ class Setting extends Model
      */
     public static function get(string $key, mixed $default = null): mixed
     {
-        return Cache::remember("pos:setting:{$key}", self::CACHE_TTL, function () use ($key, $default) {
-            $setting = static::where('key', $key)->first();
+        $tenantId = app(TenantContext::class)->requireTenantId();
 
+        return Cache::remember("pos:setting:{$tenantId}:{$key}", self::CACHE_TTL, function () use ($key, $default) {
+            $setting = static::where('key', $key)->first();
             if (! $setting) {
                 return $default;
             }
@@ -42,13 +46,14 @@ class Setting extends Model
 
     public static function set(string $key, mixed $value, string $type = 'string'): void
     {
+        $tenantId = app(TenantContext::class)->requireTenantId();
+
         static::updateOrCreate(
-            ['key' => $key],
+            ['tenant_id' => $tenantId, 'key' => $key],
             ['value' => is_array($value) ? json_encode($value) : (string) $value, 'type' => $type]
         );
-
         // WAJIB: hapus cache lama agar perubahan setting langsung berlaku,
         // tidak menunggu TTL 1 jam habis.
-        Cache::forget("pos:setting:{$key}");
+        Cache::forget("pos:setting:{$tenantId}:{$key}");
     }
 }

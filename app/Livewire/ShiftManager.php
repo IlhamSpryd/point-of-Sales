@@ -5,9 +5,9 @@ namespace App\Livewire;
 // [OMEGA-NODE1] Import QueryException untuk menangkap pelanggaran unique
 // constraint DB (shifts_one_open_per_user_unique) sebagai sinyal otoritatif
 // "shift sudah open", bukan lagi sekadar pengecekan aplikasi | 2026-09-21
-use App\Enums\OrderStatus;
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\Order;
+use App\Models\CashDrawerMovement;
+use App\Models\Payment;
 use App\Models\Shift;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -99,12 +99,21 @@ class ShiftManager extends Component
                 return false;
             }
 
-            $cashSales = (int) Order::where('shift_id', $shift->id)
-                ->where('payment_method', 'cash')
-                ->where('order_status', OrderStatus::Paid->value)
-                ->sum('order_amount');
+            $cashSales = (int) Payment::join('orders', 'orders.id', '=', 'payments.order_id')
+                ->where('orders.shift_id', $shift->id)
+                ->where('payments.payment_method', 'cash')
+                ->whereIn('payments.status', ['captured', 'voided'])
+                ->sum(DB::raw("CASE WHEN payments.status = 'captured' THEN payments.amount ELSE -payments.amount END"));
 
-            $expectedCash = (int) $shift->opening_balance + $cashSales;
+            $cashIn = (int) CashDrawerMovement::where('shift_id', $shift->id)
+                ->where('type', 'cash_in')
+                ->sum('amount');
+
+            $cashOut = (int) CashDrawerMovement::where('shift_id', $shift->id)
+                ->where('type', 'cash_out')
+                ->sum('amount');
+
+            $expectedCash = (int) $shift->opening_balance + $cashSales + $cashIn - $cashOut;
             $closing = (int) $this->closing_balance;
 
             $shift->update([
@@ -137,16 +146,29 @@ class ShiftManager extends Component
     public function render()
     {
         $cashSales = 0;
+        $expectedCash = 0;
+
         if ($this->activeShift) {
-            $cashSales = Order::where('shift_id', $this->activeShift->id)
-                ->where('payment_method', 'cash')
-                ->where('order_status', OrderStatus::Paid->value)
-                ->sum('order_amount');
+            $cashSales = (int) Payment::join('orders', 'orders.id', '=', 'payments.order_id')
+                ->where('orders.shift_id', $this->activeShift->id)
+                ->where('payments.payment_method', 'cash')
+                ->whereIn('payments.status', ['captured', 'voided'])
+                ->sum(DB::raw("CASE WHEN payments.status = 'captured' THEN payments.amount ELSE -payments.amount END"));
+
+            $cashIn = (int) CashDrawerMovement::where('shift_id', $this->activeShift->id)
+                ->where('type', 'cash_in')
+                ->sum('amount');
+
+            $cashOut = (int) CashDrawerMovement::where('shift_id', $this->activeShift->id)
+                ->where('type', 'cash_out')
+                ->sum('amount');
+
+            $expectedCash = (int) $this->activeShift->opening_balance + $cashSales + $cashIn - $cashOut;
         }
 
         return view('livewire.shift-manager', [
             'cashSales' => $cashSales,
-            'expectedCash' => $this->activeShift ? ($this->activeShift->opening_balance + $cashSales) : 0,
+            'expectedCash' => $expectedCash,
         ]);
     }
 }

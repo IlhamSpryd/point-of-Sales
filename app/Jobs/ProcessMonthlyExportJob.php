@@ -20,19 +20,19 @@ class ProcessMonthlyExportJob implements ShouldQueue
     public function __construct(
         public string $month,
         public string $year,
-        public ?int $tenantId = null,
+        public int $tenantId,
         public ?int $storeId = null
     ) {}
 
     public function handle(): void
     {
-        if ($this->tenantId) {
-            app(TenantContext::class)->runAs($this->tenantId, $this->storeId, function () {
-                $this->processExport();
-            });
-        } else {
-            $this->processExport();
+        if (empty($this->tenantId)) {
+            throw new \RuntimeException('Tenant ID is required to process monthly export job.');
         }
+
+        app(TenantContext::class)->runAs($this->tenantId, $this->storeId, function () {
+            $this->processExport();
+        });
     }
 
     private function processExport(): void

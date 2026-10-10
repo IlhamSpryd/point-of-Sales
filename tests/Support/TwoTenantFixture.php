@@ -63,6 +63,7 @@ trait TwoTenantFixture
             $this->userAOwner = User::create([
                 'name' => 'Owner A',
                 'email' => 'ownerA@test.com',
+                'email_verified_at' => now(),
                 'tenant_id' => $this->tenantA->id,
                 'role_id' => $roleOwner->id,
                 'is_active' => 1,
@@ -71,6 +72,7 @@ trait TwoTenantFixture
             $this->userBBarista = User::create([
                 'name' => 'Barista B',
                 'email' => 'baristaB@test.com',
+                'email_verified_at' => now(),
                 'tenant_id' => $this->tenantB->id,
                 'role_id' => $roleBarista->id,
                 'is_active' => 1,

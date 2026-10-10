@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Livewire\Concerns\RequiresTenantContext;
+use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Context\TenantContext;
@@ -38,7 +39,9 @@ class TenantContextLivewireTest extends TestCase
     public function test_tenant_context_persists_in_livewire_update()
     {
         $tenant = Tenant::create(['name' => 'Test Tenant']);
+        $store = Store::create(['tenant_id' => $tenant->id, 'name' => 'Test Store']);
         $user = User::factory()->create(['tenant_id' => $tenant->id, 'is_active' => true]);
+        $user->stores()->attach($store->id, ['tenant_id' => $tenant->id]);
 
         Livewire::component('dummy', DummyLivewireComponent::class);
 
@@ -53,7 +56,9 @@ class TenantContextLivewireTest extends TestCase
     public function test_inactive_user_is_denied_on_livewire_update()
     {
         $tenant = Tenant::create(['name' => 'Test Tenant']);
+        $store = Store::create(['tenant_id' => $tenant->id, 'name' => 'Test Store']);
         $user = User::factory()->create(['tenant_id' => $tenant->id, 'is_active' => true]);
+        $user->stores()->attach($store->id, ['tenant_id' => $tenant->id]);
 
         Livewire::component('dummy', DummyLivewireComponent::class);
 

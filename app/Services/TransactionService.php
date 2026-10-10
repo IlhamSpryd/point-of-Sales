@@ -119,13 +119,22 @@ class TransactionService
 
                     return $item['product_id'].'|'.$optionsSignature.'|'.$notesSignature;
                 })
-                ->map(fn ($group) => [
-                    'product_id' => $group->first()['product_id'],
-                    'quantity' => $group->sum('quantity'),
-                    'extra_price' => $group->first()['extra_price'] ?? 0,
-                    'options' => $group->first()['options'] ?? null,
-                    'notes' => $group->first()['notes'] ?? null,
-                ])
+                ->map(function ($group) {
+                    $qty = $group->sum('quantity');
+                    if ((int) $qty < 1) {
+                        throw ValidationException::withMessages([
+                            'cart' => 'Kuantitas produk tidak valid. Minimal 1.',
+                        ]);
+                    }
+
+                    return [
+                        'product_id' => $group->first()['product_id'],
+                        'quantity' => $qty,
+                        'extra_price' => $group->first()['extra_price'] ?? 0,
+                        'options' => $group->first()['options'] ?? null,
+                        'notes' => $group->first()['notes'] ?? null,
+                    ];
+                })
                 ->values()
                 ->all();
 
@@ -398,7 +407,17 @@ class TransactionService
             $discountId = $data['discount_id'] ?? null;
             if ($discountId) {
                 $discount = Discount::find($discountId);
-                if ($discount && $discount->is_active && $subtotalAmount >= $discount->min_purchase_amount) {
+                $now = now();
+                $isValidDiscount = $discount && $discount->is_active && $subtotalAmount >= $discount->min_purchase_amount;
+
+                if ($isValidDiscount && $discount->valid_from && $now->lt($discount->valid_from)) {
+                    $isValidDiscount = false;
+                }
+                if ($isValidDiscount && $discount->valid_until && $now->gt($discount->valid_until)) {
+                    $isValidDiscount = false;
+                }
+
+                if ($isValidDiscount) {
                     if ($discount->type === 'percentage') {
                         $calc = (int) round($subtotalAmount * ($discount->value / 100));
                         if ($discount->max_discount_amount) {
