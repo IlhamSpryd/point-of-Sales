@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessWebhookOrderJob;
 use App\Models\ChannelOrderLog;
+use App\Services\Context\TenantContext;
+use App\Services\DatabaseErrorClassifier;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -25,32 +27,35 @@ class WebhookController extends Controller
         if (! $externalOrderId) {
             return response()->json(['message' => 'Missing order_id'], 422);
         }
-        try {
+
+        return app(TenantContext::class)->runAs((int) $tenantId, $storeId ? (int) $storeId : null, function () use ($request, $provider, $tenantId, $storeId, $externalOrderId) {
             try {
-                $log = ChannelOrderLog::create([
-                    'tenant_id' => $tenantId,
-                    'store_id' => $storeId,
-                    'provider' => $provider,
-                    'external_order_id' => $externalOrderId,
-                    'payload' => $request->all(),
-                    'status' => 'pending',
-                ]);
-            } catch (QueryException $e) {
-                // 23000 = Integrity constraint violation (duplicate key)
-                if ($e->getCode() === '23000') {
-                    return response()->json(['message' => 'Order already processed (duplicate)'], 200);
+                try {
+                    $log = ChannelOrderLog::create([
+                        'tenant_id' => $tenantId,
+                        'provider' => $provider,
+                        'external_order_id' => $externalOrderId,
+                        'payload' => $request->all(),
+                        'status' => 'pending',
+                    ]);
+                } catch (QueryException $e) {
+                    // SEC-06/SEC-02: Hanya tangani duplicate entry (1062) aktual, bukan SQLSTATE 23000 generik.
+                    if (DatabaseErrorClassifier::isDuplicateEntry($e)) {
+                        return response()->json(['message' => 'Order already processed (duplicate)'], 200);
+                    }
+                    throw $e;
                 }
-                throw $e;
+
+                // Lempar ke Background Job agar respon API secepat kilat (Zero-Latency)
+                ProcessWebhookOrderJob::dispatch($log, (int) $tenantId, $storeId ? (int) $storeId : null);
+
+                return response()->json(['message' => 'Accepted for processing'], 202);
+
+            } catch (\Exception $e) {
+                Log::error('Webhook DB error: '.$e->getMessage());
+
+                return response()->json(['message' => 'Internal Server Error'], 500);
             }
-            // Lempar ke Background Job agar respon API secepat kilat (Zero-Latency)
-            ProcessWebhookOrderJob::dispatch($log, $tenantId, $storeId);
-
-            return response()->json(['message' => 'Accepted for processing'], 202);
-
-        } catch (\Exception $e) {
-            Log::error('Webhook DB error: '.$e->getMessage());
-
-            return response()->json(['message' => 'Internal Server Error'], 500);
-        }
+        });
     }
 }

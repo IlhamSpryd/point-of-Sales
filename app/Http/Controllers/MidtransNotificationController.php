@@ -32,15 +32,26 @@ class MidtransNotificationController extends Controller
     {
         $payload = $request->all();
 
-        Log::info('Midtrans webhook received:', $payload);
-
         $orderId = $payload['order_id'] ?? null;
         $statusCode = $payload['status_code'] ?? null;
         $grossAmount = $payload['gross_amount'] ?? null;
         $signatureKey = $payload['signature_key'] ?? null;
 
+        // SEC-07: Log metadata terkurasi saja; jangan bocorkan signature_key, nomor VA, atau data sensitif customer ke logs.
+        Log::info('Midtrans webhook received:', [
+            'order_id' => $orderId,
+            'status_code' => $statusCode,
+            'transaction_status' => $payload['transaction_status'] ?? null,
+            'payment_type' => $payload['payment_type'] ?? null,
+        ]);
+
         if (! $orderId || ! $statusCode || ! $grossAmount || ! $signatureKey) {
-            Log::warning('Midtrans notification: payload tidak lengkap.', $payload);
+            Log::warning('Midtrans notification: payload tidak lengkap.', [
+                'order_id' => $orderId,
+                'has_status_code' => ! empty($statusCode),
+                'has_gross_amount' => ! empty($grossAmount),
+                'has_signature_key' => ! empty($signatureKey),
+            ]);
 
             return response()->json(['message' => 'invalid payload'], 400);
         }

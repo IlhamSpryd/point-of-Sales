@@ -101,15 +101,23 @@ class User extends Authenticatable
     /**
      * Route binding di-scope ke tenant pada konteks aktif (404 bila lintas tenant).
      * Login tidak melewati route binding, sehingga tidak terpengaruh (BD-7 aman).
+     * Fail-closed: jika tenant context tidak ada dan tidak dalam explicit bypass, tolak resolusi.
      */
     public function resolveRouteBinding($value, $field = null)
     {
-        $query = static::query();
+        $context = app(TenantContext::class);
 
-        if (app(TenantContext::class)->hasTenant()) {
-            $query->where('tenant_id', app(TenantContext::class)->requireTenantId());
+        if ($context->isBypassed()) {
+            return static::query()->where($field ?? $this->getRouteKeyName(), $value)->first();
         }
 
-        return $query->where($field ?? $this->getRouteKeyName(), $value)->first();
+        if ($context->hasTenant()) {
+            return static::query()
+                ->where('tenant_id', $context->requireTenantId())
+                ->where($field ?? $this->getRouteKeyName(), $value)
+                ->first();
+        }
+
+        return null;
     }
 }

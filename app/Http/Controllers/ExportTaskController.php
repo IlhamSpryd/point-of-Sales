@@ -41,8 +41,12 @@ class ExportTaskController extends Controller
     private function authorizeAccess(Request $request, ExportTask $exportTask): void
     {
         $user = $request->user();
-        $isOwnerOrManager = in_array($user?->role?->name, ['Owner', 'Manager'], true);
 
-        abort_unless($isOwnerOrManager || $exportTask->requested_by === $user?->id, 403);
+        // SEC-01: Verifikasi kepemilikan tenant server-side secara eksplisit (Defense-in-Depth).
+        abort_unless($user && (int) $exportTask->tenant_id === (int) $user->tenant_id, 403);
+
+        $isOwnerOrManager = in_array($user->role?->name, ['Owner', 'Manager'], true);
+
+        abort_unless($isOwnerOrManager || $exportTask->requested_by === $user->id, 403);
     }
 }
