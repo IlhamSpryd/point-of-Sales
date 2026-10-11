@@ -31,14 +31,26 @@ class Role extends Model
         ];
     }
 
-    // Auto-generate Business ID
+    // Auto-generate Business ID yang collision-safe (TX-008)
     protected static function booted()
     {
         static::creating(function ($model) {
             if (empty($model->role_code)) {
-                $latest = static::withoutTenantScope()->latest('id')->first();
-                $nextId = $latest ? $latest->id + 1 : 1;
-                $model->role_code = 'ROL-'.str_pad($nextId, 3, '0', STR_PAD_LEFT);
+                $slug = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', (string) $model->name), 0, 8));
+                if ($slug !== '') {
+                    $candidate = 'ROL-'.$slug;
+                    $exists = static::withoutTenantScope()
+                        ->where('tenant_id', $model->tenant_id)
+                        ->where('role_code', $candidate)
+                        ->exists();
+                    if (! $exists) {
+                        $model->role_code = $candidate;
+
+                        return;
+                    }
+                }
+
+                $model->role_code = 'ROL-'.strtoupper(\Illuminate\Support\Str::random(6));
             }
         });
     }

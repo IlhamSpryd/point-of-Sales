@@ -54,11 +54,6 @@ class EmployeeIdGenerator
     {
         $prefix = self::prefix();
 
-        // Migration backfills existing users. This lazy insert covers newly-
-        // created tenants without a sequence row; its composite primary key
-        // serializes concurrent first use on the database engine.
-        self::ensureSequenceRow($tenantId, $prefix);
-
         $next = self::allocate($tenantId, $prefix);
         $identifier = $prefix.'-'.$tenantId.'-'.str_pad((string) $next, 4, '0', STR_PAD_LEFT);
         if (strlen($identifier) > self::MAX_LENGTH) {
@@ -69,32 +64,68 @@ class EmployeeIdGenerator
     }
 
     /**
-     * Satu kali alokasi atomik: `last_value = last_value + 1` lalu baca
-     * nilainya kembali lewat koneksi yang sama (transaksional di MariaDB/MySQL
-     * karena UPDATE ... LAST_INSERT_ID(...) memakai koneksi milik query).
+     * Satu kali alokasi atomik: INSERT ... ON DUPLICATE KEY UPDATE ... LAST_INSERT_ID(...)
+     * dieksekusi langsung pada koneksi WRITER (TX-007) dalam single statement (TX-006).
+     * Dilengkapi bounded retry terhadap deadlock (1213) atau lock wait timeout (1205).
      */
     public static function allocate(int $tenantId, string $prefix): int
     {
-        // `LAST_INSERT_ID(expr)` berlaku per-koneksi, jadi nilai yang dibaca
-        // kembali pasti milik UPDATE ini — bukan milik penulis konkuren.
-        $updated = DB::table('employee_id_sequences')
-            ->where('tenant_id', $tenantId)
-            ->where('prefix', $prefix)
-            ->update(['last_value' => DB::raw('LAST_INSERT_ID(last_value + 1)')]);
+        $maxAttempts = 3;
+        $attempt = 0;
 
-        if ($updated === 0) {
-            throw new RuntimeException(
-                "employee_id sequence hilang untuk tenant {$tenantId} (prefix {$prefix})."
-            );
+        while (true) {
+            $attempt++;
+
+            try {
+                // Gunakan koneksi writer secara eksplisit agar LAST_INSERT_ID()
+                // tidak terpisah sesi replica saat read/write splitting (TX-007).
+                $conn = DB::connection();
+                $pdo = $conn->getPdo();
+
+                $stmt = $pdo->prepare(
+                    'INSERT INTO employee_id_sequences (tenant_id, prefix, last_value, created_at, updated_at) '
+                    .'VALUES (?, ?, LAST_INSERT_ID(1), NOW(), NOW()) '
+                    .'ON DUPLICATE KEY UPDATE '
+                    .'last_value = LAST_INSERT_ID(last_value + 1), updated_at = NOW()'
+                );
+                $stmt->execute([$tenantId, $prefix]);
+
+                $lastIdStmt = $pdo->query('SELECT LAST_INSERT_ID() AS v');
+                $row = $lastIdStmt ? $lastIdStmt->fetch(\PDO::FETCH_ASSOC) : null;
+                $val = (int) ($row['v'] ?? 0);
+
+                if ($val <= 0) {
+                    throw new RuntimeException(
+                        "employee_id sequence gagal dialokasikan untuk tenant {$tenantId} (prefix {$prefix})."
+                    );
+                }
+
+                return $val;
+            } catch (\Throwable $e) {
+                $driverCode = 0;
+                if ($e instanceof \Illuminate\Database\QueryException) {
+                    $driverCode = DatabaseErrorClassifier::getDriverCode($e);
+                } elseif ($e instanceof \PDOException) {
+                    $driverCode = (int) ($e->errorInfo[1] ?? 0);
+                }
+
+                $isLockConflict = ($driverCode === DatabaseErrorClassifier::MYSQL_ER_LOCK_DEADLOCK
+                    || $driverCode === DatabaseErrorClassifier::MYSQL_ER_LOCK_WAIT_TIMEOUT);
+
+                if ($isLockConflict && $attempt < $maxAttempts) {
+                    usleep(random_int(10_000, 50_000)); // 10ms - 50ms jitter
+
+                    continue;
+                }
+
+                throw $e;
+            }
         }
-
-        return (int) DB::selectOne('SELECT LAST_INSERT_ID() AS v')->v;
     }
 
     /**
-     * Pastikan baris sequence ada. Dipakai oleh migrasi (backfill) dan oleh
-     * jalur defensif di {@see next()}. Idempoten terhadap request konkuren:
-     * `insertOrIgnore` tidak melempar pada PK duplikat.
+     * Pastikan baris sequence ada. Dipakai oleh migrasi (backfill) dan seeding.
+     * Idempoten terhadap request konkuren.
      */
     public static function ensureSequenceRow(int $tenantId, ?string $prefix = null): void
     {

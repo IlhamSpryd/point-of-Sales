@@ -22,10 +22,21 @@ class ProcessEmailOutbox extends Command
     {
         $limit = max(1, (int) $this->option('limit'));
 
+        // Temukan item:
+        // 1. PENDING yang sudah jatuh tempo (atau baru dibuat tanpa jadwal)
+        // 2. PROCESSING yang lease worker-nya kedaluwarsa (worker mati/crash)
         $due = EmailOutbox::query()
-            ->where('status', EmailOutbox::STATUS_PENDING)
             ->where(function ($q) {
-                $q->whereNull('next_attempt_at')->orWhere('next_attempt_at', '<=', now());
+                $q->where(function ($pending) {
+                    $pending->where('status', EmailOutbox::STATUS_PENDING)
+                        ->where(function ($time) {
+                            $time->whereNull('next_attempt_at')->orWhere('next_attempt_at', '<=', now());
+                        });
+                })->orWhere(function ($staleProcessing) {
+                    $staleProcessing->where('status', EmailOutbox::STATUS_PROCESSING)
+                        ->whereNotNull('lease_expires_at')
+                        ->where('lease_expires_at', '<=', now());
+                });
             })
             ->orderBy('id')
             ->limit($limit)

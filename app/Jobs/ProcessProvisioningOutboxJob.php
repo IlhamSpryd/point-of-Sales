@@ -9,6 +9,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -16,22 +17,14 @@ use Illuminate\Support\Facades\Mail;
 /**
  * Domain 1 — proses SATU baris outbox.
  *
- * Klaim atomik (DB-016): baris `pending` diubah menjadi `processing` lewat
- * conditional UPDATE, dan hanya worker yang berhasil (1 baris terpengaruh)
- * yang boleh mengirim. SELECT-saja tidak pernah cukup: dua worker dapat
- * membaca baris pending yang sama sebelum salah satu menulis.
+ * Klaim atomik (DB-016 / TX-002): baris `pending` (atau `processing` dengan lease kedaluwarsa)
+ * diklaim via conditional UPDATE. Kolom `lease_expires_at` memisahkan lease worker
+ * dari jadwal retry `next_attempt_at`.
  *
- * Token onboarding (DB-003): plaintext token TIDAK disimpan di baris outbox —
- * body yang tersimpan memuat hash-nya. Plaintext diturunkan saat pengiriman
- * dari payload job, atau (bila scheduler men-dispatch ulang) dari
- * `owner_onboarding_tokens` yang cocok dengan hash di body. Jadi selama baris
- * menunggu/gagal, database hanya memuat tautan ber-hash.
- *
- * Retry (next_attempt_at + batas percobaan): job TIDAK melempar exception
- * selama masih di bawah batas, karena melempar akan memicu retry framework
- * yang mengabaikan next_attempt_at. Penjadwalan ulang dilakukan dengan
- * menulis status `pending` + next_attempt_at, dan `emails:process-outbox`
- * yang men-pick baris yang sudah jatuh tempo.
+ * Token onboarding (TX-005 / TX-011): `email_outbox.body_text` dienkripsi at rest
+ * dengan AES-256 (`Crypt::encryptString`). Retry pengiriman TIDAK merotasi token,
+ * sehingga provider timeout tidak membatalkan tautan yang sudah sampai ke pemilik.
+ * Tautan ber-token hanya diredaksi setelah pengiriman berhasil (`STATUS_SENT`).
  */
 class ProcessProvisioningOutboxJob implements ShouldQueue
 {
@@ -44,9 +37,7 @@ class ProcessProvisioningOutboxJob implements ShouldQueue
     public function __construct(
         public int $outboxId,
         /**
-         * Plaintext token onboarding (hanya ada pada dispatch pasca-commit).
-         * TIDAK pernah dipersistensi; hilang bila worker mati, dan diturunkan
-         * ulang dari hash di database pada percobaan berikutnya.
+         * Plaintext token onboarding opsional jika diteruskan dari pemanggil.
          */
         public ?string $onboardingToken = null,
     ) {}
@@ -59,11 +50,7 @@ class ProcessProvisioningOutboxJob implements ShouldQueue
         }
 
         try {
-            $plaintext = $this->resolvePlaintextToken($outbox);
-            if ($outbox->event_type === 'owner_onboarding' && $plaintext === null) {
-                throw new \RuntimeException('onboarding_token_unavailable');
-            }
-            $body = $this->renderBody($outbox, $plaintext);
+            $body = $this->resolveAndVerifyBody($outbox);
 
             Mail::raw($body, function ($message) use ($outbox) {
                 $message->to($outbox->recipient_email)
@@ -75,9 +62,8 @@ class ProcessProvisioningOutboxJob implements ShouldQueue
             return;
         }
 
-        // Penanda sukses. Body diganti versi ber-hash (tanpa plaintext) agar
-        // nilai yang menganggur di database tidak pernah menjadi kredensial
-        // yang bisa dipakai ulang.
+        // Penanda sukses: body disunting (redacted) agar token tidak lagi tersimpan
+        // bahkan dalam bentuk terenkripsi (TX-005, TX-011).
         EmailOutbox::whereKey($outbox->id)
             ->where('status', EmailOutbox::STATUS_PROCESSING)
             ->where('attempts', $outbox->attempts)
@@ -86,30 +72,29 @@ class ProcessProvisioningOutboxJob implements ShouldQueue
                 'sent_at' => now(),
                 'last_error' => null,
                 'next_attempt_at' => null,
-                'body_text' => encrypt($this->redactedBody($outbox)),
+                'lease_expires_at' => null,
+                'body_text' => Crypt::encryptString($this->redactedBody($outbox, $body)),
             ]);
     }
 
     /**
-     * Klaim atomik. Baris `processing` yang lease-nya kedaluwarsa (worker mati
-     * di tengah pengiriman) boleh diambil alih — tanpa itu, satu crash
-     * permanen membuat email tidak pernah terkirim.
+     * Klaim atomik. Memilih baris PENDING due ATAU PROCESSING dengan lease kedaluwarsa (TX-002).
      */
     private function claim(): ?EmailOutbox
     {
         $leaseMinutes = max(1, (int) config('pos.provisioning.outbox_lease_minutes', 10));
 
         $candidate = EmailOutbox::whereKey($this->outboxId)
-            ->where(function ($q) use ($leaseMinutes) {
-                $q->where(function ($q2) {
-                    $q2->where('status', EmailOutbox::STATUS_PENDING)
-                        ->where(function ($q3) {
-                            $q3->whereNull('next_attempt_at')->orWhere('next_attempt_at', '<=', now());
+            ->where(function ($q) {
+                $q->where(function ($pending) {
+                    $pending->where('status', EmailOutbox::STATUS_PENDING)
+                        ->where(function ($time) {
+                            $time->whereNull('next_attempt_at')->orWhere('next_attempt_at', '<=', now());
                         });
-                })->orWhere(function ($q2) use ($leaseMinutes) {
-                    $q2->where('status', EmailOutbox::STATUS_PROCESSING)
-                        ->whereNotNull('next_attempt_at')
-                        ->where('next_attempt_at', '<=', now());
+                })->orWhere(function ($stale) {
+                    $stale->where('status', EmailOutbox::STATUS_PROCESSING)
+                        ->whereNotNull('lease_expires_at')
+                        ->where('lease_expires_at', '<=', now());
                 });
             })
             ->first();
@@ -124,7 +109,7 @@ class ProcessProvisioningOutboxJob implements ShouldQueue
             ->update([
                 'status' => EmailOutbox::STATUS_PROCESSING,
                 'attempts' => $candidate->attempts + 1,
-                'next_attempt_at' => now()->addMinutes($leaseMinutes),
+                'lease_expires_at' => now()->addMinutes($leaseMinutes),
             ]);
 
         if ($claimed !== 1) {
@@ -133,109 +118,131 @@ class ProcessProvisioningOutboxJob implements ShouldQueue
 
         $candidate->status = EmailOutbox::STATUS_PROCESSING;
         $candidate->attempts++;
+        $candidate->lease_expires_at = now()->addMinutes($leaseMinutes);
 
         return $candidate;
     }
 
     /**
-     * Plaintext token: dari payload job bila ada (jalur normal), atau
-     * diturunkan dari hash yang tertulis di body (jalur pemulihan scheduler).
-     * Pada jalur pemulihan, token dirotasi lebih dulu sehingga hash lama
-     * berhenti berlaku — token yang mungkin sudah terkirim tidak dapat
-     * dipakai lagi.
+     * Selesaikan dan verifikasi isi email.
+     * Retry TIDAK merotasi token (TX-005). Jika tautan memuat hash lama atau token
+     * diteruskan via constructor, injeksikan secara konsisten.
      */
-    private function resolvePlaintextToken(EmailOutbox $outbox): ?string
+    private function resolveAndVerifyBody(EmailOutbox $outbox): string
     {
+        $body = $outbox->body_text;
+
         if ($outbox->event_type !== 'owner_onboarding') {
-            return null;
+            return $body;
         }
 
+        // Jalur 1: Body sudah memuat plaintext token yang valid
+        $rawToken = $this->tokenFromLink($body);
+        if ($rawToken !== null) {
+            $tokenHash = OwnerOnboardingToken::hash($rawToken);
+            $tokenRecord = OwnerOnboardingToken::withoutGlobalScopes()
+                ->where('tenant_id', $outbox->tenant_id)
+                ->where('user_id', $outbox->user_id)
+                ->where('token_hash', $tokenHash)
+                ->first();
+
+            if ($tokenRecord !== null) {
+                if ($tokenRecord->isExpired()) {
+                    throw new \RuntimeException('onboarding_token_expired');
+                }
+
+                return $body;
+            }
+        }
+
+        // Jalur 2: Token diteruskan via payload job ($this->onboardingToken)
         if (is_string($this->onboardingToken) && $this->onboardingToken !== '') {
-            $tokenHash = $this->hashFromBody($outbox->body_text);
-            if ($tokenHash !== null && hash_equals($tokenHash, OwnerOnboardingToken::hash($this->onboardingToken))) {
-                return $this->onboardingToken;
-            }
+            $expectedHash = OwnerOnboardingToken::hash($this->onboardingToken);
+            $tokenRecord = OwnerOnboardingToken::withoutGlobalScopes()
+                ->where('tenant_id', $outbox->tenant_id)
+                ->where('user_id', $outbox->user_id)
+                ->where('token_hash', $expectedHash)
+                ->first();
 
-            return null;
+            if ($tokenRecord !== null && ! $tokenRecord->isExpired()) {
+                $hashInBody = $this->hashFromBody($body);
+                if ($hashInBody !== null) {
+                    return ProvisioningService::injectOnboardingToken($body, $hashInBody, $this->onboardingToken);
+                }
+
+                return $body;
+            }
         }
 
-        $tokenHash = $this->hashFromBody($outbox->body_text);
-        if ($tokenHash === null) {
-            return null;
+        // Jalur 3: Token di database ada tapi body hanya memuat hash (mis. legacy)
+        $hashInBody = $this->hashFromBody($body);
+        if ($hashInBody !== null) {
+            $tokenRecord = OwnerOnboardingToken::withoutGlobalScopes()
+                ->where('tenant_id', $outbox->tenant_id)
+                ->where('user_id', $outbox->user_id)
+                ->where('token_hash', $hashInBody)
+                ->first();
+
+            if ($tokenRecord !== null && ! $tokenRecord->isExpired() && ! $tokenRecord->isConsumed()) {
+                // Untuk baris legacy yang tidak memiliki plaintext, lakukan reissue terkontrol
+                $plaintext = OwnerOnboardingToken::reissueFor($hashInBody, (int) $outbox->tenant_id, (int) $outbox->user_id);
+                if ($plaintext !== null) {
+                    $newHash = OwnerOnboardingToken::hash($plaintext);
+
+                    return ProvisioningService::injectOnboardingToken($body, $hashInBody, $plaintext);
+                }
+            }
         }
 
-        return DB::transaction(function () use ($outbox, $tokenHash) {
-            $plaintext = OwnerOnboardingToken::reissueFor($tokenHash, (int) $outbox->tenant_id, (int) $outbox->user_id);
-            if ($plaintext === null) {
-                return null;
-            }
-
-            $newHash = OwnerOnboardingToken::hash($plaintext);
-            $body = ProvisioningService::injectOnboardingToken($outbox->body_text, $tokenHash, $newHash);
-            $affected = DB::table('email_outbox')->where('id', $outbox->id)
-                ->where('status', EmailOutbox::STATUS_PROCESSING)
-                ->where('attempts', $outbox->attempts)
-                ->update(['body_text' => encrypt($body), 'updated_at' => now()]);
-            if ($affected !== 1) {
-                throw new \RuntimeException('outbox_claim_lost');
-            }
-            $outbox->setAttribute('body_text', $body);
-
-            return $plaintext;
-        });
+        return $body;
     }
 
-    private function renderBody(EmailOutbox $outbox, ?string $plaintext): string
+    private function tokenFromLink(string $body): ?string
     {
-        $tokenHash = $this->hashFromBody($outbox->body_text);
+        if (preg_match('#/onboarding/set-password/([A-Za-z0-9_-]{40,})#', $body, $m)) {
+            // Jika panjangnya 64 hex, kemungkinan itu hash, bukan random plaintext token
+            if (preg_match('/^[a-f0-9]{64}$/i', $m[1])) {
+                // Cek apakah ada record dengan hash ini
+                $hashExists = OwnerOnboardingToken::where('token_hash', strtolower($m[1]))->exists();
+                if ($hashExists) {
+                    return null; // Ini hash, bukan plaintext
+                }
+            }
 
-        // Tanpa token yang bisa disisipkan, kirim body apa adanya. Lebih baik
-        // terkirim tanpa tautan daripada gagal permanen.
-        if ($plaintext === null || $tokenHash === null) {
-            return $outbox->body_text;
+            return $m[1];
         }
 
-        $currentHash = OwnerOnboardingToken::hash($plaintext);
-        if (! hash_equals($tokenHash, $currentHash)) {
-            // A fresh job payload is valid only for the hash originally bound
-            // to this outbox event; never send an unpersisted token.
-            return $outbox->body_text;
-        }
-
-        return ProvisioningService::injectOnboardingToken($outbox->body_text, $tokenHash, $plaintext);
-    }
-
-    /**
-     * Versi body yang disimpan setelah pengiriman: tautan sudah tidak memuat
-     * plaintext. Dinormalkan ke bentuk ber-hash agar konsisten.
-     */
-    private function redactedBody(EmailOutbox $outbox): string
-    {
-        $tokenHash = $this->hashFromBody($outbox->body_text);
-
-        if ($tokenHash === null) {
-            return $outbox->body_text;
-        }
-
-        return ProvisioningService::injectOnboardingToken($outbox->body_text, $tokenHash, $tokenHash);
+        return null;
     }
 
     private function hashFromBody(string $body): ?string
     {
-        if (! preg_match('#/onboarding/set-password/([a-f0-9]{64})#', $body, $m)) {
-            return null;
+        if (preg_match('#/onboarding/set-password/([a-f0-9]{64})#', $body, $m)) {
+            return strtolower($m[1]);
         }
 
-        return $m[1];
+        return null;
+    }
+
+    /**
+     * Versi body yang disimpan setelah pengiriman: token plaintext dihapus dan
+     * disubstitusi dengan hash token (TX-005, TX-011).
+     */
+    private function redactedBody(EmailOutbox $outbox, string $sentBody): string
+    {
+        $token = $this->tokenFromLink($sentBody);
+        if ($token === null) {
+            return $sentBody;
+        }
+
+        $tokenHash = OwnerOnboardingToken::hash($token);
+
+        return ProvisioningService::injectOnboardingToken($sentBody, $token, $tokenHash);
     }
 
     private function markFailedAttempt(EmailOutbox $outbox, \Throwable $e): void
     {
         if ($outbox->event_type === 'owner_onboarding') {
-            // Percobaan ini menghabiskan satu plaintext token (dialokasikan
-            // sebelum pengiriman). Catat supaya kebijakan token sekali-pakai
-            // dapat diaudit, dan supaya token dapat dirotasi saat percobaan
-            // berikutnya.
             OwnerOnboardingToken::query()
                 ->where('tenant_id', $outbox->tenant_id)
                 ->where('user_id', $outbox->user_id)
@@ -256,6 +263,7 @@ class ProcessProvisioningOutboxJob implements ShouldQueue
                 'status' => EmailOutbox::STATUS_FAILED,
                 'last_error' => $this->safeError($e),
                 'next_attempt_at' => null,
+                'lease_expires_at' => null,
             ]);
 
             Log::error('Outbox email gagal permanen setelah batas percobaan.', [
@@ -266,11 +274,13 @@ class ProcessProvisioningOutboxJob implements ShouldQueue
             return;
         }
 
-        // Backoff eksponensial: 5, 25, 125 menit (base 5).
+        // Backoff eksponensial (5, 25, 125 menit) dengan jitter 0-30 detik
+        $jitter = random_int(0, 30);
         $query->update([
             'status' => EmailOutbox::STATUS_PENDING,
             'last_error' => $this->safeError($e),
-            'next_attempt_at' => now()->addMinutes(5 ** $attempts),
+            'lease_expires_at' => null,
+            'next_attempt_at' => now()->addMinutes(5 ** $attempts)->addSeconds($jitter),
         ]);
 
         Log::warning('Outbox email gagal dikirim; dijadwalkan ulang.', [
@@ -281,8 +291,7 @@ class ProcessProvisioningOutboxJob implements ShouldQueue
 
     private function safeError(\Throwable $e): string
     {
-        // Jangan simpan pesan mentah (dapat memuat kredensial SMTP atau isi
-        // pesan). Cukup jenis kegagalannya.
+        // Jangan simpan pesan mentah (dapat memuat kredensial SMTP atau isi pesan)
         return substr($e::class.' during outbox delivery', 0, 120);
     }
 }

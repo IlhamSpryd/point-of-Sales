@@ -53,15 +53,27 @@ class ReconcileProvisioningLedger extends Command
     {
         $limit = max(1, (int) $this->option('limit'));
         $dryRun = (bool) $this->option('dry-run');
-        // lease_expires_at already stores an absolute expiry, so compare it
-        // directly with the current time (do not subtract the lease twice).
         $cutoff = Carbon::now();
 
+        // TX-009: State machine rekonsiliasi non-terminal:
+        // 1. Baris PROCESSING dengan expired lease (atau null)
+        // 2. Baris PENDING / FAILED yang berpotensi memiliki committed tenant di database
         $candidates = ProvisioningRequest::withoutGlobalScopes()
-            ->where('status', ProvisioningRequest::STATUS_PROCESSING)
             ->where(function ($q) use ($cutoff) {
-                $q->whereNull('lease_expires_at')->orWhere('lease_expires_at', '<=', $cutoff);
+                // Klaim processing yang sudah expired
+                $q->where(function ($proc) use ($cutoff) {
+                    $proc->where('status', ProvisioningRequest::STATUS_PROCESSING)
+                        ->where(function ($time) use ($cutoff) {
+                            $time->whereNull('lease_expires_at')->orWhere('lease_expires_at', '<=', $cutoff);
+                        });
+                })
+                // Atau baris non-terminal lain yang mungkin transaksi bisnisnya sebenarnya sudah commit
+                ->orWhere(function ($other) {
+                    $other->whereIn('status', [ProvisioningRequest::STATUS_PENDING, ProvisioningRequest::STATUS_FAILED])
+                        ->where('attempt_count', '>', 0);
+                });
             })
+            ->where('status', '!=', ProvisioningRequest::STATUS_COMPLETED)
             ->orderBy('id')
             ->limit($limit)
             ->get();
@@ -73,9 +85,46 @@ class ReconcileProvisioningLedger extends Command
             $facts = $this->committedFacts($ledger);
 
             if ($facts !== null) {
+                // Bukti commit ditemukan (tenant + user committed) -> rekonsiliasi ke COMPLETED
                 if ($dryRun) {
                     $this->line("[dry-run] complete {$ledger->idempotency_key} → tenant {$facts['tenant_id']}");
                     $completed++;
+
+                    continue;
+                }
+
+                $affected = ProvisioningRequest::withoutGlobalScopes()
+                    ->whereKey($ledger->id)
+                    ->where('status', $ledger->status)
+                    ->where('attempt_count', $ledger->attempt_count)
+                    ->update([
+                        'status' => ProvisioningRequest::STATUS_COMPLETED,
+                        'result_tenant_id' => $facts['tenant_id'],
+                        'result_user_id' => $facts['user_id'],
+                        'completed_at' => now(),
+                        'error_message' => null,
+                        'lease_expires_at' => null,
+                    ]);
+
+                if ($affected === 1) {
+                    $completed++;
+                    \Illuminate\Support\Facades\Log::info('Provisioning ledger reconciled to completed from committed tenant.', [
+                        'idempotency_key' => $ledger->idempotency_key,
+                        'tenant_id' => $facts['tenant_id'],
+                        'user_id' => $facts['user_id'],
+                    ]);
+                    $this->line("completed {$ledger->idempotency_key} → tenant {$facts['tenant_id']}");
+                }
+
+                continue;
+            }
+
+            // Tidak ada bukti commit tenant
+            // Jika status PROCESSING dan lease kedaluwarsa: buka kembali klaim ke PENDING
+            if ($ledger->status === ProvisioningRequest::STATUS_PROCESSING) {
+                if ($dryRun) {
+                    $this->line("[dry-run] release claim {$ledger->idempotency_key}");
+                    $released++;
 
                     continue;
                 }
@@ -88,47 +137,19 @@ class ReconcileProvisioningLedger extends Command
                         $q->whereNull('lease_expires_at')->orWhere('lease_expires_at', '<=', now());
                     })
                     ->update([
-                        'status' => ProvisioningRequest::STATUS_COMPLETED,
-                        'result_tenant_id' => $facts['tenant_id'],
-                        'result_user_id' => $facts['user_id'],
-                        'completed_at' => now(),
-                        'error_message' => null,
+                        'status' => ProvisioningRequest::STATUS_PENDING,
                         'lease_expires_at' => null,
+                        'error_message' => 'claim_expired_released',
                     ]);
 
                 if ($affected === 1) {
-                    $completed++;
-                    $this->line("completed {$ledger->idempotency_key} → tenant {$facts['tenant_id']}");
+                    $released++;
+                    \Illuminate\Support\Facades\Log::warning('Provisioning ledger stale claim released to pending.', [
+                        'idempotency_key' => $ledger->idempotency_key,
+                        'attempt_count' => $ledger->attempt_count,
+                    ]);
+                    $this->line("released stale claim {$ledger->idempotency_key}");
                 }
-
-                continue;
-            }
-
-            // Tidak ada bukti commit → transaksi bisnis dijamin rollback.
-            // Buka klaim agar retry dengan key yang sama boleh jalan.
-            if ($dryRun) {
-                $this->line("[dry-run] release claim {$ledger->idempotency_key}");
-                $released++;
-
-                continue;
-            }
-
-            $affected = ProvisioningRequest::withoutGlobalScopes()
-                ->whereKey($ledger->id)
-                ->where('status', ProvisioningRequest::STATUS_PROCESSING)
-                ->where('attempt_count', $ledger->attempt_count)
-                ->where(function ($q) {
-                    $q->whereNull('lease_expires_at')->orWhere('lease_expires_at', '<=', now());
-                })
-                ->update([
-                    'status' => ProvisioningRequest::STATUS_PENDING,
-                    'lease_expires_at' => null,
-                    'error_message' => 'claim_expired_released',
-                ]);
-
-            if ($affected === 1) {
-                $released++;
-                $this->line("released stale claim {$ledger->idempotency_key}");
             }
         }
 

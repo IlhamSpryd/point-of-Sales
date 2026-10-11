@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\StaleWorkerException;
 use App\Jobs\ProcessProvisioningOutboxJob;
 use App\Models\ActivityLog;
 use App\Models\EmailOutbox;
@@ -12,6 +13,7 @@ use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Context\TenantContext;
+use App\Services\DatabaseErrorClassifier;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -153,18 +155,33 @@ class ProvisioningService
             $attempts++;
 
             try {
-                $result = $this->tenantContext->runWithoutTenant(function () use ($data, $idempotencyKey) {
-                    return DB::transaction(function () use ($data, $idempotencyKey) {
-                        return $this->provisionWithinTransaction($data, $idempotencyKey);
+                $result = $this->tenantContext->runWithoutTenant(function () use ($data, $idempotencyKey, $fencingToken) {
+                    return DB::transaction(function () use ($data, $idempotencyKey, $fencingToken) {
+                        return $this->provisionWithinTransaction($data, $idempotencyKey, $fencingToken);
                     });
                 });
+            } catch (StaleWorkerException $e) {
+                Log::warning('Provisioning worker stale; transaction rolled back.', [
+                    'idempotency_key' => $idempotencyKey,
+                    'fencing_token' => $fencingToken,
+                    'reason' => $e->getMessage(),
+                ]);
+
+                // Worker stale (TX-001): transaksi bisnis dibatalkan total.
+                // Worker ini tidak boleh mengubah ledger attempt terbaru, tidak boleh
+                // mendispatch email outbox, dan tidak boleh mengembalikan 201.
+                $currentLedger = ProvisioningRequest::where('idempotency_key', $idempotencyKey)->first();
+                if ($currentLedger !== null) {
+                    $existingResponse = $this->responseForExisting($currentLedger, $fingerprint);
+                    if ($existingResponse !== null) {
+                        return $existingResponse;
+                    }
+                }
+
+                return $this->pendingResponse();
             } catch (\Throwable $e) {
-                if ($e instanceof QueryException && $this->isUniqueViolation($e)) {
-                    // Dua kemungkinan, dan keduanya harus dibedakan — bukan
-                    // ditelan sebagai 500 generik (DB-005):
-                    //  (a) email pemilik memang sudah dipakai (race lintas
-                    //      request) -> kegagalan BISNIS permanen -> 409.
-                    //  (b) tabrakan lain (mis. employee_id) -> transient.
+                if ($e instanceof QueryException && DatabaseErrorClassifier::isDuplicateEntry($e)) {
+                    // Cek apakah email benturan dengan user yang sudah ada
                     $emailConflict = $this->tenantContext->runWithoutTenant(
                         fn () => User::where('email', $data['owner_email'])->first()
                     );
@@ -178,19 +195,17 @@ class ProvisioningService
 
                         return $this->emailConflictResponse();
                     }
+                }
 
-                    if ($attempts < $maxBusinessAttempts) {
-                        // Backoff singkat lalu ulangi. Transaksi sudah
-                        // rollback total, jadi tidak ada state parsial.
-                        usleep(50_000);
+                // Retry transien untuk deadlock atau lock wait timeout InnoDB (TX-010)
+                if ($e instanceof QueryException && DatabaseErrorClassifier::isLockConflict($e) && $attempts < $maxBusinessAttempts) {
+                    usleep(random_int(20_000, 80_000));
 
-                        continue;
-                    }
+                    continue;
                 }
 
                 // Rollback total: tidak ada partial state. Ledger ditandai
-                // failed (transient) agar retry dengan key yang sama diizinkan
-                // dan kegagalan terlihat di monitoring.
+                // failed (transient) bila worker masih memegang fencing token (TX-012).
                 $this->finaliseLedger($idempotencyKey, $fencingToken, [
                     'status' => ProvisioningRequest::STATUS_FAILED,
                     'error_message' => $this->safeErrorMessage($e),
@@ -218,18 +233,20 @@ class ProvisioningService
             }
         }
 
-        // --- 4. Finalisasi ledger (post-commit, idempoten & tahan retry) ---
-        $this->finaliseLedger($idempotencyKey, $fencingToken, [
-            'status' => ProvisioningRequest::STATUS_COMPLETED,
-            'result_tenant_id' => $result['tenant']->id,
-            'result_user_id' => $result['owner']->id,
-            'completed_at' => now(),
-            'error_message' => null,
-        ]);
+        if ($result === null) {
+            return [
+                'status' => 500,
+                'body' => [
+                    'success' => false,
+                    'error' => 'provisioning_failed',
+                    'message' => 'Provisioning gagal, silakan coba lagi dengan idempotency key yang sama.',
+                    'retryable' => true,
+                ],
+            ];
+        }
 
-        // It should already be complete inside the transaction. If readiness
-        // evaluation unexpectedly fails after commit, fail closed and leave the
-        // tenant marked pending for repair rather than advertise it as ready.
+        // Ledger telah difinalisasi menjadi STATUS_COMPLETED di DALAM transaksi bisnis (TX-001).
+        // Refresh readiness fail-closed pasca commit
         try {
             $this->tenantProvisioning->refreshReadiness($result['tenant']);
         } catch (\Throwable $e) {
@@ -239,11 +256,9 @@ class ProvisioningService
             ]);
         }
 
-        // Outbox baris sudah di-commit di dalam transaksi; dispatch job
-        // AFTER commit agar tidak ada race worker. Bila dispatch gagal
-        // (crash di sini), scheduled processor tetap men-pick baris pending.
+        // Outbox baris sudah di-commit di dalam transaksi; dispatch job AFTER commit (TX-001)
         try {
-            ProcessProvisioningOutboxJob::dispatch($result['outbox_id']);
+            ProcessProvisioningOutboxJob::dispatch($result['outbox_id'], $result['onboarding_token'] ?? null);
         } catch (\Throwable $e) {
             Log::warning('Outbox dispatch failed; scheduled processor will pick it up.', [
                 'outbox_id' => $result['outbox_id'],
@@ -355,15 +370,22 @@ class ProvisioningService
      * (fakta commit), dan baris yang sudah `completed` tidak pernah diturunkan
      * statusnya.
      */
-    private function finaliseLedger(string $idempotencyKey, int $fencingToken, array $attributes): void
+    /**
+     * Penulisan terminal (TX-012: return bool hasil conditional update).
+     *
+     * Idempoten & tahan retry: hasil yang sudah tercatat tidak pernah ditimpa
+     * (fakta commit), dan baris yang sudah `completed` tidak pernah diturunkan
+     * statusnya.
+     */
+    private function finaliseLedger(string $idempotencyKey, int $fencingToken, array $attributes): bool
     {
         if ($fencingToken < 1) {
-            return;
+            return false;
         }
 
         // Single conditional UPDATE is the fencing point. A stale worker cannot
         // pass a read/check then race a newer claim or terminal transition.
-        ProvisioningRequest::query()
+        $affected = ProvisioningRequest::query()
             ->where('idempotency_key', $idempotencyKey)
             ->where('status', ProvisioningRequest::STATUS_PROCESSING)
             ->where('attempt_count', $fencingToken)
@@ -375,20 +397,40 @@ class ProvisioningService
                 'result_user_id' => $attributes['result_user_id'] ?? null,
                 'lease_expires_at' => null,
             ]);
+
+        return $affected === 1;
     }
 
     /**
-     * Transaksi utama. Semua resource atau tidak sama sekali.
+     * Transaksi utama (TX-001): Validasi fencing token, business writes, dan finalisasi
+     * ledger disatukan ke dalam SATU batas transaksi InnoDB atomik.
      *
-     * @return array{tenant: Tenant, owner: User, store: Store, outbox_id: int}
+     * @return array{tenant: Tenant, owner: User, store: Store, outbox_id: int, onboarding_token: string}
      */
-    private function provisionWithinTransaction(array $data, string $idempotencyKey): array
+    private function provisionWithinTransaction(array $data, string $idempotencyKey, int $fencingToken): array
     {
-        // 3a. Tenant — dibuat di platform context (Tenant model tidak memakai
-        // AssignsTenant/TenantScope — diverifikasi saat audit).
-        //
-        // Penanda idempotency pada tenant ditulis saat FINALISASI ledger,
-        // agar tenant dan baris ledger selalu menunjuk key yang sama.
+        // 1. Kunci baris ledger dan verifikasi hak eksklusif worker (TX-001)
+        $ledger = ProvisioningRequest::where('idempotency_key', $idempotencyKey)
+            ->lockForUpdate()
+            ->first();
+
+        if ($ledger === null) {
+            throw new StaleWorkerException("Baris ledger hilang untuk key {$idempotencyKey}", $idempotencyKey, $fencingToken);
+        }
+
+        if ($ledger->status !== ProvisioningRequest::STATUS_PROCESSING) {
+            throw new StaleWorkerException("Status ledger bukan processing ({$ledger->status})", $idempotencyKey, $fencingToken);
+        }
+
+        if ((int) $ledger->attempt_count !== $fencingToken) {
+            throw new StaleWorkerException("Fencing token mismatch (ledger: {$ledger->attempt_count}, worker: {$fencingToken})", $idempotencyKey, $fencingToken);
+        }
+
+        if ($ledger->lease_expires_at !== null && $ledger->lease_expires_at->isPast()) {
+            throw new StaleWorkerException("Lease worker sudah kedaluwarsa ({$ledger->lease_expires_at})", $idempotencyKey, $fencingToken);
+        }
+
+        // 3a. Tenant — dibuat di platform context
         $tenant = Tenant::create([
             'name' => $data['tenant_name'],
             'provisioning_idempotency_key' => $idempotencyKey,
@@ -397,31 +439,24 @@ class ProvisioningService
 
         // 3b. Masuk konteks tenant baru untuk entitas tenant-scoped.
         $result = $this->tenantContext->runAs($tenant->id, null, function () use ($tenant, $data, $idempotencyKey) {
-            // 3c. Role Owner (pola RoleService::provisionDefaultRoles).
+            // 3c. Role Owner (deterministik role_code ROL-OWNER — TX-008).
             $ownerRole = Role::firstOrCreate(
                 ['name' => 'Owner', 'tenant_id' => $tenant->id],
                 [
+                    'role_code' => 'ROL-OWNER',
                     'description' => 'Pemilik bisnis — akses penuh',
                     'permissions' => ['*'],
                     'is_active' => true,
                 ]
             );
 
-            // 3d. Store pertama — hook Store::created membuat stock balances
-            //     HANYA bila TenantContext->getTenantId() === tenant_id store
-            //     (benar di dalam runAs ini).
+            // 3d. Store pertama
             $store = Store::create([
                 'tenant_id' => $tenant->id,
                 'name' => $data['tenant_name'],
             ]);
 
-            // 3e. User Owner. password null (D5 — ditetapkan via magic link);
-            //     email_verified_at NULL (D4 — wajib verifikasi).
-            //
-            // employee_id TIDAK diisi manual: hook User::booted() memakai
-            // App\Services\EmployeeIdGenerator (sequence atomik per tenant,
-            // nilainya memuat tenant_id sehingga unik GLOBAL) — satu strategi
-            // untuk provisioning dan pembuatan user biasa (DB-001/XD-03).
+            // 3e. User Owner
             $owner = User::create([
                 'name' => $data['owner_name'],
                 'email' => $data['owner_email'],
@@ -433,9 +468,7 @@ class ProvisioningService
                 'join_date' => now()->toDateString(),
             ]);
 
-            // 3f. Token magic link onboarding. Yang tersimpan di database
-            //     HANYA hash (bukan plaintext) — dump DB tidak menghasilkan
-            //     token yang bisa dipakai (DB-003).
+            // 3f. Token magic link onboarding (hash SHA-256 tersimpan di database).
             $plaintextToken = Str::random(48);
             $tokenHash = hash('sha256', $plaintextToken);
             OwnerOnboardingToken::create([
@@ -446,18 +479,14 @@ class ProvisioningService
                 'send_attempts' => 1,
             ]);
 
-            // 3g. Outbox email — IKUT transaksi (D8): tidak ada event hilang
-            //     antara commit dan enqueue.
-            //
-            //     Token plaintext DITITIPKAN di payload antrean (bukan di
-            //     database): body yang tersimpan hanya memuat HASH token,
-            //     sehingga baris outbox yang menganggur/terkirim tidak pernah
-            //     menjadi kredensial yang bisa dipakai ulang.
+            // 3g. Outbox email — IKUT transaksi (D8).
+            //     Tautan onboarding memuat plaintext token yang terenkripsi at-rest
+            //     di kolom body_text (TX-005, TX-011) sehingga retry tidak merotasi token.
             $outbox = EmailOutbox::create([
                 'event_type' => 'owner_onboarding',
                 'recipient_email' => $data['owner_email'],
                 'subject' => 'Aktivasi akun Apeiron POS — '.$tenant->name,
-                'body_text' => $this->onboardingEmailBody($owner->name, $tenant->name, $tokenHash),
+                'body_text' => $this->onboardingEmailBody($owner->name, $tenant->name, $plaintextToken),
                 'tenant_id' => $tenant->id,
                 'user_id' => $owner->id,
                 'status' => EmailOutbox::STATUS_PENDING,
@@ -465,16 +494,10 @@ class ProvisioningService
                 'next_attempt_at' => now(),
             ]);
 
-            // 3h. Baseline kesiapan tenant (XD-02/DB-002): 8 role standar,
-            //     user sistem self-order & channel order, setting minimum.
-            //     Semuanya di dalam transaksi yang sama supaya tenant tidak
-            //     pernah dipakai dalam keadaan setengah siap.
+            // 3h. Baseline kesiapan tenant
             $this->tenantProvisioning->provisionBaseline($tenant, $owner);
 
             // 3i. Audit record dalam transaksi yang sama.
-            // ActivityLog menggunakan AssignsTenant sehingga tenant_id
-            // otomatis terisi dari context runAs; jangan force fill bila
-            // tidak ada di fillable array.
             ActivityLog::create([
                 'user_id' => $owner->id,
                 'action' => 'provisioning.completed',
@@ -491,11 +514,29 @@ class ProvisioningService
                 'owner' => $owner,
                 'store' => $store,
                 'outbox_id' => $outbox->id,
-                // Token plaintext HANYA dikembalikan sebagai payload dispatch
-                // (memori/antrean), tidak pernah ditulis ke kolom mana pun.
                 'onboarding_token' => $plaintextToken,
             ];
         });
+
+        // TX-001 & TX-012: Finalisasi ledger di DALAM batas transaksi yang sama SEBELUM commit!
+        $finalized = ProvisioningRequest::whereKey($ledger->id)
+            ->where('status', ProvisioningRequest::STATUS_PROCESSING)
+            ->where('attempt_count', $fencingToken)
+            ->where(function ($q) {
+                $q->whereNull('lease_expires_at')->orWhere('lease_expires_at', '>', now());
+            })
+            ->update([
+                'status' => ProvisioningRequest::STATUS_COMPLETED,
+                'result_tenant_id' => $tenant->id,
+                'result_user_id' => $result['owner']->id,
+                'completed_at' => now(),
+                'error_message' => null,
+                'lease_expires_at' => null,
+            ]);
+
+        if ($finalized !== 1) {
+            throw new StaleWorkerException('Gagal memfinalisasi ledger di dalam transaksi; fencing atau lease hilang.', $idempotencyKey, $fencingToken);
+        }
 
         return [
             'tenant' => $tenant,
@@ -624,20 +665,12 @@ class ProvisioningService
     }
 
     /**
-     * Hanya benturan unique yang ditangani di sini. Exception lain (koneksi
-     * mati, disk penuh, dsb) TIDAK boleh disamarkan sebagai benturan
-     * email/employee_id — dibiarkan naik agar kerusakan nyata tidak
-     * tersembunyi.
+     * Hanya benturan unique yang ditangani di sini (TX-010). Exception lain (koneksi
+     * mati, FK, disk penuh, dsb) TIDAK boleh disamarkan sebagai benturan duplicate key.
      */
     private function isUniqueViolation(QueryException $e): bool
     {
-        // 23000/23505 = SQLSTATE integrity violation (MySQL/MariaDB &
-        // PostgreSQL). Kode driver 1062 = ER_DUP_ENTRY (MariaDB/MySQL).
-        if (in_array((string) $e->getCode(), ['23000', '23505'], true)) {
-            return true;
-        }
-
-        return (int) ($e->errorInfo[1] ?? 0) === 1062;
+        return DatabaseErrorClassifier::isDuplicateEntry($e);
     }
 
     private function safeErrorMessage(\Throwable $e): string

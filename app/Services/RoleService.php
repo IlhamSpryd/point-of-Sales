@@ -107,9 +107,22 @@ class RoleService
 
         app(TenantContext::class)->runAs($tenant->id, null, function () use ($defaults, $tenant) {
             foreach ($defaults as $default) {
+                $roleCode = match ($default['name']) {
+                    'Owner' => 'ROL-OWNER',
+                    'Manager' => 'ROL-MANAGER',
+                    'Kasir' => 'ROL-KASIR',
+                    'Waiter' => 'ROL-WAITER',
+                    'Barista' => 'ROL-BARISTA',
+                    'Inventory' => 'ROL-INVENTORY',
+                    'Supervisor' => 'ROL-SUPERVISOR',
+                    'Cook' => 'ROL-COOK',
+                    default => 'ROL-'.strtoupper(substr($default['name'], 0, 6)),
+                };
+
                 Role::firstOrCreate(
                     ['name' => $default['name'], 'tenant_id' => $tenant->id],
                     [
+                        'role_code' => $roleCode,
                         'description' => $default['description'],
                         'permissions' => $default['permissions'],
                         'is_active' => true,

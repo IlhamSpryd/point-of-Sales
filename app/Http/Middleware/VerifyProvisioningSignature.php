@@ -117,8 +117,10 @@ class VerifyProvisioningSignature
                 'expires_at_epoch' => $expiresAt,
             ]);
         } catch (QueryException $e) {
-            // PK sudah ada => nonce sudah dipakai sebelumnya = replay.
-            if ($e->getCode() === '23000') {
+            // Hanya pelanggaran duplicate key (ER_DUP_ENTRY / 1062) pada nonce
+            // yang ditafsirkan sebagai replay. Error lain (FK, NOT NULL, dll)
+            // tidak disamarkan sebagai replay nonce.
+            if (\App\Services\DatabaseErrorClassifier::isDuplicateEntry($e)) {
                 return $this->reject($request, 'nonce_replayed');
             }
 

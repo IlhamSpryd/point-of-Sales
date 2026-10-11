@@ -43,21 +43,24 @@ class EmailOutbox extends Model
         'attempts',
         'last_error',
         'next_attempt_at',
+        'lease_expires_at',
         'sent_at',
     ];
 
     protected $casts = [
         'attempts' => 'integer',
         'next_attempt_at' => 'datetime',
+        'lease_expires_at' => 'datetime',
         'sent_at' => 'datetime',
         'body_text' => 'encrypted',
     ];
 
+
     /** Klaim sudah kedaluwarsa (worker pengirim dianggap mati). */
     public function isClaimExpired(): bool
     {
-        return $this->next_attempt_at !== null
+        return $this->lease_expires_at !== null
             && $this->status === self::STATUS_PROCESSING
-            && $this->next_attempt_at->isPast();
+            && $this->lease_expires_at->isPast();
     }
 }
