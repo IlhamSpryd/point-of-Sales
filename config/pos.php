@@ -36,5 +36,14 @@ return [
         'onboarding_token_ttl_hours' => env('POS_ONBOARDING_TOKEN_TTL_HOURS', 48),
         // Batas retry pengiriman email outbox sebelum ditandai failed.
         'outbox_max_attempts' => env('POS_OUTBOX_MAX_ATTEMPTS', 5),
+        // Umur klaim outbox (menit). Setelah lewat, baris 'processing' yang
+        // worker-nya mati boleh diklaim ulang worker lain.
+        'outbox_lease_minutes' => env('POS_OUTBOX_LEASE_MINUTES', 10),
+        // Umur klaim ledger provisioning (menit). Sama seperti di atas, tetapi
+        // untuk baris provisioning_requests('processing') yang ditinggalkan
+        // worker yang mati di tengah transaksi.
+        'ledger_lease_minutes' => env('POS_PROVISIONING_LEDGER_LEASE_MINUTES', 10),
     ],
+    // Prefix identifier staf (format: <prefix>-<tenant_id>-<nomor>).
+    'employee_id_prefix' => env('POS_EMPLOYEE_ID_PREFIX', 'YVL-EMP'),
 ];
