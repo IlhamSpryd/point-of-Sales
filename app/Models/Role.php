@@ -51,7 +51,22 @@ class Role extends Model
 
     public function hasPermission(string $permission): bool
     {
-        return is_array($this->permissions) && in_array($permission, $this->permissions, true);
+        if (! is_array($this->permissions)) {
+            return false;
+        }
+
+        // `*` is the explicit full-access grant; dotted wildcards match only
+        // descendants (e.g. orders.* matches orders.view, not orders).
+        foreach ($this->permissions as $grant) {
+            if ($grant === '*'
+                || $grant === $permission
+                || (str_ends_with((string) $grant, '.*')
+                    && str_starts_with($permission, substr((string) $grant, 0, -1)))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function getIsAdminAttribute(): bool

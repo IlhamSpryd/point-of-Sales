@@ -11,6 +11,13 @@ class Tenant extends Model
 
     protected $fillable = [
         'name',
+        'provisioning_idempotency_key',
+        'readiness_status',
+        'readiness_checked_at',
+    ];
+
+    protected $casts = [
+        'readiness_checked_at' => 'datetime',
     ];
 
     public function stores()

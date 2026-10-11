@@ -118,7 +118,7 @@ class VerifyProvisioningSignature
             ]);
         } catch (QueryException $e) {
             // PK sudah ada => nonce sudah dipakai sebelumnya = replay.
-            if (str_contains($e->getMessage(), 'Duplicate entry')) {
+            if ($e->getCode() === '23000') {
                 return $this->reject($request, 'nonce_replayed');
             }
 

@@ -42,6 +42,11 @@ class AppServiceProvider extends ServiceProvider
             throw new \RuntimeException('MIDTRANS_SERVER_KEY wajib diisi di produksi.');
         }
 
+        // PATCH FOR SEC-003: Jangan gunakan mailer log di production (mencegah PII/token leak ke logs)
+        if ($this->app->isProduction() && config('mail.default') === 'log') {
+            throw new \RuntimeException('Mail driver "log" dilarang di production (SEC-003 PII leak).');
+        }
+
         // PATCH FOR S-04: rate limiter bernama dengan kunci per-session, bukan per-IP saja.
         $sid = fn (Request $r) => $r->hasSession() ? $r->session()->getId() : 'nosession';
         $table = fn (Request $r) => $r->hasSession() ? (string) $r->session()->get('current_table_id', '-') : '-';

@@ -24,10 +24,10 @@ class StoreProvisioningRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tenant_name' => ['required', 'string', 'min:2', 'max:120'],
-            'owner_name' => ['required', 'string', 'min:2', 'max:120'],
+            'tenant_name' => ['required', 'string', 'min:2', 'max:120', 'regex:/^[\pL\pM\pN\s.,\-\'&]+$/u'],
+            'owner_name' => ['required', 'string', 'min:2', 'max:120', 'regex:/^[\pL\pM\s.,\-\']+$/u'],
             'owner_email' => ['required', 'string', 'lowercase', 'email:rfc', 'max:255'],
-            'owner_phone' => ['sometimes', 'nullable', 'string', 'max:32', 'regex:/^[0-9+\-\s()]{6,32}$/'],
+            'owner_phone' => ['sometimes', 'nullable', 'string', 'max:32', 'regex:/^[0-9+\-\s()]{6,32}\z/'],
         ];
     }
 

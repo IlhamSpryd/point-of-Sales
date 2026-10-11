@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\AssignsTenant;
 use App\Services\Context\TenantContext;
+use App\Services\EmployeeIdGenerator;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -51,15 +52,33 @@ class User extends Authenticatable
         return $this->password_hash ?? $this->password;
     }
 
-    // Otomatis buat Employee ID saat user baru ditambahkan
+    // Otomatis buat Employee ID saat user baru ditambahkan.
+    //
+    // DB-001 / XD-03: logika generate TIDAK lagi di sini — dipindahkan ke
+    // App\Services\EmployeeIdGenerator agar provisioning dan pembuatan user
+    // biasa memakai SATU strategi yang sama. `employee_id` di-unique-kan
+    // GLOBAL (users_employee_id_unique), jadi nilai wajib unik lintas tenant;
+    // maks(id)+1 dan loop exists() tidak dapat menjamin itu pada request
+    // konkuren.
+    //
+    // Presedens: pemanggil yang sudah mengisi employee_id (mis. provisioning)
+    // tidak ditimpa. Bila tenant_id belum terisi, AssignsTenant mengisinya
+    // lebih dulu pada event `creating` yang sama, sehingga urutan listener
+    // tetap benar.
     protected static function booted()
     {
         static::creating(function ($model) {
-            if (empty($model->employee_id)) {
-                $latest = static::latest('id')->first();
-                $nextId = $latest ? $latest->id + 1 : 1;
-                $model->employee_id = 'YVL-EMP-'.date('Y').'-'.str_pad($nextId, 4, '0', STR_PAD_LEFT);
+            if (! empty($model->employee_id)) {
+                return;
             }
+
+            if (empty($model->tenant_id)) {
+                throw new \RuntimeException(
+                    'Tidak dapat membuat employee_id tanpa tenant_id pada user baru.'
+                );
+            }
+
+            $model->employee_id = EmployeeIdGenerator::next((int) $model->tenant_id);
         });
     }
 

@@ -16,14 +16,19 @@ use Illuminate\View\View;
  *
  * Sifat penting:
  *  - Token dinilai server-side berdasarkan SHA-256 hash; plaintext TIDAK
- *    tersimpan. Tidak bisa dipakai dua kali (consumed_at diisi atomik).
- *  - Token TERIKAT ke (user_id, tenant_id) — TIDAK mengubah email/tenant.
+ *    tersimpan.
+ *  - Konsumsi token ATOMIK ({@see OwnerOnboardingToken::consume()}): dua tab
+ *    yang membuka tautan sama hanya menghasilkan satu perubahan password.
+ *  - Token TERIKAT ke (user_id, tenant_id). Penukaran TIDAK PERNAH mengubah
+ *    email dan TIDAK memindahkan user antar tenant; user yang sudah pindah
+ *    tenant (atau sudah di-soft-delete) ditolak.
  *  - Password ditetapkan via POST HTTPS + validasi Rules\Password, di-hash
  *    dengan Hash::make (cast 'password_hash' => 'hashed' di User).
- *  - Verifikasi email (email_verified_at) di-set pada penukaran yang SUKSES
- *    — satu langkah aktivasi yang sama.
+ *  - Verifikasi email (email_verified_at) di-set pada penukaran yang SUKSES —
+ *    satu langkah aktivasi yang sama.
  *  - Rate limit pada route (throttle:6,1).
- *  - Tidak mengembalikan detail apapun tentang token invalid selain generic.
+ *  - Pesan galat bersifat generic: tidak membedakan "token tidak ada",
+ *    "sudah dipakai", dan "kedaluwarsa".
  */
 class OwnerOnboardingController extends Controller
 {
@@ -55,24 +60,28 @@ class OwnerOnboardingController extends Controller
                 ->with('error', 'Tautan aktivasi tidak valid atau sudah kedaluwarsa.');
         }
 
-        // Penukaran sekali-pakai secara atomik: conditional update di dalam
-        // transaksi. Bila dua tab membuka link yang sama, hanya satu yang
-        // berhasil menetapkan consumed_at => lainnya akan gagal konsumsi.
-        $success = DB::transaction(function () use ($record, $request) {
-            $claimed = OwnerOnboardingToken::where('id', $record->id)
-                ->whereNull('consumed_at')
-                ->update(['consumed_at' => now()]);
-
-            if ($claimed !== 1) {
-                return false;
+        $result = DB::transaction(function () use ($record, $request) {
+            // Konsumsi atomik: hanya pemanggil pertama yang berhasil.
+            if (! $record->consume()) {
+                return 'consumed';
             }
 
-            $user = User::withTrashed()->findOrFail($record->user_id);
+            $user = User::withTrashed()->find($record->user_id);
 
-            // Guard: token terikat ke user & tenant spesifik; tidak mengubah
-            // email. User harus belum punya password (owner baru provisioning).
-            if ($user->trashed() || $user->tenant_id !== $record->tenant_id) {
-                return false;
+            // Guard lintas-tenant: token yang dibuat untuk user tenant A tidak
+            // boleh mengubah user tenant B, walau barisnya sempat dipindahkan.
+            if ($user === null || $user->trashed()) {
+                return 'invalid';
+            }
+
+            if ((int) $user->tenant_id !== (int) $record->tenant_id) {
+                return 'cross_tenant';
+            }
+
+            // Akun yang sudah punya password bukan lagi akun "onboarding";
+            // token tidak boleh menimpanya.
+            if (! empty($user->password_hash)) {
+                return 'already_activated';
             }
 
             $user->forceFill([
@@ -80,21 +89,22 @@ class OwnerOnboardingController extends Controller
                 'email_verified_at' => now(), // D4 — verifikasi email sekaligus aktivasi
             ])->save();
 
-            return true;
+            return 'ok';
         });
 
-        if (! $success) {
-            return redirect()->route('login')
-                ->with('error', 'Tautan aktivasi sudah pernah digunakan.');
-        }
-
-        return redirect()->route('login')
-            ->with('success', 'Password berhasil ditetapkan. Silakan login.');
+        return match ($result) {
+            'ok' => redirect()->route('login')
+                ->with('success', 'Password berhasil ditetapkan. Silakan login.'),
+            'already_activated' => redirect()->route('login')
+                ->with('error', 'Akun ini sudah pernah diaktifkan. Silakan login atau reset password.'),
+            default => redirect()->route('login')
+                ->with('error', 'Tautan aktivasi tidak valid atau sudah kedaluwarsa.'),
+        };
     }
 
     /**
-     * Cari token valid: hash cocok, belum dipakai, belum kedaluwarsa,
-     * user masih aktif. Plaintext token tidak pernah disimpan.
+     * Cari token valid: hash cocok, belum dipakai, belum kedaluwarsa, user
+     * masih aktif dan masih berada di tenant yang sama dengannya.
      */
     private function findValidToken(string $plaintext): ?OwnerOnboardingToken
     {
@@ -102,15 +112,21 @@ class OwnerOnboardingController extends Controller
             return null;
         }
 
-        $record = OwnerOnboardingToken::where('token_hash', hash('sha256', $plaintext))
-            ->first();
+        $record = OwnerOnboardingToken::findRedeemable($plaintext);
 
-        if ($record === null || $record->isConsumed() || $record->isExpired()) {
+        if ($record === null || ! $record->isRedeemable()) {
             return null;
         }
 
         $user = User::find($record->user_id);
+
         if ($user === null || ! $user->is_active) {
+            return null;
+        }
+
+        // Token TERIKAT tenant: user yang sudah berpindah tenant tidak boleh
+        // memakai token lamanya.
+        if ((int) $user->tenant_id !== (int) $record->tenant_id) {
             return null;
         }
 

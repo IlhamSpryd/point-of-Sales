@@ -92,6 +92,16 @@ class TenantContext
     /**
      * Executes the given callback under the specified tenant (and optional store) context.
      * Restores the previous context afterwards.
+     *
+     * Catatan penting (XD-06): bila dipanggil di dalam
+     * {@see runWithoutTenant()}, `isBypassed` SENGAJA dibiarkan true selama
+     * callback berjalan. `isBypassed` adalah izin lintas-tenant yang lebih
+     * luas dari `tenantId`; menaikkannya ke false di sini akan membuat scope
+     * tenant langsung aktif kembali dan justru mempersempit akses yang sudah
+     * diminta pemanggil secara eksplisit. Yang di-scope saat itu adalah
+     * TIER: tenantId di atas (opt-in), bukan bypass. `finally` tetap
+     * mengembalikan tenant/store seperti semula, jadi scope tenant di luar
+     * blok ini tidak pernah melemah.
      */
     public function runAs(int $tenantId, ?int $storeId, Closure $cb): mixed
     {
