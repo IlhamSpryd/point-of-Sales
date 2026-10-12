@@ -9,7 +9,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Menu — {{ config('app.name', 'Apeiron POS') }}</title>
+    <title>Menu — {{ config('app.name', 'Apeiron System') }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -48,7 +48,7 @@
         {{-- Header (Menambahkan Tombol Panggil Waiter & Riwayat) --}}
         <header
             class="sticky top-0 z-40 h-14 flex items-center justify-between gap-3 px-4 bg-apeiron-bg/90 backdrop-blur-xl border-b border-apeiron-border">
-            <h1 class="font-brand font-bold text-lg tracking-tight truncate">Apeiron POS</h1>
+            <h1 class="font-brand font-bold text-lg tracking-tight truncate">Apeiron System</h1>
 
             <div class="flex items-center gap-2">
                 {{-- PATCH FOR S-08/P-09: panggil waiter yang nyata, XSS-safe via @js() --}}
@@ -153,7 +153,7 @@
                                 ? $product->sellableQuantity() <= 0
                                 : $product->stock <= 0;
                             // PATCH FOR U-08: gunakan kolom yang benar (product_description, bukan description).
-                            $desc = $product->product_description ?: 'Racikan pilihan terbaik khas Apeiron POS.';
+                            $desc = $product->product_description ?: 'Racikan pilihan terbaik khas Apeiron System.';
                         @endphp
 
                         {{-- Logic Alpine: Tampilkan jika kategori cocok ATAU sedang mencari nama produk --}}

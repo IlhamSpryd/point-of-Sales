@@ -42,9 +42,31 @@ class AppServiceProvider extends ServiceProvider
             throw new \RuntimeException('MIDTRANS_SERVER_KEY wajib diisi di produksi.');
         }
 
-        // PATCH FOR SEC-003: Jangan gunakan mailer log di production (mencegah PII/token leak ke logs)
-        if ($this->app->isProduction() && config('mail.default') === 'log') {
-            throw new \RuntimeException('Mail driver "log" dilarang di production (SEC-003 PII leak).');
+        // PATCH FOR SEC-003 / SEC-016 / OR-012: Jangan gunakan mailer log di production (mencegah PII/token leak ke logs)
+        if ($this->app->isProduction()) {
+            $defaultMailer = (string) config('mail.default');
+            $mailersConfig = config('mail.mailers', []);
+
+            $hasLogTransport = function (string $mailerName) use (&$hasLogTransport, $mailersConfig): bool {
+                $mailer = $mailersConfig[$mailerName] ?? [];
+                $transport = $mailer['transport'] ?? $mailerName;
+                if ($transport === 'log') {
+                    return true;
+                }
+                if (in_array($transport, ['failover', 'roundrobin'], true)) {
+                    foreach ($mailer['mailers'] ?? [] as $subMailer) {
+                        if ($hasLogTransport($subMailer)) {
+                            return true;
+                        }
+                    }
+                }
+
+                return false;
+            };
+
+            if ($hasLogTransport($defaultMailer)) {
+                throw new \RuntimeException('Mail driver "log" dilarang di production (SEC-003/SEC-016 PII leak).');
+            }
         }
 
         // PATCH FOR S-04: rate limiter bernama dengan kunci per-session, bukan per-IP saja.

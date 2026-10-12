@@ -16,17 +16,12 @@ class ProvisionSystemUsers extends Command
 
     public function handle()
     {
-        $tenantId = $this->argument('tenant');
+        $tenantId = (int) $this->argument('tenant');
         $tenant = Tenant::findOrFail($tenantId);
 
         app(TenantContext::class)->runAs($tenantId, null, function () use ($tenantId) {
-            $selfOrderEmail = $tenantId == 1
-                ? config('pos.system_users.self_order_email', 'selforder@system.local')
-                : "selforder.t{$tenantId}@system.local";
-
-            $channelEmail = $tenantId == 1
-                ? config('pos.system_users.channel_order_email', 'channel@system.local')
-                : "channel.t{$tenantId}@system.local";
+            $selfOrderEmail = \App\Services\SystemUserResolver::selfOrderEmail($tenantId);
+            $channelEmail = \App\Services\SystemUserResolver::channelEmail($tenantId);
 
             $selfOrderUser = User::firstOrCreate(
                 ['email' => $selfOrderEmail, 'tenant_id' => $tenantId],

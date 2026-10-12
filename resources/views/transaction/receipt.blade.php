@@ -14,8 +14,8 @@
 
     <div id="receipt" class="receipt-area mx-auto bg-white text-apeiron-ink">
         <div class="text-center mb-2">
-            <p class="font-bold text-base">Apeiron POS</p>
-            <p class="text-[10px]">Jl. Contoh No. 123, Jakarta</p>
+            <p class="font-bold text-base">Apeiron System</p>
+            <p class="text-[10px]">Jl. Dewa No. 16b, Jakarta</p>
             <p class="text-[10px]">{{ $order->created_at->format('d/m/Y H:i') }}</p>
         </div>
 

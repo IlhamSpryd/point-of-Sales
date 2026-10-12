@@ -50,6 +50,20 @@ class EnsureTableSession
             abort(403, 'Meja tidak terhubung dengan tenant mana pun.');
         }
 
+        // DOMAIN 1 TENANCY HARDENING: Validasi batas tenant agar sesi tidak dapat diarahkan ke meja tenant lain
+        $sessionTenantId = $request->session()->get('current_tenant_id');
+        if ($sessionTenantId && (int) $table->tenant_id !== (int) $sessionTenantId) {
+            $request->session()->forget(['current_table_id', 'current_table_name', 'current_tenant_id', 'current_store_id']);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Sesi meja tidak cocok dengan tenant aktif.',
+                ], 403);
+            }
+            abort(403, 'Sesi meja tidak cocok dengan tenant aktif.');
+        }
+
         $context = app(TenantContext::class);
         $context->setTenantId($table->tenant_id);
         $context->setStoreId($table->store_id);

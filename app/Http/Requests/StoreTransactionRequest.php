@@ -45,8 +45,29 @@ class StoreTransactionRequest extends FormRequest
             'items.*.options.*.extra_price' => 'nullable|numeric|min:0',
             // Hanya izinkan metode pembayaran yang benar-benar didukung sistem,
             // agar tidak ada nilai sembarangan yang lolos ke TransactionService.
-            'payment_method' => ['required', 'string', Rule::in(['cash', 'qris', 'ewallet', 'card'])],
+            'payment_method' => ['required_without:payments', 'nullable', 'string', Rule::in(['cash', 'qris', 'ewallet', 'card'])],
             'cash_received' => 'nullable|numeric|min:0',
+            'payments' => 'nullable|array|min:1',
+            'payments.*.method' => ['required_with:payments', 'string', Rule::in(['cash', 'qris', 'ewallet', 'card'])],
+            'payments.*.amount' => 'required_with:payments|integer|min:1',
+            'payments.*.reference_number' => 'nullable|string|max:100',
+            'payments.*.idempotency_key' => 'nullable|string|max:100',
+            'customer_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('customers', 'id')->where(fn ($q) => $q->where('is_active', true)->where('tenant_id', app(TenantContext::class)->requireTenantId())),
+            ],
+            'discount_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('discounts', 'id')->where(fn ($q) => $q->where('is_active', true)->where('tenant_id', app(TenantContext::class)->requireTenantId())),
+            ],
+            'table_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('tables', 'id')->where(fn ($q) => $q->where('tenant_id', app(TenantContext::class)->requireTenantId())),
+            ],
+            'order_type' => ['nullable', 'string', Rule::in(['dine_in', 'takeaway'])],
             // [OMEGA-NODE9] SEC FIX CRITICAL: idempotency_key kini WAJIB.
             // Sebelumnya nullable, dan Cache::lock() di
             // TransactionController::store() dibungkus if($idempotencyKey)

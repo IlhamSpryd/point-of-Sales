@@ -12,6 +12,19 @@ use App\Models\Concerns\ScopedToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int|null $tenant_id
+ * @property int|null $store_id
+ * @property int $requested_by
+ * @property string $type
+ * @property array<string, mixed>|null $parameters
+ * @property ExportTaskStatus $status
+ * @property string|null $file_path
+ * @property int|null $file_size_bytes
+ * @property string|null $error_message
+ * @property \Carbon\CarbonInterface|null $completed_at
+ */
 class ExportTask extends Model
 {
     use AssignsStore;

@@ -15,6 +15,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Model Table merepresentasikan satu meja fisik di coffeeshop.
  * Setiap meja punya QR Code unik (dibuat dari secure_token) yang ditempel
  * di atas meja untuk memulai sesi pemesanan self-order.
+ *
+ * @property int $id
+ * @property int|null $tenant_id
+ * @property int|null $store_id
+ * @property string $table_code
+ * @property string $table_name
+ * @property int $capacity
+ * @property string|null $area
+ * @property bool $is_active
+ * @property string $operational_status
+ * @property string $secure_token
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
  */
 class Table extends Model
 {
@@ -54,14 +68,13 @@ class Table extends Model
             if (empty($table->table_code)) {
                 $latest = static::latest('id')->first();
                 $nextId = $latest ? $latest->id + 1 : 1;
-                $table->table_code = 'YVL-TBL-'.str_pad($nextId, 3, '0', STR_PAD_LEFT);
+                $table->table_code = 'YVL-TBL-'.str_pad((string) $nextId, 3, '0', STR_PAD_LEFT);
             }
 
-            // KUNCI PERMANEN: Auto-generate Secure Token secara deterministik
-            // Kita menggunakan md5 dari nama meja agar token tidak berubah
-            // jika meja dihapus dan dibuat ulang, sehingga QR code fisik tidak perlu dicetak ulang.
+            // KUNCI KEAMANAN & MULTI-TENANCY: Auto-generate Secure Token sebagai UUID acak berentropi tinggi.
+            // Mencegah kolisi antar meja/tenant dengan nama sama dan mencegah penebakan token URL (OR-008).
             if (empty($table->secure_token)) {
-                $table->secure_token = md5('apeiron-pos-qr-'.strtolower(trim($table->table_name)));
+                $table->secure_token = (string) \Illuminate\Support\Str::uuid();
             }
         });
     }

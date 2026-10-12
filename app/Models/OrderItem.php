@@ -14,6 +14,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 /**
  * Model OrderItem mengatur spesifikasi parsial dalam keranjang transaksi,
  * mencakup produk apa saja yang dibeli, quantitas, serta subtotal per itemnya.
+ *
+ * @property int $id
+ * @property int $order_id
+ * @property int $product_id
+ * @property int $qty
+ * @property int|float $order_price
+ * @property int|float $order_subtotal
+ * @property array<string, mixed>|null $options
+ * @property string|null $notes
+ * @property \App\Enums\PreparationStatus $preparation_status
+ * @property int|null $processed_by
+ * @property int|null $tenant_id
+ * @property int|null $store_id
  */
 class OrderItem extends Model
 {
@@ -24,7 +37,7 @@ class OrderItem extends Model
     /**
      * Kumpulan atribut pembentuk rincian pesanan.
      */
-    protected $fillable = ['order_id', 'product_id', 'qty', 'order_price', 'order_subtotal', 'options', 'notes', 'preparation_status', 'tenant_id', 'store_id'];
+    protected $fillable = ['order_id', 'product_id', 'qty', 'order_price', 'order_subtotal', 'options', 'notes', 'preparation_status', 'processed_by', 'tenant_id', 'store_id'];
 
     /**
      * BARU: "options" disimpan sebagai JSON di database, tapi otomatis

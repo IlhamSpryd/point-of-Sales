@@ -326,7 +326,6 @@ class TransactionService
             //  - OFF : perilaku lama persis (lock baris items).
             $lockedIngredients = collect();
             $lockedIngredientBalances = collect();
-            $lockedProductBalances = collect();
             if (! empty($ingredientRequirements)) {
                 $ingredientIds = array_keys($ingredientRequirements);
                 sort($ingredientIds);
@@ -465,8 +464,7 @@ class TransactionService
                 // tabel `payments`. PERLU TINDAK LANJUT: satukan
                 // App\Enums\PaymentMethod dengan App\Enums\PaymentMethodEnum.
                 $legsByAmountDesc = collect($finalPaymentLegs)->sortByDesc('amount');
-                $safeDominant = $legsByAmountDesc->first(fn ($l) => $l['method'] !== PaymentMethodEnum::Card);
-                $dominantPaymentMethod = $safeDominant ? $safeDominant['method']->value : 'qris';
+                $dominantPaymentMethod = $legsByAmountDesc->first()['method']->value;
 
                 $cashLegTotal = collect($finalPaymentLegs)->where('method', PaymentMethodEnum::Cash)->sum('amount');
                 $cashReceivedForReceipt = $cashLegTotal > 0 ? $cashLegTotal : null;
@@ -1162,8 +1160,7 @@ class TransactionService
             }
 
             $legsByAmountDesc = collect($parsedPaymentLegs)->sortByDesc('amount');
-            $safeDominant = $legsByAmountDesc->first(fn ($l) => $l['method'] !== PaymentMethodEnum::Card);
-            $dominantPaymentMethod = $safeDominant ? $safeDominant['method']->value : 'qris';
+            $dominantPaymentMethod = $legsByAmountDesc->first()['method']->value;
 
             $cashLegTotal = collect($parsedPaymentLegs)->where('method', PaymentMethodEnum::Cash)->sum('amount');
             $cashReceivedForReceipt = $cashLegTotal > 0 ? $cashLegTotal : null;
@@ -1304,12 +1301,12 @@ class TransactionService
                 );
             }
 
-            $lockedOrder->update([
+            $lockedOrder->forceFill([
                 'order_status' => OrderStatus::Void,
                 'voided_by' => $userId,
                 'void_reason' => $reason,
                 'voided_at' => now(),
-            ]);
+            ])->save();
 
             // 2. Restore all BOM & Product Stocks
             $this->restoreStockForOrder($lockedOrder);

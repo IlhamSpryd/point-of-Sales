@@ -85,20 +85,9 @@ class TenantProvisioningService
      */
     public function systemUserEmail(Tenant $tenant, string $kind): string
     {
-        $key = $kind === 'channel_order' ? 'channel_order_system_email' : 'self_order_system_email';
-        $configured = (string) config('pos.'.$key, '');
-
-        // Tenant 1 memakai alamat yang dikonfigurasi (seeder lama); tenant
-        // lain memakai pola ber-tenant agar unik GLOBAL seperti email lain.
-        if ((int) $tenant->id === 1 && $configured !== '' && ! str_contains($configured, '@system.local')) {
-            return $configured;
-        }
-
-        $local = $kind === 'channel_order'
-            ? 'channel-order.t'.$tenant->id
-            : 'selforder.t'.$tenant->id;
-
-        return $local.'@system.local';
+        return $kind === 'channel_order'
+            ? SystemUserResolver::channelEmail((int) $tenant->id)
+            : SystemUserResolver::selfOrderEmail((int) $tenant->id);
     }
 
     public function systemUserName(string $kind): string

@@ -1,5 +1,5 @@
 {{--
-    SIDEBAR DINAMIS BERBASIS ROLE — Apeiron POS
+    SIDEBAR DINAMIS BERBASIS ROLE — Apeiron System
 
     Sumber kebenaran tunggal menu: config/navigation.php.
     Visibilitas menu BUKAN keamanan: keamanan tetap di middleware `role:` pada routes/web.php.
@@ -51,7 +51,7 @@
             class="group flex items-center min-w-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
             <span
                 class="flex items-center justify-center shrink-0 w-10 h-10 rounded-full group-hover:bg-[#F7F7F5] transition-colors">
-                <img src="{{ asset('assets/images/logo.png') }}" alt="Apeiron POS Logo" :class="!wide ? 'group-hover:hidden' : ''" class="h-8 w-auto object-contain transition-transform duration-500 group-hover:scale-110">
+                <img src="{{ asset('assets/images/logo.png') }}" alt="Apeiron System Logo" :class="!wide ? 'group-hover:hidden' : ''" class="h-8 w-auto object-contain transition-transform duration-500 group-hover:scale-110">
                 <svg :class="!wide ? 'hidden group-hover:block' : 'hidden'" width="18" height="18"
                     viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
                     stroke-linejoin="round" class="text-[#787774]" aria-hidden="true">

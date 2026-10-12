@@ -58,4 +58,21 @@ class TableService
             return $table->delete();
         });
     }
+
+    /**
+     * Memperbarui secure_token meja dengan UUID v4 baru (misal saat staf mencetak ulang QR).
+     * Menghapus cache QR lama secara atomik.
+     */
+    public function regenerateToken(Table $table): Table
+    {
+        return DB::transaction(function () use ($table) {
+            $table->update([
+                'secure_token' => (string) \Illuminate\Support\Str::uuid(),
+            ]);
+
+            \Illuminate\Support\Facades\Cache::forget('pos:qr:table:'.$table->id);
+
+            return $table;
+        });
+    }
 }

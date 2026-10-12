@@ -172,7 +172,7 @@ class ProvisioningHardenedIntegrityTest extends TestCase
         $outbox = EmailOutbox::create([
             'event_type' => 'owner_onboarding_magic_link',
             'recipient_email' => $user->email,
-            'subject' => 'Aktivasi Akun Apeiron POS',
+            'subject' => 'Aktivasi Akun Apeiron System',
             'body_text' => "Klik tautan: {$magicUrl}",
             'tenant_id' => $tenant->id,
             'user_id' => $user->id,
@@ -225,7 +225,7 @@ class ProvisioningHardenedIntegrityTest extends TestCase
         $outbox = EmailOutbox::create([
             'event_type' => 'owner_onboarding_magic_link',
             'recipient_email' => $user->email,
-            'subject' => 'Aktivasi Akun Apeiron POS',
+            'subject' => 'Aktivasi Akun Apeiron System',
             'body_text' => "Aktivasi: {$magicUrl}",
             'tenant_id' => $tenant->id,
             'user_id' => $user->id,

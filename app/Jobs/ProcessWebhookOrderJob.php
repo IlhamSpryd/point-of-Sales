@@ -22,11 +22,13 @@ use App\Models\ChannelProductMapping;
 use App\Models\Order;
 use App\Models\Product;
 use App\Services\Context\TenantContext;
+use App\Services\DatabaseErrorClassifier;
 use App\Services\Omnichannel\ChannelOrderNormalizerFactory;
 use App\Services\SystemUserResolver;
 use App\Services\TransactionService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
@@ -81,6 +83,19 @@ class ProcessWebhookOrderJob implements ShouldQueue
             ]);
         } catch (ValidationException $e) {
             $this->fail(collect($e->errors())->flatten()->first() ?? 'Validasi checkout gagal.', warning: true);
+        } catch (QueryException $e) {
+            $idempotencyKey = $this->deterministicIdempotencyKey();
+            if (DatabaseErrorClassifier::isDuplicateEntry($e) && ($existing = Order::where('idempotency_key', $idempotencyKey)->first())) {
+                $this->log->update([
+                    'status' => 'completed',
+                    'order_id' => $existing->id,
+                    'error_message' => null,
+                ]);
+
+                return;
+            }
+
+            $this->fail($e->getMessage(), warning: false);
         } catch (Throwable $e) {
             $this->fail($e->getMessage(), warning: false);
         }

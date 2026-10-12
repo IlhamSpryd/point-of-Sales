@@ -58,4 +58,11 @@ class TableController extends Controller
             return redirect()->route('tables.index')->with('error', $e->getMessage());
         }
     }
+
+    public function regenerateToken(Table $table): RedirectResponse
+    {
+        $this->tableService->regenerateToken($table);
+
+        return redirect()->route('tables.index')->with('success', 'Token QR meja "'.$table->table_name.'" berhasil diperbarui.');
+    }
 }

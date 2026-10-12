@@ -10,11 +10,11 @@
     @endif
 
     <div class="mb-8 js-anim flex flex-col items-start" id="anim-heading">
-        <!-- Bagian Logo & Teks Apeiron POS (Atas, rata kiri) -->
+        <!-- Bagian Logo & Teks Apeiron System (Atas, rata kiri) -->
         <div class="flex items-end gap-2 mb-6">
-            <img src="{{ asset('assets/images/logo.png') }}" alt="Apeiron POS Logo" class="h-16 w-auto object-contain">
+            <img src="{{ asset('assets/images/logo.png') }}" alt="Apeiron System Logo" class="h-16 w-auto object-contain">
             <span class="text-lg tracking-tight font-brand mb-1">
-                <span class="font-bold">Apeiron POS</span>
+                <span class="font-bold">Apeiron System</span>
             </span>
         </div>
         
@@ -116,7 +116,7 @@
     </div>
 
     <div class="mt-8 text-center js-anim" id="anim-copyright">
-        <p class="text-xs text-[#C4C3C0]">Ilham Sepriyadi &copy; {{ date('Y') }}</p>
+        <p class="text-xs text-[#C4C3C0]">Apeiron System.inc &copy; {{ date('Y') }}</p>
     </div>
 @endsection
 
@@ -131,16 +131,16 @@
         <div class="relative z-10 mt-auto">
             <div class="mb-8 js-anim min-h-40" id="anim-testimonial">
                 <p class="text-2xl font-medium tracking-tight text-white/90 leading-snug mb-5 max-w-lg">
-                    "Dashboard baru memberikan kinerja ekstrem dengan visual memukau."
+                    Terimakasih sudah menggunakan <br /> Apeiron System.
                 </p>
                 <div class="flex items-center gap-3">
                     <div
                         class="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20 overflow-hidden backdrop-blur-sm">
-                        <span class="text-white font-medium">A</span>
+                        <span class="text-white font-medium">IS</span>
                     </div>
                     <div>
-                        <p class="text-sm font-semibold text-white">Pengguna Admin</p>
-                        <p class="text-xs text-white/50 mt-0.5">Owner / Manager</p>
+                        <p class="text-sm font-semibold text-white">Ilham Sepriyadi</p>
+                        <p class="text-xs text-white/50 mt-0.5">CEO Apeiron System.inc</p>
                     </div>
                 </div>
             </div>

@@ -35,6 +35,9 @@ class ProcessSalesReportExportJob implements ShouldBeUnique, ShouldQueue
     // below via Laravel's own timeout handling.
     public int $timeout = 600;
 
+    // Deterministic 10-second backoff before retrying attempt 2
+    public int $backoff = 10;
+
     // FIX (M6-B-002): dedicated queue so a heavy report export never
     // blocks time-sensitive omnichannel order jobs sharing the 'default'
     // queue (see ProcessWebhookOrderJob::$queue).
@@ -75,11 +78,13 @@ class ProcessSalesReportExportJob implements ShouldBeUnique, ShouldQueue
 
     private function processExport(): void
     {
-        if ($this->exportTask->status !== ExportTaskStatus::Pending) {
+        if ($this->exportTask->status !== ExportTaskStatus::Pending && $this->exportTask->status !== ExportTaskStatus::Processing) {
             return;
         }
 
-        $this->exportTask->update(['status' => ExportTaskStatus::Processing]);
+        if ($this->exportTask->status !== ExportTaskStatus::Processing) {
+            $this->exportTask->update(['status' => ExportTaskStatus::Processing]);
+        }
 
         // Defensive memory ceiling for this worker process only. NOT a
         // substitute for the chunked reading in SalesExport (M6-B-001),
@@ -107,6 +112,10 @@ class ProcessSalesReportExportJob implements ShouldBeUnique, ShouldQueue
                 'error_message' => null,
             ]);
         } catch (Throwable $e) {
+            if ($this->attempts() < $this->tries) {
+                throw $e;
+            }
+
             $this->fail($e);
         }
     }

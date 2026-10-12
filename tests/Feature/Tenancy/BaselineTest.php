@@ -80,15 +80,18 @@ class BaselineTest extends TestCase
     // T5: Kds Board::claim on a tenant-B order item is denied.
     public function test_t5_kds_board_claim_cross_tenant_denied()
     {
-        $orderItemB = OrderItem::withoutGlobalScope(TenantScope::class)->where('order_id', $this->orderB->id)->first();
-        if (! $orderItemB) {
-            $this->markTestSkipped('Order B has no items');
-        }
+        $orderItemB = OrderItem::withoutGlobalScopes()->where('order_id', $this->orderB->id)->first();
+        $this->assertNotNull($orderItemB, 'Order B must have an order item');
 
-        $this->expectException(ModelNotFoundException::class);
         Livewire::actingAs($this->userAOwner)
             ->test(Board::class)
-            ->call('claim', $orderItemB->id);
+            ->call('claim', $orderItemB->id)
+            ->assertHasErrors(['kds']);
+
+        // Assert the order item was not claimed by userAOwner (remains pending, no processed_by)
+        $orderItemB->refresh();
+        $this->assertNull($orderItemB->processed_by);
+        $this->assertSame(\App\Enums\PreparationStatus::Pending, $orderItemB->preparation_status);
     }
 
     // T6: a deactivated user is denied on the next HTTP request and the next Livewire action.

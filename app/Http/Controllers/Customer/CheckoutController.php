@@ -9,6 +9,7 @@ use App\Models\Customer;
 use App\Models\Modifier;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Table;
 use App\Models\User;
 use App\Services\CartService;
 use App\Services\Context\TenantContext;
@@ -43,9 +44,32 @@ class CheckoutController extends Controller
     {
         // Guard baru: pastikan pelanggan benar-benar sudah scan QR meja
         // sebelum boleh melihat halaman checkout sama sekali.
-        if (! session('current_table_id')) {
-            return redirect()->route('customer.menu.index')
+        $tableId = session('current_table_id');
+        if (! $tableId) {
+            return redirect()->route('customer.cart.index')
                 ->with('error', 'Silakan scan ulang QR Code di meja Anda.');
+        }
+
+        $tenantId = app(TenantContext::class)->requireTenantId();
+        $table = Table::withoutGlobalScopes()
+            ->where('id', $tableId)
+            ->where('tenant_id', $tenantId)
+            ->where('is_active', true)
+            ->first();
+
+        if (! $table) {
+            return redirect()->route('customer.cart.index')
+                ->with('error', 'Meja tidak ditemukan atau sedang tidak aktif.');
+        }
+
+        if ($table->operational_status === 'cleaning') {
+            return redirect()->route('customer.cart.index')
+                ->with('error', 'Meja sedang dalam proses pembersihan. Silakan panggil staf kami.');
+        }
+
+        if ($table->operational_status === 'reserved') {
+            return redirect()->route('customer.cart.index')
+                ->with('error', 'Meja ini telah direservasi. Silakan hubungi staf untuk konfirmasi kedatangan.');
         }
 
         $items = $this->cartService->getItems();
@@ -68,7 +92,7 @@ class CheckoutController extends Controller
         $tableId = session('current_table_id');
 
         if (! $tableId) {
-            return redirect()->route('customer.menu.index')->with('error', 'Sesi meja tidak ditemukan, silakan scan ulang QR Code.');
+            return redirect()->route('customer.cart.index')->with('error', 'Sesi meja tidak ditemukan, silakan scan ulang QR Code.');
         }
 
         // === IDEMPOTENCY GUARD ===
@@ -104,6 +128,28 @@ class CheckoutController extends Controller
         }
 
         try {
+            $tenantId = app(TenantContext::class)->requireTenantId();
+
+            // DOMAIN 1 ACCEPTANCE CRITERIA: Validasi status meja di server pada checkout menggunakan state terbaru database.
+            // Mencegah perubahan status antara pemindaian QR dan checkout melewati kebijakan.
+            $table = Table::withoutGlobalScopes()
+                ->where('id', $tableId)
+                ->where('tenant_id', $tenantId)
+                ->where('is_active', true)
+                ->first();
+
+            if (! $table) {
+                return back()->with('error', 'Meja tidak ditemukan atau sedang tidak aktif.');
+            }
+
+            if ($table->operational_status === 'cleaning') {
+                return back()->with('error', 'Meja sedang dalam proses pembersihan. Silakan panggil staf kami.');
+            }
+
+            if ($table->operational_status === 'reserved') {
+                return back()->with('error', 'Meja ini telah direservasi. Silakan hubungi staf untuk konfirmasi kedatangan.');
+            }
+
             // PATCH FOR S-05: cap order Pending per sesi dan per meja.
             $mine = session('customer_orders', []);
             $openPending = $mine === [] ? 0 : Order::whereIn('order_code', $mine)->where('order_status', OrderStatus::Pending)->count();
@@ -133,16 +179,11 @@ class CheckoutController extends Controller
             }, $items);
 
             // PATCH FOR S-07: guard system user dengan pesan aman.
-            $tenantId = app(TenantContext::class)->requireTenantId();
             $systemUserId = SystemUserResolver::selfOrder($tenantId)->id;
             if (! $systemUserId) {
                 Log::critical('[SELF-ORDER] akun sistem self-order belum di-seed.');
 
                 return back()->with('error', 'Layanan pemesanan mandiri sedang tidak tersedia. Silakan panggil staf.');
-            }
-
-            if (empty($transactionItems)) {
-                return back()->with('error', 'Keranjang belanja Anda kosong.');
             }
 
             // [OMEGA-NODE9] PATCH FOR M-05: Stale Price Protection.
@@ -182,6 +223,11 @@ class CheckoutController extends Controller
                 'customer_id' => $customerId,
                 'idempotency_key' => $idempotencyKey,
             ], $systemUserId);
+
+            // Transisi status meja dari 'available' ke 'occupied' setelah pesanan pertama berhasil dibuat
+            if ($table->operational_status === 'available') {
+                $table->update(['operational_status' => 'occupied']);
+            }
         } catch (ValidationException $e) {
             // Pesan bisnis (stok/varian/harga): aman ditampilkan.
             return back()->with('error', collect($e->errors())->flatten()->first());
@@ -263,10 +309,8 @@ class CheckoutController extends Controller
         $order->load('orderItems:id,order_id,preparation_status');
         $prep = ['total' => $order->orderItems->count(), 'pending' => 0, 'brewing' => 0, 'ready' => 0];
         foreach ($order->orderItems as $i) {
-            $key = $i->preparation_status->value ?? $i->preparation_status;
-            if (isset($prep[$key])) {
-                $prep[$key]++;
-            }
+            $key = $i->preparation_status->value;
+            $prep[$key]++;
         }
 
         // PATCH FOR F-11: ETA Tracking

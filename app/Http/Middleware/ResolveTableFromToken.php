@@ -38,6 +38,21 @@ class ResolveTableFromToken
         $context->setTenantId($table->tenant_id);
         $context->setStoreId($table->store_id);
 
+        // Telemetri token legacy: catat event terstruktur jika meja valid masih memakai token non-UUID
+        try {
+            if (! \Illuminate\Support\Str::isUuid((string) $table->secure_token)) {
+                \Illuminate\Support\Facades\Log::info('[SECURITY] Legacy QR token access detected', [
+                    'event' => 'legacy_qr_token_accessed',
+                    'table_id' => $table->id,
+                    'tenant_id' => $table->tenant_id,
+                    'store_id' => $table->store_id,
+                    'is_legacy_token' => true,
+                ]);
+            }
+        } catch (\Throwable) {
+            // Fail-safe: kegagalan logging tidak boleh memutus request pelanggan
+        }
+
         $oldTableId = $request->session()->get('current_table_id');
         if ($oldTableId !== $table->id) {
             $request->session()->regenerate();

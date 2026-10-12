@@ -8,6 +8,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Models\Order;
+use App\Services\DatabaseErrorClassifier;
 use App\Services\Printing\KitchenPrinterService;
 use App\Services\Printing\ReceiptPrinterService;
 use App\Services\TransactionService;
@@ -81,11 +82,12 @@ class TransactionController extends Controller
                 'message' => 'Transaksi serupa sedang diproses, coba lagi.',
             ], 429);
         } catch (QueryException $e) {
-            if (isset($idempotencyKey) && str_contains($e->getMessage(), 'Duplicate entry') && str_contains($e->getMessage(), 'idempotency_key')) {
+            $isDuplicate = DatabaseErrorClassifier::isDuplicateEntry($e) || str_contains($e->getMessage(), 'idempotency_key');
+            if ($isDuplicate && isset($idempotencyKey) && ($existing = Order::where('idempotency_key', $idempotencyKey)->first())) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Pesanan sudah diproses (Idempotent fallback)',
-                    'order_number' => Order::where('idempotency_key', $idempotencyKey)->value('order_code'),
+                    'order_number' => $existing->order_code,
                 ]);
             }
             Log::error('Transaction Query Error: '.$e->getMessage());

@@ -9,6 +9,12 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ProvisioningNonce extends Model
 {
+    protected $primaryKey = 'nonce';
+
+    public $incrementing = false;
+
+    protected $keyType = 'string';
+
     public $timestamps = true;
 
     protected $fillable = ['nonce', 'expires_at_epoch'];

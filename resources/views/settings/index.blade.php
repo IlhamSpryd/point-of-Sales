@@ -42,7 +42,7 @@
                     <form class="space-y-5">
                         <div class="space-y-1.5">
                             <label class="block text-sm font-bold text-apeiron-ink">Nama Toko</label>
-                            <input type="text" class="w-full bg-[#F9F9F8] border border-[#E9E9E7] rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all" value="Apeiron POS">
+                            <input type="text" class="w-full bg-[#F9F9F8] border border-[#E9E9E7] rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all" value="Apeiron System">
                         </div>
 
                         <div class="space-y-1.5">

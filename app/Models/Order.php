@@ -18,6 +18,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * Model Order menyimpan segala informasi garis besar sebuah transaksi (struk total),
  * mencakup uang kumulatif, kembalian, hingga status dari gerbang pembayaran.
+ *
+ * @property int $id
+ * @property int|null $tenant_id
+ * @property int|null $store_id
+ * @property string $order_code
+ * @property \App\Enums\OrderStatus $order_status
+ * @property \App\Enums\PaymentMethod|null $payment_method
+ * @property \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderItem> $orderItems
  */
 class Order extends Model
 {

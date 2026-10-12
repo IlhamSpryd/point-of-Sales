@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $title ?? 'Apeiron POS' }}</title>
+    <title>{{ $title ?? 'Apeiron System' }}</title>
 
     <link rel="icon" href="{{ asset('assets/images/logo.png') }}" type="image/png">
 

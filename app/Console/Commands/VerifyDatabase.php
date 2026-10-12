@@ -13,7 +13,7 @@ class VerifyDatabase extends Command
      *
      * @var string
      */
-    protected $signature = 'pos:verify-database';
+    protected $signature = 'pos:verify-database {--allow-skipped : Do not fail if scripts are empty or skipped}';
 
     /**
      * The console command description.
@@ -38,6 +38,8 @@ class VerifyDatabase extends Command
 
         $files = File::files($path);
         $hasErrors = false;
+        $skippedCount = 0;
+        $passedCount = 0;
 
         foreach ($files as $file) {
             $this->info("\n--- Running ".$file->getFilename().' ---');
@@ -45,6 +47,7 @@ class VerifyDatabase extends Command
 
             if (empty($sql)) {
                 $this->warn('SKIPPED: File is empty.');
+                $skippedCount++;
 
                 continue;
             }
@@ -58,6 +61,7 @@ class VerifyDatabase extends Command
                         $firstRow = (array) $results[0];
                         if (isset($firstRow['result']) && $firstRow['result'] === 'PASS') {
                             $this->info('PASSED: Script executed successfully. '.json_encode($firstRow));
+                            $passedCount++;
 
                             continue;
                         }
@@ -76,10 +80,12 @@ class VerifyDatabase extends Command
                         }
                     } else {
                         $this->info('PASSED: No discrepancies found.');
+                        $passedCount++;
                     }
                 } else {
                     DB::unprepared($sql);
                     $this->info('PASSED: Script executed successfully.');
+                    $passedCount++;
                 }
             } catch (\Exception $e) {
                 $this->error('ERROR Executing Script: '.$e->getMessage());
@@ -94,7 +100,13 @@ class VerifyDatabase extends Command
             return 1;
         }
 
-        $this->info('Verification Suite completed SUCCESSFULLY. Database integrity is verified.');
+        if ($skippedCount > 0 && ! $this->option('allow-skipped')) {
+            $this->error("Verification Suite completed with {$skippedCount} SKIPPED check(s). Database integrity cannot be verified when checks are skipped.");
+
+            return 1;
+        }
+
+        $this->info("Verification Suite completed SUCCESSFULLY ({$passedCount} checks passed). Database integrity is verified.");
 
         return 0;
     }

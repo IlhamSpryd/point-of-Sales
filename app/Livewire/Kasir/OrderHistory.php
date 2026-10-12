@@ -99,7 +99,9 @@ class OrderHistory extends Component
             abort(403, 'Anda tidak memiliki izin untuk membatalkan (void) pesanan.');
         }
 
-        if (strlen($voidReason) < 5) {
+        $reason = trim($voidReason) !== '' ? $voidReason : $this->voidReason;
+
+        if (strlen($reason) < 5) {
             $this->addError('voidReason', 'Alasan void harus minimal 5 karakter.');
 
             return;
@@ -113,7 +115,7 @@ class OrderHistory extends Component
         }
 
         try {
-            app(TransactionService::class)->voidOrder($order, $this->voidReason, Auth::id());
+            app(TransactionService::class)->voidOrder($order, $reason, Auth::id());
             session()->flash('success', 'Pesanan berhasil di-void dan stok dikembalikan.');
         } catch (\DomainException $e) {
             session()->flash('error', $e->getMessage());

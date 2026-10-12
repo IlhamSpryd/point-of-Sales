@@ -183,7 +183,7 @@ class ProvisioningService
                 if ($e instanceof QueryException && DatabaseErrorClassifier::isDuplicateEntry($e)) {
                     // Cek apakah email benturan dengan user yang sudah ada
                     $emailConflict = $this->tenantContext->runWithoutTenant(
-                        fn () => User::where('email', $data['owner_email'])->first()
+                        fn () => User::withTrashed()->where('email', $data['owner_email'])->first()
                     );
 
                     if ($emailConflict !== null) {
@@ -212,13 +212,16 @@ class ProvisioningService
                     'completed_at' => now(),
                 ]);
 
+                $rawBrief = $e instanceof QueryException
+                    ? (string) ($e->errorInfo[2] ?? $e->getCode())
+                    : $e->getMessage();
+                $redactedBrief = (string) preg_replace('/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/', '[REDACTED_EMAIL]', $rawBrief);
+
                 Log::error('Provisioning failed, transaction rolled back.', [
                     'idempotency_key' => $idempotencyKey,
                     'attempt' => $attempts,
                     'exception_class' => $e::class,
-                    'exception_brief' => $e instanceof QueryException
-                        ? ($e->errorInfo[2] ?? $e->getCode())
-                        : $e->getMessage(),
+                    'exception_brief' => $redactedBrief,
                 ]);
 
                 return [
@@ -438,7 +441,7 @@ class ProvisioningService
         ]);
 
         // 3b. Masuk konteks tenant baru untuk entitas tenant-scoped.
-        $result = $this->tenantContext->runAs($tenant->id, null, function () use ($tenant, $data, $idempotencyKey) {
+        $result = $this->tenantContext->runAs($tenant->id, null, function () use ($tenant, $data) {
             // 3c. Role Owner (deterministik role_code ROL-OWNER — TX-008).
             $ownerRole = Role::firstOrCreate(
                 ['name' => 'Owner', 'tenant_id' => $tenant->id],
@@ -485,7 +488,7 @@ class ProvisioningService
             $outbox = EmailOutbox::create([
                 'event_type' => 'owner_onboarding',
                 'recipient_email' => $data['owner_email'],
-                'subject' => 'Aktivasi akun Apeiron POS — '.$tenant->name,
+                'subject' => 'Aktivasi akun Apeiron System — '.$tenant->name,
                 'body_text' => $this->onboardingEmailBody($owner->name, $tenant->name, $plaintextToken),
                 'tenant_id' => $tenant->id,
                 'user_id' => $owner->id,
@@ -693,14 +696,16 @@ class ProvisioningService
      */
     private function onboardingEmailBody(string $ownerName, string $tenantName, string $tokenHash): string
     {
-        $link = route('onboarding.set-password', ['token' => $tokenHash]);
+        $baseUrl = rtrim((string) config('app.url', 'http://localhost'), '/');
+        $relative = route('onboarding.set-password', ['token' => $tokenHash], false);
+        $link = $baseUrl.$relative;
 
         return "Halo {$ownerName},\n\n"
-            ."Akun Apeiron POS untuk bisnis \"{$tenantName}\" telah dibuat.\n"
+            ."Akun Apeiron System untuk bisnis \"{$tenantName}\" telah dibuat.\n"
             ."Silakan atur password Anda melalui tautan berikut (berlaku 48 jam, sekali pakai):\n\n"
             ."{$link}\n\n"
             ."Jika Anda tidak merasa mendaftar, abaikan email ini.\n\n"
-            .'— Tim Apeiron POS';
+            .'— Tim Apeiron System';
     }
 
     /**

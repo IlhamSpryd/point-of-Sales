@@ -74,6 +74,12 @@
                                 <a href="{{ route('tables.edit', $table->secure_token) }}" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200 active:scale-90" aria-label="Ubah meja" wire:navigate>
                                     <span class="material-symbols-rounded text-[20px]">edit</span>
                                 </a>
+                                <form action="{{ route('tables.regenerate-token', $table->secure_token) }}" method="POST" class="inline-block">
+                                    @csrf
+                                    <button type="submit" onclick="return confirm('Perbarui token QR meja {{ $table->table_name }}? QR code fisik harus dicetak ulang.')" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-amber-600 hover:bg-amber-50 transition-colors duration-200 active:scale-90" aria-label="Perbarui token QR" title="Perbarui token QR">
+                                        <span class="material-symbols-rounded text-[20px]">sync</span>
+                                    </button>
+                                </form>
                                 <form id="delete-form-{{ $table->id }}" action="{{ route('tables.destroy', $table->secure_token) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')
@@ -136,6 +142,12 @@
                             <a href="{{ route('tables.edit', $table->secure_token) }}" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200" aria-label="Ubah meja" wire:navigate>
                                 <span class="material-symbols-rounded text-[18px]">edit</span>
                             </a>
+                            <form action="{{ route('tables.regenerate-token', $table->secure_token) }}" method="POST">
+                                @csrf
+                                <button type="submit" onclick="return confirm('Perbarui token QR meja {{ $table->table_name }}? QR code fisik harus dicetak ulang.')" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-amber-600 hover:bg-amber-50 transition-colors duration-200" aria-label="Perbarui token QR" title="Perbarui token QR">
+                                    <span class="material-symbols-rounded text-[18px]">sync</span>
+                                </button>
+                            </form>
                             <form id="delete-form-mobile-{{ $table->id }}" action="{{ route('tables.destroy', $table->secure_token) }}" method="POST">
                                 @csrf
                                 @method('DELETE')

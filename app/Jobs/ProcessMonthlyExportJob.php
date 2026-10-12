@@ -9,6 +9,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Storage;
+use Throwable;
 
 class ProcessMonthlyExportJob implements ShouldQueue
 {
@@ -38,24 +40,43 @@ class ProcessMonthlyExportJob implements ShouldQueue
     private function processExport(): void
     {
         $filename = "exports/sales_{$this->month}_{$this->year}_".time().'.csv';
-        $handle = fopen(storage_path('app/'.$filename), 'w');
+        Storage::disk('local')->makeDirectory('exports');
+        $fullPath = Storage::disk('local')->path($filename);
+        $handle = fopen($fullPath, 'w');
 
-        fputcsv($handle, ['Order Code', 'Total', 'Payment Method', 'Status', 'Date']);
+        if ($handle === false) {
+            throw new \RuntimeException("Gagal membuka file ekspor untuk penulisan: {$fullPath}");
+        }
 
-        // Menggunakan chunkById agar memori flat walau ada 1 juta data
-        Order::whereMonth('created_at', $this->month)
-            ->whereYear('created_at', $this->year)
-            ->chunkById(1000, function ($orders) use ($handle) {
-                foreach ($orders as $order) {
-                    fputcsv($handle, [$order->order_code,
-                        $order->order_amount, $order->payment_method?->value ?? '-',
-                        $order->order_status?->value ?? '-',
-                        $order->created_at->format('Y-m-d H:i:s'),
-                    ]);
-                }
-            });
+        try {
+            fputcsv($handle, ['Order Code', 'Total', 'Payment Method', 'Status', 'Date']);
 
-        fclose($handle);
+            // Menggunakan chunkById agar memori flat walau ada 1 juta data
+            Order::whereMonth('created_at', $this->month)
+                ->whereYear('created_at', $this->year)
+                ->chunkById(1000, function ($orders) use ($handle) {
+                    foreach ($orders as $order) {
+                        fputcsv($handle, [$order->order_code,
+                            $order->order_amount, $order->payment_method !== null ? $order->payment_method->value : '-',
+                            $order->order_status->value,
+                            $order->created_at->format('Y-m-d H:i:s'),
+                        ]);
+                    }
+                });
+        } catch (Throwable $e) {
+            if (is_resource($handle)) {
+                fclose($handle);
+            }
+            if (file_exists($fullPath)) {
+                @unlink($fullPath);
+            }
+
+            throw $e;
+        } finally {
+            if (is_resource($handle)) {
+                fclose($handle);
+            }
+        }
 
         // ┌─ SYNC ALERT — NODE 2 (UI) ───────────────────────────┐
         // │ Beri tahu UI bahwa export selesai (misal via WebSocket

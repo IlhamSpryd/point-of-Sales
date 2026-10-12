@@ -1,6 +1,6 @@
 # Domain 1 — Provisioning API Contract
 
-Endpoint ini dikonsumsi oleh Website Marketing (TanStack Start) secara server-to-server (S2S) untuk membuat tenant baru di Apeiron POS.
+Endpoint ini dikonsumsi oleh Website Marketing (TanStack Start) secara server-to-server (S2S) untuk membuat tenant baru di Apeiron System.
 
 ## Environment Variables (Marketing Server)
 ```env
