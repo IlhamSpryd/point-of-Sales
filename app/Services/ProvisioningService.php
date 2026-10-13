@@ -276,10 +276,15 @@ class ProvisioningService
                 'tenant_id' => $result['tenant']->id,
                 'owner_user_id' => $result['owner']->id,
                 'store_id' => $result['store']->id,
-                'onboarding' => [
-                    // Token TIDAK dikirim via response — hanya via email (D5).
-                    'email_sent_to' => $data['owner_email'],
-                ],
+                'onboarding' => array_merge(
+                    ['email_sent_to' => $data['owner_email']],
+                    (app()->environment('local', 'testing') && ! empty($result['onboarding_token']))
+                        ? [
+                            'activation_url' => url('/onboarding/set-password/' . $result['onboarding_token']),
+                            'onboarding_token' => $result['onboarding_token'],
+                        ]
+                        : []
+                ),
             ],
         ];
     }

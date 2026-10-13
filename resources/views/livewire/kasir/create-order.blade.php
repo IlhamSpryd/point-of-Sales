@@ -194,8 +194,12 @@
                                                 ->where('product_id', $product->id)
                                                 ->sum('qty');
                                         @endphp
-                                        <div wire:click="{{ $product->modifierGroups->count() > 0 ? "openModifierPicker({$product->id})" : "addToCartDirectly({$product->id})" }}"
+                                        <div wire:key="product-{{ $product->id }}"
+                                            wire:click="{{ $product->modifierGroups->count() > 0 ? "openModifierPicker({$product->id})" : "addToCartDirectly({$product->id})" }}"
+                                            @keydown.enter="$wire.{{ $product->modifierGroups->count() > 0 ? "openModifierPicker({$product->id})" : "addToCartDirectly({$product->id})" }}"
+                                            @keydown.space.prevent="$wire.{{ $product->modifierGroups->count() > 0 ? "openModifierPicker({$product->id})" : "addToCartDirectly({$product->id})" }}"
                                             role="button" tabindex="0"
+                                            aria-label="Tambah {{ $product->product_name }} ke keranjang, harga Rp {{ number_format($product->product_price, 0, ',', '.') }}"
                                             class="group bg-white rounded-2xl border border-gray-200 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:border-apeiron-ink hover:shadow-md hover:-translate-y-1 cursor-pointer active:scale-[0.98] transition-all duration-200 flex flex-col h-full relative outline-none focus-visible:ring-2 focus-visible:ring-gray-900">
 
                                             @if ($inCartQty > 0)
@@ -352,11 +356,12 @@
                             </div>
                         @else
                             @foreach ($this->cartLines as $line)
-                                <div
+                                <div wire:key="cart-line-{{ $line['product_id'] }}-{{ implode('-', $line['modifier_ids'] ?? []) }}-{{ md5((string) ($line['notes'] ?? '')) }}-{{ $line['index'] }}"
                                     class="flex gap-3 p-3 bg-white rounded-xl border border-gray-200 shadow-sm relative group transition-all duration-200 hover:border-gray-300">
                                     <button type="button" wire:click="removeFromCart({{ $line['index'] }})"
-                                        class="absolute -top-2 -right-2 bg-white rounded-full p-1 border border-gray-200 text-gray-400 hover:text-rose-500 hover:border-rose-200 shadow-sm transition-opacity opacity-0 group-hover:opacity-100 focus:opacity-100">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24"
+                                        aria-label="Hapus {{ $line['product_name'] }} dari keranjang"
+                                        class="absolute -top-2 -right-2 bg-white rounded-full p-1.5 border border-gray-200 text-gray-400 hover:text-rose-500 hover:border-rose-200 shadow-sm transition-opacity opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
+                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
                                             stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M6 18L18 6M6 6l12 12" />
@@ -384,9 +389,21 @@
                                                     {{ number_format($line['order_price'], 0, ',', '.') }}</span>
                                             </div>
                                             <div
-                                                class="flex items-center gap-1.5 bg-gray-50 border border-gray-200 rounded-full px-2 py-0.5 shadow-sm">
+                                                class="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg p-0.5 shadow-sm">
+                                                <button type="button"
+                                                    wire:click="updateCartQty({{ $line['index'] }}, -1)"
+                                                    aria-label="Kurangi jumlah {{ $line['product_name'] }}"
+                                                    class="w-6 h-6 flex items-center justify-center rounded text-gray-500 hover:text-apeiron-ink hover:bg-gray-200/60 active:scale-95 transition-all text-xs font-bold focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-900">
+                                                    -
+                                                </button>
                                                 <span
-                                                    class="text-[12px] font-bold text-gray-700 w-5 text-center leading-none">{{ $line['qty'] }}x</span>
+                                                    class="text-[12px] font-bold text-gray-700 min-w-[20px] text-center leading-none select-none">{{ $line['qty'] }}</span>
+                                                <button type="button"
+                                                    wire:click="updateCartQty({{ $line['index'] }}, 1)"
+                                                    aria-label="Tambah jumlah {{ $line['product_name'] }}"
+                                                    class="w-6 h-6 flex items-center justify-center rounded text-gray-500 hover:text-apeiron-ink hover:bg-gray-200/60 active:scale-95 transition-all text-xs font-bold focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-900">
+                                                    +
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -491,7 +508,7 @@
                             <button wire:click="submitOrder" id="btn-bayar"
                                 wire:loading.attr="disabled" wire:target="submitOrder"
                                 class="w-full h-12 bg-apeiron-ink hover:bg-apeiron-ink text-white rounded-xl font-black text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                                :disabled="count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId)">
+                                @disabled(count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId))>
                                 <span wire:loading wire:target="submitOrder" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
                                 <span wire:loading.remove wire:target="submitOrder">Bayar Sekarang</span>
                                 <span wire:loading wire:target="submitOrder">Memproses...</span>
@@ -504,10 +521,10 @@
                                 </div>
                             @enderror
 
-                            <button type="button" id="btn-bayar"
+                            <button type="button" id="btn-proses-bayar"
                                 class="w-full h-12 bg-apeiron-ink hover:bg-apeiron-ink text-white rounded-xl font-black text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }} }); $dispatch('open-modal', 'checkout-payment')"
-                                :disabled="count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId)">
+                                @disabled(count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId))>
                                 Proses Pembayaran
                             </button>
                         @endif
@@ -535,20 +552,25 @@
                     }
                 }
             }"
+            @keydown.escape.window="$wire.closeModifierPicker()"
             class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-gray-900/40"
             wire:transition>
             <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="modifier-picker-title"
                 class="bg-white sm:rounded-2xl rounded-t-3xl p-0 w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
                 <!-- Header Modal -->
                 <div class="px-6 py-5 flex justify-between items-start bg-white z-10 shrink-0 border-b border-gray-100">
                     <div>
-                        <h3 class="font-black text-xl leading-tight text-apeiron-ink tracking-tight">
+                        <h3 id="modifier-picker-title" class="font-black text-xl leading-tight text-apeiron-ink tracking-tight">
                             {{ $selectingProduct->product_name }}</h3>
                         <p class="text-[14px] font-semibold text-gray-500 mt-1">Rp
                             {{ number_format($selectingProduct->product_price, 0, ',', '.') }}</p>
                     </div>
                     <button wire:click="closeModifierPicker"
-                        class="p-2 rounded-xl text-gray-400 hover:text-apeiron-ink hover:bg-gray-100 transition-colors duration-200 -mr-2 -mt-1">
+                        aria-label="Tutup pemilih varian"
+                        class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-gray-400 hover:text-apeiron-ink hover:bg-gray-100 transition-colors duration-200 -mr-2 -mt-1">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -903,8 +925,13 @@
 
         document.addEventListener('livewire:init', () => {
             Livewire.on('transaction-success', async (e) => {
-                const orderCode = e[0].orderCode;
-                const isCash = e[0].isCash;
+                const payload = Array.isArray(e) ? e[0] : (e?.detail ?? e);
+                const orderCode = payload?.orderCode;
+                const isCash = Boolean(payload?.isCash);
+
+                if (!orderCode) {
+                    return;
+                }
 
                 Swal.fire({
                     title: 'Memproses Struk...',

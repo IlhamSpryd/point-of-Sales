@@ -60,7 +60,7 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2 pt-3 border-t border-[#E9E9E7]">
-            <span class="text-xs font-bold uppercase tracking-wider text-[#9B9A97] mr-1">Periode:</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-[#6B6A66] mr-1">Periode:</span>
             @foreach ([
         'today' => 'Hari Ini',
         'yesterday' => 'Kemarin',
@@ -78,12 +78,12 @@
                 <div class="flex items-center gap-2 ml-1">
                     <input type="date" wire:model.live="startDate"
                         class="min-h-[44px] px-3 rounded-xl border border-[#E9E9E7] bg-white text-sm text-apeiron-ink focus:outline-none focus:ring-2 focus:ring-[#37352F] shadow-sm">
-                    <span class="text-[#9B9A97] text-sm">s/d</span>
+                    <span class="text-[#6B6A66] text-sm">s/d</span>
                     <input type="date" wire:model.live="endDate"
                         class="min-h-[44px] px-3 rounded-xl border border-[#E9E9E7] bg-white text-sm text-apeiron-ink focus:outline-none focus:ring-2 focus:ring-[#37352F] shadow-sm">
                 </div>
             @else
-                <span class="text-xs font-medium text-[#9B9A97] ml-1">({{ $this->dateRangeLabel }})</span>
+                <span class="text-xs font-medium text-[#6B6A66] ml-1">({{ $this->dateRangeLabel }})</span>
             @endif
         </div>
     </div>
@@ -141,11 +141,11 @@
                                 <div class="text-sm text-apeiron-ink max-w-[220px] truncate">
                                     {{ $order->orderItems->pluck('product.product_name')->filter()->take(2)->implode(', ') }}
                                     @if ($order->order_items_count > 2)
-                                        <span class="text-[#9B9A97]">+{{ $order->order_items_count - 2 }}
+                                        <span class="text-[#6B6A66]">+{{ $order->order_items_count - 2 }}
                                             lainnya</span>
                                     @endif
                                 </div>
-                                <div class="text-xs text-[#9B9A97] mt-0.5">{{ $order->order_items_count }} item</div>
+                                <div class="text-xs text-[#6B6A66] mt-0.5">{{ $order->order_items_count }} item</div>
                             </td>
                             <td class="px-6 py-4 text-sm text-[#787774]">
                                 {{ $order->customer->name ?? '—' }}
@@ -244,18 +244,19 @@
     @if ($this->selectedOrder)
         @php $detail = $this->selectedOrder; @endphp
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-apeiron-ink/40 backdrop-blur-sm p-4"
+            role="dialog" aria-modal="true" aria-labelledby="order-detail-title"
             wire:click.self="closeDetail">
             <div
                 class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl border border-[#E9E9E7]">
 
                 <div class="px-6 py-4 border-b border-[#E9E9E7] flex justify-between items-start shrink-0">
                     <div>
-                        <h3 class="font-bold text-lg text-apeiron-ink font-mono">{{ $detail->order_code }}</h3>
+                        <h3 id="order-detail-title" class="font-bold text-lg text-apeiron-ink font-mono">{{ $detail->order_code }}</h3>
                         <p class="text-sm text-[#787774] mt-0.5">{{ $detail->created_at->format('d F Y, H:i') }} WIB
                         </p>
                     </div>
-                    <button type="button" wire:click="closeDetail"
-                        class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-[#9B9A97] hover:text-apeiron-ink hover:bg-[#F7F7F5] transition-all duration-200 active:scale-90">
+                    <button type="button" wire:click="closeDetail" aria-label="Tutup rincian pesanan"
+                        class="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl text-[#6B6A66] hover:text-apeiron-ink hover:bg-[#F7F7F5] transition-all duration-200 active:scale-90">
                         <span class="material-symbols-rounded text-[22px]">close</span>
                     </button>
                 </div>
@@ -263,11 +264,11 @@
                 <div class="p-6 overflow-y-auto flex-1 custom-scrollbar space-y-6">
                     <div class="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <p class="text-xs font-semibold text-[#9B9A97] uppercase tracking-wider mb-1">Kasir</p>
+                            <p class="text-xs font-semibold text-[#6B6A66] uppercase tracking-wider mb-1">Kasir</p>
                             <p class="font-medium text-apeiron-ink">{{ $detail->user->name ?? 'Self-Order' }}</p>
                         </div>
                         <div>
-                            <p class="text-xs font-semibold text-[#9B9A97] uppercase tracking-wider mb-1">Tipe Pesanan
+                            <p class="text-xs font-semibold text-[#6B6A66] uppercase tracking-wider mb-1">Tipe Pesanan
                             </p>
                             <p class="font-medium text-apeiron-ink">
                                 @if ($detail->order_type?->value === 'takeaway')
@@ -282,7 +283,7 @@
                             </p>
                         </div>
                         <div>
-                            <p class="text-xs font-semibold text-[#9B9A97] uppercase tracking-wider mb-1">Status</p>
+                            <p class="text-xs font-semibold text-[#6B6A66] uppercase tracking-wider mb-1">Status</p>
                             <x-badge :type="$this->statusBadgeType($detail->order_status)">
                                 {{ $detail->order_status->label() }}
                             </x-badge>
@@ -302,7 +303,7 @@
 
                     @if ($detail->customer)
                         <div class="bg-[#F7F7F5] rounded-xl p-4 border border-[#E9E9E7]">
-                            <p class="text-xs font-bold text-[#9B9A97] uppercase tracking-wider mb-2">Pelanggan &amp;
+                            <p class="text-xs font-bold text-[#6B6A66] uppercase tracking-wider mb-2">Pelanggan &amp;
                                 Loyalty</p>
                             <div class="flex items-center justify-between gap-3">
                                 <div class="min-w-0">
@@ -324,7 +325,7 @@
                     @endif
 
                     <div>
-                        <p class="text-xs font-bold text-[#9B9A97] uppercase tracking-wider mb-2">Item Pesanan</p>
+                        <p class="text-xs font-bold text-[#6B6A66] uppercase tracking-wider mb-2">Item Pesanan</p>
                         <ul class="divide-y divide-[#E9E9E7] border border-[#E9E9E7] rounded-xl overflow-hidden">
                             @foreach ($detail->orderItems as $item)
                                 <li class="p-3 flex justify-between items-start gap-3 bg-white">
@@ -337,7 +338,7 @@
                                             </p>
                                         @endif
                                         @if ($item->notes)
-                                            <p class="text-xs italic text-[#9B9A97] mt-0.5">Catatan:
+                                            <p class="text-xs italic text-[#6B6A66] mt-0.5">Catatan:
                                                 {{ $item->notes }}</p>
                                         @endif
                                     </div>
@@ -349,7 +350,7 @@
                     </div>
 
                     <div>
-                        <p class="text-xs font-bold text-[#9B9A97] uppercase tracking-wider mb-2">Rincian Pembayaran
+                        <p class="text-xs font-bold text-[#6B6A66] uppercase tracking-wider mb-2">Rincian Pembayaran
                         </p>
                         @if ($detail->payments->isNotEmpty())
                             <ul class="space-y-2">
@@ -431,14 +432,18 @@
 
     {{-- ==================== MODAL VOID ==================== --}}
     @if ($this->voidingOrderId)
-        <div class="fixed inset-0 z-[60] flex items-center justify-center bg-apeiron-ink/40 backdrop-blur-sm p-4">
+        <div class="fixed inset-0 z-[60] flex items-center justify-center bg-apeiron-ink/40 backdrop-blur-sm p-4"
+            role="alertdialog" aria-modal="true" aria-labelledby="void-modal-title"
+            @keydown.escape.stop.prevent="$wire.set('voidingOrderId', null)">
             <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-[#E9E9E7]">
-                <h3 class="font-bold text-lg text-rose-600 mb-2">Batalkan (Void) Pesanan</h3>
+                <h3 id="void-modal-title" class="font-bold text-lg text-rose-600 mb-2">Batalkan (Void) Pesanan</h3>
                 <p class="text-sm text-[#787774] mb-4">Aksi ini akan mengubah status pesanan menjadi Void dan
                     mengembalikan semua stok secara otomatis. Silakan tuliskan alasan pembatalan.</p>
 
                 <form wire:submit.prevent="voidOrder">
-                    <textarea wire:model="voidReason" rows="3" required minlength="5"
+                    <label for="void-reason-input" class="sr-only">Alasan pembatalan (void) pesanan</label>
+                    <textarea id="void-reason-input" wire:model="voidReason" rows="3" required minlength="5"
+                        aria-label="Alasan pembatalan (void) pesanan"
                         placeholder="Alasan pembatalan (min. 5 karakter)..."
                         class="w-full rounded-xl border border-[#E9E9E7] p-3 text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 mb-4 shadow-sm"></textarea>
 

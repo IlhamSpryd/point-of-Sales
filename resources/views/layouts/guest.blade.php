@@ -25,12 +25,40 @@
         <!-- KIRI: KONTEN SLOT -->
         <div class="flex flex-col items-center justify-center p-6 sm:p-10 w-full relative bg-white">
             <div class="w-full max-w-md">
-                @yield('content')
+                @hasSection('content')
+                    @yield('content')
+                @else
+                    {{ $slot ?? '' }}
+                @endif
             </div>
         </div>
 
         <!-- KANAN: PANEL VISUAL -->
-        @yield('panel')
+        @hasSection('panel')
+            @yield('panel')
+        @else
+            <div class="hidden lg:flex flex-col justify-between p-12 text-white bg-cover bg-center relative overflow-hidden bg-apeiron-ink"
+                style="background-image: url('{{ asset('assets/images/auth/panelKananLogin.avif') }}');">
+                <div class="absolute inset-0 bg-apeiron-ink/70 mix-blend-multiply"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-[#37352F]/90 via-transparent to-transparent"></div>
+                <div class="relative z-10 mt-auto">
+                    <div class="mb-8 min-h-40">
+                        <p class="text-2xl font-medium tracking-tight text-white/90 leading-snug mb-5 max-w-lg">
+                            Selamat Datang di <br /> Apeiron System.
+                        </p>
+                        <div class="flex items-center gap-3">
+                            <div class="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20 overflow-hidden backdrop-blur-sm">
+                                <span class="text-white font-medium">AS</span>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-white">Apeiron POS</p>
+                                <p class="text-xs text-white/50 mt-0.5">Operating System for F&amp;B</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
     </div>
 
     @yield('scripts')

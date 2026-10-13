@@ -20,6 +20,11 @@ class Tenant extends Model
         'readiness_checked_at' => 'datetime',
     ];
 
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'owner_user_id');
+    }
+
     public function stores()
     {
         return $this->hasMany(Store::class);

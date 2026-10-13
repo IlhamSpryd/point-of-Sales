@@ -35,6 +35,17 @@ class CreateOrder extends Component
 {
     use RequiresTenantContext;
 
+    public function boot(): void
+    {
+        $this->bootRequiresTenantContext();
+
+        $role = Auth::user()?->role;
+        $roleName = $role?->name;
+        if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager', 'Kasir', 'Admin'], true)) {
+            abort(403, 'Anda tidak memiliki hak akses kasir.');
+        }
+    }
+
     public ?string $orderType = null;   // 'dine_in' | 'takeaway'
 
     public ?int $tableId = null;
@@ -107,7 +118,7 @@ class CreateOrder extends Component
             ->where('order_code', $orderCode)
             ->where('order_status', 'pending')
             ->where('payment_method', 'cash')
-            ->firstOrFail();
+            ->first();
 
         if (! $order) {
             $this->dispatch('toast', message: 'Pesanan tidak ditemukan atau sudah dibayar.', type: 'error');
@@ -257,20 +268,35 @@ class CreateOrder extends Component
 
     public function confirmAddToCart(): void
     {
-        if ($this->selectingProductId) {
-            Product::findOrFail($this->selectingProductId);
+        if (! $this->selectingProductId) {
+            return;
         }
+
+        $product = Product::with('modifierGroups')->findOrFail($this->selectingProductId);
+
         if (! empty($this->pendingModifierIds)) {
             Modifier::whereIn('id', $this->pendingModifierIds)->get()->each(function ($mod) {
                 // Ensure all modifiers belong to the current tenant via the global scope automatically.
-                // Implicit fail if count doesn't match happens implicitly by not finding them,
-                // but explicitly we could just check count.
             });
             $validCount = Modifier::whereIn('id', $this->pendingModifierIds)->count();
             if ($validCount !== count($this->pendingModifierIds)) {
                 $this->addError('cart', 'Invalid modifiers selected.');
 
                 return;
+            }
+        }
+
+        // Validasi pemenuhan grup varian yang wajib (is_required = true)
+        $requiredGroups = $product->modifierGroups->where('is_required', true);
+        if ($requiredGroups->isNotEmpty()) {
+            $selectedModifiers = Modifier::whereIn('id', $this->pendingModifierIds)->get();
+            $selectedGroupIds = $selectedModifiers->pluck('modifier_group_id')->unique();
+            foreach ($requiredGroups as $group) {
+                if (! $selectedGroupIds->contains($group->id)) {
+                    $this->addError('cart', "Pilihan wajib untuk {$group->name} belum dipilih.");
+
+                    return;
+                }
             }
         }
 
@@ -299,12 +325,18 @@ class CreateOrder extends Component
 
     public function addToCartDirectly(int $productId): void
     {
-        $productId = Product::findOrFail($productId)->id;
+        $product = Product::with('modifierGroups')->findOrFail($productId);
+        $hasRequiredModifiers = $product->modifierGroups->where('is_required', true)->isNotEmpty();
+        if ($hasRequiredModifiers) {
+            $this->openModifierPicker($productId);
+
+            return;
+        }
 
         // Group with identical item if exists
         foreach ($this->cart as $index => $item) {
             if (
-                $item['product_id'] === $productId &&
+                $item['product_id'] === $product->id &&
                 empty($item['modifier_ids']) &&
                 empty($item['notes'])
             ) {
@@ -315,7 +347,7 @@ class CreateOrder extends Component
         }
 
         $this->cart[] = [
-            'product_id' => $productId,
+            'product_id' => $product->id,
             'qty' => 1,
             'modifier_ids' => [],
             'notes' => null,
@@ -326,6 +358,21 @@ class CreateOrder extends Component
     {
         unset($this->cart[$index]);
         $this->cart = array_values($this->cart);
+    }
+
+    public function updateCartQty(int $index, int $delta): void
+    {
+        if (! isset($this->cart[$index])) {
+            return;
+        }
+
+        $newQty = (int) ($this->cart[$index]['qty'] ?? 1) + $delta;
+        if ($newQty <= 0) {
+            $this->removeFromCart($index);
+            return;
+        }
+
+        $this->cart[$index]['qty'] = $newQty;
     }
 
     // READ-ONLY preview -- panggil ulang method Service yang sama persis
@@ -462,7 +509,7 @@ class CreateOrder extends Component
         ];
 
         if ($this->pendingOrderId) {
-            $rules['cashReceived'] = ['required', 'numeric', 'min:0'];
+            $rules['cashReceived'] = ['required', 'numeric', 'min:'.$this->totalAmount];
         }
 
         if ($this->customerId) {
@@ -513,17 +560,30 @@ class CreateOrder extends Component
 
             // Normalisasi payment legs untuk KEDUA skenario (Walk-in & Pending)
             $normalizedLegs = [];
-            foreach ($legs as $leg) {
-                $method = PaymentMethodEnum::tryFrom((string) ($leg['method'] ?? ''));
-                $amount = (int) ($leg['amount'] ?? 0);
-
-                if (! $method || $amount <= 0) {
+            if ($this->pendingOrderId && empty($legs)) {
+                // Skenario Tarik Pesanan via form tunai langsung di kasir
+                if ((int) $this->cashReceived < (int) $this->totalAmount) {
                     throw ValidationException::withMessages([
-                        'cart' => 'Salah satu metode pembayaran tidak valid.',
+                        'cart' => 'Uang tunai yang diterima kurang dari total tagihan.',
                     ]);
                 }
+                $normalizedLegs[] = [
+                    'method' => $this->paymentMethod,
+                    'amount' => (int) $this->totalAmount,
+                ];
+            } else {
+                foreach ($legs as $leg) {
+                    $method = PaymentMethodEnum::tryFrom((string) ($leg['method'] ?? ''));
+                    $amount = (int) ($leg['amount'] ?? 0);
 
-                $normalizedLegs[] = ['method' => $method->value, 'amount' => $amount];
+                    if (! $method || $amount <= 0) {
+                        throw ValidationException::withMessages([
+                            'cart' => 'Salah satu metode pembayaran tidak valid.',
+                        ]);
+                    }
+
+                    $normalizedLegs[] = ['method' => $method->value, 'amount' => $amount];
+                }
             }
 
             if (empty($normalizedLegs)) {
@@ -582,7 +642,16 @@ class CreateOrder extends Component
 
             $this->dispatch('transaction-success', orderCode: $order->order_code, isCash: collect($normalizedLegs)->contains('method', 'cash'));
 
-            // Reset idempotency key for next transaction
+            // Reset server-side cart & state untuk transaksi berikutnya
+            $this->cart = [];
+            $this->orderType = null;
+            $this->tableId = null;
+            $this->customerId = null;
+            $this->customerName = null;
+            $this->selectedDiscountId = null;
+            $this->pendingOrderId = null;
+            $this->pendingOrderCode = null;
+            $this->cashReceived = 0;
             $this->idempotencyKey = (string) Str::uuid();
 
             return;

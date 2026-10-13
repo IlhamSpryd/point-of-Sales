@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Discount;
 use App\Services\Context\TenantContext;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -14,6 +15,17 @@ class DiscountManager extends Component
 {
     use RequiresTenantContext;
     use WithPagination;
+
+    public function boot(): void
+    {
+        $this->bootRequiresTenantContext();
+
+        $role = Auth::user()?->role;
+        $roleName = $role?->name;
+        if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager', 'Admin'], true)) {
+            abort(403, 'Anda tidak memiliki hak akses untuk mengelola diskon.');
+        }
+    }
 
     public $search = '';
 

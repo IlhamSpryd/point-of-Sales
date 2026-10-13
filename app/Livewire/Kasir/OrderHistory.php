@@ -23,6 +23,17 @@ class OrderHistory extends Component
     use RequiresTenantContext;
     use WithPagination;
 
+    public function boot(): void
+    {
+        $this->bootRequiresTenantContext();
+
+        $role = Auth::user()?->role;
+        $roleName = $role?->name;
+        if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager', 'Kasir', 'Waiter', 'Supervisor', 'Admin'], true)) {
+            abort(403, 'Anda tidak memiliki hak akses riwayat pesanan.');
+        }
+    }
+
     #[Url(as: 'q', history: true)]
     public string $search = '';
 
@@ -43,7 +54,6 @@ class OrderHistory extends Component
 
     public string $voidReason = '';
 
-    #[Locked]
     public ?int $voidingOrderId = null;
 
     public function updatedSearch(): void
@@ -91,15 +101,20 @@ class OrderHistory extends Component
         $this->selectedOrderId = null;
     }
 
-    public function voidOrder(int $orderId, string $voidReason): void
+    public function voidOrder(?int $orderId = null, ?string $voidReason = null): void
     {
-        /** @var User $user */
+        $targetOrderId = $orderId ?? $this->voidingOrderId;
+        if (! $targetOrderId) {
+            return;
+        }
+
+        /** @var User|null $user */
         $user = auth()->user();
-        if (! $user->role->hasPermission('can_void_order') && ! $user->role->is_admin) {
+        if (! $user?->role?->hasPermission('can_void_order') && ! $user?->role?->is_admin) {
             abort(403, 'Anda tidak memiliki izin untuk membatalkan (void) pesanan.');
         }
 
-        $reason = trim($voidReason) !== '' ? $voidReason : $this->voidReason;
+        $reason = trim((string) ($voidReason ?? $this->voidReason));
 
         if (strlen($reason) < 5) {
             $this->addError('voidReason', 'Alasan void harus minimal 5 karakter.');
@@ -107,9 +122,10 @@ class OrderHistory extends Component
             return;
         }
 
-        $order = Order::findOrFail($orderId);
+        $order = Order::findOrFail($targetOrderId);
         if (! $order || $order->order_status !== OrderStatus::Paid) {
             session()->flash('error', 'Pesanan tidak ditemukan atau tidak dalam status Lunas.');
+            $this->dispatch('toast', message: 'Pesanan tidak ditemukan atau tidak dalam status Lunas.', type: 'error');
 
             return;
         }
@@ -117,10 +133,13 @@ class OrderHistory extends Component
         try {
             app(TransactionService::class)->voidOrder($order, $reason, Auth::id());
             session()->flash('success', 'Pesanan berhasil di-void dan stok dikembalikan.');
+            $this->dispatch('toast', message: 'Pesanan berhasil di-void dan stok dikembalikan.', type: 'success');
         } catch (\DomainException $e) {
             session()->flash('error', $e->getMessage());
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
         } catch (\Exception $e) {
             session()->flash('error', 'Terjadi kesalahan sistem: '.$e->getMessage());
+            $this->dispatch('toast', message: 'Terjadi kesalahan sistem: '.$e->getMessage(), type: 'error');
         }
 
         $this->voidingOrderId = null;

@@ -23,6 +23,17 @@ class Board extends Component
 {
     use RequiresTenantContext;
 
+    public function boot(): void
+    {
+        $this->bootRequiresTenantContext();
+
+        $role = Auth::user()?->role;
+        $roleName = $role?->name;
+        if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager', 'Kasir', 'Barista', 'Waiter', 'Cook', 'Supervisor', 'Admin'], true)) {
+            abort(403, 'Anda tidak memiliki hak akses KDS.');
+        }
+    }
+
     public function claim(int $itemId): void
     {
         $this->ensureCanProcess();

@@ -1,11 +1,27 @@
 @extends('layouts.guest')
 
 @section('content')
+    @if (session('success'))
+        <div class="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-800 px-4 py-3 rounded-xl relative text-sm"
+            role="status" aria-live="polite">
+            <strong class="font-medium mb-1 block">{{ __('Berhasil') }}</strong>
+            <span class="block">{{ session('success') }}</span>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="mb-6 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl relative text-sm"
+            role="alert" aria-live="assertive">
+            <strong class="font-medium mb-1 block">{{ __('Pemberitahuan') }}</strong>
+            <span class="block">{{ session('error') }}</span>
+        </div>
+    @endif
+
     @if ($errors->any())
         <div class="mb-6 bg-rose-50 border border-rose-200 text-rose-700 px-4 py-3 rounded-xl relative text-sm error-alert"
             role="alert" aria-live="assertive">
             <strong class="font-medium mb-1 block">{{ __('Autentikasi Gagal') }}</strong>
-            <span class="block">{{ __('Periksa kembali email dan kata sandi Anda.') }}</span>
+            <span class="block">{{ $errors->first('email') ?: ($errors->first('password') ?: $errors->first()) }}</span>
         </div>
     @endif
 
@@ -22,7 +38,7 @@
         <div>
             <h1 class="text-2xl text-apeiron-ink tracking-tight">{{ __('Halo,') }} <span
                     class="font-semibold">{{ __('Selamat Datang Kembali!') }}</span></h1>
-            <p class="text-[#787774] text-sm mt-2">{{ __('Masuk untuk mengelola dashboard Anda.') }}</p>
+            <p class="text-[#787774] text-sm mt-2">{{ __('Masuk untuk mengelola bisnis Anda.') }}</p>
         </div>
     </div>
 
@@ -111,8 +127,8 @@
 
     <!-- Footer -->
     <div class="mt-6 text-center js-anim text-sm text-[#787774]" id="anim-footer-link">
-        {{ __('Belum punya akun?') }} <button type="button" disabled
-            class="font-medium text-[#C4C3C0] cursor-not-allowed ml-1">{{ __('Daftar') }}</button>
+        {{ __('Belum punya akun?') }} <a href="{{ env('MARKETING_REGISTER_URL', rtrim(env('MARKETING_URL', 'http://localhost:8080'), '/') . '/register') }}"
+            class="font-medium text-apeiron-ink hover:underline ml-1">{{ __('Daftar') }}</a>
     </div>
 
     <div class="mt-8 text-center js-anim" id="anim-copyright">
