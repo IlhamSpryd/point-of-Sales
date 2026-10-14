@@ -23,8 +23,19 @@ class DashboardService
     public function getDashboardMetrics(): array
     {
         $tenantId = app(TenantContext::class)->getTenantId();
-        $cacheKey = $tenantId ? "pos:dashboard:{$tenantId}:metrics" : 'pos:dashboard:metrics';
-        $metrics = Cache::remember($cacheKey, 90, function () {
+        $user = auth()->user();
+        $isOwner = $user?->role?->name === 'Owner' || (bool) ($user?->role?->is_admin ?? false);
+        $sessionStore = session('active_store_id');
+        $isAllStores = $isOwner && ($sessionStore === 'all' || $sessionStore === null);
+        $activeStoreId = app(TenantContext::class)->getStoreId();
+
+        $cacheScope = $isAllStores ? 'all' : ($activeStoreId ?? 'default');
+        $cacheKey = $tenantId ? "pos:dashboard:{$tenantId}:{$cacheScope}:metrics" : 'pos:dashboard:metrics';
+
+        $metrics = Cache::remember($cacheKey, 90, function () use ($isAllStores) {
+            $orderQuery = $isAllStores ? Order::allStores() : Order::query();
+            $orderItemQuery = $isAllStores ? OrderItem::allStores() : OrderItem::query();
+
             // 1. Core KPIs
             $now = Carbon::now();
             $thisMonth = $now->month;
@@ -33,7 +44,7 @@ class DashboardService
             $lastMonth = $lastMonthDate->month;
             $lastYear = $lastMonthDate->year;
 
-            $kpi = Order::where('order_status', OrderStatus::Paid->value)
+            $kpi = (clone $orderQuery)->where('order_status', OrderStatus::Paid->value)
                 ->selectRaw("
                     COALESCE(SUM(order_amount), 0) as total_earnings,
                     COUNT(*) as total_orders,
@@ -62,7 +73,7 @@ class DashboardService
             $lowStockCount = Product::where('is_active', true)->where('stock', '<=', 10)->count();
             $lowStockPercent = $productsCount > 0 ? min(100, round(($lowStockCount / $productsCount) * 100)) : 0;
 
-            $soldThisMonth = OrderItem::whereHas('order', function ($query) {
+            $soldThisMonth = (clone $orderItemQuery)->whereHas('order', function ($query) {
                 $query->where('order_status', OrderStatus::Paid->value)
                     ->whereMonth('created_at', Carbon::now()->month)
                     ->whereYear('created_at', Carbon::now()->year);
@@ -77,7 +88,7 @@ class DashboardService
             $startDate = Carbon::now()->subDays(6)->startOfDay();
             $endDate = Carbon::now()->endOfDay();
 
-            $dailyStatsQuery = Order::whereBetween('created_at', [$startDate, $endDate])
+            $dailyStatsQuery = (clone $orderQuery)->whereBetween('created_at', [$startDate, $endDate])
                 ->where('order_status', OrderStatus::Paid->value)
                 ->selectRaw('DATE(created_at) as tanggal, COALESCE(SUM(order_amount), 0) as total, COUNT(*) as jumlah')
                 ->groupBy('tanggal')
@@ -121,7 +132,8 @@ class DashboardService
         });
 
         // Ambil data non-kalkulasi yang rawan serialization error jika di-cache
-        $metrics['recentOrders'] = Order::with('user')->orderBy('created_at', 'desc')->take(4)->get();
+        $recentOrderQuery = $isAllStores ? Order::allStores() : Order::query();
+        $metrics['recentOrders'] = (clone $recentOrderQuery)->with(['user', 'store'])->orderBy('created_at', 'desc')->take(4)->get();
 
         return $metrics;
     }

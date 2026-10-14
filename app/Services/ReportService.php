@@ -30,7 +30,11 @@ class ReportService
      */
     public function getSalesSummary(Carbon $start, Carbon $end): object
     {
-        return Order::whereBetween('order_date', [$start, $end])
+        $isOwner = auth()->user()?->role?->name === 'Owner' || (bool) (auth()->user()?->role?->is_admin ?? false);
+        $isAll = $isOwner && (session('active_store_id') === 'all' || session('active_store_id') === null);
+        $orderQuery = $isAll ? Order::allStores() : Order::query();
+
+        return (clone $orderQuery)->whereBetween('order_date', [$start, $end])
             ->where('order_status', OrderStatus::Paid->value)
             ->selectRaw('COALESCE(SUM(order_amount), 0) as total, COUNT(*) as count')
             ->first();
@@ -43,7 +47,11 @@ class ReportService
      */
     public function getRecentPaidOrders(Carbon $start, Carbon $end, int $perPage = 15)
     {
-        return Order::with('user')
+        $isOwner = auth()->user()?->role?->name === 'Owner' || (bool) (auth()->user()?->role?->is_admin ?? false);
+        $isAll = $isOwner && (session('active_store_id') === 'all' || session('active_store_id') === null);
+        $orderQuery = $isAll ? Order::allStores() : Order::query();
+
+        return (clone $orderQuery)->with(['user', 'store'])
             ->whereBetween('order_date', [$start, $end])
             ->where('order_status', OrderStatus::Paid->value)
             ->orderBy('created_at', 'desc')

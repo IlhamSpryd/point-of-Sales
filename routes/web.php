@@ -24,6 +24,7 @@ use App\Http\Controllers\RestockForecastController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\StoreSwitchController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
@@ -108,6 +109,9 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Penggantian Cabang (Store Switcher)
+    Route::post('/switch-store', StoreSwitchController::class)->name('store.switch');
 
     // Dashboard & Laporan
     Route::middleware('role:Owner,Manager')->group(function () {

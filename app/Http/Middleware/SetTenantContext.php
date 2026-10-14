@@ -66,13 +66,16 @@ class SetTenantContext
         // 7. Resolve active store (cabang). TIDAK PERNAH dari input request.
         $allowed = $this->storeResolver->allowedStoreIdsFor($user, $tenantId);
         $sessionStoreId = $request->session()->get('active_store_id');
+        $isOwner = $user->role?->name === 'Owner' || (bool) ($user->role?->is_admin ?? false);
+        $wantsAllStores = $isOwner && ($sessionStoreId === 'all' || $sessionStoreId === null);
+
         $activeStoreId = $this->storeResolver->resolve(
             $allowed,
             is_numeric($sessionStoreId) ? (int) $sessionStoreId : null,
         );
 
         $this->tenantContext->setStoreId($activeStoreId);
-        $request->session()->put('active_store_id', $activeStoreId);
+        $request->session()->put('active_store_id', $wantsAllStores ? 'all' : $activeStoreId);
 
         // Himpunan store yang diizinkan disimpan agar lapisan laporan dapat
         // mengecek izin all-stores tanpa query ulang.

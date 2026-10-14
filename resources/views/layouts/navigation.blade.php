@@ -80,6 +80,11 @@
         </button>
     </div>
 
+    {{-- Branch Switcher (Sidebar) --}}
+    <div x-show="wide" class="px-3 pb-2 pt-1 border-b border-[#E9E9E7]/60">
+        <x-branch-switcher :fullWidth="true" />
+    </div>
+
     {{-- Navigasi --}}
     <nav class="flex-1 py-3 overflow-y-auto overflow-x-hidden scrollbar-hide" :class="wide ? 'px-3' : 'px-2'"
         aria-label="Navigasi utama">

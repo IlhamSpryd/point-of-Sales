@@ -1,15 +1,17 @@
 <x-app-layout>
     <!-- PAGE HEADER -->
-    <div class="flex items-center justify-between mb-8">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
         <div>
             <h1 class="text-2xl font-bold text-apeiron-ink tracking-tight">Dashboard</h1>
-            <p class="text-sm font-medium text-[#787774] mt-1">Cara mudah mengelola penjualan dengan teliti dan presisi.
-            </p>
+            <p class="text-sm font-medium text-[#787774] mt-1">Cara mudah mengelola penjualan dengan teliti dan presisi.</p>
         </div>
-        <div
-            class="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-white border border-[#E9E9E7] text-[#787774] text-sm font-medium rounded-xl shadow-sm">
-            <span class="material-symbols-rounded text-[18px]">calendar_today</span>
-            <span>{{ now()->subDays(6)->format('F d, Y') }} — {{ now()->format('F d, Y') }}</span>
+        <div class="flex items-center gap-3">
+            <x-branch-switcher />
+            <div
+                class="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-white border border-[#E9E9E7] text-[#787774] text-sm font-medium rounded-xl shadow-sm">
+                <span class="material-symbols-rounded text-[18px]">calendar_today</span>
+                <span>{{ now()->subDays(6)->format('F d, Y') }} — {{ now()->format('F d, Y') }}</span>
+            </div>
         </div>
     </div>
 
@@ -132,6 +134,9 @@
                                             {{ $order->user->name ?? 'Pelanggan Ritel' }}</h4>
                                         <p class="text-xs font-medium text-[#9B9A97] mt-0.5">
                                             {{ $order->created_at?->format('F d, Y • h:i A') ?? now()->format('F d, Y') }}
+                                            @if($order->store)
+                                                • <span class="text-[#787774]">{{ $order->store->name }}</span>
+                                            @endif
                                         </p>
                                     </div>
                                 </div>

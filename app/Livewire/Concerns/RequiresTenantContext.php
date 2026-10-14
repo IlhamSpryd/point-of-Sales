@@ -46,12 +46,15 @@ trait RequiresTenantContext
         $storeResolver = app(StoreResolver::class);
         $allowed = $storeResolver->allowedStoreIdsFor($user, $tenantId);
         $sessionStoreId = session('active_store_id');
+        $isOwner = $user->role?->name === 'Owner' || (bool) ($user->role?->is_admin ?? false);
+        $wantsAllStores = $isOwner && ($sessionStoreId === 'all' || $sessionStoreId === null);
+
         $activeStoreId = $storeResolver->resolve(
             $allowed,
             is_numeric($sessionStoreId) ? (int) $sessionStoreId : null,
         );
         $tenantContext->setStoreId($activeStoreId);
-        session(['active_store_id' => $activeStoreId]);
+        session(['active_store_id' => $wantsAllStores ? 'all' : $activeStoreId]);
         $tenantContext->setAllowedStoreIds($allowed);
     }
 }
