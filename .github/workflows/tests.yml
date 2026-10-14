@@ -24,6 +24,8 @@ jobs:
     name: Lint & Static Analysis
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    env:
+      APP_ENV: testing
     steps:
       - uses: actions/checkout@v4
       - uses: shivammathur/setup-php@v2
@@ -31,13 +33,20 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           extensions: mbstring, intl, pdo_mysql, bcmath, gd, zip
           coverage: none
+      # Pindahkan composer install ke sini (sebelum php artisan)
+      - uses: ramsey/composer-install@v3
+
+      - name: Ensure Composer dependencies
+        run: |
+          if [ ! -f vendor/autoload.php ]; then composer install --no-interaction --no-progress --prefer-dist; fi
+
       - name: Siapkan .env agar Larastan bisa boot aplikasi
         run: |
           cp .env.example .env
           php artisan key:generate --ansi
-      - uses: ramsey/composer-install@v3
+
       - name: Pint (mode cek, tanpa auto-fix)
-        run: vendor/bin/pint --test || true # Sementara dibiarkan true agar tidak memblokir jika ada styling beda
+        run: vendor/bin/pint --test || true # Toleran untuk langkah non-kritis style check
       - name: PHPStan / Larastan (butuh phpstan.neon)
         run: vendor/bin/phpstan analyse --memory-limit=1G --no-progress
 
@@ -75,22 +84,34 @@ jobs:
           coverage: pcov
           ini-values: pcov.directory=app, memory_limit=1G
           tools: composer:v2
+
+      # Pasang composer sebelum menjalankan php artisan
+      - uses: ramsey/composer-install@v3
+
+      - name: Ensure Composer dependencies
+        run: |
+          if [ ! -f vendor/autoload.php ]; then composer install --no-interaction --no-progress --prefer-dist; fi
+
       - name: Siapkan .env
         run: |
           cp .env.example .env
           php artisan key:generate --ansi
-      - uses: ramsey/composer-install@v3
+
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
+
       - name: Build aset frontend
         run: |
           npm ci
           npm run build
+
       - name: Smoke test migrasi + seeder
         run: php artisan migrate:fresh --seed --force
+
       - name: Test suite (paralel, tanpa grup chaos)
-        run: php artisan test --parallel --exclude-group=chaos --coverage --min=${{ env.COVERAGE_MIN }} || true
+        run: php artisan test --parallel --exclude-group=chaos --coverage --min=${{ env.COVERAGE_MIN }}
+
       - name: Chaos / concurrency suite (serial)
-        run: php artisan test --group=chaos || true
+        run: php artisan test --group=chaos || true # Toleran jika file chaos test berstatus .disabled

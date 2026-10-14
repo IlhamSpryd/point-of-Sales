@@ -83,10 +83,10 @@ class EmployeeIdGenerator
                 $pdo = $conn->getPdo();
 
                 $stmt = $pdo->prepare(
-                    'INSERT INTO employee_id_sequences (tenant_id, prefix, last_value, created_at, updated_at) '
+                    'INSERT INTO `employee_id_sequences` (`tenant_id`, `prefix`, `last_value`, `created_at`, `updated_at`) '
                     .'VALUES (?, ?, LAST_INSERT_ID(1), NOW(), NOW()) '
                     .'ON DUPLICATE KEY UPDATE '
-                    .'last_value = LAST_INSERT_ID(last_value + 1), updated_at = NOW()'
+                    .'`last_value` = LAST_INSERT_ID(`last_value` + 1), `updated_at` = NOW()'
                 );
                 $stmt->execute([$tenantId, $prefix]);
 
