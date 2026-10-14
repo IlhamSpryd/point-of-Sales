@@ -46,6 +46,16 @@ class ModifierManager extends Component
         'ingredients' => [],
     ];
 
+    public function boot(): void
+    {
+        $this->bootRequiresTenantContext();
+
+        $user = auth()->user();
+        if (! $user || ! $user->role || ! in_array($user->role->name, ['Owner', 'Manager', 'Inventory'])) {
+            abort(403, 'Anda tidak memiliki hak akses untuk halaman ini.');
+        }
+    }
+
     public function mount()
     {
         $this->loadData();
@@ -152,12 +162,17 @@ class ModifierManager extends Component
 
     public function saveModifier()
     {
+        $tenantId = app(\App\Services\Context\TenantContext::class)->requireTenantId();
+
         $this->validate([
             'modifierForm.name' => 'required|string|max:255',
             'modifierForm.extra_price' => 'numeric|min:0',
             'modifierForm.is_default' => 'boolean',
             'modifierForm.ingredients' => 'array',
-            'modifierForm.ingredients.*.id' => 'required|exists:ingredients,id',
+            'modifierForm.ingredients.*.id' => [
+                'required',
+                Rule::exists('ingredients', 'id')->where('tenant_id', $tenantId),
+            ],
             'modifierForm.ingredients.*.quantity' => 'required|numeric|min:0.01',
         ]);
 
@@ -166,6 +181,7 @@ class ModifierManager extends Component
             'name' => $this->modifierForm['name'],
             'extra_price' => $this->modifierForm['extra_price'],
             'is_default' => $this->modifierForm['is_default'],
+            'tenant_id' => $tenantId,
         ];
 
         if ($this->editingModifierId) {
@@ -180,7 +196,10 @@ class ModifierManager extends Component
         if (! empty($this->modifierForm['ingredients'])) {
             foreach ($this->modifierForm['ingredients'] as $ing) {
                 if (isset($ing['id']) && isset($ing['quantity'])) {
-                    $syncData[$ing['id']] = ['quantity_required' => $ing['quantity']];
+                    $syncData[$ing['id']] = [
+                        'quantity_required' => $ing['quantity'],
+                        'tenant_id' => $tenantId,
+                    ];
                 }
             }
         }

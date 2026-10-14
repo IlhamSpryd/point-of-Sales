@@ -551,13 +551,13 @@
                 // 4. Donut Chart: Payment Methods
                 var performanceOptions = {
                     series: @json($paymentStats),
-                    labels: ['Cash', 'QRIS', 'E-Wallet'],
+                    labels: ['Cash', 'QRIS', 'E-Wallet', 'Card'],
                     chart: {
                         type: 'donut',
                         height: 260,
                         fontFamily: 'Plus Jakarta Sans, Inter, sans-serif'
                     },
-                    colors: [muted, ink, '#f59e0b'],
+                    colors: [muted, ink, '#f59e0b', '#3b82f6'],
                     plotOptions: {
                         pie: {
                             donut: {

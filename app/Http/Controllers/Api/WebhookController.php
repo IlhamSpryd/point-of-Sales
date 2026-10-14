@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessWebhookOrderJob;
 use App\Models\ChannelOrderLog;
+use App\Models\Store;
+use App\Models\Tenant;
 use App\Services\Context\TenantContext;
 use App\Services\DatabaseErrorClassifier;
 use Illuminate\Database\QueryException;
@@ -13,22 +15,73 @@ use Illuminate\Support\Facades\Log;
 
 class WebhookController extends Controller
 {
-    public function handle(Request $request, $provider)
+    public function handle(Request $request)
     {
-        $tenantId = config('services.webhooks.default_tenant_id');
-        if (! $tenantId) {
-            Log::critical('Webhook received but WEBHOOK_DEFAULT_TENANT_ID is not set in environment. Failing closed to prevent cross-tenant data corruption.');
+        $provider = $request->route('provider');
 
-            return response()->json(['message' => 'Service Unavailable: Tenant Context Missing'], 503);
+        // 1. Kumpulkan seluruh identitas tenant yang dikirimkan oleh pemanggil
+        $routeTenant = $request->route('tenant');
+        $headerTenant = $request->header('X-Tenant-ID') ?? $request->header('x-tenant-id');
+        $queryTenant = $request->query('tenant_id');
+
+        $providedTenants = array_filter([
+            'route' => $routeTenant,
+            'header' => $headerTenant,
+            'query' => $queryTenant,
+        ], fn ($val) => $val !== null && $val !== '');
+
+        // 2. Fail-closed jika tenant tidak terdefinisi (TIDAK PERNAH fallback ke default tenant)
+        if (empty($providedTenants)) {
+            Log::warning('Webhook rejected: tenant context missing from route, header, and query.');
+
+            return response()->json(['message' => 'Tenant context missing'], 400);
         }
-        $storeId = config('services.webhooks.default_store_id');
+
+        // 3. Deteksi Tenant Mismatch / Manipulasi Route vs Header vs Query
+        $uniqueTenants = array_unique(array_map('intval', $providedTenants));
+        if (count($uniqueTenants) > 1) {
+            Log::warning('Webhook rejected: conflicting tenant identifiers provided.', $providedTenants);
+
+            return response()->json(['message' => 'Tenant ID mismatch detected'], 400);
+        }
+
+        $tenantId = reset($uniqueTenants);
+
+        // 4. Verifikasi keberadaan dan keabsahan tenant di database
+        if (! Tenant::where('id', $tenantId)->exists()) {
+            Log::warning("Webhook rejected: tenant #{$tenantId} not found.");
+
+            return response()->json(['message' => 'Tenant not found'], 404);
+        }
+
+        // 5. Verifikasi store jika disertakan pemanggil
+        $headerStore = $request->header('X-Store-ID') ?? $request->header('x-store-id');
+        $queryStore = $request->query('store_id');
+        $providedStores = array_filter([
+            'header' => $headerStore,
+            'query' => $queryStore,
+        ], fn ($val) => $val !== null && $val !== '');
+
+        $storeId = null;
+        if (! empty($providedStores)) {
+            $uniqueStores = array_unique(array_map('intval', $providedStores));
+            if (count($uniqueStores) > 1) {
+                return response()->json(['message' => 'Store ID mismatch detected'], 400);
+            }
+            $storeId = reset($uniqueStores);
+            if (! Store::where('id', $storeId)->where('tenant_id', $tenantId)->exists()) {
+                Log::warning("Webhook rejected: store #{$storeId} does not belong to tenant #{$tenantId}.");
+
+                return response()->json(['message' => 'Store does not belong to tenant'], 422);
+            }
+        }
 
         $externalOrderId = $request->input('id') ?? $request->input('order_id');
         if (! $externalOrderId) {
             return response()->json(['message' => 'Missing order_id'], 422);
         }
 
-        return app(TenantContext::class)->runAs((int) $tenantId, $storeId ? (int) $storeId : null, function () use ($request, $provider, $tenantId, $storeId, $externalOrderId) {
+        return app(TenantContext::class)->runAs($tenantId, $storeId, function () use ($request, $provider, $tenantId, $storeId, $externalOrderId) {
             try {
                 try {
                     $log = ChannelOrderLog::create([
@@ -47,7 +100,7 @@ class WebhookController extends Controller
                 }
 
                 // Lempar ke Background Job agar respon API secepat kilat (Zero-Latency)
-                ProcessWebhookOrderJob::dispatch($log, (int) $tenantId, $storeId ? (int) $storeId : null);
+                ProcessWebhookOrderJob::dispatch($log, $tenantId, $storeId);
 
                 return response()->json(['message' => 'Accepted for processing'], 202);
 

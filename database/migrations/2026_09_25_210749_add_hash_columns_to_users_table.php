@@ -12,8 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('pin_hash', 255)->nullable()->after('pin_code');
-            $table->string('password_hash', 255)->nullable()->after('password');
+            if (! Schema::hasColumn('users', 'pin_hash')) {
+                if (Schema::hasColumn('users', 'pin_code')) {
+                    $table->string('pin_hash', 255)->nullable()->after('pin_code');
+                } else {
+                    $table->string('pin_hash', 255)->nullable();
+                }
+            }
+            if (! Schema::hasColumn('users', 'password_hash')) {
+                $table->string('password_hash', 255)->nullable()->after('password');
+            }
         });
     }
 

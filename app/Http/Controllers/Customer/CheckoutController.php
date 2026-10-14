@@ -9,6 +9,7 @@ use App\Models\Customer;
 use App\Models\Modifier;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Models\Table;
 use App\Models\User;
 use App\Services\CartService;
@@ -79,12 +80,17 @@ class CheckoutController extends Controller
         }
 
         $subtotal = $this->cartService->getSubtotal();
+        $totals = $this->transactionService->calculateOrderTotals($subtotal);
+        $tax = $totals['tax_amount'];
+        $total = $totals['total_amount'];
 
         // Generate idempotency key untuk form ini
         $idempotencyKey = Str::uuid()->toString();
         session(['checkout_idempotency_key' => $idempotencyKey]);
 
-        return view('customer.checkout.create', compact('items', 'subtotal', 'idempotencyKey'));
+        $taxRate = (float) Setting::get('tax_rate', config('pos.tax_rate', 0.11));
+
+        return view('customer.checkout.create', compact('items', 'subtotal', 'tax', 'total', 'idempotencyKey', 'taxRate'));
     }
 
     public function store(StoreCheckoutRequest $request): RedirectResponse

@@ -10,6 +10,9 @@ use Illuminate\Support\Facades\Route;
 Route::post('/webhooks/{provider}/orders', [WebhookController::class, 'handle'])
     ->middleware(['throttle:120,1', 'verify.webhook']);
 
+Route::post('/tenants/{tenant}/webhooks/{provider}/orders', [WebhookController::class, 'handle'])
+    ->middleware(['throttle:120,1', 'verify.webhook']);
+
 /*
 | Domain 1 — S2S provisioning dari website marketing.
 | HMAC + timestamp + nonce anti-replay + rate limit ketat.

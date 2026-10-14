@@ -88,49 +88,12 @@ class ShiftManager extends Component
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        $closed = DB::transaction(function () {
-            // Ambil ulang + kunci baris: $this->activeShift bisa basi (tab lain sudah menutupnya).
-            $shift = Shift::where('user_id', auth()->id())
-                ->where('status', 'open')
-                ->lockForUpdate()
-                ->first();
-
-            if (! $shift) {
-                return false;
-            }
-
-            $cashSales = (int) Payment::join('orders', 'orders.id', '=', 'payments.order_id')
-                ->where('orders.shift_id', $shift->id)
-                ->where('payments.payment_method', 'cash')
-                ->whereIn('payments.status', ['captured', 'voided'])
-                ->sum(DB::raw("CASE WHEN payments.status = 'captured' THEN payments.amount ELSE -payments.amount END"));
-
-            $cashIn = (int) CashDrawerMovement::where('shift_id', $shift->id)
-                ->where('type', 'cash_in')
-                ->sum('amount');
-
-            $cashOut = (int) CashDrawerMovement::where('shift_id', $shift->id)
-                ->where('type', 'cash_out')
-                ->sum('amount');
-
-            $expectedCash = (int) $shift->opening_balance + $cashSales + $cashIn - $cashOut;
-            $closing = (int) $this->closing_balance;
-
-            $shift->update([
-                'closing_balance' => $closing,
-                'expected_cash' => $expectedCash,
-                'cash_difference' => $closing - $expectedCash,
-                'notes' => $this->notes,
-                'status' => 'closed',
-                'closed_at' => now(),
-            ]);
-
-            return true;
-        });
+        $shiftService = app(\App\Services\ShiftService::class);
+        $closedShift = $shiftService->closeShift((int) auth()->id(), (int) $this->closing_balance, $this->notes);
 
         $this->loadActiveShift();
 
-        if (! $closed) {
+        if (! $closedShift) {
             $this->dispatch('toast', message: 'Tidak ada shift aktif untuk ditutup.', type: 'info');
 
             return;
@@ -149,21 +112,9 @@ class ShiftManager extends Component
         $expectedCash = 0;
 
         if ($this->activeShift) {
-            $cashSales = (int) Payment::join('orders', 'orders.id', '=', 'payments.order_id')
-                ->where('orders.shift_id', $this->activeShift->id)
-                ->where('payments.payment_method', 'cash')
-                ->whereIn('payments.status', ['captured', 'voided'])
-                ->sum(DB::raw("CASE WHEN payments.status = 'captured' THEN payments.amount ELSE -payments.amount END"));
-
-            $cashIn = (int) CashDrawerMovement::where('shift_id', $this->activeShift->id)
-                ->where('type', 'cash_in')
-                ->sum('amount');
-
-            $cashOut = (int) CashDrawerMovement::where('shift_id', $this->activeShift->id)
-                ->where('type', 'cash_out')
-                ->sum('amount');
-
-            $expectedCash = (int) $this->activeShift->opening_balance + $cashSales + $cashIn - $cashOut;
+            $summary = app(\App\Services\ShiftService::class)->getCashSummary($this->activeShift);
+            $cashSales = $summary['cash_sales'];
+            $expectedCash = $summary['expected_cash'];
         }
 
         return view('livewire.shift-manager', [

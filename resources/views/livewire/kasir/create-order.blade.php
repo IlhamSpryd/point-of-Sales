@@ -908,7 +908,19 @@
                 },
 
                 async submit() {
-                    if (this.remaining > 0 || this.legs.length === 0 || this.submitting) return;
+                    if (this.submitting) return;
+
+                    // Sinkronisasi totalAmount langsung dari instance Livewire sebelum submit
+                    const livewireTotal = await this.$wire.get('totalAmount');
+                    if (livewireTotal !== undefined && livewireTotal !== null && livewireTotal !== this.total) {
+                        this.total = livewireTotal;
+                        if (this.remaining > 0 || this.paidTotal !== this.total) {
+                            this.errorMsg = 'Total tagihan berubah (Rp' + this.formatRupiah(livewireTotal) + '). Silakan sesuaikan rincian pembayaran.';
+                            return;
+                        }
+                    }
+
+                    if (this.remaining > 0 || this.legs.length === 0) return;
                     this.submitting = true;
                     const payload = this.legs.map(l => ({
                         method: l.method,
@@ -916,6 +928,8 @@
                     }));
                     try {
                         await $wire.call('submitOrder', payload, this.idempotencyKey);
+                    } catch (err) {
+                        this.errorMsg = err?.message || 'Gagal memproses pembayaran.';
                     } finally {
                         this.submitting = false;
                     }

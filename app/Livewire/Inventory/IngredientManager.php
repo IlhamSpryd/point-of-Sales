@@ -21,6 +21,16 @@ class IngredientManager extends Component
     use RequiresTenantContext;
     use WithPagination;
 
+    public function boot(): void
+    {
+        $this->bootRequiresTenantContext();
+
+        $user = auth()->user();
+        if (! $user || ! $user->role || ! in_array($user->role->name, ['Owner', 'Manager', 'Inventory'])) {
+            abort(403, 'Anda tidak memiliki hak akses untuk halaman ini.');
+        }
+    }
+
     public string $search = '';
 
     // Form properties

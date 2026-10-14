@@ -177,6 +177,8 @@ class TenantIsolationSecurityTest extends TestCase
         $response = $this->postJson('/api/webhooks/grabfood/orders', $payloadArray, [
             'X-Timestamp' => $nowTimestamp,
             'X-Signature' => $signature,
+            'X-Tenant-ID' => (string) $this->tenantA->id,
+            'X-Store-ID' => (string) $this->storeA->id,
         ]);
 
         $response->assertStatus(202);
@@ -189,8 +191,6 @@ class TenantIsolationSecurityTest extends TestCase
     public function test_webhook_duplicate_order_returns_200_ok(): void
     {
         Config::set('services.webhooks.grabfood_secret', 'secret123');
-        Config::set('services.webhooks.default_tenant_id', $this->tenantA->id);
-        Config::set('services.webhooks.default_store_id', $this->storeA->id);
 
         // Buat log pertama
         ChannelOrderLog::withoutTenantScope()->create([
@@ -209,6 +209,8 @@ class TenantIsolationSecurityTest extends TestCase
         $response = $this->postJson('/api/webhooks/grabfood/orders', $payloadArray, [
             'X-Timestamp' => $nowTimestamp,
             'X-Signature' => $signature,
+            'X-Tenant-ID' => (string) $this->tenantA->id,
+            'X-Store-ID' => (string) $this->storeA->id,
         ]);
 
         $response->assertStatus(200);
@@ -221,18 +223,26 @@ class TenantIsolationSecurityTest extends TestCase
     public function test_webhook_non_duplicate_database_error_returns_500(): void
     {
         Config::set('services.webhooks.grabfood_secret', 'secret123');
-        // Tenant ID tidak valid (melanggar foreign key constraint)
-        Config::set('services.webhooks.default_tenant_id', 999999);
-        Config::set('services.webhooks.default_store_id', null);
 
         $nowTimestamp = (string) time();
         $payloadArray = ['id' => 'EXT-FK-FAIL-1'];
         $payload = json_encode($payloadArray);
         $signature = hash_hmac('sha256', $payload.$nowTimestamp, 'secret123');
 
+        // Simulasikan QueryException non-duplicate (mis. kegagalan koneksi atau error 1213/deadlock)
+        ChannelOrderLog::creating(function () {
+            throw new \Illuminate\Database\QueryException(
+                'mysql',
+                'insert into channel_order_logs ...',
+                [],
+                new \Exception('Deadlock or system database failure', 1213)
+            );
+        });
+
         $response = $this->postJson('/api/webhooks/grabfood/orders', $payloadArray, [
             'X-Timestamp' => $nowTimestamp,
             'X-Signature' => $signature,
+            'X-Tenant-ID' => (string) $this->tenantA->id,
         ]);
 
         $response->assertStatus(500);

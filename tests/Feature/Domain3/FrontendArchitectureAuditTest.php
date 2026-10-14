@@ -14,6 +14,7 @@ use App\Livewire\Kasir\CreateOrder;
 use App\Livewire\Kasir\OrderHistory;
 use App\Livewire\Kds\Board;
 use App\Models\Category;
+use App\Models\Discount;
 use App\Models\Modifier;
 use App\Models\ModifierGroup;
 use App\Models\Order;
@@ -39,14 +40,23 @@ class FrontendArchitectureAuditTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected Role $ownerRole;
+
     protected Role $kasirRole;
+
     protected Role $waiterRole;
+
     protected Role $cookRole;
+
     protected User $cashierUser;
+
     protected User $waiterUser;
+
     protected User $cookUser;
+
     protected User $ownerUser;
 
     protected function setUp(): void
@@ -916,5 +926,40 @@ class FrontendArchitectureAuditTest extends TestCase
         Livewire::actingAs($inventoryUser)
             ->test(Board::class)
             ->assertStatus(403);
+    }
+
+    public function test_cashier_can_select_discount_without_locked_property_exception(): void
+    {
+        $this->openShiftFor($this->cashierUser);
+
+        $category = Category::create([
+            'tenant_id' => $this->tenant->id,
+            'category_name' => 'Food',
+        ]);
+
+        $product = Product::create([
+            'tenant_id' => $this->tenant->id,
+            'category_id' => $category->id,
+            'product_name' => 'Burger',
+            'product_price' => 20000,
+            'stock' => 10,
+            'is_active' => true,
+        ]);
+
+        $discount = Discount::create([
+            'tenant_id' => $this->tenant->id,
+            'code' => 'DISC10',
+            'name' => 'Diskon 10%',
+            'type' => 'percentage',
+            'value' => 10,
+            'is_active' => true,
+        ]);
+
+        Livewire::actingAs($this->cashierUser)
+            ->test(CreateOrder::class)
+            ->call('addToCartDirectly', $product->id)
+            ->set('selectedDiscountId', $discount->id)
+            ->assertSet('selectedDiscountId', $discount->id)
+            ->assertSee('Diskon 10%');
     }
 }

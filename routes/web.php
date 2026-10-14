@@ -203,5 +203,6 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
 
     Route::middleware('role:Owner')->group(function () {
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+        Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
     });
 });

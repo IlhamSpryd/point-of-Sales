@@ -10,7 +10,9 @@ class UpdateTableRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $roleName = $this->user()?->role?->name;
+
+        return in_array($roleName, ['Owner', 'Manager'], true);
     }
 
     public function rules(): array

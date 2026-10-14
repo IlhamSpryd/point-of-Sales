@@ -30,6 +30,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Models\Shift;
 use App\Models\StockMovement;
 use App\Models\Store;
@@ -835,12 +836,13 @@ class TransactionService
     public function calculateOrderTotals(float $subtotalAmount, float $discountAmount = 0): array
     {
         $discountedSubtotal = max(0, $subtotalAmount - $discountAmount);
-        $taxRate = config('pos.tax_rate', 0.11);
+        $tenantId = app(TenantContext::class)->getTenantId();
+        $taxRate = $tenantId !== null ? (float) Setting::get('tax_rate', config('pos.tax_rate', 0.11)) : (float) config('pos.tax_rate', 0.11);
         $taxAmount = (int) round($discountedSubtotal * $taxRate);
         $totalAmount = (int) ($discountedSubtotal + $taxAmount);
 
-        $roundingValue = config('pos.rounding_value', 100);
-        $roundingBehavior = config('pos.rounding_behavior', 'ROUND_NEAREST');
+        $roundingValue = $tenantId !== null ? (int) Setting::get('rounding_value', config('pos.rounding_value', 100)) : (int) config('pos.rounding_value', 100);
+        $roundingBehavior = $tenantId !== null ? (string) Setting::get('rounding_behavior', config('pos.rounding_behavior', 'ROUND_NEAREST')) : (string) config('pos.rounding_behavior', 'ROUND_NEAREST');
 
         $totalAmount = (int) match ($roundingBehavior) {
             'ROUND_NEAREST' => round($totalAmount / $roundingValue) * $roundingValue,
@@ -892,59 +894,7 @@ class TransactionService
         return $shiftId;
     }
 
-    /**
-     * Memproses pesanan dari Self-Order QR (Publik). (UNCHANGED -- BELUM
-     * BOM/Split-Payment/Loyalty aware, lihat backlog Fase 1.4)
-     */
-    public function createSelfOrder(Table $table, array $itemsPayload): Order
-    {
-        return DB::transaction(function () use ($table, $itemsPayload) {
-            [$orderItemsData, $subtotalAmount] = $this->buildOrderItemsWithStockLock($itemsPayload);
-
-            ['tax_amount' => $taxAmount, 'total_amount' => $totalAmount] = $this->calculateOrderTotals($subtotalAmount);
-
-            do {
-                $orderCode = 'POS-'.strtoupper(Str::random(6)).'-'.rand(100, 999);
-            } while (Order::where('order_code', $orderCode)->exists());
-
-            $order = Order::forceCreate([
-                'table_id' => $table->id,
-                'order_type' => 'dine_in',
-                'order_code' => $orderCode,
-                'order_date' => now()->toDateString(),
-                'subtotal_amount' => $subtotalAmount,
-                'tax_amount' => $taxAmount,
-                'order_amount' => $totalAmount,
-                'order_status' => OrderStatus::Pending,
-                'payment_method' => null,
-                'user_id' => null,
-            ]);
-
-            $orderItems = $order->orderItems()->createMany($orderItemsData);
-
-            // Phase 4: Use ledger instead of direct decrement for WalkIn/SelfOrder
-            foreach ($orderItems as $item) {
-                DB::table('stock_movements')->insert([
-                    'tenant_id' => $order->tenant_id, // Fallback if no shift
-                    'store_id' => $order->store_id,
-                    'product_id' => $item->product_id,
-                    'order_id' => $order->id,
-                    'order_item_id' => $item->id,
-                    'type' => 'sale_deduction',
-                    'quantity' => -$item->qty,
-                    'reason' => 'Self order checkout',
-                    'idempotency_key' => "sale:{$order->id}:{$item->id}",
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-
-            return $order;
-        });
-    }
-
-    // PUBLIC -- dipanggil dari createSelfOrder, createWalkInOrder, DAN dari
-    // Livewire computed property untuk preview. (UNCHANGED)
+    // PUBLIC -- dipanggil dari Livewire computed property untuk preview. (UNCHANGED)
     public function resolveOrderItemLine(Product $product, array $modifierIds, int $qty, ?string $notes): array
     {
         // [OMEGA-NODE1] PATCH FOR M-10: pakai koleksi yang sudah (atau baru
@@ -1003,120 +953,6 @@ class TransactionService
                 'modifier_id' => $m->id, 'name' => $m->name, 'extra_price' => $m->extra_price,
             ])->values()->toArray(),
         ];
-    }
-
-    /**
-     * (UNCHANGED -- BELUM BOM/Split-Payment/Loyalty aware, lihat backlog
-     * Fase 1.4: jalur ini masih memotong products.stock langsung untuk
-     * SEMUA produk, termasuk yang sudah punya resep BOM.)
-     */
-    public function createWalkInOrder(
-        array $itemsPayload,
-        OrderType $orderType,
-        ?int $tableId,
-        string $paymentMethod,
-        int $cashReceived,
-        int $userId,
-        int $shiftId,
-    ): Order {
-        return DB::transaction(function () use ($itemsPayload, $orderType, $tableId, $paymentMethod, $cashReceived, $userId, $shiftId) {
-            $shift = Shift::lockForUpdate()->find($shiftId);
-
-            if (! $shift || $shift->status !== 'open') {
-                throw ValidationException::withMessages([
-                    'shift' => 'Shift Anda baru saja ditutup. Transaksi ini dibatalkan, silakan buka shift baru sebelum melanjutkan.',
-                ]);
-            }
-
-            [$orderItemsData, $subtotal] = $this->buildOrderItemsWithStockLock($itemsPayload);
-
-            ['tax_amount' => $taxAmount, 'total_amount' => $totalAmount] = $this->calculateOrderTotals($subtotal);
-
-            if ($paymentMethod === 'cash' && $cashReceived < $totalAmount) {
-                throw ValidationException::withMessages([
-                    'cashReceived' => 'Uang tunai yang diterima kurang dari total belanja.',
-                ]);
-            }
-
-            do {
-                $orderCode = 'POS-'.strtoupper(Str::random(6)).'-'.rand(100, 999);
-            } while (Order::where('order_code', $orderCode)->exists());
-
-            $order = Order::forceCreate([
-                'user_id' => $userId,
-                'shift_id' => $shiftId,
-                'table_id' => $tableId,
-                'order_code' => $orderCode,
-                'order_date' => now()->toDateString(),
-                'order_type' => $orderType,
-                'order_status' => OrderStatus::Paid,
-                'subtotal_amount' => $subtotal,
-                'tax_amount' => $taxAmount,
-                'order_amount' => $totalAmount,
-                'payment_method' => $paymentMethod,
-                'cash_received' => $cashReceived,
-                'order_change' => max(0, $cashReceived - $totalAmount),
-            ]);
-
-            $orderItems = $order->orderItems()->createMany($orderItemsData);
-
-            // Phase 4: Use ledger instead of direct decrement for WalkIn/SelfOrder
-            foreach ($orderItems as $item) {
-                DB::table('stock_movements')->insert([
-                    'tenant_id' => app(TenantContext::class)->requireTenantId(),
-                    'store_id' => app(TenantContext::class)->getStoreId(),
-                    'product_id' => $item->product_id,
-                    'order_id' => $order->id,
-                    'order_item_id' => $item->id,
-                    'type' => 'sale_deduction',
-                    'quantity' => -$item->qty,
-                    'reason' => 'Walk-in order checkout',
-                    'idempotency_key' => "sale:{$order->id}:{$item->id}",
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-
-            return $order->load('orderItems.product');
-        });
-    }
-
-    // Helper privat dipakai ULANG oleh createSelfOrder & createWalkInOrder. (UNCHANGED)
-    private function buildOrderItemsWithStockLock(array $itemsPayload): array
-    {
-        $orderItemsData = [];
-        $subtotal = 0;
-
-        // [OMEGA-NODE9] SEC FIX HIGH (Deadlock): sebelumnya produk dikunci
-        // SATU PER SATU mengikuti urutan payload klien -- BERBEDA dari
-        // createTransaction() yang selalu ->orderBy('id'). Dua request
-        // paralel dengan urutan item terbalik (A,B vs B,A) bisa saling
-        // menunggu lock -> deadlock InnoDB. | 2026-09-25
-        usort($itemsPayload, fn ($a, $b) => $a['product_id'] <=> $b['product_id']);
-
-        foreach ($itemsPayload as $itemInput) {
-            $product = Product::availableForOrder()->lockForUpdate()->findOrFail($itemInput['product_id']);
-            if ($product->stock < $itemInput['qty']) {
-                throw ValidationException::withMessages([
-                    'items' => "Stok {$product->product_name} tidak cukup.",
-                ]);
-            }
-
-            $line = $this->resolveOrderItemLine($product, $itemInput['modifier_ids'] ?? [], $itemInput['qty'], $itemInput['notes'] ?? null);
-
-            unset($line['product_name']);
-
-            $subtotal += $line['order_subtotal'];
-            $orderItemsData[] = [
-                ...$line,
-                'created_at' => now(),
-                'updated_at' => now(),
-                'tenant_id' => app(TenantContext::class)->requireTenantId(),
-                'store_id' => app(TenantContext::class)->getStoreId(),
-            ];
-        }
-
-        return [$orderItemsData, $subtotal];
     }
 
     /**

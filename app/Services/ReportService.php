@@ -28,10 +28,12 @@ class ReportService
      * Method ini generik: bisa dipanggil untuk rentang tanggal APAPUN
      * (harian/mingguan/bulanan/custom), cukup ganti parameter $start dan $end.
      */
-    public function getSalesSummary(Carbon $start, Carbon $end): object
+    public function getSalesSummary(Carbon $start, Carbon $end, ?bool $allStores = null): object
     {
-        $isOwner = auth()->user()?->role?->name === 'Owner' || (bool) (auth()->user()?->role?->is_admin ?? false);
-        $isAll = $isOwner && (session('active_store_id') === 'all' || session('active_store_id') === null);
+        $isAll = $allStores ?? (
+            (auth()->user()?->role?->name === 'Owner' || (bool) (auth()->user()?->role?->is_admin ?? false)) &&
+            (session('active_store_id') === 'all' || session('active_store_id') === null)
+        );
         $orderQuery = $isAll ? Order::allStores() : Order::query();
 
         return (clone $orderQuery)->whereBetween('order_date', [$start, $end])
@@ -45,10 +47,12 @@ class ReportService
      *
      * @return LengthAwarePaginator
      */
-    public function getRecentPaidOrders(Carbon $start, Carbon $end, int $perPage = 15)
+    public function getRecentPaidOrders(Carbon $start, Carbon $end, int $perPage = 15, ?bool $allStores = null)
     {
-        $isOwner = auth()->user()?->role?->name === 'Owner' || (bool) (auth()->user()?->role?->is_admin ?? false);
-        $isAll = $isOwner && (session('active_store_id') === 'all' || session('active_store_id') === null);
+        $isAll = $allStores ?? (
+            (auth()->user()?->role?->name === 'Owner' || (bool) (auth()->user()?->role?->is_admin ?? false)) &&
+            (session('active_store_id') === 'all' || session('active_store_id') === null)
+        );
         $orderQuery = $isAll ? Order::allStores() : Order::query();
 
         return (clone $orderQuery)->with(['user', 'store'])
@@ -63,11 +67,15 @@ class ReportService
      *
      * @return BinaryFileResponse
      */
-    public function exportCsv(Carbon $start, Carbon $end)
+    public function exportCsv(Carbon $start, Carbon $end, ?bool $allStores = null)
     {
+        $isAll = $allStores ?? (
+            (auth()->user()?->role?->name === 'Owner' || (bool) (auth()->user()?->role?->is_admin ?? false)) &&
+            (session('active_store_id') === 'all' || session('active_store_id') === null)
+        );
         $filename = 'Laporan_Penjualan_'.$start->format('Ymd').'-'.$end->format('Ymd').'.xlsx';
 
-        return Excel::download(new SalesExport($start, $end), $filename);
+        return Excel::download(new SalesExport($start, $end, $isAll), $filename);
     }
 
     /**
@@ -75,7 +83,7 @@ class ReportService
      * exportCsv() (sinkron) SENGAJA TIDAK diubah, UI existing (Node 2)
      * masih memakainya untuk rentang kecil. Lihat SYNC ALERT NODE 2.
      */
-    public function queueExport(Carbon $start, Carbon $end, ?int $requestedBy = null): ExportTask
+    public function queueExport(Carbon $start, Carbon $end, ?int $requestedBy = null, ?bool $allStores = null): ExportTask
     {
         if ($start->diffInDays($end) > self::MAX_EXPORT_RANGE_DAYS) {
             throw ValidationException::withMessages([
@@ -83,15 +91,25 @@ class ReportService
             ]);
         }
 
+        $tenantContext = app(TenantContext::class);
+        $resolvedAllStores = $allStores ?? (
+            (auth()->user()?->role?->name === 'Owner' || (bool) (auth()->user()?->role?->is_admin ?? false)) &&
+            (session('active_store_id') === 'all' || session('active_store_id') === null)
+        );
+
         $task = ExportTask::create([
             'requested_by' => $requestedBy,
             'type' => 'sales_report',
-            'parameters' => ['start' => $start->toDateString(), 'end' => $end->toDateString()],
+            'parameters' => [
+                'start' => $start->toDateString(),
+                'end' => $end->toDateString(),
+                'all_stores' => $resolvedAllStores,
+            ],
             'status' => ExportTaskStatus::Pending,
         ]);
 
-        $tenantContext = app(TenantContext::class);
-        ProcessSalesReportExportJob::dispatch($task, $tenantContext->getTenantId(), $tenantContext->getStoreId());
+        $storeId = $resolvedAllStores ? null : $tenantContext->getStoreId();
+        ProcessSalesReportExportJob::dispatch($task, $tenantContext->getTenantId(), $storeId);
 
         return $task;
     }

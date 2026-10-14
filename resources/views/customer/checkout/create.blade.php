@@ -1,15 +1,4 @@
 @php
-    // CATATAN ARSITEKTUR (Backend): ini ESTIMASI tampilan yang meniru TransactionService::calculateOrderTotals().
-    $taxRate = (float) config('pos.tax_rate', 0.11);
-    $tax = (int) round($subtotal * $taxRate);
-    $raw = $subtotal + $tax;
-    $step = max(1, (int) config('pos.rounding_value', 100));
-    $total = (int) match (config('pos.rounding_behavior', 'ROUND_NEAREST')) {
-        'ROUND_NEAREST' => round($raw / $step) * $step,
-        'ROUND_UP'      => ceil($raw / $step) * $step,
-        'ROUND_DOWN'    => floor($raw / $step) * $step,
-        default         => round($raw),
-    };
     $methods = [
         ['qris',    'qr_code_2',              'QRIS',     'Scan dengan aplikasi bank atau e-wallet apa pun'],
         ['ewallet', 'account_balance_wallet', 'E-Wallet', 'GoPay atau ShopeePay'],
@@ -57,7 +46,7 @@
 
                 <dl class="mt-2 pt-3 border-t border-apeiron-border text-[14px] space-y-1.5">
                     <div class="flex justify-between text-apeiron-muted"><dt>Subtotal</dt><dd class="tabular-nums">Rp {{ number_format($subtotal, 0, ',', '.') }}</dd></div>
-                    <div class="flex justify-between text-apeiron-muted"><dt>Pajak ({{ rtrim(rtrim(number_format($taxRate * 100, 1), '0'), '.') }}%)</dt><dd class="tabular-nums">Rp {{ number_format($tax, 0, ',', '.') }}</dd></div>
+                    <div class="flex justify-between text-apeiron-muted"><dt>Pajak ({{ rtrim(rtrim(number_format(($taxRate ?? 0.11) * 100, 1), '0'), '.') }}%)</dt><dd class="tabular-nums">Rp {{ number_format($tax, 0, ',', '.') }}</dd></div>
                     <div class="flex justify-between text-[17px] font-extrabold pt-1"><dt>Total Tagihan</dt><dd class="tabular-nums">Rp {{ number_format($total, 0, ',', '.') }}</dd></div>
                 </dl>
             </section>

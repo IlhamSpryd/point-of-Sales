@@ -99,9 +99,8 @@ class ProcessSalesReportExportJob implements ShouldBeUnique, ShouldQueue
 
             $filename = 'exports/sales_report_'.$start->format('Ymd').'-'.$end->format('Ymd').'_'.$this->exportTask->id.'.xlsx';
 
-            // Disk 'local' (storage/app/private) -- laporan finansial TIDAK
-            // ditaruh di disk 'public' seperti foto produk.
-            Excel::store(new SalesExport($start, $end), $filename, 'local');
+            $allStores = (bool) ($params['all_stores'] ?? ($this->storeId === null));
+            Excel::store(new SalesExport($start, $end, $allStores), $filename, 'local');
             $fullPath = Storage::disk('local')->path($filename);
 
             $this->exportTask->update([

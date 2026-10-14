@@ -86,7 +86,6 @@ class CreateOrder extends Component
 
     public string $customerSearch = '';
 
-    #[Locked]
     public ?int $selectedDiscountId = null;
 
     public string $idempotencyKey;
@@ -589,6 +588,13 @@ class CreateOrder extends Component
             if (empty($normalizedLegs)) {
                 throw ValidationException::withMessages([
                     'cart' => 'Minimal satu metode pembayaran wajib diisi sebelum memproses transaksi.',
+                ]);
+            }
+
+            $sumLegs = array_sum(array_column($normalizedLegs, 'amount'));
+            if ($sumLegs !== (int) $this->totalAmount) {
+                throw ValidationException::withMessages([
+                    'cart' => 'Total metode pembayaran (Rp'.number_format($sumLegs, 0, ',', '.').') tidak cocok dengan total tagihan (Rp'.number_format($this->totalAmount, 0, ',', '.').').',
                 ]);
             }
 

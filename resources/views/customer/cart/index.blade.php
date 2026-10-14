@@ -1,9 +1,5 @@
 @php
-    $currentTable = \App\Models\Table::find(session('current_table_id'));
-    $menuUrl = $currentTable ? route('customer.menu.index', ['token' => $currentTable->secure_token]) : null;
-
-    // CATATAN ARSITEKTUR (Backend): pajak & pembulatan di bawah hanyalah ESTIMASI tampilan yang meniru
-    // TransactionService::calculateOrderTotals(). Idealnya CartController mengirim $taxAmount/$totalAmount.
+    $menuUrl = $menuUrl ?? ($currentTable ? route('customer.menu.index', ['token' => $currentTable->secure_token]) : null);
     $config = [
         'lines' => collect($items)->map(fn ($i) => [
             'lineId'    => $i['line_id'],

@@ -33,11 +33,17 @@ class SalesExport implements FromQuery, ShouldAutoSize, WithChunkReading, WithHe
 {
     private const CHUNK_SIZE = 1000;
 
-    public function __construct(protected Carbon $start, protected Carbon $end) {}
+    public function __construct(
+        protected Carbon $start,
+        protected Carbon $end,
+        protected bool $allStores = false
+    ) {}
 
     public function query(): Builder
     {
-        return Order::query()
+        $baseQuery = $this->allStores ? Order::allStores() : Order::query();
+
+        return $baseQuery
             ->select(['id', 'user_id', 'order_code', 'payment_method', 'order_amount', 'created_at'])
             ->with('user:id,name')
             ->whereBetween('order_date', [$this->start, $this->end])

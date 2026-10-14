@@ -36,14 +36,11 @@ class ProcessWebhookOrderJobIdempotencyTest extends TestCase
 
         $this->tenant = Tenant::create([
             'name' => 'Webhook Tenant',
-            'slug' => 'webhook-tenant',
-            'status' => 'active',
         ]);
 
         $this->store = Store::create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Online Store',
-            'is_active' => true,
         ]);
 
         $context = app(TenantContext::class);
@@ -75,7 +72,6 @@ class ProcessWebhookOrderJobIdempotencyTest extends TestCase
 
         ChannelProductMapping::create([
             'tenant_id' => $this->tenant->id,
-            'store_id' => $this->store->id,
             'provider' => 'gofood',
             'external_product_id' => 'GF-BURGER-1',
             'product_id' => $this->product->id,
@@ -97,7 +93,6 @@ class ProcessWebhookOrderJobIdempotencyTest extends TestCase
 
         $log = ChannelOrderLog::create([
             'tenant_id' => $this->tenant->id,
-            'store_id' => $this->store->id,
             'provider' => 'gofood',
             'external_order_id' => 'GF-ORD-999',
             'status' => 'pending',

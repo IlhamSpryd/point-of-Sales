@@ -15,7 +15,7 @@ trait AssignsTenant
             if (empty($model->tenant_id)) {
                 $model->tenant_id = $context->requireTenantId();
             } else {
-                if ($context->hasTenant() && $model->tenant_id !== $context->getTenantId()) {
+                if ($context->hasTenant() && (int) $model->tenant_id !== (int) $context->getTenantId()) {
                     throw new \RuntimeException("Cannot create record for tenant {$model->tenant_id} while in context of tenant {$context->getTenantId()}");
                 }
             }

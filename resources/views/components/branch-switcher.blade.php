@@ -5,11 +5,16 @@
     $roleName = $user?->role?->name;
     $isOwner = $roleName === 'Owner' || (bool) ($user?->role?->is_admin ?? false);
     $tenantId = app(\App\Services\Context\TenantContext::class)->getTenantId();
-    $storeResolver = app(\App\Services\Context\StoreResolver::class);
-    $allowedStoreIds = $user && $tenantId ? $storeResolver->allowedStoreIdsFor($user, $tenantId) : [];
-    $stores = ! empty($allowedStoreIds) 
-        ? \App\Models\Store::whereIn('id', $allowedStoreIds)->orderBy('id')->get() 
-        : collect();
+    $cacheKey = 'req_branch_switcher_stores_'.$user?->id.'_'.$tenantId;
+    $stores = request()->attributes->get($cacheKey);
+    if ($stores === null) {
+        $storeResolver = app(\App\Services\Context\StoreResolver::class);
+        $allowedStoreIds = $user && $tenantId ? $storeResolver->allowedStoreIdsFor($user, $tenantId) : [];
+        $stores = ! empty($allowedStoreIds) 
+            ? \App\Models\Store::whereIn('id', $allowedStoreIds)->orderBy('id')->get() 
+            : collect();
+        request()->attributes->set($cacheKey, $stores);
+    }
     
     $currentSession = session('active_store_id');
     $isAll = ($currentSession === 'all' || $currentSession === null) && $isOwner;

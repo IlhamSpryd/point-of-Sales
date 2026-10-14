@@ -5,18 +5,24 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\AddToCartRequest;
 use App\Models\Product;
+use App\Models\Table;
 use App\Services\CartService;
+use App\Services\Context\TenantContext;
+use App\Services\TransactionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
  * CartController: Thin Controller — seluruh logika berat didelegasikan
- * ke CartService, mengikuti Service Pattern yang sudah baku di proyek ini.
+ * ke CartService dan TransactionService.
  */
 class CartController extends Controller
 {
-    public function __construct(protected CartService $cartService) {}
+    public function __construct(
+        protected CartService $cartService,
+        protected TransactionService $transactionService,
+    ) {}
 
     /**
      * Menampilkan halaman keranjang / ringkasan sebelum checkout.
@@ -25,8 +31,22 @@ class CartController extends Controller
     {
         $items = $this->cartService->getItems();
         $subtotal = $this->cartService->getSubtotal();
+        $totals = $this->transactionService->calculateOrderTotals($subtotal);
 
-        return view('customer.cart.index', compact('items', 'subtotal'));
+        $tableId = session('current_table_id');
+        $currentTable = null;
+        if ($tableId) {
+            $currentTable = Table::withoutGlobalScopes()
+                ->where('id', $tableId)
+                ->where('tenant_id', app(TenantContext::class)->getTenantId())
+                ->first();
+        }
+        $menuUrl = $currentTable ? route('customer.menu.index', ['token' => $currentTable->secure_token]) : null;
+
+        $taxAmount = $totals['tax_amount'];
+        $totalAmount = $totals['total_amount'];
+
+        return view('customer.cart.index', compact('items', 'subtotal', 'taxAmount', 'totalAmount', 'currentTable', 'menuUrl'));
     }
 
     /**

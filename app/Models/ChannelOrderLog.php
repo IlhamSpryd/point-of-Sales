@@ -13,7 +13,7 @@ class ChannelOrderLog extends Model
     use ScopedToTenant;
 
     protected $fillable = [
-        'provider', 'external_order_id', 'status', 'payload', 'error_message', 'order_id',
+        'tenant_id', 'provider', 'external_order_id', 'status', 'payload', 'error_message', 'order_id',
     ];
 
     protected $casts = [

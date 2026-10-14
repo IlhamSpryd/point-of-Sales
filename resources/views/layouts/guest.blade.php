@@ -47,8 +47,8 @@
                             Selamat Datang di <br /> Apeiron System.
                         </p>
                         <div class="flex items-center gap-3">
-                            <div class="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center border border-white/20 overflow-hidden backdrop-blur-sm">
-                                <span class="text-white font-medium">AS</span>
+                            <div class="h-10 w-10 rounded-xl bg-white flex items-center justify-center border border-white/40 shadow-sm overflow-hidden p-1.5">
+                                <img src="{{ asset('assets/images/logo.png') }}" alt="Apeiron System Logo" class="h-full w-full object-contain">
                             </div>
                             <div>
                                 <p class="text-sm font-semibold text-white">Apeiron POS</p>

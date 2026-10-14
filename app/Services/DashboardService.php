@@ -109,9 +109,10 @@ class DashboardService
             $cashOrders = (int) $kpi->cash_orders;
             $qrisOrders = (int) $kpi->qris_orders;
             $ewalletOrders = (int) $kpi->ewallet_orders;
+            $cardOrders = (int) $kpi->card_orders;
 
-            $totalPaidOrders = $cashOrders + $qrisOrders + $ewalletOrders;
-            $paymentStats = $totalPaidOrders > 0 ? [$cashOrders, $qrisOrders, $ewalletOrders] : [0, 0, 0];
+            $totalPaidOrders = $cashOrders + $qrisOrders + $ewalletOrders + $cardOrders;
+            $paymentStats = $totalPaidOrders > 0 ? [$cashOrders, $qrisOrders, $ewalletOrders, $cardOrders] : [0, 0, 0, 0];
 
             return compact(
                 'totalEarnings',
