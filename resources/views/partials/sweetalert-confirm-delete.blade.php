@@ -1,29 +1,69 @@
 <script>
-    // ─── POLA 1: data-confirm-delete (form submit tradisional) ───────────────
-    // Event delegation global — aman untuk wire:navigate SPA
-    document.addEventListener('click', function(e) {
-        const deleteBtn = e.target.closest('button[data-confirm-delete="true"]');
-        if (deleteBtn) {
-            e.preventDefault();
-            const form = deleteBtn.closest('form');
+    // ─── POLA 0: window.confirmDelete (dipanggil via onclick form CRUD tradisional) ──
+    window.confirmDelete = function(formId, itemName) {
+        const form = document.getElementById(formId);
+        if (!form) {
+            console.error('[confirmDelete] Form tidak ditemukan:', formId);
+            return;
+        }
+
+        const title = itemName ? `Hapus "${itemName}"?` : 'Apakah Anda Yakin?';
+        const text = 'Data yang dihapus tidak dapat dikembalikan!';
+
+        if (typeof Swal !== 'undefined') {
             Swal.fire({
-                title: 'Apakah Anda Yakin?',
-                text: 'Data yang dihapus tidak dapat dikembalikan!',
+                title: title,
+                text: text,
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
+                confirmButtonColor: '#BE123C',
                 cancelButtonColor: '#6B7280',
                 confirmButtonText: 'Ya, Hapus!',
                 cancelButtonText: 'Batal',
                 reverseButtons: true,
                 customClass: { popup: 'rounded-2xl' },
             }).then((result) => {
-                if (result.isConfirmed && form) {
+                if (result.isConfirmed) {
                     form.submit();
                 }
             });
+        } else if (confirm(`${title}\n${text}`)) {
+            form.submit();
         }
-    });
+    };
+
+    if (!window.__swalDeleteListenersBound) {
+        window.__swalDeleteListenersBound = true;
+
+        // ─── POLA 1: data-confirm-delete (form submit tradisional) ───────────────
+        // Event delegation global — aman untuk wire:navigate SPA
+        document.addEventListener('click', function(e) {
+            const deleteBtn = e.target.closest('button[data-confirm-delete="true"]');
+            if (deleteBtn) {
+                e.preventDefault();
+                const form = deleteBtn.closest('form');
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: 'Apakah Anda Yakin?',
+                        text: 'Data yang dihapus tidak dapat dikembalikan!',
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#BE123C',
+                        cancelButtonColor: '#6B7280',
+                        confirmButtonText: 'Ya, Hapus!',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true,
+                        customClass: { popup: 'rounded-2xl' },
+                    }).then((result) => {
+                        if (result.isConfirmed && form) {
+                            form.submit();
+                        }
+                    });
+                } else if (form && confirm('Apakah Anda Yakin?\nData yang dihapus tidak dapat dikembalikan!')) {
+                    form.submit();
+                }
+            }
+        });
 
     // ─── POLA 2: data-swal-delete (Livewire wire:call) ───────────────────────
     // Dipakai oleh discount-manager, channel-mapping-manager, dan komponen lain
@@ -148,4 +188,5 @@
             });
         });
     });
+    }
 </script>

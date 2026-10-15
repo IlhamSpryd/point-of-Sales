@@ -174,7 +174,8 @@ class CartService
      */
     public function restoreSnapshot(): bool
     {
-        $snap = Session::pull('customer_cart_last');
+        $scopedKey = 'customer_cart_last_'.$this->getSessionKey();
+        $snap = Session::pull($scopedKey) ?? Session::pull('customer_cart_last');
         if (! $snap) {
             return false;
         }
@@ -272,12 +273,20 @@ class CartService
     /** Helper internal: ambil array keranjang mentah dari session. */
     private function getCartArray(): array
     {
-        return Session::get($this->getSessionKey(), []);
+        $scoped = Session::get($this->getSessionKey());
+        if ($scoped !== null) {
+            return $scoped;
+        }
+
+        return Session::get(self::SESSION_KEY, []);
     }
 
     /** Helper internal: simpan array keranjang kembali ke session. */
     private function saveCartArray(array $cart): void
     {
         Session::put($this->getSessionKey(), $cart);
+        if ($this->getSessionKey() !== self::SESSION_KEY) {
+            Session::put(self::SESSION_KEY, $cart);
+        }
     }
 }

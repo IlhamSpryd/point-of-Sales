@@ -29,6 +29,17 @@ class ShiftManager extends Component
 
     public $notes = '';
 
+    public function boot(): void
+    {
+        $this->bootRequiresTenantContext();
+
+        $role = auth()->user()?->role;
+        $roleName = $role?->name;
+        if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager', 'Kasir', 'Supervisor'], true)) {
+            abort(403, 'Anda tidak memiliki hak akses manajemen shift.');
+        }
+    }
+
     public function mount()
     {
         $this->loadActiveShift();
@@ -68,6 +79,16 @@ class ShiftManager extends Component
 
     public function closeShift()
     {
+        $this->loadActiveShift();
+
+        if (! $this->activeShift) {
+            $this->dispatch('toast', message: 'Tidak ada shift aktif untuk ditutup.', type: 'info');
+
+            return;
+        }
+
+        Gate::authorize('close', $this->activeShift);
+
         // [OMEGA-NODE1] integer, bukan numeric -- Rupiah tidak punya
         // subunit desimal praktis (konsisten dengan pola BIGINT UNSIGNED
         // yang sudah ditegakkan di kolom finansial orders) | 2026-09-21

@@ -56,7 +56,6 @@ class OrderHistory extends Component
 
     public string $voidReason = '';
 
-    #[Locked]
     public ?int $voidingOrderId = null;
 
     public function updatedSearch(): void
@@ -96,7 +95,7 @@ class OrderHistory extends Component
 
     public function viewDetail(int $orderId): void
     {
-        $this->selectedOrderId = Order::findOrFail($orderId)->id;
+        $this->selectedOrderId = $this->getOrderQuery()->findOrFail($orderId)->id;
     }
 
     public function closeDetail(): void
@@ -109,12 +108,6 @@ class OrderHistory extends Component
         $targetOrderId = $orderId ?? $this->voidingOrderId;
         if (! $targetOrderId) {
             return;
-        }
-
-        /** @var User|null $user */
-        $user = auth()->user();
-        if (! $user?->role?->hasPermission('can_void_order') && ! $user?->role?->is_admin) {
-            abort(403, 'Anda tidak memiliki izin untuk membatalkan (void) pesanan.');
         }
 
         $reason = trim((string) ($voidReason ?? $this->voidReason));
@@ -142,9 +135,14 @@ class OrderHistory extends Component
         } catch (\DomainException $e) {
             session()->flash('error', $e->getMessage());
             $this->dispatch('toast', message: $e->getMessage(), type: 'error');
-        } catch (\Exception $e) {
-            session()->flash('error', 'Terjadi kesalahan sistem: '.$e->getMessage());
-            $this->dispatch('toast', message: 'Terjadi kesalahan sistem: '.$e->getMessage(), type: 'error');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Void order failed: '.$e->getMessage(), [
+                'exception' => $e,
+                'order_id' => $targetOrderId,
+                'user_id' => Auth::id(),
+            ]);
+            session()->flash('error', 'Terjadi kesalahan sistem saat memproses pembatalan pesanan. Silakan coba beberapa saat lagi.');
+            $this->dispatch('toast', message: 'Terjadi kesalahan sistem saat memproses pembatalan pesanan. Silakan coba beberapa saat lagi.', type: 'error');
         }
 
         $this->voidingOrderId = null;
@@ -200,12 +198,19 @@ class OrderHistory extends Component
             ->all();
     }
 
+    private function getOrderQuery()
+    {
+        $isOwnerConsolidated = auth()->user()?->role?->name === 'Owner' && session('active_store_id') === 'all';
+
+        return $isOwnerConsolidated ? Order::allStores() : Order::query();
+    }
+
     #[Computed]
     public function orders(): LengthAwarePaginator
     {
         [$start, $end] = $this->resolveDateRange();
 
-        return Order::query()
+        return $this->getOrderQuery()
             ->with([
                 'orderItems.product:id,product_name',
                 'payments',
@@ -226,7 +231,7 @@ class OrderHistory extends Component
     {
         [$start, $end] = $this->resolveDateRange();
 
-        return Order::query()
+        return $this->getOrderQuery()
             ->whereBetween('order_date', [$start->toDateString(), $end->toDateString()])
             ->when($this->statusFilter !== 'all', fn ($q) => $q->where('order_status', $this->statusFilter))
             ->when(trim($this->search) !== '', fn ($q) => $q->where('order_code', 'like', '%'.trim($this->search).'%'))
@@ -244,7 +249,7 @@ class OrderHistory extends Component
             return null;
         }
 
-        return Order::query()
+        return $this->getOrderQuery()
             ->with([
                 'orderItems.product',
                 'payments',

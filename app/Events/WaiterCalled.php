@@ -16,13 +16,19 @@ class WaiterCalled implements ShouldBroadcast
 
     public string $tableName;
 
+    public ?int $tenantId;
+
+    public ?int $storeId;
+
     /**
      * Create a new event instance.
      */
-    public function __construct(int $tableId, string $tableName)
+    public function __construct(int $tableId, string $tableName, ?int $tenantId = null, ?int $storeId = null)
     {
         $this->tableId = $tableId;
         $this->tableName = $tableName;
+        $this->tenantId = $tenantId;
+        $this->storeId = $storeId;
     }
 
     /**
@@ -32,8 +38,14 @@ class WaiterCalled implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
+        if ($this->tenantId && $this->storeId) {
+            return [
+                new \Illuminate\Broadcasting\PrivateChannel("tenant.{$this->tenantId}.store.{$this->storeId}.waiter-calls"),
+            ];
+        }
+
         return [
-            new Channel('waiter-calls'),
+            new \Illuminate\Broadcasting\PrivateChannel('waiter-calls'),
         ];
     }
 }

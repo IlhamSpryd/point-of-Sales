@@ -23,8 +23,25 @@ class ChannelMappingManager extends Component
 
     public $productId = null;
 
+    public function boot(): void
+    {
+        $this->bootRequiresTenantContext();
+
+        $role = auth()->user()?->role;
+        $roleName = $role?->name;
+        if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager'], true)) {
+            abort(403, 'Anda tidak memiliki hak akses pemetaan kanal integrasi.');
+        }
+    }
+
     public function saveMapping()
     {
+        $role = auth()->user()?->role;
+        $roleName = $role?->name;
+        if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager'], true)) {
+            abort(403, 'Anda tidak memiliki hak akses pemetaan kanal integrasi.');
+        }
+
         $tenantId = app(TenantContext::class)->requireTenantId();
 
         $this->validate([
@@ -44,7 +61,19 @@ class ChannelMappingManager extends Component
 
     public function deleteMapping($id)
     {
-        ChannelProductMapping::findOrFail($id)->delete();
+        $role = auth()->user()?->role;
+        $roleName = $role?->name;
+        if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager'], true)) {
+            abort(403, 'Anda tidak memiliki hak akses pemetaan kanal integrasi.');
+        }
+
+        $tenantId = app(TenantContext::class)->requireTenantId();
+        $mapping = ChannelProductMapping::where('tenant_id', $tenantId)->find($id);
+        if (! $mapping) {
+            abort(404, 'Pemetaan kanal tidak ditemukan.');
+        }
+
+        $mapping->delete();
         session()->flash('message', 'Pemetaan berhasil dihapus.');
     }
 

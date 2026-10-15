@@ -6,6 +6,8 @@ use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Ingredient;
 use App\Models\Modifier;
 use App\Models\ModifierGroup;
+use App\Services\MenuCacheService;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -77,12 +79,14 @@ class ModifierManager extends Component
 
     public function createGroup()
     {
+        Gate::authorize('manageRecipe', Ingredient::class);
         $this->resetGroupForm();
         $this->showGroupForm = true;
     }
 
     public function editGroup($id)
     {
+        Gate::authorize('manageRecipe', Ingredient::class);
         $group = ModifierGroup::findOrFail($id);
         $this->editingGroupId = $group->id;
         $this->groupForm = [
@@ -95,6 +99,7 @@ class ModifierManager extends Component
 
     public function saveGroup()
     {
+        Gate::authorize('manageRecipe', Ingredient::class);
         $this->validate([
             'groupForm.name' => 'required|string|max:255',
             'groupForm.selection_type' => ['required', Rule::in(['single', 'multiple'])],
@@ -107,13 +112,17 @@ class ModifierManager extends Component
             ModifierGroup::create($this->groupForm);
         }
 
+        app(\App\Services\MenuCacheService::class)->flush();
+
         $this->resetGroupForm();
         $this->loadData();
     }
 
     public function deleteGroup($id)
     {
+        Gate::authorize('manageRecipe', Ingredient::class);
         ModifierGroup::findOrFail($id)->delete();
+        app(\App\Services\MenuCacheService::class)->flush();
         $this->loadData();
     }
 
@@ -132,6 +141,7 @@ class ModifierManager extends Component
 
     public function createModifier($groupId)
     {
+        Gate::authorize('manageRecipe', Ingredient::class);
         $this->resetModifierForm();
         $group = ModifierGroup::findOrFail($groupId);
         $this->selectedGroupId = $group->id;
@@ -140,6 +150,7 @@ class ModifierManager extends Component
 
     public function editModifier($id)
     {
+        Gate::authorize('manageRecipe', Ingredient::class);
         $modifier = Modifier::with('ingredients')->findOrFail($id);
         $this->editingModifierId = $modifier->id;
         $this->selectedGroupId = $modifier->modifier_group_id;
@@ -163,6 +174,7 @@ class ModifierManager extends Component
 
     public function saveModifier()
     {
+        Gate::authorize('manageRecipe', Ingredient::class);
         $tenantId = app(\App\Services\Context\TenantContext::class)->requireTenantId();
         $group = ModifierGroup::findOrFail($this->selectedGroupId);
 
@@ -207,13 +219,17 @@ class ModifierManager extends Component
         }
         $modifier->ingredients()->sync($syncData);
 
+        app(MenuCacheService::class)->flush();
+
         $this->resetModifierForm();
         $this->loadData();
     }
 
     public function deleteModifier($id)
     {
+        Gate::authorize('manageRecipe', Ingredient::class);
         Modifier::findOrFail($id)->delete();
+        app(MenuCacheService::class)->flush();
         $this->loadData();
     }
 

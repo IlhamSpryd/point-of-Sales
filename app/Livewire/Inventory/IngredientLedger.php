@@ -41,7 +41,12 @@ class IngredientLedger extends Component
 
     public function render()
     {
-        $movements = IngredientStockMovement::with('ingredient')
+        $isOwnerConsolidated = auth()->user()?->role?->name === 'Owner' && session('active_store_id') === 'all';
+        $query = $isOwnerConsolidated
+            ? IngredientStockMovement::allStores()
+            : IngredientStockMovement::query();
+
+        $movements = $query->with('ingredient')
             ->when($this->ingredient_id, function ($query) {
                 $query->where('ingredient_id', $this->ingredient_id);
             })

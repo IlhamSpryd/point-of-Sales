@@ -12,9 +12,8 @@
     
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
-    <!-- GSAP & Alpine.js -->
+    <!-- GSAP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
 
 </head>

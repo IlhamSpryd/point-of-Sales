@@ -169,6 +169,12 @@ class IngredientManager extends Component
             'adjustReason' => 'nullable|string|max:500',
         ]);
 
+        if ($this->adjustType === 'purchase_receipt' && (float) $this->adjustQuantity <= 0) {
+            $this->addError('adjustQuantity', 'Kuantitas penerimaan barang (purchase receipt) harus bernilai lebih dari 0.');
+
+            return;
+        }
+
         if ($this->adjustQuantity == 0) {
             $this->addError('adjustQuantity', 'Kuantitas tidak boleh 0.');
 
@@ -181,7 +187,30 @@ class IngredientManager extends Component
             $qty = -$qty;
         }
 
-        DB::transaction(function () use ($qty) {
+        $storeId = app(TenantContext::class)->getStoreId();
+
+        // [CF-07 / D3-013] Pencegahan saldo negatif
+        $ingredient = Ingredient::findOrFail($this->adjustIngredientId);
+        if ($storeId) {
+            $tenantId = app(TenantContext::class)->requireTenantId();
+            $storeBalance = (float) (DB::table('ingredient_stock_balances')
+                ->where('tenant_id', $tenantId)
+                ->where('store_id', $storeId)
+                ->where('ingredient_id', $ingredient->id)
+                ->value('quantity') ?? $ingredient->current_stock);
+
+            if ($storeBalance + $qty < 0) {
+                $this->addError('adjustQuantity', 'Saldo stok cabang tidak mencukupi untuk pengurangan ini (stok saat ini: '.$storeBalance.').');
+
+                return;
+            }
+        } elseif ($ingredient->current_stock + $qty < 0) {
+            $this->addError('adjustQuantity', 'Stok bahan baku tidak mencukupi untuk pengurangan ini.');
+
+            return;
+        }
+
+        DB::transaction(function () use ($qty, $storeId) {
             $ingredient = Ingredient::lockForUpdate()->findOrFail($this->adjustIngredientId);
 
             IngredientStockMovement::create([
@@ -194,10 +223,8 @@ class IngredientManager extends Component
                 'created_by' => Auth::id(),
             ]);
 
-            // [PHASE 14] Penyesuaian manual juga memperbarui baris balance
-            // store aktif (otoritas) -- kolom legacy tetap jadi mirror.
-            $storeId = app(TenantContext::class)->getStoreId();
-            if (config('pos.stock_balances_authoritative', false) && $storeId) {
+            // Pastikan baris balance cabang aktif ada sebelum Ingredient::saved() memperbarui delta
+            if ($storeId) {
                 DB::table('ingredient_stock_balances')->insertOrIgnore([
                     'tenant_id' => app(TenantContext::class)->requireTenantId(),
                     'store_id' => $storeId,
@@ -208,17 +235,10 @@ class IngredientManager extends Component
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-
-                DB::table('ingredient_stock_balances')
-                    ->where('tenant_id', app(TenantContext::class)->requireTenantId())
-                    ->where('store_id', $storeId)
-                    ->where('ingredient_id', $ingredient->id)
-                    ->update([
-                        'quantity' => DB::raw('quantity + ('.(float) $qty.')'),
-                        'updated_at' => now(),
-                    ]);
             }
 
+            // [CF-07 / D3-013] Hapus update manual duplikat DB::raw('quantity + qty').
+            // Listener Ingredient::saved() akan menambahkan delta ($qty) ke ingredient_stock_balances secara otomatis.
             $ingredient->current_stock += $qty;
             $ingredient->save();
         });
@@ -242,14 +262,26 @@ class IngredientManager extends Component
 
     public function render()
     {
+        $storeId = app(TenantContext::class)->getStoreId();
+
         $ingredients = Ingredient::query()
+            ->select('ingredients.*')
+            ->when($storeId, function ($query) use ($storeId) {
+                $query->addSelect([
+                    'store_stock' => DB::table('ingredient_stock_balances')
+                        ->select('quantity')
+                        ->whereColumn('ingredient_stock_balances.ingredient_id', 'ingredients.id')
+                        ->where('ingredient_stock_balances.store_id', $storeId)
+                        ->limit(1),
+                ]);
+            })
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('name', 'like', '%'.$this->search.'%')
                         ->orWhere('ingredient_code', 'like', '%'.$this->search.'%');
                 });
             })
-            ->latest()
+            ->latest('ingredients.created_at')
             ->paginate(10);
 
         return view('livewire.inventory.ingredient-manager', compact('ingredients'));

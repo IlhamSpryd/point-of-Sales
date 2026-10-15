@@ -54,8 +54,26 @@ class TableController extends Controller
             $this->tableService->delete($table);
 
             return redirect()->route('tables.index')->with('success', 'Meja berhasil dihapus.');
-        } catch (\Throwable $e) {
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return redirect()->route('tables.index')->withErrors($e->validator);
+        } catch (\Exception $e) {
+            if ($e instanceof \Illuminate\Database\QueryException) {
+                \Illuminate\Support\Facades\Log::error('Failed to delete table: '.$e->getMessage(), [
+                    'table_id' => $table->id,
+                    'exception' => $e,
+                ]);
+
+                return redirect()->route('tables.index')->with('error', 'Terjadi kesalahan sistem saat menghapus meja. Silakan coba lagi.');
+            }
+
             return redirect()->route('tables.index')->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Unexpected error deleting table: '.$e->getMessage(), [
+                'table_id' => $table->id,
+                'exception' => $e,
+            ]);
+
+            return redirect()->route('tables.index')->with('error', 'Terjadi kesalahan sistem saat menghapus meja.');
         }
     }
 

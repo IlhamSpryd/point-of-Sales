@@ -20,8 +20,16 @@ class OrderPolicy
 
     private function sameStore(User $user, Order $order): bool
     {
-        return $user->store_id === null
-            || (int) $user->store_id === (int) $order->store_id;
+        $role = $user->role;
+        if ($role && ($role->name === 'Owner' || (bool) $role->is_admin)) {
+            return true;
+        }
+
+        if (isset($user->store_id)) {
+            return (int) $user->store_id === (int) $order->store_id;
+        }
+
+        return $user->stores()->where('stores.id', $order->store_id)->exists();
     }
 
     public function create(User $user): bool

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Customer\AddToCartRequest;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Models\Table;
 use App\Services\CartService;
 use App\Services\Context\TenantContext;
@@ -45,8 +46,14 @@ class CartController extends Controller
 
         $taxAmount = $totals['tax_amount'];
         $totalAmount = $totals['total_amount'];
+        $taxRate = (float) Setting::get('tax_rate', config('pos.tax_rate', 0.11));
+        $roundingValue = (int) Setting::get('rounding_value', config('pos.rounding_value', 100));
+        $roundingBehavior = (string) Setting::get('rounding_behavior', config('pos.rounding_behavior', 'ROUND_NEAREST'));
 
-        return view('customer.cart.index', compact('items', 'subtotal', 'taxAmount', 'totalAmount', 'currentTable', 'menuUrl'));
+        return view('customer.cart.index', compact(
+            'items', 'subtotal', 'taxAmount', 'totalAmount', 'currentTable', 'menuUrl',
+            'taxRate', 'roundingValue', 'roundingBehavior'
+        ));
     }
 
     /**

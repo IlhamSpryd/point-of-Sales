@@ -409,10 +409,7 @@
                         class="flex-1 min-h-[44px] rounded-xl border border-[#E9E9E7] bg-white text-sm font-semibold text-[#787774] hover:bg-[#F7F7F5] transition-all duration-200 active:scale-95">
                         Tutup
                     </button>
-                    @if (
-                        $detail->order_status->value === 'paid' &&
-                            (auth()->user()->role->hasPermission('can_void_order') ||
-                                in_array(auth()->user()->role->name, ['Owner', 'Manager'])))
+                    @if ($detail->order_status->value === 'paid' && auth()->user()->can('void', $detail))
                         <button type="button" wire:click="$set('voidingOrderId', {{ $detail->id }})"
                             class="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600 text-white text-sm font-bold hover:bg-rose-700 transition-all duration-200 active:scale-95 shadow-sm">
                             <span class="material-symbols-rounded text-[18px]">cancel</span> Batalkan (Void)

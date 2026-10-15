@@ -7,7 +7,7 @@
             if (input) input.focus();
         },
         triggerPay() {
-            const btn = document.getElementById('btn-bayar');
+            const btn = document.getElementById('btn-bayar') || document.getElementById('btn-proses-bayar');
             if (btn && !btn.disabled) btn.click();
         }
 }"
@@ -348,6 +348,18 @@
                 <div class="absolute inset-0 flex flex-col">
                     <!-- AREA PRODUK YANG DI-SCROLL -->
                     <div class="flex-1 overflow-y-auto custom-scrollbar p-4 lg:p-5 space-y-3">
+                        @if ($pendingOrderId)
+                            <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs font-semibold text-amber-900 flex items-center justify-between shadow-sm">
+                                <span class="flex items-center gap-1.5">
+                                    <span class="material-symbols-rounded text-base text-amber-700">lock</span>
+                                    Mode Pelunasan QR #{{ $pendingOrderCode }} (Terkunci)
+                                </span>
+                                <button type="button" wire:click="cancelPendingOrderMode" class="text-xs font-bold text-rose-600 hover:text-rose-800">
+                                    Batal
+                                </button>
+                            </div>
+                        @endif
+
                         @if (count($this->cartLines) === 0)
                             <div class="h-full flex flex-col justify-center items-center opacity-70">
                                 <span
@@ -358,15 +370,17 @@
                             @foreach ($this->cartLines as $line)
                                 <div wire:key="cart-line-{{ $line['product_id'] }}-{{ implode('-', $line['modifier_ids'] ?? []) }}-{{ md5((string) ($line['notes'] ?? '')) }}-{{ $line['index'] }}"
                                     class="flex gap-3 p-3 bg-white rounded-xl border border-gray-200 shadow-sm relative group transition-all duration-200 hover:border-gray-300">
-                                    <button type="button" wire:click="removeFromCart({{ $line['index'] }})"
-                                        aria-label="Hapus {{ $line['product_name'] }} dari keranjang"
-                                        class="absolute -top-2 -right-2 bg-white rounded-full p-1.5 border border-gray-200 text-gray-400 hover:text-rose-500 hover:border-rose-200 shadow-sm transition-opacity opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
-                                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
-                                            stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
+                                    @unless ($pendingOrderId)
+                                        <button type="button" wire:click="removeFromCart({{ $line['index'] }})"
+                                            aria-label="Hapus {{ $line['product_name'] }} dari keranjang"
+                                            class="absolute -top-2 -right-2 bg-white rounded-full p-1.5 border border-gray-200 text-gray-400 hover:text-rose-500 hover:border-rose-200 shadow-sm transition-opacity opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
+                                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    @endunless
                                     <div class="flex-1 flex flex-col justify-between">
                                         <div class="flex justify-between items-start">
                                             <h4
@@ -390,20 +404,24 @@
                                             </div>
                                             <div
                                                 class="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg p-0.5 shadow-sm">
-                                                <button type="button"
-                                                    wire:click="updateCartQty({{ $line['index'] }}, -1)"
-                                                    aria-label="Kurangi jumlah {{ $line['product_name'] }}"
-                                                    class="w-6 h-6 flex items-center justify-center rounded text-gray-500 hover:text-apeiron-ink hover:bg-gray-200/60 active:scale-95 transition-all text-xs font-bold focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-900">
-                                                    -
-                                                </button>
-                                                <span
-                                                    class="text-[12px] font-bold text-gray-700 min-w-[20px] text-center leading-none select-none">{{ $line['qty'] }}</span>
-                                                <button type="button"
-                                                    wire:click="updateCartQty({{ $line['index'] }}, 1)"
-                                                    aria-label="Tambah jumlah {{ $line['product_name'] }}"
-                                                    class="w-6 h-6 flex items-center justify-center rounded text-gray-500 hover:text-apeiron-ink hover:bg-gray-200/60 active:scale-95 transition-all text-xs font-bold focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-900">
-                                                    +
-                                                </button>
+                                                @if ($pendingOrderId)
+                                                    <span class="text-[12px] font-bold text-gray-700 px-2 py-0.5 leading-none select-none">{{ $line['qty'] }} pcs</span>
+                                                @else
+                                                    <button type="button"
+                                                        wire:click="updateCartQty({{ $line['index'] }}, -1)"
+                                                        aria-label="Kurangi jumlah {{ $line['product_name'] }}"
+                                                        class="w-6 h-6 flex items-center justify-center rounded text-gray-500 hover:text-apeiron-ink hover:bg-gray-200/60 active:scale-95 transition-all text-xs font-bold focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-900">
+                                                        -
+                                                    </button>
+                                                    <span
+                                                        class="text-[12px] font-bold text-gray-700 min-w-[20px] text-center leading-none select-none">{{ $line['qty'] }}</span>
+                                                    <button type="button"
+                                                        wire:click="updateCartQty({{ $line['index'] }}, 1)"
+                                                        aria-label="Tambah jumlah {{ $line['product_name'] }}"
+                                                        class="w-6 h-6 flex items-center justify-center rounded text-gray-500 hover:text-apeiron-ink hover:bg-gray-200/60 active:scale-95 transition-all text-xs font-bold focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-900">
+                                                        +
+                                                    </button>
+                                                @endif
                                             </div>
                                         </div>
                                     </div>
@@ -419,7 +437,8 @@
                         @if (count($this->activeDiscounts) > 0)
                             <div class="relative">
                                 <select wire:model.live="selectedDiscountId"
-                                    class="w-full h-10 pl-4 pr-9 bg-gray-100/80 border border-gray-200/50 rounded-xl outline-none text-[13px] font-bold text-gray-700 hover:bg-gray-200/50 hover:text-apeiron-ink focus:bg-white focus:border-gray-300 focus:ring-0 appearance-none transition-all duration-200 cursor-pointer">
+                                    @disabled((bool) $pendingOrderId)
+                                    class="w-full h-10 pl-4 pr-9 bg-gray-100/80 border border-gray-200/50 rounded-xl outline-none text-[13px] font-bold text-gray-700 hover:bg-gray-200/50 hover:text-apeiron-ink focus:bg-white focus:border-gray-300 focus:ring-0 appearance-none transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                                     <option value="">+ Tambah Diskon</option>
                                     @foreach ($this->activeDiscounts as $d)
                                         <option value="{{ $d->id }}">{{ $d->name }}
@@ -452,7 +471,7 @@
                             @endif
                             <div class="flex justify-between items-center">
                                 <span class="text-xs text-gray-500 font-medium">Pajak
-                                    ({{ rtrim(rtrim(number_format(config('pos.tax_rate', 0.11) * 100, 1), '0'), '.') }}%)</span>
+                                    ({{ $this->taxRatePercent }}%)</span>
                                 <span class="text-xs font-medium text-gray-600 tabular-nums">Rp
                                     {{ number_format($this->taxAmount, 0, ',', '.') }}</span>
                             </div>
@@ -593,11 +612,12 @@
                                     $allModIds = $group->modifiers->pluck('id')->toJson();
                                 @endphp
                                 @foreach ($group->modifiers as $mod)
-                                    <label :class="localMods.includes({{ $mod->id }}) ? 'bg-apeiron-ink border-apeiron-ink text-white shadow-sm' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'"
-                                           class="flex-col min-h-[50px] rounded-xl p-3 flex justify-center items-center cursor-pointer transition-colors duration-150 border">
-                                        <input type="button"
-                                            x-on:click="toggleMod({{ $mod->id }}, '{{ $group->selection_type }}', {{ $allModIds }})"
-                                            class="sr-only">
+                                    <button type="button"
+                                        role="{{ $group->selection_type === 'single' ? 'radio' : 'checkbox' }}"
+                                        :aria-checked="localMods.includes({{ $mod->id }})"
+                                        x-on:click="toggleMod({{ $mod->id }}, '{{ $group->selection_type }}', {{ $allModIds }})"
+                                        :class="localMods.includes({{ $mod->id }}) ? 'bg-apeiron-ink border-apeiron-ink text-white shadow-sm' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'"
+                                        class="flex flex-col min-h-[50px] rounded-xl p-3 justify-center items-center cursor-pointer transition-colors duration-150 border text-center">
                                         <span class="font-bold text-[13px] leading-tight text-center">
                                             {{ $mod->name }}
                                         </span>
@@ -605,7 +625,7 @@
                                             <span :class="localMods.includes({{ $mod->id }}) ? 'text-gray-300' : 'text-gray-400'"
                                                   class="text-[11px] font-bold mt-0.5">+Rp {{ number_format($mod->extra_price, 0, ',', '.') }}</span>
                                         @endif
-                                    </label>
+                                    </button>
                                 @endforeach
                             </div>
                         </div>
@@ -813,7 +833,11 @@
     </x-modal>
 
     <script>
-        document.addEventListener('alpine:init', () => {
+        function registerCheckoutPayment() {
+            if (!window.Alpine) return;
+            if (window.__checkoutPaymentRegistered) return;
+            window.__checkoutPaymentRegistered = true;
+
             Alpine.data('checkoutPayment', () => ({
                 total: 0,
                 legs: [],
@@ -935,9 +959,19 @@
                     }
                 },
             }));
-        });
+        }
 
-        document.addEventListener('livewire:init', () => {
+        if (window.Alpine) {
+            registerCheckoutPayment();
+        } else {
+            document.addEventListener('alpine:init', registerCheckoutPayment);
+        }
+
+        function registerTransactionSuccessListener() {
+            if (!window.Livewire) return;
+            if (window.__transactionSuccessBound) return;
+            window.__transactionSuccessBound = true;
+
             Livewire.on('transaction-success', async (e) => {
                 const payload = Array.isArray(e) ? e[0] : (e?.detail ?? e);
                 const orderCode = payload?.orderCode;
@@ -969,7 +1003,13 @@
 
                 window.location.reload();
             });
-        });
+        }
+
+        if (window.Livewire) {
+            registerTransactionSuccessListener();
+        } else {
+            document.addEventListener('livewire:init', registerTransactionSuccessListener);
+        }
     </script>
 </div>
 

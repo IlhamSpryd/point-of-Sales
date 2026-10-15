@@ -51,6 +51,13 @@ class AsyncExportButton extends Component
             403
         );
 
+        $this->resetErrorBag();
+
+        $this->validate([
+            'startDate' => 'required|date',
+            'endDate' => 'required|date|after_or_equal:startDate',
+        ]);
+
         // Guard against a stray double-click (or forged repeat call)
         // creating duplicate ExportTask rows for the same request.
         if ($this->taskId !== null) {
@@ -64,8 +71,17 @@ class AsyncExportButton extends Component
             $task = $reportService->queueExport($start, $end, Auth::id());
             $this->taskId = $task->id;
         } catch (ValidationException $e) {
-            $this->addError('range', collect($e->errors())->flatten()->first());
+            $this->addError('range', collect($e->errors())->flatten()->first() ?? 'Rentang tanggal tidak valid.');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Export failed to queue: '.$e->getMessage(), ['exception' => $e]);
+            $this->addError('range', 'Terjadi kesalahan sistem saat memproses antrean ekspor.');
         }
+    }
+
+    public function resetExport(): void
+    {
+        $this->taskId = null;
+        $this->resetErrorBag();
     }
 
     public function render()

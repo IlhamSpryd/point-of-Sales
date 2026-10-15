@@ -34,8 +34,12 @@ class WaiterCallController extends Controller
 
         Log::channel('stack')->info("[WAITER-CALL] Pelanggan di {$tableName} (ID:{$tableId}) memanggil staf.");
 
+        $table = \App\Models\Table::find($tableId);
+        $tenantId = $table ? $table->tenant_id : app(\App\Services\Context\TenantContext::class)->getTenantId();
+        $storeId = $table ? $table->store_id : app(\App\Services\Context\TenantContext::class)->getStoreId();
+
         // PATCH FOR P-09: Dispatch event push notification ke KDS/Kasir
-        WaiterCalled::dispatch($tableId, $tableName);
+        WaiterCalled::dispatch($tableId, $tableName, $tenantId, $storeId);
 
         return response()->json(['message' => "Panggilan terkirim. Staf sedang menuju {$tableName}."]);
     }

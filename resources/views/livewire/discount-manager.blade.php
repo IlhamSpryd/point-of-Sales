@@ -21,7 +21,7 @@
 
     <div class="card-surface flex flex-col flex-1 min-h-0">
 
-        <div class="hidden lg:block overflow-auto flex-1 table-scroll-shadow">
+        <div class="overflow-x-auto flex-1 table-scroll-shadow">
             <x-data-table>
                 <x-slot:head>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">Nama &amp; Kode</th>
@@ -99,7 +99,7 @@
                 <h3 class="text-lg font-bold text-apeiron-ink tracking-tight" id="discount-modal-title">
                     {{ $discountId ? 'Edit Diskon' : 'Tambah Diskon Baru' }}
                 </h3>
-                <button type="button" x-on:click="$dispatch('close')" aria-label="Tutup"
+                <button type="button" wire:click="closeModal" x-on:click="$dispatch('close')" aria-label="Tutup"
                     class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-apeiron-muted hover:bg-apeiron-surface hover:text-apeiron-ink transition-all duration-200 active:scale-90">
                     <span class="material-symbols-rounded text-[22px]">close</span>
                 </button>
@@ -191,7 +191,7 @@
                     <span wire:loading wire:target="store" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
                     Simpan
                 </x-button>
-                <x-button type="button" variant="secondary" x-on:click="$dispatch('close')">
+                <x-button type="button" variant="secondary" wire:click="closeModal" x-on:click="$dispatch('close')">
                     Batal
                 </x-button>
             </div>

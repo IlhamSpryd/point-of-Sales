@@ -20,8 +20,18 @@
                     </div>
                     <div>
                         <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">{{ __('Status') }}</span>
-                        <p class="text-sm font-semibold capitalize px-3 py-1 rounded-full {{ $order->order_status === 'paid' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600' }}">
-                            {{ $order->order_status }}
+                        @php
+                            $statusValue = $order->order_status instanceof \App\Enums\OrderStatus ? $order->order_status->value : (string) $order->order_status;
+                            $statusLabel = $order->order_status instanceof \App\Enums\OrderStatus ? $order->order_status->label() : ucfirst($statusValue);
+                            $statusClass = match($statusValue) {
+                                'paid', 'completed' => 'bg-emerald-50 text-emerald-600',
+                                'pending' => 'bg-amber-50 text-amber-600',
+                                'void', 'failed' => 'bg-rose-50 text-rose-600',
+                                default => 'bg-slate-50 text-slate-600',
+                            };
+                        @endphp
+                        <p class="text-sm font-semibold capitalize px-3 py-1 rounded-full {{ $statusClass }}">
+                            {{ $statusLabel }}
                         </p>
                     </div>
                 </div>
@@ -33,7 +43,7 @@
                             <div class="py-2 flex justify-between items-center text-sm">
                                 <div>
                                     <span class="font-medium text-slate-800">{{ $item->product->product_name ?? 'Produk' }}</span>
-                                    <span class="text-slate-400"> x {{ $item->quantity }}</span>
+                                    <span class="text-slate-400"> x {{ $item->qty }}</span>
                                 </div>
                                 <span class="font-medium text-slate-700">Rp {{ number_format((float) $item->order_subtotal, 0, ',', '.') }}</span>
                             </div>

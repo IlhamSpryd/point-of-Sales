@@ -121,11 +121,14 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
+                                @php
+                                    $displayStock = (float) ($item->store_stock ?? $item->current_stock);
+                                @endphp
                                 <div class="flex items-center justify-end gap-2">
-                                    <span class="text-sm font-medium tabular-nums {{ $item->current_stock <= $item->reorder_level ? 'text-rose-600' : 'text-apeiron-ink' }}">
-                                        {{ number_format($item->current_stock, 2) }} {{ $item->unit }}
+                                    <span class="text-sm font-medium tabular-nums {{ $displayStock <= $item->reorder_level ? 'text-rose-600' : 'text-apeiron-ink' }}">
+                                        {{ number_format($displayStock, 2) }} {{ $item->unit }}
                                     </span>
-                                    @if($item->current_stock <= $item->reorder_level)
+                                    @if($displayStock <= $item->reorder_level)
                                         <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700" title="Stok Menipis">!</span>
                                     @endif
                                 </div>
@@ -195,7 +198,10 @@
                     </div>
                     <div class="flex items-center justify-between mt-3 pt-3 border-t border-apeiron-border">
                         <div class="flex-1">
-                            <span class="text-[11px] font-semibold text-apeiron-muted uppercase tracking-wider block mb-0.5">Stok: <span class="{{ $item->current_stock <= $item->reorder_level ? 'text-rose-600' : 'text-apeiron-ink' }}">{{ number_format($item->current_stock, 2) }} {{ $item->unit }}</span></span>
+                            @php
+                                $displayStock = (float) ($item->store_stock ?? $item->current_stock);
+                            @endphp
+                            <span class="text-[11px] font-semibold text-apeiron-muted uppercase tracking-wider block mb-0.5">Stok: <span class="{{ $displayStock <= $item->reorder_level ? 'text-rose-600' : 'text-apeiron-ink' }}">{{ number_format($displayStock, 2) }} {{ $item->unit }}</span></span>
                             <span class="text-xs text-apeiron-ink">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }} / {{ $item->unit }}</span>
                         </div>
                         <div class="flex items-center gap-1 shrink-0">

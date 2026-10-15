@@ -2,17 +2,22 @@
         taskId: @entangle('taskId'),
         status: 'idle',
         downloadUrl: null,
+        errorMessage: '',
         loading: false,
         init() {
             this.$watch('taskId', value => {
                 if(value) {
                     this.pollStatus();
+                } else {
+                    this.status = 'idle';
+                    this.loading = false;
                 }
             });
         },
         pollStatus() {
             this.loading = true;
             this.status = 'processing';
+            this.errorMessage = '';
             
             let interval = setInterval(() => {
                 if(!this.taskId) {
@@ -21,7 +26,12 @@
                 }
                 
                 fetch(`/exports/${this.taskId}/status`)
-                    .then(res => res.json())
+                    .then(res => {
+                        if (!res.ok) {
+                            throw new Error('HTTP ' + res.status);
+                        }
+                        return res.json();
+                    })
                     .then(data => {
                         this.status = data.status;
                         if(data.status === 'completed') {
@@ -30,12 +40,16 @@
                             clearInterval(interval);
                         } else if(data.status === 'failed') {
                             this.loading = false;
+                            this.errorMessage = data.error_message || 'Ekspor gagal diproses.';
                             clearInterval(interval);
-                            alert('Export failed: ' + data.error_message);
                         }
                     })
                     .catch(err => {
                         console.error('Error polling status:', err);
+                        this.loading = false;
+                        this.status = 'failed';
+                        this.errorMessage = 'Gagal memeriksa status ekspor (kesalahan jaringan atau server).';
+                        clearInterval(interval);
                     });
             }, 2000);
         }
@@ -73,4 +87,30 @@
     >
         <span class="material-symbols-rounded text-[18px]">check_circle</span> Download File Ready
     </a>
+
+    <!-- Polling Error Message -->
+    <div x-show="errorMessage" class="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-medium" x-cloak>
+        <span class="material-symbols-rounded text-[14px]">error</span>
+        <span x-text="errorMessage"></span>
+    </div>
+
+    <!-- Livewire Validation Errors -->
+    @error('range')
+        <div class="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-medium">
+            <span class="material-symbols-rounded text-[14px]">error</span>
+            <span>{{ $message }}</span>
+        </div>
+    @enderror
+    @error('startDate')
+        <div class="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-medium">
+            <span class="material-symbols-rounded text-[14px]">error</span>
+            <span>{{ $message }}</span>
+        </div>
+    @enderror
+    @error('endDate')
+        <div class="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-medium">
+            <span class="material-symbols-rounded text-[14px]">error</span>
+            <span>{{ $message }}</span>
+        </div>
+    @enderror
 </div>

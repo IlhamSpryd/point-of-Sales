@@ -624,10 +624,21 @@ class FrontendArchitectureAuditTest extends TestCase
 
         $context->setStoreId($storeB->id);
 
+        $rivalRole = Role::create([
+            'tenant_id' => $tenantB->id,
+            'name' => 'Kasir Rival',
+            'permissions' => ['orders.create', 'orders.view'],
+        ]);
+
+        $rivalUser = User::factory()->create([
+            'tenant_id' => $tenantB->id,
+            'role_id' => $rivalRole->id,
+        ]);
+
         $rivalOrder = Order::forceCreate([
             'tenant_id' => $tenantB->id,
             'store_id' => $storeB->id,
-            'user_id' => $this->cashierUser->id,
+            'user_id' => $rivalUser->id,
             'order_code' => 'RIVAL-ORDER-99',
             'order_status' => OrderStatus::Paid,
             'payment_method' => PaymentMethod::Cash,

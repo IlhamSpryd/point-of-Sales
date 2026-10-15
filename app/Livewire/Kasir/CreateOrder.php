@@ -14,12 +14,15 @@ use App\Models\Discount;
 use App\Models\Modifier;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Models\Table;
+use App\Services\Context\TenantContext;
 use App\Services\MenuCacheService;
 use App\Services\TransactionService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
@@ -220,6 +223,11 @@ class CreateOrder extends Component
     // Modal state reset
     public function openModifierPicker(int $productId): void
     {
+        if ($this->pendingOrderId !== null) {
+            $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+            return;
+        }
+
         $this->selectingProductId = Product::findOrFail($productId)->id;
         $this->pendingModifierIds = [];
 
@@ -249,6 +257,11 @@ class CreateOrder extends Component
 
     public function toggleModifier(int $groupId, int $modifierId, string $selectionType): void
     {
+        if ($this->pendingOrderId !== null) {
+            $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+            return;
+        }
+
         if ($selectionType === 'single') {
             // Hapus modifier lain yang berada dalam grup yang sama, lalu tambahkan yang baru
             $groupModifierIds = Modifier::where('modifier_group_id', $groupId)->pluck('id')->toArray();
@@ -267,9 +280,16 @@ class CreateOrder extends Component
 
     public function confirmAddToCart(): void
     {
+        if ($this->pendingOrderId !== null) {
+            $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+            return;
+        }
+
         if (! $this->selectingProductId) {
             return;
         }
+
+        $this->pendingQty = max(1, (int) $this->pendingQty);
 
         $product = Product::with('modifierGroups')->findOrFail($this->selectingProductId);
 
@@ -324,6 +344,11 @@ class CreateOrder extends Component
 
     public function addToCartDirectly(int $productId): void
     {
+        if ($this->pendingOrderId !== null) {
+            $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+            return;
+        }
+
         $product = Product::with('modifierGroups')->findOrFail($productId);
         $hasRequiredModifiers = $product->modifierGroups->where('is_required', true)->isNotEmpty();
         if ($hasRequiredModifiers) {
@@ -355,12 +380,22 @@ class CreateOrder extends Component
 
     public function removeFromCart(int $index): void
     {
+        if ($this->pendingOrderId !== null) {
+            $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+            return;
+        }
+
         unset($this->cart[$index]);
         $this->cart = array_values($this->cart);
     }
 
     public function updateCartQty(int $index, int $delta): void
     {
+        if ($this->pendingOrderId !== null) {
+            $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+            return;
+        }
+
         if (! isset($this->cart[$index])) {
             return;
         }
@@ -372,6 +407,18 @@ class CreateOrder extends Component
         }
 
         $this->cart[$index]['qty'] = $newQty;
+    }
+
+    public function clearCart(): void
+    {
+        if ($this->pendingOrderId !== null) {
+            $this->cancelPendingOrderMode();
+        }
+
+        $this->cart = [];
+        $this->selectedDiscountId = null;
+        $this->cashReceived = 0;
+        $this->resetValidation();
     }
 
     // READ-ONLY preview -- panggil ulang method Service yang sama persis
@@ -391,15 +438,19 @@ class CreateOrder extends Component
         $products = Product::with('modifierGroups')->whereIn('id', $productIds)->get()->keyBy('id');
 
         return collect($this->cart)->map(function ($raw, $i) use ($service, $products) {
-            $product = $products->get($raw['product_id']) ?? Product::findOrFail($raw['product_id']);
+            $product = $products->get($raw['product_id']);
+            if (! $product) {
+                return null;
+            }
 
+            $qty = max(1, (int) ($raw['qty'] ?? 1));
             $line = $service->resolveOrderItemLine(
                 $product,
-                $raw['modifier_ids'], $raw['qty'], $raw['notes'],
+                $raw['modifier_ids'] ?? [], $qty, $raw['notes'] ?? null,
             );
 
             return [...$line, 'index' => $i];
-        });
+        })->filter()->values();
     }
 
     #[Computed]
@@ -431,6 +482,14 @@ class CreateOrder extends Component
         return Discount::find($this->selectedDiscountId);
     }
 
+    public function updatedSelectedDiscountId(): void
+    {
+        if ($this->pendingOrderId !== null) {
+            $this->selectedDiscountId = null;
+            $this->addError('cart', 'Diskon tidak dapat dimodifikasi pada pesanan QR pending.');
+        }
+    }
+
     #[Computed]
     public function discountAmount(): int
     {
@@ -457,30 +516,46 @@ class CreateOrder extends Component
     }
 
     #[Computed]
+    public function orderTotals(): array
+    {
+        return app(TransactionService::class)->calculateOrderTotals($this->subtotal, $this->discountAmount);
+    }
+
+    #[Computed]
     public function taxAmount(): int
     {
-        $discountedSubtotal = max(0, $this->subtotal - $this->discountAmount);
+        if ($this->pendingOrderId) {
+            $order = Order::find($this->pendingOrderId);
+            if ($order) {
+                return (int) $order->tax_amount;
+            }
+        }
 
-        return (int) round($discountedSubtotal * config('pos.tax_rate', 0.11));
+        return $this->orderTotals()['tax_amount'];
     }
 
     #[Computed]
     public function totalAmount(): int
     {
-        $discountedSubtotal = max(0, $this->subtotal - $this->discountAmount);
+        if ($this->pendingOrderId) {
+            $order = Order::find($this->pendingOrderId);
+            if ($order) {
+                return (int) $order->order_amount;
+            }
+        }
 
-        $totalAmount = $discountedSubtotal + $this->taxAmount;
+        return $this->orderTotals()['total_amount'];
+    }
 
-        // Aplikasikan rounding sesuai setting
-        $roundingValue = config('pos.rounding_value', 100);
-        $roundingBehavior = config('pos.rounding_behavior', 'ROUND_NEAREST');
+    #[Computed]
+    public function taxRatePercent(): string
+    {
+        $tenantId = app(TenantContext::class)->getTenantId();
+        $rate = $tenantId !== null
+            ? (float) Setting::get('tax_rate', config('pos.tax_rate', 0.11))
+            : (float) config('pos.tax_rate', 0.11);
 
-        return (int) match ($roundingBehavior) {
-            'ROUND_NEAREST' => round($totalAmount / $roundingValue) * $roundingValue,
-            'ROUND_UP' => ceil($totalAmount / $roundingValue) * $roundingValue,
-            'ROUND_DOWN' => floor($totalAmount / $roundingValue) * $roundingValue,
-            default => round($totalAmount),
-        };
+        return rtrim(rtrim(number_format($rate * 100, 1), '0'), '.');
     }
 
     #[Computed]
@@ -601,7 +676,13 @@ class CreateOrder extends Component
             if ($this->pendingOrderId) {
                 // Skenario 2: Membayar Pesanan Self-Order yang tertunda.
                 // Sekarang menggunakan TransactionService untuk insert ledger payments & loyalty.
-                $order = Order::findOrFail($this->pendingOrderId);
+                $tenantId = app(TenantContext::class)->requireTenantId();
+                $storeId = app(TenantContext::class)->getStoreId();
+                $orderQuery = Order::where('tenant_id', $tenantId);
+                if ($storeId) {
+                    $orderQuery->where('store_id', $storeId);
+                }
+                $order = $orderQuery->findOrFail($this->pendingOrderId);
                 $transactionService->payPendingOrder(
                     $order,
                     $normalizedLegs,
@@ -666,8 +747,11 @@ class CreateOrder extends Component
             DB::rollBack();
             if ($e instanceof ValidationException) {
                 $this->addError('cart', collect($e->errors())->flatten()->first());
-            } else {
+            } elseif ($e instanceof \DomainException) {
                 $this->addError('cart', $e->getMessage());
+            } else {
+                Log::error('CreateOrder submitOrder error: '.$e->getMessage(), ['exception' => $e]);
+                $this->addError('cart', 'Terjadi kesalahan sistem saat memproses transaksi. Silakan coba lagi.');
             }
 
             return;
