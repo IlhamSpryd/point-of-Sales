@@ -78,27 +78,44 @@ class MidtransNotificationController extends Controller
             return response()->json(['message' => 'invalid signature'], 403);
         }
 
+        $tenantContext = app(TenantContext::class);
+        $prevTenantId = $tenantContext->getTenantId();
+        $prevStoreId = $tenantContext->getStoreId();
+
         try {
             // Because webhooks run without an HTTP tenant context, we MUST fetch the order without
-            // global scope first, verify it exists, and then run the service logic INSIDE that tenant's context.
-            $order = Order::withoutTenantScope()->where('order_code', (string) $orderId)->firstOrFail();
+            // global scopes first, verify it exists, and then run the service logic INSIDE that tenant's context.
+            $order = Order::withoutGlobalScopes()->where('order_code', (string) $orderId)->firstOrFail();
 
-            app(TenantContext::class)->runAs($order->tenant_id, $order->store_id, function () use ($payload, $orderId, $grossAmount) {
-                // [SEC-006] gross_amount dari payload (yang keasliannya sudah
-                // terverifikasi lewat pengecekan signature di atas) diteruskan
-                // ke Service agar dicocokkan terhadap order_amount di database
-                // sebelum status benar-benar diubah menjadi Paid.
-                $this->transactionService->updateStatusFromMidtransNotification(
-                    orderCode: (string) $orderId,
-                    transactionStatus: (string) ($payload['transaction_status'] ?? ''),
-                    fraudStatus: $payload['fraud_status'] ?? null,
-                    grossAmount: (int) round((float) $grossAmount),
-                );
-            });
+            if (! $order->tenant_id) {
+                Log::warning('Midtrans notification: order tidak memiliki tenant_id.', ['order_id' => $orderId]);
+
+                return response()->json(['message' => 'invalid order tenancy'], 422);
+            }
+
+            $tenantContext->setTenantId((int) $order->tenant_id);
+            $tenantContext->setStoreId($order->store_id !== null ? (int) $order->store_id : null);
+
+            // [SEC-006] gross_amount dari payload (yang keasliannya sudah
+            // terverifikasi lewat pengecekan signature di atas) diteruskan
+            // ke Service agar dicocokkan terhadap order_amount di database
+            // sebelum status benar-benar diubah menjadi Paid.
+            $this->transactionService->updateStatusFromMidtransNotification(
+                orderCode: (string) $orderId,
+                transactionStatus: (string) ($payload['transaction_status'] ?? ''),
+                fraudStatus: $payload['fraud_status'] ?? null,
+                grossAmount: (int) round((float) $grossAmount),
+            );
         } catch (ModelNotFoundException) {
             Log::warning('Midtrans notification: order tidak ditemukan.', ['order_id' => $orderId]);
 
             return response()->json(['message' => 'order not found'], 404);
+        } finally {
+            $tenantContext->clear();
+            if ($prevTenantId !== null) {
+                $tenantContext->setTenantId($prevTenantId);
+                $tenantContext->setStoreId($prevStoreId);
+            }
         }
 
         return response()->json(['message' => 'ok']);

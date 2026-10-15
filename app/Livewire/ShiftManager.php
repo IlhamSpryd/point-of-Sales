@@ -7,16 +7,20 @@ namespace App\Livewire;
 // "shift sudah open", bukan lagi sekadar pengecekan aplikasi | 2026-09-21
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\CashDrawerMovement;
+use App\Policies\ShiftPolicy;
 use App\Models\Payment;
 use App\Models\Shift;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 class ShiftManager extends Component
 {
     use RequiresTenantContext;
 
+    #[Locked]
     public $activeShift;
 
     public $opening_balance = 0;
@@ -45,35 +49,19 @@ class ShiftManager extends Component
     // eksekusi PHP yang bisa diselang request paralel.
     public function openShift()
     {
+        // [D2-BE-004] Otorisasi policy buka shift.
+        Gate::authorize('open', \App\Models\Shift::class);
         $this->validate([
             'opening_balance' => 'required|integer|min:0',
         ]);
-
-        if (Shift::where('user_id', auth()->id())->where('status', 'open')->exists()) {
+        // [D2-BE-008] Logika domain didelegasikan ke ShiftService (thin caller).
+        $opened = app(\App\Services\ShiftService::class)
+            ->openShift((int) auth()->id(), (int) $this->opening_balance);
+        if ($opened === null) {
             $this->loadActiveShift();
             $this->dispatch('toast', message: 'Anda sudah memiliki shift yang sedang aktif.', type: 'info');
-
             return;
         }
-
-        try {
-            Shift::create([
-                'user_id' => auth()->id(),
-                'opening_balance' => (int) $this->opening_balance,
-                'status' => 'open',
-                'opened_at' => now(),
-            ]);
-        } catch (QueryException $e) {
-            if (! str_contains($e->getMessage(), 'shifts_one_open_per_user_unique')) {
-                throw $e;
-            }
-
-            $this->loadActiveShift();
-            $this->dispatch('toast', message: 'Anda sudah memiliki shift yang sedang aktif.', type: 'info');
-
-            return;
-        }
-
         $this->loadActiveShift();
         $this->dispatch('toast', message: 'Shift berhasil dibuka.', type: 'success');
     }

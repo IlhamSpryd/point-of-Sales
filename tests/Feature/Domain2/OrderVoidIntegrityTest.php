@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Domain2;
 
 use App\Enums\OrderStatus;
-use App\Enums\PaymentMethodEnum;
+use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatusEnum;
 use App\Livewire\Kasir\OrderHistory;
 use App\Models\Order;
@@ -29,9 +29,9 @@ class OrderVoidIntegrityTest extends TestCase
     protected User $cashier;
     protected Role $adminRole;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         app(TenantContext::class)->clear();
 
@@ -84,7 +84,7 @@ class OrderVoidIntegrityTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'store_id' => $this->store->id,
             'order_id' => $order->id,
-            'payment_method' => PaymentMethodEnum::Cash,
+            'payment_method' => PaymentMethod::Cash,
             'amount' => 55500,
             'status' => PaymentStatusEnum::Captured,
             'captured_at' => now(),
@@ -132,7 +132,7 @@ class OrderVoidIntegrityTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'store_id' => $this->store->id,
             'order_id' => $order->id,
-            'payment_method' => PaymentMethodEnum::Cash,
+            'payment_method' => PaymentMethod::Cash,
             'amount' => 22200,
             'status' => PaymentStatusEnum::Captured,
             'captured_at' => now(),

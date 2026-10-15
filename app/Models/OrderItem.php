@@ -73,6 +73,7 @@ class OrderItem extends Model
     public function modifiers(): BelongsToMany
     {
         return $this->belongsToMany(Modifier::class, 'order_item_modifiers')
+            ->using(OrderItemModifier::class)
             ->withPivot('price_at_time', 'qty', 'tenant_id', 'store_id')
             ->withTimestamps();
     }

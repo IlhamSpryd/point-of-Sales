@@ -30,9 +30,9 @@ class KdsLifecycleTest extends TestCase
     protected User $staffB;
     protected Product $product;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         app(TenantContext::class)->clear();
 

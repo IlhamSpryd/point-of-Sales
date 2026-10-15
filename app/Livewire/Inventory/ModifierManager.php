@@ -133,7 +133,8 @@ class ModifierManager extends Component
     public function createModifier($groupId)
     {
         $this->resetModifierForm();
-        $this->selectedGroupId = $groupId;
+        $group = ModifierGroup::findOrFail($groupId);
+        $this->selectedGroupId = $group->id;
         $this->showModifierForm = true;
     }
 
@@ -163,6 +164,7 @@ class ModifierManager extends Component
     public function saveModifier()
     {
         $tenantId = app(\App\Services\Context\TenantContext::class)->requireTenantId();
+        $group = ModifierGroup::findOrFail($this->selectedGroupId);
 
         $this->validate([
             'modifierForm.name' => 'required|string|max:255',
@@ -177,7 +179,7 @@ class ModifierManager extends Component
         ]);
 
         $data = [
-            'modifier_group_id' => $this->selectedGroupId,
+            'modifier_group_id' => $group->id,
             'name' => $this->modifierForm['name'],
             'extra_price' => $this->modifierForm['extra_price'],
             'is_default' => $this->modifierForm['is_default'],

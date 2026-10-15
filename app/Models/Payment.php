@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\PaymentMethodEnum;
+use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatusEnum;
 use App\Models\Concerns\AssignsStore;
 use App\Models\Concerns\AssignsTenant;
@@ -25,7 +25,7 @@ class Payment extends Model
 
     protected $casts = [
         'amount' => 'integer',
-        'payment_method' => PaymentMethodEnum::class,
+        'payment_method' => PaymentMethod::class,
         'status' => PaymentStatusEnum::class,
     ];
 

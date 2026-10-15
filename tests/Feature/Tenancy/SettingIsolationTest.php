@@ -18,9 +18,9 @@ class SettingIsolationTest extends TestCase
 
     private $tenantB;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         app(TenantContext::class)->runWithoutTenant(function () {
             $this->tenantA = Tenant::forceCreate(['name' => 'Tenant A']);

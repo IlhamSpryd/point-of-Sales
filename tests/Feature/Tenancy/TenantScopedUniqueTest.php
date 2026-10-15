@@ -20,9 +20,9 @@ class TenantScopedUniqueTest extends TestCase
 {
     use RefreshDatabase, TwoTenantFixture;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
         if (! str_contains(DB::connection()->getDatabaseName(), 'test')) {
             $this->markTestSkipped('Not test database');
         }

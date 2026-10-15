@@ -45,6 +45,7 @@ class Modifier extends Model
     public function ingredients(): BelongsToMany
     {
         return $this->belongsToMany(Ingredient::class, 'modifier_ingredients')
+            ->using(ModifierIngredient::class)
             ->withPivot('quantity_required', 'tenant_id')
             ->withTimestamps();
     }
@@ -55,7 +56,8 @@ class Modifier extends Model
     public function orderItems(): BelongsToMany
     {
         return $this->belongsToMany(OrderItem::class, 'order_item_modifiers')
-            ->withPivot('price_at_time', 'qty')
+            ->using(OrderItemModifier::class)
+            ->withPivot('price_at_time', 'qty', 'tenant_id', 'store_id')
             ->withTimestamps();
     }
 }

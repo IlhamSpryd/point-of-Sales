@@ -41,11 +41,23 @@ class SalesExport implements FromQuery, ShouldAutoSize, WithChunkReading, WithHe
 
     public function query(): Builder
     {
+        $tenantId = app(\App\Services\Context\TenantContext::class)->requireTenantId();
+        $storeId = app(\App\Services\Context\TenantContext::class)->getStoreId();
+
         $baseQuery = $this->allStores ? Order::allStores() : Order::query();
 
+        $baseQuery
+            ->select(['id', 'user_id', 'order_code', 'payment_method', 'order_amount', 'created_at', 'tenant_id', 'store_id'])
+            ->with(['user' => function ($q) use ($tenantId) {
+                $q->select(['id', 'name', 'tenant_id'])->where('tenant_id', $tenantId);
+            }])
+            ->where('tenant_id', $tenantId);
+
+        if (! $this->allStores && $storeId !== null) {
+            $baseQuery->where('store_id', $storeId);
+        }
+
         return $baseQuery
-            ->select(['id', 'user_id', 'order_code', 'payment_method', 'order_amount', 'created_at'])
-            ->with('user:id,name')
             ->whereBetween('order_date', [$this->start, $this->end])
             ->where('order_status', OrderStatus::Paid->value)
             ->orderBy('created_at', 'desc');

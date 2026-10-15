@@ -32,7 +32,7 @@ class ReconcileBalances extends Command
                 }
 
                 // --- Products ---
-                $products = Product::where('tenant_id', $tenant->id)->get();
+                $products = Product::withoutTenantScope()->where('tenant_id', $tenant->id)->get();
                 foreach ($products as $product) {
                     // (a) legacy column
                     $legacyStock = $product->stock;

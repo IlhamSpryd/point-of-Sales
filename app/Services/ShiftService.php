@@ -7,10 +7,86 @@ namespace App\Services;
 use App\Models\CashDrawerMovement;
 use App\Models\Payment;
 use App\Models\Shift;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
 class ShiftService
 {
+    /**
+     * [D2-BE-008] Membuka shift untuk satu user secara atomik.
+     * Invarian satu-shift-aktif-per-user ditegakkan oleh unique constraint
+     * `shifts_one_open_per_user_unique` (penjaga otoritatif), ditambah
+     * pengecekan exists sebagai UX fail-fast.
+     *
+     * @return Shift|null shift yang baru dibuka, atau null bila sudah ada shift aktif.
+     */
+    public function openShift(int $userId, int $openingBalance): ?Shift
+    {
+        return DB::transaction(function () use ($userId, $openingBalance) {
+            $existing = Shift::where('user_id', $userId)
+                ->where('status', 'open')
+                ->lockForUpdate()
+                ->first();
+            if ($existing) {
+                return null;
+            }
+
+            try {
+                return Shift::create([
+                    'user_id' => $userId,
+                    'opening_balance' => $openingBalance,
+                    'status' => 'open',
+                    'opened_at' => now(),
+                ]);
+            } catch (QueryException $e) {
+                // Race kedua: unique constraint menolak shift aktif kedua.
+                if (! str_contains($e->getMessage(), 'shifts_one_open_per_user_unique')) {
+                    throw $e;
+                }
+
+                return null;
+            }
+        });
+    }
+
+    /**
+     * [D2-BE-008] Mencatat CashDrawerMovement (cash in / cash out) secara atomik
+     * di dalam shift aktif milik user. Mengunci baris shift agar rekap kas
+     * tidak berubah di bawah kaki pencatat.
+     */
+    public function recordCashMovement(int $userId, int $shiftId, string $type, int $amount, string $category, string $reason, ?string $receiptReference = null): ?CashDrawerMovement
+    {
+        if (! in_array($type, ['cash_in', 'cash_out'], true)) {
+            throw new \InvalidArgumentException("Tipe pergerakan kas tidak dikenal: {$type}");
+        }
+        if ($amount <= 0) {
+            throw new \InvalidArgumentException('Nominal pergerakan kas harus positif.');
+        }
+
+        return DB::transaction(function () use ($userId, $shiftId, $type, $amount, $category, $reason, $receiptReference) {
+            $shift = Shift::where('id', $shiftId)
+                ->where('user_id', $userId)
+                ->where('status', 'open')
+                ->lockForUpdate()
+                ->first();
+            if (! $shift) {
+                return null;
+            }
+
+            return CashDrawerMovement::create([
+                'tenant_id' => $shift->tenant_id,
+                'store_id' => $shift->store_id,
+                'shift_id' => $shift->id,
+                'type' => $type,
+                'category' => $category,
+                'amount' => $amount,
+                'reason' => $reason,
+                'receipt_reference' => $receiptReference,
+                'created_by' => $userId,
+            ]);
+        });
+    }
+
     /**
      * Hitung ringkasan kas (penjualan tunai, cash-in, cash-out, dan kas yang diharapkan).
      *

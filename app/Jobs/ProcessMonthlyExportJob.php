@@ -32,15 +32,29 @@ class ProcessMonthlyExportJob implements ShouldQueue
             throw new \RuntimeException('Tenant ID is required to process monthly export job.');
         }
 
-        app(TenantContext::class)->runAs($this->tenantId, $this->storeId, function () {
+        $tenantContext = app(TenantContext::class);
+        $prevTenantId = $tenantContext->getTenantId();
+        $prevStoreId = $tenantContext->getStoreId();
+
+        try {
+            $tenantContext->setTenantId($this->tenantId);
+            $tenantContext->setStoreId($this->storeId);
+
             $this->processExport();
-        });
+        } finally {
+            $tenantContext->clear();
+            if ($prevTenantId !== null) {
+                $tenantContext->setTenantId($prevTenantId);
+                $tenantContext->setStoreId($prevStoreId);
+            }
+        }
     }
 
     private function processExport(): void
     {
-        $filename = "exports/sales_{$this->month}_{$this->year}_".time().'.csv';
-        Storage::disk('local')->makeDirectory('exports');
+        $dir = "exports/tenant_{$this->tenantId}";
+        Storage::disk('local')->makeDirectory($dir);
+        $filename = "{$dir}/sales_{$this->month}_{$this->year}_".time().'.csv';
         $fullPath = Storage::disk('local')->path($filename);
         $handle = fopen($fullPath, 'w');
 
@@ -52,7 +66,13 @@ class ProcessMonthlyExportJob implements ShouldQueue
             fputcsv($handle, ['Order Code', 'Total', 'Payment Method', 'Status', 'Date']);
 
             // Menggunakan chunkById agar memori flat walau ada 1 juta data
-            Order::whereMonth('created_at', $this->month)
+            $orderQuery = $this->storeId !== null ? Order::query() : Order::allStores();
+            $orderQuery->where('tenant_id', $this->tenantId);
+            if ($this->storeId !== null) {
+                $orderQuery->where('store_id', $this->storeId);
+            }
+
+            $orderQuery->whereMonth('created_at', $this->month)
                 ->whereYear('created_at', $this->year)
                 ->chunkById(1000, function ($orders) use ($handle) {
                     foreach ($orders as $order) {

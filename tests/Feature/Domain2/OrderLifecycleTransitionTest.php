@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Domain2;
 
 use App\Enums\OrderStatus;
-use App\Enums\PaymentMethodEnum;
+use App\Enums\PaymentMethod;
 use App\Models\Order;
 use App\Models\Role;
 use App\Models\Shift;
@@ -27,9 +27,9 @@ class OrderLifecycleTransitionTest extends TestCase
     protected User $cashier;
     protected Shift $shift;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         app(TenantContext::class)->clear();
 
@@ -92,7 +92,7 @@ class OrderLifecycleTransitionTest extends TestCase
         $this->expectException(ValidationException::class);
         $service->payPendingOrder(
             $order,
-            [['method' => PaymentMethodEnum::Cash->value, 'amount' => 55500]],
+            [['method' => PaymentMethod::Cash->value, 'amount' => 55500]],
             $this->cashier->id,
             $this->shift->id
         );
@@ -119,7 +119,7 @@ class OrderLifecycleTransitionTest extends TestCase
         $this->expectException(ValidationException::class);
         $service->payPendingOrder(
             $order,
-            [['method' => PaymentMethodEnum::Cash->value, 'amount' => 33300]],
+            [['method' => PaymentMethod::Cash->value, 'amount' => 33300]],
             $this->cashier->id,
             $this->shift->id
         );
@@ -146,7 +146,7 @@ class OrderLifecycleTransitionTest extends TestCase
         $this->expectException(ValidationException::class);
         $service->payPendingOrder(
             $order,
-            [['method' => PaymentMethodEnum::Qris->value, 'amount' => 22200]],
+            [['method' => PaymentMethod::Qris->value, 'amount' => 22200]],
             $this->cashier->id,
             $this->shift->id
         );

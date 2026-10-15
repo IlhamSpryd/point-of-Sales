@@ -18,7 +18,7 @@ class ReconcilePendingMidtransOrders extends Command
 
     public function handle(TransactionService $service): int
     {
-        $stale = Order::withoutTenantScope()->where('order_status', OrderStatus::Pending)
+        $stale = Order::withoutGlobalScopes()->where('order_status', OrderStatus::Pending)
             ->where('payment_method', '!=', 'cash')
             ->whereNotNull('snap_token')
             ->where('created_at', '<=', now()->subMinutes(30))

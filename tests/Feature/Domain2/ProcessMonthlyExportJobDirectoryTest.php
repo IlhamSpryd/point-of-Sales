@@ -22,9 +22,9 @@ class ProcessMonthlyExportJobDirectoryTest extends TestCase
     protected Tenant $tenant;
     protected Store $store;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         app(TenantContext::class)->clear();
 

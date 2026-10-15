@@ -28,9 +28,9 @@ class ProcessWebhookOrderJobIdempotencyTest extends TestCase
     protected Product $product;
     protected User $systemUser;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         app(TenantContext::class)->clear();
 

@@ -66,7 +66,7 @@ class Table extends Model
         static::creating(function (Table $table) {
             // Auto-generate Business ID
             if (empty($table->table_code)) {
-                $latest = static::latest('id')->first();
+                $latest = static::withTrashed()->withoutGlobalScopes()->latest('id')->first();
                 $nextId = $latest ? $latest->id + 1 : 1;
                 $table->table_code = 'YVL-TBL-'.str_pad((string) $nextId, 3, '0', STR_PAD_LEFT);
             }

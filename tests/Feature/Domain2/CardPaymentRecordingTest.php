@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Domain2;
 
 use App\Enums\OrderStatus;
-use App\Enums\PaymentMethodEnum;
+use App\Enums\PaymentMethod;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Payment;
@@ -30,9 +30,9 @@ class CardPaymentRecordingTest extends TestCase
     protected Product $product;
     protected Shift $shift;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         app(TenantContext::class)->clear();
 
@@ -102,7 +102,7 @@ class CardPaymentRecordingTest extends TestCase
             ],
             'payments' => [
                 [
-                    'method' => PaymentMethodEnum::Card,
+                    'method' => PaymentMethod::Card,
                     'amount' => 111000, // 100,000 + 11% PPN (11,000)
                     'reference_number' => 'EDC-BCA-9876',
                 ],
@@ -116,7 +116,7 @@ class CardPaymentRecordingTest extends TestCase
 
         $this->assertDatabaseHas('payments', [
             'order_id' => $fresh->id,
-            'payment_method' => PaymentMethodEnum::Card->value,
+            'payment_method' => PaymentMethod::Card->value,
             'amount' => 111000,
             'reference_number' => 'EDC-BCA-9876',
         ]);

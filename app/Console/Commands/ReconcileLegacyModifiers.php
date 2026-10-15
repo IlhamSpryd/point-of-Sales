@@ -32,7 +32,7 @@ class ReconcileLegacyModifiers extends Command
         $dryRun = $this->option('dry-run');
         $chunkSize = (int) $this->option('chunk');
 
-        $query = OrderItem::whereNotNull('options')->where('options', '!=', '[]')->where('options', '!=', '{}');
+        $query = OrderItem::withoutGlobalScopes()->whereNotNull('options')->where('options', '!=', '[]')->where('options', '!=', '{}');
         $total = $query->count();
 
         $this->info("Found {$total} order items with legacy JSON options.");
@@ -80,11 +80,12 @@ class ReconcileLegacyModifiers extends Command
 
                         if (! $exists) {
                             $inserts[] = [
+                                'tenant_id' => $item->tenant_id,
+                                'store_id' => $item->store_id,
                                 'order_item_id' => $item->id,
                                 'modifier_id' => $modId,
                                 'qty' => $qty,
-                                'price' => $price,
-                                'line_total' => $price * $qty,
+                                'price_at_time' => $price,
                                 'created_at' => $item->created_at,
                                 'updated_at' => $item->updated_at,
                             ];

@@ -21,9 +21,9 @@ class TenantIsolationSecurityTest extends TestCase
     use RefreshDatabase;
     use TwoTenantFixture;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
         $this->setupTwoTenants();
     }
 

@@ -26,9 +26,9 @@ class ProvisioningRealConcurrencyTest extends TestCase
 
     private string $secret = 'test-provisioning-secret-0123456789abcdef';
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         if (! function_exists('pcntl_fork')) {
             $this->markTestSkipped('pcntl extension is required for multi-process concurrency testing.');

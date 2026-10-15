@@ -67,13 +67,26 @@ class ProcessSalesReportExportJob implements ShouldBeUnique, ShouldQueue
             throw new \RuntimeException('Tenant ID is required to process export job.');
         }
 
-        if ($this->exportTask->tenant_id !== null && $this->tenantId !== $this->exportTask->tenant_id) {
+        if ($this->exportTask->tenant_id !== null && (int) $this->tenantId !== (int) $this->exportTask->tenant_id) {
             throw new \RuntimeException('Tenant ID mismatch between job and task.');
         }
 
-        app(TenantContext::class)->runAs($this->tenantId, $this->storeId, function () {
+        $tenantContext = app(TenantContext::class);
+        $prevTenantId = $tenantContext->getTenantId();
+        $prevStoreId = $tenantContext->getStoreId();
+
+        try {
+            $tenantContext->setTenantId($this->tenantId);
+            $tenantContext->setStoreId($this->storeId);
+
             $this->processExport();
-        });
+        } finally {
+            $tenantContext->clear();
+            if ($prevTenantId !== null) {
+                $tenantContext->setTenantId($prevTenantId);
+                $tenantContext->setStoreId($prevStoreId);
+            }
+        }
     }
 
     private function processExport(): void
@@ -86,10 +99,7 @@ class ProcessSalesReportExportJob implements ShouldBeUnique, ShouldQueue
             $this->exportTask->update(['status' => ExportTaskStatus::Processing]);
         }
 
-        // Defensive memory ceiling for this worker process only. NOT a
-        // substitute for the chunked reading in SalesExport (M6-B-001),
-        // but gives PhpSpreadsheet's XML buffers more headroom before a
-        // hard fatal on very wide date ranges.
+        // Defensive memory ceiling for this worker process only.
         ini_set('memory_limit', '512M');
 
         try {
@@ -97,7 +107,9 @@ class ProcessSalesReportExportJob implements ShouldBeUnique, ShouldQueue
             $start = Carbon::parse($params['start'] ?? now()->startOfMonth());
             $end = Carbon::parse($params['end'] ?? now());
 
-            $filename = 'exports/sales_report_'.$start->format('Ymd').'-'.$end->format('Ymd').'_'.$this->exportTask->id.'.xlsx';
+            $dir = "exports/tenant_{$this->tenantId}";
+            Storage::disk('local')->makeDirectory($dir);
+            $filename = $dir.'/sales_report_'.$start->format('Ymd').'-'.$end->format('Ymd').'_'.$this->exportTask->id.'.xlsx';
 
             $allStores = (bool) ($params['all_stores'] ?? ($this->storeId === null));
             Excel::store(new SalesExport($start, $end, $allStores), $filename, 'local');

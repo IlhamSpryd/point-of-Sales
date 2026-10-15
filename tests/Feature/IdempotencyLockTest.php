@@ -16,9 +16,9 @@ class IdempotencyLockTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         $role = Role::create(['name' => 'Kasir', 'role_code' => 'KSR']);
         $this->user = User::factory()->create(['role_id' => $role->id]);

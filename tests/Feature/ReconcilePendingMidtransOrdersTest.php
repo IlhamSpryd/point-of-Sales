@@ -19,9 +19,9 @@ class ReconcilePendingMidtransOrdersTest extends TestCase
 
     protected $systemUser;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         Config::set('services.midtrans.server_key', 'test_server_key');
         Config::set('services.midtrans.is_production', false);

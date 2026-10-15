@@ -83,4 +83,9 @@ class SetTenantContext
 
         return $next($request);
     }
+
+    public function terminate(Request $request, Response $response): void
+    {
+        $this->tenantContext->clear();
+    }
 }

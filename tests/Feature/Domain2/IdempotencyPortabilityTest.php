@@ -28,9 +28,9 @@ class IdempotencyPortabilityTest extends TestCase
     protected User $cashierB;
     protected Shift $shiftA;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         app(TenantContext::class)->clear();
 

@@ -70,4 +70,9 @@ class EnsureTableSession
 
         return $next($request);
     }
+
+    public function terminate(Request $request, Response $response): void
+    {
+        app(TenantContext::class)->clear();
+    }
 }

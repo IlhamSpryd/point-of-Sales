@@ -16,7 +16,7 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Enums\OrderType;
-use App\Enums\PaymentMethodEnum;
+use App\Enums\PaymentMethod;
 use App\Models\ChannelOrderLog;
 use App\Models\ChannelProductMapping;
 use App\Models\Order;
@@ -172,7 +172,7 @@ class ProcessWebhookOrderJob implements ShouldQueue
         return $transactionService->createTransaction([
             'items' => $items,
             'payments' => [[
-                'method' => PaymentMethodEnum::Ewallet->value,
+                'method' => PaymentMethod::Ewallet->value,
                 'amount' => $totalAmount,
                 'reference_number' => strtoupper($this->log->provider).'-'.$normalized->externalOrderId,
             ]],

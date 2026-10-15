@@ -21,9 +21,9 @@ class E2EOnboardingAndLoginTest extends TestCase
     private string $secret = 'test-provisioning-secret-apeiron-e2e';
     private string $path = '/api/v1/provisioning/registrations';
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
         config(['services.provisioning.secret_current' => $this->secret]);
         config(['services.provisioning.secret_previous' => null]);
     }

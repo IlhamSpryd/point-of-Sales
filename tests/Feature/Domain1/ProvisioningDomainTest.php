@@ -37,9 +37,9 @@ class ProvisioningDomainTest extends TestCase
 
     private string $path = '/api/v1/provisioning/registrations';
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
         config(['services.provisioning.secret_current' => $this->secret]);
         config(['services.provisioning.secret_previous' => null]);
     }

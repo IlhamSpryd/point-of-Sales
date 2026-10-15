@@ -14,14 +14,14 @@ class PopulateApeironFullYearDataset extends Command
 {
     protected $signature = 'pos:populate-full-year 
                             {--tenant=9 : Target tenant ID}
-                            {--orders=70000 : Target order count}
+                            {--orders=1000000 : Target order count}
                             {--chunk=1000 : Database insert batch size}
                             {--dry-run : Validate plan without inserting data}';
 
     protected $description = 'Populate Apeiron POS with 1 full year realistic dataset (70K orders, 8 stores, BOM, shifts, payments).';
 
     private int $tenantId = 9;
-    private int $targetOrders = 70000;
+    private int $targetOrders = 1000000;
     private int $chunkSize = 1000;
     private bool $isDryRun = false;
 

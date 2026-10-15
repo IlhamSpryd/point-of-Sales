@@ -32,9 +32,9 @@ class StockBalanceAuthorityTest extends TestCase
 
     private int $categoryId;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         $this->tenant = Tenant::create(['name' => 'Stock Tenant']);
         $this->store1 = Store::create(['tenant_id' => $this->tenant->id, 'name' => 'Store 1']);

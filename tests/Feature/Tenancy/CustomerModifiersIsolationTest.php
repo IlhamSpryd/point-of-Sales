@@ -33,9 +33,9 @@ class CustomerModifiersIsolationTest extends TestCase
 
     private $productB;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
         app(TenantContext::class)->runWithoutTenant(function () {
             $this->tenantA = Tenant::forceCreate(['name' => 'Tenant A']);
             $this->storeA = Store::forceCreate(['tenant_id' => $this->tenantA->id, 'name' => 'Store A']);

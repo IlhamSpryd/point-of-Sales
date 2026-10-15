@@ -20,7 +20,14 @@ class RolesExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
 
     public function collection(): Collection
     {
-        return $this->query->withCount('users')->get();
+        $tenantId = app(\App\Services\Context\TenantContext::class)->requireTenantId();
+
+        $table = $this->query->getModel()->getTable();
+        $this->query->where($table.'.tenant_id', $tenantId);
+
+        return $this->query->withCount(['users' => function ($q) use ($tenantId) {
+            $q->where('tenant_id', $tenantId);
+        }])->get();
     }
 
     public function headings(): array

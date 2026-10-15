@@ -28,9 +28,9 @@ class ProvisioningHardenedIntegrityTest extends TestCase
 
     private string $secret = 'test-provisioning-secret-0123456789abcdef';
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
         config(['services.provisioning.secret_current' => $this->secret]);
         config(['services.provisioning.secret_previous' => null]);
     }

@@ -19,9 +19,9 @@ class MidtransWebhookTest extends TestCase
 
     protected $systemUser;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         // Setup config and seeders
         Config::set('services.midtrans.server_key', 'test_server_key');

@@ -74,7 +74,7 @@ class RestockPredictionService
         $buffer = (float) $ingredient->current_stock - (float) $ingredient->reorder_level;
 
         IngredientRestockForecast::updateOrCreate(
-            ['ingredient_id' => $ingredient->id],
+            ['ingredient_id' => $ingredient->id, 'tenant_id' => $tenantId],
             [
                 'tenant_id' => $tenantId,
                 'avg_daily_consumption' => round($avgDaily, 4),

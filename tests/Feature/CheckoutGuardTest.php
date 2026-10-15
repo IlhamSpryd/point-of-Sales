@@ -24,9 +24,9 @@ class CheckoutGuardTest extends TestCase
 
     protected $systemUser;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         $tenantId = app(TenantContext::class)->requireTenantId();
 

@@ -4,6 +4,8 @@ namespace App\Livewire\Inventory;
 
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Ingredient;
+use App\Policies\IngredientPolicy;
+use Illuminate\Support\Facades\Gate;
 use App\Models\IngredientStockMovement;
 use App\Services\Context\TenantContext;
 use Illuminate\Support\Facades\Auth;
@@ -106,6 +108,8 @@ class IngredientManager extends Component
     public function save()
     {
         $this->validate();
+        // [D2-BE-004] Otorisasi policy CRUD bahan baku.
+        Gate::authorize($this->isEditing ? 'update' : 'create', Ingredient::class);
 
         if ($this->isEditing) {
             $ingredient = Ingredient::findOrFail($this->ingredientId);
@@ -144,6 +148,7 @@ class IngredientManager extends Component
     public function delete(int $id)
     {
         $ingredient = Ingredient::findOrFail($id);
+        Gate::authorize('delete', $ingredient);
         $ingredient->delete();
         session()->flash('success', 'Bahan baku berhasil dihapus.');
     }
@@ -157,6 +162,7 @@ class IngredientManager extends Component
 
     public function saveAdjustment()
     {
+        Gate::authorize('adjustStock', Ingredient::findOrFail($this->adjustIngredientId));
         $this->validate([
             'adjustQuantity' => 'required|numeric',
             'adjustType' => 'required|string|in:purchase_receipt,waste,adjustment',

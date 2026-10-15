@@ -2,7 +2,7 @@
 
 namespace Tests\Support;
 
-use App\Enums\PaymentMethodEnum;
+use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatusEnum;
 use App\Models\Category;
 use App\Models\Order;
@@ -152,7 +152,7 @@ trait TwoTenantFixture
                 'tenant_id' => $this->tenantB->id,
                 'store_id' => $this->storeB->id,
                 'order_id' => $this->orderB->id,
-                'payment_method' => PaymentMethodEnum::Cash,
+                'payment_method' => PaymentMethod::Cash,
                 'amount' => 5000,
                 'status' => PaymentStatusEnum::Captured,
                 'captured_at' => now(),

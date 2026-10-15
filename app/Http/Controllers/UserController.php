@@ -73,6 +73,8 @@ class UserController extends Controller
      */
     public function edit(User $user): View
     {
+        abort_if((int) $user->tenant_id !== (int) app(\App\Services\Context\TenantContext::class)->requireTenantId(), 404);
+
         // Hanya role milik tenant pada konteks aktif (TenantScope global).
         $roles = Role::orderBy('name')->get();
 
@@ -84,6 +86,8 @@ class UserController extends Controller
      */
     public function update(UpdateUserRequest $request, User $user): RedirectResponse
     {
+        abort_if((int) $user->tenant_id !== (int) app(\App\Services\Context\TenantContext::class)->requireTenantId(), 404);
+
         // Aturan update diserahkan ke Form Request, dan validasi data disalurkan
         // kepada UserService yang akan menerapkan pembaharuan atas pengguna tersebut.
         $this->userService->update($user, $request->validated());
@@ -96,6 +100,8 @@ class UserController extends Controller
      */
     public function destroy(User $user): RedirectResponse
     {
+        abort_if((int) $user->tenant_id !== (int) app(\App\Services\Context\TenantContext::class)->requireTenantId(), 404);
+
         try {
             // Mendelegasikan operasi penghapusan ke Service.
             $this->userService->delete($user);

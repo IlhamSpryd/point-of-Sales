@@ -20,6 +20,15 @@ trait WithDefaultTenant
             return;
         }
 
+        // Idempotent: jangan buat tenant default dua kali dan jangan timpa
+        // konteks tenant yang sudah disiapkan oleh setUp() subclass test.
+        // (Tests\TestCase memanggil hook ini SETELAH setUp() subclass.)
+        $context = app(TenantContext::class);
+
+        if ($this->defaultTenant !== null || $context->hasTenant()) {
+            return;
+        }
+
         $this->defaultTenant = Tenant::create(['name' => 'Default Test Tenant']);
         $this->defaultStore = Store::create([
             'tenant_id' => $this->defaultTenant->id,
@@ -29,7 +38,6 @@ trait WithDefaultTenant
 
         Artisan::call('tenant:provision-system-users', ['tenant' => $this->defaultTenant->id]);
 
-        $context = app(TenantContext::class);
         $context->setTenantId($this->defaultTenant->id);
         $context->setStoreId($this->defaultStore->id);
     }

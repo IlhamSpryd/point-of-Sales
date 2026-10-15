@@ -4,8 +4,10 @@ namespace App\Livewire;
 
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Discount;
+use App\Policies\DiscountPolicy;
 use App\Services\Context\TenantContext;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -145,10 +147,13 @@ class DiscountManager extends Component
             'valid_until' => $this->valid_until ?: null,
         ];
 
+        // [D2-BE-004] Otorisasi policy: hanya Owner/Manager yang boleh CRUD diskon.
         if ($this->discountId) {
             $discount = Discount::findOrFail($this->discountId);
+            Gate::authorize('update', $discount);
             $discount->update($data);
         } else {
+            Gate::authorize('create', Discount::class);
             Discount::create($data);
         }
 
@@ -176,6 +181,7 @@ class DiscountManager extends Component
 
     public function delete($id)
     {
+        Gate::authorize('delete', Discount::findOrFail($id));
         Discount::findOrFail($id)->delete();
         session()->flash('message', 'Diskon berhasil dihapus.');
     }

@@ -31,6 +31,16 @@ class CartService
      */
     public function addItem(Product $product, array $modifierIds, int $qty, ?string $notes = null): array
     {
+        $tenantId = session('current_tenant_id') ?? app(\App\Services\Context\TenantContext::class)->getTenantId();
+        $storeId = session('current_store_id') ?? app(\App\Services\Context\TenantContext::class)->getStoreId();
+
+        if ($tenantId !== null && (int) $product->tenant_id !== (int) $tenantId) {
+            throw ValidationException::withMessages(['product_id' => 'Produk tidak ditemukan di tenant ini.']);
+        }
+        if ($storeId !== null && isset($product->store_id) && $product->store_id !== null && (int) $product->store_id !== (int) $storeId) {
+            throw ValidationException::withMessages(['product_id' => 'Produk tidak ditemukan di cabang ini.']);
+        }
+
         // Validasi keanggotaan grup + is_required + selection_type single/multiple.
         // Melempar ValidationException jika payload tidak sah — persis aturan Kasir.
         app(TransactionService::class)->resolveOrderItemLine($product, $modifierIds, $qty, null);
@@ -38,7 +48,15 @@ class CartService
         // Ambil detail modifier yang dipilih dari database, sekaligus validasi
         // bahwa modifier tersebut memang ada (mencegah ID palsu dari request manual).
         // PATCH FOR S-15: hanya modifier aktif.
-        $modifiers = Modifier::whereIn('id', $modifierIds)->where('is_active', true)->with('modifierGroup')->get();
+        $modifierQuery = Modifier::whereIn('id', $modifierIds)->where('is_active', true);
+        if ($tenantId !== null) {
+            $modifierQuery->where('tenant_id', $tenantId);
+        }
+        $modifiers = $modifierQuery->with('modifierGroup')->get();
+
+        if (count($modifiers) !== count($modifierIds)) {
+            throw ValidationException::withMessages(['modifier_ids' => 'Pilihan varian tidak valid untuk cabang ini.']);
+        }
 
         // Urutkan ID modifier agar kombinasi yang sama selalu menghasilkan
         // line_id yang identik, apapun urutan pelanggan memilihnya di form.
@@ -136,6 +154,7 @@ class CartService
      */
     public function clear(): void
     {
+        Session::forget($this->getSessionKey());
         Session::forget(self::SESSION_KEY);
     }
 
@@ -145,6 +164,7 @@ class CartService
      */
     public function snapshot(): void
     {
+        Session::put('customer_cart_last_'.$this->getSessionKey(), $this->getCartArray());
         Session::put('customer_cart_last', $this->getCartArray());
     }
 
@@ -236,15 +256,28 @@ class CartService
         $this->saveCartArray($cart);
     }
 
+    public function getSessionKey(): string
+    {
+        $tenantId = session('current_tenant_id') ?? app(\App\Services\Context\TenantContext::class)->getTenantId();
+        $storeId = session('current_store_id') ?? app(\App\Services\Context\TenantContext::class)->getStoreId();
+        $tableId = session('current_table_id');
+
+        if ($tenantId !== null && $tableId !== null) {
+            return "customer_cart_{$tenantId}_{$storeId}_{$tableId}";
+        }
+
+        return self::SESSION_KEY;
+    }
+
     /** Helper internal: ambil array keranjang mentah dari session. */
     private function getCartArray(): array
     {
-        return Session::get(self::SESSION_KEY, []);
+        return Session::get($this->getSessionKey(), []);
     }
 
     /** Helper internal: simpan array keranjang kembali ke session. */
     private function saveCartArray(array $cart): void
     {
-        Session::put(self::SESSION_KEY, $cart);
+        Session::put($this->getSessionKey(), $cart);
     }
 }

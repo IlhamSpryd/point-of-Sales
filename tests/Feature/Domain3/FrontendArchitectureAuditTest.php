@@ -6,7 +6,6 @@ namespace Tests\Feature\Domain3;
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
-use App\Enums\PaymentMethodEnum;
 use App\Enums\PaymentStatusEnum;
 use App\Enums\PreparationStatus;
 use App\Livewire\DiscountManager;
@@ -59,9 +58,9 @@ class FrontendArchitectureAuditTest extends TestCase
 
     protected User $ownerUser;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         app(TenantContext::class)->clear();
 
@@ -399,7 +398,7 @@ class FrontendArchitectureAuditTest extends TestCase
         $this->assertEquals(OrderStatus::Paid, $fresh->order_status);
         $this->assertDatabaseHas('payments', [
             'order_id' => $order->id,
-            'payment_method' => PaymentMethodEnum::Cash->value,
+            'payment_method' => PaymentMethod::Cash->value,
             'amount' => 11100,
             'status' => PaymentStatusEnum::Captured->value,
         ]);
@@ -482,7 +481,7 @@ class FrontendArchitectureAuditTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'store_id' => $this->store->id,
             'order_id' => $order->id,
-            'payment_method' => PaymentMethodEnum::Cash,
+            'payment_method' => PaymentMethod::Cash,
             'amount' => 22200,
             'status' => PaymentStatusEnum::Captured,
             'captured_at' => now(),
@@ -642,7 +641,7 @@ class FrontendArchitectureAuditTest extends TestCase
             'tenant_id' => $tenantB->id,
             'store_id' => $storeB->id,
             'order_id' => $rivalOrder->id,
-            'payment_method' => PaymentMethodEnum::Cash,
+            'payment_method' => PaymentMethod::Cash,
             'amount' => 55000,
             'status' => PaymentStatusEnum::Captured,
             'captured_at' => now(),
@@ -697,7 +696,7 @@ class FrontendArchitectureAuditTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'store_id' => $store2->id,
             'order_id' => $otherStoreOrder->id,
-            'payment_method' => PaymentMethodEnum::Cash,
+            'payment_method' => PaymentMethod::Cash,
             'amount' => 33000,
             'status' => PaymentStatusEnum::Captured,
             'captured_at' => now(),
@@ -741,7 +740,7 @@ class FrontendArchitectureAuditTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'store_id' => $this->store->id,
             'order_id' => $order->id,
-            'payment_method' => PaymentMethodEnum::Cash,
+            'payment_method' => PaymentMethod::Cash,
             'amount' => 22000,
             'status' => PaymentStatusEnum::Captured,
             'captured_at' => now(),

@@ -15,7 +15,7 @@ use App\Enums\IngredientStockMovementTypeEnum;
 use App\Enums\LoyaltyLedgerTypeEnum;
 use App\Enums\OrderStatus;
 use App\Enums\OrderType;
-use App\Enums\PaymentMethodEnum;
+use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatusEnum;
 use App\Enums\StockMovementType;
 use App\Models\ActivityLog;
@@ -463,11 +463,11 @@ class TransactionService
                 // ValueError setiap kali order ini dibaca ulang. Rincian
                 // sesungguhnya (termasuk leg Card) tetap 100% akurat di
                 // tabel `payments`. PERLU TINDAK LANJUT: satukan
-                // App\Enums\PaymentMethod dengan App\Enums\PaymentMethodEnum.
+                // App\Enums\PaymentMethod dengan App\Enums\PaymentMethod.
                 $legsByAmountDesc = collect($finalPaymentLegs)->sortByDesc('amount');
                 $dominantPaymentMethod = $legsByAmountDesc->first()['method']->value;
 
-                $cashLegTotal = collect($finalPaymentLegs)->where('method', PaymentMethodEnum::Cash)->sum('amount');
+                $cashLegTotal = collect($finalPaymentLegs)->where('method', PaymentMethod::Cash)->sum('amount');
                 $cashReceivedForReceipt = $cashLegTotal > 0 ? $cashLegTotal : null;
                 $orderChangeForReceipt = 0; // kontrak exact-sum -- lihat docblock method ini
 
@@ -627,7 +627,7 @@ class TransactionService
                     'tenant_id' => $order->tenant_id,
                     'store_id' => $order->store_id,
                     'order_id' => $order->id,
-                    'payment_method' => PaymentMethodEnum::from($dominantPaymentMethod),
+                    'payment_method' => PaymentMethod::from($dominantPaymentMethod),
                     'amount' => $totalAmount,
                     'status' => PaymentStatusEnum::Captured,
                     'captured_at' => now(),
@@ -729,7 +729,7 @@ class TransactionService
      * (bentuk, enum, nominal positif) -- TIDAK memvalidasi jumlah total
      * (butuh totalAmount yang belum diketahui saat method ini dipanggil).
      *
-     * @return array<int, array{method: PaymentMethodEnum, amount: int, reference_number: ?string, idempotency_key: ?string}>
+     * @return array<int, array{method: PaymentMethod, amount: int, reference_number: ?string, idempotency_key: ?string}>
      */
     private function parsePaymentLegs(array $rawLegs): array
     {
@@ -739,9 +739,9 @@ class TransactionService
             $rawMethod = $raw['method'] ?? null;
 
             try {
-                $method = $rawMethod instanceof PaymentMethodEnum
+                $method = $rawMethod instanceof PaymentMethod
                     ? $rawMethod
-                    : PaymentMethodEnum::from((string) $rawMethod);
+                    : PaymentMethod::from((string) $rawMethod);
             } catch (\ValueError) {
                 throw ValidationException::withMessages([
                     'payments' => 'Metode pembayaran "'.$rawMethod.'" tidak dikenali.',
@@ -827,6 +827,10 @@ class TransactionService
             'tenant_id' => $order->tenant_id,
             'store_id' => $order->store_id,
         ]);
+
+        // [D2-BE-009] Trigger DB sudah memutasi saldo; refresh agar objek
+        // di memori mencerminkan nilai terbaru dari database.
+        $account?->refresh();
     }
 
     /**
@@ -998,7 +1002,7 @@ class TransactionService
             $legsByAmountDesc = collect($parsedPaymentLegs)->sortByDesc('amount');
             $dominantPaymentMethod = $legsByAmountDesc->first()['method']->value;
 
-            $cashLegTotal = collect($parsedPaymentLegs)->where('method', PaymentMethodEnum::Cash)->sum('amount');
+            $cashLegTotal = collect($parsedPaymentLegs)->where('method', PaymentMethod::Cash)->sum('amount');
             $cashReceivedForReceipt = $cashLegTotal > 0 ? $cashLegTotal : null;
 
             foreach ($parsedPaymentLegs as $i => $leg) {
@@ -1229,6 +1233,10 @@ class TransactionService
             'tenant_id' => $order->tenant_id,
             'store_id' => $order->store_id,
         ]);
+
+        // [D2-BE-009] Trigger DB sudah memutasi saldo; refresh agar objek
+        // di memori mencerminkan nilai terbaru dari database.
+        $account?->refresh();
     }
 
     // [OMEGA-NODE1] PATCH FOR M-03: sebelumnya fungsi ini HANYA mengembalikan

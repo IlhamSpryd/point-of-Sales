@@ -29,9 +29,9 @@ class StoreTransactionRequestTest extends TestCase
     protected Discount $discount;
     protected Table $table;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         app(TenantContext::class)->clear();
 

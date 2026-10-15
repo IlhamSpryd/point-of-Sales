@@ -8,7 +8,6 @@
 namespace App\Livewire\Kasir;
 
 use App\Enums\PaymentMethod;
-use App\Enums\PaymentMethodEnum;
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Customer;
 use App\Models\Discount;
@@ -88,6 +87,7 @@ class CreateOrder extends Component
 
     public ?int $selectedDiscountId = null;
 
+    #[Locked]
     public string $idempotencyKey;
 
     public function mount(): void
@@ -572,7 +572,7 @@ class CreateOrder extends Component
                 ];
             } else {
                 foreach ($legs as $leg) {
-                    $method = PaymentMethodEnum::tryFrom((string) ($leg['method'] ?? ''));
+                    $method = PaymentMethod::tryFrom((string) ($leg['method'] ?? ''));
                     $amount = (int) ($leg['amount'] ?? 0);
 
                     if (! $method || $amount <= 0) {

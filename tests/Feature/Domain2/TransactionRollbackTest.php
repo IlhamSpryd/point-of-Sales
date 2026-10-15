@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domain2;
 
-use App\Enums\PaymentMethodEnum;
+use App\Enums\PaymentMethod;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -32,9 +32,9 @@ class TransactionRollbackTest extends TestCase
     protected Shift $shift;
     protected Product $product;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         app(TenantContext::class)->clear();
 
@@ -107,7 +107,7 @@ class TransactionRollbackTest extends TestCase
             ],
             'payments' => [
                 [
-                    'method' => PaymentMethodEnum::Cash->value,
+                    'method' => PaymentMethod::Cash->value,
                     'amount' => 20000,
                 ],
             ],
@@ -147,7 +147,7 @@ class TransactionRollbackTest extends TestCase
             ],
             'payments' => [
                 [
-                    'method' => PaymentMethodEnum::Cash->value,
+                    'method' => PaymentMethod::Cash->value,
                     'amount' => 1110000,
                 ],
             ],

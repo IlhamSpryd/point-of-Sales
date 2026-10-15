@@ -25,14 +25,16 @@ class ChannelMappingManager extends Component
 
     public function saveMapping()
     {
+        $tenantId = app(TenantContext::class)->requireTenantId();
+
         $this->validate([
             'provider' => ['required', 'string', Rule::in(['grabfood', 'gofood'])],
             'externalProductId' => 'required|string|max:255',
-            'productId' => ['required', Rule::exists('products', 'id')->where('tenant_id', app(TenantContext::class)->requireTenantId())],
+            'productId' => ['required', Rule::exists('products', 'id')->where('tenant_id', $tenantId)],
         ]);
 
         ChannelProductMapping::updateOrCreate(
-            ['provider' => $this->provider, 'external_product_id' => $this->externalProductId],
+            ['tenant_id' => $tenantId, 'provider' => $this->provider, 'external_product_id' => $this->externalProductId],
             ['product_id' => $this->productId]
         );
 

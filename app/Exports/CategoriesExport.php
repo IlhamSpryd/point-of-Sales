@@ -20,7 +20,21 @@ class CategoriesExport implements FromCollection, ShouldAutoSize, WithHeadings, 
 
     public function collection(): Collection
     {
-        return $this->query->withCount('products')->get();
+        $tenantId = app(\App\Services\Context\TenantContext::class)->requireTenantId();
+        $storeId = app(\App\Services\Context\TenantContext::class)->getStoreId();
+
+        $table = $this->query->getModel()->getTable();
+        $this->query->where($table.'.tenant_id', $tenantId);
+        if ($storeId !== null) {
+            $this->query->where($table.'.store_id', $storeId);
+        }
+
+        return $this->query->withCount(['products' => function ($q) use ($tenantId, $storeId) {
+            $q->where('tenant_id', $tenantId);
+            if ($storeId !== null) {
+                $q->where('store_id', $storeId);
+            }
+        }])->get();
     }
 
     public function headings(): array

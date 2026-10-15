@@ -7,11 +7,13 @@ namespace App\Livewire\Kasir;
 use App\Enums\OrderStatus;
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Order;
+use App\Policies\OrderPolicy;
 use App\Models\User;
 use App\Services\TransactionService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
@@ -54,6 +56,7 @@ class OrderHistory extends Component
 
     public string $voidReason = '';
 
+    #[Locked]
     public ?int $voidingOrderId = null;
 
     public function updatedSearch(): void
@@ -123,6 +126,8 @@ class OrderHistory extends Component
         }
 
         $order = Order::findOrFail($targetOrderId);
+        // [D2-BE-004] Otorisasi policy void: tenant/store match + peran berwenang.
+        Gate::authorize('void', $order);
         if (! $order || $order->order_status !== OrderStatus::Paid) {
             session()->flash('error', 'Pesanan tidak ditemukan atau tidak dalam status Lunas.');
             $this->dispatch('toast', message: 'Pesanan tidak ditemukan atau tidak dalam status Lunas.', type: 'error');

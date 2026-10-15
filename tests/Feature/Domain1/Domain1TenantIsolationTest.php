@@ -49,9 +49,9 @@ class Domain1TenantIsolationTest extends TestCase
 
     private int $userBId;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         $context = app(TenantContext::class);
         $context->clear();

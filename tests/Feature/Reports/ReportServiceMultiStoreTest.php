@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Reports;
 
 use App\Enums\OrderStatus;
-use App\Enums\PaymentMethodEnum;
+use App\Enums\PaymentMethod;
 use App\Exports\SalesExport;
 use App\Models\Order;
 use App\Services\Context\TenantContext;
@@ -21,9 +21,9 @@ class ReportServiceMultiStoreTest extends TestCase
     use RefreshDatabase;
     use TwoTenantFixture;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         app(TenantContext::class)->runWithoutTenant(function () {
             $this->setupTwoTenants();
@@ -47,7 +47,7 @@ class ReportServiceMultiStoreTest extends TestCase
             'order_status' => OrderStatus::Paid->value,
             'order_amount' => 50000,
             'order_date' => $today,
-            'payment_method' => PaymentMethodEnum::Cash->value,
+            'payment_method' => PaymentMethod::Cash->value,
             'idempotency_key' => Str::uuid()->toString(),
         ]);
 
@@ -61,7 +61,7 @@ class ReportServiceMultiStoreTest extends TestCase
                 'order_status' => OrderStatus::Paid->value,
                 'order_amount' => 75000,
                 'order_date' => $today,
-                'payment_method' => PaymentMethodEnum::Cash->value,
+                'payment_method' => PaymentMethod::Cash->value,
                 'idempotency_key' => Str::uuid()->toString(),
             ]);
         });
@@ -76,7 +76,7 @@ class ReportServiceMultiStoreTest extends TestCase
                 'order_status' => OrderStatus::Paid->value,
                 'order_amount' => 999000,
                 'order_date' => $today,
-                'payment_method' => PaymentMethodEnum::Cash->value,
+                'payment_method' => PaymentMethod::Cash->value,
                 'idempotency_key' => Str::uuid()->toString(),
             ]);
         });

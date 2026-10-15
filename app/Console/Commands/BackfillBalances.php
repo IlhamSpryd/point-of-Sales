@@ -31,7 +31,7 @@ class BackfillBalances extends Command
                 $defaultStore = $stores->first();
 
                 // Products
-                $products = Product::where('tenant_id', $tenant->id)->get();
+                $products = Product::withoutTenantScope()->where('tenant_id', $tenant->id)->get();
                 $maxProductMovementId = DB::table('stock_movements')->where('tenant_id', $tenant->id)->max('id') ?? 0;
 
                 foreach ($products as $product) {

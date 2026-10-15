@@ -23,9 +23,9 @@ class BaselineTest extends TestCase
 {
     use RefreshDatabase, TwoTenantFixture;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
         $dbName = DB::connection()->getDatabaseName();
         if (! str_contains($dbName, 'test')) {
             $this->markTestSkipped('Not test database');

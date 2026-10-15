@@ -57,4 +57,9 @@ trait RequiresTenantContext
         session(['active_store_id' => $wantsAllStores ? 'all' : $activeStoreId]);
         $tenantContext->setAllowedStoreIds($allowed);
     }
+
+    public function hydrateRequiresTenantContext(): void
+    {
+        $this->bootRequiresTenantContext();
+    }
 }

@@ -49,32 +49,50 @@ class ProcessProvisioningOutboxJob implements ShouldQueue
             return; // sudah diproses worker lain / sudah terkirim / belum due
         }
 
+        if (empty($outbox->tenant_id)) {
+            Log::error('EmailOutbox record missing tenant_id.', ['outbox_id' => $outbox->id]);
+            return;
+        }
+
+        $tenantContext = app(\App\Services\Context\TenantContext::class);
+        $prevTenantId = $tenantContext->getTenantId();
+        $prevStoreId = $tenantContext->getStoreId();
+
         try {
+            $tenantContext->setTenantId((int) $outbox->tenant_id);
+            $tenantContext->setStoreId(null);
+
             $body = $this->resolveAndVerifyBody($outbox);
 
             Mail::raw($body, function ($message) use ($outbox) {
                 $message->to($outbox->recipient_email)
                     ->subject($outbox->subject);
             });
+
+            // Penanda sukses: body disunting (redacted) agar token tidak lagi tersimpan
+            // bahkan dalam bentuk terenkripsi (TX-005, TX-011).
+            EmailOutbox::whereKey($outbox->id)
+                ->where('status', EmailOutbox::STATUS_PROCESSING)
+                ->where('attempts', $outbox->attempts)
+                ->update([
+                    'status' => EmailOutbox::STATUS_SENT,
+                    'sent_at' => now(),
+                    'last_error' => null,
+                    'next_attempt_at' => null,
+                    'lease_expires_at' => null,
+                    'body_text' => Crypt::encryptString($this->redactedBody($outbox, $body)),
+                ]);
         } catch (\Throwable $e) {
             $this->markFailedAttempt($outbox, $e);
 
             return;
+        } finally {
+            $tenantContext->clear();
+            if ($prevTenantId !== null) {
+                $tenantContext->setTenantId($prevTenantId);
+                $tenantContext->setStoreId($prevStoreId);
+            }
         }
-
-        // Penanda sukses: body disunting (redacted) agar token tidak lagi tersimpan
-        // bahkan dalam bentuk terenkripsi (TX-005, TX-011).
-        EmailOutbox::whereKey($outbox->id)
-            ->where('status', EmailOutbox::STATUS_PROCESSING)
-            ->where('attempts', $outbox->attempts)
-            ->update([
-                'status' => EmailOutbox::STATUS_SENT,
-                'sent_at' => now(),
-                'last_error' => null,
-                'next_attempt_at' => null,
-                'lease_expires_at' => null,
-                'body_text' => Crypt::encryptString($this->redactedBody($outbox, $body)),
-            ]);
     }
 
     /**

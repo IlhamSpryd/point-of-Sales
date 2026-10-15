@@ -25,9 +25,9 @@ class QueueTerminalFailureTest extends TestCase
     protected Store $store;
     protected User $user;
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         app(TenantContext::class)->clear();
 

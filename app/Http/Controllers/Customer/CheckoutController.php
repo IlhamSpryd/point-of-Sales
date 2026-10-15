@@ -165,20 +165,41 @@ class CheckoutController extends Controller
                 return back()->with('error', 'Masih ada pesanan yang belum dibayar. Selesaikan atau tunggu kedaluwarsa sebelum memesan lagi.');
             }
 
-            $transactionItems = array_map(function (array $item) {
+            $transactionItems = array_map(function (array $item) use ($tenantId) {
                 // SECURITY: Hitung ulang extra_price dari database, jangan percaya
                 // nilai yang sudah dihitung di session (bisa dimanipulasi via devtools).
-                $modifierIds = collect($item['options'] ?? [])->pluck('modifier_id')->all();
-                // PATCH FOR S-15: hanya modifier aktif.
-                $serverExtraPrice = Modifier::whereIn('id', $modifierIds)->where('is_active', true)->sum('extra_price');
+                $modifierIds = collect($item['options'] ?? [])->pluck('modifier_id')->filter()->all();
+                $storeId = app(TenantContext::class)->getStoreId();
 
-                $product = Product::find($item['product_id']);
+                $serverExtraPrice = 0;
+                if (! empty($modifierIds)) {
+                    $modifierQuery = Modifier::whereIn('id', $modifierIds)
+                        ->where('is_active', true)
+                        ->where('tenant_id', $tenantId);
+                    $modifiers = $modifierQuery->get();
+                    if ($modifiers->count() !== count($modifierIds)) {
+                        throw ValidationException::withMessages([
+                            'items' => 'Pilihan varian tidak valid atau milik cabang/tenant lain.',
+                        ]);
+                    }
+                    $serverExtraPrice = $modifiers->sum('extra_price');
+                }
+
+                $productQuery = Product::where('id', $item['product_id'])
+                    ->where('tenant_id', $tenantId);
+                $product = $productQuery->first();
+
+                if (! $product || ! $product->is_active) {
+                    throw ValidationException::withMessages([
+                        'items' => 'Produk tidak tersedia di cabang/tenant ini.',
+                    ]);
+                }
 
                 return [
-                    'product_id' => $item['product_id'],
+                    'product_id' => $product->id,
                     'quantity' => $item['qty'],
                     'extra_price' => (float) $serverExtraPrice,
-                    'unit_price' => ($product ? $product->product_price : 0) + $serverExtraPrice,
+                    'unit_price' => $product->product_price + $serverExtraPrice,
                     'options' => $item['options'],
                     'notes' => $item['notes'] ?? null,
                 ];

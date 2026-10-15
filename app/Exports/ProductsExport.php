@@ -20,7 +20,18 @@ class ProductsExport implements FromCollection, ShouldAutoSize, WithHeadings, Wi
 
     public function collection(): Collection
     {
-        return $this->query->get();
+        $tenantId = app(\App\Services\Context\TenantContext::class)->requireTenantId();
+        $storeId = app(\App\Services\Context\TenantContext::class)->getStoreId();
+
+        $table = $this->query->getModel()->getTable();
+        $this->query->where($table.'.tenant_id', $tenantId);
+        if ($storeId !== null) {
+            $this->query->where($table.'.store_id', $storeId);
+        }
+
+        return $this->query->with(['category' => function ($q) use ($tenantId) {
+            $q->where('tenant_id', $tenantId);
+        }])->get();
     }
 
     public function headings(): array

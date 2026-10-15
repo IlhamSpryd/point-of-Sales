@@ -81,9 +81,9 @@ class OwnershipTransferServiceTest extends TestCase
         $this->beginDatabaseTransaction();
     }
 
-    protected function setUp(): void
+    protected function afterSubclassSetUp(): void
     {
-        parent::setUp();
+        parent::afterSubclassSetUp();
 
         $this->setupTwoTenants();
         \Illuminate\Database\Eloquent\Model::reguard();
