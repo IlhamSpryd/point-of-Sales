@@ -848,6 +848,13 @@ class TransactionService
         $roundingValue = $tenantId !== null ? (int) Setting::get('rounding_value', config('pos.rounding_value', 100)) : (int) config('pos.rounding_value', 100);
         $roundingBehavior = $tenantId !== null ? (string) Setting::get('rounding_behavior', config('pos.rounding_behavior', 'ROUND_NEAREST')) : (string) config('pos.rounding_behavior', 'ROUND_NEAREST');
 
+        if ($roundingValue <= 0 || $roundingBehavior === 'NONE') {
+            return [
+                'tax_amount' => $taxAmount,
+                'total_amount' => $totalAmount,
+            ];
+        }
+
         $totalAmount = (int) match ($roundingBehavior) {
             'ROUND_NEAREST' => round($totalAmount / $roundingValue) * $roundingValue,
             'ROUND_UP' => ceil($totalAmount / $roundingValue) * $roundingValue,
@@ -1104,92 +1111,101 @@ class TransactionService
     // PATCH FOR F-02: reverse payments + loyalty ledger saat void.
     public function voidOrder(Order $order, string $reason, int $userId): void
     {
-        // Pre-check sebagai fail-fast UX saja (BUKAN penjaga tunggal).
-        if ($order->order_status !== OrderStatus::Paid) {
-            throw new \Exception('Hanya pesanan yang sudah lunas (Paid) yang dapat di-void.');
+        $tenantContext = app(TenantContext::class);
+        $currentTenantId = $tenantContext->requireTenantId();
+
+        if ((int) $order->tenant_id !== (int) $currentTenantId) {
+            throw new \DomainException('Unauthorized cross-tenant void attempt.');
         }
 
-        $capturedPayments = Payment::where('order_id', $order->id)->where('status', PaymentStatusEnum::Captured)->get();
-        $hasNonCash = false;
+        $tenantContext->runAs($order->tenant_id, $order->store_id, function () use ($order, $reason, $userId) {
+            // Pre-check sebagai fail-fast UX saja (BUKAN penjaga tunggal).
+            if ($order->order_status !== OrderStatus::Paid) {
+                throw new \Exception('Hanya pesanan yang sudah lunas (Paid) yang dapat di-void.');
+            }
 
-        if ($capturedPayments->isNotEmpty()) {
-            foreach ($capturedPayments as $payment) {
-                $pm = is_string($payment->payment_method) ? $payment->payment_method : ($payment->payment_method->value ?? null);
+            $capturedPayments = Payment::where('order_id', $order->id)->where('status', PaymentStatusEnum::Captured)->get();
+            $hasNonCash = false;
+
+            if ($capturedPayments->isNotEmpty()) {
+                foreach ($capturedPayments as $payment) {
+                    $pm = is_string($payment->payment_method) ? $payment->payment_method : ($payment->payment_method->value ?? null);
+                    if ($pm !== 'cash') {
+                        $hasNonCash = true;
+                        break;
+                    }
+                }
+            } else {
+                $pm = is_string($order->payment_method) ? $order->payment_method : ($order->payment_method->value ?? null);
                 if ($pm !== 'cash') {
                     $hasNonCash = true;
-                    break;
                 }
             }
-        } else {
-            $pm = is_string($order->payment_method) ? $order->payment_method : ($order->payment_method->value ?? null);
-            if ($pm !== 'cash') {
-                $hasNonCash = true;
-            }
-        }
 
-        if ($hasNonCash) {
-            throw new \DomainException('Void pesanan non-tunai belum didukung. Gunakan prosedur refund manual.');
-        }
-
-        DB::transaction(function () use ($order, $reason, $userId) {
-            // 1. Lock dan RE-VALIDASI di dalam transaksi (F-01 fix).
-            $lockedOrder = Order::where('id', $order->id)->lockForUpdate()->first();
-
-            if (! $lockedOrder || $lockedOrder->order_status !== OrderStatus::Paid) {
-                throw new \Exception(
-                    'Pesanan ini sudah tidak berstatus Lunas (mungkin baru saja di-void oleh proses lain).'
-                );
+            if ($hasNonCash) {
+                throw new \DomainException('Void pesanan non-tunai belum didukung. Gunakan prosedur refund manual.');
             }
 
-            $lockedOrder->forceFill([
-                'order_status' => OrderStatus::Void,
-                'voided_by' => $userId,
-                'void_reason' => $reason,
-                'voided_at' => now(),
-            ])->save();
+            DB::transaction(function () use ($order, $reason, $userId) {
+                // 1. Lock dan RE-VALIDASI di dalam transaksi (F-01 fix).
+                $lockedOrder = Order::where('id', $order->id)->lockForUpdate()->first();
 
-            // 2. Restore all BOM & Product Stocks
-            $this->restoreStockForOrder($lockedOrder);
+                if (! $lockedOrder || $lockedOrder->order_status !== OrderStatus::Paid) {
+                    throw new \Exception(
+                        'Pesanan ini sudah tidak berstatus Lunas (mungkin baru saja di-void oleh proses lain).'
+                    );
+                }
 
-            // 3. PATCH FOR F-02: Reverse payment records.
-            // Payments table immutable (update/delete throws), jadi kita
-            // buat baris BARU berstatus Voided sebagai counter-entry.
-            $existingPayments = Payment::where('order_id', $lockedOrder->id)
-                ->where('status', PaymentStatusEnum::Captured)
-                ->get();
+                $lockedOrder->forceFill([
+                    'order_status' => OrderStatus::Void,
+                    'voided_by' => $userId,
+                    'void_reason' => $reason,
+                    'voided_at' => now(),
+                ])->save();
 
-            foreach ($existingPayments as $i => $payment) {
-                Payment::forceCreate([
-                    'tenant_id' => $lockedOrder->tenant_id,
-                    'store_id' => $lockedOrder->store_id,
-                    'order_id' => $lockedOrder->id,
-                    'payment_method' => $payment->payment_method,
-                    'amount' => $payment->amount,
-                    'reference_number' => 'VOID-'.($payment->reference_number ?? $payment->idempotency_key),
-                    'status' => PaymentStatusEnum::Voided,
-                    'captured_at' => null,
-                    'processed_by' => $userId,
-                    'idempotency_key' => 'void:'.$lockedOrder->order_code.':'.$i,
+                // 2. Restore all BOM & Product Stocks
+                $this->restoreStockForOrder($lockedOrder);
+
+                // 3. PATCH FOR F-02: Reverse payment records.
+                // Payments table immutable (update/delete throws), jadi kita
+                // buat baris BARU berstatus Voided sebagai counter-entry.
+                $existingPayments = Payment::where('order_id', $lockedOrder->id)
+                    ->where('status', PaymentStatusEnum::Captured)
+                    ->get();
+
+                foreach ($existingPayments as $i => $payment) {
+                    Payment::forceCreate([
+                        'tenant_id' => $lockedOrder->tenant_id,
+                        'store_id' => $lockedOrder->store_id,
+                        'order_id' => $lockedOrder->id,
+                        'payment_method' => $payment->payment_method,
+                        'amount' => $payment->amount,
+                        'reference_number' => 'VOID-'.($payment->reference_number ?? $payment->idempotency_key),
+                        'status' => PaymentStatusEnum::Voided,
+                        'captured_at' => null,
+                        'processed_by' => $userId,
+                        'idempotency_key' => 'void:'.$lockedOrder->order_code.':'.$i,
+                    ]);
+                }
+
+                // 4. PATCH FOR F-02: Reverse loyalty points if any were granted.
+                if ($lockedOrder->customer_id) {
+                    $this->reverseLoyaltyPointsForOrder($lockedOrder, $userId);
+                }
+
+                // 5. Record to Activity Log
+                ActivityLog::create([
+                    'user_id' => $userId,
+                    'action' => 'VOID_ORDER',
+                    'description' => "Membatalkan pesanan {$lockedOrder->order_code}. Alasan: {$reason}",
+                    'ip_address' => request()->ip(),
+                    'user_agent' => request()->userAgent(),
+                    'metadata' => [
+                        'order_id' => $lockedOrder->id,
+                        'total_amount' => $lockedOrder->order_amount,
+                    ],
                 ]);
-            }
-
-            // 4. PATCH FOR F-02: Reverse loyalty points if any were granted.
-            if ($lockedOrder->customer_id) {
-                $this->reverseLoyaltyPointsForOrder($lockedOrder, $userId);
-            }
-
-            // 5. Record to Activity Log
-            ActivityLog::create([
-                'user_id' => $userId,
-                'action' => 'VOID_ORDER',
-                'description' => "Membatalkan pesanan {$lockedOrder->order_code}. Alasan: {$reason}",
-                'ip_address' => request()->ip(),
-                'user_agent' => request()->userAgent(),
-                'metadata' => [
-                    'order_id' => $lockedOrder->id,
-                    'total_amount' => $lockedOrder->order_amount,
-                ],
-            ]);
+            });
         });
     }
 

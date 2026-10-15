@@ -55,7 +55,9 @@ class OrderPolicy
             && $this->sameStore($user, $order)
             && (in_array($user->role?->name, ['Owner', 'Manager', 'Supervisor', 'Admin'], true)
                 || (bool) $user->role?->is_admin
-                || (bool) $user->role?->hasPermission('can_void_order'));
+                || (bool) $user->role?->hasPermission('can_void_order')
+                || (bool) $user->role?->hasPermission('orders.void')
+                || (bool) $user->role?->hasPermission('void.approve'));
     }
 
     public function refund(User $user, Order $order): bool

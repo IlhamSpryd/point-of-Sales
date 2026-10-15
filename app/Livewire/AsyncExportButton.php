@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Enums\ExportTaskStatus;
 use App\Livewire\Concerns\RequiresTenantContext;
+use App\Models\ExportTask;
 use App\Services\ReportService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
@@ -58,10 +61,19 @@ class AsyncExportButton extends Component
             'endDate' => 'required|date|after_or_equal:startDate',
         ]);
 
-        // Guard against a stray double-click (or forged repeat call)
-        // creating duplicate ExportTask rows for the same request.
+        // Guard against duplicate active tasks. If the previous task failed,
+        // allow retry by resetting taskId.
         if ($this->taskId !== null) {
-            return;
+            $existingTask = ExportTask::find($this->taskId);
+            $statusVal = $existingTask?->status instanceof ExportTaskStatus
+                ? $existingTask->status->value
+                : (string) $existingTask?->status;
+
+            if ($statusVal === 'failed') {
+                $this->taskId = null;
+            } else {
+                return;
+            }
         }
 
         try {
@@ -73,7 +85,7 @@ class AsyncExportButton extends Component
         } catch (ValidationException $e) {
             $this->addError('range', collect($e->errors())->flatten()->first() ?? 'Rentang tanggal tidak valid.');
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Export failed to queue: '.$e->getMessage(), ['exception' => $e]);
+            Log::error('Export failed to queue: '.$e->getMessage(), ['exception' => $e]);
             $this->addError('range', 'Terjadi kesalahan sistem saat memproses antrean ekspor.');
         }
     }

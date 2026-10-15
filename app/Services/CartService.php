@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Modifier;
 use App\Models\Product;
+use App\Services\Context\TenantContext;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\ValidationException;
 
@@ -31,8 +32,8 @@ class CartService
      */
     public function addItem(Product $product, array $modifierIds, int $qty, ?string $notes = null): array
     {
-        $tenantId = session('current_tenant_id') ?? app(\App\Services\Context\TenantContext::class)->getTenantId();
-        $storeId = session('current_store_id') ?? app(\App\Services\Context\TenantContext::class)->getStoreId();
+        $tenantId = session('current_tenant_id') ?? app(TenantContext::class)->getTenantId();
+        $storeId = session('current_store_id') ?? app(TenantContext::class)->getStoreId();
 
         if ($tenantId !== null && (int) $product->tenant_id !== (int) $tenantId) {
             throw ValidationException::withMessages(['product_id' => 'Produk tidak ditemukan di tenant ini.']);
@@ -165,7 +166,6 @@ class CartService
     public function snapshot(): void
     {
         Session::put('customer_cart_last_'.$this->getSessionKey(), $this->getCartArray());
-        Session::put('customer_cart_last', $this->getCartArray());
     }
 
     /**
@@ -175,7 +175,7 @@ class CartService
     public function restoreSnapshot(): bool
     {
         $scopedKey = 'customer_cart_last_'.$this->getSessionKey();
-        $snap = Session::pull($scopedKey) ?? Session::pull('customer_cart_last');
+        $snap = Session::pull($scopedKey);
         if (! $snap) {
             return false;
         }
@@ -259,8 +259,8 @@ class CartService
 
     public function getSessionKey(): string
     {
-        $tenantId = session('current_tenant_id') ?? app(\App\Services\Context\TenantContext::class)->getTenantId();
-        $storeId = session('current_store_id') ?? app(\App\Services\Context\TenantContext::class)->getStoreId();
+        $tenantId = session('current_tenant_id') ?? app(TenantContext::class)->getTenantId();
+        $storeId = session('current_store_id') ?? app(TenantContext::class)->getStoreId();
         $tableId = session('current_table_id');
 
         if ($tenantId !== null && $tableId !== null) {
@@ -273,20 +273,12 @@ class CartService
     /** Helper internal: ambil array keranjang mentah dari session. */
     private function getCartArray(): array
     {
-        $scoped = Session::get($this->getSessionKey());
-        if ($scoped !== null) {
-            return $scoped;
-        }
-
-        return Session::get(self::SESSION_KEY, []);
+        return Session::get($this->getSessionKey(), []);
     }
 
     /** Helper internal: simpan array keranjang kembali ke session. */
     private function saveCartArray(array $cart): void
     {
         Session::put($this->getSessionKey(), $cart);
-        if ($this->getSessionKey() !== self::SESSION_KEY) {
-            Session::put(self::SESSION_KEY, $cart);
-        }
     }
 }

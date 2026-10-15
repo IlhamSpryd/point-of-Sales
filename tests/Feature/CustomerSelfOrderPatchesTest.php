@@ -126,7 +126,17 @@ class CustomerSelfOrderPatchesTest extends TestCase
         $product = $this->createProduct();
         $table = $this->createTable();
 
-        // Setup snapshot manually via CartService
+        $tenantId = (int) $product->tenant_id;
+        $storeId = (int) ($table->store_id ?? 1);
+
+        // Setup snapshot manually via CartService in table context
+        session([
+            'current_tenant_id' => $tenantId,
+            'current_store_id' => $storeId,
+            'current_table_id' => $table->id,
+            'current_table_name' => $table->table_name,
+        ]);
+
         $cartService = app(CartService::class);
         $cartService->addItem($product, [], 2);
         $cartService->snapshot();
@@ -135,10 +145,15 @@ class CustomerSelfOrderPatchesTest extends TestCase
         // Cart should be empty now
         $this->assertEquals(0, $cartService->getTotalQty());
 
+        $scopedSnapshotKey = 'customer_cart_last_'.$cartService->getSessionKey();
+
         // Call reorder endpoint
         $response = $this->withSession([
+            'current_tenant_id' => $tenantId,
+            'current_store_id' => $storeId,
             'current_table_id' => $table->id,
             'current_table_name' => $table->table_name,
+            $scopedSnapshotKey => session($scopedSnapshotKey),
         ])->post(route('customer.checkout.reorder'));
 
         $response->assertStatus(302);

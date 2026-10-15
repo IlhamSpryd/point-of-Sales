@@ -4,12 +4,12 @@ namespace App\Livewire\Inventory;
 
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Ingredient;
-use App\Policies\IngredientPolicy;
-use Illuminate\Support\Facades\Gate;
 use App\Models\IngredientStockMovement;
+use App\Models\Store;
 use App\Services\Context\TenantContext;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -189,59 +189,65 @@ class IngredientManager extends Component
 
         $storeId = app(TenantContext::class)->getStoreId();
 
-        // [CF-07 / D3-013] Pencegahan saldo negatif
-        $ingredient = Ingredient::findOrFail($this->adjustIngredientId);
-        if ($storeId) {
-            $tenantId = app(TenantContext::class)->requireTenantId();
-            $storeBalance = (float) (DB::table('ingredient_stock_balances')
-                ->where('tenant_id', $tenantId)
-                ->where('store_id', $storeId)
-                ->where('ingredient_id', $ingredient->id)
-                ->value('quantity') ?? $ingredient->current_stock);
+        try {
+            DB::transaction(function () use ($qty, $storeId) {
+                $ingredient = Ingredient::lockForUpdate()->findOrFail($this->adjustIngredientId);
+                $tenantId = app(TenantContext::class)->requireTenantId();
 
-            if ($storeBalance + $qty < 0) {
-                $this->addError('adjustQuantity', 'Saldo stok cabang tidak mencukupi untuk pengurangan ini (stok saat ini: '.$storeBalance.').');
+                if ($storeId) {
+                    $defaultStoreId = Store::where('tenant_id', $tenantId)->orderBy('id')->value('id');
+                    $isFirstStore = ((int) $storeId === (int) $defaultStoreId);
+                    $initialQty = $isFirstStore ? (float) $ingredient->current_stock : 0.0;
 
-                return;
-            }
-        } elseif ($ingredient->current_stock + $qty < 0) {
-            $this->addError('adjustQuantity', 'Stok bahan baku tidak mencukupi untuk pengurangan ini.');
+                    DB::table('ingredient_stock_balances')->insertOrIgnore([
+                        'tenant_id' => $tenantId,
+                        'store_id' => $storeId,
+                        'ingredient_id' => $ingredient->id,
+                        'quantity' => $initialQty,
+                        'baseline_quantity' => $initialQty,
+                        'baseline_movement_id' => 0,
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+
+                    $balanceRow = DB::table('ingredient_stock_balances')
+                        ->where('tenant_id', $tenantId)
+                        ->where('store_id', $storeId)
+                        ->where('ingredient_id', $ingredient->id)
+                        ->lockForUpdate()
+                        ->first();
+
+                    $storeBalance = (float) ($balanceRow ? $balanceRow->quantity : $initialQty);
+
+                    if ($storeBalance + $qty < 0) {
+                        throw new \DomainException('Saldo stok cabang tidak mencukupi untuk pengurangan ini (stok saat ini: '.$storeBalance.').');
+                    }
+                } else {
+                    if ($ingredient->current_stock + $qty < 0) {
+                        throw new \DomainException('Stok bahan baku tidak mencukupi untuk pengurangan ini.');
+                    }
+                }
+
+                IngredientStockMovement::create([
+                    'ingredient_id' => $ingredient->id,
+                    'type' => $this->adjustType,
+                    'quantity' => $qty,
+                    'unit_cost' => $ingredient->cost_per_unit,
+                    'reason' => $this->adjustReason,
+                    'idempotency_key' => 'adj_'.Str::uuid()->toString(),
+                    'created_by' => Auth::id(),
+                ]);
+
+                // [CF-07 / D3-013] Hapus update manual duplikat DB::raw('quantity + qty').
+                // Listener Ingredient::saved() akan menambahkan delta ($qty) ke ingredient_stock_balances secara otomatis.
+                $ingredient->current_stock += $qty;
+                $ingredient->save();
+            });
+        } catch (\DomainException $e) {
+            $this->addError('adjustQuantity', $e->getMessage());
 
             return;
         }
-
-        DB::transaction(function () use ($qty, $storeId) {
-            $ingredient = Ingredient::lockForUpdate()->findOrFail($this->adjustIngredientId);
-
-            IngredientStockMovement::create([
-                'ingredient_id' => $ingredient->id,
-                'type' => $this->adjustType,
-                'quantity' => $qty,
-                'unit_cost' => $ingredient->cost_per_unit,
-                'reason' => $this->adjustReason,
-                'idempotency_key' => 'adj_'.Str::uuid()->toString(),
-                'created_by' => Auth::id(),
-            ]);
-
-            // Pastikan baris balance cabang aktif ada sebelum Ingredient::saved() memperbarui delta
-            if ($storeId) {
-                DB::table('ingredient_stock_balances')->insertOrIgnore([
-                    'tenant_id' => app(TenantContext::class)->requireTenantId(),
-                    'store_id' => $storeId,
-                    'ingredient_id' => $ingredient->id,
-                    'quantity' => 0,
-                    'baseline_quantity' => 0,
-                    'baseline_movement_id' => 0,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
-
-            // [CF-07 / D3-013] Hapus update manual duplikat DB::raw('quantity + qty').
-            // Listener Ingredient::saved() akan menambahkan delta ($qty) ke ingredient_stock_balances secara otomatis.
-            $ingredient->current_stock += $qty;
-            $ingredient->save();
-        });
 
         session()->flash('success', 'Stok berhasil disesuaikan.');
         $this->showAdjustModal = false;

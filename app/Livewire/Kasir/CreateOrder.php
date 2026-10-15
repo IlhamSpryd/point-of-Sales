@@ -143,6 +143,7 @@ class CreateOrder extends Component
         // pastikan tidak ada sisa pilihan pelanggan dari sesi sebelumnya.
         $this->customerId = null;
         $this->customerName = null;
+        $this->selectedDiscountId = null;
 
         $this->pendingOrderCode = $order->order_code;
         $this->pendingOrderId = $order->id;
@@ -225,6 +226,7 @@ class CreateOrder extends Component
     {
         if ($this->pendingOrderId !== null) {
             $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+
             return;
         }
 
@@ -259,6 +261,7 @@ class CreateOrder extends Component
     {
         if ($this->pendingOrderId !== null) {
             $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+
             return;
         }
 
@@ -282,6 +285,7 @@ class CreateOrder extends Component
     {
         if ($this->pendingOrderId !== null) {
             $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+
             return;
         }
 
@@ -346,6 +350,7 @@ class CreateOrder extends Component
     {
         if ($this->pendingOrderId !== null) {
             $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+
             return;
         }
 
@@ -382,6 +387,7 @@ class CreateOrder extends Component
     {
         if ($this->pendingOrderId !== null) {
             $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+
             return;
         }
 
@@ -393,6 +399,7 @@ class CreateOrder extends Component
     {
         if ($this->pendingOrderId !== null) {
             $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+
             return;
         }
 
@@ -403,6 +410,7 @@ class CreateOrder extends Component
         $newQty = (int) ($this->cart[$index]['qty'] ?? 1) + $delta;
         if ($newQty <= 0) {
             $this->removeFromCart($index);
+
             return;
         }
 
@@ -701,7 +709,10 @@ class CreateOrder extends Component
                 foreach ($this->cart as $raw) {
                     $product = $products->get($raw['product_id']) ?? Product::findOrFail($raw['product_id']);
                     $line = $transactionService->resolveOrderItemLine(
-                        $product, $raw['modifier_ids'], $raw['qty'], $raw['notes'],
+                        $product,
+                        $raw['modifier_ids'] ?? [],
+                        max(1, (int) ($raw['qty'] ?? 1)),
+                        $raw['notes'] ?? null,
                     );
 
                     $items[] = [

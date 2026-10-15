@@ -8,6 +8,7 @@ namespace App\Services;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\Store;
 use App\Services\Context\TenantContext;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Support\Facades\Cache;
@@ -126,11 +127,15 @@ class MenuCacheService
             return;
         }
 
-        $resolvedStoreId = $storeId ?? $context->getStoreId();
-
-        $this->forgetStoreKeys($resolvedTenantId, $resolvedStoreId);
-        if ($resolvedStoreId !== null) {
+        if ($storeId !== null) {
+            $this->forgetStoreKeys($resolvedTenantId, $storeId);
             $this->forgetStoreKeys($resolvedTenantId, null);
+        } else {
+            $this->forgetStoreKeys($resolvedTenantId, null);
+            $storeIds = Store::where('tenant_id', $resolvedTenantId)->pluck('id');
+            foreach ($storeIds as $sid) {
+                $this->forgetStoreKeys($resolvedTenantId, (int) $sid);
+            }
         }
     }
 

@@ -4,6 +4,7 @@ namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
+use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
@@ -40,12 +41,10 @@ class WaiterCalled implements ShouldBroadcast
     {
         if ($this->tenantId && $this->storeId) {
             return [
-                new \Illuminate\Broadcasting\PrivateChannel("tenant.{$this->tenantId}.store.{$this->storeId}.waiter-calls"),
+                new PrivateChannel("tenant.{$this->tenantId}.store.{$this->storeId}.waiter-calls"),
             ];
         }
 
-        return [
-            new \Illuminate\Broadcasting\PrivateChannel('waiter-calls'),
-        ];
+        return [];
     }
 }

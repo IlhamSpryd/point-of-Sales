@@ -7,13 +7,13 @@ namespace App\Livewire\Kasir;
 use App\Enums\OrderStatus;
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Order;
-use App\Policies\OrderPolicy;
-use App\Models\User;
+use App\Models\Scopes\StoreScope;
 use App\Services\TransactionService;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
@@ -118,7 +118,7 @@ class OrderHistory extends Component
             return;
         }
 
-        $order = Order::findOrFail($targetOrderId);
+        $order = $this->getOrderQuery()->findOrFail($targetOrderId);
         // [D2-BE-004] Otorisasi policy void: tenant/store match + peran berwenang.
         Gate::authorize('void', $order);
         if (! $order || $order->order_status !== OrderStatus::Paid) {
@@ -136,7 +136,7 @@ class OrderHistory extends Component
             session()->flash('error', $e->getMessage());
             $this->dispatch('toast', message: $e->getMessage(), type: 'error');
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Void order failed: '.$e->getMessage(), [
+            Log::error('Void order failed: '.$e->getMessage(), [
                 'exception' => $e,
                 'order_id' => $targetOrderId,
                 'user_id' => Auth::id(),
@@ -198,11 +198,14 @@ class OrderHistory extends Component
             ->all();
     }
 
+    private function isOwnerConsolidated(): bool
+    {
+        return auth()->user()?->role?->name === 'Owner' && session('active_store_id') === 'all';
+    }
+
     private function getOrderQuery()
     {
-        $isOwnerConsolidated = auth()->user()?->role?->name === 'Owner' && session('active_store_id') === 'all';
-
-        return $isOwnerConsolidated ? Order::allStores() : Order::query();
+        return $this->isOwnerConsolidated() ? Order::allStores() : Order::query();
     }
 
     #[Computed]
@@ -210,15 +213,27 @@ class OrderHistory extends Component
     {
         [$start, $end] = $this->resolveDateRange();
 
-        return $this->getOrderQuery()
-            ->with([
+        $query = $this->getOrderQuery();
+
+        if ($this->isOwnerConsolidated()) {
+            $query->with([
+                'orderItems' => fn ($q) => $q->withoutGlobalScope(StoreScope::class)->with('product:id,product_name'),
+                'payments' => fn ($q) => $q->withoutGlobalScope(StoreScope::class),
+                'customer:id,name,phone',
+                'user:id,name',
+                'table' => fn ($q) => $q->withoutGlobalScope(StoreScope::class)->select('id', 'table_name'),
+            ])->withCount(['orderItems' => fn ($q) => $q->withoutGlobalScope(StoreScope::class)]);
+        } else {
+            $query->with([
                 'orderItems.product:id,product_name',
                 'payments',
                 'customer:id,name,phone',
                 'user:id,name',
                 'table:id,table_name',
-            ])
-            ->withCount('orderItems')
+            ])->withCount('orderItems');
+        }
+
+        return $query
             ->whereBetween('order_date', [$start->toDateString(), $end->toDateString()])
             ->when($this->statusFilter !== 'all', fn ($q) => $q->where('order_status', $this->statusFilter))
             ->when(trim($this->search) !== '', fn ($q) => $q->where('order_code', 'like', '%'.trim($this->search).'%'))
@@ -249,8 +264,20 @@ class OrderHistory extends Component
             return null;
         }
 
-        return $this->getOrderQuery()
-            ->with([
+        $query = $this->getOrderQuery();
+
+        if ($this->isOwnerConsolidated()) {
+            $query->with([
+                'orderItems' => fn ($q) => $q->withoutGlobalScope(StoreScope::class)->with('product'),
+                'payments' => fn ($q) => $q->withoutGlobalScope(StoreScope::class),
+                'customer.loyaltyAccount.currentTier',
+                'user:id,name',
+                'table' => fn ($q) => $q->withoutGlobalScope(StoreScope::class)->select('id', 'table_name'),
+                'discount',
+                'voidedBy:id,name',
+            ]);
+        } else {
+            $query->with([
                 'orderItems.product',
                 'payments',
                 'customer.loyaltyAccount.currentTier',
@@ -258,8 +285,10 @@ class OrderHistory extends Component
                 'table:id,table_name',
                 'discount',
                 'voidedBy:id,name',
-            ])
-            ->find($this->selectedOrderId);
+            ]);
+        }
+
+        return $query->find($this->selectedOrderId);
     }
 
     public function render()

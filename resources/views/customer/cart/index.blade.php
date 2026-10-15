@@ -15,7 +15,7 @@
         ])->values()->all(),
         'taxRate'          => (float) ($taxRate ?? \App\Models\Setting::get('tax_rate', config('pos.tax_rate', 0.11))),
         'roundingBehavior' => (string) ($roundingBehavior ?? \App\Models\Setting::get('rounding_behavior', config('pos.rounding_behavior', 'ROUND_NEAREST'))),
-        'roundingValue'    => max(1, (int) ($roundingValue ?? \App\Models\Setting::get('rounding_value', config('pos.rounding_value', 100)))),
+        'roundingValue'    => (int) ($roundingValue ?? \App\Models\Setting::get('rounding_value', config('pos.rounding_value', 100))),
         'urlTemplate'      => route('customer.cart.update', ['lineId' => '__LINE__']),
         'checkoutUrl'      => route('customer.checkout.create'),
         'menuUrl'          => $menuUrl,
@@ -143,6 +143,7 @@
                 get tax() { return Math.round(this.subtotal * cfg.taxRate); },
                 get total() {
                     const raw = this.subtotal + this.tax, v = cfg.roundingValue;
+                    if (v <= 0 || cfg.roundingBehavior === 'NONE') return Math.round(raw);
                     switch (cfg.roundingBehavior) {
                         case 'ROUND_NEAREST': return Math.round(raw / v) * v;
                         case 'ROUND_UP': return Math.ceil(raw / v) * v;

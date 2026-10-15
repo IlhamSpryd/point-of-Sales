@@ -42,6 +42,7 @@
                             this.loading = false;
                             this.errorMessage = data.error_message || 'Ekspor gagal diproses.';
                             clearInterval(interval);
+                            $wire.resetExport();
                         }
                     })
                     .catch(err => {
@@ -50,6 +51,7 @@
                         this.status = 'failed';
                         this.errorMessage = 'Gagal memeriksa status ekspor (kesalahan jaringan atau server).';
                         clearInterval(interval);
+                        $wire.resetExport();
                     });
             }, 2000);
         }
@@ -59,7 +61,7 @@
     <!-- Idle State / Request Export -->
     <button 
         x-show="!taskId || status === 'failed'" 
-        wire:click="requestExport" 
+        @click="if (status === 'failed') { $wire.resetExport(); status = 'idle'; errorMessage = ''; } $wire.requestExport()"
         class="w-full h-10 bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 rounded-md px-4 py-2 text-sm font-medium transition-colors flex items-center justify-center gap-2"
     >
         <span class="material-symbols-rounded text-[18px]">download</span> Request Export Excel

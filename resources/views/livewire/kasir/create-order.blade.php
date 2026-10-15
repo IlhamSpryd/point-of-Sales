@@ -849,7 +849,7 @@
                 idempotencyKey: null,
 
                 init() {
-                    window.addEventListener('open-checkout-modal', (e) => {
+                    this._openModalHandler = (e) => {
                         this.total = e.detail.total;
                         this.legs = [];
                         this.method = 'cash';
@@ -860,7 +860,14 @@
                         this.idempotencyKey = (window.crypto && window.crypto.randomUUID) ?
                             window.crypto.randomUUID() :
                             (Date.now().toString(36) + Math.random().toString(36).slice(2));
-                    });
+                    };
+                    window.addEventListener('open-checkout-modal', this._openModalHandler);
+                },
+
+                destroy() {
+                    if (this._openModalHandler) {
+                        window.removeEventListener('open-checkout-modal', this._openModalHandler);
+                    }
                 },
 
                 get paidTotal() {
