@@ -9,8 +9,13 @@ use Illuminate\Database\Eloquent\Scope;
 
 /**
  * Discount bersifat tenant-wide bila store_id NULL, atau spesifik cabang
- * bila store_id terisi. Karena itu filter-nya:
- *   store_id IS NULL OR store_id = active store
+ * bila store_id terisi.
+ *
+ * PENGELOMPOKAN BOOLEAN BERTANDA KURUNG (D1-DB-007):
+ * Kueri WAJIB dikelompokkan dengan tanda kurung:
+ *   WHERE tenant_id = ? AND (store_id = ? OR store_id IS NULL)
+ * Tanpa pengelompokan ini, kondisi OR store_id IS NULL akan membocorkan
+ * diskon global milik tenant lain ke tenant aktif!
  */
 class DiscountStoreScope implements Scope
 {
@@ -22,15 +27,23 @@ class DiscountStoreScope implements Scope
             return;
         }
 
-        $storeId = $context->getStoreId();
+        $tenantId = $context->getTenantId();
 
-        if ($storeId === null) {
+        if ($tenantId === null) {
+            $builder->whereRaw('1 = 0');
+
             return;
         }
 
-        $builder->where(function (Builder $q) use ($model, $storeId) {
-            $q->whereNull($model->getTable().'.store_id')
-                ->orWhere($model->getTable().'.store_id', $storeId);
-        });
+        $builder->where($model->qualifyColumn('tenant_id'), $tenantId);
+
+        $storeId = $context->getStoreId();
+
+        if ($storeId !== null) {
+            $builder->where(function (Builder $query) use ($model, $storeId) {
+                $query->where($model->qualifyColumn('store_id'), $storeId)
+                    ->orWhereNull($model->qualifyColumn('store_id'));
+            });
+        }
     }
 }

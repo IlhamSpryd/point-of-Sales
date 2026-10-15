@@ -75,6 +75,11 @@ class MenuCacheService
     {
         $tenantId = $tenantId ?? app(TenantContext::class)->getTenantId();
 
+        // D1-DB-008: fail-closed -- tolak pembacaan/penulisan cache tanpa tenant.
+        if ($tenantId === null) {
+            throw new \RuntimeException('MenuCacheService requires an active tenant context.');
+        }
+
         return Cache::supportsTags() ? Cache::tags(["menu:tenant_{$tenantId}"]) : Cache::store();
     }
 
@@ -184,6 +189,10 @@ class MenuCacheService
     {
         $resolvedTenantId = $tenantId ?? app(TenantContext::class)->getTenantId();
 
+        // D1-DB-008: invalidasi tanpa tenant jelas tidak boleh menghapus cache tenant lain.
+        if ($resolvedTenantId === null) {
+            throw new \RuntimeException('MenuCacheService::flush() requires a tenant id.');
+        }
         if (Cache::supportsTags()) {
             Cache::tags(["menu:tenant_{$resolvedTenantId}"])->flush();
 
@@ -198,8 +207,18 @@ class MenuCacheService
 
     private function getTenantKey(string $key, ?int $tenantId = null): string
     {
-        $tenantId = $tenantId ?? app(TenantContext::class)->getTenantId();
+        $context = app(TenantContext::class);
+        $tenantId = $tenantId ?? $context->getTenantId();
 
-        return $tenantId ? str_replace('pos:menu:', "pos:menu:{$tenantId}:", $key) : $key;
+        // D1-DB-008: kunci cache tanpa dimensi tenant DILARANG -- fail-closed.
+        if ($tenantId === null) {
+            throw new \RuntimeException('MenuCacheService cache key requires an active tenant context.');
+        }
+
+        // D1-DB-008: katalog menu adalah data level cabang -> sertakan dimensi
+        // store pada kunci agar menu antar-cabang tidak saling menimpa.
+        $storeId = $context->getStoreId();
+
+        return str_replace('pos:menu:', "pos:menu:{$tenantId}:".($storeId !== null ? "store:{$storeId}:" : 'all:'), $key);
     }
 }

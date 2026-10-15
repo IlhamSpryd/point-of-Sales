@@ -63,13 +63,17 @@ class ProcessWebhookOrderJob implements ShouldQueue
         $tenantId = $this->tenantId ?? $this->log->tenant_id;
         $storeId = $this->storeId ?? $this->log->store_id;
 
-        if ($tenantId) {
-            app(TenantContext::class)->runAs($tenantId, $storeId, function () use ($transactionService) {
-                $this->processInsideContext($transactionService);
-            });
-        } else {
-            $this->processInsideContext($transactionService);
+        // D1-DB-006: job async TIDAK BOLEH berjalan tanpa konteks tenant
+        // (fail-open pada queue worker berumur panjang membocorkan data).
+        if (! $tenantId) {
+            $this->fail('Channel order log tidak memiliki tenant_id; job ditolak (fail-closed).', warning: true);
+
+            return;
         }
+
+        app(TenantContext::class)->runAs((int) $tenantId, $storeId !== null ? (int) $storeId : null, function () use ($transactionService) {
+            $this->processInsideContext($transactionService);
+        });
     }
 
     private function processInsideContext(TransactionService $transactionService): void

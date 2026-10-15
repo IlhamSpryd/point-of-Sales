@@ -8,10 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Scope;
 
 /**
- * Membatasi query ke store aktif. Bila context tidak punya store
- * (operasi sistem / seeder / command), scope tidak menambahkan filter
- * agar operasi lintas-cabang sistem tetap berjalan -- sama seperti pola
- * TenantScope.isBypassed().
+ * Global scope: membatasi query ke store aktif (cabang) pada TenantContext.
+ * FAIL-CLOSED: bila storeId null dan tidak dalam bypass eksplisit (allStores()),
+ * injeksikan klausa '1 = 0' agar tidak pernah fail-open membocorkan data store lain.
  */
 class StoreScope implements Scope
 {
@@ -26,9 +25,11 @@ class StoreScope implements Scope
         $storeId = $context->getStoreId();
 
         if ($storeId === null) {
+            $builder->whereRaw('1 = 0');
+
             return;
         }
 
-        $builder->where($model->getTable().'.store_id', $storeId);
+        $builder->where($model->qualifyColumn('store_id'), $storeId);
     }
 }

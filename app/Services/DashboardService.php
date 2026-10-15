@@ -30,7 +30,14 @@ class DashboardService
         $activeStoreId = app(TenantContext::class)->getStoreId();
 
         $cacheScope = $isAllStores ? 'all' : ($activeStoreId ?? 'default');
-        $cacheKey = $tenantId ? "pos:dashboard:{$tenantId}:{$cacheScope}:metrics" : 'pos:dashboard:metrics';
+
+        // D1-DB-008: fail-closed -- tanpa tenant, jangan pernah baca/tulis cache
+        // global 'pos:dashboard:metrics' yang bisa berisi agregasi lintas-tenant.
+        if ($tenantId === null) {
+            throw new \RuntimeException('DashboardService requires an active tenant context.');
+        }
+
+        $cacheKey = "pos:dashboard:{$tenantId}:{$cacheScope}:metrics";
 
         $metrics = Cache::remember($cacheKey, 90, function () use ($isAllStores) {
             $orderQuery = $isAllStores ? Order::allStores() : Order::query();

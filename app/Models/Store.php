@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\AssignsTenant;
+use App\Models\Concerns\ScopedToTenant;
 use App\Services\Context\TenantContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -9,6 +11,8 @@ use Illuminate\Support\Facades\DB;
 
 class Store extends Model
 {
+    use AssignsTenant;
+    use ScopedToTenant;
     use SoftDeletes;
 
     protected static function booted()

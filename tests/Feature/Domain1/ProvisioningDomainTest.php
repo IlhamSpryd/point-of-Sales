@@ -102,7 +102,7 @@ class ProvisioningDomainTest extends TestCase
         ]);
 
         // Store pertama
-        $store = Store::where('tenant_id', $tenant->id)->first();
+        $store = Store::withoutGlobalScopes()->where('tenant_id', $tenant->id)->first();
         $this->assertNotNull($store);
         $this->assertSame($response->json('store_id'), $store->id);
 
@@ -405,7 +405,7 @@ class ProvisioningDomainTest extends TestCase
         // Tenant baru tidak punya Product/Ingredient. Hook Store::created
         // wajib berjalan tanpa error dan membuat nol balance (bukan membuat
         // balance palsu tanpa parent catalog row).
-        $store = Store::first();
+        $store = Store::withoutGlobalScopes()->first();
         $this->assertSame(0, DB::table('product_stock_balances')->where('store_id', $store->id)->count());
         $this->assertSame(0, DB::table('ingredient_stock_balances')->where('store_id', $store->id)->count());
     }
@@ -428,8 +428,7 @@ class ProvisioningDomainTest extends TestCase
         $this->postProvision($payload, $this->signedHeaders($payload, ['X-Idempotency-Key' => $key]))
             ->assertStatus(201);
         $tenant = Tenant::first();
-        $store = Store::where('tenant_id', $tenant->id)->first();
-
+        $store = Store::withoutGlobalScopes()->where('tenant_id', $tenant->id)->first();
         // Seed produk tenant ini secara langsung (platform context), lalu
         // trigger hook via pembuatan store kedua milik tenant yang sama.
         $product = null;
@@ -460,6 +459,7 @@ class ProvisioningDomainTest extends TestCase
         $ctx->runAs($tenant->id, null, function () use ($tenant, &$store2) {
             $store2 = Store::create(['tenant_id' => $tenant->id, 'name' => 'Cabang 2']);
         });
+        $store2 = Store::withoutGlobalScopes()->find($store2->id);
 
         // Hook harus membuat balances utk kedua store (loop products/ingredients).
         $this->assertDatabaseHas('product_stock_balances', [

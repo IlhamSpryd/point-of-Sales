@@ -59,5 +59,11 @@ trait AssignsStore
 
             throw new \RuntimeException("Tidak dapat menentukan store untuk pembuatan record (tenant {$tenantId}).");
         });
+
+        static::updating(function ($model) {
+            if ($model->isDirty('store_id')) {
+                throw new \RuntimeException('Store ownership (store_id) cannot be modified once set.');
+            }
+        });
     }
 }

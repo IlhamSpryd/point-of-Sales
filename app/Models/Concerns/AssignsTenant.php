@@ -3,11 +3,10 @@
 namespace App\Models\Concerns;
 
 use App\Services\Context\TenantContext;
-use Illuminate\Database\Eloquent\Builder;
 
 trait AssignsTenant
 {
-    protected static function bootAssignsTenant()
+    protected static function bootAssignsTenant(): void
     {
         static::creating(function ($model) {
             $context = app(TenantContext::class);
@@ -21,10 +20,9 @@ trait AssignsTenant
             }
         });
 
-        static::addGlobalScope('tenant', function (Builder $builder) {
-            $context = app(TenantContext::class);
-            if ($context->hasTenant()) {
-                $builder->where($builder->getModel()->getTable().'.tenant_id', $context->getTenantId());
+        static::updating(function ($model) {
+            if ($model->isDirty('tenant_id')) {
+                throw new \RuntimeException('Tenant ownership (tenant_id) cannot be modified once set.');
             }
         });
     }

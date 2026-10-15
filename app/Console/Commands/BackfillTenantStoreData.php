@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Schema;
 
 class BackfillTenantStoreData extends Command
 {
-    protected $signature = 'database:backfill-tenant-store {--apply : Execute the database writes}';
+    protected $signature = 'database:backfill-tenant-store {--apply : Execute the database writes} {--tenant= : Explicit tenant id for orphan rows when multiple tenants exist}';
 
     protected $description = 'Backfill tenant_id and store_id for existing multi-tenant architecture safely';
 
@@ -19,7 +19,46 @@ class BackfillTenantStoreData extends Command
         $this->info('Starting backfill for tenants and stores... '.($apply ? '[APPLY MODE]' : '[DRY RUN]'));
 
         $tenantCount = DB::table('tenants')->count();
+
+        // D1-DB-009: bila multi-tenant dan ada baris yatim, jangan pernah
+        // menetapkan Tenant::first() secara otomatis -- wajib --tenant= eksplisit.
+        $explicitTenant = $this->option('tenant');
+
         if ($tenantCount > 1) {
+            $orphanRows = 0;
+            foreach (['users', 'products', 'orders', 'customers'] as $probe) {
+                if (Schema::hasTable($probe) && Schema::hasColumn($probe, 'tenant_id')) {
+                    $orphanRows += DB::table($probe)->whereNull('tenant_id')->count();
+                }
+            }
+
+            if ($orphanRows > 0) {
+                if (! $apply) {
+                    $this->warn("Found $orphanRows orphan rows across multiple tenants. Re-run with --tenant=<id> to assign them explicitly.");
+
+                    return 1;
+                }
+
+                if (! $explicitTenant) {
+                    $this->error("Abort: Ownership is ambiguous. Found $tenantCount tenants and $orphanRows orphan rows. Provide --tenant=<id> explicitly.");
+
+                    return 1;
+                }
+
+                $exists = DB::table('tenants')->where('id', (int) $explicitTenant)->exists();
+                if (! $exists) {
+                    $this->error("Abort: Tenant {$explicitTenant} does not exist.");
+
+                    return 1;
+                }
+
+                $tenantId = (int) $explicitTenant;
+                $storeId = DB::table('stores')->where('tenant_id', $tenantId)->orderBy('id')->value('id');
+                $this->warn("AMBIGUOUS MODE: assigning orphan rows to tenant {$tenantId} (store {$storeId}) as explicitly requested via --tenant=.");
+
+                goto target;
+            }
+
             $this->error("Abort: Ownership is ambiguous. Found $tenantCount tenants.");
 
             return 1;
@@ -58,6 +97,7 @@ class BackfillTenantStoreData extends Command
             }
         }
 
+        target:
         $this->info("Target Tenant ID: $tenantId, Target Store ID: $storeId");
 
         if ($tenantId !== 1) {

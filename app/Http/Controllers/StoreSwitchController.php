@@ -49,12 +49,14 @@ class StoreSwitchController extends Controller
             $request->session()->put('active_store_id', $storeId);
         }
 
-        // Invalidate cache dashboard agar data ter-refresh seketika
-        Cache::forget("pos:dashboard:{$tenantId}:metrics");
+        // Invalidate cache dashboard agar data ter-refresh seketika.
+        // D1-DB-008: kunci mengikuti format DashboardService (tenant + scope),
+        // tidak ada kunci global lintas-tenant.
         Cache::forget("pos:dashboard:{$tenantId}:all:metrics");
         foreach ($allowed as $sId) {
             Cache::forget("pos:dashboard:{$tenantId}:{$sId}:metrics");
         }
+        Cache::forget("pos:dashboard:{$tenantId}:default:metrics");
 
         return back();
     }

@@ -81,7 +81,8 @@ return new class extends Migration
             }
 
             // Drop seluruh FK agar MODIFY kolom tidak bentrok tipe (Phase 10 FKs).
-            foreach ($this->foreignKeysOf($table) as $fk) {
+            $existingFks = $this->foreignKeysOf($table);
+            foreach ($existingFks as $fk) {
                 DB::statement("ALTER TABLE `{$table}` DROP FOREIGN KEY `{$fk['name']}`");
             }
 
@@ -92,7 +93,7 @@ return new class extends Migration
                 // Tidak semua versi mendukung ALTER COLUMN ... DROP DEFAULT.
             }
 
-            foreach ($this->foreignKeysOf($table) as $fk) {
+            foreach ($existingFks as $fk) {
                 $cols = implode('`, `', $fk['columns']);
                 $refCols = implode('`, `', $fk['ref_columns']);
                 DB::statement("ALTER TABLE `{$table}` ADD CONSTRAINT `{$fk['name']}` FOREIGN KEY (`{$cols}`) REFERENCES `{$fk['ref_table']}` (`{$refCols}`) {$fk['rest']}");

@@ -934,7 +934,11 @@ class Domain1AuditRemediationTest extends TestCase
         $env1 = $this->setupSelfOrderEnvironment();
 
         $tenant2 = Tenant::create(['name' => 'Kedai Kopi Tenant 2']);
-        $store2 = Store::create(['tenant_id' => $tenant2->id, 'name' => 'Store 2']);
+        $store2 = null;
+        app(TenantContext::class)->runAs($tenant2->id, null, function () use ($tenant2, &$store2) {
+            $store2 = Store::create(['tenant_id' => $tenant2->id, 'name' => 'Store 2']);
+        });
+        $store2 = $store2->withoutGlobalScopes()->findOrFail($store2->id);
         $tableTenant2 = null;
         app(TenantContext::class)->runAs($tenant2->id, $store2->id, function () use ($tenant2, $store2, &$tableTenant2) {
             $tableTenant2 = Table::create([
