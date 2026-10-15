@@ -34,24 +34,40 @@ class IdempotencyPortabilityTest extends TestCase
 
         app(TenantContext::class)->clear();
 
-        $this->tenantA = Tenant::create(['name' => 'Tenant A', 'slug' => 'tenant-a', 'status' => 'active']);
-        $this->tenantB = Tenant::create(['name' => 'Tenant B', 'slug' => 'tenant-b', 'status' => 'active']);
+        $this->tenantA = Tenant::create(['name' => 'Tenant A', 'readiness_status' => 'active']);
+        $this->tenantB = Tenant::create(['name' => 'Tenant B', 'readiness_status' => 'active']);
 
         // Setup Tenant A models within Tenant A context
         $context = app(TenantContext::class);
         $context->setTenantId($this->tenantA->id);
 
-        $this->storeA = Store::create(['tenant_id' => $this->tenantA->id, 'name' => 'Store A', 'is_active' => true]);
+        $this->storeA = Store::create(['tenant_id' => $this->tenantA->id, 'name' => 'Store A']);
         $context->setStoreId($this->storeA->id);
-        $roleA = Role::create(['tenant_id' => $this->tenantA->id, 'name' => 'Cashier', 'permissions' => []]);
+        $roleA = Role::forceCreate(['tenant_id' => $this->tenantA->id, 'name' => 'Kasir', 'permissions' => ['can_create_order']]);
         $this->cashierA = User::factory()->create(['tenant_id' => $this->tenantA->id, 'role_id' => $roleA->id]);
+        $this->cashierA->stores()->attach($this->storeA->id, ['tenant_id' => $this->tenantA->id]);
+
+        $categoryA = \App\Models\Category::create([
+            'tenant_id' => $this->tenantA->id,
+            'category_name' => 'Food',
+        ]);
+
+        $this->productA = \App\Models\Product::forceCreate([
+            'tenant_id' => $this->tenantA->id,
+            'category_id' => $categoryA->id,
+            'product_name' => 'Burger',
+            'product_price' => 50000,
+            'stock' => 10,
+            'is_active' => true,
+        ]);
 
         // Setup Tenant B models within Tenant B context
         $context->setTenantId($this->tenantB->id);
-        $this->storeB = Store::create(['tenant_id' => $this->tenantB->id, 'name' => 'Store B', 'is_active' => true]);
+        $this->storeB = Store::create(['tenant_id' => $this->tenantB->id, 'name' => 'Store B']);
         $context->setStoreId($this->storeB->id);
-        $roleB = Role::create(['tenant_id' => $this->tenantB->id, 'name' => 'Cashier', 'permissions' => []]);
+        $roleB = Role::forceCreate(['tenant_id' => $this->tenantB->id, 'name' => 'Kasir', 'permissions' => ['can_create_order']]);
         $this->cashierB = User::factory()->create(['tenant_id' => $this->tenantB->id, 'role_id' => $roleB->id]);
+        $this->cashierB->stores()->attach($this->storeB->id, ['tenant_id' => $this->tenantB->id]);
 
         // Return context to Tenant A
         $context->setTenantId($this->tenantA->id);
@@ -66,6 +82,8 @@ class IdempotencyPortabilityTest extends TestCase
             'opened_at' => now(),
         ]);
     }
+
+    protected \App\Models\Product $productA;
 
     public function test_existing_order_with_same_idempotency_key_returns_idempotent_success(): void
     {
@@ -88,16 +106,15 @@ class IdempotencyPortabilityTest extends TestCase
         $response = $this->actingAs($this->cashierA)
             ->postJson(route('transaction.store'), [
                 'items' => [
-                    ['product_id' => 999999, 'quantity' => 1], // Even with invalid item, fast idempotency check precedes
+                    ['product_id' => $this->productA->id, 'quantity' => 1],
                 ],
                 'payment_method' => 'cash',
                 'cash_received' => 55500,
                 'idempotency_key' => $idempotencyKey,
             ]);
 
-        // Validation for items runs before controller body, but if payload is valid for controller:
-        // Let's test the controller directly via idempotency check
-        $this->assertTrue(Order::where('idempotency_key', $idempotencyKey)->exists());
+        $response->assertStatus(200);
+        $this->assertTrue(Order::withoutGlobalScopes()->where('idempotency_key', $idempotencyKey)->exists());
     }
 
     public function test_idempotent_order_lookup_is_isolated_to_authenticated_tenant(): void

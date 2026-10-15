@@ -85,6 +85,29 @@ return new class extends Migration
 
         // 11. channel_order_logs
         $addFkIfNotExists('channel_order_logs', 'channel_order_logs_order_id_composite_foreign', ['tenant_id', 'order_id'], 'orders', ['tenant_id', 'id']);
+
+        // 12. Branch ownership FKs to stores (if missing on older databases)
+        $branchTables = [
+            'shifts', 'orders', 'order_items', 'order_item_modifiers', 'payments',
+            'stock_movements', 'ingredient_stock_movements', 'cash_drawer_movements',
+            'tables', 'activity_logs', 'export_tasks',
+        ];
+        foreach ($branchTables as $bTable) {
+            $addFkIfNotExists($bTable, "{$bTable}_tenant_id_store_id_composite_foreign", ['tenant_id', 'store_id'], 'stores', ['tenant_id', 'id']);
+        }
+
+        // 13. Provisioning & Onboarding FKs (if missing on older databases)
+        if (Schema::hasTable('provisioning_requests') && Schema::hasTable('tenants')) {
+            $addFkIfNotExists('provisioning_requests', 'provisioning_requests_result_tenant_fk', ['result_tenant_id'], 'tenants', ['id'], 'SET NULL');
+            $addFkIfNotExists('provisioning_requests', 'provisioning_requests_result_user_fk', ['result_user_id'], 'users', ['id'], 'SET NULL');
+        }
+        if (Schema::hasTable('owner_onboarding_tokens') && Schema::hasTable('users')) {
+            $addFkIfNotExists('owner_onboarding_tokens', 'onboarding_tokens_tenant_user_fk', ['tenant_id', 'user_id'], 'users', ['tenant_id', 'id'], 'CASCADE');
+        }
+        if (Schema::hasTable('email_outbox') && Schema::hasTable('tenants')) {
+            $addFkIfNotExists('email_outbox', 'email_outbox_tenant_fk', ['tenant_id'], 'tenants', ['id'], 'SET NULL');
+            $addFkIfNotExists('email_outbox', 'email_outbox_user_fk', ['user_id'], 'users', ['id'], 'SET NULL');
+        }
     }
 
     public function down(): void
@@ -100,6 +123,21 @@ return new class extends Migration
                 }
             }
         };
+
+        $dropFk('email_outbox', 'email_outbox_user_fk');
+        $dropFk('email_outbox', 'email_outbox_tenant_fk');
+        $dropFk('owner_onboarding_tokens', 'onboarding_tokens_tenant_user_fk');
+        $dropFk('provisioning_requests', 'provisioning_requests_result_user_fk');
+        $dropFk('provisioning_requests', 'provisioning_requests_result_tenant_fk');
+
+        $branchTables = [
+            'shifts', 'orders', 'order_items', 'order_item_modifiers', 'payments',
+            'stock_movements', 'ingredient_stock_movements', 'cash_drawer_movements',
+            'tables', 'activity_logs', 'export_tasks',
+        ];
+        foreach ($branchTables as $bTable) {
+            $dropFk($bTable, "{$bTable}_tenant_id_store_id_composite_foreign");
+        }
 
         $dropFk('channel_order_logs', 'channel_order_logs_order_id_composite_foreign');
         $dropFk('export_tasks', 'export_tasks_requested_by_composite_foreign');

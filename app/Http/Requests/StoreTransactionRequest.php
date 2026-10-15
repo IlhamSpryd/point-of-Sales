@@ -1,80 +1,114 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Requests;
 
+use App\Enums\PaymentMethod;
+use App\Models\Order;
 use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-/**
- * Mengembalikan konsistensi pola Form Request yang sudah dipakai di seluruh modul lain proyek
- * alih-alih meletakkan validasi mentah (raw validation) di dalam Controller.
- */
 class StoreTransactionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        $user = $this->user();
+        if (! $user) {
+            return false;
+        }
+
+        return $user->can('create', Order::class);
     }
 
     public function rules(): array
     {
+        $tenantId = app(TenantContext::class)->requireTenantId();
+        $storeId = app(TenantContext::class)->getStoreId();
+
         return [
-            'items' => 'required|array|min:1',
+            'items' => ['required', 'array', 'min:1'],
             'items.*.product_id' => [
                 'required',
-                // Validasi ganda: produk harus ADA di database DAN berstatus is_active = true.
-                // Ini mencegah produk yang sudah dinonaktifkan Admin tetap bisa "disundul"
-                // langsung lewat request API, meskipun sudah disembunyikan dari UI kasir.
-                Rule::exists('products', 'id')->where(function ($query) {
+                Rule::exists('products', 'id')->where(function ($query) use ($tenantId) {
                     $query->where('is_active', true)
-                        ->where('tenant_id', app(TenantContext::class)->requireTenantId());
+                        ->where('tenant_id', $tenantId);
                 }),
             ],
-            'items.*.quantity' => 'required|integer|min:1',
-            // PATCH FOR F-04: extra_price & options sebelumnya tidak divalidasi
-            // sama sekali, sehingga hilang dari validated() dan modifier senyap
-            // tidak terhitung. Lapisan pertama — TransactionService tetap harus
-            // menghitung ulang harga dari DB.
-            'items.*.extra_price' => 'nullable|numeric|min:0',
-            'items.*.options' => 'nullable|array',
+            'items.*.quantity' => ['required', 'integer', 'min:1'],
+            'items.*.extra_price' => ['nullable', 'numeric', 'min:0'],
+            'items.*.options' => ['nullable', 'array'],
             'items.*.options.*.modifier_id' => [
                 'required_with:items.*.options',
-                Rule::exists('modifiers', 'id')->where(fn ($q) => $q->where('is_active', true)->where('tenant_id', app(TenantContext::class)->requireTenantId())),
+                Rule::exists('modifiers', 'id')->where(function ($q) use ($tenantId) {
+                    $q->where('is_active', true)
+                        ->where('tenant_id', $tenantId);
+                }),
             ],
-            'items.*.options.*.extra_price' => 'nullable|numeric|min:0',
-            // Hanya izinkan metode pembayaran yang benar-benar didukung sistem,
-            // agar tidak ada nilai sembarangan yang lolos ke TransactionService.
-            'payment_method' => ['required_without:payments', 'nullable', 'string', Rule::in(['cash', 'qris', 'ewallet', 'card'])],
-            'cash_received' => 'nullable|numeric|min:0',
-            'payments' => 'nullable|array|min:1',
-            'payments.*.method' => ['required_with:payments', 'string', Rule::in(['cash', 'qris', 'ewallet', 'card'])],
-            'payments.*.amount' => 'required_with:payments|integer|min:1',
-            'payments.*.reference_number' => 'nullable|string|max:100',
-            'payments.*.idempotency_key' => 'nullable|string|max:100',
+            'items.*.options.*.extra_price' => ['nullable', 'numeric', 'min:0'],
+
+            'payment_method' => [
+                'required_without:payments',
+                'nullable',
+                Rule::enum(PaymentMethod::class),
+            ],
+            'cash_received' => ['nullable', 'numeric', 'min:0'],
+
+            'payments' => ['nullable', 'array', 'min:1'],
+            'payments.*.method' => [
+                'required_with:payments',
+                Rule::enum(PaymentMethod::class),
+            ],
+            'payments.*.amount' => ['required_with:payments', 'integer', 'min:1'],
+            'payments.*.reference_number' => ['nullable', 'string', 'max:100'],
+            'payments.*.idempotency_key' => ['nullable', 'string', 'max:100'],
+
             'customer_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('customers', 'id')->where(fn ($q) => $q->where('is_active', true)->where('tenant_id', app(TenantContext::class)->requireTenantId())),
+                Rule::exists('customers', 'id')->where(function ($q) use ($tenantId) {
+                    $q->where('is_active', true)
+                        ->where('tenant_id', $tenantId);
+                }),
             ],
             'discount_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('discounts', 'id')->where(fn ($q) => $q->where('is_active', true)->where('tenant_id', app(TenantContext::class)->requireTenantId())),
+                Rule::exists('discounts', 'id')->where(function ($q) use ($tenantId, $storeId) {
+                    $q->where('is_active', true)
+                        ->where('tenant_id', $tenantId)
+                        ->where(function ($sub) use ($storeId) {
+                            $sub->whereNull('store_id');
+                            if ($storeId !== null) {
+                                $sub->orWhere('store_id', $storeId);
+                            }
+                        });
+                }),
             ],
             'table_id' => [
                 'nullable',
                 'integer',
-                Rule::exists('tables', 'id')->where(fn ($q) => $q->where('tenant_id', app(TenantContext::class)->requireTenantId())),
+                Rule::exists('tables', 'id')->where(function ($q) use ($tenantId, $storeId) {
+                    $q->where('tenant_id', $tenantId);
+                    if ($storeId !== null) {
+                        $q->where('store_id', $storeId);
+                    }
+                }),
+            ],
+            'shift_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('shifts', 'id')->where(function ($q) use ($tenantId, $storeId) {
+                    $q->where('tenant_id', $tenantId)
+                        ->where('status', 'open');
+                    if ($storeId !== null) {
+                        $q->where('store_id', $storeId);
+                    }
+                }),
             ],
             'order_type' => ['nullable', 'string', Rule::in(['dine_in', 'takeaway'])],
-            // [OMEGA-NODE9] SEC FIX CRITICAL: idempotency_key kini WAJIB.
-            // Sebelumnya nullable, dan Cache::lock() di
-            // TransactionController::store() dibungkus if($idempotencyKey)
-            // sehingga TANPA field ini SELURUH proteksi idempotency lolos
-            // total, memungkinkan order & grant poin loyalti duplikat tak
-            // terbatas dari satu klik ganda via klien HTTP mentah. | 2026-09-25
-            'idempotency_key' => 'required|string|size:36',
+            'idempotency_key' => ['required', 'string', 'max:64'],
         ];
     }
 

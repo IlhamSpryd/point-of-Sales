@@ -37,14 +37,12 @@ class StoreTransactionRequestTest extends TestCase
 
         $this->tenant = Tenant::create([
             'name' => 'Req Tenant',
-            'slug' => 'req-tenant',
-            'status' => 'active',
+            'readiness_status' => 'active',
         ]);
 
         $this->store = Store::create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Req Store',
-            'is_active' => true,
         ]);
 
         $context = app(TenantContext::class);
@@ -62,14 +60,12 @@ class StoreTransactionRequestTest extends TestCase
             'product_name' => 'Chips',
             'product_price' => 15000,
             'stock' => 50,
-            'is_active' => true,
         ]);
 
         $this->customer = Customer::create([
             'tenant_id' => $this->tenant->id,
             'name' => 'John Doe',
             'phone' => '08123456789',
-            'is_active' => true,
         ]);
 
         $this->discount = Discount::create([
@@ -78,14 +74,12 @@ class StoreTransactionRequestTest extends TestCase
             'type' => 'percentage',
             'value' => 10,
             'min_purchase_amount' => 10000,
-            'is_active' => true,
         ]);
 
         $this->table = Table::create([
             'tenant_id' => $this->tenant->id,
             'table_name' => 'Meja 5',
             'capacity' => 4,
-            'is_active' => true,
         ]);
     }
 

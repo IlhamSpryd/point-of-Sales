@@ -30,14 +30,12 @@ class ProcessMonthlyExportJobDirectoryTest extends TestCase
 
         $this->tenant = Tenant::create([
             'name' => 'Monthly Tenant',
-            'slug' => 'monthly-tenant',
-            'status' => 'active',
+            'readiness_status' => 'active',
         ]);
 
         $this->store = Store::create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Monthly Store',
-            'is_active' => true,
         ]);
 
         $context = app(TenantContext::class);
@@ -77,7 +75,7 @@ class ProcessMonthlyExportJobDirectoryTest extends TestCase
 
         $job->handle();
 
-        $files = Storage::disk('local')->files('exports');
+        $files = Storage::disk('local')->allFiles('exports');
         $this->assertNotEmpty($files, 'Monthly export file must be generated inside exports directory on local disk');
     }
 }

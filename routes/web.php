@@ -167,11 +167,17 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
     // Shift Kasir — Supervisor ditambahkan (§7.3 audit: Supervisor memiliki izin shifts.*)
     Route::middleware('role:Owner,Manager,Kasir,Supervisor')->group(function () {
         Route::get('/shifts', [ShiftController::class, 'index'])->name('shifts.index');
+        Route::post('/shifts/open', [ShiftController::class, 'open'])->name('shifts.open');
+        Route::post('/shifts/{shift}/close', [ShiftController::class, 'close'])->name('shifts.close');
+        Route::post('/shifts/{shift}/movement', [ShiftController::class, 'recordCashMovement'])->name('shifts.movement');
+        Route::get('/shifts/{shift}', [ShiftController::class, 'show'])->name('shifts.show');
     });
 
     // Riwayat Pesanan
     Route::middleware('role:Owner,Manager,Kasir,Waiter')->group(function () {
-        Route::get('/orders', OrderHistory::class)->name('orders.index');
+        Route::get('/orders', [TransactionController::class, 'index'])->name('orders.index');
+        Route::get('/orders/{orderNumber}', [TransactionController::class, 'show'])->name('orders.show');
+        Route::post('/orders/{orderNumber}/void', [TransactionController::class, 'void'])->name('orders.void');
     });
 
     // Diskon & Promo

@@ -19,6 +19,9 @@
         "predis/predis": "*",
         "simplesoftwareio/simple-qrcode": "^4.2"
     },
+    "suggest": {
+        "ext-bcmath": "Provides native arbitrary precision arithmetic for high-concurrency POS & BOM environments."
+    },
     "require-dev": {
         "brianium/paratest": "^7.20",
         "fakerphp/faker": "^1.23",

@@ -37,8 +37,7 @@ class OrderVoidIntegrityTest extends TestCase
 
         $this->tenant = Tenant::create([
             'name' => 'Void Tenant',
-            'slug' => 'void-tenant',
-            'status' => 'active',
+            'readiness_status' => 'active',
         ]);
 
         $context = app(TenantContext::class);
@@ -47,7 +46,6 @@ class OrderVoidIntegrityTest extends TestCase
         $this->store = Store::create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Main Branch',
-            'is_active' => true,
         ]);
 
         $context->setStoreId($this->store->id);

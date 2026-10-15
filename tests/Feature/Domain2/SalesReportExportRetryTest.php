@@ -31,14 +31,12 @@ class SalesReportExportRetryTest extends TestCase
 
         $this->tenant = Tenant::create([
             'name' => 'Report Tenant',
-            'slug' => 'report-tenant',
-            'status' => 'active',
+            'readiness_status' => 'active',
         ]);
 
         $this->store = Store::create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Report Store',
-            'is_active' => true,
         ]);
 
         $this->user = User::factory()->create([

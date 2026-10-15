@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Domain1;
 
+use App\Enums\OrderStatus;
 use App\Jobs\ProcessSalesReportExportJob;
 use App\Jobs\ProcessWebhookOrderJob;
 use App\Models\Category;
@@ -10,13 +11,16 @@ use App\Models\Discount;
 use App\Models\ExportTask;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Table;
 use App\Services\Context\TenantContext;
 use App\Services\DashboardService;
 use App\Services\MenuCacheService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 use Throwable;
 
@@ -466,5 +470,141 @@ class Domain1TenantIsolationTest extends TestCase
         $context->clear();
         $this->expectException(\RuntimeException::class);
         $service->getCatalog();
+    }
+
+    /** NEG-13: User Tenant A is denied (403/404) when attempting to download an ExportTask belonging to Tenant B. */
+    public function test_export_download_idor(): void
+    {
+        $userA = \App\Models\User::find($this->userAId);
+        $taskB = app(TenantContext::class)->runAs($this->tenantBId, $this->storeBId, function () {
+            return ExportTask::create([
+                'type' => 'sales_report',
+                'status' => 'completed',
+                'file_path' => 'exports/tenant_'.$this->tenantBId.'/report_b.csv',
+                'file_size_bytes' => 100,
+                'requested_by' => $this->userBId,
+                'completed_at' => now(),
+            ]);
+        });
+
+        $response = $this->actingAs($userA)->get(route('exports.download', $taskB->id));
+        $this->assertTrue(in_array($response->status(), [403, 404], true));
+
+        $statusResponse = $this->actingAs($userA)->get(route('exports.status', $taskB->id));
+        $this->assertTrue(in_array($statusResponse->status(), [403, 404], true));
+    }
+
+    /** NEG-14: QR Self-Order - scanning QR binds table & tenant context, but cross-tenant product in cart is rejected. */
+    public function test_qr_self_order_end_to_end_and_cross_tenant_injection(): void
+    {
+        $tableA = app(TenantContext::class)->runAs($this->tenantAId, $this->storeAId, function () {
+            return Table::create([
+                'table_name' => 'MEJA-01',
+                'capacity' => 4,
+                'operational_status' => 'available',
+                'is_active' => true,
+                'secure_token' => Str::uuid()->toString(),
+            ]);
+        });
+
+        $productB = app(TenantContext::class)->runAs($this->tenantBId, $this->storeBId, function () {
+            return Product::create([
+                'product_name' => 'Cross-Tenant B Menu',
+                'category_id' => $this->categoryBId,
+                'product_price' => 25000,
+                'stock' => 50,
+                'stock_type' => 'single',
+                'is_active' => true,
+            ]);
+        });
+
+        // 1. Visit menu with QR token -> sets table session and tenant context
+        $menuResponse = $this->get(route('customer.menu.index', ['token' => $tableA->secure_token]));
+        $menuResponse->assertOk();
+        $this->assertEquals($tableA->id, session('current_table_id'));
+        $this->assertEquals($this->tenantAId, session('current_tenant_id'));
+
+        // 2. Add product from Tenant B to cart -> must be rejected with 422 validation error
+        $cartResponse = $this->postJson(route('customer.cart.store'), [
+            'product_id' => $productB->id,
+            'qty' => 1,
+        ]);
+        $this->assertSame(422, $cartResponse->status(), 'Adding cross-tenant product to self-order cart must be rejected with 422');
+    }
+
+    /** NEG-15: Soft-deleted table allows reusing name in same store, but duplicate active table is rejected. */
+    public function test_soft_deleted_table_allows_name_reuse_but_active_duplicate_rejected(): void
+    {
+        $table = app(TenantContext::class)->runAs($this->tenantAId, $this->storeAId, function () {
+            return Table::create([
+                'table_name' => 'MEJA-VIP',
+                'capacity' => 6,
+                'operational_status' => 'available',
+                'is_active' => true,
+                'secure_token' => Str::uuid()->toString(),
+            ]);
+        });
+
+        $table->delete(); // Soft delete
+
+        // Re-creating table with same name in same store must succeed after soft-delete
+        $newTable = app(TenantContext::class)->runAs($this->tenantAId, $this->storeAId, function () {
+            return Table::create([
+                'table_name' => 'MEJA-VIP',
+                'capacity' => 6,
+                'operational_status' => 'available',
+                'is_active' => true,
+                'secure_token' => Str::uuid()->toString(),
+            ]);
+        });
+        $this->assertNotNull($newTable->id);
+
+        // Attempting to create duplicate active table name must throw QueryException
+        $this->expectException(\Illuminate\Database\QueryException::class);
+        app(TenantContext::class)->runAs($this->tenantAId, $this->storeAId, function () {
+            Table::create([
+                'table_name' => 'MEJA-VIP',
+                'capacity' => 6,
+                'operational_status' => 'available',
+                'is_active' => true,
+                'secure_token' => Str::uuid()->toString(),
+            ]);
+        });
+    }
+
+    /** NEG-16: Console commands operate safely under fail-closed scopes without cross-tenant mixing. */
+    public function test_console_commands_isolation(): void
+    {
+        $table = app(TenantContext::class)->runAs($this->tenantAId, $this->storeAId, function () {
+            return Table::create([
+                'table_name' => 'T-STALE',
+                'capacity' => 2,
+                'operational_status' => 'available',
+                'is_active' => true,
+                'secure_token' => Str::uuid()->toString(),
+            ]);
+        });
+
+        $this->travel(-40)->minutes();
+        $staleOrderA = app(TenantContext::class)->runAs($this->tenantAId, $this->storeAId, function () use ($table) {
+            return Order::create([
+                'user_id' => $this->userAId,
+                'table_id' => $table->id,
+                'order_code' => 'ORD-STALE-A',
+                'idempotency_key' => Str::uuid()->toString(),
+                'order_date' => now()->toDateString(),
+                'order_status' => OrderStatus::Pending,
+                'payment_method' => 'cash',
+                'subtotal_amount' => 15000,
+                'order_amount' => 15000,
+            ]);
+        });
+        $this->travelBack();
+
+        Artisan::call('orders:expire-stale-cash');
+        $this->assertEquals(OrderStatus::Expired, $staleOrderA->refresh()->order_status);
+
+        $exitCode = Artisan::call('inventory:reconcile-balances');
+        $this->assertSame(0, $exitCode);
     }
 }

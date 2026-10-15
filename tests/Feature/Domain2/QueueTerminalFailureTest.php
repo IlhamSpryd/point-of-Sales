@@ -33,14 +33,12 @@ class QueueTerminalFailureTest extends TestCase
 
         $this->tenant = Tenant::create([
             'name' => 'Queue Tenant',
-            'slug' => 'queue-tenant',
-            'status' => 'active',
+            'readiness_status' => 'active',
         ]);
 
         $this->store = Store::create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Queue Store',
-            'is_active' => true,
         ]);
 
         $this->user = User::factory()->create([

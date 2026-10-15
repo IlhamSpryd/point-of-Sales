@@ -15,8 +15,10 @@ use App\Services\TransactionService;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 use Midtrans\Config;
@@ -27,10 +29,22 @@ class TransactionController extends Controller
     public function __construct(protected TransactionService $transactionService) {}
 
     /**
+     * Menampilkan halaman riwayat pesanan (Orders Index).
+     */
+    public function index(): View
+    {
+        Gate::authorize('viewAny', Order::class);
+
+        return view('orders.index');
+    }
+
+    /**
      * Memproses pesanan dari UI Kasir
      */
     public function store(StoreTransactionRequest $request)
     {
+        Gate::authorize('create', Order::class);
+
         $validated = $request->validated();
         $userId = Auth::id();
 
@@ -114,14 +128,64 @@ class TransactionController extends Controller
     }
 
     /**
+     * Menampilkan detail spesifik pesanan.
+     */
+    public function show(Request $request, string $orderNumber): JsonResponse|View
+    {
+        $order = Order::with(['orderItems.product', 'orderItems.modifiers', 'payments', 'customer', 'table', 'user'])
+            ->where('order_code', $orderNumber)
+            ->firstOrFail();
+
+        Gate::authorize('view', $order);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'success' => true,
+                'order' => $order,
+            ]);
+        }
+
+        return view('orders.show', compact('order'));
+    }
+
+    /**
+     * Membatalkan pesanan (Void) melalui otorisasi OrderPolicy.
+     */
+    public function void(Request $request, string $orderNumber): JsonResponse
+    {
+        $order = Order::where('order_code', $orderNumber)->firstOrFail();
+
+        Gate::authorize('void', $order);
+
+        $validated = $request->validate([
+            'reason' => 'required|string|max:255',
+        ]);
+
+        try {
+            $this->transactionService->voidOrder($order, $validated['reason'], (int) Auth::id());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pesanan berhasil dibatalkan (void).',
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /**
      * Cetak struk pesanan — halaman thermal printer.
-     * Identik dengan belajar-laravel/OrderController@receipt
      */
     public function receipt(string $orderNumber): View
     {
         $order = Order::with(['orderItems.product', 'user', 'table'])
             ->where('order_code', $orderNumber)
             ->firstOrFail();
+
+        Gate::authorize('view', $order);
 
         $taxRatePercent = $order->subtotal_amount > 0
             ? round($order->tax_amount / $order->subtotal_amount * 100, 1)
@@ -132,38 +196,13 @@ class TransactionController extends Controller
 
     /**
      * Sinkronisasi status Midtrans secara manual (untuk localhost tanpa webhook).
-     *
-     * [SEC-005 - CRITICAL FIX - AUDIT KEAMANAN]
-     * SEBELUM perbaikan ini, method ini melakukan pembacaan (`Order::first()`)
-     * dan penulisan (`->update()`) TANPA `lockForUpdate()`/`DB::transaction()`
-     * sama sekali, dan HANYA menangani status 'capture'/'settlement' --
-     * mengabaikan 'deny'/'cancel'/'expire' sepenuhnya. Ini membuka DUA celah:
-     *
-     *  1. RACE CONDITION -- frontend (pos-script.blade.php) memanggil endpoint
-     *     ini dari callback onSuccess() DAN onClose() Midtrans Snap, yang bisa
-     *     terpicu nyaris bersamaan. Tanpa row-lock, dua request paralel bisa
-     *     saling menimpa dalam jendela balapan yang sama.
-     *  2. STATUS REGRESSION -- karena Transaction::status() adalah panggilan
-     *     jaringan ke Midtrans (butuh waktu), webhook resmi
-     *     (MidtransNotificationController) bisa saja SUDAH memfinalisasi order
-     *     ini (misal jadi 'Failed' via notifikasi 'deny') PERSIS di jendela
-     *     waktu tersebut -- lalu endpoint sync ini datang belakangan dan
-     *     MENIMPA PAKSA status yang sudah final itu kembali jadi 'Paid'. Ini
-     *     adalah kebocoran finansial nyata: pembayaran yang sudah ditolak
-     *     Midtrans bisa tercatat lunas di sistem kita.
-     *
-     * Perbaikan: seluruh logika pembaruan status kini didelegasikan penuh ke
-     * TransactionService::updateStatusFromMidtransNotification() -- method
-     * yang SAMA PERSIS dipakai webhook resmi, yang sudah membungkus
-     * lockForUpdate()+DB::transaction()+idempotency guard (isFinal()) dan
-     * menangani SELURUH status Midtrans, bukan hanya jalur bahagia. Controller
-     * ini sekarang HANYA bertugas mengambil status terbaru dari Midtrans
-     * (network call) lalu meneruskannya -- tidak lagi menulis ke database
-     * secara langsung.
      */
     public function syncMidtrans(string $orderNumber): JsonResponse
     {
         $order = Order::where('order_code', $orderNumber)->firstOrFail();
+
+        Gate::authorize('view', $order);
+
         if ($order->order_status !== OrderStatus::Pending || $order->payment_method === PaymentMethod::Cash) {
             return response()->json(['success' => true]);
         }
@@ -179,15 +218,10 @@ class TransactionController extends Controller
         }
 
         try {
-            // Beri waktu 2 detik agar status midtrans di Sandbox benar-benar berubah menjadi settlement,
-            // sebelum kita melakukan pengecekan ke server mereka.
             sleep(2);
 
             $status = (object) Transaction::status($orderNumber);
 
-            // [SEC-006] Sertakan gross_amount yang dilaporkan Midtrans (jika ada)
-            // agar TransactionService bisa memverifikasinya terhadap order_amount
-            // di database sebelum mengubah status apa pun.
             $grossAmount = isset($status->gross_amount)
                 ? (int) round((float) $status->gross_amount)
                 : null;
@@ -200,7 +234,6 @@ class TransactionController extends Controller
             );
         } catch (\Exception $e) {
             Log::error('syncMidtrans Error: '.$e->getMessage());
-            // Biarkan hening, akan di-retry manual
         }
 
         return response()->json(['success' => true]);
@@ -215,6 +248,8 @@ class TransactionController extends Controller
             ->where('order_code', $orderNumber)
             ->firstOrFail();
 
+        Gate::authorize('view', $order);
+
         $payload = $printerService->generatePayload($order);
 
         return response()->json($payload);
@@ -228,6 +263,8 @@ class TransactionController extends Controller
         $order = Order::with(['orderItems.product', 'table'])
             ->where('order_code', $orderNumber)
             ->firstOrFail();
+
+        Gate::authorize('view', $order);
 
         $payload = $printerService->generatePayload($order);
 

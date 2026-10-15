@@ -67,7 +67,6 @@ class ProcessWebhookOrderJobIdempotencyTest extends TestCase
             'product_name' => 'Burger',
             'product_price' => 50000,
             'stock' => 100,
-            'is_active' => true,
         ]);
 
         ChannelProductMapping::create([

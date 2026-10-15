@@ -48,15 +48,13 @@ class FinancialCalculationAndParityTest extends TestCase
         app(TenantContext::class)->clear();
         $this->tenant = Tenant::create([
             'name' => 'Parity Tenant',
-            'slug' => 'parity-tenant',
-            'status' => 'active',
+            'readiness_status' => 'active',
         ]);
         $context = app(TenantContext::class);
         $context->setTenantId($this->tenant->id);
         $this->store = Store::create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Parity Store',
-            'is_active' => true,
         ]);
         $context->setStoreId($this->store->id);
         $role = Role::create([
@@ -86,7 +84,6 @@ class FinancialCalculationAndParityTest extends TestCase
             'product_name' => 'Kopi Susu',
             'product_price' => 17500,
             'stock' => 50,
-            'is_active' => true,
         ]);
     }
 

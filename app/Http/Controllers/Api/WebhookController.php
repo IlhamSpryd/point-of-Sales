@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
@@ -17,7 +19,7 @@ class WebhookController extends Controller
 {
     public function handle(Request $request)
     {
-        $provider = $request->route('provider');
+        $provider = (string) $request->route('provider');
 
         // 1. Kumpulkan seluruh identitas tenant yang dikirimkan oleh pemanggil
         $routeTenant = $request->route('tenant');
@@ -54,12 +56,14 @@ class WebhookController extends Controller
             return response()->json(['message' => 'Tenant not found'], 404);
         }
 
-        // 5. Verifikasi store jika disertakan pemanggil
+        // 5. Verifikasi store jika disertakan pemanggil atau dari body
         $headerStore = $request->header('X-Store-ID') ?? $request->header('x-store-id');
         $queryStore = $request->query('store_id');
+        $bodyStore = $request->input('store_id') ?? $request->input('branch_id');
         $providedStores = array_filter([
             'header' => $headerStore,
             'query' => $queryStore,
+            'body' => $bodyStore,
         ], fn ($val) => $val !== null && $val !== '');
 
         $storeId = null;
@@ -69,11 +73,14 @@ class WebhookController extends Controller
                 return response()->json(['message' => 'Store ID mismatch detected'], 400);
             }
             $storeId = reset($uniqueStores);
-            if (! Store::where('id', $storeId)->where('tenant_id', $tenantId)->exists()) {
+            if (! Store::withoutTenantScope()->where('id', $storeId)->where('tenant_id', $tenantId)->exists()) {
                 Log::warning("Webhook rejected: store #{$storeId} does not belong to tenant #{$tenantId}.");
 
                 return response()->json(['message' => 'Store does not belong to tenant'], 422);
             }
+        } else {
+            // Selesaikan store default untuk tenant jika hanya ada 1 store atau fallback ke store pertama
+            $storeId = Store::withoutTenantScope()->where('tenant_id', $tenantId)->orderBy('id')->value('id');
         }
 
         $externalOrderId = $request->input('id') ?? $request->input('order_id');
@@ -81,7 +88,7 @@ class WebhookController extends Controller
             return response()->json(['message' => 'Missing order_id'], 422);
         }
 
-        return app(TenantContext::class)->runAs($tenantId, $storeId, function () use ($request, $provider, $tenantId, $storeId, $externalOrderId) {
+        return app(TenantContext::class)->runAs($tenantId, $storeId ? (int) $storeId : null, function () use ($request, $provider, $tenantId, $storeId, $externalOrderId) {
             try {
                 try {
                     $log = ChannelOrderLog::create([
@@ -92,7 +99,7 @@ class WebhookController extends Controller
                         'status' => 'pending',
                     ]);
                 } catch (QueryException $e) {
-                    // SEC-06/SEC-02: Hanya tangani duplicate entry (1062) aktual, bukan SQLSTATE 23000 generik.
+                    // SEC-06/SEC-02: Hanya tangani duplicate entry (1062) aktual
                     if (DatabaseErrorClassifier::isDuplicateEntry($e)) {
                         return response()->json(['message' => 'Order already processed (duplicate)'], 200);
                     }
@@ -100,7 +107,7 @@ class WebhookController extends Controller
                 }
 
                 // Lempar ke Background Job agar respon API secepat kilat (Zero-Latency)
-                ProcessWebhookOrderJob::dispatch($log, $tenantId, $storeId);
+                ProcessWebhookOrderJob::dispatch($log, $tenantId, $storeId ? (int) $storeId : null);
 
                 return response()->json(['message' => 'Accepted for processing'], 202);
 

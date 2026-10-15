@@ -53,15 +53,13 @@ class StrictInventoryAndWebhookRejectionTest extends TestCase
         app(TenantContext::class)->clear();
         $this->tenant = Tenant::create([
             'name' => 'Stock Tenant',
-            'slug' => 'stock-tenant',
-            'status' => 'active',
+            'readiness_status' => 'active',
         ]);
         $context = app(TenantContext::class);
         $context->setTenantId($this->tenant->id);
         $this->store = Store::create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Stock Store',
-            'is_active' => true,
         ]);
         $context->setStoreId($this->store->id);
         $role = Role::create([
@@ -91,7 +89,6 @@ class StrictInventoryAndWebhookRejectionTest extends TestCase
             'product_name' => 'Latte',
             'product_price' => 20000,
             'stock' => 10,
-            'is_active' => true,
         ]);
         $this->ingredient = Ingredient::create([
             'tenant_id' => $this->tenant->id,
@@ -99,7 +96,6 @@ class StrictInventoryAndWebhookRejectionTest extends TestCase
             'unit' => 'ml',
             'cost_per_unit' => 20,
             'current_stock' => '500.0000',
-            'is_active' => true,
         ]);
     }
 
@@ -108,7 +104,6 @@ class StrictInventoryAndWebhookRejectionTest extends TestCase
         $this->product->update(['stock' => 1]); // butuh qty 2 -> ditolak
         $log = ChannelOrderLog::create([
             'tenant_id' => $this->tenant->id,
-            'store_id' => $this->store->id,
             'provider' => 'gofood',
             'external_order_id' => 'GF-STOCK-1',
             'status' => 'pending',
@@ -151,7 +146,6 @@ class StrictInventoryAndWebhookRejectionTest extends TestCase
         $this->ingredient->update(['current_stock' => '100.0000']);
         $log = ChannelOrderLog::create([
             'tenant_id' => $this->tenant->id,
-            'store_id' => $this->store->id,
             'provider' => 'grabfood',
             'external_order_id' => 'GR-BOM-1',
             'status' => 'pending',
@@ -201,7 +195,6 @@ class StrictInventoryAndWebhookRejectionTest extends TestCase
             'modifier_group_id' => $group->id,
             'name' => 'Extra Shot',
             'extra_price' => 5000,
-            'is_active' => true,
         ]);
         DB::table('modifier_ingredients')->insert([
             'tenant_id' => $this->tenant->id,
@@ -216,7 +209,6 @@ class StrictInventoryAndWebhookRejectionTest extends TestCase
 
         $log = ChannelOrderLog::create([
             'tenant_id' => $this->tenant->id,
-            'store_id' => $this->store->id,
             'provider' => 'gofood',
             'external_order_id' => 'GF-MOD-1',
             'status' => 'pending',

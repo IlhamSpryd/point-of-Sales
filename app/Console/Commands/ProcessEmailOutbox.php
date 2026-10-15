@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Jobs\ProcessProvisioningOutboxJob;
 use App\Models\EmailOutbox;
+use App\Services\Context\TenantContext;
 use Illuminate\Console\Command;
 
 /**
@@ -22,25 +23,25 @@ class ProcessEmailOutbox extends Command
     {
         $limit = max(1, (int) $this->option('limit'));
 
-        // Temukan item:
-        // 1. PENDING yang sudah jatuh tempo (atau baru dibuat tanpa jadwal)
-        // 2. PROCESSING yang lease worker-nya kedaluwarsa (worker mati/crash)
-        $due = EmailOutbox::query()
-            ->where(function ($q) {
-                $q->where(function ($pending) {
-                    $pending->where('status', EmailOutbox::STATUS_PENDING)
-                        ->where(function ($time) {
-                            $time->whereNull('next_attempt_at')->orWhere('next_attempt_at', '<=', now());
-                        });
-                })->orWhere(function ($staleProcessing) {
-                    $staleProcessing->where('status', EmailOutbox::STATUS_PROCESSING)
-                        ->whereNotNull('lease_expires_at')
-                        ->where('lease_expires_at', '<=', now());
-                });
-            })
-            ->orderBy('id')
-            ->limit($limit)
-            ->pluck('id');
+        // Temukan item bebas hambatan scope (outbox adalah tabel platform-level per-tenant)
+        $due = app(TenantContext::class)->runWithoutTenant(function () use ($limit) {
+            return EmailOutbox::query()
+                ->where(function ($q) {
+                    $q->where(function ($pending) {
+                        $pending->where('status', EmailOutbox::STATUS_PENDING)
+                            ->where(function ($time) {
+                                $time->whereNull('next_attempt_at')->orWhere('next_attempt_at', '<=', now());
+                            });
+                    })->orWhere(function ($staleProcessing) {
+                        $staleProcessing->where('status', EmailOutbox::STATUS_PROCESSING)
+                            ->whereNotNull('lease_expires_at')
+                            ->where('lease_expires_at', '<=', now());
+                    });
+                })
+                ->orderBy('id')
+                ->limit($limit)
+                ->pluck('id');
+        });
 
         foreach ($due as $id) {
             ProcessProvisioningOutboxJob::dispatch($id);

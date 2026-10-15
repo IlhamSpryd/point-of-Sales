@@ -1,125 +1,233 @@
 <?php
 
 // Polyfill fungsi bcmath untuk lingkungan yang tidak memiliki ekstensi bcmath
-// (mis. PHP CLI lokal tanpa bcmath.ini). Implementasinya memakai aritmetika
-// desimal skala tetap yang cukup untuk kebutuhan POS (skala <= 8).
+// (mis. PHP CLI lokal tanpa bcmath.ini). Menggunakan aritmetika integer ter-skala
+// (scaled integer arithmetic dengan intdiv / PHP_ROUND_HALF_UP) untuk menjaga
+// presisi floating-point pada skala desimal POS & BOM/resep (hingga 4-8 desimal).
 // Polyfill ini HANYA aktif bila ekstensi bcmath benar-benar tidak tersedia.
 
-if (! function_exists('bcadd')) {
-    function bc_math_parse(string $number, int $scale): array
-    {
-        $number = trim($number);
-        if ($number === '' || ! preg_match('/^([+-]?)(\d*)(?:\.(\d*))?$/', $number, $m)) {
-            throw new \ValueError("bcmath: nilai tidak valid: '{$number}'");
-        }
-        $sign = $m[1] === '-' ? -1 : 1;
-        $int = $m[2] === '' ? '0' : $m[2];
-        $frac = ($m[3] ?? '') ?: '';
-        // Pad/crop pecahan ke scale yang diminta.
-        $frac = str_pad(substr($frac, 0, $scale), $scale, '0');
-        return [$sign, $int, $frac, $scale];
-    }
-
-    function bc_math_cmp(string $a, string $b, int $scale = 0): int
-    {
-        $scale = max(0, $scale);
-        [$sa, $ia, $fa] = bc_math_parse($a, $scale);
-        [$sb, $ib, $fb] = bc_math_parse($b, $scale);
-        $na = ($sa * (int) $ia * (10 ** $scale)) + ($sa * (int) $fa);
-        $nb = ($sb * (int) $ib * (10 ** $scale)) + ($sb * (int) $fb);
-        return $na <=> $nb;
-    }
-
-    function bc_math_op(string $a, string $b, int $scale, int $signB): string
-    {
-        $scale = max(0, $scale);
-        [$sa, $ia, $fa] = bc_math_parse($a, $scale);
-        [$sb, $ib, $fb] = bc_math_parse($b, $scale);
-        $na = ((int) $ia * (10 ** $scale)) + (int) $fa;
-        $nb = $signB * (((int) $ib * (10 ** $scale)) + (int) $fb);
-        $result = $sa * $na + $nb;
-        $negative = $result < 0;
-        $result = (int) abs($result);
-        $divisor = 10 ** $scale;
-        $int = intdiv($result, $divisor);
-        $frac = str_pad((string) ($result % $divisor), $scale, '0', STR_PAD_LEFT);
-        $out = ($negative ? '-' : '').$int.($scale > 0 ? '.'.$frac : '');
-        return bc_math_trim($out);
-    }
-
-    function bc_math_trim(string $number): string
-    {
-        if (str_contains($number, '.')) {
-            $number = rtrim(rtrim($number, '0'), '.');
-            if (str_ends_with($number, '.') || $number === '' || $number === '-') {
-                $number = rtrim($number, '.');
+if (! extension_loaded('bcmath')) {
+    if (! function_exists('_bc_parse')) {
+        function _bc_parse(string $number): array
+        {
+            $number = trim($number);
+            if ($number === '' || ! preg_match('/^([+-]?)(\d*)(?:\.(\d*))?$/', $number, $m)) {
+                throw new \ValueError("bcmath: nilai numerik tidak valid: '{$number}'");
             }
+            $sign = $m[1] === '-' ? -1 : 1;
+            $int = $m[2] === '' ? '0' : ltrim($m[2], '0');
+            if ($int === '') {
+                $int = '0';
+            }
+            $frac = $m[3] ?? '';
+            return [$sign, $int, $frac];
         }
-        if ($number === '' || $number === '-') {
-            return '0';
+
+        function _bc_format(int $sign, string $digits, int $dec, int $scale): string
+        {
+            $scale = max(0, $scale);
+
+            if ($dec > $scale) {
+                // Skala dipotong dengan pembulatan PHP_ROUND_HALF_UP
+                $drop = $dec - $scale;
+                $len = strlen($digits);
+                if ($len <= $drop) {
+                    $remStr = str_pad($digits, $drop, '0', STR_PAD_LEFT);
+                    $keepStr = '0';
+                } else {
+                    $keepStr = substr($digits, 0, $len - $drop);
+                    $remStr = substr($digits, $len - $drop);
+                }
+
+                $firstDrop = (int) $remStr[0];
+                if ($firstDrop >= 5) {
+                    // Bulatkan ke atas
+                    $keepLen = strlen($keepStr);
+                    $carry = 1;
+                    $keepChars = str_split($keepStr);
+                    for ($k = $keepLen - 1; $k >= 0 && $carry > 0; $k--) {
+                        $digitVal = (int) $keepChars[$k] + $carry;
+                        if ($digitVal >= 10) {
+                            $keepChars[$k] = (string) ($digitVal - 10);
+                            $carry = 1;
+                        } else {
+                            $keepChars[$k] = (string) $digitVal;
+                            $carry = 0;
+                        }
+                    }
+                    if ($carry > 0) {
+                        array_unshift($keepChars, '1');
+                    }
+                    $digits = implode('', $keepChars);
+                } else {
+                    $digits = $keepStr;
+                }
+                $dec = $scale;
+            } elseif ($dec < $scale) {
+                $digits .= str_repeat('0', $scale - $dec);
+                $dec = $scale;
+            }
+
+            if ($dec === 0) {
+                $clean = ltrim($digits, '0');
+                if ($clean === '') {
+                    return '0';
+                }
+                return ($sign === -1 ? '-' : '').$clean;
+            }
+
+            $len = strlen($digits);
+            if ($len <= $dec) {
+                $intPart = '0';
+                $fracPart = str_pad($digits, $dec, '0', STR_PAD_LEFT);
+            } else {
+                $intPart = substr($digits, 0, $len - $dec);
+                $fracPart = substr($digits, $len - $dec);
+            }
+
+            $intClean = ltrim($intPart, '0');
+            if ($intClean === '') {
+                $intClean = '0';
+            }
+
+            if ($intClean === '0' && ltrim($fracPart, '0') === '') {
+                $sign = 1;
+            }
+
+            return ($sign === -1 ? '-' : '').$intClean.'.'.$fracPart;
         }
-        return $number;
-    }
 
-    function bcadd(string $num1, string $num2, ?int $scale = null): string
-    {
-        $s = $scale ?? 0;
-        return bc_math_op($num1, $num2, $s, +1);
-    }
-
-    function bcsub(string $num1, string $num2, ?int $scale = null): string
-    {
-        $s = $scale ?? 0;
-        return bc_math_op($num1, $num2, $s, -1);
-    }
-
-    function bcmul(string $num1, string $num2, ?int $scale = null): string
-    {
-        $s = $scale ?? 0;
-        [$sa, $ia1, $fa1, $sc1] = bc_math_parse($num1, $s + 8);
-        [$sb, $ia2, $fa2, $sc2] = bc_math_parse($num2, $s + 8);
-        $p1 = (int) $ia1 * (10 ** ($s + 8)) + (int) $fa1;
-        $p2 = (int) $ia2 * (10 ** ($s + 8)) + (int) $fa2;
-        $sign = $sa * $sb;
-        $neg = $sign < 0;
-        // Skala internal kecil (6 digit) agar produk tetap muat dalam int 64-bit.
-        $p1 = (int) $ia1 * (10 ** 6) + (int) substr(str_pad($fa1, 6, '0'), 0, 6);
-        $p2 = (int) $ia2 * (10 ** 6) + (int) substr(str_pad($fa2, 6, '0'), 0, 6);
-        $prodAbs = $p1 * $p2;
-        $div = 10 ** 6;
-        $q = intdiv($prodAbs, $div);
-        $r = $prodAbs % $div;
-        if ($r * 2 >= $div) {
-            $q++;
+        function _bc_str_mul(string $n1, string $n2): string
+        {
+            $len1 = strlen($n1);
+            $len2 = strlen($n2);
+            $res = array_fill(0, $len1 + $len2, 0);
+            for ($i = $len1 - 1; $i >= 0; $i--) {
+                $d1 = (int) $n1[$i];
+                for ($j = $len2 - 1; $j >= 0; $j--) {
+                    $sum = $d1 * (int) $n2[$j] + $res[$i + $j + 1];
+                    $res[$i + $j + 1] = $sum % 10;
+                    $res[$i + $j] += intdiv($sum, 10);
+                }
+            }
+            $out = ltrim(implode('', $res), '0');
+            return $out === '' ? '0' : $out;
         }
-        $digits = str_pad((string) $q, $s + 1, '0', STR_PAD_LEFT);
-        $int = $s > 0 ? substr($digits, 0, -$s) : $digits;
-        $frac = $s > 0 ? substr($digits, -$s) : '';
-        $out = ($neg ? '-' : '').($int === '' ? '0' : $int).($s > 0 ? '.'.$frac : '');
-        return bc_math_trim($out);
     }
 
-    function bccomp(string $num1, string $num2, ?int $scale = null): int
-    {
-        return bc_math_cmp($num1, $num2, $scale ?? 0);
-    }
+    if (! function_exists('bcadd')) {
+        function bcadd(string $num1, string $num2, ?int $scale = null): string
+        {
+            $s = max(0, $scale ?? 0);
+            [$s1, $i1, $f1] = _bc_parse($num1);
+            [$s2, $i2, $f2] = _bc_parse($num2);
+            $maxDec = max(strlen($f1), strlen($f2), $s);
+            $f1 = str_pad($f1, $maxDec, '0');
+            $f2 = str_pad($f2, $maxDec, '0');
+            $d1 = $i1.$f1;
+            $d2 = $i2.$f2;
 
-    function bcdiv(string $num1, string $num2, ?int $scale = null): string
-    {
-        $s = $scale ?? 0;
-        if (bc_math_cmp($num2, '0', $s + 8) === 0) {
-            throw new \DivisionByZeroError('Division by zero');
+            if (strlen($d1) < 18 && strlen($d2) < 18) {
+                $val1 = $s1 * (int) $d1;
+                $val2 = $s2 * (int) $d2;
+                $sum = $val1 + $val2;
+                $sign = $sum < 0 ? -1 : 1;
+                return _bc_format($sign, (string) abs($sum), $maxDec, $s);
+            }
+
+            // Fallback float/string jika sangat besar
+            $sum = ($s1 * (float) $d1) + ($s2 * (float) $d2);
+            $sign = $sum < 0 ? -1 : 1;
+            return _bc_format($sign, (string) abs((int) $sum), $maxDec, $s);
         }
-        [$sa, $ia, $fa] = bc_math_parse($num1, $s + 12);
-        [$sb, $ib, $fb] = bc_math_parse($num2, $s + 12);
-        $na = ((int) $ia * (10 ** ($s + 12))) + (int) $fa;
-        $nb = ((int) $ib * (10 ** ($s + 12))) + (int) $fb;
-        $q = intdiv($na * (10 ** $s), $nb);
-        $negative = ($sa * $sb) < 0;
-        $divisor = 10 ** $s;
-        $int = intdiv($q, $divisor);
-        $frac = str_pad((string) ($q % $divisor), $s, '0', STR_PAD_LEFT);
-        $out = ($negative ? '-' : '').$int.($s > 0 ? '.'.$frac : '');
-        return bc_math_trim($out);
+    }
+
+    if (! function_exists('bcsub')) {
+        function bcsub(string $num1, string $num2, ?int $scale = null): string
+        {
+            $s = max(0, $scale ?? 0);
+            [$s1, $i1, $f1] = _bc_parse($num1);
+            [$s2, $i2, $f2] = _bc_parse($num2);
+            $maxDec = max(strlen($f1), strlen($f2), $s);
+            $f1 = str_pad($f1, $maxDec, '0');
+            $f2 = str_pad($f2, $maxDec, '0');
+            $d1 = $i1.$f1;
+            $d2 = $i2.$f2;
+
+            if (strlen($d1) < 18 && strlen($d2) < 18) {
+                $val1 = $s1 * (int) $d1;
+                $val2 = (-$s2) * (int) $d2;
+                $diff = $val1 + $val2;
+                $sign = $diff < 0 ? -1 : 1;
+                return _bc_format($sign, (string) abs($diff), $maxDec, $s);
+            }
+
+            $diff = ($s1 * (float) $d1) - ($s2 * (float) $d2);
+            $sign = $diff < 0 ? -1 : 1;
+            return _bc_format($sign, (string) abs((int) $diff), $maxDec, $s);
+        }
+    }
+
+    if (! function_exists('bcmul')) {
+        function bcmul(string $num1, string $num2, ?int $scale = null): string
+        {
+            $s = max(0, $scale ?? 0);
+            [$s1, $i1, $f1] = _bc_parse($num1);
+            [$s2, $i2, $f2] = _bc_parse($num2);
+            $d1 = $i1.$f1;
+            $d2 = $i2.$f2;
+            $dec = strlen($f1) + strlen($f2);
+            $sign = ($s1 * $s2 === -1) ? -1 : 1;
+
+            if (strlen($d1) < 9 && strlen($d2) < 9) {
+                $prod = (int) $d1 * (int) $d2;
+                return _bc_format($sign, (string) abs($prod), $dec, $s);
+            }
+
+            $prodStr = _bc_str_mul($d1, $d2);
+            return _bc_format($sign, $prodStr, $dec, $s);
+        }
+    }
+
+    if (! function_exists('bcdiv')) {
+        function bcdiv(string $num1, string $num2, ?int $scale = null): string
+        {
+            $s = max(0, $scale ?? 0);
+            [$s1, $i1, $f1] = _bc_parse($num1);
+            [$s2, $i2, $f2] = _bc_parse($num2);
+            $d1 = $i1.$f1;
+            $d2 = $i2.$f2;
+            $d2Int = (int) $d2;
+            if ($d2Int === 0) {
+                throw new \DivisionByZeroError('Division by zero');
+            }
+
+            $dec1 = strlen($f1);
+            $dec2 = strlen($f2);
+            // Tambahkan 1 digit untuk pembulatan HALF_UP pada format()
+            $shift = $s + 1 + $dec2 - $dec1;
+            if ($shift >= 0) {
+                $num = (int) $d1 * (10 ** $shift);
+                $denom = (int) $d2;
+            } else {
+                $num = (int) $d1;
+                $denom = (int) $d2 * (10 ** (-$shift));
+            }
+            $q = intdiv($num, $denom);
+            $sign = ($s1 * $s2 === -1) ? -1 : 1;
+            return _bc_format($sign, (string) abs($q), $s + 1, $s);
+        }
+    }
+
+    if (! function_exists('bccomp')) {
+        function bccomp(string $num1, string $num2, ?int $scale = null): int
+        {
+            $s = max(0, $scale ?? 0);
+            $diff = bcsub($num1, $num2, $s);
+            if ($diff === '0' || preg_match('/^0(?:\.0*)?$/', $diff)) {
+                return 0;
+            }
+            return str_starts_with($diff, '-') ? -1 : 1;
+        }
     }
 }

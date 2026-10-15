@@ -85,7 +85,8 @@ class ProductService
 
             // PENTING: invalidasi cache katalog menu setiap ada produk baru,
             // agar Kasir/Self-Order langsung melihat produk baru tanpa delay 1 jam.
-            $this->menuCache->flush($tenantId);
+            $storeId = app(TenantContext::class)->getStoreId();
+            $this->menuCache->flush($tenantId, $storeId);
 
             return $product;
         });
@@ -157,7 +158,8 @@ class ProductService
                 }
             }
 
-            $this->menuCache->flush($tenantId);
+            $storeId = app(TenantContext::class)->getStoreId();
+            $this->menuCache->flush($tenantId, $storeId);
 
             return $product;
         });
@@ -178,7 +180,8 @@ class ProductService
             }
 
             $result = $product->delete();
-            $this->menuCache->flush($product->tenant_id);
+            $storeId = app(TenantContext::class)->getStoreId();
+            $this->menuCache->flush($product->tenant_id, $storeId);
 
             return $result;
         });

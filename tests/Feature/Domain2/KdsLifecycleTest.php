@@ -38,8 +38,7 @@ class KdsLifecycleTest extends TestCase
 
         $this->tenant = Tenant::create([
             'name' => 'KDS Tenant',
-            'slug' => 'kds-tenant',
-            'status' => 'active',
+            'readiness_status' => 'active',
         ]);
 
         $context = app(TenantContext::class);
@@ -48,7 +47,6 @@ class KdsLifecycleTest extends TestCase
         $this->store = Store::create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Kitchen Branch',
-            'is_active' => true,
         ]);
 
         $context->setStoreId($this->store->id);
@@ -80,7 +78,6 @@ class KdsLifecycleTest extends TestCase
             'product_name' => 'Americano',
             'product_price' => 25000,
             'stock' => 50,
-            'is_active' => true,
         ]);
     }
 

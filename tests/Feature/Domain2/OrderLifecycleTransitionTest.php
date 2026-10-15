@@ -35,8 +35,7 @@ class OrderLifecycleTransitionTest extends TestCase
 
         $this->tenant = Tenant::create([
             'name' => 'Lifecycle Tenant',
-            'slug' => 'lifecycle-tenant',
-            'status' => 'active',
+            'readiness_status' => 'active',
         ]);
 
         $context = app(TenantContext::class);
@@ -45,7 +44,6 @@ class OrderLifecycleTransitionTest extends TestCase
         $this->store = Store::create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Lifecycle Store',
-            'is_active' => true,
         ]);
 
         $context->setStoreId($this->store->id);

@@ -38,8 +38,7 @@ class CardPaymentRecordingTest extends TestCase
 
         $this->tenant = Tenant::create([
             'name' => 'Card Tenant',
-            'slug' => 'card-tenant',
-            'status' => 'active',
+            'readiness_status' => 'active',
         ]);
 
         $context = app(TenantContext::class);
@@ -48,7 +47,6 @@ class CardPaymentRecordingTest extends TestCase
         $this->store = Store::create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Card Branch',
-            'is_active' => true,
         ]);
 
         $context->setStoreId($this->store->id);
@@ -84,7 +82,6 @@ class CardPaymentRecordingTest extends TestCase
             'product_name' => 'Tumbler',
             'product_price' => 100000,
             'stock' => 10,
-            'is_active' => true,
         ]);
     }
 

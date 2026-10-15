@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Console\Commands;
 
 use App\Services\Analytics\RestockPredictionService;
+use App\Services\Context\TenantContext;
 use Illuminate\Console\Command;
 
 class RecomputeRestockForecasts extends Command
@@ -15,9 +16,21 @@ class RecomputeRestockForecasts extends Command
 
     public function handle(RestockPredictionService $service): int
     {
-        $count = $service->recomputeAll();
-        $this->info("Forecast restock diperbarui untuk {$count} bahan baku aktif.");
+        $tenantContext = app(TenantContext::class);
+        $prevTenantId = $tenantContext->getTenantId();
+        $prevStoreId = $tenantContext->getStoreId();
 
-        return self::SUCCESS;
+        try {
+            $count = $service->recomputeAll();
+            $this->info("Forecast restock diperbarui untuk {$count} bahan baku aktif.");
+
+            return self::SUCCESS;
+        } finally {
+            $tenantContext->clear();
+            if ($prevTenantId !== null) {
+                $tenantContext->setTenantId($prevTenantId);
+                $tenantContext->setStoreId($prevStoreId);
+            }
+        }
     }
 }

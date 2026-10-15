@@ -40,8 +40,7 @@ class TransactionRollbackTest extends TestCase
 
         $this->tenant = Tenant::create([
             'name' => 'Rollback Tenant',
-            'slug' => 'rollback-tenant',
-            'status' => 'active',
+            'readiness_status' => 'active',
         ]);
 
         $context = app(TenantContext::class);
@@ -50,7 +49,6 @@ class TransactionRollbackTest extends TestCase
         $this->store = Store::create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Rollback Store',
-            'is_active' => true,
         ]);
 
         $context->setStoreId($this->store->id);
@@ -86,7 +84,6 @@ class TransactionRollbackTest extends TestCase
             'product_name' => 'Iced Tea',
             'product_price' => 10000,
             'stock' => 50,
-            'is_active' => true,
         ]);
     }
 

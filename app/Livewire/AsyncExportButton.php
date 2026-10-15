@@ -23,6 +23,11 @@ class AsyncExportButton extends Component
     #[Locked]
     public ?int $taskId = null;
 
+    public function boot(): void
+    {
+        $this->bootRequiresTenantContext();
+    }
+
     public function mount(string $startDate, string $endDate): void
     {
         // FIX: child Livewire components embedded via <livewire:x /> do

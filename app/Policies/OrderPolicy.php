@@ -26,7 +26,9 @@ class OrderPolicy
 
     public function create(User $user): bool
     {
-        return in_array($user->role?->name, ['Owner', 'Manager', 'Kasir'], true);
+        return in_array($user->role?->name, ['Owner', 'Manager', 'Kasir', 'Cashier', 'Admin'], true)
+            || (bool) $user->role?->is_admin
+            || (bool) $user->role?->hasPermission('can_create_order');
     }
 
     public function viewAny(User $user): bool
@@ -43,13 +45,17 @@ class OrderPolicy
     {
         return $this->sameTenant($user, $order)
             && $this->sameStore($user, $order)
-            && in_array($user->role?->name, ['Owner', 'Manager', 'Supervisor'], true);
+            && (in_array($user->role?->name, ['Owner', 'Manager', 'Supervisor', 'Admin'], true)
+                || (bool) $user->role?->is_admin
+                || (bool) $user->role?->hasPermission('can_void_order'));
     }
 
     public function refund(User $user, Order $order): bool
     {
         return $this->sameTenant($user, $order)
             && $this->sameStore($user, $order)
-            && in_array($user->role?->name, ['Owner', 'Manager'], true);
+            && (in_array($user->role?->name, ['Owner', 'Manager', 'Supervisor', 'Admin'], true)
+                || (bool) $user->role?->is_admin
+                || (bool) $user->role?->hasPermission('can_refund_order'));
     }
 }

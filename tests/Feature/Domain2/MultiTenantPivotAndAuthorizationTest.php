@@ -48,17 +48,25 @@ class MultiTenantPivotAndAuthorizationTest extends TestCase
     {
         parent::afterSubclassSetUp();
         app(TenantContext::class)->clear();
-        $this->tenantA = Tenant::create(['name' => 'A', 'slug' => 'a', 'status' => 'active']);
-        $this->tenantB = Tenant::create(['name' => 'B', 'slug' => 'b', 'status' => 'active']);
-        $this->storeA = Store::create(['tenant_id' => $this->tenantA->id, 'name' => 'A Store', 'is_active' => true]);
-        app(TenantContext::class)->setTenantId($this->tenantA->id);
-        app(TenantContext::class)->setStoreId($this->storeA->id);
-        $roleAOwner = \App\Models\Role::firstOrCreate(['tenant_id' => $this->tenantA->id, 'name' => 'Owner'], ['permissions' => []]);
-        $roleAKasir = \App\Models\Role::firstOrCreate(['tenant_id' => $this->tenantA->id, 'name' => 'Kasir'], ['permissions' => []]);
-        $roleBOwner = \App\Models\Role::firstOrCreate(['tenant_id' => $this->tenantB->id, 'name' => 'Owner'], ['permissions' => []]);
+        $this->tenantA = Tenant::create(['name' => 'A', 'readiness_status' => 'active']);
+        $this->tenantB = Tenant::create(['name' => 'B', 'readiness_status' => 'active']);
+        $this->storeA = Store::create(['tenant_id' => $this->tenantA->id, 'name' => 'A Store']);
+
+        $context = app(TenantContext::class);
+        $context->setTenantId($this->tenantA->id);
+        $context->setStoreId($this->storeA->id);
+
+        $roleAOwner = \App\Models\Role::forceCreate(['tenant_id' => $this->tenantA->id, 'name' => 'Owner', 'permissions' => []]);
+        $roleAKasir = \App\Models\Role::forceCreate(['tenant_id' => $this->tenantA->id, 'name' => 'Kasir', 'permissions' => []]);
         $this->ownerA = User::factory()->create(['tenant_id' => $this->tenantA->id, 'role_id' => $roleAOwner->id]);
         $this->kasirA = User::factory()->create(['tenant_id' => $this->tenantA->id, 'role_id' => $roleAKasir->id]);
+
+        $context->setTenantId($this->tenantB->id);
+        $roleBOwner = \App\Models\Role::forceCreate(['tenant_id' => $this->tenantB->id, 'name' => 'Owner', 'permissions' => []]);
         $this->ownerB = User::factory()->create(['tenant_id' => $this->tenantB->id, 'role_id' => $roleBOwner->id]);
+
+        $context->setTenantId($this->tenantA->id);
+        $context->setStoreId($this->storeA->id);
     }
 
     public function test_order_policy_rejects_cross_tenant_and_unauthorized_roles(): void
@@ -74,6 +82,7 @@ class MultiTenantPivotAndAuthorizationTest extends TestCase
             'service_charge_amount' => 0,
             'order_amount' => 10000,
             'order_status' => 'paid',
+            'idempotency_key' => 'idemp-pol-1',
         ]);
         $policy = new OrderPolicy;
 
@@ -108,7 +117,6 @@ class MultiTenantPivotAndAuthorizationTest extends TestCase
             'type' => 'fixed',
             'value' => 1000,
             'min_purchase_amount' => 0,
-            'is_active' => true,
         ]);
         $discountPolicy = new DiscountPolicy;
         $this->assertTrue($discountPolicy->create($this->ownerA));
@@ -124,7 +132,6 @@ class MultiTenantPivotAndAuthorizationTest extends TestCase
             'name' => 'Gula',
             'unit' => 'gr',
             'current_stock' => '1000.0000',
-            'is_active' => true,
         ]);
         $policy = new IngredientPolicy;
         $this->assertTrue($policy->view($this->ownerA, $ingredient));
@@ -142,14 +149,12 @@ class MultiTenantPivotAndAuthorizationTest extends TestCase
             'product_name' => 'P1',
             'product_price' => 10000,
             'stock' => 10,
-            'is_active' => true,
         ]);
         $ingredient = Ingredient::create([
             'tenant_id' => $this->tenantA->id,
             'name' => 'Teh',
             'unit' => 'gr',
             'current_stock' => '500.0000',
-            'is_active' => true,
         ]);
         app(TenantContext::class)->setTenantId($this->tenantA->id);
 
@@ -169,14 +174,12 @@ class MultiTenantPivotAndAuthorizationTest extends TestCase
             'modifier_group_id' => $group->id,
             'name' => 'M1',
             'extra_price' => 1000,
-            'is_active' => true,
         ]);
         $ingredient = Ingredient::create([
             'tenant_id' => $this->tenantA->id,
             'name' => 'Susu',
             'unit' => 'ml',
             'current_stock' => '1000.0000',
-            'is_active' => true,
         ]);
         app(TenantContext::class)->setTenantId($this->tenantA->id);
 

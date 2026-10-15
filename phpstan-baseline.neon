@@ -1,28 +1,16 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_amount\.$#'
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Console/Commands/ExpireStaleCashSelfOrders.php
+			path: app/Console/Commands/BackfillBalances.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_code\.$#'
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Console/Commands/ExpireStaleCashSelfOrders.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$store_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/ExpireStaleCashSelfOrders.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/ExpireStaleCashSelfOrders.php
+			path: app/Console/Commands/BackfillBalances.php
 
 		-
 			message: '#^Offset ''bom'' on array\{cat\: 0\|1\|2\|3\|4\|5\|6\|7\|8\|9\|10\|11\|12\|13\|14\|15, name\: ''Almond Cream…''\|''Americano Hot''\|''Avocado Espresso…''\|''Burnt Basque…''\|''Butter Croissant…''\|''Butterscotch Cream…''\|''Caffe Latte Hot''\|''Caffe Mocha Belgian''\|''Cappuccino Hot''\|''Caramel Crunch…''\|''Chamomile Dream…''\|''Chicken Caesar…''\|''Chicken Teriyaki…''\|''Cinnamon Morning…''\|''Cireng Krispi Bumbu…''\|''Classic Black Cold…''\|''Classic Tiramisu Cup''\|''Creamy Fettuccine…''\|''Crispy Chicken…''\|''Dark Chocolate…''\|''Earl Grey Supreme…''\|''Espresso Double Shot''\|''Espresso Single Shot''\|''Fudgy Dark Choco…''\|''Gyudon Beef…''\|''Hazelnut Praline…''\|''Iced Americano''\|''Iced Caffe Latte''\|''Iced Cappuccino''\|''Iced Dark Chocolate…''\|''Iced Lemon Mint Tea''\|''Iced Lychee Tea…''\|''Iced Matcha Uji…''\|''Japanese Iced Drip…''\|''Jasmine Green…''\|''Kopi Pandan Wangi…''\|''Kopi Rindu Aren…''\|''Long Black Hot''\|''Matcha Cream Frappe''\|''Matcha Uji Latte Hot''\|''Mie Goreng Dok\-dok…''\|''Mocha Chip Frappe''\|''Nasi Goreng Rindu…''\|''Pain au Chocolat''\|''Piccolo Latte''\|''Red Velvet…''\|''Salted Caramel…''\|''Smoked Beef &…''\|''Spaghetti Aglio…''\|''Sparkling Lemon…''\|''Taro Gourmet Latte…''\|''Truffle Fries with…''\|''Truffle Scrambled…''\|''V60 Aceh Gayo…''\|''V60 Bali Kintamani…''\|''V60 Ethiopia…''\|''V60 Toraja Sapan…''\|''Vanilla Bean Latte''\|''White Velvet Cold…'', price\: 22000\|26000\|28000\|30000\|32000\|34000\|35000\|36000\|37000\|38000\|40000\|42000\|45000\|46000\|48000\|52000\|55000\|58000, has_bom\: true, bom\: non\-empty\-list\<array\{ing\: ''ING\-9\-001''\|''ING\-9\-002''\|''ING\-9\-003''\|''ING\-9\-004''\|''ING\-9\-005''\|''ING\-9\-006''\|''ING\-9\-010''\|''ING\-9\-011''\|''ING\-9\-012''\|''ING\-9\-013''\|''ING\-9\-014''\|''ING\-9\-015''\|''ING\-9\-016''\|''ING\-9\-017''\|''ING\-9\-018''\|''ING\-9\-019''\|''ING\-9\-020''\|''ING\-9\-025''\|''ING\-9\-026''\|''ING\-9\-027''\|''ING\-9\-028''\|''ING\-9\-030''\|''ING\-9\-031''\|''ING\-9\-032''\|''ING\-9\-033''\|''ING\-9\-036''\|''ING\-9\-037''\|''ING\-9\-048'', qty\: 8\|10\|15\|18\|20\|24\|25\|30\|35\|40\|45\|50\|60\|80\|90\|100\|120\|130\|140\|150\|160\|180\|200\}\|array\{ing\: ''ING\-9\-021''\|''ING\-9\-022'', qty\: 5\}\|array\{ing\: ''ING\-9\-023'', qty\: 4\}\|array\{ing\: ''ING\-9\-024''\|''ING\-9\-029''\|''ING\-9\-035''\|''ING\-9\-038''\|''ING\-9\-039''\|''ING\-9\-040''\|''ING\-9\-041''\|''ING\-9\-042''\|''ING\-9\-043''\|''ING\-9\-044''\|''ING\-9\-045'', qty\: 1\|2\}\>\} in empty\(\) always exists and is not falsy\.$#'
@@ -55,6 +43,18 @@ parameters:
 			path: app/Console/Commands/PopulateApeironFullYearDataset.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Console/Commands/ReconcileBalances.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/ReconcileBalances.php
+
+		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.expr
 			count: 2
@@ -65,30 +65,6 @@ parameters:
 			identifier: function.impossibleType
 			count: 1
 			path: app/Console/Commands/ReconcileLegacyModifiers.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_amount\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/ReconcilePendingMidtransOrders.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_code\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Console/Commands/ReconcilePendingMidtransOrders.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$store_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Console/Commands/ReconcilePendingMidtransOrders.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Console/Commands/ReconcilePendingMidtransOrders.php
 
 		-
 			message: '#^Cannot access property \$fraud_status on array\<mixed\>\.$#'
@@ -129,7 +105,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Http/Controllers/ExportTaskController.php
 
 		-
@@ -137,18 +113,6 @@ parameters:
 			identifier: property.notFound
 			count: 1
 			path: app/Http/Controllers/HomeController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$store_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/MidtransNotificationController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/MidtransNotificationController.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
@@ -235,6 +199,12 @@ parameters:
 			path: app/Http/Controllers/StoreSwitchController.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Http/Controllers/UserController.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
 			identifier: property.notFound
 			count: 1
@@ -283,10 +253,118 @@ parameters:
 			path: app/Http/Middleware/SetTenantContext.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\EmailOutbox\:\:\$lease_expires_at\.$#'
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
 			identifier: property.notFound
 			count: 1
-			path: app/Jobs/ProcessProvisioningOutboxJob.php
+			path: app/Http/Requests/StoreCategoryRequest.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Requests/StoreProductRequest.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Requests/StoreRoleRequest.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Requests/StoreRoleRequest.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Requests/StoreTableRequest.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Requests/StoreUserRequest.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Requests/StoreUserRequest.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Requests/UpdateCategoryRequest.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Requests/UpdateProductRequest.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Requests/UpdateRoleRequest.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Requests/UpdateRoleRequest.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Requests/UpdateTableRequest.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Http/Requests/UpdateUserRequest.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Requests/UpdateUserRequest.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$created_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Jobs/ProcessMonthlyExportJob.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Jobs/ProcessMonthlyExportJob.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Jobs/ProcessMonthlyExportJob.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Jobs/ProcessMonthlyExportJob.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$payment_method\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Jobs/ProcessMonthlyExportJob.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\ChannelOrderLog\:\:\$store_id\.$#'
@@ -375,7 +453,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Livewire/Inventory/IngredientLedger.php
 
 		-
@@ -393,7 +471,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Livewire/Inventory/IngredientManager.php
 
 		-
@@ -423,7 +501,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Livewire/Inventory/ModifierManager.php
 
 		-
@@ -483,7 +561,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Livewire\\Kasir\\CreateOrder\:\:\$totalAmount\.$#'
 			identifier: property.notFound
-			count: 4
+			count: 6
 			path: app/Livewire/Kasir/CreateOrder.php
 
 		-
@@ -637,12 +715,6 @@ parameters:
 			path: app/Models/Category.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\EmailOutbox\:\:\$lease_expires_at\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/EmailOutbox.php
-
-		-
 			message: '#^Relation ''users'' is not found in App\\Models\\Store model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
@@ -671,6 +743,12 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Models/OrderItem.php
+
+		-
+			message: '#^Relation ''users'' is not found in App\\Models\\Store model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Models/OrderItemModifier.php
 
 		-
 			message: '#^Strict comparison using \!\=\= between Carbon\\Carbon and null will always evaluate to true\.$#'
@@ -718,6 +796,12 @@ parameters:
 			message: '#^Relation ''users'' is not found in App\\Models\\Store model\.$#'
 			identifier: larastan.relationExistence
 			count: 1
+			path: app/Models/StockBalance.php
+
+		-
+			message: '#^Relation ''users'' is not found in App\\Models\\Store model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
 			path: app/Models/StockMovement.php
 
 		-
@@ -733,6 +817,156 @@ parameters:
 			path: app/Models/Table.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Category\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Policies/CategoryPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/CategoryPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Policies/CategoryPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Discount\:\:\$store_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/DiscountPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Discount\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/DiscountPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Policies/DiscountPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/DiscountPolicy.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Policies/DiscountPolicy.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Policies/DiscountPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Ingredient\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/IngredientPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Policies/IngredientPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/IngredientPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 9
+			path: app/Policies/OrderPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$store_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/OrderPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/OrderPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Product\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Policies/ProductPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/ProductPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Policies/ProductPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Policies/ShiftPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Policies/ShiftPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Policies/TablePolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/TablePolicy.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Policies/TablePolicy.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Policies/TablePolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Product\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/CartService.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
 			count: 2
@@ -742,6 +976,12 @@ parameters:
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Modifier\>\:\:map\(\) contains unresolvable type\.$#'
 			identifier: argument.unresolvableType
 			count: 2
+			path: app/Services/CartService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
 			path: app/Services/CartService.php
 
 		-
@@ -772,6 +1012,12 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
 			identifier: property.notFound
 			count: 2
+			path: app/Services/DashboardService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$card_orders\.$#'
+			identifier: property.notFound
+			count: 1
 			path: app/Services/DashboardService.php
 
 		-
@@ -957,13 +1203,13 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
 			identifier: property.notFound
-			count: 4
+			count: 8
 			path: app/Services/ReportService.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
-			count: 2
+			count: 4
 			path: app/Services/ReportService.php
 
 		-
@@ -977,6 +1223,12 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Services/RoleService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Shift\:\:\$store_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ShiftService.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Order\:\:\$jumlah\.$#'
@@ -993,7 +1245,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
-			count: 14
+			count: 10
 			path: app/Services/TransactionService.php
 
 		-
@@ -1017,13 +1269,13 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_id\.$#'
 			identifier: property.notFound
-			count: 4
+			count: 2
 			path: app/Services/TransactionService.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$qty\.$#'
 			identifier: property.notFound
-			count: 5
+			count: 3
 			path: app/Services/TransactionService.php
 
 		-
@@ -1033,7 +1285,7 @@ parameters:
 			path: app/Services/TransactionService.php
 
 		-
-			message: '#^Call to function is_string\(\) with App\\Enums\\PaymentMethodEnum will always evaluate to false\.$#'
+			message: '#^Call to function is_string\(\) with App\\Enums\\PaymentMethod will always evaluate to false\.$#'
 			identifier: function.impossibleType
 			count: 1
 			path: app/Services/TransactionService.php
@@ -1121,3 +1373,57 @@ parameters:
 			identifier: larastan.relationExistence
 			count: 1
 			path: app/Services/UserService.php
+
+		-
+			message: '#^Class Database\\Seeders\\ModifierSeeder not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: database/seeders/DatabaseSeeder.php
+
+		-
+			message: '#^Undefined variable\: \$tenant$#'
+			identifier: variable.undefined
+			count: 4
+			path: database/seeders/DemoDataSeeder.php
+
+		-
+			message: '#^Parameter \#1 \$string of function str_pad expects string, int\<1, 300\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: database/seeders/Pos/ActivityLogSeeder.php
+
+		-
+			message: '#^Parameter \#1 \$max of method Symfony\\Component\\Console\\Style\\SymfonyStyle\:\:createProgressBar\(\) expects int, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: database/seeders/Pos/IngredientStockMovementSeeder.php
+
+		-
+			message: '#^Variable \$prevHash on left side of \?\? always exists and is always null\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: database/seeders/Pos/LoyaltyLedgerSeeder.php
+
+		-
+			message: '#^Parameter \#1 \$max of method Symfony\\Component\\Console\\Style\\SymfonyStyle\:\:createProgressBar\(\) expects int, float given\.$#'
+			identifier: argument.type
+			count: 1
+			path: database/seeders/Pos/OrderSeeder.php
+
+		-
+			message: '#^Parameter \#1 \$string of function str_pad expects string, int\<1, max\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: database/seeders/Pos/OrderSeeder.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between 0 and 0 will always evaluate to true\.$#'
+			identifier: identical.alwaysTrue
+			count: 1
+			path: database/seeders/Pos/OrderSeeder.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: database/seeders/PosFullSeeder.php

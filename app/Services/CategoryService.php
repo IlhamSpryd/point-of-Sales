@@ -42,7 +42,9 @@ class CategoryService
     {
         return DB::transaction(function () use ($data) {
             $category = Category::create($data);
-            $this->menuCache->flush(app(TenantContext::class)->requireTenantId());
+            $tenantId = app(TenantContext::class)->requireTenantId();
+            $storeId = app(TenantContext::class)->getStoreId();
+            $this->menuCache->flush($tenantId, $storeId);
 
             return $category;
         });
@@ -52,7 +54,8 @@ class CategoryService
     {
         return DB::transaction(function () use ($category, $data) {
             $category->update($data);
-            $this->menuCache->flush($category->tenant_id);
+            $storeId = app(TenantContext::class)->getStoreId();
+            $this->menuCache->flush((int) $category->tenant_id, $storeId);
 
             return $category;
         });
@@ -65,7 +68,8 @@ class CategoryService
                 throw new Exception('Tidak dapat menghapus kategori "'.$category->category_name.'" karena masih memiliki '.$category->products()->count().' produk.');
             }
             $result = $category->delete();
-            $this->menuCache->flush($category->tenant_id);
+            $storeId = app(TenantContext::class)->getStoreId();
+            $this->menuCache->flush((int) $category->tenant_id, $storeId);
 
             return $result;
         });

@@ -15,26 +15,6 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * MenuCacheService: lapisan cache-aside untuk katalog menu (Kasir & Self-Order).
- *
- * [OMEGA-NODE3] KEPUTUSAN ARSITEKTUR -- KENAPA TANPA Cache::tags():
- * CACHE_STORE default aplikasi ini adalah 'database' (lihat .env.example
- * dan config/cache.php: 'default' => env('CACHE_STORE', 'database')).
- * Driver 'database' TIDAK MENDUKUNG tagged cache -- hanya redis,
- * memcached, dynamodb, dan array yang mendukung Cache::tags(). Memanggil
- * Cache::tags() di atas driver 'database' akan melempar
- * BadMethodCallException saat runtime pertama kali dipanggil, bukan saat
- * migrasi/deploy -- kegagalan yang baru ketahuan di production.
- *
- * Strategi yang dipakai di sini adalah KEY EKSPLISIT + INVALIDASI
- * EKSPLISIT/EVENT-DRIVEN, yang kompatibel dengan SEMUA driver cache
- * Laravel termasuk 'database' yang sedang aktif sekarang. Lihat
- *
- * PATCH FOR F-08: Tag-based invalidation (Redis).
- * Sekarang di-upgrade untuk mendukung Cache::tags() secara elegan:
- * menggunakan getCache() helper yang akan otomatis menggunakan tag
- * ['menu'] jika CACHE_STORE mendukungnya (Redis), atau fallback ke store
- * bawaan jika tidak. Ini sangat meningkatkan performa saat flush()
- * karena satu operasi tags()->flush() akan membersihkan semua key.
  */
 class MenuCacheService
 {
@@ -48,29 +28,10 @@ class MenuCacheService
 
     private const KEY_MENU_DISPLAY = 'pos:menu:display:v2';
 
-    /**
-     * Nama lock atomik (memakai tabel `cache_locks`, driver 'database'
-     * SUDAH mendukung atomic locks -- lihat pola identik yang sudah
-     * dipakai TransactionController::store() untuk idempotency).
-     */
     private const REBUILD_LOCK_KEY = 'pos:menu:rebuild-lock';
 
     private const REBUILD_LOCK_WAIT_SECONDS = 5;
 
-    /**
-     * [OMEGA-NODE3] FIX KRITIKAL DITEMUKAN SAAT AUDIT: versi SEBELUMNYA
-     * method ini TIDAK PERNAH membungkus query dengan Cache::remember() --
-     * padahal dipanggil sebagai #[Computed] property di
-     * App\Livewire\Kasir\CreateOrder::categories(), yang komentarnya
-     * BAHKAN mengklaim "MenuCacheService::getCatalog() pakai
-     * Cache::remember (Laravel Cache, TTL 1 jam)". Klaim itu SALAH
-     * sebelum perbaikan ini: query Category -> products(availableForOrder)
-     * -> modifierGroups.modifiers dijalankan ULANG dari nol pada SETIAP
-     * re-render Livewire di layar Kasir POS -- layar dengan frekuensi
-     * interaksi TERTINGGI di seluruh sistem (setiap klik produk, setiap
-     * toggle modifier, setiap perubahan qty memicu render ulang). Ini
-     * adalah temuan N+1/beban-DB paling signifikan pada audit Node 3.
-     */
     private function getCache(?int $tenantId = null)
     {
         $tenantId = $tenantId ?? app(TenantContext::class)->getTenantId();
@@ -112,22 +73,6 @@ class MenuCacheService
         });
     }
 
-    /**
-     * [OMEGA-NODE3] Endpoint dengan traffic TERTINGGI di seluruh sistem:
-     * dipanggil setiap kali pelanggan scan QR meja (rute PUBLIK, tanpa
-     * auth, hanya throttle:60,1 per-IP -- lihat routes/customer.php).
-     * Cache-miss di endpoint publik bertraffic tinggi rawan "thundering
-     * herd": puluhan pelanggan scan QR bersamaan tepat saat TTL habis
-     * bisa memukul database dengan query berat yang SAMA secara paralel,
-     * masing-masing menanggung join Category+Product+ModifierGroup+Modifier.
-     *
-     * Cache::lock() memastikan HANYA SATU proses yang benar-benar
-     * menjalankan query rebuild; proses lain menunggu maksimal
-     * REBUILD_LOCK_WAIT_SECONDS lalu membaca hasil yang baru ditulis oleh
-     * pemenang lock -- pola yang SAMA PERSIS dengan
-     * TransactionController::store() (Cache::lock('order_idempotency_...'))
-     * yang sudah teruji berjalan baik di proyek ini.
-     */
     public function getMenuDisplayData(): array
     {
         $key = $this->getTenantKey(self::KEY_MENU_DISPLAY);
@@ -147,22 +92,12 @@ class MenuCacheService
                     );
                 });
         } catch (LockTimeoutException) {
-            // Lock tidak didapat dalam batas waktu -- daripada membuat
-            // pelanggan menunggu tanpa kepastian, jalankan query langsung
-            // TANPA menulis ulang cache (proses pemenang lock yang akan
-            // menuliskannya). Latensi request INI sedikit lebih tinggi,
-            // tapi request tidak diblokir dan beban DB tidak digandakan.
             Log::warning('[OMEGA-NODE3] Menu display cache rebuild lock timeout -- fallback ke query langsung.');
 
             return $this->buildMenuDisplayData();
         }
     }
 
-    /**
-     * Query mentah katalog Self-Order. Dipisah dari getMenuDisplayData()
-     * agar bisa dipanggil ulang baik oleh jalur cache normal (Cache::remember)
-     * maupun jalur fallback (lock timeout) tanpa duplikasi logika.
-     */
     private function buildMenuDisplayData(): array
     {
         return [
@@ -174,51 +109,56 @@ class MenuCacheService
     }
 
     /**
-     * Invalidasi PENUH seluruh cache katalog menu.
-     *
-     * Dipanggil eksplisit oleh CategoryService & ProductService pada
-     * setiap store/update/delete (SUDAH ADA sebelumnya, TIDAK diubah di
-     * sini) -- DAN sekarang JUGA dipanggil otomatis oleh
-     * App\Models\Product::booted()::saved() saat status ketersediaan
-     * produk berubah lewat jalur LAIN yang sebelumnya tidak pernah
-     * menyentuh cache ini sama sekali. Lihat SYNC ALERT di laporan untuk
-     * detail celah yang ditutup dan alasan pemanggilannya lewat
-     * DB::afterCommit() (bukan langsung) di dalam model event tersebut.
+     * Invalidasi PENUH seluruh cache katalog menu per tenant & store.
      */
-    public function flush(?int $tenantId = null): void
+    public function flush(?int $tenantId = null, ?int $storeId = null): void
     {
-        $resolvedTenantId = $tenantId ?? app(TenantContext::class)->getTenantId();
+        $context = app(TenantContext::class);
+        $resolvedTenantId = $tenantId ?? $context->getTenantId();
 
-        // D1-DB-008: invalidasi tanpa tenant jelas tidak boleh menghapus cache tenant lain.
         if ($resolvedTenantId === null) {
             throw new \RuntimeException('MenuCacheService::flush() requires a tenant id.');
         }
+
         if (Cache::supportsTags()) {
             Cache::tags(["menu:tenant_{$resolvedTenantId}"])->flush();
 
             return;
         }
 
-        $this->getCache($resolvedTenantId)->forget($this->getTenantKey(self::KEY_CATALOG, $resolvedTenantId));
-        $this->getCache($resolvedTenantId)->forget($this->getTenantKey(self::KEY_CATEGORIES, $resolvedTenantId));
-        $this->getCache($resolvedTenantId)->forget($this->getTenantKey(self::KEY_ACTIVE_PRODUCTS, $resolvedTenantId));
-        $this->getCache($resolvedTenantId)->forget($this->getTenantKey(self::KEY_MENU_DISPLAY, $resolvedTenantId));
+        $resolvedStoreId = $storeId ?? $context->getStoreId();
+
+        $this->forgetStoreKeys($resolvedTenantId, $resolvedStoreId);
+        if ($resolvedStoreId !== null) {
+            $this->forgetStoreKeys($resolvedTenantId, null);
+        }
     }
 
-    private function getTenantKey(string $key, ?int $tenantId = null): string
+    private function forgetStoreKeys(int $tenantId, ?int $storeId): void
+    {
+        $cache = $this->getCache($tenantId);
+        $cache->forget($this->formatKey(self::KEY_CATALOG, $tenantId, $storeId));
+        $cache->forget($this->formatKey(self::KEY_CATEGORIES, $tenantId, $storeId));
+        $cache->forget($this->formatKey(self::KEY_ACTIVE_PRODUCTS, $tenantId, $storeId));
+        $cache->forget($this->formatKey(self::KEY_MENU_DISPLAY, $tenantId, $storeId));
+    }
+
+    private function formatKey(string $key, int $tenantId, ?int $storeId): string
+    {
+        return str_replace('pos:menu:', "pos:menu:{$tenantId}:".($storeId !== null ? "store:{$storeId}:" : 'all:'), $key);
+    }
+
+    private function getTenantKey(string $key, ?int $tenantId = null, ?int $storeId = null): string
     {
         $context = app(TenantContext::class);
         $tenantId = $tenantId ?? $context->getTenantId();
 
-        // D1-DB-008: kunci cache tanpa dimensi tenant DILARANG -- fail-closed.
         if ($tenantId === null) {
             throw new \RuntimeException('MenuCacheService cache key requires an active tenant context.');
         }
 
-        // D1-DB-008: katalog menu adalah data level cabang -> sertakan dimensi
-        // store pada kunci agar menu antar-cabang tidak saling menimpa.
-        $storeId = $context->getStoreId();
+        $storeId = $storeId ?? $context->getStoreId();
 
-        return str_replace('pos:menu:', "pos:menu:{$tenantId}:".($storeId !== null ? "store:{$storeId}:" : 'all:'), $key);
+        return $this->formatKey($key, $tenantId, $storeId);
     }
 }
