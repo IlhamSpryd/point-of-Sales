@@ -193,14 +193,18 @@
                                             $inCartQty = collect($this->cartLines)
                                                 ->where('product_id', $product->id)
                                                 ->sum('qty');
+                                            $isOutOfStock = !is_null($product->stock) && $product->stock <= 0;
                                         @endphp
                                         <div wire:key="product-{{ $product->id }}"
-                                            wire:click="{{ $product->modifierGroups->count() > 0 ? "openModifierPicker({$product->id})" : "addToCartDirectly({$product->id})" }}"
-                                            @keydown.enter="$wire.{{ $product->modifierGroups->count() > 0 ? "openModifierPicker({$product->id})" : "addToCartDirectly({$product->id})" }}"
-                                            @keydown.space.prevent="$wire.{{ $product->modifierGroups->count() > 0 ? "openModifierPicker({$product->id})" : "addToCartDirectly({$product->id})" }}"
-                                            role="button" tabindex="0"
-                                            aria-label="Tambah {{ $product->product_name }} ke keranjang, harga Rp {{ number_format($product->product_price, 0, ',', '.') }}"
-                                            class="group bg-white rounded-2xl border border-gray-200 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:border-apeiron-ink hover:shadow-md hover:-translate-y-1 cursor-pointer active:scale-[0.98] transition-all duration-200 flex flex-col h-full relative outline-none focus-visible:ring-2 focus-visible:ring-gray-900">
+                                            @if(!$isOutOfStock)
+                                                wire:click="{{ $product->modifierGroups->count() > 0 ? "openModifierPicker({$product->id})" : "addToCartDirectly({$product->id})" }}"
+                                                @keydown.enter="$wire.{{ $product->modifierGroups->count() > 0 ? "openModifierPicker({$product->id})" : "addToCartDirectly({$product->id})" }}"
+                                                @keydown.space.prevent="$wire.{{ $product->modifierGroups->count() > 0 ? "openModifierPicker({$product->id})" : "addToCartDirectly({$product->id})" }}"
+                                            @endif
+                                            role="button" tabindex="{{ $isOutOfStock ? '-1' : '0' }}"
+                                            @if($isOutOfStock) aria-disabled="true" @endif
+                                            aria-label="{{ $isOutOfStock ? ($product->product_name . ' - Stok Habis') : ('Tambah ' . $product->product_name . ' ke keranjang, harga Rp ' . number_format($product->product_price, 0, ',', '.')) }}"
+                                            class="{{ $isOutOfStock ? 'opacity-60 cursor-not-allowed bg-gray-50 border border-gray-200' : 'group bg-white border border-gray-200 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:border-apeiron-ink hover:shadow-md hover:-translate-y-1 cursor-pointer active:scale-[0.98]' }} rounded-2xl transition-all duration-200 flex flex-col h-full relative outline-none focus-visible:ring-2 focus-visible:ring-gray-900">
 
                                             @if ($inCartQty > 0)
                                                 <div class="absolute -top-2 -right-2 z-20 flex">
@@ -213,6 +217,11 @@
 
                                             <div
                                                 class="w-full aspect-square sm:aspect-[4/3] bg-gray-50 relative overflow-hidden group-hover:opacity-95 transition-opacity rounded-t-2xl shrink-0 border-b border-gray-100 flex items-center justify-center">
+                                                @if ($isOutOfStock)
+                                                    <div class="absolute inset-0 bg-white/70 backdrop-blur-[1px] flex items-center justify-center z-10">
+                                                        <span class="px-2.5 py-1 rounded-lg bg-gray-800 text-white text-[11px] font-bold uppercase tracking-wider">Stok Habis</span>
+                                                    </div>
+                                                @endif
                                                 @if ($product->product_photo)
                                                     <!-- Jika ada foto produk -->
                                                     <img src="{{ Storage::url($product->product_photo) }}"
@@ -569,9 +578,20 @@
                             this.localMods.push(modId);
                         }
                     }
-                }
+                },
+                focusables() {
+                    let selector = 'a, button, input:not([type=\'hidden\']), textarea, select, details, [tabindex]:not([tabindex=\'-1\'])';
+                    return [...$el.querySelectorAll(selector)].filter(el => !el.hasAttribute('disabled'));
+                },
+                firstFocusable() { return this.focusables()[0]; },
+                lastFocusable() { return this.focusables().slice(-1)[0]; },
+                nextFocusable() { return this.focusables()[(this.focusables().indexOf(document.activeElement) + 1) % (this.focusables().length + 1)] || this.firstFocusable(); },
+                prevFocusable() { return this.focusables()[Math.max(0, this.focusables().indexOf(document.activeElement) - 1)] || this.lastFocusable(); }
             }"
+            x-init="setTimeout(() => firstFocusable() && firstFocusable().focus(), 100)"
             @keydown.escape.window="$wire.closeModifierPicker()"
+            x-on:keydown.tab.prevent="$event.shiftKey || nextFocusable().focus()"
+            x-on:keydown.shift.tab.prevent="prevFocusable().focus()"
             class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-gray-900/40"
             wire:transition>
             <div

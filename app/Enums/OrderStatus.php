@@ -36,4 +36,15 @@ enum OrderStatus: string
             self::Void => 'Di-void',
         };
     }
+
+    /** Variant semantic x-badge untuk status pesanan. */
+    public function badgeType(): string
+    {
+        return match ($this) {
+            self::Paid, self::Completed => 'success',
+            self::Pending => 'warning',
+            self::Void, self::Failed => 'danger',
+            self::Cancelled, self::Expired => 'secondary',
+        };
+    }
 }

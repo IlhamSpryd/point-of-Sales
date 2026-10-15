@@ -6,6 +6,8 @@
 <div x-data="variantSheet()"
      x-on:open-variant.window="show($event.detail.id)"
      x-on:keydown.escape.window="close()"
+     x-on:keydown.tab.prevent="$event.shiftKey || nextFocusable().focus()"
+     x-on:keydown.shift.tab.prevent="prevFocusable().focus()"
      x-effect="document.body.classList.toggle('overflow-hidden', open)"
      :class="open ? '' : 'pointer-events-none'"
      class="fixed inset-0 z-50 flex items-end justify-center mx-auto max-w-md">
@@ -170,14 +172,37 @@
             qty: 1,
             notes: '',
             reqId: 0,
+            triggerEl: null,
+
+            focusables() {
+                let selector = 'a, button, input:not([type=\'hidden\']), textarea, select, details, [tabindex]:not([tabindex=\'-1\'])';
+                return [...this.$el.querySelectorAll(selector)].filter(el => !el.hasAttribute('disabled'));
+            },
+            firstFocusable() { return this.focusables()[0]; },
+            lastFocusable() { return this.focusables().slice(-1)[0]; },
+            nextFocusable() {
+                const list = this.focusables();
+                return list[(list.indexOf(document.activeElement) + 1) % (list.length + 1)] || list[0];
+            },
+            prevFocusable() {
+                const list = this.focusables();
+                return list[Math.max(0, list.indexOf(document.activeElement) - 1)] || list.slice(-1)[0];
+            },
 
             async show(id) {
+                this.triggerEl = document.activeElement;
                 this.productId = id;
                 this.open = true;
                 await this.load();
+                setTimeout(() => this.firstFocusable() && this.firstFocusable().focus(), 100);
             },
 
-            close() { this.open = false; },
+            close() {
+                this.open = false;
+                if (this.triggerEl && typeof this.triggerEl.focus === 'function') {
+                    setTimeout(() => this.triggerEl.focus(), 50);
+                }
+            },
 
             async load() {
                 const req = ++this.reqId;

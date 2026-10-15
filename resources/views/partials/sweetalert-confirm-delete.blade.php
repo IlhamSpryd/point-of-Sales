@@ -1,6 +1,7 @@
 <script>
     // ─── POLA 0: window.confirmDelete (dipanggil via onclick form CRUD tradisional) ──
     window.confirmDelete = function(formId, itemName) {
+        const triggerEl = document.activeElement;
         const form = document.getElementById(formId);
         if (!form) {
             console.error('[confirmDelete] Form tidak ditemukan:', formId);
@@ -21,10 +22,13 @@
                 confirmButtonText: 'Ya, Hapus!',
                 cancelButtonText: 'Batal',
                 reverseButtons: true,
+                returnFocus: true,
                 customClass: { popup: 'rounded-2xl' },
             }).then((result) => {
                 if (result.isConfirmed) {
                     form.submit();
+                } else if (triggerEl && typeof triggerEl.focus === 'function') {
+                    triggerEl.focus();
                 }
             });
         } else if (confirm(`${title}\n${text}`)) {
@@ -53,10 +57,13 @@
                         confirmButtonText: 'Ya, Hapus!',
                         cancelButtonText: 'Batal',
                         reverseButtons: true,
+                        returnFocus: true,
                         customClass: { popup: 'rounded-2xl' },
                     }).then((result) => {
                         if (result.isConfirmed && form) {
                             form.submit();
+                        } else if (deleteBtn && typeof deleteBtn.focus === 'function') {
+                            deleteBtn.focus();
                         }
                     });
                 } else if (form && confirm('Apakah Anda Yakin?\nData yang dihapus tidak dapat dikembalikan!')) {
@@ -68,20 +75,6 @@
     // ─── POLA 2: data-swal-delete (Livewire wire:call) ───────────────────────
     // Dipakai oleh discount-manager, channel-mapping-manager, dan komponen lain
     // yang membutuhkan konfirmasi destruktif sebelum memanggil Livewire method.
-    //
-    // Atribut yang dibutuhkan pada tombol:
-    //   data-swal-delete          — penanda tombol ini
-    //   data-swal-title           — judul konfirmasi (opsional, ada default)
-    //   data-swal-text            — teks deskripsi (opsional)
-    //   data-wire-action          — string method Livewire, mis. "delete(5)"
-    //
-    // Contoh:
-    //   <button data-swal-delete
-    //           data-swal-title="Hapus Diskon?"
-    //           data-swal-text="Diskon ini akan dihapus permanen."
-    //           data-wire-action="delete(3)">
-    //     Hapus
-    //   </button>
     document.addEventListener('click', function(e) {
         const btn = e.target.closest('[data-swal-delete]');
         if (!btn) return;
@@ -108,9 +101,15 @@
             confirmButtonText: 'Ya, Hapus!',
             cancelButtonText: 'Batal',
             reverseButtons: true,
+            returnFocus: true,
             customClass: { popup: 'rounded-2xl' },
         }).then((result) => {
-            if (!result.isConfirmed) return;
+            if (!result.isConfirmed) {
+                if (btn && typeof btn.focus === 'function') {
+                    btn.focus();
+                }
+                return;
+            }
 
             // Cari Livewire component terdekat
             const lwEl = btn.closest('[wire\\:id]');
@@ -147,18 +146,9 @@
     });
 
     // ─── POLA 3: Livewire event "swal-confirm" ────────────────────────────────
-    // Komponen Livewire dapat mendispatch event ini untuk menampilkan konfirmasi
-    // sebelum melanjutkan aksi. Berguna untuk aksi yang dipicu server-side.
-    //
-    // Contoh dari Livewire:
-    //   $this->dispatch('swal-confirm', [
-    //       'title'   => 'Tutup Shift?',
-    //       'text'    => 'Shift aktif akan ditutup.',
-    //       'method'  => 'closeShift',
-    //       'args'    => [],
-    //   ]);
     document.addEventListener('livewire:init', () => {
         Livewire.on('swal-confirm', (payload) => {
+            const triggerEl = document.activeElement;
             const { title, text, method, args = [], componentId } = Array.isArray(payload) ? payload[0] : payload;
 
             Swal.fire({
@@ -171,9 +161,15 @@
                 confirmButtonText: 'Ya, Lanjutkan',
                 cancelButtonText: 'Batal',
                 reverseButtons: true,
+                returnFocus: true,
                 customClass: { popup: 'rounded-2xl' },
             }).then((result) => {
-                if (!result.isConfirmed) return;
+                if (!result.isConfirmed) {
+                    if (triggerEl && typeof triggerEl.focus === 'function') {
+                        triggerEl.focus();
+                    }
+                    return;
+                }
                 if (componentId) {
                     const component = Livewire.find(componentId);
                     if (component) component.$wire.call(method, ...args);

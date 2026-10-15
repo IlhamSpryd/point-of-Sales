@@ -1,13 +1,22 @@
 @props([
-    'type' => 'success', // success, danger, warning, info, secondary
+    'type' => null,
+    'status' => null,
 ])
 
 @php
+    if ($status instanceof \BackedEnum) {
+        if ($type === null && method_exists($status, 'badgeType')) {
+            $type = $status->badgeType();
+        }
+    }
+
+    $type = $type ?? 'secondary';
+
     $variants = [
-        'success' => 'bg-success-50 text-success-700 border-success-600/20',
-        'danger'  => 'bg-danger-50 text-danger-700 border-danger-600/20',
-        'warning' => 'bg-warning-50 text-warning-600 border-warning-600/20',
-        'info'    => 'bg-info-50 text-info-600 border-info-600/20',
+        'success'   => 'bg-success-50 text-success-700 border-success-600/20',
+        'danger'    => 'bg-danger-50 text-danger-700 border-danger-600/20',
+        'warning'   => 'bg-warning-50 text-warning-600 border-warning-600/20',
+        'info'      => 'bg-info-50 text-info-600 border-info-600/20',
         'secondary' => 'bg-primary-100 text-primary-500 border-primary-200',
     ];
 
@@ -15,5 +24,5 @@
 @endphp
 
 <span {{ $attributes->merge(['class' => $classes]) }}>
-    {{ $slot }}
+    {{ $slot->isNotEmpty() ? $slot : ($status instanceof \BackedEnum && method_exists($status, 'label') ? $status->label() : '') }}
 </span>

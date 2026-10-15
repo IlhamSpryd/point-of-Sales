@@ -19,20 +19,8 @@
                         <p class="text-lg font-bold text-slate-800">{{ $order->order_code }}</p>
                     </div>
                     <div>
-                        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">{{ __('Status') }}</span>
-                        @php
-                            $statusValue = $order->order_status instanceof \App\Enums\OrderStatus ? $order->order_status->value : (string) $order->order_status;
-                            $statusLabel = $order->order_status instanceof \App\Enums\OrderStatus ? $order->order_status->label() : ucfirst($statusValue);
-                            $statusClass = match($statusValue) {
-                                'paid', 'completed' => 'bg-emerald-50 text-emerald-600',
-                                'pending' => 'bg-amber-50 text-amber-600',
-                                'void', 'failed' => 'bg-rose-50 text-rose-600',
-                                default => 'bg-slate-50 text-slate-600',
-                            };
-                        @endphp
-                        <p class="text-sm font-semibold capitalize px-3 py-1 rounded-full {{ $statusClass }}">
-                            {{ $statusLabel }}
-                        </p>
+                        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold block mb-1">{{ __('Status') }}</span>
+                        <x-badge :status="$order->order_status" />
                     </div>
                 </div>
 

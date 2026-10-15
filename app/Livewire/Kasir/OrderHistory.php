@@ -154,12 +154,7 @@ class OrderHistory extends Component
 
     public function statusBadgeType(OrderStatus $status): string
     {
-        return match ($status) {
-            OrderStatus::Paid, OrderStatus::Completed => 'success',
-            OrderStatus::Pending => 'warning',
-            OrderStatus::Failed, OrderStatus::Void => 'danger',
-            OrderStatus::Cancelled, OrderStatus::Expired => 'secondary',
-        };
+        return $status->badgeType();
     }
 
     private function resolveDateRange(): array

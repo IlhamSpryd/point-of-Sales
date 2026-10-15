@@ -2,6 +2,7 @@
     'variant' => 'primary', // primary, secondary, danger, ghost
     'size' => 'md',         // sm, md, lg
     'hotkey' => null,
+    'disabled' => false,
 ])
 
 @php
@@ -14,16 +15,16 @@
     ];
 
     $variants = [
-        'primary'   => 'bg-primary-700 text-white hover:bg-primary-900 focus-visible:ring-primary-700 shadow-sm hover:shadow-md',
-        'secondary' => 'bg-white text-primary-700 border border-apeiron-border hover:bg-primary-50 focus-visible:ring-primary-700 shadow-sm',
-        'danger'    => 'bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 focus-visible:ring-rose-500 shadow-sm',
-        'ghost'     => 'bg-transparent text-primary-500 hover:bg-primary-50 hover:text-primary-700 focus-visible:ring-primary-700',
+        'primary'   => 'bg-apeiron-ink text-white hover:bg-apeiron-ink/90 focus-visible:ring-apeiron-ink shadow-sm hover:shadow-md',
+        'secondary' => 'bg-white text-gray-700 border border-apeiron-border hover:bg-gray-50 focus-visible:ring-apeiron-ink shadow-sm',
+        'danger'    => 'bg-rose-600 text-white hover:bg-rose-700 focus-visible:ring-rose-500 shadow-sm hover:shadow-md',
+        'ghost'     => 'bg-transparent text-gray-500 hover:bg-gray-100 hover:text-apeiron-ink focus-visible:ring-apeiron-ink',
     ];
 
     $classes = $baseClasses . ' ' . ($sizes[$size] ?? $sizes['md']) . ' ' . ($variants[$variant] ?? $variants['primary']);
 @endphp
 
-<button {{ $attributes->merge(['class' => $classes]) }}>
+<button @disabled($disabled) {{ $attributes->merge(['class' => $classes]) }}>
     {{ $slot }}
     @if($hotkey)
         <kbd class="ml-auto inline-flex items-center justify-center min-w-[24px] h-6 px-1.5 rounded bg-apeiron-ink/10 text-[10px] font-bold tracking-widest text-inherit border border-apeiron-ink/5 uppercase shadow-sm whitespace-nowrap">{{ $hotkey }}</kbd>

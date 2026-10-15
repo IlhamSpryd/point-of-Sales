@@ -34,6 +34,7 @@ $panelEnterEndClasses = $sheet
 <div
     x-data="{
         show: @js($show),
+        triggerEl: null,
         focusables() {
             let selector = 'a, button, input:not([type=\'hidden\']), textarea, select, details, [tabindex]:not([tabindex=\'-1\'])'
             return [...$el.querySelectorAll(selector)]
@@ -48,13 +49,24 @@ $panelEnterEndClasses = $sheet
     }"
     x-init="$watch('show', value => {
         if (value) {
+            triggerEl = document.activeElement;
             document.body.classList.add('overflow-y-hidden');
-            {{ $attributes->has('focusable') ? 'setTimeout(() => firstFocusable().focus(), 100)' : '' }}
+            setTimeout(() => {
+                const auto = $el.querySelector('[autofocus]');
+                if (auto && typeof auto.focus === 'function') {
+                    auto.focus();
+                } else if (firstFocusable()) {
+                    firstFocusable().focus();
+                }
+            }, 100);
         } else {
             document.body.classList.remove('overflow-y-hidden');
+            if (triggerEl && typeof triggerEl.focus === 'function') {
+                setTimeout(() => triggerEl.focus(), 50);
+            }
         }
     })"
-    x-on:open-modal.window="$event.detail == '{{ $name }}' ? show = true : null"
+    x-on:open-modal.window="$event.detail == '{{ $name }}' ? (triggerEl = document.activeElement, show = true) : null"
     x-on:close-modal.window="$event.detail == '{{ $name }}' ? show = false : null"
     x-on:close.stop="show = false"
     x-on:keydown.escape.window="show = false"

@@ -24,4 +24,15 @@ enum PaymentStatusEnum: string
             self::Voided => 'Dibatalkan (Void)',
         };
     }
+
+    /** Variant semantic x-badge untuk status pembayaran. */
+    public function badgeType(): string
+    {
+        return match ($this) {
+            self::Captured => 'success',
+            self::Pending => 'warning',
+            self::Failed => 'danger',
+            self::Refunded, self::Voided => 'secondary',
+        };
+    }
 }
