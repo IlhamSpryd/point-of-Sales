@@ -17,7 +17,7 @@
                     </div>
                     @error('opening_balance') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
-                <button type="submit" wire:loading.attr="disabled" wire:target="openShift" class="w-full disabled:opacity-60 disabled:cursor-wait bg-apeiron-ink text-white font-bold py-4 rounded-2xl shadow-md hover:bg-apeiron-ink active:scale-[0.98] transition-all flex justify-center items-center gap-2">
+                <button type="submit" wire:loading.attr="disabled" wire:target="openShift" class="w-full disabled:opacity-60 disabled:cursor-wait bg-apeiron-ink hover:bg-[#111111] text-white font-bold py-4 rounded-2xl shadow-md active:scale-[0.98] transition-all flex justify-center items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2">
                     <span wire:loading wire:target="openShift" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
                     Mulai Bekerja
                 </button>

@@ -45,18 +45,18 @@
     </style>
 </head>
 
-<body class="font-sans antialiased bg-apeiron-bg text-apeiron-ink flex h-dvh overflow-hidden pos-layout-locked">
+<body class="font-sans antialiased bg-white text-apeiron-ink flex h-dvh overflow-hidden pos-layout-locked">
 
-    <div x-data="{ sidebarMobileOpen: false, expanded: localStorage.getItem('sidebarExpanded') !== 'false' }" x-init="$watch('expanded', val => localStorage.setItem('sidebarExpanded', val))" class="flex w-full h-full">
+    <div x-data="{ sidebarMobileOpen: false, expanded: localStorage.getItem('sidebarExpanded') !== 'false' }" x-init="$watch('expanded', val => localStorage.setItem('sidebarExpanded', val))" class="flex w-full h-full bg-white">
         <!-- Sidebar Navigation -->
         @include('layouts.navigation')
 
         <!-- Main Content Wrapper -->
-        <div class="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300" id="main-wrapper">
+        <div class="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 bg-white" id="main-wrapper">
 
             <!-- Main Scrollable Area -->
             <main
-                class="flex-1 overflow-y-auto overflow-x-hidden w-full {{ ($noPadding ?? false) ? '' : 'px-4 pb-4 pt-16 sm:px-6 sm:pb-6 sm:pt-16 lg:p-8' }} animate-fade-in flex flex-col"
+                class="flex-1 overflow-y-auto overflow-x-hidden w-full {{ ($noPadding ?? false) ? '' : 'px-4 pb-4 pt-16 sm:px-6 sm:pb-6 sm:pt-16 lg:p-8' }} animate-fade-in flex flex-col bg-white"
                 id="main-content">
                 <!-- Page Heading -->
                 @isset($header)

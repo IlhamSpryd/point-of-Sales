@@ -18,43 +18,65 @@
 
 </head>
 
-<body class="font-sans antialiased text-apeiron-ink bg-[#F7F7F5]">
+<body class="font-sans antialiased text-apeiron-ink bg-white min-h-screen overflow-x-hidden selection:bg-zinc-900 selection:text-white">
 
-    <div id="swup" class="transition-fade min-h-screen grid lg:grid-cols-2 w-full">
-        <!-- KIRI: KONTEN SLOT -->
-        <div class="flex flex-col items-center justify-center p-6 sm:p-10 w-full relative bg-white">
-            <div class="w-full max-w-md">
+    <div id="swup" class="transition-fade min-h-screen grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 w-full bg-white overflow-x-hidden">
+        <!-- KIRI: KONTEN UTAMA (7 cols di lg, 1 col di md, single col di mobile) -->
+        <div class="md:col-span-1 lg:col-span-7 flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-16 w-full relative bg-white min-h-screen">
+            <div>
+                <!-- Brand Wordmark & Logo -->
+                <div class="mb-6 sm:mb-8 w-full max-w-sm mx-auto md:mx-0" style="max-width: 384px;">
+                    <a href="/" class="inline-flex items-center gap-2.5 select-none transition-opacity hover:opacity-85">
+                        <img src="{{ asset('assets/images/logo.png') }}" alt="Apeiron System Logo" class="h-9 sm:h-10 w-auto object-contain">
+                        <span class="text-base sm:text-lg font-bold tracking-tight text-zinc-950 font-brand">Apeiron System</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Form Content Mount (Strictly clamped to max-w-sm to prevent horizontal stretching) -->
+            <div class="my-auto py-4 sm:py-6 w-full max-w-sm mx-auto" style="max-width: 384px;">
                 @hasSection('content')
                     @yield('content')
                 @else
                     {{ $slot ?? '' }}
                 @endif
             </div>
+
+            <!-- Footer Bar -->
+            <div class="w-full max-w-sm mx-auto md:max-w-none flex items-center justify-between text-xs text-zinc-400 pt-8 mt-auto border-t border-zinc-100" style="max-width: 384px;">
+                <span>© {{ date('Y') }} Apeiron Systems</span>
+                <div class="flex items-center gap-4">
+                    <a href="#privacy" onclick="event.preventDefault()" class="hover:text-zinc-600 transition-colors">Privacy</a>
+                    <a href="#terms" onclick="event.preventDefault()" class="hover:text-zinc-600 transition-colors">Terms</a>
+                </div>
+            </div>
         </div>
 
-        <!-- KANAN: PANEL VISUAL -->
+        <!-- KANAN: EDITORIAL BRAND PANEL (5 cols di lg, 1 col di md, disembunyikan di mobile < 768px) -->
         @hasSection('panel')
             @yield('panel')
         @else
-            <div class="hidden lg:flex flex-col justify-between p-12 text-white bg-cover bg-center relative overflow-hidden bg-apeiron-ink"
-                style="background-image: url('{{ asset('assets/images/auth/panelKananLogin.avif') }}');">
-                <div class="absolute inset-0 bg-apeiron-ink/70 mix-blend-multiply"></div>
-                <div class="absolute inset-0 bg-gradient-to-t from-[#37352F]/90 via-transparent to-transparent"></div>
-                <div class="relative z-10 mt-auto">
-                    <div class="mb-8 min-h-40">
-                        <p class="text-2xl font-medium tracking-tight text-white/90 leading-snug mb-5 max-w-lg">
-                            Selamat Datang di <br /> Apeiron System.
-                        </p>
-                        <div class="flex items-center gap-3">
-                            <div class="h-10 w-10 rounded-xl bg-white flex items-center justify-center border border-white/40 shadow-sm overflow-hidden p-1.5">
-                                <img src="{{ asset('assets/images/logo.png') }}" alt="Apeiron System Logo" class="h-full w-full object-contain">
-                            </div>
-                            <div>
-                                <p class="text-sm font-semibold text-white">Apeiron POS</p>
-                                <p class="text-xs text-white/50 mt-0.5">Operating System for F&amp;B</p>
-                            </div>
-                        </div>
-                    </div>
+            <div class="hidden md:flex md:col-span-1 lg:col-span-5 editorial-surface text-white p-8 sm:p-10 lg:p-12 xl:p-14 flex-col justify-between select-none relative overflow-hidden bg-[#0A0A0B] min-h-screen" id="anim-panel-right" aria-hidden="true">
+                <div class="absolute inset-0 bg-cover bg-center opacity-20 mix-blend-luminosity pointer-events-none"
+                    style="background-image: url('{{ asset('assets/images/auth/panelKananLogin.avif') }}');"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-[#0A0A0B] via-[#0A0A0B]/60 to-transparent pointer-events-none"></div>
+
+                <div class="relative z-10 text-xs text-zinc-400 font-medium tracking-wide">
+                    Apeiron Systems
+                </div>
+
+                <div class="relative z-10 my-auto max-w-sm space-y-4">
+                    <p class="text-[19px] lg:text-[21px] font-normal tracking-tight text-zinc-100 leading-[1.45]">
+                        Point of sale, inventory ledger, and shift reconciliation built for multi-branch hospitality.
+                    </p>
+                    <p class="text-xs text-zinc-400 leading-relaxed">
+                        Every order, stock movement, and cash drawer event is recorded with strict branch isolation.
+                    </p>
+                </div>
+
+                <div class="relative z-10 flex items-center justify-between text-xs text-zinc-400 pt-6 border-t border-zinc-900">
+                    <span>Enterprise Point of Sale</span>
+                    <span>© {{ date('Y') }}</span>
                 </div>
             </div>
         @endif

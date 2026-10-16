@@ -98,7 +98,7 @@
             <div class="fixed inset-x-0 bottom-0 z-30 mx-auto max-w-md bg-white/90 backdrop-blur-xl border-t border-apeiron-border sm:border-x">
                 <div class="px-4 pt-4 pb-safe">
                     <button type="submit" :disabled="submitting"
-                            class="w-full flex items-center justify-between rounded-2xl bg-apeiron-ink text-white px-5 min-h-14 font-semibold shadow-lg hover:bg-apeiron-ink active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2">
+                            class="w-full flex items-center justify-between rounded-2xl bg-apeiron-ink text-white px-5 min-h-14 font-semibold shadow-lg hover:bg-[#111111] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2">
                         <span class="flex items-center gap-2 text-[15px]">
                             <span x-show="submitting" x-cloak class="spinner" aria-hidden="true"></span>
                             <span x-text="submitting ? 'Memproses…' : 'Bayar Sekarang'"></span>

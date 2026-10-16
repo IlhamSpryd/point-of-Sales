@@ -64,9 +64,9 @@
                 </div>
 
                 <div class="pt-4 border-t border-[#E9E9E7] flex justify-end">
-                    <button type="submit" class="bg-apeiron-ink text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-sm hover:-translate-y-0.5 transition-transform">
-                        Simpan Perubahan
-                    </button>
+                    <x-button type="submit" variant="primary">
+                        <span class="material-symbols-rounded text-[18px]">save</span> Simpan Perubahan
+                    </x-button>
                 </div>
             </form>
         </div>

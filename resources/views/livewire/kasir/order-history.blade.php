@@ -418,7 +418,7 @@
                     @if (in_array($detail->order_status->value, ['paid', 'completed'], true))
                         <a href="{{ route('transaction.receipt', $detail->order_code) }}" target="_blank"
                             rel="noopener"
-                            class="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl bg-apeiron-ink text-white text-sm font-bold hover:bg-apeiron-ink transition-all duration-200 active:scale-95 shadow-sm">
+                            class="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl bg-apeiron-ink text-white text-sm font-bold hover:bg-[#111111] transition-all duration-200 active:scale-95 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2">
                             <span class="material-symbols-rounded text-[18px]">print</span> Cetak Ulang Struk
                         </a>
                     @endif

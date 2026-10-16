@@ -1,9 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
 @import 'tailwindcss';
 
+@source '../views';
+@source '../**/*.blade.php';
+@source '../../storage/framework/views';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../../resources/views/**/*.blade.php';
 
 /* ═══════════════════════════════════════════════════════
    THEME — Tailwind v4 CSS-first configuration
@@ -40,8 +41,8 @@
     --color-primary-950: #141413;
 
     /* ── Apeiron Brand Tokens ── */
-    --color-apeiron-bg:  #F7F7F5;
-    --color-apeiron-ink: #37352F;
+    --color-apeiron-bg:  #ffffff;
+    --color-apeiron-ink: #202020;
     --color-apeiron-muted: #787774;           /* decorative: borders, placeholders */
     --color-apeiron-muted-700: #6B6A66;       /* WCAG AA text-small ≈5.1:1 on white */
     --color-apeiron-border: #E9E9E7;
@@ -78,13 +79,13 @@
     --breakpoint-4xl: 2560px;
 
     /* ── Apeiron Brand Tokens (in @theme for Tailwind v4 utility generation) ── */
-    --color-apeiron-bg:        #F7F7F5;
-    --color-apeiron-ink:       #37352F;
+    --color-apeiron-bg:        #ffffff;
+    --color-apeiron-ink:       #202020;
     --color-apeiron-muted:     #787774;    /* decorative use only */
     --color-apeiron-muted-700: #6B6A66;   /* WCAG AA ≈5.1:1 — use for small/body text */
     --color-apeiron-border:    #E9E9E7;
     --color-apeiron-surface:   #F1F1EF;
-    --color-apeiron-sidebar:   #F9F9F9;
+    --color-apeiron-sidebar:   #ffffff;
     --color-table-header-bg: #F7F7F5;
 }
 
@@ -564,7 +565,7 @@ option {
 
 /* Base class untuk Layout POS (PC/Tablet) - Mengunci layar 100% dan menghilangkan scroll halaman utama */
 .pos-layout-locked {
-    @apply h-screen w-screen overflow-hidden bg-[#F7F7F5];
+    @apply h-screen w-screen overflow-hidden bg-white;
     overscroll-behavior: none;
     touch-action: manipulation;
     -webkit-user-select: none;
@@ -712,6 +713,36 @@ option {
     }
     .dash-list-item:hover {
         background-color: #F9F9F9;
+    }
+
+    /* Crisp, restrained editorial input transitions */
+    .field-input {
+        transition: border-color 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+    }
+    .field-input:hover:not(:disabled):not([readonly]) {
+        border-color: #A1A1AA;
+    }
+    .field-input:focus {
+        outline: none;
+        border-color: #09090B;
+        box-shadow: 0 0 0 1px #09090B;
+    }
+    .field-input-focused {
+        border-color: #09090B !important;
+        box-shadow: 0 0 0 1px #09090B !important;
+    }
+    .field-input-error {
+        border-color: #DC2626 !important;
+    }
+    .field-input-error:focus {
+        border-color: #DC2626 !important;
+        box-shadow: 0 0 0 1px #DC2626 !important;
+    }
+
+    /* Subtle editorial lighting for the right-hand brand panel */
+    .editorial-surface {
+        background-color: #0A0A0B;
+        background-image: radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.04) 0%, transparent 55%);
     }
 }
 

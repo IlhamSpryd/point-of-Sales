@@ -1,25 +1,61 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-zinc-500">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
+    @section('title', 'Lupa Kata Sandi — Apeiron POS')
+
+    <div class="mb-8">
+        <h1 class="text-2xl font-medium tracking-tight text-zinc-950">
+            {{ __('Lupa Kata Sandi') }}
+        </h1>
+        <p class="text-sm text-zinc-500 mt-1.5 leading-relaxed">
+            {{ __('Masukkan alamat email akun Anda. Kami akan mengirimkan tautan untuk mengatur ulang kata sandi.') }}
+        </p>
     </div>
 
     <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    @if (session('status'))
+        <div role="status" aria-live="polite" class="mb-6 pb-4 border-b border-emerald-200 text-xs text-emerald-700 leading-relaxed">
+            {{ session('status') }}
+        </div>
+    @endif
 
-    <form method="POST" action="{{ route('password.email') }}">
+    @if ($errors->any())
+        <div role="alert" aria-live="assertive" class="mb-6 pb-4 border-b border-red-200 text-xs text-red-600 leading-relaxed">
+            {{ $errors->first('email') ?: $errors->first() }}
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('password.email') }}" class="space-y-4">
         @csrf
 
         <!-- Email Address -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <label for="email" class="block text-[13px] font-medium text-zinc-800 mb-1.5">
+                {{ __('Alamat Email') }}
+            </label>
+            <input
+                id="email"
+                type="email"
+                name="email"
+                value="{{ old('email') }}"
+                placeholder="name@company.com"
+                required
+                autofocus
+                class="field-input w-full h-10 px-3 rounded-md border border-zinc-300 bg-white text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all {{ $errors->has('email') ? 'field-input-error' : '' }}"
+            />
         </div>
 
-        <div class="flex items-center justify-end mt-4">
-            <x-button variant="primary">
-                {{ __('Email Password Reset Link') }}
-            </x-button>
+        <div class="pt-2">
+            <button
+                type="submit"
+                class="w-full h-10 px-4 rounded-md font-medium transition-colors flex items-center justify-center gap-2 bg-apeiron-ink hover:bg-[#111111] text-white text-sm cursor-pointer shadow-xs active:scale-[0.99]"
+            >
+                {{ __('Kirim Tautan Reset Kata Sandi') }}
+            </button>
         </div>
     </form>
+
+    <div class="mt-8 pt-6 border-t border-zinc-100 text-xs text-zinc-500 leading-relaxed">
+        <a href="{{ route('login') }}" class="text-zinc-950 font-medium hover:underline underline-offset-4">
+            ← {{ __('Kembali ke halaman masuk') }}
+        </a>
+    </div>
 </x-guest-layout>

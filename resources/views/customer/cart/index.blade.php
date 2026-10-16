@@ -36,7 +36,7 @@
             <h1 class="text-[17px] font-bold">Keranjang masih kosong</h1>
             <p class="text-[14px] text-apeiron-muted mt-1 mb-6">Pilih menu favorit Anda untuk mulai memesan.</p>
             <template x-if="menuUrl">
-                <a :href="menuUrl" class="inline-flex items-center gap-2 rounded-2xl bg-apeiron-ink text-white px-6 min-h-12 font-semibold active:scale-95 hover:bg-apeiron-ink transition-all duration-200">
+                <a :href="menuUrl" class="inline-flex items-center gap-2 rounded-2xl bg-apeiron-ink text-white px-6 min-h-12 font-semibold active:scale-95 hover:bg-[#111111] transition-all duration-200">
                     <span class="material-symbols-rounded text-[20px]">restaurant_menu</span> Lihat Menu
                 </a>
             </template>
@@ -119,7 +119,7 @@
                     <div class="flex justify-between text-apeiron-muted"><dt x-text="'Pajak (' + taxPercent + '%)'"></dt><dd class="tabular-nums" x-text="rupiah(tax)"></dd></div>
                 </dl>
                 <a :href="checkoutUrl" :class="busy ? 'pointer-events-none opacity-60' : ''"
-                   class="flex items-center justify-between w-full rounded-2xl bg-apeiron-ink text-white px-5 min-h-14 font-semibold shadow-lg hover:bg-apeiron-ink active:scale-[0.98] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2">
+                   class="flex items-center justify-between w-full rounded-2xl bg-apeiron-ink text-white px-5 min-h-14 font-semibold shadow-lg hover:bg-[#111111] active:scale-[0.98] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2">
                     <span class="text-[15px]">Lanjut ke Pembayaran</span>
                     <span class="tabular-nums text-[15px]" x-text="rupiah(total)"></span>
                 </a>

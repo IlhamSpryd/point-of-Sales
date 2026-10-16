@@ -31,7 +31,7 @@
     class="flex flex-col h-[calc(100vh-64px)] lg:h-screen overflow-hidden min-h-0 bg-white">
 
     <!-- Struktur Utama: Layout Kiri (Produk) & Kanan (Keranjang) -->
-    <div class="flex flex-col lg:flex-row flex-1 w-full overflow-hidden relative min-h-0 bg-gray-50/50">
+    <div class="flex flex-col lg:flex-row flex-1 w-full overflow-hidden relative min-h-0 bg-white">
 
         <!-- PANEL KIRI: Pencarian, Kategori & Daftar Produk -->
         <section
@@ -368,7 +368,7 @@
             </div>
 
             <!-- Area Keranjang List & Kalkulasi dipisah jadi absolute inset-0 -->
-            <div class="relative flex-1 w-full min-h-0 bg-gray-50/50">
+            <div class="relative flex-1 w-full min-h-0 bg-white">
 
                 <div class="absolute inset-0 flex flex-col">
                     <!-- AREA PRODUK YANG DI-SCROLL -->
@@ -520,7 +520,7 @@
                             <div class="flex gap-2 mt-1.5">
                                 <button type="button"
                                     x-on:click="$wire.set('cashReceived', {{ (int) $this->totalAmount }})"
-                                    class="flex-1 h-9 text-xs font-bold rounded-lg bg-apeiron-ink text-white hover:bg-apeiron-ink transition-all active:scale-95 shadow-sm">
+                                    class="flex-1 h-9 text-xs font-bold rounded-lg bg-apeiron-ink text-white hover:bg-[#111111] transition-all active:scale-95 shadow-sm">
                                     Tunai Pas
                                 </button>
                                 <button type="button"
@@ -551,7 +551,7 @@
 
                             <button wire:click="submitOrder" id="btn-bayar"
                                 wire:loading.attr="disabled" wire:target="submitOrder"
-                                class="w-full h-12 bg-apeiron-ink hover:bg-apeiron-ink text-white rounded-xl font-black text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                class="w-full h-12 bg-apeiron-ink hover:bg-[#111111] text-white rounded-xl font-bold text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2"
                                 @disabled(count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId))>
                                 <span wire:loading wire:target="submitOrder" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
                                 <span wire:loading.remove wire:target="submitOrder">Bayar Sekarang</span>
@@ -566,7 +566,7 @@
                             @enderror
 
                             <button type="button" id="btn-proses-bayar"
-                                class="w-full h-12 bg-apeiron-ink hover:bg-apeiron-ink text-white rounded-xl font-black text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                class="w-full h-12 bg-apeiron-ink hover:bg-[#111111] text-white rounded-xl font-bold text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2"
                                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }} }); $dispatch('open-modal', 'checkout-payment')"
                                 @disabled(count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId))>
                                 Proses Pembayaran
@@ -689,7 +689,7 @@
                         </button>
                     </div>
                     <button wire:click="confirmAddToCart"
-                        class="flex-1 min-h-[52px] bg-apeiron-ink hover:bg-[#2A2823] text-white rounded-2xl font-black text-[15px] shadow-lg shadow-apeiron-ink/20 transition-all duration-200 active:scale-[0.98]">
+                        class="flex-1 min-h-[52px] bg-apeiron-ink hover:bg-[#111111] text-white rounded-2xl font-bold text-[15px] shadow-lg shadow-apeiron-ink/20 transition-all duration-200 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink">
                         Tambahkan
                     </button>
                 </div>
@@ -825,7 +825,7 @@
 
                     <div class="flex gap-2.5">
                         <button type="button" x-on:click="fillRemaining()"
-                            class="flex-1 min-h-[48px] text-[13px] font-black rounded-xl bg-apeiron-ink text-white hover:bg-apeiron-ink shadow-md shadow-apeiron-ink/20 transition-all duration-200 active:scale-95">PAS</button>
+                            class="flex-1 min-h-[48px] text-[13px] font-black rounded-xl bg-apeiron-ink text-white hover:bg-[#111111] shadow-md shadow-apeiron-ink/20 transition-all duration-200 active:scale-95">PAS</button>
                         <template x-if="method === 'cash'">
                             <button type="button" x-on:click="addQuick(50000)"
                                 class="flex-1 min-h-[48px] text-[13px] font-bold rounded-xl bg-white text-gray-700 hover:bg-gray-50 border border-gray-200 shadow-sm transition-all duration-200 active:scale-95">+50K</button>
@@ -858,7 +858,7 @@
             <div class="p-6 border-t border-gray-200 bg-white shrink-0 rounded-b-3xl">
                 <button type="button" x-on:click="submit()"
                     :disabled="remaining > 0 || legs.length === 0 || submitting"
-                    class="w-full min-h-[64px] rounded-2xl bg-apeiron-ink hover:bg-apeiron-ink text-white font-black text-lg shadow-xl shadow-apeiron-ink/20 transition-all duration-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    class="w-full min-h-[64px] rounded-2xl bg-apeiron-ink hover:bg-[#111111] text-white font-black text-lg shadow-xl shadow-apeiron-ink/20 transition-all duration-300 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                     <span x-show="submitting"
                         class="h-5 w-5 animate-spin rounded-full border-2 border-white/30 border-t-white"
                         aria-hidden="true"></span>
