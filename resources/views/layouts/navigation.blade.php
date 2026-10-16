@@ -42,7 +42,7 @@
         sidebarMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
         wide ? 'w-72 lg:w-64' : 'w-18'
     ]"
-    class="fixed lg:relative z-40 h-full flex flex-col bg-white/80 backdrop-blur-xl border-r border-[#E9E9E7] text-apeiron-ink select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+    class="fixed lg:relative z-40 h-full flex flex-col bg-[#F9F9F9] border-r border-[#E9E9E7] text-apeiron-ink select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
 
     {{-- Logo + tombol lipat --}}
     <div class="h-15 flex items-center shrink-0 px-4 gap-3" :class="wide ? 'justify-between' : 'justify-center'">
@@ -89,9 +89,9 @@
     <nav class="flex-1 py-3 overflow-y-auto overflow-x-hidden scrollbar-hide" :class="wide ? 'px-3' : 'px-2'"
         aria-label="Navigasi utama">
         @foreach ($visibleMenu as $section => $items)
-            <div class="{{ $loop->first ? '' : 'mt-5' }}">
+            <div class="{{ $loop->first ? '' : 'mt-4' }}">
                 <p x-show="wide"
-                    class="px-3 pb-1.5 text-[10px] font-bold text-[#9B9A97] uppercase tracking-[0.08em] whitespace-nowrap">
+                    class="px-3 pb-1 text-[11px] font-semibold text-[#6B6A66] tracking-[0.02em] whitespace-nowrap">
                     {{ $section }}</p>
                 @unless ($loop->first)
                     <div x-show="!wide" x-cloak class="mx-3 mb-2 border-t border-[#E9E9E7]"></div>
@@ -103,31 +103,27 @@
                             $routeExists = \Illuminate\Support\Facades\Route::has($item['route']);
                             $isActive = $routeExists && request()->routeIs($item['active']);
                             $rowBase =
-                                'group relative flex items-center rounded-xl text-[13px] font-medium whitespace-nowrap min-h-[44px] transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#37352F]';
+                                'group relative flex items-center rounded-[10px] text-[13px] whitespace-nowrap min-h-[40px] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#37352F]';
                         @endphp
                         <li>
                             @if ($routeExists)
                                 <a href="{{ route($item['route']) }}" wire:navigate
                                     @if ($isActive) aria-current="page" @endif
-                                    title="{{ $item['label'] }}" :class="wide ? 'px-3' : 'justify-center px-0'"
-                                    class="{{ $rowBase }} {{ $isActive ? 'bg-[#F1F1EF] text-apeiron-ink' : 'text-[#787774] hover:text-apeiron-ink hover:bg-[#F7F7F5] active:scale-[0.98]' }}">
-                                    @if ($isActive)
-                                        <span
-                                            class="absolute left-0 top-1/2 -translate-y-1/2 w-0.75 h-5 bg-apeiron-ink rounded-r-full"></span>
-                                    @endif
+                                    title="{{ $item['label'] }}" :class="wide ? 'px-2.5' : 'justify-center px-0'"
+                                    class="{{ $rowBase }} {{ $isActive ? 'bg-[#ECECEA] text-[#202020] font-semibold' : 'text-[#55544E] hover:text-[#202020] hover:bg-[#F1F1EF]' }}">
                                     <span
-                                        class="material-symbols-rounded text-[20px] shrink-0 w-5 text-center">{{ $item['icon'] }}</span>
-                                    <span :class="wide ? 'opacity-100 ml-3' : 'opacity-0 w-0 ml-0'"
-                                        class="overflow-hidden transition-all duration-200">{{ $item['label'] }}</span>
+                                        class="material-symbols-rounded text-[18px] shrink-0 w-5 text-center {{ $isActive ? 'text-[#202020]' : 'text-[#787774] group-hover:text-[#202020]' }}">{{ $item['icon'] }}</span>
+                                    <span :class="wide ? 'opacity-100 ml-2.5' : 'opacity-0 w-0 ml-0'"
+                                        class="overflow-hidden transition-all duration-150">{{ $item['label'] }}</span>
                                 </a>
                             @else
                                 <div aria-disabled="true" title="{{ $item['label'] }} — segera hadir"
-                                    :class="wide ? 'px-3' : 'justify-center px-0'"
+                                    :class="wide ? 'px-2.5' : 'justify-center px-0'"
                                     class="{{ $rowBase }} text-[#C4C3C0] cursor-not-allowed">
                                     <span
-                                        class="material-symbols-rounded text-[20px] shrink-0 w-5 text-center">{{ $item['icon'] }}</span>
-                                    <span :class="wide ? 'opacity-100 ml-3' : 'opacity-0 w-0 ml-0'"
-                                        class="overflow-hidden transition-all duration-200">{{ $item['label'] }}</span>
+                                        class="material-symbols-rounded text-[18px] shrink-0 w-5 text-center text-[#C4C3C0]">{{ $item['icon'] }}</span>
+                                    <span :class="wide ? 'opacity-100 ml-2.5' : 'opacity-0 w-0 ml-0'"
+                                        class="overflow-hidden transition-all duration-150">{{ $item['label'] }}</span>
                                     <span x-show="wide"
                                         class="ml-auto text-[9px] font-bold uppercase tracking-wider text-[#9B9A97] bg-[#F1F1EF] border border-[#E9E9E7] rounded-md px-1.5 py-0.5">Segera</span>
                                 </div>
@@ -142,20 +138,20 @@
     {{-- Profil + popover --}}
     <div class="shrink-0 mt-auto relative border-t border-[#E9E9E7]" :class="wide ? 'p-3' : 'p-2'">
         <button type="button" @click="openPopover = !openPopover" :aria-expanded="openPopover.toString()"
-            class="w-full flex items-center rounded-xl transition-all duration-200 whitespace-nowrap min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]"
-            :class="[wide ? 'p-2 hover:bg-[#F7F7F5]' : 'p-1.5 justify-center hover:bg-[#F7F7F5]', openPopover ? 'bg-[#F7F7F5]' :
+            class="w-full flex items-center rounded-xl transition-all duration-150 whitespace-nowrap min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]"
+            :class="[wide ? 'p-2 hover:bg-[#F1F1EF]' : 'p-1.5 justify-center hover:bg-[#F1F1EF]', openPopover ? 'bg-[#F1F1EF]' :
                 ''
             ]"
             title="{{ auth()->user()->name ?? 'Profil' }}">
             <div
-                class="w-8 h-8 rounded-lg bg-[#F1F1EF] text-apeiron-ink border border-[#E9E9E7] flex items-center justify-center font-semibold text-[13px] shrink-0">
+                class="w-7 h-7 rounded-full bg-[#F1F1EF] text-apeiron-ink border border-[#E9E9E7] flex items-center justify-center font-semibold text-[12px] shrink-0">
                 {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
             </div>
-            <div :class="wide ? 'opacity-100 ml-3 flex-1 text-left' : 'opacity-0 w-0 ml-0 hidden'"
-                class="overflow-hidden transition-all duration-200">
-                <p class="text-[13px] font-semibold truncate leading-tight">{{ auth()->user()->name ?? 'Pengguna' }}
+            <div :class="wide ? 'opacity-100 ml-2.5 flex-1 text-left' : 'opacity-0 w-0 ml-0 hidden'"
+                class="overflow-hidden transition-all duration-150">
+                <p class="text-[13px] font-semibold text-[#202020] truncate leading-tight">{{ auth()->user()->name ?? 'Pengguna' }}
                 </p>
-                <p class="text-[11px] text-[#787774] truncate leading-tight mt-0.5">{{ $roleName ?? 'Tanpa peran' }}
+                <p class="text-[11px] text-[#6B6A66] truncate leading-tight mt-0.5">{{ $roleName ?? 'Tanpa peran' }}
                 </p>
             </div>
             <span x-show="wide"

@@ -1,634 +1,301 @@
-<x-app-layout>
-    <!-- PAGE HEADER -->
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-apeiron-ink tracking-tight">Dashboard</h1>
-            <p class="text-sm font-medium text-[#787774] mt-1">Cara mudah mengelola penjualan dengan teliti dan presisi.</p>
-        </div>
-        <div class="flex items-center gap-3">
-            <x-branch-switcher />
-            <div
-                class="hidden sm:flex items-center gap-2 px-4 py-2.5 bg-white border border-[#E9E9E7] text-[#787774] text-sm font-medium rounded-xl shadow-sm">
-                <span class="material-symbols-rounded text-[18px]">calendar_today</span>
-                <span>{{ now()->subDays(6)->format('F d, Y') }} — {{ now()->format('F d, Y') }}</span>
+<x-app-layout :noPadding="true">
+    <div class="w-full min-h-full bg-white flex flex-col flex-1">
+        {{-- TOP BAR --}}
+        <header class="h-14 border-b border-[#E9E9E7] flex items-center justify-between px-6 sm:px-8 lg:px-12 shrink-0 bg-white sticky top-0 z-20">
+            <div class="flex items-center gap-3">
+                {{-- Mobile Drawer Trigger (disembunyikan di desktop) --}}
+                <button type="button" @click="sidebarMobileOpen = true" aria-label="Buka menu"
+                    class="lg:hidden w-9 h-9 flex flex-col justify-center gap-1 items-center rounded-lg hover:bg-[#F1F1EF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
+                    <i class="block w-4 h-0.5 bg-[#37352F] rounded-full"></i>
+                    <i class="block w-4 h-0.5 bg-[#37352F] rounded-full"></i>
+                    <i class="block w-4 h-0.5 bg-[#37352F] rounded-full"></i>
+                </button>
+                <span class="font-semibold text-sm text-[#202020]">Dashboard</span>
             </div>
-        </div>
-    </div>
 
-    <!-- STAT CARDS ROW -->
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-6">
-        <!-- 1. Promo Card -->
-        <div
-            class="bg-apeiron-ink rounded-2xl p-6 text-white relative overflow-hidden flex flex-col shadow-md min-h-40 group">
-            <div class="relative z-10 flex-1">
-                <span
-                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/10 border border-white/20 text-[11px] font-bold tracking-wider uppercase text-white/90 mb-4 backdrop-blur-sm">
-                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> Pembaruan
-                </span>
-                <p class="text-white/50 text-xs font-medium mb-1">{{ now()->format('M dS Y') }}</p>
-                <h3 class="text-xl font-bold leading-snug pr-8 text-white/95">Pendapatan penjualan meningkat dalam 1
-                    minggu</h3>
-            </div>
-            <div class="relative z-10 mt-6">
-                <a href="#"
-                    class="text-white/80 text-sm font-bold hover:text-white transition-colors flex items-center gap-1.5 group w-max">
-                    Lihat Statistik
-                    <span
-                        class="material-symbols-rounded text-[16px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
-                </a>
-            </div>
-            <!-- Geometric Decoration -->
-            <div class="absolute -right-4 -bottom-4 opacity-[0.08]">
-                <span
-                    class="material-symbols-rounded text-[140px] text-white group-hover:rotate-12 transition-transform duration-700">coffee</span>
-            </div>
-        </div>
-
-        <!-- 2. Net Income -->
-        <div class="card-surface p-6 flex flex-col relative min-h-40 overflow-hidden">
-            <div class="flex justify-between items-start mb-3 relative z-10">
-                <h3 class="text-xs font-semibold text-[#787774] mb-1 tracking-tight">Total Pendapatan</h3>
-                <span class="w-9 h-9 rounded-xl bg-emerald-50 flex items-center justify-center">
-                    <span class="material-symbols-rounded text-[18px] text-emerald-600">trending_up</span>
+            <div class="flex items-center gap-3">
+                {{-- Date Range Pill --}}
+                <span class="inline-flex items-center font-medium text-xs text-[#6B6A66] border border-[#E9E9E7] rounded-full px-3 py-1.5 bg-white shadow-2xs">
+                    {{ $dateRangeLabel ?? '7 hari terakhir' }}
                 </span>
             </div>
-            <h3 class="text-[28px] font-extrabold text-apeiron-ink mb-2 tracking-tight relative z-10">Rp
-                {{ number_format($totalEarnings, 0, ',', '.') }}</h3>
-            <span class="inline-flex items-center text-xs font-bold text-emerald-600 gap-1 relative z-10">
-                <span class="material-symbols-rounded text-[14px]">north_east</span> Akumulasi seluruh waktu
-            </span>
-            <div class="absolute bottom-0 left-0 w-full h-15 opacity-100">
-                <div id="income-sparkline"></div>
+        </header>
+
+        {{-- MAIN CONTENT CONTAINER (FULL WIDTH) --}}
+        <div class="w-full py-6 px-6 sm:px-8 lg:px-12 flex flex-col gap-8 lg:gap-11 bg-white flex-1">
+        
+        {{-- GREETING & SUMMARY --}}
+        <header>
+            <h1 class="text-2xl sm:text-[30px] font-semibold text-[#202020] tracking-tight leading-tight">
+                {{ $greeting ?? 'Selamat datang' }}, {{ $firstName ?? ($userName ?? 'Owner') }}
+            </h1>
+            <p class="text-sm sm:text-base text-[#55544E] mt-2.5 max-w-[720px] leading-relaxed">
+                {!! $summaryText !!}
+            </p>
+        </header>
+
+        {{-- PRIMARY KPI: TOTAL PENDAPATAN + 7-DAY REVENUE SVG CHART --}}
+        <section class="flex flex-col">
+            <div class="text-[13px] text-[#6B6A66] font-medium">
+                Total pendapatan · {{ $isAllStores ? 'seluruh cabang' : ($activeStoreName ?? 'Cabang') }}
             </div>
-        </div>
-
-        <!-- 3. Total Orders -->
-        <div class="card-surface p-6 flex flex-col relative min-h-40 overflow-hidden">
-            <div class="flex justify-between items-start mb-3 relative z-10">
-                <span class="text-sm font-semibold text-[#787774]">Total Transaksi</span>
-                <span class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center">
-                    <span class="material-symbols-rounded text-[18px] text-blue-600">receipt_long</span>
-                </span>
+            <div class="text-[32px] sm:text-[42px] font-semibold text-[#37352F] tracking-tight leading-none my-2 font-mono">
+                Rp {{ number_format($totalEarnings, 0, ',', '.') }}
             </div>
-            <h3 class="text-[28px] font-extrabold text-apeiron-ink mb-2 tracking-tight relative z-10">
-                {{ number_format($totalOrders) }}</h3>
-            <span class="inline-flex items-center text-xs font-bold text-emerald-600 gap-1 relative z-10">
-                <span class="material-symbols-rounded text-[14px]">north_east</span> Akumulasi seluruh waktu
-            </span>
-            <div class="absolute bottom-0 left-0 w-full h-15 opacity-100">
-                <div id="return-sparkline"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MAIN GRID -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
-
-        <!-- LEFT AREA -->
-        <div class="lg:col-span-8 flex flex-col gap-6">
-
-            <!-- Revenue Chart Area -->
-            <div class="card-surface px-6 pt-6 pb-2 relative overflow-hidden">
-                <div class="flex flex-wrap justify-between items-start mb-2 gap-4">
-                    <h2 class="text-lg font-bold text-apeiron-ink">Pendapatan</h2>
-                    <div class="flex items-center gap-4 text-sm font-medium">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-apeiron-ink"></span> <span
-                                class="text-[#787774]">Pendapatan</span>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-[#E9E9E7]"></span> <span
-                                class="text-[#787774]">Jumlah Transaksi</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex items-baseline gap-2 mb-4 relative z-10">
-                    <span class="text-[28px] font-extrabold text-apeiron-ink tracking-tight">Rp
-                        {{ number_format($totalEarnings, 0, ',', '.') }}</span>
-                    <div class="text-[11px] font-medium text-[#787774]">Akumulasi seluruh waktu</div>
-                </div>
-                <div id="revenue-chart" class="w-full h-70 -mx-2"></div>
+            <div class="flex items-center gap-2 mb-4">
+                @if($earningsDeltaPercent !== null)
+                    <span class="delta-badge {{ $earningsDeltaPercent < 0 ? 'negative' : '' }}">
+                        {{ $earningsDeltaPercent >= 0 ? '+' : '' }}{{ number_format($earningsDeltaPercent, 1, ',', '.') }}%
+                    </span>
+                    <span class="text-xs text-[#6B6A66]">bulan ini vs bulan lalu</span>
+                @else
+                    <span class="text-xs text-[#6B6A66]">Akumulasi seluruh waktu</span>
+                @endif
             </div>
 
-            <!-- Lower Left Split Grid -->
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-                <!-- Transaction List -->
-                <div class="lg:col-span-12 xl:col-span-7 card-surface p-6 flex flex-col h-full">
-                    <div class="flex justify-between items-center mb-5">
-                        <h2 class="text-lg font-bold text-apeiron-ink">Transaksi</h2>
-                    </div>
-
-                    <div class="flex-1 flex flex-col gap-4">
-                        @forelse($recentOrders->take(4) as $order)
-                            <div
-                                class="flex items-center justify-between group p-3 rounded-xl hover:bg-[#F7F7F5] transition-all duration-200">
-                                <div class="flex items-center gap-3.5">
-                                    <div
-                                        class="w-10 h-10 rounded-xl {{ $order->order_status->value === 'paid' ? 'bg-apeiron-ink text-white' : 'bg-apeiron-surface text-apeiron-ink' }} flex items-center justify-center shrink-0">
-                                        <span class="material-symbols-rounded text-[18px]">
-                                            {{ $order->order_status->value === 'paid' ? 'check_circle' : 'schedule' }}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <h4 class="text-sm font-bold text-apeiron-ink">
-                                            {{ $order->user->name ?? 'Pelanggan Ritel' }}</h4>
-                                        <p class="text-xs font-medium text-[#9B9A97] mt-0.5">
-                                            {{ $order->created_at?->format('F d, Y • h:i A') ?? now()->format('F d, Y') }}
-                                            @if($order->store)
-                                                • <span class="text-[#787774]">{{ $order->store->name }}</span>
-                                            @endif
-                                        </p>
-                                    </div>
-                                </div>
-                                <span
-                                    class="text-sm font-extrabold {{ $order->order_status->value === 'paid' ? 'text-apeiron-ink' : 'text-apeiron-muted' }}">
-                                    {{ $order->order_status->value === 'paid' ? '+' : '' }}Rp
-                                    {{ number_format($order->order_amount, 0, ',', '.') }}
-                                </span>
-                            </div>
-                        @empty
-                            <div class="flex flex-col items-center justify-center py-8">
-                                <div class="w-14 h-14 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
-                                    <span
-                                        class="material-symbols-rounded text-[28px] text-[#C4C3C0]">receipt_long</span>
-                                </div>
-                                <p class="text-sm text-[#9B9A97] font-medium">Belum ada transaksi terbaru.</p>
-                            </div>
-                        @endforelse
-                    </div>
-                </div>
-
-                <!-- Product Overview Progress -->
-                <div class="lg:col-span-12 xl:col-span-5 card-surface p-6 flex flex-col h-full">
-                    <div class="flex justify-between items-center mb-5">
-                        <h2 class="text-lg font-bold text-apeiron-ink">Ringkasan Produk</h2>
-                    </div>
-
-                    <div class="flex-1 flex flex-col gap-5">
-                        <div>
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-xs font-semibold text-[#787774]">Total Produk</span>
-                                <span class="text-xs font-bold text-apeiron-ink">{{ $productsCount }}</span>
-                            </div>
-                            <div class="w-full h-1.5 bg-[#F1F1EF] rounded-full overflow-hidden">
-                                <div class="h-full bg-apeiron-ink rounded-full transition-all duration-700"
-                                    style="width: {{ $productsCount > 0 ? 100 : 0 }}%"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-xs font-semibold text-[#787774]">Peringatan Stok Tipis</span>
-                                <span class="text-xs font-bold text-amber-600">{{ $lowStockCount }}</span>
-                            </div>
-                            <div class="w-full h-1.5 bg-[#F1F1EF] rounded-full overflow-hidden">
-                                <div class="h-full bg-amber-500 rounded-full transition-all duration-700"
-                                    style="width: {{ $lowStockPercent }}%"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-xs font-semibold text-[#787774]">Terjual Bulan Ini</span>
-                                <span
-                                    class="text-xs font-bold text-emerald-600">{{ number_format($soldThisMonth) }}</span>
-                            </div>
-                            <div class="w-full h-1.5 bg-[#F1F1EF] rounded-full overflow-hidden">
-                                <div class="h-full bg-emerald-500 rounded-full transition-all duration-700"
-                                    style="width: 100%"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <div class="flex justify-between items-center mb-2">
-                                <span class="text-xs font-semibold text-[#787774]">Produk Dikembalikan</span>
-                                <span class="text-xs font-bold text-apeiron-ink">{{ $returnedProducts }}</span>
-                            </div>
-                            <div class="w-full h-1.5 bg-[#F1F1EF] rounded-full overflow-hidden">
-                                <div class="h-full bg-rose-400 rounded-full transition-all duration-700"
-                                    style="width: 0%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- RIGHT AREA -->
-        <div class="lg:col-span-4 flex flex-col gap-6">
-            <!-- Payment Methods Chart -->
-            <div class="card-surface p-6 flex flex-col flex-1">
-                <h2 class="text-lg font-bold text-apeiron-ink mb-2">Ringkasan Metode Pembayaran</h2>
-
-                <div class="flex-1 flex items-center justify-center my-4 min-h-55">
-                    <div id="performance-chart" class="w-full max-h-60 flex justify-center"></div>
-                </div>
-
-                <div class="flex justify-between items-center gap-2 mt-auto">
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-[#9B9A97]"></span>
-                        <span class="text-xs font-semibold text-[#787774]">Cash</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-apeiron-ink"></span>
-                        <span class="text-xs font-semibold text-[#787774]">QRIS</span>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                        <span class="text-xs font-semibold text-[#787774]">E-Wallet</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Promo Banner -->
-            <div
-                class="bg-apeiron-ink rounded-2xl p-8 lg:p-10 text-white relative overflow-hidden shadow-md flex flex-col justify-center min-h-[240px] shrink-0 group">
-                <div class="absolute -right-4 -bottom-4 opacity-[0.08]">
-                    <span
-                        class="material-symbols-rounded text-[200px] text-white group-hover:rotate-12 transition-transform duration-700">storefront</span>
-                </div>
-
-                <div class="relative z-10 w-full sm:w-11/12 pr-4">
-                    <h3 class="text-2xl font-extrabold leading-tight text-white mb-3 tracking-tight">Tingkatkan
-                        pengelolaan penjualan Anda ke level berikutnya.</h3>
-                    <p class="text-white/60 text-sm font-medium leading-relaxed mb-8">Cara mudah mengelola penjualan
-                        dengan teliti dan presisi.</p>
-                    <div>
-                        <button
-                            class="bg-white text-apeiron-ink px-6 py-3 rounded-xl text-sm font-bold transition-all duration-200 hover:bg-[#F7F7F5] hover:-translate-y-0.5 active:scale-95 shadow-sm whitespace-nowrap">
-                            Cek pembaruan sekarang
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- AI Predictive Restocking Widget -->
-            <div class="card-surface p-6 flex flex-col h-full" x-data="{
-                forecasts: [],
-                loading: true,
-                init() {
-                    fetch('/api/analytics/restock-forecasts')
-                        .then(res => res.json())
-                        .then(data => {
-                            this.forecasts = data.data.slice(0, 5); // top 5
-                            this.loading = false;
-
-                            if (this.forecasts.length > 0) {
-                                setTimeout(() => {
-                                    const chartData = this.forecasts.map(f => f.projected_days_remaining || 0);
-                                    const chartLabels = this.forecasts.map(f => f.name);
-                                    
-                                    const options = {
-                                        series: [{
-                                            name: 'Sisa Hari',
-                                            data: chartData
-                                        }],
-                                        chart: {
-                                            type: 'bar',
-                                            height: 220,
-                                            toolbar: { show: false },
-                                            fontFamily: 'Plus Jakarta Sans, Inter, sans-serif'
-                                        },
-                                        plotOptions: {
-                                            bar: {
-                                                borderRadius: 4,
-                                                horizontal: true,
-                                                barHeight: '60%'
-                                            }
-                                        },
-                                        colors: ['#37352F'],
-                                        dataLabels: { enabled: false },
-                                        xaxis: { categories: chartLabels },
-                                        grid: {
-                                            borderColor: '#E9E9E7',
-                                            strokeDashArray: 4,
-                                        }
-                                    };
-                                    new ApexCharts(document.querySelector('#restock-forecast-chart'), options).render();
-                                }, 100);
-                            }
-                        })
-                        .catch(err => {
-                            console.error(err);
-                            this.loading = false;
-                        });
-                }
+            {{-- 7-DAY REVENUE CHART (SVG) --}}
+            <div class="mt-4 w-full relative" x-data="{
+                activeIdx: {{ count($chartSvg['desktop_points']) - 1 }},
+                points: {{ json_encode($chartSvg['desktop_points']) }},
+                setActive(idx) { this.activeIdx = idx; }
             }">
-                <div class="flex justify-between items-center mb-5">
-                    <h2 class="text-lg font-bold text-apeiron-ink">Prakiraan Restock AI</h2>
-                    <span class="material-symbols-rounded text-[18px] text-[#9B9A97]">auto_awesome</span>
-                </div>
+                {{-- Desktop SVG Chart --}}
+                <div class="hidden sm:block w-full">
+                    <svg viewBox="0 0 880 230" class="w-full h-auto overflow-visible select-none" role="img" aria-label="Grafik pendapatan harian 7 hari terakhir">
+                        <defs>
+                            <linearGradient id="revenueGradientDesktop" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0" stop-color="#37352F" stop-opacity="0.12"></stop>
+                                <stop offset="1" stop-color="#37352F" stop-opacity="0"></stop>
+                            </linearGradient>
+                        </defs>
 
-                <div x-show="loading" class="flex justify-center items-center py-6">
-                    <svg class="animate-spin h-5 w-5 text-[#9B9A97]" xmlns="http://www.w3.org/2000/svg"
-                        fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                            stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                        </path>
+                        {{-- Grid Lines --}}
+                        @foreach($chartSvg['desktop_grid'] as $g)
+                            <line x1="30" x2="870" y1="{{ $g['y'] }}" y2="{{ $g['y'] }}" stroke="#ECECEA" stroke-dasharray="{{ $loop->first ? '0' : '3 4' }}"></line>
+                            <text x="0" y="{{ $g['y'] + 4 }}" font-size="11" fill="#6B6A66" font-family="'Plus Jakarta Sans', sans-serif">{{ $g['label'] }}</text>
+                        @endforeach
+
+                        {{-- Gradient Area Fill --}}
+                        @if(!empty($chartSvg['desktop_fill']))
+                            <path d="{{ $chartSvg['desktop_fill'] }}" fill="url(#revenueGradientDesktop)"></path>
+                        @endif
+
+                        {{-- Line Stroke --}}
+                        @if(!empty($chartSvg['desktop_path']))
+                            <path d="{{ $chartSvg['desktop_path'] }}" fill="none" stroke="#37352F" stroke-width="2.25" stroke-linecap="round"></path>
+                        @endif
+
+                        {{-- Interactive Hovered Point & Tooltip --}}
+                        <template x-if="points[activeIdx]">
+                            <g>
+                                <circle :cx="points[activeIdx].x" :cy="points[activeIdx].y" r="8" fill="#37352F" fill-opacity=".1" class="transition-all duration-150"></circle>
+                                <circle :cx="points[activeIdx].x" :cy="points[activeIdx].y" r="4" fill="#ffffff" stroke="#37352F" stroke-width="2" class="transition-all duration-150"></circle>
+                                <rect :x="Math.min(766, Math.max(10, points[activeIdx].x - 56))" :y="Math.max(8, points[activeIdx].y - 30)" width="112" height="22" rx="6" fill="#37352F" class="transition-all duration-150"></rect>
+                                <text :x="Math.min(766, Math.max(10, points[activeIdx].x - 56)) + 56" :y="Math.max(8, points[activeIdx].y - 30) + 15" font-size="11" font-weight="600" fill="#ffffff" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif" x-text="points[activeIdx].date + ' · ' + points[activeIdx].formatted" class="transition-all duration-150"></text>
+                            </g>
+                        </template>
+
+                        {{-- X-Axis Date Labels & Hover Hit-boxes --}}
+                        @foreach($chartSvg['desktop_points'] as $idx => $p)
+                            <text x="{{ $p['x'] }}" y="224" font-size="11" fill="#6B6A66" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif">{{ $p['date'] }}</text>
+                            <rect x="{{ $p['x'] - 70 }}" y="0" width="140" height="230" fill="transparent" class="cursor-pointer" @mouseenter="setActive({{ $idx }})"></rect>
+                        @endforeach
                     </svg>
                 </div>
 
-                <div x-show="!loading && forecasts.length === 0" class="text-xs text-[#787774] text-center py-4">
-                    Belum ada data prediksi stok.
-                </div>
+                {{-- Mobile SVG Chart (< 640px) --}}
+                <div class="sm:hidden w-full">
+                    <svg viewBox="0 0 358 150" class="w-full h-auto overflow-visible select-none" role="img" aria-label="Grafik pendapatan harian mobile">
+                        {{-- Mobile Grid Lines --}}
+                        @foreach($chartSvg['mobile_grid'] as $g)
+                            <line x1="34" x2="350" y1="{{ $g['y'] }}" y2="{{ $g['y'] }}" stroke="#E9E9E7" stroke-width="1"></line>
+                            <text x="0" y="{{ $g['y'] + 4 }}" font-size="11" fill="#6B6A66" font-family="'Plus Jakarta Sans', sans-serif">{{ $g['label'] }}</text>
+                        @endforeach
 
-                <div x-show="!loading && forecasts.length > 0" class="flex flex-col gap-4">
-                    <!-- Bagian Bagan / Chart -->
-                    <div id="restock-forecast-chart" class="w-full mb-2"></div>
-                    <template x-for="item in forecasts" :key="item.ingredient_id">
-                        <div
-                            class="flex items-center justify-between border-b border-[#F1F1EF] pb-3 last:border-0 last:pb-0">
-                            <div>
-                                <h4 class="text-sm font-bold text-apeiron-ink" x-text="item.name"></h4>
-                                <div class="flex items-center gap-2 mt-0.5">
-                                    <span class="text-[11px] text-[#787774]">Sisa: <strong class="text-apeiron-ink"
-                                            x-text="item.projected_days_remaining ? item.projected_days_remaining + ' hari' : '-'"></strong></span>
-                                </div>
-                            </div>
-                            <div class="flex flex-col items-end gap-1">
-                                <span x-show="item.trend === 'falling'"
-                                    class="bg-rose-50 text-rose-700 border border-rose-200 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wide uppercase leading-none">Turun</span>
-                                <span x-show="item.trend === 'rising'"
-                                    class="bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wide uppercase leading-none">Naik</span>
-                                <span x-show="item.trend === 'stable'"
-                                    class="bg-[#F1F1EF] text-[#787774] border border-[#E9E9E7] rounded-full px-2.5 py-0.5 text-[10px] font-bold tracking-wide uppercase leading-none">Stabil</span>
-                            </div>
-                        </div>
-                    </template>
+                        {{-- Mobile Polygon Fill --}}
+                        @if(!empty($chartSvg['mobile_polygon']))
+                            <polygon points="{{ $chartSvg['mobile_polygon'] }}" fill="#F1F1EF"></polygon>
+                        @endif
+
+                        {{-- Mobile Polyline Stroke --}}
+                        @if(!empty($chartSvg['mobile_polyline']))
+                            <polyline points="{{ $chartSvg['mobile_polyline'] }}" fill="none" stroke="#37352F" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></polyline>
+                        @endif
+
+                        {{-- Active Point Marker --}}
+                        @if(!empty($chartSvg['mobile_points']))
+                            @php $lastMobile = end($chartSvg['mobile_points']); @endphp
+                            <circle cx="{{ $lastMobile['x'] }}" cy="{{ $lastMobile['y'] }}" r="3.5" fill="#37352F"></circle>
+                        @endif
+
+                        {{-- Mobile X-Axis Labels --}}
+                        @foreach($chartSvg['mobile_points'] as $p)
+                            <text x="{{ $p['x'] }}" y="145" font-size="11" fill="#6B6A66" text-anchor="middle" font-family="'Plus Jakarta Sans', sans-serif">{{ $p['date'] }}</text>
+                        @endforeach
+                    </svg>
                 </div>
             </div>
+        </section>
+
+        {{-- 3 SECONDARY KPI CARDS --}}
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-6 sm:gap-10 border-t border-[#ECECEA] pt-4">
+            {{-- 1. Total Transaksi --}}
+            <div>
+                <div class="text-[13px] text-[#6B6A66]">Total transaksi</div>
+                <div class="text-2xl sm:text-[24px] font-semibold text-[#37352F] tracking-tight my-1">
+                    {{ number_format($totalOrders, 0, ',', '.') }}
+                </div>
+                <div>
+                    @if($ordersDeltaPercent !== null)
+                        <span class="delta-badge {{ $ordersDeltaPercent < 0 ? 'negative' : '' }}">
+                            {{ $ordersDeltaPercent >= 0 ? '+' : '' }}{{ number_format($ordersDeltaPercent, 1, ',', '.') }}%
+                        </span>
+                        <span class="text-xs text-[#6B6A66]">vs bulan lalu</span>
+                    @else
+                        <span class="text-xs text-[#6B6A66]">Akumulasi seluruh waktu</span>
+                    @endif
+                </div>
+            </div>
+
+            {{-- 2. Terjual Bulan Ini --}}
+            <div>
+                <div class="text-[13px] text-[#6B6A66]">Terjual bulan ini</div>
+                <div class="text-2xl sm:text-[24px] font-semibold text-[#37352F] tracking-tight my-1">
+                    {{ number_format($soldThisMonth, 0, ',', '.') }}
+                </div>
+                <div class="text-[13px] text-[#6B6A66]">item, status lunas</div>
+            </div>
+
+            {{-- 3. Stok Tipis --}}
+            <div class="col-span-2 sm:col-span-1">
+                <div class="text-[13px] text-[#6B6A66]">Stok tipis</div>
+                <div class="text-2xl sm:text-[24px] font-semibold text-[#37352F] tracking-tight my-1 flex items-center gap-2">
+                    <span class="dot-warning"></span>
+                    {{ number_format($lowStockCount, 0, ',', '.') }}
+                </div>
+                <div class="text-[13px] text-[#6B6A66]">dari {{ number_format($productsCount, 0, ',', '.') }} produk</div>
+            </div>
         </div>
+
+        {{-- TWO-COLUMN SECTION: TRANSAKSI TERBARU & METODE PEMBAYARAN / RESTOCK --}}
+        <div class="grid grid-cols-1 lg:grid-cols-[1.25fr_1fr] gap-8 lg:gap-14">
+            
+            {{-- LEFT COLUMN: TRANSAKSI TERBARU --}}
+            <section class="flex flex-col">
+                <h2 class="text-sm font-semibold text-[#202020] mb-3">Transaksi terbaru</h2>
+
+                <div class="flex flex-col">
+                    @forelse($recentOrders as $order)
+                        @php
+                            $customerName = $order->customer?->name ?? $order->user?->name ?? 'Pelanggan Ritel';
+                            $initial = strtoupper(substr($customerName, 0, 1));
+                            $storeName = $order->store?->name ?? ($activeStoreName ?? 'Cabang');
+                            $methodRaw = $order->payment_method instanceof \BackedEnum ? $order->payment_method->value : (string) ($order->payment_method ?? '');
+                            $paymentLabel = match(strtolower($methodRaw)) {
+                                'cash' => 'Tunai',
+                                'qris' => 'QRIS',
+                                'ewallet' => 'E-Wallet',
+                                'card' => 'Kartu',
+                                default => !empty($methodRaw) ? strtoupper($methodRaw) : 'Tunai'
+                            };
+                            $dateStr = $order->created_at 
+                                ? $order->created_at->format('j') . ' ' . (\App\Services\DashboardService::ID_MONTHS[$order->created_at->month - 1] ?? '') . ', ' . $order->created_at->format('H:i') 
+                                : '';
+                            $statusVal = $order->order_status->value ?? $order->order_status;
+                        @endphp
+                        <div class="dash-list-item">
+                            <span class="w-8 h-8 rounded-full bg-[#F1F1EF] text-[#202020] flex items-center justify-center font-semibold text-xs shrink-0">
+                                {{ $initial }}
+                            </span>
+                            <div class="flex-1 min-w-0">
+                                <div class="font-semibold text-sm text-[#202020] truncate">{{ $customerName }}</div>
+                                <div class="text-xs text-[#6B6A66] truncate mt-0.5">{{ $storeName }} · {{ $paymentLabel }} · {{ $dateStr }}</div>
+                            </div>
+                            <div class="text-right shrink-0">
+                                <div class="font-semibold text-sm text-[#202020]">Rp {{ number_format($order->order_amount, 0, ',', '.') }}</div>
+                                @if($statusVal === 'paid' || $statusVal === 'completed')
+                                    <span class="chip ok mt-0.5">Lunas</span>
+                                @elseif($statusVal === 'pending')
+                                    <span class="chip wt mt-0.5">Menunggu</span>
+                                @else
+                                    <span class="chip danger mt-0.5">Batal</span>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <div class="py-8 text-center bg-[#F9F9F9] rounded-2xl border border-[#E9E9E7]/60">
+                            <p class="font-semibold text-sm text-[#202020]">Belum ada transaksi</p>
+                            <p class="text-xs text-[#6B6A66] mt-1">Transaksi lunas akan muncul di sini setelah kasir menyelesaikan pesanan.</p>
+                        </div>
+                    @endforelse
+                </div>
+
+                <div class="mt-2">
+                    <a href="{{ route('orders.index') }}" wire:navigate class="inline-block font-semibold text-[13px] text-[#202020] hover:underline">
+                        Lihat semua pesanan →
+                    </a>
+                </div>
+            </section>
+
+            {{-- RIGHT COLUMN: METODE PEMBAYARAN & PRAKIRAAN RESTOCK --}}
+            <div class="flex flex-col gap-8">
+                {{-- METODE PEMBAYARAN --}}
+                <section>
+                    <h2 class="text-sm font-semibold text-[#202020] mb-3">Metode pembayaran</h2>
+
+                    {{-- Stacked Horizontal Bar --}}
+                    <div class="flex h-2.5 rounded-full overflow-hidden gap-0.5 bg-[#F1F1EF]">
+                        @if($paymentBreakdown['total'] > 0)
+                            <span style="width: {{ $paymentBreakdown['cash']['percent'] }}%; background-color: #C4C3C0;" title="Tunai: {{ $paymentBreakdown['cash']['percent'] }}%"></span>
+                            <span style="width: {{ $paymentBreakdown['qris']['percent'] }}%; background-color: #37352F;" title="QRIS: {{ $paymentBreakdown['qris']['percent'] }}%"></span>
+                            <span style="width: {{ $paymentBreakdown['ewallet']['percent'] }}%; background-color: #787774;" title="E-Wallet: {{ $paymentBreakdown['ewallet']['percent'] }}%"></span>
+                            <span style="width: {{ $paymentBreakdown['card']['percent'] }}%; background-color: #E3E2E0;" title="Kartu: {{ $paymentBreakdown['card']['percent'] }}%"></span>
+                        @else
+                            <span style="width: 100%; background-color: #E9E9E7;"></span>
+                        @endif
+                    </div>
+
+                    {{-- Legend List --}}
+                    <div class="mt-2.5 space-y-1">
+                        @foreach(['cash' => $paymentBreakdown['cash'], 'qris' => $paymentBreakdown['qris'], 'ewallet' => $paymentBreakdown['ewallet'], 'card' => $paymentBreakdown['card']] as $key => $pm)
+                            <div class="flex items-center gap-2 py-1 text-[13px]">
+                                <span class="w-2.5 h-2.5 rounded-xs shrink-0 border border-black/10" style="background-color: {{ $pm['color'] }};"></span>
+                                <span class="flex-1 text-[#37352F]">{{ $pm['label'] }}</span>
+                                <span class="text-[#6B6A66]">{{ number_format($pm['count'], 0, ',', '.') }} · {{ $pm['percent'] }}%</span>
+                            </div>
+                        @endforeach
+                    </div>
+                </section>
+
+                {{-- PRAKIRAAN RESTOCK --}}
+                <section>
+                    <h2 class="text-sm font-semibold text-[#202020] mb-3">
+                        Prakiraan restock <span class="text-[#6B6A66] font-normal">· sisa hari</span>
+                    </h2>
+
+                    <div class="flex flex-col divide-y divide-[#F1F1EF]">
+                        @forelse($restockList as $item)
+                            <div class="flex items-center gap-3 py-2.5 text-[13px]">
+                                <span class="flex-1 text-[#37352F] truncate font-medium">{{ $item['name'] }}</span>
+                                <div class="restock-bar">
+                                    <i style="width: {{ $item['progress_percent'] }}%;"></i>
+                                </div>
+                                <span class="text-[#6B6A66] w-14 text-right shrink-0">{{ $item['days_label'] }}</span>
+                                <span style="color: {{ $item['trend_color'] }};" class="w-11 text-right font-semibold text-xs shrink-0">
+                                    {{ $item['trend_label'] }}
+                                </span>
+                            </div>
+                        @empty
+                            <div class="py-4 text-center">
+                                <p class="font-semibold text-xs text-[#202020]">Prakiraan restock tidak tersedia</p>
+                                <p class="text-xs text-[#6B6A66] mt-0.5">Semua stok bahan baku saat ini berada di level aman.</p>
+                            </div>
+                        @endforelse
+                    </div>
+                </section>
+            </div>
+        </div>
+
     </div>
-
-    <!-- Scripts for ApexCharts -->
-    <script>
-        (function() {
-            const getVar = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-
-            const renderCharts = () => {
-                const ink = getVar('--color-apeiron-ink') || '#37352F';
-                const border = getVar('--color-apeiron-border') || '#E9E9E7';
-                const muted = getVar('--color-apeiron-muted') || '#787774';
-                const surface = getVar('--color-apeiron-surface') || '#F1F1EF';
-
-                // 1. Sparkline: Net Income
-                var incomeSparklineOptions = {
-                    series: [{
-                        data: @json(array_slice($revenueData, -8, 8))
-                    }],
-                    chart: {
-                        type: 'area',
-                        height: 60,
-                        sparkline: {
-                            enabled: true
-                        }
-                    },
-                    stroke: {
-                        curve: 'smooth',
-                        width: 2
-                    },
-                    fill: {
-                        type: 'gradient',
-                        gradient: {
-                            shadeIntensity: 1,
-                            opacityFrom: 0.4,
-                            opacityTo: 0,
-                            stops: [0, 100]
-                        }
-                    },
-                    colors: ['#10b981'],
-                    tooltip: {
-                        fixed: {
-                            enabled: false
-                        },
-                        x: {
-                            show: false
-                        },
-                        y: {
-                            title: {
-                                formatter: function() {
-                                    return ''
-                                }
-                            }
-                        },
-                        marker: {
-                            show: false
-                        }
-                    }
-                };
-                new ApexCharts(document.querySelector("#income-sparkline"), incomeSparklineOptions).render();
-
-                // 2. Sparkline: Total Orders
-                var returnSparklineOptions = {
-                    series: [{
-                        data: @json(array_slice($ordersData, -8, 8))
-                    }],
-                    chart: {
-                        type: 'area',
-                        height: 60,
-                        sparkline: {
-                            enabled: true
-                        }
-                    },
-                    stroke: {
-                        curve: 'smooth',
-                        width: 2
-                    },
-                    fill: {
-                        type: 'gradient',
-                        gradient: {
-                            shadeIntensity: 1,
-                            opacityFrom: 0.4,
-                            opacityTo: 0,
-                            stops: [0, 100]
-                        }
-                    },
-                    colors: ['#3b82f6'],
-                    tooltip: {
-                        fixed: {
-                            enabled: false
-                        },
-                        x: {
-                            show: false
-                        },
-                        y: {
-                            title: {
-                                formatter: function() {
-                                    return ''
-                                }
-                            }
-                        },
-                        marker: {
-                            show: false
-                        }
-                    }
-                };
-                new ApexCharts(document.querySelector("#return-sparkline"), returnSparklineOptions).render();
-
-                // 3. Main Area Chart: Revenue
-                var revenueOptions = {
-                    series: [{
-                        name: "Income",
-                        data: @json($revenueData)
-                    }, {
-                        name: "Orders Count",
-                        data: @json($ordersData)
-                    }],
-                    chart: {
-                        height: 280,
-                        type: 'area',
-                        fontFamily: 'Plus Jakarta Sans, Inter, sans-serif',
-                        toolbar: {
-                            show: false
-                        },
-                        sparkline: {
-                            enabled: false
-                        }
-                    },
-                    colors: [ink, border],
-                    dataLabels: {
-                        enabled: false
-                    },
-                    stroke: {
-                        curve: 'smooth',
-                        width: 2.5
-                    },
-                    xaxis: {
-                        categories: @json($chartDates),
-                        axisBorder: {
-                            show: false
-                        },
-                        axisTicks: {
-                            show: false
-                        },
-                        labels: {
-                            style: {
-                                colors: muted,
-                                fontSize: '12px',
-                                fontWeight: 500,
-                                fontFamily: 'Plus Jakarta Sans, Inter, sans-serif'
-                            }
-                        }
-                    },
-                    yaxis: {
-                        labels: {
-                            style: {
-                                colors: muted,
-                                fontSize: '12px',
-                                fontWeight: 500,
-                                fontFamily: 'Plus Jakarta Sans, Inter, sans-serif'
-                            }
-                        }
-                    },
-                    grid: {
-                        borderColor: surface,
-                        strokeDashArray: 4,
-                        xaxis: {
-                            lines: {
-                                show: false
-                            }
-                        },
-                        yaxis: {
-                            lines: {
-                                show: true
-                            }
-                        }
-                    },
-                    fill: {
-                        type: 'gradient',
-                        gradient: {
-                            shadeIntensity: 1,
-                            opacityFrom: 0.15,
-                            opacityTo: 0.0,
-                            stops: [0, 100]
-                        }
-                    },
-                    legend: {
-                        show: false
-                    }
-                };
-                new ApexCharts(document.querySelector("#revenue-chart"), revenueOptions).render();
-
-                // 4. Donut Chart: Payment Methods
-                var performanceOptions = {
-                    series: @json($paymentStats),
-                    labels: ['Cash', 'QRIS', 'E-Wallet', 'Card'],
-                    chart: {
-                        type: 'donut',
-                        height: 260,
-                        fontFamily: 'Plus Jakarta Sans, Inter, sans-serif'
-                    },
-                    colors: [muted, ink, '#f59e0b', '#3b82f6'],
-                    plotOptions: {
-                        pie: {
-                            donut: {
-                                size: '75%',
-                                labels: {
-                                    show: true,
-                                    name: {
-                                        show: true,
-                                        fontSize: '12px',
-                                        fontWeight: 600,
-                                        color: muted,
-                                        offsetY: -5
-                                    },
-                                    value: {
-                                        show: true,
-                                        fontSize: '28px',
-                                        fontWeight: 800,
-                                        color: ink,
-                                        offsetY: 5,
-                                        formatter: function(val) {
-                                            return val
-                                        }
-                                    },
-                                    total: {
-                                        show: true,
-                                        showAlways: true,
-                                        label: 'Total Lunas',
-                                        fontSize: '12px',
-                                        fontWeight: 600,
-                                        color: muted,
-                                        formatter: function(w) {
-                                            return "{{ $totalPaidOrders }}"
-                                        }
-                                    }
-                                }
-                            },
-                            customScale: 0.8,
-                            dataLabels: {
-                                offset: 40
-                            }
-                        }
-                    },
-                    dataLabels: {
-                        enabled: true,
-                        style: {
-                            fontSize: '12px',
-                            colors: [ink],
-                            fontWeight: 800
-                        },
-                        dropShadow: {
-                            enabled: false
-                        }
-                    },
-                    stroke: {
-                        show: true,
-                        width: 4,
-                        colors: ['transparent']
-                    },
-                    legend: {
-                        show: false
-                    }
-                };
-                new ApexCharts(document.querySelector("#performance-chart"), performanceOptions).render();
-            };
-
-            // Support both standard load and SPA (wire:navigate)
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', renderCharts);
-            } else {
-                renderCharts();
-            }
-        })();
-    </script>
+    </div>
 </x-app-layout>

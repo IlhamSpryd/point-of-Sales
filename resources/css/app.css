@@ -84,6 +84,7 @@
     --color-apeiron-muted-700: #6B6A66;   /* WCAG AA ≈5.1:1 — use for small/body text */
     --color-apeiron-border:    #E9E9E7;
     --color-apeiron-surface:   #F1F1EF;
+    --color-apeiron-sidebar:   #F9F9F9;
     --color-table-header-bg: #F7F7F5;
 }
 
@@ -619,6 +620,98 @@ option {
         font-weight: 900;
         letter-spacing: -0.02em;
         font-variant-numeric: tabular-nums;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CONCEPT C DASHBOARD REDESIGN V2 UTILITIES & TOKENS
+       ═══════════════════════════════════════════════════════ */
+    .chip {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 8px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        line-height: 1.45;
+        white-space: nowrap;
+    }
+    .chip.ok {
+        background-color: #ECFDF5;
+        color: #047857;
+    }
+    .chip.wt {
+        background-color: #FBF3E7;
+        color: #8A5A16;
+    }
+    .chip.danger {
+        background-color: #FFF1F2;
+        color: #BE123C;
+    }
+    .chip.stable {
+        background-color: #F1F1EF;
+        color: #6B6A66;
+    }
+
+    .delta-badge {
+        color: #047857;
+        font-weight: 600;
+        background-color: #ECFDF5;
+        border-radius: 999px;
+        padding: 2px 8px;
+        font-size: 12px;
+        display: inline-flex;
+        align-items: center;
+        gap: 2px;
+    }
+    .delta-badge.negative {
+        color: #BE123C;
+        background-color: #FFF1F2;
+    }
+
+    .restock-bar {
+        height: 6px;
+        border-radius: 3px;
+        background-color: #F1F1EF;
+        width: 72px;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+    .restock-bar i {
+        display: block;
+        height: 100%;
+        background-color: #787774;
+        border-radius: 3px;
+    }
+
+    .dot-warning {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #C88A2E;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+    .dot-success {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #047857;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+
+    .dash-list-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        margin-left: -12px;
+        margin-right: -12px;
+        border-radius: 12px;
+        transition: background-color var(--dur-micro) var(--ease-ui);
+    }
+    .dash-list-item:hover {
+        background-color: #F9F9F9;
     }
 }
 
