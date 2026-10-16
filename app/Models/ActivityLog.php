@@ -10,7 +10,25 @@ use App\Models\Concerns\ScopedToStore;
 use App\Models\Concerns\ScopedToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int|null $tenant_id
+ * @property int|null $store_id
+ * @property int|null $user_id
+ * @property string $action
+ * @property string|null $subject_type
+ * @property int|null $subject_id
+ * @property string|null $description
+ * @property array<string, mixed>|null $old_values
+ * @property array<string, mixed>|null $new_values
+ * @property string|null $ip_address
+ * @property string|null $user_agent
+ * @property array<string, mixed>|null $metadata
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 class ActivityLog extends Model
 {
     use AssignsStore;

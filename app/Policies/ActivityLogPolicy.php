@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Models\ActivityLog;
+use App\Models\Role;
 use App\Models\User;
 
 class ActivityLogPolicy
@@ -12,8 +13,11 @@ class ActivityLogPolicy
     private function canView(User $user): bool
     {
         $role = $user->relationLoaded('role') ? $user->role : $user->role()->withoutGlobalScopes()->first();
+        if (! $role instanceof Role) {
+            return false;
+        }
 
-        return in_array($role?->name, ['Owner', 'Manager'], true) || (bool) ($role?->is_admin ?? false);
+        return in_array($role->name, ['Owner', 'Manager'], true) || (bool) $role->is_admin;
     }
 
     public function viewAny(User $user): bool

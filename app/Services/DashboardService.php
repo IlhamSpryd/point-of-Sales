@@ -8,6 +8,8 @@ use App\Models\IngredientRestockForecast;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Store;
+use App\Models\User;
 use App\Services\Analytics\RestockPredictionService;
 use App\Services\Context\TenantContext;
 use Illuminate\Support\Carbon;
@@ -42,13 +44,14 @@ class DashboardService
 
         $cacheKey = "pos:dashboard:{$tenantId}:{$cacheScope}:metrics_v2";
 
-        $metrics = Cache::remember($cacheKey, 90, function () use ($isAllStores, $user) {
+        $metrics = Cache::remember($cacheKey, 90, function () use ($isAllStores, $user): array {
             $orderQuery = $isAllStores ? Order::allStores() : Order::query();
             $orderItemQuery = $isAllStores ? OrderItem::allStores() : OrderItem::query();
 
             // 1. Tentukan tanggal referensi (mendukung database demo/seeder maupun produksi real-time)
             $paidStatuses = [OrderStatus::Paid->value, OrderStatus::Completed->value];
             $now = Carbon::now();
+            /** @var Order|null $latestOrder */
             $latestOrder = (clone $orderQuery)->whereIn('order_status', $paidStatuses)->latest('created_at')->first();
             $latestOrderDate = $latestOrder?->created_at;
 
@@ -197,11 +200,12 @@ class DashboardService
                         default => '#6B6A66',
                     };
 
-                    $daysLabel = $days !== null ? round($days).' hari' : ($f->ingredient?->current_stock <= 0 ? 'Habis' : 'Stok tipis');
+                    $ingredient = $f->ingredient;
+                    $daysLabel = $days !== null ? round($days).' hari' : (($ingredient && $ingredient->current_stock <= 0) ? 'Habis' : 'Stok tipis');
                     $barWidth = $days !== null ? min(100, max(8, round(($days / 14) * 100))) : 12;
 
                     $restockList[] = [
-                        'name' => $f->ingredient?->name ?? 'Bahan Baku',
+                        'name' => $ingredient ? $ingredient->name : 'Bahan Baku',
                         'days' => $days,
                         'days_label' => $daysLabel,
                         'progress_percent' => $barWidth,
@@ -247,9 +251,10 @@ class DashboardService
                 default => 'Selamat malam',
             };
 
-            $userName = $user?->name ?? 'Owner';
+            $userName = $user instanceof User ? $user->name : 'Owner';
             // Ambil nama panggilan pertama jika ada
-            $firstName = explode(' ', trim($userName))[0] ?? 'Owner';
+            $nameParts = explode(' ', trim($userName));
+            $firstName = $nameParts[0] !== '' ? $nameParts[0] : 'Owner';
 
             $earningsDir = ($earningsDeltaPercent ?? 0) >= 0 ? 'naik' : 'turun';
             $earningsAbs = abs($earningsDeltaPercent ?? 0);
@@ -259,7 +264,7 @@ class DashboardService
             if ($earningsDeltaPercent !== null && $ordersDeltaPercent !== null) {
                 $summaryText = "Bulan ini pendapatan {$earningsDir} <b>".number_format($earningsAbs, 1, ',', '.')."%</b> dan transaksi {$ordersDir} <b>".number_format($ordersAbs, 1, ',', '.')."%</b> dibanding bulan lalu. Ada <b>{$lowStockCount} produk</b> dengan stok tipis yang perlu dicek.";
             } else {
-                $summaryText = "Total akumulasi penjualan tercatat <b>Rp ".number_format($totalEarnings, 0, ',', '.')."</b> dari <b>".number_format($totalOrders, 0, ',', '.')." transaksi</b>. Ada <b>{$lowStockCount} produk</b> dengan stok tipis yang perlu dicek.";
+                $summaryText = 'Total akumulasi penjualan tercatat <b>Rp '.number_format($totalEarnings, 0, ',', '.').'</b> dari <b>'.number_format($totalOrders, 0, ',', '.')." transaksi</b>. Ada <b>{$lowStockCount} produk</b> dengan stok tipis yang perlu dicek.";
             }
 
             return compact(
@@ -296,9 +301,15 @@ class DashboardService
             ->take(4)
             ->get();
 
-        $activeStore = ! $isAllStores ? \App\Models\Store::find($activeStoreId) : null;
-        $metrics['activeStoreName'] = $isAllStores ? 'Semua cabang' : ($activeStore?->name ?? 'Cabang Utama');
-        $metrics['activeStoreBadge'] = $isAllStores ? 'Konsolidasi' : ($activeStore?->code ?? 'Aktif');
+        $activeStore = ! $isAllStores ? Store::find($activeStoreId) : null;
+        $activeStoreName = 'Semua cabang';
+        $activeStoreBadge = 'Konsolidasi';
+        if (! $isAllStores) {
+            $activeStoreName = $activeStore ? $activeStore->name : 'Cabang Utama';
+            $activeStoreBadge = $activeStore && $activeStore->code ? $activeStore->code : 'Aktif';
+        }
+        $metrics['activeStoreName'] = $activeStoreName;
+        $metrics['activeStoreBadge'] = $activeStoreBadge;
         $metrics['isAllStores'] = $isAllStores;
 
         return $metrics;

@@ -11,8 +11,23 @@ use App\Services\MenuCacheService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property string $name
+ * @property string|null $code
+ * @property string $unit
+ * @property float|string $current_stock
+ * @property float|string $reorder_level
+ * @property float|string $cost_per_unit
+ * @property bool $is_active
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ */
 class Ingredient extends Model
 {
     use AssignsTenant;

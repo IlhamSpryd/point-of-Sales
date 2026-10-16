@@ -8,7 +8,22 @@ use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $ingredient_id
+ * @property float|null $avg_daily_consumption
+ * @property float|null $projected_days_remaining
+ * @property Carbon|null $projected_stockout_at
+ * @property float|null $suggested_reorder_qty
+ * @property string|null $trend
+ * @property Carbon|null $computed_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Ingredient|null $ingredient
+ */
 class IngredientRestockForecast extends Model
 {
     use AssignsTenant;
@@ -30,6 +45,9 @@ class IngredientRestockForecast extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Ingredient, $this>
+     */
     public function ingredient(): BelongsTo
     {
         return $this->belongsTo(Ingredient::class);

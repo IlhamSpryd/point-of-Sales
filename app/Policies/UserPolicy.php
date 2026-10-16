@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
+use App\Models\Role;
 use App\Models\User;
 
 class UserPolicy
@@ -11,8 +12,11 @@ class UserPolicy
     private function isOwner(User $user): bool
     {
         $role = $user->relationLoaded('role') ? $user->role : $user->role()->withoutGlobalScopes()->first();
+        if (! $role instanceof Role) {
+            return false;
+        }
 
-        return $role?->name === 'Owner' || (bool) ($role?->is_admin ?? false);
+        return $role->name === 'Owner' || (bool) $role->is_admin;
     }
 
     public function viewAny(User $user): bool

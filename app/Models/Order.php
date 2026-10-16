@@ -11,9 +11,11 @@ use App\Models\Concerns\AssignsStore;
 use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToStore;
 use App\Models\Concerns\ScopedToTenant;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * Model Order menyimpan segala informasi garis besar sebuah transaksi (struk total),
@@ -23,9 +25,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $tenant_id
  * @property int|null $store_id
  * @property string $order_code
- * @property \App\Enums\OrderStatus $order_status
- * @property \App\Enums\PaymentMethod|null $payment_method
- * @property \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderItem> $orderItems
+ * @property OrderStatus $order_status
+ * @property PaymentMethod|null $payment_method
+ * @property Collection<int, OrderItem> $orderItems
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class Order extends Model
 {

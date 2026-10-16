@@ -6,9 +6,12 @@ use App\Models\Concerns\AssignsTenant;
 use App\Services\Context\TenantContext;
 use App\Services\EmployeeIdGenerator;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -20,17 +23,17 @@ use Illuminate\Notifications\Notifiable;
  * @property string|null $phone_number
  * @property string|null $password_hash
  * @property string|null $pin_hash
- * @property \Illuminate\Support\Carbon|null $join_date
+ * @property Carbon|null $join_date
  * @property bool $is_active
- * @property \Illuminate\Support\Carbon|null $email_verified_at
+ * @property Carbon|null $email_verified_at
  * @property int $failed_login_attempts
- * @property \Illuminate\Support\Carbon|null $locked_until
- * @property \Illuminate\Support\Carbon|null $last_login_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \App\Models\Tenant|null $tenant
- * @property-read \App\Models\Role|null $role
+ * @property Carbon|null $locked_until
+ * @property Carbon|null $last_login_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Tenant|null $tenant
+ * @property-read Role|null $role
  */
 class User extends Authenticatable
 {
@@ -143,18 +146,23 @@ class User extends Authenticatable
         });
     }
 
-    // Relasi ke Role
-    public function role(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    /**
+     * @return BelongsTo<Role, $this>
+     */
+    public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
     }
 
-    public function tenant(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
+    public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
-    public function stores(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function stores(): BelongsToMany
     {
         return $this->belongsToMany(Store::class, 'user_stores');
     }

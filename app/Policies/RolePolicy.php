@@ -12,8 +12,11 @@ class RolePolicy
     private function isOwner(User $user): bool
     {
         $role = $user->relationLoaded('role') ? $user->role : $user->role()->withoutGlobalScopes()->first();
+        if (! $role instanceof Role) {
+            return false;
+        }
 
-        return $role?->name === 'Owner' || (bool) ($role?->is_admin ?? false);
+        return $role->name === 'Owner' || (bool) $role->is_admin;
     }
 
     public function viewAny(User $user): bool

@@ -8,8 +8,19 @@ use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
 use App\Services\Context\TenantContext;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * @property int $id
+ * @property int|null $tenant_id
+ * @property string $key
+ * @property string|null $value
+ * @property string $type
+ * @property string|null $description
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ */
 class Setting extends Model
 {
     use AssignsTenant;

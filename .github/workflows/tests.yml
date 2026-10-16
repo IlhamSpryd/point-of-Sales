@@ -43,6 +43,11 @@ jobs:
       - name: Siapkan .env agar Larastan bisa boot aplikasi
         run: |
           cp .env.example .env
+          sed -i 's/DB_DATABASE=.*/DB_DATABASE=apeiron_pos_test/' .env
+          sed -i 's/DB_USERNAME=.*/DB_USERNAME=root/' .env
+          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=root/' .env
+          sed -i 's/CACHE_STORE=.*/CACHE_STORE=array/' .env
+          sed -i 's/SESSION_DRIVER=.*/SESSION_DRIVER=array/' .env
           php artisan key:generate --ansi
 
       - name: Pint (mode cek, tanpa auto-fix)
@@ -95,7 +100,16 @@ jobs:
       - name: Siapkan .env
         run: |
           cp .env.example .env
+          sed -i 's/DB_DATABASE=.*/DB_DATABASE=apeiron_pos_test/' .env
+          sed -i 's/DB_USERNAME=.*/DB_USERNAME=root/' .env
+          sed -i 's/DB_PASSWORD=.*/DB_PASSWORD=root/' .env
+          sed -i 's/CACHE_STORE=.*/CACHE_STORE=array/' .env
+          sed -i 's/SESSION_DRIVER=.*/SESSION_DRIVER=array/' .env
           php artisan key:generate --ansi
+
+      - name: Pastikan database MySQL siap
+        run: |
+          mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS apeiron_pos_test; CREATE DATABASE IF NOT EXISTS yovel_pos_test;"
 
       - uses: actions/setup-node@v4
         with:
