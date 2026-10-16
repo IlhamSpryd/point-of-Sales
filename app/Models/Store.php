@@ -58,7 +58,19 @@ class Store extends Model
     protected $fillable = [
         'tenant_id',
         'name',
+        'code',
+        'timezone',
+        'business_date_cutoff',
+        'default_channel',
         'address',
+        'phone',
+        'is_active',
+        'is_initial',
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+        'is_initial' => 'boolean',
     ];
 
     public function tenant()

@@ -34,7 +34,7 @@ class NewPasswordController extends Controller
         $request->validate([
             'token' => ['required'],
             'email' => ['required', 'email'],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Rules\Password::min(10)->letters()->mixedCase()->numbers()->uncompromised()],
         ]);
 
         // Proses krusial pembaharuan token autentikasi sandi masuk ke DB.
@@ -46,7 +46,17 @@ class NewPasswordController extends Controller
                     'password' => $hash,
                     'password_hash' => $hash,
                     'remember_token' => Str::random(60),
+                    'failed_login_attempts' => 0,
+                    'locked_until' => null,
+                    'email_verified_at' => $user->email_verified_at ?? now(),
                 ])->save();
+
+                // Purge active sessions pada database driver
+                try {
+                    \Illuminate\Support\Facades\DB::table('sessions')->where('user_id', $user->id)->delete();
+                } catch (\Throwable) {
+                    // Session table might not exist in array/memory driver
+                }
 
                 event(new PasswordReset($user));
             }

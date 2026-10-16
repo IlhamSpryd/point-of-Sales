@@ -57,6 +57,21 @@ Route::post('/onboarding/set-password/{token}', [OwnerOnboardingController::clas
     ->middleware('throttle:6,1')
     ->name('onboarding.set-password.store');
 
+// P0-01 & SEC-01: Lockdown route legacy /register pada monolit POS
+Route::get('/register', function () {
+    return redirect()->route('login')
+        ->with('info', 'Pendaftaran tenant baru dilakukan melalui portal pemasaran resmi.');
+})->name('register');
+
+Route::post('/register', function () {
+    abort(405, 'Pendaftaran publik langsung tidak diizinkan pada aplikasi POS.');
+});
+
+// Self-service resend token aktivasi (unauthenticated & rate limited throttle:3,15)
+Route::post('/onboarding/resend-token', [OwnerOnboardingController::class, 'resend'])
+    ->middleware('throttle:3,15')
+    ->name('onboarding.resend');
+
 Route::get('/email/verify/{id}/{hash}', VerifyEmailController::class)
     ->middleware(['signed', 'throttle:6,1'])
     ->name('verification.verify');
@@ -113,11 +128,25 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
     // Penggantian Cabang (Store Switcher)
     Route::post('/switch-store', StoreSwitchController::class)->name('store.switch');
 
-    // Dashboard & Laporan
-    Route::middleware('role:Owner,Manager')->group(function () {
-        Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-        Route::get('/reports/sales', [ReportController::class, 'index'])->name('reports.sales');
+    // Wizard Onboarding (Step 1 & Step 2) — Hanya Owner
+    Route::middleware('role:Owner')->group(function () {
+        Route::get('/onboarding/business-profile', [\App\Http\Controllers\OnboardingWizardController::class, 'businessProfile'])
+            ->name('onboarding.business-profile');
+        Route::post('/onboarding/business-profile', [\App\Http\Controllers\OnboardingWizardController::class, 'storeBusinessProfile'])
+            ->name('onboarding.business-profile.store');
+        Route::get('/onboarding/initial-branch', [\App\Http\Controllers\OnboardingWizardController::class, 'initialBranch'])
+            ->name('onboarding.initial-branch');
+        Route::post('/onboarding/initial-branch', [\App\Http\Controllers\OnboardingWizardController::class, 'storeInitialBranch'])
+            ->name('onboarding.initial-branch.store');
     });
+
+    // Rute Operasional POS — Dilindungi EnsureOnboardingCompleted
+    Route::middleware('ensure.onboarding.completed')->group(function () {
+        // Dashboard & Laporan
+        Route::middleware('role:Owner,Manager')->group(function () {
+            Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+            Route::get('/reports/sales', [ReportController::class, 'index'])->name('reports.sales');
+        });
 
     // Kasir POS
     Route::middleware('role:Owner,Manager,Kasir')->group(function () {
@@ -211,4 +240,5 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
         Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
     });
+    }); // Akhir dari grup ensure.onboarding.completed
 });

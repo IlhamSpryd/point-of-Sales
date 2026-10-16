@@ -20,7 +20,24 @@ class HomeController extends Controller
 {
     public function index(): View|RedirectResponse
     {
-        $roleName = auth()->user()->role?->name;
+        $user = auth()->user();
+        $roleName = $user->role?->name;
+
+        // Jika Owner belum menyelesaikan wizard onboarding, arahkan ke wizard step yang aktif
+        if (($roleName === 'Owner' || (bool) ($user->role?->is_admin ?? false)) && config('pos.enforce_onboarding_wizard', true)) {
+            $tenant = $user->tenant;
+            if ($tenant && ! $tenant->isOnboardingCompleted()) {
+                $tenant = $tenant->fresh() ?? $tenant;
+            }
+
+            if ($tenant && ! $tenant->isOnboardingCompleted()) {
+                if ($tenant->onboarding_status === \App\Models\Tenant::ONBOARDING_INITIAL_BRANCH) {
+                    return redirect()->route('onboarding.initial-branch');
+                }
+
+                return redirect()->route('onboarding.business-profile');
+            }
+        }
 
         $roleHome = match ($roleName) {
             'Kasir' => 'transaction.create',

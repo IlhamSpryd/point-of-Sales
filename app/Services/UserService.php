@@ -96,6 +96,14 @@ class UserService
 
             $user->update($data);
 
+            // Invalidate active sessions jika password diubah, role diubah, atau user dinonaktifkan
+            if (isset($data['password_hash']) || (isset($data['is_active']) && ! $data['is_active']) || isset($data['role_id'])) {
+                try {
+                    DB::table('sessions')->where('user_id', $user->id)->delete();
+                } catch (\Throwable) {
+                }
+            }
+
             return $user;
         });
     }
@@ -114,6 +122,11 @@ class UserService
         }
 
         return DB::transaction(function () use ($user) {
+            try {
+                DB::table('sessions')->where('user_id', $user->id)->delete();
+            } catch (\Throwable) {
+            }
+
             return $user->delete();
         });
     }

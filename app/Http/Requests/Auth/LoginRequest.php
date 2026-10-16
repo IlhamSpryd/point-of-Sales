@@ -46,43 +46,77 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-            RateLimiter::hit($this->throttleKey());
+        $email = Str::lower($this->string('email'));
+        $userCandidate = User::withoutGlobalScopes()->where('email', $email)->first();
+
+        // 1. Cek apakah user terkunci di level database (15 menit)
+        if ($userCandidate && $userCandidate->isLockedOut()) {
+            event(new Lockout($this));
+            $seconds = now()->diffInSeconds($userCandidate->locked_until, false);
+            throw ValidationException::withMessages([
+                'email' => 'Akun Anda terkunci sementara karena 5 kali percobaan login gagal. Silakan coba lagi dalam '.ceil($seconds / 60).' menit.',
+            ]);
+        }
+
+        if (! Auth::attempt(['email' => $email, 'password' => $this->string('password')], $this->boolean('remember'))) {
+            // Hit rate limiter dengan decay 15 menit (900 detik) sesuai PRD OD-09
+            RateLimiter::hit($this->throttleKey(), 900);
+
+            if ($userCandidate) {
+                $isLocked = $userCandidate->recordFailedLogin(5, 15);
+                if ($isLocked) {
+                    try {
+                        \Illuminate\Support\Facades\DB::table('activity_logs')->insert([
+                            'tenant_id' => $userCandidate->tenant_id,
+                            'store_id' => \App\Models\Store::withoutTenantScope()->where('tenant_id', $userCandidate->tenant_id)->orderBy('id')->value('id') ?? 1,
+                            'user_id' => $userCandidate->id,
+                            'action' => 'user.auth_locked_out',
+                            'subject_type' => User::class,
+                            'subject_id' => $userCandidate->id,
+                            'description' => "Akun {$userCandidate->email} dikunci selama 15 menit setelah 5 kali gagal login.",
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    } catch (\Throwable $e) {
+                        \Illuminate\Support\Facades\Log::warning('Audit user.auth_locked_out failed: '.$e->getMessage());
+                    }
+
+                    event(new Lockout($this));
+                    throw ValidationException::withMessages([
+                        'email' => 'Akun Anda telah dikunci selama 15 menit karena 5 kali percobaan login gagal berturut-turut.',
+                    ]);
+                }
+            }
 
             throw ValidationException::withMessages([
                 'email' => trans('auth.failed'),
             ]);
         }
 
-        // [SEC-004 - CRITICAL FIX - AUDIT KEAMANAN]
-        // SEBELUM perbaikan ini, kolom `users.is_active` HANYA bersifat
-        // kosmetik: ditampilkan di UI sebagai toggle "Karyawan Aktif" /
-        // "Nonaktif" (lihat users/create.blade.php, users/edit.blade.php),
-        // tapi TIDAK PERNAH benar-benar dicek di jalur otentikasi. Guard
-        // SessionGuard bawaan Laravel (Auth::attempt) hanya mencocokkan
-        // email + hash password, sama sekali tidak tahu soal is_active.
-        //
-        // Akibatnya: karyawan yang di-nonaktifkan Owner (resign, dipecat,
-        // atau bahkan sedang diselidiki dugaan kecurangan kas) TETAP BISA
-        // login dan memproses transaksi selama masih ingat password lamanya
-        // -- kegagalan kontrol akses paling berbahaya untuk sistem yang
-        // menangani uang tunai secara langsung.
-        //
-        // Pengecekan WAJIB dilakukan SETELAH Auth::attempt() berhasil
-        // (bukan sebelum, dan bukan lewat query terpisah sebelum attempt),
-        // supaya kita hanya membocorkan informasi "akun ini nonaktif"
-        // kepada seseorang yang SUDAH terbukti tahu password yang benar --
-        // ini mencegah celah User Enumeration lewat perbedaan pesan error.
         $user = Auth::user();
 
+        // [SEC-004] Cek akun nonaktif
         if ($user instanceof User && ! $user->is_active) {
             Auth::logout();
-
-            RateLimiter::hit($this->throttleKey());
+            RateLimiter::hit($this->throttleKey(), 900);
 
             throw ValidationException::withMessages([
                 'email' => 'Akun ini telah dinonaktifkan. Silakan hubungi Owner atau Manager.',
             ]);
+        }
+
+        // Cek tenant ditangguhkan
+        if ($user instanceof User && $user->tenant?->isSuspended()) {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'email' => 'Ruang kerja bisnis Anda sedang ditangguhkan. Silakan hubungi dukungan pelanggan.',
+            ]);
+        }
+
+        // Login sukses: reset penghitung kegagalan
+        if ($user instanceof User) {
+            $user->resetLoginLockout();
         }
 
         RateLimiter::clear($this->throttleKey());
@@ -95,6 +129,16 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited(): void
     {
+        $email = Str::lower($this->string('email'));
+        $userCandidate = User::withoutGlobalScopes()->where('email', $email)->first();
+        if ($userCandidate && $userCandidate->isLockedOut()) {
+            event(new Lockout($this));
+            $seconds = now()->diffInSeconds($userCandidate->locked_until, false);
+            throw ValidationException::withMessages([
+                'email' => 'Akun Anda terkunci sementara karena 5 kali percobaan login gagal. Silakan coba lagi dalam '.ceil($seconds / 60).' menit.',
+            ]);
+        }
+
         if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
             return;
         }

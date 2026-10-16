@@ -25,6 +25,9 @@ class User extends Authenticatable
         'join_date',
         'role_id',
         'is_active',
+        'email_verified_at',
+        'failed_login_attempts',
+        'locked_until',
         'last_login_at',
     ];
 
@@ -44,7 +47,43 @@ class User extends Authenticatable
             'join_date' => 'date',
             'last_login_at' => 'datetime',
             'is_active' => 'boolean',
+            'failed_login_attempts' => 'integer',
+            'locked_until' => 'datetime',
         ];
+    }
+
+    public function isLockedOut(): bool
+    {
+        return $this->locked_until !== null && $this->locked_until->isFuture();
+    }
+
+    public function recordFailedLogin(int $maxAttempts = 5, int $lockoutMinutes = 15): bool
+    {
+        $attempts = ($this->failed_login_attempts ?? 0) + 1;
+        $lockedUntil = null;
+        $isNowLocked = false;
+
+        if ($attempts >= $maxAttempts) {
+            $lockedUntil = now()->addMinutes($lockoutMinutes);
+            $isNowLocked = true;
+        }
+
+        $this->forceFill([
+            'failed_login_attempts' => $attempts,
+            'locked_until' => $lockedUntil,
+        ])->save();
+
+        return $isNowLocked;
+    }
+
+    public function resetLoginLockout(): void
+    {
+        if ($this->failed_login_attempts > 0 || $this->locked_until !== null) {
+            $this->forceFill([
+                'failed_login_attempts' => 0,
+                'locked_until' => null,
+            ])->save();
+        }
     }
 
     public function getAuthPassword()

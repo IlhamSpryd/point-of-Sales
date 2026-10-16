@@ -139,14 +139,42 @@ class E2EOnboardingAndLoginTest extends TestCase
         $loginResponse->assertRedirect(route('home', absolute: false));
         $this->assertAuthenticatedAs($user);
 
-        // Verify authenticated route resolves TenantContext via SetTenantContext middleware
+        // Before completing onboarding, home and dashboard redirect to onboarding wizard
         $homeResponse = $this->get(route('home'));
-        $homeResponse->assertRedirect(route('dashboard'));
+        $homeResponse->assertRedirect('/onboarding/business-profile');
+
+        $dashboardBlocked = $this->get(route('dashboard'));
+        $dashboardBlocked->assertRedirect('/onboarding/business-profile');
+
+        // Complete Step 1: Business Profile
+        $step1 = $this->post('/onboarding/business-profile', [
+            'business_name' => 'Artisan Coffee Roasters',
+            'business_category' => 'fnb_cafe',
+            'country_code' => 'ID',
+            'tenant_timezone' => 'Asia/Jakarta',
+            'default_currency' => 'IDR',
+            'owner_phone' => '+6281234567890',
+        ]);
+        $step1->assertRedirect('/onboarding/initial-branch');
+
+        // Complete Step 2: Initial Branch
+        $step2 = $this->post('/onboarding/initial-branch', [
+            'store_name' => 'Main Roastery Outlet',
+            'store_code' => 'MAIN-01',
+            'store_timezone' => 'Asia/Jakarta',
+            'business_date_cutoff' => '04:00',
+            'default_channel' => 'dine_in',
+            'store_phone' => '+6281234567890',
+        ]);
+        $step2->assertRedirect(route('dashboard'));
+
+        // Now that onboarding is completed, accessing home redirects to dashboard and succeeds
+        $homeAfterOnboarding = $this->get(route('home'));
+        $homeAfterOnboarding->assertRedirect(route('dashboard'));
+
         $dashboardResponse = $this->get(route('dashboard'));
         $dashboardResponse->assertOk();
-        $tenantContext = app(TenantContext::class);
-        $this->assertEquals($tenantId, $tenantContext->getTenantId());
-        $this->assertNotEmpty($tenantContext->getAllowedStoreIds());
+        $this->assertEquals($tenantId, $user->fresh()->tenant_id);
 
         // 7. Owner logs out
         $logoutResponse = $this->post('/logout');

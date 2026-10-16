@@ -48,6 +48,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'verify.webhook' => VerifyWebhookSignature::class,
             'tenant.context' => SetTenantContext::class,
             'enforce.email.verification' => EnforceEmailVerification::class,
+            'ensure.onboarding.completed' => \App\Http\Middleware\EnsureOnboardingCompleted::class,
             'verify.provisioning' => VerifyProvisioningSignature::class,
         ]);
 
