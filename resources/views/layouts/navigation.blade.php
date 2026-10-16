@@ -62,14 +62,14 @@
         sidebarMobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0',
         wide ? 'w-72 lg:w-64' : 'w-18'
     ]"
-    class="fixed lg:relative z-40 h-full flex flex-col bg-[#F9F9F9] border-r border-[#E9E9E7] text-apeiron-ink select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+    class="fixed lg:relative z-40 h-full flex flex-col bg-white text-apeiron-ink select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
 
     {{-- Logo + tombol lipat --}}
-    <div class="h-15 flex items-center shrink-0 px-4 gap-3" :class="wide ? 'justify-between' : 'justify-center'">
+    <div class="h-14 flex items-center shrink-0 transition-all duration-200" :class="wide ? 'justify-between px-4 gap-3' : 'justify-center px-0'">
         <a href="{{ $homeUrl }}" wire:navigate
             @click="if (window.apeironPosCartDirty && !confirm('Anda memiliki pesanan aktif di kasir. Pindah halaman akan membatalkan keranjang aktif. Lanjutkan?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; } if (!wide) { $event.preventDefault(); expanded = true; }"
             :title="!wide ? 'Buka sidebar' : ''"
-            class="group flex items-center min-w-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
+            class="group flex items-center justify-center min-w-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
             <span
                 class="flex items-center justify-center shrink-0 w-10 h-10 rounded-full group-hover:bg-[#F7F7F5] transition-colors">
                 <img src="{{ asset('assets/images/logo.png') }}" alt="Apeiron System Logo" :class="!wide ? 'group-hover:hidden' : ''" class="h-8 w-auto object-contain transition-transform duration-500 group-hover:scale-110">
@@ -81,7 +81,7 @@
                     <path d="m14 9 3 3-3 3"></path>
                 </svg>
             </span>
-            <span :class="wide ? 'opacity-100 ml-2' : 'opacity-0 w-0 hidden'"
+            <span :class="wide ? 'opacity-100 ml-2' : 'hidden'"
                 class="font-brand text-xl whitespace-nowrap overflow-hidden transition-all duration-200">
                 <span class="font-bold">Apeiron</span><span class="font-normal text-[#787774] ml-0.5">POS</span>
             </span>
@@ -103,18 +103,18 @@
     </div>
 
     {{-- Branch Switcher (Sidebar) --}}
-    <div x-show="wide" class="px-3 pb-2 pt-1 border-b border-[#E9E9E7]/60">
+    <div x-show="wide" class="px-3 pb-2 pt-1 border-b border-[#F1F1EF]">
         <x-branch-switcher :fullWidth="true" />
     </div>
 
     {{-- Navigasi --}}
-    <nav class="flex-1 py-3 overflow-y-auto overflow-x-hidden scrollbar-hide" :class="wide ? 'px-3' : 'px-2'"
+    <nav class="flex-1 py-3 overflow-y-auto overflow-x-hidden scrollbar-hide" :class="wide ? 'px-3' : 'px-0'"
         aria-label="Navigasi utama">
         @foreach ($visibleMenu as $section => $items)
             @php
                 $isTerminalSection = ($section === 'Terminal Kerja');
             @endphp
-            <div class="{{ $loop->first ? '' : ($isTerminalSection ? 'mt-5 pt-3 border-t border-[#E9E9E7]/80' : 'mt-4') }}">
+            <div class="{{ $loop->first ? '' : ($isTerminalSection ? 'mt-5 pt-3 border-t border-[#F1F1EF]' : 'mt-4') }}">
                 <div x-show="wide" class="px-3 pb-1 flex items-center justify-between">
                     <p class="text-[11px] font-semibold text-[#6B6A66] tracking-[0.02em] whitespace-nowrap uppercase">
                         {{ $section }}
@@ -126,29 +126,30 @@
                     @endif
                 </div>
                 @unless ($loop->first)
-                    <div x-show="!wide" x-cloak class="mx-3 mb-2 border-t border-[#E9E9E7]"></div>
+                    <div x-show="!wide" x-cloak class="w-8 mx-auto my-2 border-t border-[#F1F1EF]"></div>
                 @endunless
 
-                <ul class="space-y-0.5">
+                <ul class="space-y-1">
                     @foreach ($items as $item)
                         @php
                             $routeExists = \Illuminate\Support\Facades\Route::has($item['route']);
                             $isActive = $routeExists && request()->routeIs($item['active']);
                             $scope = $item['scope'] ?? 'store';
                             $rowBase =
-                                'group relative flex items-center rounded-[10px] text-[13px] whitespace-nowrap min-h-[40px] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#37352F]';
+                                'group relative flex items-center rounded-xl text-[13px] whitespace-nowrap transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#37352F]';
                         @endphp
-                        <li>
+                        <li class="flex justify-center w-full">
                             @if ($routeExists)
                                 <a href="{{ route($item['route']) }}" wire:navigate
                                     @click="if (window.apeironPosCartDirty && !confirm('Anda memiliki pesanan aktif di kasir. Pindah halaman akan membatalkan keranjang aktif. Lanjutkan?')) { $event.preventDefault(); $event.stopImmediatePropagation(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }"
                                     @if ($isActive) aria-current="page" @endif
-                                    title="{{ $item['label'] }} ({{ $scope === 'store' ? 'Cabang Aktif' : 'Tenant' }})" :class="wide ? 'px-2.5' : 'justify-center px-0'"
-                                    class="{{ $rowBase }} {{ $isActive ? 'bg-[#ECECEA] text-[#202020] font-semibold before:absolute before:left-0 before:top-1.5 before:bottom-1.5 before:w-1 before:bg-[#202020] before:rounded-r' : 'text-[#55544E] hover:text-[#202020] hover:bg-[#F1F1EF]' }}">
+                                    title="{{ $item['label'] }} ({{ $scope === 'store' ? 'Cabang Aktif' : 'Tenant' }})"
+                                    :class="wide ? 'w-full px-2.5 min-h-[40px] justify-start before:left-0 before:top-2 before:bottom-2 before:w-1 before:rounded-r' : 'w-10 h-10 justify-center px-0 before:hidden'"
+                                    class="{{ $rowBase }} {{ $isActive ? 'bg-[#F1F1EF] text-[#202020] font-semibold before:absolute before:bg-[#202020]' : 'text-[#6B6A66] hover:text-[#202020] hover:bg-[#F7F7F5]' }}">
                                     <span
-                                        class="material-symbols-rounded text-[18px] shrink-0 w-5 text-center {{ $isActive ? 'text-[#202020]' : 'text-[#787774] group-hover:text-[#202020]' }}">{{ $item['icon'] }}</span>
-                                    <span :class="wide ? 'opacity-100 ml-2.5' : 'opacity-0 w-0 ml-0'"
-                                        class="overflow-hidden transition-all duration-150 flex-1 truncate">{{ $item['label'] }}</span>
+                                        class="material-symbols-rounded text-[20px] shrink-0 text-center flex items-center justify-center {{ $isActive ? 'text-[#202020]' : 'text-[#787774] group-hover:text-[#202020]' }}">{{ $item['icon'] }}</span>
+                                    <span :class="wide ? 'opacity-100 ml-2.5 flex-1 truncate' : 'hidden'"
+                                        class="overflow-hidden transition-all duration-150">{{ $item['label'] }}</span>
                                     @if ($scope === 'store')
                                         <span x-show="wide"
                                             class="ml-auto text-[9px] font-medium text-[#787774] bg-[#F1F1EF] border border-[#E9E9E7]/60 rounded px-1.5 py-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
@@ -163,11 +164,11 @@
                                 </a>
                             @else
                                 <div aria-disabled="true" title="{{ $item['label'] }} — segera hadir"
-                                    :class="wide ? 'px-2.5' : 'justify-center px-0'"
+                                    :class="wide ? 'w-full px-2.5 min-h-[40px] justify-start' : 'w-10 h-10 justify-center px-0'"
                                     class="{{ $rowBase }} text-[#C4C3C0] cursor-not-allowed">
                                     <span
-                                        class="material-symbols-rounded text-[18px] shrink-0 w-5 text-center text-[#C4C3C0]">{{ $item['icon'] }}</span>
-                                    <span :class="wide ? 'opacity-100 ml-2.5' : 'opacity-0 w-0 ml-0'"
+                                        class="material-symbols-rounded text-[20px] shrink-0 text-center flex items-center justify-center text-[#C4C3C0]">{{ $item['icon'] }}</span>
+                                    <span :class="wide ? 'opacity-100 ml-2.5 flex-1 truncate' : 'hidden'"
                                         class="overflow-hidden transition-all duration-150">{{ $item['label'] }}</span>
                                     <span x-show="wide"
                                         class="ml-auto text-[9px] font-bold uppercase tracking-wider text-[#9B9A97] bg-[#F1F1EF] border border-[#E9E9E7] rounded-md px-1.5 py-0.5">Segera</span>
@@ -181,20 +182,18 @@
     </nav>
 
     {{-- Profil + popover --}}
-    <div class="shrink-0 mt-auto relative border-t border-[#E9E9E7]" :class="wide ? 'p-3' : 'p-2'">
+    <div class="shrink-0 mt-auto relative border-t border-[#F1F1EF]" :class="wide ? 'p-3' : 'py-3 px-0 flex justify-center'">
         <button type="button" @click="openPopover = !openPopover" :aria-expanded="openPopover.toString()"
             aria-haspopup="true"
             aria-label="Menu akun pengguna"
-            class="w-full flex items-center rounded-xl transition-all duration-150 whitespace-nowrap min-h-[44px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F] cursor-pointer"
-            :class="[wide ? 'p-2 hover:bg-[#F1F1EF]' : 'p-1.5 justify-center hover:bg-[#F1F1EF]', openPopover ? 'bg-[#F1F1EF]' :
-                ''
-            ]"
+            class="flex items-center rounded-xl transition-all duration-150 whitespace-nowrap min-h-[40px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F] cursor-pointer"
+            :class="[wide ? 'w-full p-2 hover:bg-[#F7F7F5]' : 'w-10 h-10 justify-center p-0 hover:bg-[#F7F7F5]', openPopover ? 'bg-[#F1F1EF]' : '']"
             title="{{ auth()->user()->name ?? 'Profil' }}">
             <div
                 class="w-7 h-7 rounded-full bg-[#F1F1EF] text-apeiron-ink border border-[#E9E9E7] flex items-center justify-center font-semibold text-[12px] shrink-0">
                 {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
             </div>
-            <div :class="wide ? 'opacity-100 ml-2.5 flex-1 text-left' : 'opacity-0 w-0 ml-0 hidden'"
+            <div :class="wide ? 'opacity-100 ml-2.5 flex-1 text-left' : 'hidden'"
                 class="overflow-hidden transition-all duration-150">
                 <p class="text-[13px] font-semibold text-[#202020] truncate leading-tight">{{ auth()->user()->name ?? 'Pengguna' }}
                 </p>
