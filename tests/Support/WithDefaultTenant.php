@@ -29,7 +29,12 @@ trait WithDefaultTenant
             return;
         }
 
-        $this->defaultTenant = Tenant::create(['name' => 'Default Test Tenant']);
+        $this->defaultTenant = Tenant::create([
+            'name' => 'Default Test Tenant',
+            'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
+            'access_status' => Tenant::ACCESS_ACTIVE,
+            'status' => 'active',
+        ]);
         $this->defaultStore = Store::create([
             'tenant_id' => $this->defaultTenant->id,
             'name' => 'Default Test Store',

@@ -9,6 +9,23 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property string $name
+ * @property string|null $code
+ * @property string $timezone
+ * @property string $business_date_cutoff
+ * @property string $default_channel
+ * @property string|null $address
+ * @property string|null $phone
+ * @property bool $is_active
+ * @property bool $is_initial
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read \App\Models\Tenant|null $tenant
+ */
 class Store extends Model
 {
     use AssignsTenant;

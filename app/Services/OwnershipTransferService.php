@@ -368,7 +368,7 @@ class OwnershipTransferService
         $storeResolutionStrategy = 'none';
 
         if (! empty($options['store_id'])) {
-            $explicitStore = Store::where('tenant_id', $tenant->id)->where('id', $options['store_id'])->first();
+            $explicitStore = Store::withoutTenantScope()->where('tenant_id', $tenant->id)->where('id', $options['store_id'])->first();
             if (! $explicitStore) {
                 throw new OwnershipTransferException("store_id {$options['store_id']} tidak valid untuk tenant {$tenant->id}.");
             }
@@ -376,7 +376,7 @@ class OwnershipTransferService
             $storeResolutionStrategy = 'explicit_option';
         } elseif (app(TenantContext::class)->getStoreId() !== null) {
             $contextStoreId = app(TenantContext::class)->getStoreId();
-            $contextStore = Store::where('tenant_id', $tenant->id)->where('id', $contextStoreId)->first();
+            $contextStore = Store::withoutTenantScope()->where('tenant_id', $tenant->id)->where('id', $contextStoreId)->first();
             if ($contextStore) {
                 $resolvedStoreId = $contextStore->id;
                 $storeResolutionStrategy = 'tenant_context';
@@ -392,7 +392,7 @@ class OwnershipTransferService
         }
 
         if ($resolvedStoreId === null) {
-            $primaryStore = Store::where('tenant_id', $tenant->id)->orderBy('id')->first();
+            $primaryStore = Store::withoutTenantScope()->where('tenant_id', $tenant->id)->orderBy('id')->first();
             if ($primaryStore) {
                 $resolvedStoreId = $primaryStore->id;
                 $storeResolutionStrategy = 'tenant_primary_store_fallback';

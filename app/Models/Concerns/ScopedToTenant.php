@@ -22,6 +22,8 @@ trait ScopedToTenant
     /**
      * Escape hatch eksplisit & tervalog: jalankan query tanpa filter tenant.
      * Gunakan hanya untuk operasi sistem (seeder/backfill/login), tidak pernah untuk request web.
+     *
+     * @return Builder<static>
      */
     public static function withoutTenantScope(): Builder
     {
@@ -30,6 +32,6 @@ trait ScopedToTenant
             'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3),
         ]);
 
-        return static::withoutGlobalScope(TenantScope::class);
+        return static::query()->withoutGlobalScope(TenantScope::class);
     }
 }

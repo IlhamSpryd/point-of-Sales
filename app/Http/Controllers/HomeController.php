@@ -24,7 +24,7 @@ class HomeController extends Controller
         $roleName = $user->role?->name;
 
         // Jika Owner belum menyelesaikan wizard onboarding, arahkan ke wizard step yang aktif
-        if (($roleName === 'Owner' || (bool) ($user->role?->is_admin ?? false)) && config('pos.enforce_onboarding_wizard', true)) {
+        if (($roleName === 'Owner' || (bool) ($user->role->is_admin ?? false)) && config('pos.enforce_onboarding_wizard', true)) {
             $tenant = $user->tenant;
             if ($tenant && ! $tenant->isOnboardingCompleted()) {
                 $tenant = $tenant->fresh() ?? $tenant;

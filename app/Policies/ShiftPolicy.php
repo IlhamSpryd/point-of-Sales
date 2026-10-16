@@ -22,7 +22,7 @@ class ShiftPolicy
     {
         return in_array($user->role?->name, ['Owner', 'Manager', 'Kasir', 'Supervisor'], true)
             && ((int) $user->id === (int) $shift->user_id
-                || in_array($user->role?->name, ['Owner', 'Manager'], true))
+                || in_array($user->role->name, ['Owner', 'Manager'], true))
             && (int) $user->tenant_id === (int) $shift->tenant_id;
     }
 

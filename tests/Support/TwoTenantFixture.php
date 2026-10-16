@@ -47,8 +47,18 @@ trait TwoTenantFixture
         app(TenantContext::class)->runWithoutTenant(function () {
             Model::unguard();
 
-            $this->tenantA = Tenant::create(['name' => 'Tenant A']);
-            $this->tenantB = Tenant::create(['name' => 'Tenant B']);
+            $this->tenantA = Tenant::create([
+                'name' => 'Tenant A',
+                'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
+                'access_status' => Tenant::ACCESS_ACTIVE,
+                'status' => 'active',
+            ]);
+            $this->tenantB = Tenant::create([
+                'name' => 'Tenant B',
+                'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
+                'access_status' => Tenant::ACCESS_ACTIVE,
+                'status' => 'active',
+            ]);
 
             $this->storeA = Store::create(['tenant_id' => $this->tenantA->id, 'name' => 'Store A']);
             $this->storeB = Store::create(['tenant_id' => $this->tenantB->id, 'name' => 'Store B']);

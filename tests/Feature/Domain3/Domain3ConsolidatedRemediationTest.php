@@ -194,7 +194,6 @@ class Domain3ConsolidatedRemediationTest extends TestCase
 
         $categoryRival = Category::create([
             'tenant_id' => $tenantRival->id,
-            'store_id' => $storeRival->id,
             'category_name' => 'Rival Category',
         ]);
 
@@ -275,7 +274,6 @@ class Domain3ConsolidatedRemediationTest extends TestCase
 
         $category = Category::create([
             'tenant_id' => $this->tenant->id,
-            'store_id' => $this->storeA->id,
             'category_name' => 'Tea Category',
         ]);
 
@@ -492,7 +490,6 @@ class Domain3ConsolidatedRemediationTest extends TestCase
         $category = Category::create([
             'tenant_id' => $this->tenant->id,
             'category_name' => 'Minuman',
-            'is_active' => true,
         ]);
 
         $table1 = Table::forceCreate([
@@ -592,7 +589,6 @@ class Domain3ConsolidatedRemediationTest extends TestCase
         $category = Category::create([
             'tenant_id' => $this->tenant->id,
             'category_name' => 'Kategori B',
-            'is_active' => true,
         ]);
 
         $tableB = Table::forceCreate([

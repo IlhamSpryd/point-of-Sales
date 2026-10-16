@@ -29,7 +29,7 @@ class Category extends Model
             if (empty($model->category_code)) {
                 $latest = static::withoutTenantScope()->latest('id')->first();
                 $nextId = $latest ? $latest->id + 1 : 1;
-                $model->category_code = 'CAT-'.$model->tenant_id.'-'.str_pad($nextId, 3, '0', STR_PAD_LEFT);
+                $model->category_code = 'CAT-'.$model->tenant_id.'-'.str_pad((string) $nextId, 3, '0', STR_PAD_LEFT);
             }
         });
     }

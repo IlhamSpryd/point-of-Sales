@@ -53,7 +53,7 @@ class SetTenantContext
 
         // 5. Validate tenant exists and is not soft-deleted
         $tenant = $user->tenant;
-        if (! $tenant || (method_exists($tenant, 'trashed') && $tenant->trashed())) {
+        if (! $tenant || $tenant->trashed()) {
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();

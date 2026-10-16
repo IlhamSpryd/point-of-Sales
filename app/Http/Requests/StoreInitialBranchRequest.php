@@ -15,7 +15,7 @@ class StoreInitialBranchRequest extends FormRequest
             return false;
         }
 
-        return $user->role?->name === 'Owner' || (bool) ($user->role?->is_admin ?? false);
+        return $user->role?->name === 'Owner' || (bool) ($user->role->is_admin ?? false);
     }
 
     public function rules(): array

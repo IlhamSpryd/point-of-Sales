@@ -17,10 +17,6 @@ use Illuminate\Support\Str;
 
 class TenantOnboardingService
 {
-    public function __construct(
-        private TenantContext $tenantContext,
-    ) {}
-
     /**
      * Dapatkan store awal milik tenant atau buatkan jika belum ada (idempoten).
      */
@@ -31,11 +27,11 @@ class TenantOnboardingService
             ->orderBy('id')
             ->first();
 
-        if ($store !== null) {
+        if ($store instanceof Store) {
             return $store;
         }
 
-        return Store::withoutTenantScope()->create([
+        $created = Store::withoutTenantScope()->create([
             'tenant_id' => $tenant->id,
             'name' => ($tenant->name ?: 'Bisnis').' - Pusat',
             'code' => 'MAIN-01',
@@ -45,6 +41,8 @@ class TenantOnboardingService
             'is_active' => true,
             'is_initial' => true,
         ]);
+
+        return $created;
     }
 
     /**
@@ -102,7 +100,7 @@ class TenantOnboardingService
      */
     public function saveInitialBranch(Tenant $tenant, array $data, ?User $owner = null): Store
     {
-        return DB::transaction(function () use ($tenant, $data, $owner) {
+        return DB::transaction(function () use ($tenant, $data, $owner): Store {
             $lockedTenant = Tenant::whereKey($tenant->id)->lockForUpdate()->firstOrFail();
 
             // Cari store awal dengan lock FOR UPDATE
@@ -201,7 +199,7 @@ class TenantOnboardingService
 
         // Masukkan email baru ke email_outbox
         $tenant = Tenant::find($user->tenant_id);
-        $tenantName = $tenant?->name ?? 'Apeiron POS';
+        $tenantName = $tenant->name ?? 'Apeiron POS';
         $activationUrl = url('/onboarding/set-password/'.$rawToken);
 
         $body = "Halo {$user->name},\n\n"

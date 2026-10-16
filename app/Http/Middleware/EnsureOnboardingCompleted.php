@@ -26,7 +26,7 @@ class EnsureOnboardingCompleted
             return $next($request);
         }
 
-        $isOwner = $user->role?->name === 'Owner' || (bool) ($user->role?->is_admin ?? false);
+        $isOwner = $user->role?->name === 'Owner' || (bool) ($user->role->is_admin ?? false);
 
         // Hanya Owner yang wajib menyelesaikan onboarding wizard bisnis
         if (! $isOwner) {

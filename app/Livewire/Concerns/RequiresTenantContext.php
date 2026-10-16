@@ -33,7 +33,7 @@ trait RequiresTenantContext
         }
 
         $tenant = $user->tenant;
-        if (! $tenant || (method_exists($tenant, 'trashed') && $tenant->trashed())) {
+        if (! $tenant || $tenant->trashed()) {
             Auth::guard('web')->logout();
             session()->invalidate();
             session()->regenerateToken();

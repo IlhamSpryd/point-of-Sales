@@ -48,8 +48,6 @@ class Order extends Model
         'order_code',
         'order_date',
         'idempotency_key',
-        'order_status',
-        'payment_method',
         'order_amount',
         'subtotal_amount',
         'discount_amount',

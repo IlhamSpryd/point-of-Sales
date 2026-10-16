@@ -125,7 +125,7 @@ class OwnerOnboardingController extends Controller
             return ['status' => 'ok', 'user' => $user];
         });
 
-        if (is_array($result) && ($result['status'] ?? '') === 'ok') {
+        if (is_array($result)) {
             $user = $result['user'];
 
             // Dukung auto-login & direct redirect ke Onboarding Wizard

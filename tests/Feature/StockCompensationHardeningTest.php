@@ -194,7 +194,7 @@ class StockCompensationHardeningTest extends TestCase
             ->update(['quantity' => 10]);
         $this->productA->update(['stock' => 10]);
 
-        $initialOrderCount = Order::count();
+        $initialOrderCount = Order::withoutGlobalScopes()->where('tenant_id', $this->tenantA->id)->count();
 
         $response = $this->actingAs($kasir)
             ->withSession(['active_store_id' => $this->storeA->id])
@@ -206,7 +206,7 @@ class StockCompensationHardeningTest extends TestCase
             ]);
 
         $response->assertStatus(400);
-        $this->assertEquals($initialOrderCount, Order::count());
+        $this->assertEquals($initialOrderCount, Order::withoutGlobalScopes()->where('tenant_id', $this->tenantA->id)->count());
     }
 
     public function test_auto_assigns_shift_id_when_cashier_has_open_shift(): void
@@ -252,6 +252,6 @@ class StockCompensationHardeningTest extends TestCase
             ]);
 
         $response->assertOk();
-        $this->assertEquals($shift->id, Order::latest('id')->first()->shift_id);
+        $this->assertEquals($shift->id, Order::withoutGlobalScopes()->latest('id')->first()?->shift_id);
     }
 }

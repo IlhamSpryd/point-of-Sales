@@ -6,7 +6,6 @@ use App\Http\Requests\StoreBusinessProfileRequest;
 use App\Http\Requests\StoreInitialBranchRequest;
 use App\Models\Setting;
 use App\Models\Tenant;
-use App\Services\Context\StoreResolver;
 use App\Services\Context\TenantContext;
 use App\Services\TenantOnboardingService;
 use Illuminate\Http\RedirectResponse;
@@ -18,7 +17,6 @@ class OnboardingWizardController extends Controller
     public function __construct(
         private TenantOnboardingService $onboardingService,
         private TenantContext $tenantContext,
-        private StoreResolver $storeResolver,
     ) {}
 
     /**
