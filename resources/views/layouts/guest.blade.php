@@ -23,16 +23,6 @@
     <div id="swup" class="transition-fade min-h-screen grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 w-full bg-white overflow-x-hidden">
         <!-- KIRI: KONTEN UTAMA (7 cols di lg, 1 col di md, single col di mobile) -->
         <div class="md:col-span-1 lg:col-span-7 flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-16 w-full relative bg-white min-h-screen">
-            <div>
-                <!-- Brand Wordmark & Logo -->
-                <div class="mb-6 sm:mb-8 w-full max-w-sm mx-auto md:mx-0" style="max-width: 384px;">
-                    <a href="/" class="inline-flex items-center gap-2.5 select-none transition-opacity hover:opacity-85">
-                        <img src="{{ asset('assets/images/logo.png') }}" alt="Apeiron System Logo" class="h-9 sm:h-10 w-auto object-contain">
-                        <span class="text-base sm:text-lg font-bold tracking-tight text-zinc-950 font-brand">Apeiron System</span>
-                    </a>
-                </div>
-            </div>
-
             <!-- Form Content Mount (Strictly clamped to max-w-sm to prevent horizontal stretching) -->
             <div class="my-auto py-4 sm:py-6 w-full max-w-sm mx-auto" style="max-width: 384px;">
                 @hasSection('content')
