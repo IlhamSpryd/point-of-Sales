@@ -158,6 +158,7 @@ class CreateOrder extends Component
         $this->pendingOrderCode = null;
         $this->pendingOrderId = null;
         $this->cart = [];
+        $this->dispatch('pos-cart-state-changed', dirty: false);
         $this->orderType = null;
         $this->tableId = null;
         // [OMEGA-NODE2] Hygiene fix (lihat Phase 1 self-adversarial review):
@@ -424,6 +425,7 @@ class CreateOrder extends Component
         }
 
         $this->cart = [];
+        $this->dispatch('pos-cart-state-changed', dirty: false);
         $this->selectedDiscountId = null;
         $this->cashReceived = 0;
         $this->resetValidation();
@@ -742,6 +744,7 @@ class CreateOrder extends Component
 
             // Reset server-side cart & state untuk transaksi berikutnya
             $this->cart = [];
+            $this->dispatch('pos-cart-state-changed', dirty: false);
             $this->orderType = null;
             $this->tableId = null;
             $this->customerId = null;

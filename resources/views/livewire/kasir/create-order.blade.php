@@ -11,6 +11,22 @@
             if (btn && !btn.disabled) btn.click();
         }
 }"
+    x-init="
+        window.apeironPosCartDirty = {{ count($cart) > 0 ? 'true' : 'false' }};
+        $watch('$wire.cart', val => {
+            window.apeironPosCartDirty = Array.isArray(val) && val.length > 0;
+        });
+        if (!window.__apeironBeforeUnloadBound) {
+            window.__apeironBeforeUnloadBound = true;
+            window.addEventListener('beforeunload', (e) => {
+                if (window.apeironPosCartDirty) {
+                    e.preventDefault();
+                    e.returnValue = '';
+                }
+            });
+        }
+    "
+    @destroy="window.apeironPosCartDirty = false"
     @keydown.window.f2.prevent="focusSearch()" @keydown.window.f4.prevent="triggerPay()"
     class="flex flex-col h-[calc(100vh-64px)] lg:h-screen overflow-hidden min-h-0 bg-white">
 

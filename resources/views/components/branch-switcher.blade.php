@@ -25,7 +25,7 @@
 @if(count($stores) > 1 || $isOwner)
 <div x-data="{ open: false }" class="relative {{ $fullWidth ? 'w-full block' : 'inline-block' }} text-left" @click.outside="open = false" @keydown.escape.window="open = false">
     {{-- Trigger Button --}}
-    <button type="button" @click="open = !open" :aria-expanded="open.toString()"
+    <button type="button" @click="open = !open" :aria-expanded="open.toString()" aria-haspopup="true" aria-label="Pilih cabang aktif"
         class="{{ $fullWidth ? 'w-full justify-between' : 'inline-flex' }} items-center gap-2.5 px-3.5 py-2.5 bg-white hover:bg-[#F7F7F5] border border-[#E9E9E7] text-apeiron-ink text-sm font-semibold rounded-xl shadow-sm transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F] cursor-pointer">
         <div class="flex items-center gap-2.5 min-w-0">
             <span class="shrink-0 w-2.5 h-2.5 rounded-full {{ $isAll ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)] animate-pulse' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' }}"></span>
@@ -53,7 +53,8 @@
         <div class="max-h-72 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
             @if($isOwner)
             {{-- All Stores (Konsolidasi) Option for Owner --}}
-            <form action="{{ route('store.switch') }}" method="POST">
+            <form action="{{ route('store.switch') }}" method="POST"
+                @submit="if (window.apeironPosCartDirty && !confirm('Anda memiliki pesanan aktif di kasir. Pindah cabang akan membatalkan keranjang aktif. Lanjutkan?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }">
                 @csrf
                 <input type="hidden" name="store_id" value="all">
                 <button type="submit"
@@ -76,7 +77,8 @@
             {{-- Specific Stores List --}}
             @foreach($stores as $st)
                 @php $isSelected = ! $isAll && (int)$currentSession === $st->id; @endphp
-                <form action="{{ route('store.switch') }}" method="POST">
+                <form action="{{ route('store.switch') }}" method="POST"
+                    @submit="if (window.apeironPosCartDirty && !confirm('Anda memiliki pesanan aktif di kasir. Pindah cabang akan membatalkan keranjang aktif. Lanjutkan?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }">
                     @csrf
                     <input type="hidden" name="store_id" value="{{ $st->id }}">
                     <button type="submit"
