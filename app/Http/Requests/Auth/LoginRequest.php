@@ -54,7 +54,7 @@ class LoginRequest extends FormRequest
             event(new Lockout($this));
             $seconds = now()->diffInSeconds($userCandidate->locked_until, false);
             throw ValidationException::withMessages([
-                'email' => 'Akun Anda terkunci sementara karena 5 kali percobaan login gagal. Silakan coba lagi dalam '.ceil($seconds / 60).' menit.',
+                'email' => 'Your account is temporarily locked due to 5 consecutive failed sign-in attempts. Please try again in '.ceil($seconds / 60).' minute(s).',
             ]);
         }
 
@@ -73,7 +73,7 @@ class LoginRequest extends FormRequest
                             'action' => 'user.auth_locked_out',
                             'subject_type' => User::class,
                             'subject_id' => $userCandidate->id,
-                            'description' => "Akun {$userCandidate->email} dikunci selama 15 menit setelah 5 kali gagal login.",
+                            'description' => "Account {$userCandidate->email} locked for 15 minutes after 5 failed sign-in attempts.",
                             'created_at' => now(),
                             'updated_at' => now(),
                         ]);
@@ -83,7 +83,7 @@ class LoginRequest extends FormRequest
 
                     event(new Lockout($this));
                     throw ValidationException::withMessages([
-                        'email' => 'Akun Anda telah dikunci selama 15 menit karena 5 kali percobaan login gagal berturut-turut.',
+                        'email' => 'Your account has been locked for 15 minutes due to 5 consecutive failed sign-in attempts.',
                     ]);
                 }
             }
@@ -101,7 +101,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey(), 900);
 
             throw ValidationException::withMessages([
-                'email' => 'Akun ini telah dinonaktifkan. Silakan hubungi Owner atau Manager.',
+                'email' => 'This account has been deactivated. Please contact your store owner or manager.',
             ]);
         }
 
@@ -110,7 +110,7 @@ class LoginRequest extends FormRequest
             Auth::logout();
 
             throw ValidationException::withMessages([
-                'email' => 'Ruang kerja bisnis Anda sedang ditangguhkan. Silakan hubungi dukungan pelanggan.',
+                'email' => 'Your business workspace is currently suspended. Please contact customer support.',
             ]);
         }
 
@@ -135,7 +135,7 @@ class LoginRequest extends FormRequest
             event(new Lockout($this));
             $seconds = now()->diffInSeconds($userCandidate->locked_until, false);
             throw ValidationException::withMessages([
-                'email' => 'Akun Anda terkunci sementara karena 5 kali percobaan login gagal. Silakan coba lagi dalam '.ceil($seconds / 60).' menit.',
+                'email' => 'Your account is temporarily locked due to 5 consecutive failed sign-in attempts. Please try again in '.ceil($seconds / 60).' minute(s).',
             ]);
         }
 

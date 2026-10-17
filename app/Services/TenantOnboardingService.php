@@ -33,7 +33,7 @@ class TenantOnboardingService
 
         $created = Store::withoutTenantScope()->create([
             'tenant_id' => $tenant->id,
-            'name' => ($tenant->name ?: 'Bisnis').' - Pusat',
+            'name' => ($tenant->name ?: 'Business').' - Main Branch',
             'code' => 'MAIN-01',
             'timezone' => 'Asia/Jakarta',
             'business_date_cutoff' => '00:00',
@@ -116,7 +116,7 @@ class TenantOnboardingService
                 $store->is_initial = true;
             }
 
-            $store->name = trim($data['store_name'] ?? ($tenant->name.' - Pusat'));
+            $store->name = trim($data['store_name'] ?? ($tenant->name.' - Main Branch'));
             $store->code = strtoupper(trim($data['store_code'] ?? 'MAIN-01'));
             $store->timezone = $data['store_timezone'] ?? 'Asia/Jakarta';
             $store->business_date_cutoff = $data['business_date_cutoff'] ?? '00:00';

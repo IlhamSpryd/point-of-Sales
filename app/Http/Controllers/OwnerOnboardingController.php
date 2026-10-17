@@ -38,7 +38,7 @@ class OwnerOnboardingController extends Controller
 
         if ($record === null) {
             return redirect()->route('login')
-                ->with('error', 'Tautan aktivasi tidak valid atau sudah kedaluwarsa.');
+                ->with('error', 'This activation link is invalid or has expired.');
         }
 
         $response = response()->view('auth.onboarding-set-password', [
@@ -68,7 +68,7 @@ class OwnerOnboardingController extends Controller
 
         if ($record === null) {
             return redirect()->route('login')
-                ->with('error', 'Tautan aktivasi tidak valid atau sudah kedaluwarsa.');
+                ->with('error', 'This activation link is invalid or has expired.');
         }
 
         $result = DB::transaction(function () use ($record, $request) {
@@ -137,18 +137,18 @@ class OwnerOnboardingController extends Controller
                 app(TenantContext::class)->setTenantId($user->tenant_id);
 
                 return redirect()->route('onboarding.business-profile')
-                    ->with('success', 'Kata sandi berhasil ditetapkan. Mari lengkapi profil bisnis Anda.');
+                    ->with('success', 'Your password has been set. Let\'s configure your business profile.');
             }
 
             return redirect()->route('login')
-                ->with('success', 'Password berhasil ditetapkan. Silakan login.');
+                ->with('success', 'Your password has been set successfully. Please sign in.');
         }
 
         return match ($result) {
             'already_activated' => redirect()->route('login')
-                ->with('error', 'Akun ini sudah pernah diaktifkan. Silakan login atau reset password.'),
+                ->with('error', 'This account has already been activated. Please sign in or reset your password.'),
             default => redirect()->route('login')
-                ->with('error', 'Tautan aktivasi tidak valid atau sudah kedaluwarsa.'),
+                ->with('error', 'This activation link is invalid or has expired.'),
         };
     }
 
@@ -165,7 +165,7 @@ class OwnerOnboardingController extends Controller
         app(TenantOnboardingService::class)->resendOnboardingToken($request->string('email'));
 
         return redirect()->back()
-            ->with('success', 'Jika email Anda terdaftar dan belum diverifikasi, kami telah mengirimkan tautan aktivasi baru.');
+            ->with('success', 'If your email address is registered and pending activation, a new activation link has been sent.');
     }
 
     /**

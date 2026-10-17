@@ -60,11 +60,11 @@ Route::post('/onboarding/set-password/{token}', [OwnerOnboardingController::clas
 // P0-01 & SEC-01: Lockdown route legacy /register pada monolit POS
 Route::get('/register', function () {
     return redirect()->route('login')
-        ->with('info', 'Pendaftaran tenant baru dilakukan melalui portal pemasaran resmi.');
+        ->with('info', 'New business registration is processed through the official marketing portal.');
 })->name('register');
 
 Route::post('/register', function () {
-    abort(405, 'Pendaftaran publik langsung tidak diizinkan pada aplikasi POS.');
+    abort(405, 'Direct public registration is disabled on this Point of Sale terminal.');
 });
 
 // Self-service resend token aktivasi (unauthenticated & rate limited throttle:3,15)

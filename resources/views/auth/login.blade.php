@@ -1,18 +1,18 @@
 @extends('layouts.guest')
 
-@section('title', 'Masuk — Apeiron POS')
+@section('title', 'Sign In — Apeiron POS')
 
 @section('content')
     @if (session('success'))
         <div role="status" aria-live="polite" class="mb-6 pb-4 border-b border-emerald-200 text-xs text-emerald-700 leading-relaxed">
-            <span class="font-semibold block mb-0.5">{{ __('Berhasil') }}</span>
+            <span class="font-semibold block mb-0.5">{{ __('Success') }}</span>
             <span>{{ session('success') }}</span>
         </div>
     @endif
 
     @if (session('error'))
         <div role="alert" aria-live="assertive" class="mb-6 pb-4 border-b border-rose-200 text-xs text-rose-600 leading-relaxed">
-            <span class="font-semibold block mb-0.5">{{ __('Pemberitahuan') }}</span>
+            <span class="font-semibold block mb-0.5">{{ __('Notice') }}</span>
             <span>{{ session('error') }}</span>
         </div>
     @endif
@@ -25,7 +25,7 @@
 
     @if ($errors->any())
         <div role="alert" aria-live="assertive" class="mb-6 pb-4 border-b border-red-200 text-xs text-red-600 leading-relaxed error-alert">
-            <span class="font-semibold block mb-0.5">{{ __('Autentikasi Gagal') }}</span>
+            <span class="font-semibold block mb-0.5">{{ __('Sign-in failed') }}</span>
             <span>{{ $errors->first('email') ?: ($errors->first('password') ?: $errors->first()) }}</span>
         </div>
     @endif
@@ -33,16 +33,16 @@
     <!-- Heading Block -->
     <div class="mb-8 js-anim" id="anim-heading">
         <h1 class="text-2xl font-medium tracking-tight text-zinc-950">
-            {{ __('Masuk ke Apeiron') }}
+            {{ __('Sign in to Apeiron') }}
         </h1>
         <p class="text-sm text-zinc-500 mt-1.5">
-            {{ __('Masukkan detail akun Anda untuk mengakses sistem.') }}
+            {{ __('Enter your credentials to access your workspace.') }}
         </p>
     </div>
 
     <!-- SSO Buttons (Google & Apple) -->
     <div class="grid grid-cols-2 gap-3 mb-6 js-anim" id="anim-social">
-        <button type="button" class="w-full h-10 flex items-center justify-center gap-2.5 px-3 rounded-md border border-zinc-200 bg-white text-xs sm:text-sm font-medium text-zinc-800 hover:bg-zinc-50 hover:border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs active:scale-[0.98] cursor-pointer">
+        <button type="button" id="btn-google-login" aria-label="{{ __('Sign in with Google') }}" class="w-full h-10 flex items-center justify-center gap-2.5 px-3 rounded-md border border-zinc-200 bg-white text-xs sm:text-sm font-medium text-zinc-800 hover:bg-zinc-50 hover:border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs active:scale-[0.98] cursor-pointer">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
                 <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -52,7 +52,7 @@
             <span>Google</span>
         </button>
         
-        <button type="button" class="w-full h-10 flex items-center justify-center gap-2.5 px-3 rounded-md border border-zinc-200 bg-white text-xs sm:text-sm font-medium text-zinc-800 hover:bg-zinc-50 hover:border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs active:scale-[0.98] cursor-pointer">
+        <button type="button" id="btn-apple-login" aria-label="{{ __('Sign in with Apple') }}" class="w-full h-10 flex items-center justify-center gap-2.5 px-3 rounded-md border border-zinc-200 bg-white text-xs sm:text-sm font-medium text-zinc-800 hover:bg-zinc-50 hover:border-zinc-300 focus:outline-none focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs active:scale-[0.98] cursor-pointer">
             <svg width="18" height="18" viewBox="0 0 384 512" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="text-zinc-900">
                 <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
             </svg>
@@ -63,7 +63,7 @@
     <!-- Divider -->
     <div class="relative flex items-center justify-center mb-6 js-anim" id="anim-divider">
         <div class="w-full border-t border-zinc-200"></div>
-        <span class="absolute bg-white px-3 text-xs text-zinc-400">{{ __('atau') }}</span>
+        <span class="absolute bg-white px-3 text-xs text-zinc-400">{{ __('or') }}</span>
     </div>
 
     <!-- Main Login Form -->
@@ -71,10 +71,10 @@
         @submit="handleSubmit($el)" id="login-form">
         @csrf
 
-        {{-- Email atau Username --}}
+        {{-- Email or Username --}}
         <div class="js-anim" id="anim-field-email">
             <label for="email" class="block text-[13px] font-medium text-zinc-800 mb-1.5">
-                {{ __('Email atau username') }}
+                {{ __('Email or username') }}
             </label>
             <input
                 type="text"
@@ -95,11 +95,11 @@
         <div class="js-anim" id="anim-field-password" x-data="{ show: false }">
             <div class="flex items-baseline justify-between mb-1.5">
                 <label for="password" class="text-[13px] font-medium text-zinc-800">
-                    {{ __('Kata Sandi') }}
+                    {{ __('Password') }}
                 </label>
                 @if (Route::has('password.request'))
                     <a href="{{ route('password.request') }}" class="text-xs text-zinc-500 hover:text-zinc-950 transition-colors">
-                        {{ __('Lupa kata sandi?') }}
+                        {{ __('Forgot password?') }}
                     </a>
                 @endif
             </div>
@@ -110,16 +110,16 @@
                     id="password"
                     required
                     autocomplete="current-password"
-                    placeholder="Masukkan kata sandi"
+                    placeholder="Enter your password"
                     class="field-input w-full h-10 pl-3 pr-24 rounded-md border border-zinc-300 bg-white text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all {{ $errors->has('password') ? 'field-input-error' : '' }}"
                 />
                 <button
                     type="button"
                     @click="show = !show"
                     class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500 hover:text-zinc-950 px-1.5 py-0.5 transition-colors cursor-pointer select-none whitespace-nowrap font-medium"
-                    :aria-label="show ? '{{ __('Sembunyikan kata sandi') }}' : '{{ __('Tampilkan kata sandi') }}'"
+                    :aria-label="show ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
                 >
-                    <span x-text="show ? '{{ __('Sembunyikan') }}' : '{{ __('Tampilkan') }}'"></span>
+                    <span x-text="show ? '{{ __('Hide') }}' : '{{ __('Show') }}'"></span>
                 </button>
             </div>
             @error('password')
@@ -136,7 +136,7 @@
                     id="remember"
                     class="w-4 h-4 rounded-xs border-zinc-300 text-zinc-950 focus:ring-zinc-950 accent-zinc-950"
                 />
-                <span class="text-xs text-zinc-600">{{ __('Ingat saya di perangkat ini') }}</span>
+                <span class="text-xs text-zinc-600">{{ __('Remember this device') }}</span>
             </label>
         </div>
 
@@ -151,17 +151,17 @@
                 :aria-busy="isLoading"
             >
                 <span x-show="isLoading" class="w-3.5 h-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true" x-cloak></span>
-                <span x-text="isLoading ? '{{ __('Memproses...') }}' : '{{ __('Masuk') }}'">{{ __('Masuk') }}</span>
+                <span x-text="isLoading ? '{{ __('Signing in...') }}' : '{{ __('Sign in') }}'">{{ __('Sign in') }}</span>
             </button>
         </div>
     </form>
 
     <!-- Footer Register Link -->
     <div class="mt-8 pt-6 border-t border-zinc-100 text-xs text-zinc-500 leading-relaxed js-anim" id="anim-footer-link">
-        {{ __('Belum memiliki akun bisnis?') }}
-        <a href="{{ env('MARKETING_REGISTER_URL', rtrim(env('MARKETING_URL', 'http://localhost:8080'), '/') . '/register') }}"
+        {{ __('Need a business account?') }}
+        <a href="{{ config('services.marketing.register_url', env('MARKETING_REGISTER_URL', rtrim(env('MARKETING_URL', 'http://localhost:8080'), '/') . '/register')) }}"
             class="text-zinc-950 font-medium hover:underline underline-offset-4 ml-1">
-            {{ __('Daftarkan bisnis Anda') }}
+            {{ __('Register your business') }}
         </a>
     </div>
 @endsection

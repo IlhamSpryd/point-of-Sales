@@ -53,13 +53,13 @@ class StoreInitialBranchRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'store_name.required' => 'Nama cabang pertama wajib diisi.',
-            'store_code.required' => 'Kode cabang wajib diisi.',
-            'store_code.regex' => 'Kode cabang hanya boleh berisi huruf kapital, angka, dan strip (mis. MAIN-01).',
-            'store_code.unique' => 'Kode cabang tersebut sudah digunakan pada bisnis Anda.',
-            'business_date_cutoff.required' => 'Jam tutup buku harian (cutoff) wajib diisi.',
-            'business_date_cutoff.date_format' => 'Format jam cutoff harus HH:mm (contoh: 00:00 atau 04:00).',
-            'default_channel.required' => 'Saluran penjualan default kasir wajib dipilih.',
+            'store_name.required' => 'Primary branch name is required.',
+            'store_code.required' => 'Branch code is required.',
+            'store_code.regex' => 'Branch code may only contain uppercase letters, numbers, and hyphens (e.g., MAIN-01).',
+            'store_code.unique' => 'This branch code is already in use within your business.',
+            'business_date_cutoff.required' => 'Daily business cutoff time is required.',
+            'business_date_cutoff.date_format' => 'Cutoff time must use the HH:mm format (e.g., 00:00 or 04:00).',
+            'default_channel.required' => 'Default sales channel is required.',
         ];
     }
 }

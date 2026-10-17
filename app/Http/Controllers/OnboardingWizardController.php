@@ -28,7 +28,7 @@ class OnboardingWizardController extends Controller
         $tenant = $user->tenant;
 
         if ($tenant === null) {
-            abort(403, 'Tenant tidak ditemukan.');
+            abort(403, 'Tenant workspace not found.');
         }
 
         // Jika onboarding sudah selesai, langsung arahkan ke dashboard
@@ -77,7 +77,7 @@ class OnboardingWizardController extends Controller
         $this->onboardingService->saveBusinessProfile($tenant, $request->validated());
 
         return redirect()->route('onboarding.initial-branch')
-            ->with('success', 'Profil bisnis berhasil disimpan. Sekarang, atur cabang pertama Anda.');
+            ->with('success', 'Business profile saved. Now, configure your primary branch.');
     }
 
     /**
@@ -89,7 +89,7 @@ class OnboardingWizardController extends Controller
         $tenant = $user->tenant;
 
         if ($tenant === null) {
-            abort(403, 'Tenant tidak ditemukan.');
+            abort(403, 'Tenant workspace not found.');
         }
 
         if ($tenant->isOnboardingCompleted()) {
@@ -106,7 +106,7 @@ class OnboardingWizardController extends Controller
         return view('onboarding.initial-branch', [
             'tenant' => $tenant,
             'store' => $initialStore,
-            'storeName' => $initialStore->name ?: ($tenant->name.' - Pusat'),
+            'storeName' => $initialStore->name ?: ($tenant->name.' - Main Branch'),
             'storeCode' => $initialStore->code ?: 'MAIN-01',
             'storeTimezone' => $initialStore->timezone ?: $tenantTimezone,
             'businessDateCutoff' => $initialStore->business_date_cutoff ?: '00:00',
@@ -131,6 +131,6 @@ class OnboardingWizardController extends Controller
         $this->tenantContext->setStoreId($store->id);
 
         return redirect()->route('dashboard')
-            ->with('success', 'Selamat! Bisnis dan cabang pertama Anda telah siap beroperasi.');
+            ->with('success', 'Your business workspace and primary branch are ready for operation.');
     }
 }

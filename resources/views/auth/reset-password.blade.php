@@ -1,12 +1,12 @@
 <x-guest-layout>
-    @section('title', 'Atur Ulang Kata Sandi — Apeiron POS')
+    @section('title', 'Reset Password — Apeiron POS')
 
     <div class="mb-8">
         <h1 class="text-2xl font-medium tracking-tight text-zinc-950">
-            {{ __('Atur Ulang Kata Sandi') }}
+            {{ __('Reset your password') }}
         </h1>
         <p class="text-sm text-zinc-500 mt-1.5 leading-relaxed">
-            {{ __('Tetapkan kata sandi baru untuk akun Anda.') }}
+            {{ __('Set a new password for your account.') }}
         </p>
     </div>
 
@@ -25,7 +25,7 @@
         <!-- Email Address -->
         <div>
             <label for="email" class="block text-[13px] font-medium text-zinc-800 mb-1.5">
-                {{ __('Alamat Email') }}
+                {{ __('Email address') }}
             </label>
             <input
                 id="email"
@@ -45,7 +45,7 @@
         <!-- Password -->
         <div>
             <label for="password" class="block text-[13px] font-medium text-zinc-800 mb-1.5">
-                {{ __('Kata Sandi Baru') }}
+                {{ __('New password') }}
             </label>
             <div class="relative">
                 <input
@@ -54,16 +54,16 @@
                     name="password"
                     required
                     autocomplete="new-password"
-                    placeholder="Minimal 8 karakter"
+                    placeholder="{{ __('At least 10 characters') }}"
                     class="field-input w-full h-10 pl-3 pr-24 rounded-md border border-zinc-300 bg-white text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all {{ $errors->has('password') ? 'field-input-error' : '' }}"
                 />
                 <button
                     type="button"
                     @click="showPass = !showPass"
                     class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500 hover:text-zinc-950 px-1.5 py-0.5 transition-colors cursor-pointer select-none whitespace-nowrap font-medium"
-                    :aria-label="showPass ? '{{ __('Sembunyikan kata sandi') }}' : '{{ __('Tampilkan kata sandi') }}'"
+                    :aria-label="showPass ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
                 >
-                    <span x-text="showPass ? '{{ __('Sembunyikan') }}' : '{{ __('Tampilkan') }}'"></span>
+                    <span x-text="showPass ? '{{ __('Hide') }}' : '{{ __('Show') }}'"></span>
                 </button>
             </div>
             @error('password')
@@ -74,7 +74,7 @@
         <!-- Confirm Password -->
         <div>
             <label for="password_confirmation" class="block text-[13px] font-medium text-zinc-800 mb-1.5">
-                {{ __('Konfirmasi Kata Sandi') }}
+                {{ __('Confirm new password') }}
             </label>
             <div class="relative">
                 <input
@@ -83,16 +83,16 @@
                     name="password_confirmation"
                     required
                     autocomplete="new-password"
-                    placeholder="Ulangi kata sandi baru"
+                    placeholder="{{ __('Re-enter your new password') }}"
                     class="field-input w-full h-10 pl-3 pr-24 rounded-md border border-zinc-300 bg-white text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all {{ $errors->has('password_confirmation') ? 'field-input-error' : '' }}"
                 />
                 <button
                     type="button"
                     @click="showConfirm = !showConfirm"
                     class="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500 hover:text-zinc-950 px-1.5 py-0.5 transition-colors cursor-pointer select-none whitespace-nowrap font-medium"
-                    :aria-label="showConfirm ? '{{ __('Sembunyikan kata sandi') }}' : '{{ __('Tampilkan kata sandi') }}'"
+                    :aria-label="showConfirm ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
                 >
-                    <span x-text="showConfirm ? '{{ __('Sembunyikan') }}' : '{{ __('Tampilkan') }}'"></span>
+                    <span x-text="showConfirm ? '{{ __('Hide') }}' : '{{ __('Show') }}'"></span>
                 </button>
             </div>
             @error('password_confirmation')
@@ -105,14 +105,14 @@
                 type="submit"
                 class="w-full h-10 px-4 rounded-md font-medium transition-colors flex items-center justify-center gap-2 bg-apeiron-ink hover:bg-[#111111] text-white text-sm cursor-pointer shadow-xs active:scale-[0.99]"
             >
-                {{ __('Simpan Kata Sandi Baru') }}
+                {{ __('Reset password') }}
             </button>
         </div>
     </form>
 
     <div class="mt-8 pt-6 border-t border-zinc-100 text-xs text-zinc-500 leading-relaxed">
         <a href="{{ route('login') }}" class="text-zinc-950 font-medium hover:underline underline-offset-4">
-            ← {{ __('Kembali ke halaman masuk') }}
+            ← {{ __('Back to sign in') }}
         </a>
     </div>
 </x-guest-layout>

@@ -67,4 +67,9 @@ return [
         'nonce_retention' => env('PROVISIONING_NONCE_RETENTION', 1800),
     ],
 
+    'marketing' => [
+        'url' => env('MARKETING_URL', 'http://localhost:8080'),
+        'register_url' => env('MARKETING_REGISTER_URL', 'http://localhost:8080/register'),
+    ],
+
 ];

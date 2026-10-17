@@ -1,12 +1,12 @@
 <x-guest-layout>
-    @section('title', 'Lupa Kata Sandi — Apeiron POS')
+    @section('title', 'Forgot Password — Apeiron POS')
 
     <div class="mb-8">
         <h1 class="text-2xl font-medium tracking-tight text-zinc-950">
-            {{ __('Lupa Kata Sandi') }}
+            {{ __('Forgot password?') }}
         </h1>
         <p class="text-sm text-zinc-500 mt-1.5 leading-relaxed">
-            {{ __('Masukkan alamat email akun Anda. Kami akan mengirimkan tautan untuk mengatur ulang kata sandi.') }}
+            {{ __('Enter your account email address and we will send you a password reset link.') }}
         </p>
     </div>
 
@@ -29,7 +29,7 @@
         <!-- Email Address -->
         <div>
             <label for="email" class="block text-[13px] font-medium text-zinc-800 mb-1.5">
-                {{ __('Alamat Email') }}
+                {{ __('Email address') }}
             </label>
             <input
                 id="email"
@@ -48,14 +48,14 @@
                 type="submit"
                 class="w-full h-10 px-4 rounded-md font-medium transition-colors flex items-center justify-center gap-2 bg-apeiron-ink hover:bg-[#111111] text-white text-sm cursor-pointer shadow-xs active:scale-[0.99]"
             >
-                {{ __('Kirim Tautan Reset Kata Sandi') }}
+                {{ __('Send reset link') }}
             </button>
         </div>
     </form>
 
     <div class="mt-8 pt-6 border-t border-zinc-100 text-xs text-zinc-500 leading-relaxed">
         <a href="{{ route('login') }}" class="text-zinc-950 font-medium hover:underline underline-offset-4">
-            ← {{ __('Kembali ke halaman masuk') }}
+            ← {{ __('Back to sign in') }}
         </a>
     </div>
 </x-guest-layout>

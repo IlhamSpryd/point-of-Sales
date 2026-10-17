@@ -36,10 +36,10 @@ class StoreBusinessProfileRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'business_name.required' => 'Nama brand atau bisnis wajib diisi.',
-            'business_category.required' => 'Kategori bisnis wajib dipilih.',
-            'tenant_timezone.required' => 'Zona waktu utama bisnis wajib dipilih.',
-            'default_currency.required' => 'Mata uang default wajib dipilih.',
+            'business_name.required' => 'Business or brand name is required.',
+            'business_category.required' => 'Business category is required.',
+            'tenant_timezone.required' => 'Primary timezone is required.',
+            'default_currency.required' => 'Default operating currency is required.',
         ];
     }
 }
