@@ -70,6 +70,16 @@
             @error('password')
                 <p class="mt-1.5 text-xs text-red-600" role="alert">{{ $message }}</p>
             @enderror
+
+            {{-- Password Requirements Hint --}}
+            <div class="mt-2 p-2.5 rounded-md bg-zinc-50 border border-zinc-200/80 text-xs text-zinc-600 space-y-1">
+                <p class="font-medium text-zinc-800">{{ __('Password requirements:') }}</p>
+                <ul class="list-disc list-inside space-y-0.5 text-[11px] text-zinc-500">
+                    <li>{{ __('Minimum 10 characters') }}</li>
+                    <li>{{ __('Must contain uppercase and lowercase letters (e.g., A-Z, a-z)') }}</li>
+                    <li>{{ __('Must contain at least one number (0-9)') }}</li>
+                </ul>
+            </div>
         </div>
 
         {{-- Confirm New Password --}}
