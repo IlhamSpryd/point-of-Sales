@@ -2,10 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\Plan;
 use App\Models\Role;
 use App\Models\Setting;
 use App\Models\Store;
 use App\Models\Tenant;
+use App\Models\TenantSubscription;
 use App\Models\User;
 use App\Services\Context\TenantContext;
 use Illuminate\Support\Facades\Log;
@@ -75,6 +77,19 @@ class TenantProvisioningService
 
             // 4. Baseline setting yang dibutuhkan operasi harian.
             $this->provisionBaselineSettings($tenant, $store);
+
+            // 5. Inisialisasi langganan awal (SaaS subscription)
+            $planCode = $tenant->subscription_plan ?? 'standard_trial';
+            $plan = Plan::where('code', $planCode)->first();
+            if ($plan && ! TenantSubscription::where('tenant_id', $tenant->id)->exists()) {
+                TenantSubscription::create([
+                    'tenant_id' => $tenant->id,
+                    'plan_id' => $plan->id,
+                    'status' => TenantSubscription::STATUS_TRIALING,
+                    'starts_at' => now(),
+                    'trial_ends_at' => now()->addDays(14),
+                ]);
+            }
         });
     }
 
