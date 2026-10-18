@@ -9,6 +9,7 @@ use App\Models\Discount;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\Role;
 use App\Models\Shift;
 use App\Models\Store;
 use App\Models\Tenant;
@@ -46,7 +47,7 @@ class TransactionIntegrityTest extends TestCase
                 'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             ]);
             $this->store = Store::forceCreate(['tenant_id' => $this->tenant->id, 'name' => 'Store Core']);
-            $this->role = \App\Models\Role::forceCreate([
+            $this->role = Role::forceCreate([
                 'tenant_id' => $this->tenant->id,
                 'name' => 'Kasir',
                 'description' => 'Role Kasir',

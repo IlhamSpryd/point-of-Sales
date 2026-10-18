@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Security;
 
+use App\Jobs\ProcessWebhookOrderJob;
 use App\Models\ChannelOrderLog;
 use App\Models\Store;
 use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Queue;
 use Tests\Support\TwoTenantFixture;
 use Tests\TestCase;
 
@@ -212,8 +214,8 @@ class WebhookSecurityAuditTest extends TestCase
 
     public function test_successful_webhook_processing_and_idempotent_retry_handling(): void
     {
-        \Illuminate\Support\Facades\Queue::fake([
-            \App\Jobs\ProcessWebhookOrderJob::class,
+        Queue::fake([
+            ProcessWebhookOrderJob::class,
         ]);
 
         $payload = ['id' => 'EXT-ORDER-IDEMP-001', 'items' => []];
@@ -242,7 +244,7 @@ class WebhookSecurityAuditTest extends TestCase
             'status' => 'pending',
         ]);
 
-        \Illuminate\Support\Facades\Queue::assertPushed(\App\Jobs\ProcessWebhookOrderJob::class, 1);
+        Queue::assertPushed(ProcessWebhookOrderJob::class, 1);
 
         // Permintaan kedua (Retry event yang sama dari provider):
         // Harus ditangani secara idempoten tanpa duplikasi (HTTP 200 OK)
@@ -260,7 +262,7 @@ class WebhookSecurityAuditTest extends TestCase
             ->assertJson(['message' => 'Order already processed (duplicate)']);
 
         // Pastikan job TIDAK di-dispatch ulang pada retry request
-        \Illuminate\Support\Facades\Queue::assertPushed(\App\Jobs\ProcessWebhookOrderJob::class, 1);
+        Queue::assertPushed(ProcessWebhookOrderJob::class, 1);
 
         // Pastikan hanya terdapat TEPAT SATU rekaman di database
         $count = ChannelOrderLog::withoutGlobalScopes()

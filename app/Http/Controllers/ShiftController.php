@@ -147,4 +147,130 @@ class ShiftController extends Controller
             'summary' => $summary,
         ]);
     }
+
+    /**
+     * Menginisiasi serah terima shift ke kasir lain.
+     */
+    public function initiateHandover(Request $request, Shift $shift): JsonResponse
+    {
+        Gate::authorize('handover', $shift);
+
+        $validated = $request->validate([
+            'to_user_id' => 'required|integer',
+            'counted_cash_at_handover' => 'required|integer|min:0',
+            'notes' => 'nullable|string|max:500',
+            'pin' => 'nullable|string',
+        ]);
+
+        try {
+            $handover = $this->shiftService->initiateHandover(
+                $shift->id,
+                (int) Auth::id(),
+                (int) $validated['to_user_id'],
+                (int) $validated['counted_cash_at_handover'],
+                $validated['pin'] ?? null,
+                $validated['notes'] ?? null
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Serah terima shift berhasil diinisiasi.',
+                'handover' => $handover,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /**
+     * Menerima serah terima shift.
+     */
+    public function acceptHandover(Request $request, int $handoverId): JsonResponse
+    {
+        $validated = $request->validate([
+            'pin' => 'nullable|string',
+            'supervisor_pin' => 'nullable|string',
+            'supervisor_user_id' => 'nullable|integer',
+        ]);
+
+        try {
+            $shift = $this->shiftService->acceptHandover(
+                $handoverId,
+                (int) Auth::id(),
+                $validated['pin'] ?? null,
+                $validated['supervisor_pin'] ?? null,
+                isset($validated['supervisor_user_id']) ? (int) $validated['supervisor_user_id'] : null
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Serah terima shift berhasil diterima.',
+                'shift' => $shift,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /**
+     * Membatalkan serah terima shift.
+     */
+    public function cancelHandover(Request $request, int $handoverId): JsonResponse
+    {
+        try {
+            $shift = $this->shiftService->cancelHandover($handoverId, (int) Auth::id());
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Serah terima shift berhasil dibatalkan.',
+                'shift' => $shift,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /**
+     * Menutup shift secara paksa oleh Supervisor / Manager.
+     */
+    public function forceClose(Request $request, Shift $shift): JsonResponse
+    {
+        Gate::authorize('forceClose', $shift);
+
+        $validated = $request->validate([
+            'closing_balance' => 'required|integer|min:0',
+            'supervisor_pin' => 'required|string',
+            'reason' => 'required|string|max:500',
+        ]);
+
+        try {
+            $closed = $this->shiftService->forceCloseShift(
+                $shift->id,
+                (int) Auth::id(),
+                (int) $validated['closing_balance'],
+                $validated['supervisor_pin'],
+                $validated['reason']
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Shift berhasil ditutup paksa oleh supervisor.',
+                'shift' => $closed,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
 }

@@ -12,6 +12,7 @@ use App\Services\Context\TenantContext;
 use App\Services\UserInvitationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tests\TestCase;
 
 class EmployeeInvitationExistingAccountTest extends TestCase
@@ -24,7 +25,7 @@ class EmployeeInvitationExistingAccountTest extends TestCase
     {
         $tenant = Tenant::create([
             'name' => $name,
-            'slug' => Str::slug($name) . '-' . uniqid(),
+            'slug' => Str::slug($name).'-'.uniqid(),
             'status' => 'active',
             'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             'access_status' => Tenant::ACCESS_ACTIVE,
@@ -44,21 +45,21 @@ class EmployeeInvitationExistingAccountTest extends TestCase
             'is_initial' => true,
         ]);
 
-        $ownerRole = new Role();
+        $ownerRole = new Role;
         $ownerRole->tenant_id = $tenant->id;
         $ownerRole->name = 'Owner';
         $ownerRole->permissions = ['*'];
         $ownerRole->is_active = true;
         $ownerRole->save();
 
-        $staffRole = new Role();
+        $staffRole = new Role;
         $staffRole->tenant_id = $tenant->id;
         $staffRole->name = 'Staff';
         $staffRole->permissions = ['pos.order.create'];
         $staffRole->is_active = true;
         $staffRole->save();
 
-        $owner = new User();
+        $owner = new User;
         $owner->tenant_id = $tenant->id;
         $owner->role_id = $ownerRole->id;
         $owner->name = "Owner {$name}";
@@ -76,7 +77,7 @@ class EmployeeInvitationExistingAccountTest extends TestCase
     {
         // Tenant A memiliki kasir aktif: 'kasir.shared@example.test'
         [$tenantA, $ownerA, $roleA, $storeA] = $this->createTenantWithStoreAndRoles('Kafe Alpha', 'owner.a@example.test');
-        $kasirA = new User();
+        $kasirA = new User;
         $kasirA->tenant_id = $tenantA->id;
         $kasirA->role_id = $roleA->id;
         $kasirA->name = 'Kasir Alpha';
@@ -122,7 +123,7 @@ class EmployeeInvitationExistingAccountTest extends TestCase
         $invitation->update(['token_hash' => hash('sha256', $testPlaintextToken)]);
 
         $service = app(UserInvitationService::class);
-        $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
+        $this->expectException(HttpException::class);
         $this->expectExceptionMessage('Akun dengan email ini sedang aktif pada organisasi lain.');
         $service->acceptInvitation($testPlaintextToken, ['password' => 'NewPassword123!']);
     }
@@ -132,7 +133,7 @@ class EmployeeInvitationExistingAccountTest extends TestCase
         [$tenantA, $ownerA, $roleA, $storeA] = $this->createTenantWithStoreAndRoles('Kafe Alpha', 'owner.a@example.test');
         app(TenantContext::class)->setTenantId($tenantA->id);
 
-        $kasirA = new User();
+        $kasirA = new User;
         $kasirA->tenant_id = $tenantA->id;
         $kasirA->role_id = $roleA->id;
         $kasirA->name = 'Kasir Alpha';
@@ -158,7 +159,7 @@ class EmployeeInvitationExistingAccountTest extends TestCase
     {
         // Tenant A punya user yang sudah di-soft-delete
         [$tenantA, $ownerA, $roleA, $storeA] = $this->createTenantWithStoreAndRoles('Kafe Alpha', 'owner.a@example.test');
-        $deletedUser = new User();
+        $deletedUser = new User;
         $deletedUser->tenant_id = $tenantA->id;
         $deletedUser->role_id = $roleA->id;
         $deletedUser->name = 'Mantan Karyawan';

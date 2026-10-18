@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Discount;
+use App\Models\DiscountRedemption;
 use App\Services\Context\TenantContext;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -49,6 +50,10 @@ class DiscountManager extends Component
 
     public $is_active = true;
 
+    public ?int $usage_limit = null;
+
+    public bool $is_stackable = false;
+
     public $valid_from = null;
 
     public $valid_until = null;
@@ -60,6 +65,8 @@ class DiscountManager extends Component
         'value' => 'required|integer|min:0',
         'max_discount_amount' => 'nullable|integer|min:0',
         'min_purchase_amount' => 'required|integer|min:0',
+        'usage_limit' => 'nullable|integer|min:1',
+        'is_stackable' => 'boolean',
         'is_active' => 'boolean',
         'valid_from' => 'nullable|date',
         'valid_until' => 'nullable|date|after_or_equal:valid_from',
@@ -98,6 +105,8 @@ class DiscountManager extends Component
         $this->value = 0;
         $this->max_discount_amount = null;
         $this->min_purchase_amount = 0;
+        $this->usage_limit = null;
+        $this->is_stackable = false;
         $this->is_active = true;
         $this->valid_from = null;
         $this->valid_until = null;
@@ -122,6 +131,8 @@ class DiscountManager extends Component
             'value' => 'required|integer|min:0',
             'max_discount_amount' => 'nullable|integer|min:0',
             'min_purchase_amount' => 'required|integer|min:0',
+            'usage_limit' => 'nullable|integer|min:1',
+            'is_stackable' => 'boolean',
             'is_active' => 'boolean',
             'valid_from' => 'nullable|date',
             'valid_until' => 'nullable|date|after_or_equal:valid_from',
@@ -141,6 +152,8 @@ class DiscountManager extends Component
             'value' => $this->value,
             'max_discount_amount' => $this->type === 'percentage' ? $this->max_discount_amount : null,
             'min_purchase_amount' => $this->min_purchase_amount,
+            'usage_limit' => $this->usage_limit ?: null,
+            'is_stackable' => (bool) $this->is_stackable,
             'is_active' => $this->is_active,
             'valid_from' => $this->valid_from ?: null,
             'valid_until' => $this->valid_until ?: null,
@@ -171,6 +184,8 @@ class DiscountManager extends Component
         $this->value = $discount->value;
         $this->max_discount_amount = $discount->max_discount_amount;
         $this->min_purchase_amount = $discount->min_purchase_amount;
+        $this->usage_limit = $discount->usage_limit;
+        $this->is_stackable = (bool) $discount->is_stackable;
         $this->is_active = $discount->is_active;
         $this->valid_from = $discount->valid_from ? $discount->valid_from->format('Y-m-d\TH:i') : null;
         $this->valid_until = $discount->valid_until ? $discount->valid_until->format('Y-m-d\TH:i') : null;
@@ -187,10 +202,11 @@ class DiscountManager extends Component
 
     public function render()
     {
-        $discounts = Discount::where(function ($q) {
-            $q->where('name', 'like', '%'.$this->search.'%')
-                ->orWhere('code', 'like', '%'.$this->search.'%');
-        })
+        $discounts = Discount::withCount(['redemptions' => fn ($q) => $q->where('status', DiscountRedemption::STATUS_APPLIED)])
+            ->where(function ($q) {
+                $q->where('name', 'like', '%'.$this->search.'%')
+                    ->orWhere('code', 'like', '%'.$this->search.'%');
+            })
             ->orderBy('id', 'desc')
             ->paginate(10);
 

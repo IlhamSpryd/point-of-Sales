@@ -22,14 +22,30 @@ class ShiftPolicy
     {
         return in_array($user->role?->name, ['Owner', 'Manager', 'Kasir', 'Supervisor'], true)
             && ((int) $user->id === (int) $shift->user_id
-                || in_array($user->role->name, ['Owner', 'Manager'], true))
+                || (int) $user->id === (int) ($shift->active_cashier_id ?? $shift->user_id)
+                || in_array($user->role->name, ['Owner', 'Manager', 'Supervisor'], true))
+            && (int) $user->tenant_id === (int) $shift->tenant_id;
+    }
+
+    public function forceClose(User $user, Shift $shift): bool
+    {
+        return in_array($user->role?->name, ['Owner', 'Manager', 'Supervisor'], true)
+            && (int) $user->tenant_id === (int) $shift->tenant_id;
+    }
+
+    public function handover(User $user, Shift $shift): bool
+    {
+        return in_array($user->role?->name, ['Owner', 'Manager', 'Kasir', 'Supervisor'], true)
+            && ((int) $user->id === (int) ($shift->active_cashier_id ?? $shift->user_id)
+                || in_array($user->role->name, ['Owner', 'Manager', 'Supervisor'], true))
             && (int) $user->tenant_id === (int) $shift->tenant_id;
     }
 
     public function recordCashMovement(User $user, Shift $shift): bool
     {
-        return in_array($user->role?->name, ['Owner', 'Manager', 'Kasir'], true)
-            && (int) $user->id === (int) $shift->user_id
+        return in_array($user->role?->name, ['Owner', 'Manager', 'Kasir', 'Supervisor'], true)
+            && ((int) $user->id === (int) ($shift->active_cashier_id ?? $shift->user_id)
+                || in_array($user->role->name, ['Owner', 'Manager', 'Supervisor'], true))
             && (int) $user->tenant_id === (int) $shift->tenant_id;
     }
 

@@ -2,11 +2,11 @@
 
 namespace Tests\Feature\Tenancy;
 
+use App\Enums\PreparationStatus;
 use App\Livewire\Kasir\OrderHistory;
 use App\Livewire\Kds\Board;
 use App\Models\OrderItem;
 use App\Models\Payment;
-use App\Models\Scopes\TenantScope;
 use App\Services\Context\TenantContext;
 use App\Services\DashboardService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -91,7 +91,7 @@ class BaselineTest extends TestCase
         // Assert the order item was not claimed by userAOwner (remains pending, no processed_by)
         $orderItemB->refresh();
         $this->assertNull($orderItemB->processed_by);
-        $this->assertSame(\App\Enums\PreparationStatus::Pending, $orderItemB->preparation_status);
+        $this->assertSame(PreparationStatus::Pending, $orderItemB->preparation_status);
     }
 
     // T6: a deactivated user is denied on the next HTTP request and the next Livewire action.

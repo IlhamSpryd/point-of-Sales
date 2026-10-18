@@ -8,6 +8,7 @@ use App\Enums\OrderStatus;
 use App\Services\Context\TenantContext;
 use App\Services\TransactionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Tests\Support\TwoTenantFixture;
 use Tests\TestCase;
@@ -31,7 +32,7 @@ class SelfOrderCashCheckoutTest extends TestCase
         $context->setTenantId($this->tenantA->id);
         $context->setStoreId($this->storeA->id);
 
-        \Illuminate\Support\Facades\DB::table('product_stock_balances')
+        DB::table('product_stock_balances')
             ->where('tenant_id', $this->tenantA->id)
             ->where('store_id', $this->storeA->id)
             ->where('product_id', $this->productA->id)

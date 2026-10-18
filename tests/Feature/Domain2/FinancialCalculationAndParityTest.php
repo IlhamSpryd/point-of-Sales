@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Services\Context\TenantContext;
 use App\Services\TransactionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 /**
@@ -37,9 +38,13 @@ class FinancialCalculationAndParityTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $cashier;
+
     protected Shift $shift;
+
     protected Product $product;
 
     protected function afterSubclassSetUp(): void
@@ -152,7 +157,7 @@ class FinancialCalculationAndParityTest extends TestCase
             ],
             'payments' => [
                 ['method' => PaymentMethod::Ewallet->value, 'amount' => 58300,
-                 'reference_number' => 'GOFOOD-TEST-1'],
+                    'reference_number' => 'GOFOOD-TEST-1'],
             ],
             'order_type' => 'takeaway',
             'idempotency_key' => 'channel:gofood:TEST-1',
@@ -182,7 +187,7 @@ class FinancialCalculationAndParityTest extends TestCase
                 ],
             ], $this->cashier->id);
             $this->fail('Negative allocation accepted.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             $this->assertArrayHasKey('payments', $e->errors());
         }
 
@@ -197,7 +202,7 @@ class FinancialCalculationAndParityTest extends TestCase
                 ],
             ], $this->cashier->id);
             $this->fail('Mismatched allocation accepted.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             $this->assertArrayHasKey('payments', $e->errors());
         }
 
@@ -212,7 +217,7 @@ class FinancialCalculationAndParityTest extends TestCase
             ], $this->cashier->id);
             $this->fail('Unsupported method accepted.');
         } catch (\Throwable $e) {
-            $this->assertTrue($e instanceof \Illuminate\Validation\ValidationException
+            $this->assertTrue($e instanceof ValidationException
                 || $e instanceof \ValueError,
                 'Unsupported payment method must be rejected.');
         }

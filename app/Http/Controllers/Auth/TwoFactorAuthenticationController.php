@@ -5,17 +5,21 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Services\AuditTrailService;
 use App\Services\TwoFactorAuthService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\View\View;
 
 class TwoFactorAuthenticationController extends Controller
 {
     public function __construct(
-        protected TwoFactorAuthService $twoFactorService
+        protected TwoFactorAuthService $twoFactorService,
+        protected AuditTrailService $auditTrail
     ) {}
 
     /**
@@ -131,10 +135,26 @@ class TwoFactorAuthenticationController extends Controller
     }
 
     /**
-     * Menampilkan formulir tantangan 2FA untuk aksi berisiko tinggi.
+     * Menampilkan formulir tantangan 2FA untuk pending login atau aksi berisiko tinggi (step-up).
      */
-    public function challenge(): View
+    public function challenge(Request $request): View|RedirectResponse
     {
+        $user = $request->user();
+        $pendingId = $request->session()->get('login.mfa_user_id');
+
+        if (! $user && ! $pendingId) {
+            return redirect()->route('login');
+        }
+
+        if (! $user && $pendingId) {
+            $startedAt = (int) $request->session()->get('login.mfa_started_at', 0);
+            if (now()->timestamp - $startedAt > 300) {
+                $request->session()->forget(['login.mfa_user_id', 'login.mfa_remember', 'login.mfa_started_at']);
+
+                return redirect()->route('login')->withErrors(['email' => 'Sesi verifikasi 2FA telah kedaluwarsa. Silakan login kembali.']);
+            }
+        }
+
         return view('auth.two-factor-challenge');
     }
 
@@ -148,6 +168,43 @@ class TwoFactorAuthenticationController extends Controller
         ]);
 
         $user = $request->user();
+        $isPendingLogin = false;
+
+        if (! $user) {
+            $pendingId = $request->session()->get('login.mfa_user_id');
+            $startedAt = (int) $request->session()->get('login.mfa_started_at', 0);
+
+            if (! $pendingId || (now()->timestamp - $startedAt > 300)) {
+                $request->session()->forget(['login.mfa_user_id', 'login.mfa_remember', 'login.mfa_started_at']);
+
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Sesi verifikasi 2FA telah kedaluwarsa. Silakan login kembali.',
+                    ], 401);
+                }
+
+                return redirect()->route('login')->withErrors(['email' => 'Sesi verifikasi 2FA telah kedaluwarsa. Silakan login kembali.']);
+            }
+
+            $user = User::withoutGlobalScopes()->find($pendingId);
+
+            if (! $user || ! $user->hasTwoFactorEnabled() || ! $user->is_active || (bool) $user->tenant?->isSuspended()) {
+                $request->session()->forget(['login.mfa_user_id', 'login.mfa_remember', 'login.mfa_started_at']);
+
+                if ($request->wantsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Akun tidak valid atau tidak memiliki akses.',
+                    ], 403);
+                }
+
+                return redirect()->route('login')->withErrors(['email' => 'Akun tidak valid atau tidak memiliki akses.']);
+            }
+
+            $isPendingLogin = true;
+        }
+
         $input = trim((string) $request->input('code'));
         $verified = false;
 
@@ -172,9 +229,36 @@ class TwoFactorAuthenticationController extends Controller
             return back()->withErrors(['code' => 'Kode autentikasi dua faktor atau kode pemulihan tidak valid.']);
         }
 
+        if ($isPendingLogin) {
+            $remember = (bool) $request->session()->get('login.mfa_remember', false);
+            $request->session()->forget(['login.mfa_user_id', 'login.mfa_remember', 'login.mfa_started_at']);
+
+            Auth::guard('web')->login($user, $remember);
+            $request->session()->regenerate();
+            $request->session()->put('two_factor_confirmed_at', now()->timestamp);
+
+            $this->auditTrail->log(
+                tenantId: (int) $user->tenant_id,
+                action: 'user.login_mfa_completed',
+                userId: (int) $user->id,
+                subjectType: User::class,
+                subjectId: (int) $user->id,
+                description: "Pengguna {$user->email} berhasil menyelesaikan tantangan 2FA saat masuk."
+            );
+
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'redirect_url' => route('home', absolute: false),
+                ]);
+            }
+
+            return redirect()->intended(route('home', absolute: false));
+        }
+
         $request->session()->put('two_factor_confirmed_at', now()->timestamp);
 
-        $intendedUrl = $request->session()->pull('two_factor_intended_url', route('dashboard'));
+        $intendedUrl = $request->session()->pull('two_factor_intended_url', route('home'));
 
         if ($request->wantsJson()) {
             return response()->json([

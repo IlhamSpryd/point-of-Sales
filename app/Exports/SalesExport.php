@@ -48,10 +48,15 @@ class SalesExport implements FromQuery, ShouldAutoSize, WithChunkReading, WithHe
         $baseQuery = $this->allStores ? Order::allStores() : Order::query();
 
         $baseQuery
-            ->select(['id', 'user_id', 'order_code', 'payment_method', 'order_amount', 'created_at', 'tenant_id', 'store_id'])
-            ->with(['user' => function ($q) use ($tenantId) {
-                $q->select(['id', 'name', 'tenant_id'])->where('tenant_id', $tenantId);
-            }])
+            ->select(['id', 'user_id', 'order_code', 'payment_method', 'subtotal_amount', 'discount_amount', 'tax_amount', 'service_charge_amount', 'order_amount', 'created_at', 'tenant_id', 'store_id'])
+            ->with([
+                'user' => function ($q) use ($tenantId) {
+                    $q->select(['id', 'name', 'tenant_id'])->where('tenant_id', $tenantId);
+                },
+                'paymentRefunds' => function ($q) {
+                    $q->where('request_status', 'completed');
+                },
+            ])
             ->where('tenant_id', $tenantId);
 
         if (! $this->allStores && $storeId !== null) {
@@ -71,17 +76,38 @@ class SalesExport implements FromQuery, ShouldAutoSize, WithChunkReading, WithHe
 
     public function headings(): array
     {
-        return ['Tanggal', 'Kode Pesanan', 'Kasir', 'Metode Pembayaran', 'Total Nilai (Rp)'];
+        return [
+            'Tanggal',
+            'Kode Pesanan',
+            'Kasir',
+            'Metode Pembayaran',
+            'Gross Sales (Rp)',
+            'Diskon (Rp)',
+            'Pajak (Rp)',
+            'Service Charge (Rp)',
+            'Total Tagihan (Rp)',
+            'Retur & Refund (Rp)',
+            'Net Sales (Rp)',
+        ];
     }
 
     public function map($order): array
     {
+        $refundAmount = (float) $order->paymentRefunds->sum('amount');
+        $netSales = max(0.00, (float) $order->order_amount - $refundAmount);
+
         return [
             $order->created_at->format('d/m/Y H:i'),
             $order->order_code,
             $order->user ? $order->user->name : 'Kasir',
             strtoupper($order->payment_method?->value ?? '-'),
-            $order->order_amount,
+            (float) $order->subtotal_amount,
+            (float) $order->discount_amount,
+            (float) $order->tax_amount,
+            (float) $order->service_charge_amount,
+            (float) $order->order_amount,
+            $refundAmount,
+            $netSales,
         ];
     }
 
@@ -100,7 +126,7 @@ class SalesExport implements FromQuery, ShouldAutoSize, WithChunkReading, WithHe
             'borders' => ['allBorders' => ['borderStyle' => Border::BORDER_THIN, 'color' => ['argb' => 'FFE4E4E7']]],
         ]);
 
-        $sheet->getStyle("E2:E{$lastRow}")->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle("E2:K{$lastRow}")->getNumberFormat()->setFormatCode('#,##0');
 
         return [];
     }

@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentAttemptStatus;
 use App\Enums\PaymentMethod;
 use App\Http\Requests\StoreTransactionRequest;
 use App\Models\Order;
+use App\Models\PaymentAttempt;
+use App\Services\CashierPinService;
 use App\Services\DatabaseErrorClassifier;
 use App\Services\Printing\KitchenPrinterService;
 use App\Services\Printing\ReceiptPrinterService;
+use App\Services\ReturnRefundService;
 use App\Services\TransactionService;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\QueryException;
@@ -20,6 +24,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Midtrans\Config;
 use Midtrans\Transaction;
@@ -158,8 +163,43 @@ class TransactionController extends Controller
         Gate::authorize('void', $order);
 
         $validated = $request->validate([
-            'reason' => 'required|string|max:255',
+            'reason' => 'required|string|min:5|max:255',
+            'pin' => 'nullable|string',
         ]);
+
+        // Cegah void jika ada transaksi elektronik yang belum terkonfirmasi/timeout
+        $hasUnresolvedAttempts = PaymentAttempt::where('order_id', $order->id)
+            ->whereIn('status', [
+                PaymentAttemptStatus::PendingProvider,
+                PaymentAttemptStatus::UnknownTimeout,
+            ])->exists();
+
+        if ($hasUnresolvedAttempts) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pesanan memiliki pembayaran elektronik yang sedang dalam proses verifikasi (pending/timeout). Lakukan rekonsiliasi pembayaran terlebih dahulu sebelum membatalkan (void).',
+            ], 422);
+        }
+
+        if ($order->order_status === OrderStatus::Paid) {
+            $user = Auth::user();
+            $pin = $request->input('pin');
+            if (empty($pin)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'PIN Supervisor wajib diisi untuk otorisasi void.',
+                ], 422);
+            }
+
+            try {
+                app(CashierPinService::class)->verifySupervisorPin((int) $user->id, (string) $pin, (int) $order->tenant_id);
+            } catch (\Throwable $e) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'PIN Supervisor tidak sah: '.$e->getMessage(),
+                ], 422);
+            }
+        }
 
         try {
             $this->transactionService->voidOrder($order, $validated['reason'], (int) Auth::id());
@@ -177,11 +217,71 @@ class TransactionController extends Controller
     }
 
     /**
+     * Memproses permohonan retur dan refund pesanan via Controller.
+     */
+    public function returnAndRefund(
+        Request $request,
+        string $orderNumber,
+        ReturnRefundService $returnRefundService
+    ): JsonResponse {
+        $order = Order::where('order_code', $orderNumber)->firstOrFail();
+        Gate::authorize('view', $order);
+
+        $validated = $request->validate([
+            'items' => 'required|array|min:1',
+            'items.*.order_item_id' => 'required|integer',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.disposition' => 'required|string|in:restock,quarantine,write_off_waste',
+            'items.*.disposition_reason' => 'nullable|string',
+            'refunds' => 'required|array|min:1',
+            'refunds.*.payment_id' => 'required|integer',
+            'refunds.*.amount' => 'required|numeric|min:1',
+            'refunds.*.refund_method' => 'nullable|string',
+            'refunds.*.is_method_override' => 'nullable|boolean',
+            'refunds.*.method_override_reason' => 'nullable|string',
+            'supervisor_pin' => 'required|string',
+            'reason' => 'required|string|min:5|max:255',
+            'shift_id' => 'nullable|integer',
+            'device_id' => 'nullable|integer',
+        ]);
+
+        $userId = (int) Auth::id();
+        $shiftId = $validated['shift_id'] ?? $order->shift_id;
+        $deviceId = $validated['device_id'] ?? $order->created_by_device_id ?? 1;
+        $idempotencyKey = $request->header('X-Idempotency-Key') ?? 'ret-'.Str::uuid()->toString();
+
+        try {
+            $orderReturn = $returnRefundService->createReturnAndRefund(
+                $order,
+                $validated['items'],
+                $validated['refunds'],
+                (int) $shiftId,
+                (int) $deviceId,
+                $userId,
+                $validated['supervisor_pin'],
+                $validated['reason'],
+                $idempotencyKey
+            );
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Retur dan refund berhasil diproses.',
+                'return_number' => $orderReturn->return_number,
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 422);
+        }
+    }
+
+    /**
      * Cetak struk pesanan — halaman thermal printer.
      */
-    public function receipt(string $orderNumber): View
+    public function receipt(Request $request, string $orderNumber): View
     {
-        $order = Order::with(['orderItems.product', 'user', 'table'])
+        $order = Order::with(['orderItems.product', 'orderItems.modifiers', 'user', 'table', 'payments', 'device', 'shift', 'paymentRefunds'])
             ->where('order_code', $orderNumber)
             ->firstOrFail();
 
@@ -191,7 +291,9 @@ class TransactionController extends Controller
             ? round($order->tax_amount / $order->subtotal_amount * 100, 1)
             : 0;
 
-        return view('transaction.receipt', compact('order', 'taxRatePercent'));
+        $isReprint = $request->boolean('is_reprint') || ((int) $order->print_count > 1);
+
+        return view('transaction.receipt', compact('order', 'taxRatePercent', 'isReprint'));
     }
 
     /**
@@ -242,7 +344,7 @@ class TransactionController extends Controller
     /**
      * Endpoint untuk mendapatkan payload raw ESC/POS (QZ Tray).
      */
-    public function printPayload(string $orderNumber, ReceiptPrinterService $printerService): JsonResponse
+    public function printPayload(Request $request, string $orderNumber, ReceiptPrinterService $printerService): JsonResponse
     {
         $order = Order::with(['orderItems.product', 'user', 'table'])
             ->where('order_code', $orderNumber)
@@ -250,7 +352,20 @@ class TransactionController extends Controller
 
         Gate::authorize('view', $order);
 
-        $payload = $printerService->generatePayload($order);
+        $actorUserId = (int) Auth::id();
+        $reprintReason = $request->input('reprint_reason');
+        $supervisorPin = $request->input('supervisor_pin');
+        $deviceId = $request->input('device_id') ? (int) $request->input('device_id') : $order->created_by_device_id;
+        $shiftId = $request->input('shift_id') ? (int) $request->input('shift_id') : $order->shift_id;
+
+        $payload = $printerService->generatePrintPayload(
+            $order,
+            $actorUserId,
+            $deviceId,
+            $shiftId,
+            $reprintReason,
+            $supervisorPin
+        );
 
         return response()->json($payload);
     }

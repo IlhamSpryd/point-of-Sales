@@ -27,6 +27,7 @@
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">Nama &amp; Kode</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Tipe &amp; Nilai</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Syarat</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-center">Kuota &amp; Stackable</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">Status &amp; Masa Aktif</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
                 </x-slot:head>
@@ -46,6 +47,16 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
                                 <div class="text-sm text-apeiron-ink tabular-nums">Min. Beli: Rp {{ number_format($discount->min_purchase_amount, 0, ',', '.') }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <div class="text-xs font-bold text-slate-800 tabular-nums">
+                                    Terpakai: {{ $discount->redemptions_count }} / {{ $discount->usage_limit ?? '∞' }}
+                                </div>
+                                <div class="mt-1">
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold {{ $discount->is_stackable ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-600' }}">
+                                        {{ $discount->is_stackable ? 'Stackable' : 'Tunggal' }}
+                                    </span>
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <x-badge :type="$discount->is_active ? 'success' : 'secondary'">
@@ -79,7 +90,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5">
+                            <td colspan="6">
                                 <x-empty-state icon="local_offer" title="Belum ada diskon." description="Tambahkan diskon atau kode promo untuk mulai mengelola program diskon." />
                             </td>
                         </tr>
@@ -157,6 +168,14 @@
                         @error('min_purchase_amount') <x-input-error :messages="$message" class="mt-1" /> @enderror
                     </div>
 
+                    {{-- Kuota Penggunaan --}}
+                    <div>
+                        <x-form-label for="discount-usage-limit">Kuota Penggunaan (Usage Limit)</x-form-label>
+                        <x-form-input id="discount-usage-limit" type="number" min="1" wire:model="usage_limit" placeholder="Kosongkan jika tak terbatas" class="mt-1" />
+                        @error('usage_limit') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                        <p class="text-xs text-apeiron-muted mt-1.5">Batas maksimal kuota voucher dapat ditebus.</p>
+                    </div>
+
                     {{-- Tanggal Mulai --}}
                     <div>
                         <x-form-label for="discount-from">Berlaku Mulai</x-form-label>
@@ -171,8 +190,17 @@
                         @error('valid_until') <x-input-error :messages="$message" class="mt-1" /> @enderror
                     </div>
 
-                    {{-- Status Aktif --}}
-                    <div class="col-span-1 md:col-span-2">
+                    {{-- Stackable & Status Aktif --}}
+                    <div class="col-span-1 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <label class="flex items-center gap-3 p-4 bg-white rounded-xl border border-apeiron-border cursor-pointer hover:bg-apeiron-surface transition-colors">
+                            <input wire:model="is_stackable" id="is_stackable" type="checkbox"
+                                class="w-4 h-4 rounded border-apeiron-border text-primary-700 focus:ring-primary-700">
+                            <div>
+                                <span class="block text-sm font-semibold text-apeiron-ink">Dapat Digabung (Stackable)</span>
+                                <span class="block text-xs text-apeiron-muted mt-0.5">Izinkan voucher ini digabung dengan voucher lain.</span>
+                            </div>
+                        </label>
+
                         <label class="flex items-center gap-3 p-4 bg-white rounded-xl border border-apeiron-border cursor-pointer hover:bg-apeiron-surface transition-colors">
                             <input wire:model="is_active" id="is_active" type="checkbox"
                                 class="w-4 h-4 rounded border-apeiron-border text-primary-700 focus:ring-primary-700">

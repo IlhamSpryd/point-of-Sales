@@ -28,7 +28,7 @@ class PasswordResetAndEmailChangeTest extends TestCase
     {
         $tenant = Tenant::create([
             'name' => 'Kopi Kafe Reset',
-            'slug' => 'kopi-reset-' . uniqid(),
+            'slug' => 'kopi-reset-'.uniqid(),
             'status' => 'active',
             'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             'access_status' => Tenant::ACCESS_ACTIVE,
@@ -48,14 +48,14 @@ class PasswordResetAndEmailChangeTest extends TestCase
             'is_initial' => true,
         ]);
 
-        $role = new Role();
+        $role = new Role;
         $role->tenant_id = $tenant->id;
         $role->name = 'Owner';
         $role->permissions = ['*'];
         $role->is_active = true;
         $role->save();
 
-        $user = new User();
+        $user = new User;
         $user->tenant_id = $tenant->id;
         $user->role_id = $role->id;
         $user->name = 'Owner Reset';

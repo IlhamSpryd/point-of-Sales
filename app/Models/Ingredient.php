@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\DB;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
+ * @property-read ProductIngredient $pivot
  */
 class Ingredient extends Model
 {

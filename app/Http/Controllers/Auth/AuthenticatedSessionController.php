@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -26,6 +27,26 @@ class AuthenticatedSessionController extends Controller
     {
         $request->authenticate();
 
+        $user = Auth::user();
+
+        // [M1-MVC-003] Kebijakan MFA: Pengguna dengan 2FA aktif wajib menyelesaikan challenge
+        // sebelum memperoleh sesi aplikasi terautentikasi penuh.
+        if ($user instanceof User && $user->hasTwoFactorEnabled()) {
+            $userId = (int) $user->id;
+            $remember = $request->boolean('remember');
+
+            // Log out dari web guard agar sesi saat ini BUKAN full authentication
+            Auth::guard('web')->logout();
+
+            // Simpan pending MFA state dalam session terisolasi
+            $request->session()->regenerate();
+            $request->session()->put('login.mfa_user_id', $userId);
+            $request->session()->put('login.mfa_remember', $remember);
+            $request->session()->put('login.mfa_started_at', now()->timestamp);
+
+            return redirect()->route('two-factor.challenge');
+        }
+
         $request->session()->regenerate();
 
         // Satu sumber kebenaran untuk redirect per-role: HomeController.
@@ -42,8 +63,8 @@ class AuthenticatedSessionController extends Controller
     {
         Auth::guard('web')->logout();
 
+        $request->session()->forget(['login.mfa_user_id', 'login.mfa_remember', 'login.mfa_started_at']);
         $request->session()->invalidate();
-
         $request->session()->regenerateToken();
 
         return redirect('/');

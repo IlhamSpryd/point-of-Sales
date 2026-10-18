@@ -7,6 +7,7 @@ namespace App\Models;
 use App\Casts\OrderTypeCast;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
+use App\Enums\PaymentStatusEnum;
 use App\Models\Concerns\AssignsStore;
 use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToStore;
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Carbon;
 
 /**
@@ -62,6 +64,9 @@ class Order extends Model
         'table_id',
         'order_type',
         'discount_id',
+        'origin_channel',
+        'source_reference',
+        'created_by_device_id',
     ];
 
     /**
@@ -84,6 +89,11 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class)->withTrashed();
+    }
+
+    public function device(): BelongsTo
+    {
+        return $this->belongsTo(Device::class, 'created_by_device_id');
     }
 
     /**
@@ -124,6 +134,53 @@ class Order extends Model
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
+    }
+
+    public function paymentAttempts(): HasMany
+    {
+        return $this->hasMany(PaymentAttempt::class);
+    }
+
+    public function orderReturns(): HasMany
+    {
+        return $this->hasMany(OrderReturn::class);
+    }
+
+    public function refunds(): HasMany
+    {
+        return $this->hasMany(PaymentRefund::class);
+    }
+
+    public function paymentRefunds(): HasMany
+    {
+        return $this->hasMany(PaymentRefund::class);
+    }
+
+    public function discountRedemptions(): HasMany
+    {
+        return $this->hasMany(DiscountRedemption::class);
+    }
+
+    public function parkedCart(): HasOne
+    {
+        return $this->hasOne(ParkedCart::class, 'converted_order_id');
+    }
+
+    public function printLogs(): HasMany
+    {
+        return $this->hasMany(ReceiptPrintLog::class);
+    }
+
+    public function getSettledPaidAmount(): int
+    {
+        return (int) $this->payments()
+            ->whereIn('status', [PaymentStatusEnum::Captured, 'settled'])
+            ->sum('amount');
+    }
+
+    public function getRemainingBalance(): int
+    {
+        return max(0, (int) $this->order_amount - $this->getSettledPaidAmount());
     }
 
     public function customer(): BelongsTo

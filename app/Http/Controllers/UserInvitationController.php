@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreUserInvitationRequest;
-use App\Models\User;
 use App\Models\UserInvitation;
 use App\Services\Context\TenantContext;
 use App\Services\UserInvitationService;

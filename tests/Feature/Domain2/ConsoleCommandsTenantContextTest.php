@@ -7,7 +7,6 @@ namespace Tests\Feature\Domain2;
 use App\Jobs\ProcessProvisioningOutboxJob;
 use App\Models\EmailOutbox;
 use App\Models\Ingredient;
-use App\Models\IngredientRestockForecast;
 use App\Models\Tenant;
 use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;

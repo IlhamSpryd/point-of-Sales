@@ -22,9 +22,13 @@ class DeviceManagementAndBindingTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     private Tenant $tenantA;
+
     private Store $storeA;
+
     private User $ownerA;
+
     private User $managerA;
+
     private User $kasirA;
 
     protected function afterSubclassSetUp(): void

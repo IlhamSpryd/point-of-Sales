@@ -21,7 +21,7 @@ class OtpBruteForceAndThrottlingTest extends TestCase
     {
         $tenant = Tenant::create([
             'name' => 'Test Tenant',
-            'slug' => 'test-tenant-' . uniqid(),
+            'slug' => 'test-tenant-'.uniqid(),
             'status' => 'pending',
             'onboarding_status' => Tenant::ONBOARDING_PENDING_VERIFICATION,
             'access_status' => Tenant::ACCESS_PENDING,
@@ -30,7 +30,7 @@ class OtpBruteForceAndThrottlingTest extends TestCase
             'country_code' => 'ID',
         ]);
 
-        $ownerRole = new Role();
+        $ownerRole = new Role;
         $ownerRole->tenant_id = $tenant->id;
         $ownerRole->name = 'Owner';
         $ownerRole->description = 'Tenant Owner';
@@ -38,7 +38,7 @@ class OtpBruteForceAndThrottlingTest extends TestCase
         $ownerRole->is_active = true;
         $ownerRole->save();
 
-        $user = new User();
+        $user = new User;
         $user->tenant_id = $tenant->id;
         $user->role_id = $ownerRole->id;
         $user->name = 'Owner Test';

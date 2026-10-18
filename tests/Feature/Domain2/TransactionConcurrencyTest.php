@@ -94,6 +94,7 @@ class TransactionConcurrencyTest extends TestCase
 
     protected function tearDown(): void
     {
+        $this->truncateTablesForAllConnections();
         app(TenantContext::class)->clear();
         parent::tearDown();
     }

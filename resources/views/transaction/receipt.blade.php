@@ -19,9 +19,23 @@
             <p class="text-[10px]">{{ $order->created_at->format('d/m/Y H:i') }}</p>
         </div>
 
+        @if (($isReprint ?? false) || ($order->print_count ?? 0) > 1)
+            <div class="border-y border-dashed border-apeiron-ink py-1 my-1 text-center font-bold text-[11px] tracking-wider">
+                *** COPY / CETAK ULANG #{{ $order->print_count }} ***
+            </div>
+        @endif
+
         <div class="border-t border-b border-dashed border-apeiron-ink py-1 text-[11px]">
             <div class="flex justify-between"><span>No. Order</span><span>{{ $order->order_code }}</span></div>
             <div class="flex justify-between"><span>Kasir</span><span>{{ $order->user->name ?? '-' }}</span></div>
+            @if ($order->device)
+                <div class="flex justify-between"><span>Perangkat</span><span>{{ $order->device->device_name }}</span></div>
+            @elseif ($order->created_by_device_id)
+                <div class="flex justify-between"><span>Perangkat</span><span>Terminal #{{ $order->created_by_device_id }}</span></div>
+            @endif
+            @if ($order->shift_id)
+                <div class="flex justify-between"><span>Shift</span><span>Shift #{{ $order->shift_id }}</span></div>
+            @endif
             <div class="flex justify-between">
                 <span>Tipe</span>
                 <span>
@@ -47,6 +61,13 @@
                         <span>{{ number_format($item->order_subtotal, 0, ',', '.') }}</span>
                     </div>
 
+                    @if (($item->item_discount_amount ?? 0) > 0)
+                        <div class="pl-4 text-[9px] text-gray-700 flex justify-between">
+                            <span>* Diskon Item</span>
+                            <span>-{{ number_format($item->item_discount_amount, 0, ',', '.') }}</span>
+                        </div>
+                    @endif
+
                     {{-- Modifier di-indent di bawah nama produk utama --}}
                     @foreach ($item->options ?? [] as $mod)
                         <div class="pl-4 text-[9px] text-gray-700">
@@ -70,24 +91,38 @@
             <div class="flex justify-between">
                 <span>Subtotal</span><span>{{ number_format($order->subtotal_amount, 0, ',', '.') }}</span>
             </div>
-            <div class="flex justify-between">
-                <span>Pajak ({{ rtrim(rtrim(number_format($taxRatePercent ?? 11, 1), '0'), '.') }}%)</span><span>{{ number_format($order->tax_amount, 0, ',', '.') }}</span>
-            </div>
-            <div class="flex justify-between font-bold text-[13px] mt-1">
+            @if (($order->discount_amount ?? 0) > 0)
+                <div class="flex justify-between text-gray-800">
+                    <span>Diskon Order</span><span>-{{ number_format($order->discount_amount, 0, ',', '.') }}</span>
+                </div>
+            @endif
+            @if (($order->tax_amount ?? 0) > 0)
+                <div class="flex justify-between">
+                    <span>Pajak ({{ rtrim(rtrim(number_format($taxRatePercent ?? 11, 1), '0'), '.') }}%)</span><span>{{ number_format($order->tax_amount, 0, ',', '.') }}</span>
+                </div>
+            @endif
+            @if (($order->service_charge_amount ?? 0) > 0)
+                <div class="flex justify-between">
+                    <span>Service Charge</span><span>{{ number_format($order->service_charge_amount, 0, ',', '.') }}</span>
+                </div>
+            @endif
+            <div class="flex justify-between font-bold text-[13px] mt-1 border-t border-dashed border-apeiron-ink pt-1">
                 <span>TOTAL</span><span>{{ number_format($order->order_amount, 0, ',', '.') }}</span>
             </div>
 
             @if ($order->payments && $order->payments->count() > 0)
-                <div class="mt-1">
+                <div class="mt-1 pt-1 border-t border-dotted border-gray-400">
                     @foreach ($order->payments as $payment)
                         <div class="flex justify-between">
                             <span>{{ ucfirst($payment->payment_method?->value ?? 'Pembayaran') }}</span><span>{{ number_format($payment->amount, 0, ',', '.') }}</span>
                         </div>
                     @endforeach
                 </div>
-            @elseif ($order->payment_method?->value === 'cash')
+            @endif
+
+            @if ($order->cash_received > 0 || $order->payment_method?->value === 'cash')
                 <div class="flex justify-between mt-1">
-                    <span>Tunai</span><span>{{ number_format($order->cash_received, 0, ',', '.') }}</span>
+                    <span>Diterima (Cash)</span><span>{{ number_format($order->cash_received, 0, ',', '.') }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span>Kembali</span><span>{{ number_format($order->order_change, 0, ',', '.') }}</span>

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Domain2;
 
 use App\Enums\ExportTaskStatus;
+use App\Enums\OrderStatus;
 use App\Jobs\ProcessMonthlyExportJob;
 use App\Jobs\ProcessSalesReportExportJob;
 use App\Models\ExportTask;
@@ -22,7 +23,9 @@ class QueueTerminalFailureTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $user;
 
     protected function afterSubclassSetUp(): void
@@ -88,7 +91,7 @@ class QueueTerminalFailureTest extends TestCase
             'user_id' => $this->user->id,
             'order_code' => 'POS-EXP-ERR-1',
             'order_date' => '2026-01-15',
-            'order_status' => \App\Enums\OrderStatus::Paid,
+            'order_status' => OrderStatus::Paid,
             'payment_method' => 'cash',
             'subtotal_amount' => 10000,
             'tax_amount' => 1100,
@@ -129,7 +132,7 @@ class QueueTerminalFailureTest extends TestCase
             'user_id' => $this->user->id,
             'order_code' => 'POS-EXP-OK-1',
             'order_date' => '2026-01-15',
-            'order_status' => \App\Enums\OrderStatus::Paid,
+            'order_status' => OrderStatus::Paid,
             'payment_method' => 'cash',
             'subtotal_amount' => 10000,
             'tax_amount' => 1100,

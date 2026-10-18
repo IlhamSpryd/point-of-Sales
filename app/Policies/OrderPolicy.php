@@ -66,6 +66,18 @@ class OrderPolicy
             && $this->sameStore($user, $order)
             && (in_array($user->role?->name, ['Owner', 'Manager', 'Supervisor', 'Admin'], true)
                 || (bool) $user->role?->is_admin
-                || (bool) $user->role?->hasPermission('can_refund_order'));
+                || (bool) $user->role?->hasPermission('can_refund_order')
+                || (bool) $user->role?->hasPermission('orders.refund'));
+    }
+
+    public function return(User $user, Order $order): bool
+    {
+        return $this->sameTenant($user, $order)
+            && $this->sameStore($user, $order)
+            && (in_array($user->role?->name, ['Owner', 'Manager', 'Supervisor', 'Admin'], true)
+                || (bool) $user->role?->is_admin
+                || (bool) $user->role?->hasPermission('can_return_order')
+                || (bool) $user->role?->hasPermission('orders.return')
+                || $this->refund($user, $order));
     }
 }

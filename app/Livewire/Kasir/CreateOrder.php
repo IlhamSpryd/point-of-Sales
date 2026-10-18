@@ -13,9 +13,13 @@ use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\Modifier;
 use App\Models\Order;
+use App\Models\ParkedCart;
 use App\Models\Product;
 use App\Models\Setting;
+use App\Models\Shift;
 use App\Models\Table;
+use App\Services\CartService;
+use App\Services\CashierPinService;
 use App\Services\Context\TenantContext;
 use App\Services\MenuCacheService;
 use App\Services\TransactionService;
@@ -94,12 +98,70 @@ class CreateOrder extends Component
 
     public ?int $selectedDiscountId = null;
 
+    // Parked / Held Cart State
+    public bool $isParkModalOpen = false;
+
+    public bool $isParkedListOpen = false;
+
+    public string $holdReference = '';
+
+    public string $holdLabel = '';
+
+    public string $holdNotes = '';
+
+    public array $resumeWarnings = [];
+
+    // Split Tender Payment Legs & Item Discounts
+    public array $paymentLegs = [];
+
+    public $paymentTendered = 0;
+
+    public array $itemDiscounts = [];
+
+    // Manual Discount Override State
+    public bool $isManualDiscountModalOpen = false;
+
+    public int $manualDiscountAmount = 0;
+
+    public $manualDiscountAmountInput = null;
+
+    public string $manualDiscountReason = '';
+
+    public string $manualDiscountSupervisorPin = '';
+
+    public ?string $supervisorPinInput = null;
+
+    public int $appliedManualDiscount = 0;
+
+    public string $appliedManualDiscountReason = '';
+
     #[Locked]
     public string $idempotencyKey;
+
+    #[Locked]
+    public ?int $deviceId = null;
+
+    #[Locked]
+    public ?int $shiftId = null;
 
     public function mount(): void
     {
         $this->idempotencyKey = (string) Str::uuid();
+
+        $user = Auth::user();
+        if ($user) {
+            $activeShift = Shift::where(function ($q) use ($user) {
+                $q->where('active_cashier_id', $user->id)
+                    ->orWhere(function ($sub) use ($user) {
+                        $sub->whereNull('active_cashier_id')->where('user_id', $user->id);
+                    });
+            })->where('status', 'open')->first();
+
+            if ($activeShift) {
+                $this->shiftId = $activeShift->id;
+                $this->deviceId = $activeShift->device_id;
+            }
+        }
     }
 
     public function updatedOrderType(): void
@@ -351,6 +413,11 @@ class CreateOrder extends Component
         $this->selectingProductId = null;
     }
 
+    public function addToCart(int $productId): void
+    {
+        $this->addToCartDirectly($productId);
+    }
+
     public function addToCartDirectly(int $productId): void
     {
         if ($this->pendingOrderId !== null) {
@@ -504,29 +571,276 @@ class CreateOrder extends Component
         }
     }
 
+    public function setItemDiscount(int $indexOrProductId, int $discountAmount): void
+    {
+        $discountAmount = max(0, $discountAmount);
+        $this->itemDiscounts[$indexOrProductId] = $discountAmount;
+        if (isset($this->cart[$indexOrProductId])) {
+            $this->cart[$indexOrProductId]['item_discount_amount'] = $discountAmount;
+        }
+        foreach ($this->cart as $i => $item) {
+            if (($item['product_id'] ?? null) === $indexOrProductId) {
+                $this->cart[$i]['item_discount_amount'] = $discountAmount;
+            }
+        }
+    }
+
+    #[Computed]
+    public function totalItemDiscount(): int
+    {
+        return (int) collect($this->cart)->sum(fn ($item) => (int) ($item['item_discount_amount'] ?? 0));
+    }
+
+    public function applyManualDiscount(): void
+    {
+        if ($this->manualDiscountAmountInput !== null) {
+            $this->manualDiscountAmount = (int) $this->manualDiscountAmountInput;
+        }
+        if ($this->supervisorPinInput !== null) {
+            $this->manualDiscountSupervisorPin = $this->supervisorPinInput;
+        }
+
+        $this->validate([
+            'manualDiscountAmount' => 'required|integer|min:1',
+            'manualDiscountReason' => 'required|string|min:3|max:255',
+            'manualDiscountSupervisorPin' => 'required|string|min:4',
+        ]);
+
+        $tenantId = app(TenantContext::class)->requireTenantId();
+        $isSupValid = app(CashierPinService::class)->verifySupervisorPin((int) Auth::id(), $this->manualDiscountSupervisorPin, $tenantId);
+        if (! $isSupValid) {
+            $this->addError('manualDiscountSupervisorPin', 'PIN Supervisor tidak sah.');
+            $this->dispatch('toast', message: 'PIN Supervisor tidak sah.', type: 'error');
+
+            return;
+        }
+
+        $this->appliedManualDiscount = (int) $this->manualDiscountAmount;
+        $this->appliedManualDiscountReason = $this->manualDiscountReason;
+        $this->isManualDiscountModalOpen = false;
+        $this->manualDiscountSupervisorPin = '';
+        $this->dispatch('toast', message: 'Diskon manual supervisor berhasil diterapkan.', type: 'success');
+    }
+
+    public function addPaymentLeg(): void
+    {
+        $this->paymentLegs[] = [
+            'method' => $this->paymentMethod,
+            'amount' => (int) $this->paymentTendered,
+        ];
+    }
+
+    public function removeManualDiscount(): void
+    {
+        $this->appliedManualDiscount = 0;
+        $this->appliedManualDiscountReason = '';
+        $this->manualDiscountAmount = 0;
+        $this->manualDiscountReason = '';
+        $this->dispatch('toast', message: 'Diskon manual dilepas.', type: 'info');
+    }
+
+    public function parkCurrentCart(): void
+    {
+        if (empty($this->cart)) {
+            $this->addError('cart', 'Keranjang masih kosong, tidak dapat ditahan.');
+
+            return;
+        }
+
+        $user = Auth::user();
+        $activeShift = Shift::where(function ($q) use ($user) {
+            $q->where('active_cashier_id', $user->id)
+                ->orWhere(function ($sub) use ($user) {
+                    $sub->whereNull('active_cashier_id')->where('user_id', $user->id);
+                });
+        })->where('status', 'open')->first();
+
+        if (! $activeShift) {
+            $this->addError('cart', 'Terminal kasir belum memiliki shift yang terbuka.');
+
+            return;
+        }
+
+        $tenantId = app(TenantContext::class)->requireTenantId();
+        $storeId = app(TenantContext::class)->getStoreId() ?? 1;
+
+        $cartState = [
+            'items' => $this->cart,
+            'order_type' => $this->orderType ?? 'dine_in',
+            'table_id' => $this->tableId,
+            'customer_id' => $this->customerId,
+            'discount_id' => $this->selectedDiscountId,
+            'notes' => $this->holdNotes ?: null,
+        ];
+
+        try {
+            $label = ! empty($this->holdLabel) ? $this->holdLabel : (! empty($this->holdReference) ? $this->holdReference : null);
+            $parked = app(CartService::class)->parkCart(
+                $tenantId,
+                $storeId,
+                $this->deviceId ?? 1,
+                $activeShift->id,
+                (int) $user->id,
+                $cartState,
+                $label
+            );
+
+            $this->cart = [];
+            $this->holdReference = '';
+            $this->holdLabel = '';
+            $this->holdNotes = '';
+            $this->isParkModalOpen = false;
+            $this->dispatch('pos-cart-state-changed', dirty: false);
+            $this->dispatch('toast', message: "Keranjang berhasil ditahan (Ref: {$parked->hold_reference})", type: 'success');
+        } catch (\Throwable $e) {
+            $this->addError('cart', $e->getMessage());
+        }
+    }
+
+    public function resumeCart(int $parkedCartId): void
+    {
+        $user = Auth::user();
+        $activeShift = Shift::where(function ($q) use ($user) {
+            $q->where('active_cashier_id', $user->id)
+                ->orWhere(function ($sub) use ($user) {
+                    $sub->whereNull('active_cashier_id')->where('user_id', $user->id);
+                });
+        })->where('status', 'open')->first();
+
+        if (! $activeShift) {
+            $this->addError('cart', 'Shift harus aktif untuk mengambil keranjang tertunda.');
+
+            return;
+        }
+
+        $tenantId = app(TenantContext::class)->requireTenantId();
+        $storeId = app(TenantContext::class)->getStoreId() ?? 1;
+
+        if ($parkedCartId <= 0) {
+            $latestParked = ParkedCart::where('status', ParkedCart::STATUS_PARKED)->latest()->first();
+            if ($latestParked) {
+                $parkedCartId = (int) $latestParked->id;
+            }
+        }
+
+        try {
+            $result = app(CartService::class)->resumeParkedCart(
+                $parkedCartId,
+                $tenantId,
+                $storeId,
+                $this->deviceId ?? 1,
+                $activeShift->id,
+                (int) $user->id
+            );
+
+            $payload = $result['cart'];
+            $items = $payload['items'] ?? $payload;
+
+            $this->cart = array_values($items);
+            if (isset($payload['order_type'])) {
+                $this->orderType = $payload['order_type'];
+            }
+            if (isset($payload['table_id'])) {
+                $this->tableId = $payload['table_id'];
+            }
+            if (isset($payload['customer_id'])) {
+                $this->customerId = $payload['customer_id'];
+            }
+            if (isset($payload['discount_id'])) {
+                $this->selectedDiscountId = $payload['discount_id'];
+            }
+
+            $this->resumeWarnings = $result['warnings'];
+            $this->isParkedListOpen = false;
+            $this->dispatch('pos-cart-state-changed', dirty: true);
+            $this->dispatch('toast', message: 'Keranjang berhasil dimuat kembali.', type: 'success');
+        } catch (\Throwable $e) {
+            $this->addError('cart', $e->getMessage());
+        }
+    }
+
+    public function discardHeldCart(int $parkedCartId): void
+    {
+        $tenantId = app(TenantContext::class)->requireTenantId();
+        $storeId = app(TenantContext::class)->getStoreId() ?? 1;
+
+        try {
+            app(CartService::class)->discardParkedCart($parkedCartId, $tenantId, $storeId, (int) Auth::id());
+            $this->dispatch('toast', message: 'Keranjang tertunda berhasil dibatalkan.', type: 'info');
+        } catch (\Throwable $e) {
+            $this->addError('cart', $e->getMessage());
+        }
+    }
+
+    #[Computed]
+    public function parkedCarts()
+    {
+        $tenantId = app(TenantContext::class)->getTenantId();
+        $storeId = app(TenantContext::class)->getStoreId();
+        if (! $tenantId || ! $storeId) {
+            return collect();
+        }
+
+        return app(CartService::class)->getParkedCarts($tenantId, $storeId);
+    }
+
+    #[Computed]
+    public function activeShift(): ?Shift
+    {
+        $user = Auth::user();
+        if (! $user) {
+            return null;
+        }
+
+        return Shift::with('device')->where(function ($q) use ($user) {
+            $q->where('active_cashier_id', $user->id)
+                ->orWhere(function ($sub) use ($user) {
+                    $sub->whereNull('active_cashier_id')->where('user_id', $user->id);
+                });
+        })->whereIn('status', ['open', 'handover_pending', 'closing'])->first();
+    }
+
+    #[Computed]
+    public function canCheckout(): bool
+    {
+        $shift = $this->activeShift();
+
+        return $shift !== null
+            && $shift->status === 'open'
+            && count($this->cart) > 0;
+    }
+
     #[Computed]
     public function discountAmount(): int
     {
-        $discount = $this->selectedDiscount;
-        if (! $discount || ! $discount->is_active) {
-            return 0;
-        }
-
         $subtotal = $this->subtotal;
-        if ($subtotal < $discount->min_purchase_amount) {
-            return 0;
-        }
+        $voucherDiscount = 0;
+        $discount = $this->selectedDiscount;
 
-        if ($discount->type === 'percentage') {
-            $calc = (int) round($subtotal * ($discount->value / 100));
-            if ($discount->max_discount_amount) {
-                $calc = min($calc, $discount->max_discount_amount);
+        if ($discount && $discount->is_active) {
+            if ($subtotal >= $discount->min_purchase_amount && $discount->hasAvailableQuota()) {
+                if ($discount->type === 'percentage') {
+                    $calc = (int) round($subtotal * ($discount->value / 100));
+                    if ($discount->max_discount_amount) {
+                        $calc = min($calc, $discount->max_discount_amount);
+                    }
+                    $voucherDiscount = $calc;
+                } else {
+                    $voucherDiscount = min($subtotal, (int) $discount->value);
+                }
             }
-
-            return $calc;
         }
 
-        return min($subtotal, $discount->value);
+        $manualDiscount = (int) $this->appliedManualDiscount;
+
+        // Validasi stackable: jika voucher tidak stackable dan ada manual discount
+        if ($voucherDiscount > 0 && $manualDiscount > 0 && $discount && ! $discount->is_stackable) {
+            return min($subtotal, max($voucherDiscount, $manualDiscount) + $this->totalItemDiscount());
+        }
+
+        $totalDisc = $voucherDiscount + $manualDiscount + $this->totalItemDiscount();
+
+        return min($subtotal, $totalDisc);
     }
 
     #[Computed]
@@ -589,6 +903,8 @@ class CreateOrder extends Component
      */
     public function submitOrder(array $legs = [], ?string $idempotencyKey = null)
     {
+        $this->authorize('create', Order::class);
+
         $idempotencyKey = $idempotencyKey ?? $this->idempotencyKey;
 
         $rules = [
@@ -701,7 +1017,8 @@ class CreateOrder extends Component
                     $order,
                     $normalizedLegs,
                     (int) Auth::id(),
-                    $shiftId
+                    $shiftId,
+                    $this->deviceId
                 );
             } else {
                 // Skenario 1: Pesanan Walk-in Baru + Split Payment + Loyalti.
@@ -727,6 +1044,7 @@ class CreateOrder extends Component
                         'extra_price' => $line['order_price'] - $product->product_price,
                         'options' => $line['options'],
                         'notes' => $line['notes'] ?? null,
+                        'item_discount_amount' => (int) ($raw['item_discount_amount'] ?? 0),
                     ];
                 }
 
@@ -736,8 +1054,11 @@ class CreateOrder extends Component
                     'customer_id' => $this->customerId,
                     'table_id' => $this->tableId,
                     'order_type' => $this->orderType,
+                    'origin_channel' => 'pos_cashier',
+                    'device_id' => $this->deviceId,
                     'shift_id' => $shiftId,
                     'discount_id' => $this->selectedDiscountId,
+                    'manual_discount_amount' => (int) $this->appliedManualDiscount,
                     'idempotency_key' => $idempotencyKey,
                 ], (int) Auth::id());
             }
@@ -754,6 +1075,9 @@ class CreateOrder extends Component
             $this->customerId = null;
             $this->customerName = null;
             $this->selectedDiscountId = null;
+            $this->appliedManualDiscount = 0;
+            $this->appliedManualDiscountReason = '';
+            $this->resumeWarnings = [];
             $this->pendingOrderId = null;
             $this->pendingOrderCode = null;
             $this->cashReceived = 0;

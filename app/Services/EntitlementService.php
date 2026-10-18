@@ -18,11 +18,15 @@ use Illuminate\Support\Facades\Cache;
 class EntitlementService
 {
     public const FEATURE_RESTOCK_FORECAST = 'restock_forecast';
+
     public const FEATURE_OMNICHANNEL = 'omnichannel';
+
     public const FEATURE_ASYNC_EXPORT = 'async_export';
 
     public const QUOTA_MAX_STORES = 'max_stores';
+
     public const QUOTA_MAX_DEVICES_PER_STORE = 'max_devices_per_store';
+
     public const QUOTA_MAX_EMPLOYEES = 'max_employees';
 
     /**

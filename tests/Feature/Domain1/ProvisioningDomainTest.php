@@ -2,16 +2,21 @@
 
 namespace Tests\Feature\Domain1;
 
+use App\Jobs\ProcessProvisioningOutboxJob;
 use App\Models\Category;
 use App\Models\EmailOutbox;
 use App\Models\Ingredient;
 use App\Models\OwnerOnboardingToken;
 use App\Models\Product;
 use App\Models\ProvisioningRequest;
+use App\Models\Role;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Context\TenantContext;
+use App\Services\ProvisioningService;
+use App\Services\TenantProvisioningService;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -127,13 +132,13 @@ class ProvisioningDomainTest extends TestCase
         $this->assertSame('ready', $tenant->readiness_status);
         $this->assertSame(8, DB::table('roles')->where('tenant_id', $tenant->id)->count());
         app(TenantContext::class)->runAs($tenant->id, null, function () use ($tenant): void {
-            $provisioning = app(\App\Services\TenantProvisioningService::class);
+            $provisioning = app(TenantProvisioningService::class);
             $this->assertSame(2, User::where('tenant_id', $tenant->id)->whereIn('email', [
                 $provisioning->systemUserEmail($tenant, 'self_order'),
                 $provisioning->systemUserEmail($tenant, 'channel_order'),
             ])->count());
 
-            $ownerRole = \App\Models\Role::where('tenant_id', $tenant->id)->where('name', 'Owner')->firstOrFail();
+            $ownerRole = Role::where('tenant_id', $tenant->id)->where('name', 'Owner')->firstOrFail();
             $this->assertTrue($ownerRole->hasPermission('dashboard'));
             $this->assertTrue($ownerRole->hasPermission('orders.create'));
         });
@@ -353,7 +358,7 @@ class ProvisioningDomainTest extends TestCase
         $this->postProvision($secondPayload, $this->signedHeaders($secondPayload))->assertStatus(201);
         $secondLedger = ProvisioningRequest::where('id', '<>', $firstLedger->id)->firstOrFail();
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         DB::table('provisioning_requests')->where('id', $firstLedger->id)->update([
             'result_user_id' => $secondLedger->result_user_id,
         ]);
@@ -492,6 +497,7 @@ class ProvisioningDomainTest extends TestCase
         $record = OwnerOnboardingToken::where('tenant_id', $tenantId)
             ->where('user_id', $userId)
             ->firstOrFail();
+
         return OwnerOnboardingToken::reissueFor($record->token_hash, $tenantId, $userId);
     }
 
@@ -590,7 +596,7 @@ class ProvisioningDomainTest extends TestCase
 
         Mail::shouldReceive('raw')->once()->andThrow(new \RuntimeException('SMTP password must not be logged'));
         $this->app['queue']->setDefaultDriver('sync');
-        app(\App\Jobs\ProcessProvisioningOutboxJob::class, ['outboxId' => $outbox->id])->handle();
+        app(ProcessProvisioningOutboxJob::class, ['outboxId' => $outbox->id])->handle();
 
         $this->assertDatabaseCount('tenants', 1);
         $outbox->refresh();
@@ -656,9 +662,9 @@ class ProvisioningDomainTest extends TestCase
         $tenantId = $ledger->result_tenant_id;
         $userId = $ledger->result_user_id;
 
-        $method = new \ReflectionMethod(\App\Services\ProvisioningService::class, 'finaliseLedger');
+        $method = new \ReflectionMethod(ProvisioningService::class, 'finaliseLedger');
         $method->setAccessible(true);
-        $method->invoke(app(\App\Services\ProvisioningService::class), $key, $ledger->attempt_count - 1, [
+        $method->invoke(app(ProvisioningService::class), $key, $ledger->attempt_count - 1, [
             'status' => ProvisioningRequest::STATUS_FAILED,
             'error_message' => 'database_error',
             'completed_at' => now(),
@@ -706,7 +712,7 @@ class ProvisioningDomainTest extends TestCase
         $key = 'race-insert-long-001';
 
         $tenant = Tenant::create(['name' => 'Dummy Tenant 2']);
-        $user = app(\App\Services\Context\TenantContext::class)->runAs($tenant->id, null, function() {
+        $user = app(TenantContext::class)->runAs($tenant->id, null, function () {
             return User::create(['name' => 'Dummy User 2', 'email' => 'dummy2@example.com', 'is_active' => true]);
         });
 
@@ -735,8 +741,8 @@ class ProvisioningDomainTest extends TestCase
         $key = 'unrelated-query-ex-001';
 
         // We can just use an Event listener on eloquent creation to throw a QueryException.
-        \App\Models\Tenant::creating(function () {
-            throw new \Illuminate\Database\QueryException('connection', 'insert into tenants', [], new \Exception('Disk full', 9999));
+        Tenant::creating(function () {
+            throw new QueryException('connection', 'insert into tenants', [], new \Exception('Disk full', 9999));
         });
 
         $headers = $this->signedHeaders($payload, ['X-Idempotency-Key' => $key]);
@@ -747,8 +753,8 @@ class ProvisioningDomainTest extends TestCase
         $this->assertSame('provisioning_failed', $response->json('error'));
 
         // Cleanup event listener by flushing dispatcher for Tenant
-        \App\Models\Tenant::flushEventListeners();
-        \App\Models\Tenant::boot();
+        Tenant::flushEventListeners();
+        Tenant::boot();
     }
 
     public function test_error_responses_do_not_leak_internal_details(): void

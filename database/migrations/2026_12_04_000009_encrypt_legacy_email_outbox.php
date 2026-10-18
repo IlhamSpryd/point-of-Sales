@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -31,6 +32,7 @@ return new class extends Migration
                                 ->exists();
                             if (! $tokenExists) {
                                 $failed = true;
+
                                 return '[onboarding link removed; resend required]';
                             }
 

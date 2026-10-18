@@ -10,7 +10,6 @@ use App\Models\User;
 use App\Services\Context\TenantContext;
 use App\Services\UserService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class SessionRevocationAndBranchAccessTest extends TestCase
@@ -23,7 +22,7 @@ class SessionRevocationAndBranchAccessTest extends TestCase
     {
         $tenant = Tenant::create([
             'name' => 'Kedai Kopi Multicabang',
-            'slug' => 'kedai-multi-' . uniqid(),
+            'slug' => 'kedai-multi-'.uniqid(),
             'status' => 'active',
             'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             'access_status' => Tenant::ACCESS_ACTIVE,
@@ -54,21 +53,21 @@ class SessionRevocationAndBranchAccessTest extends TestCase
             'is_initial' => false,
         ]);
 
-        $ownerRole = new Role();
+        $ownerRole = new Role;
         $ownerRole->tenant_id = $tenant->id;
         $ownerRole->name = 'Owner';
         $ownerRole->permissions = ['*'];
         $ownerRole->is_active = true;
         $ownerRole->save();
 
-        $kasirRole = new Role();
+        $kasirRole = new Role;
         $kasirRole->tenant_id = $tenant->id;
         $kasirRole->name = 'Kasir';
         $kasirRole->permissions = ['pos.order.create', 'shifts.manage'];
         $kasirRole->is_active = true;
         $kasirRole->save();
 
-        $owner = new User();
+        $owner = new User;
         $owner->tenant_id = $tenant->id;
         $owner->role_id = $ownerRole->id;
         $owner->name = 'Owner Multi';
@@ -79,7 +78,7 @@ class SessionRevocationAndBranchAccessTest extends TestCase
         $owner->email_verified_at = now();
         $owner->save();
 
-        $kasir = new User();
+        $kasir = new User;
         $kasir->tenant_id = $tenant->id;
         $kasir->role_id = $kasirRole->id;
         $kasir->name = 'Kasir Multi';

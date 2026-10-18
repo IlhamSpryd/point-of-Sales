@@ -23,8 +23,11 @@ class OrderLifecycleTransitionTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $cashier;
+
     protected Shift $shift;
 
     protected function afterSubclassSetUp(): void

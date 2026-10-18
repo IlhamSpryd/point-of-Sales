@@ -328,10 +328,19 @@
                         <p class="text-xs font-bold text-[#6B6A66] uppercase tracking-wider mb-2">Item Pesanan</p>
                         <ul class="divide-y divide-[#E9E9E7] border border-[#E9E9E7] rounded-xl overflow-hidden">
                             @foreach ($detail->orderItems as $item)
+                                @php
+                                    $returnedQty = $detail->orderReturns->flatMap->items->where('order_item_id', $item->id)->sum('quantity_returned');
+                                @endphp
                                 <li class="p-3 flex justify-between items-start gap-3 bg-white">
                                     <div class="min-w-0">
                                         <p class="text-sm font-semibold text-apeiron-ink">{{ $item->qty }}×
-                                            {{ $item->product->product_name ?? 'Produk Dihapus' }}</p>
+                                            {{ $item->product->product_name ?? 'Produk Dihapus' }}
+                                            @if ($returnedQty > 0)
+                                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 ml-1">
+                                                    Diretur {{ $returnedQty }}x
+                                                </span>
+                                            @endif
+                                        </p>
                                         @if (!empty($item->options))
                                             <p class="text-xs text-[#787774] mt-0.5">
                                                 {{ collect($item->options)->pluck('name')->filter()->implode(', ') }}
@@ -348,6 +357,75 @@
                             @endforeach
                         </ul>
                     </div>
+
+                    {{-- RIWAYAT RETUR & DISPOSISI INVENTORI --}}
+                    @if ($detail->orderReturns && $detail->orderReturns->isNotEmpty())
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-xs font-bold text-amber-700 uppercase tracking-wider">Riwayat Retur &amp; Disposisi</p>
+                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                                    {{ $detail->orderReturns->count() }} Kali Retur
+                                </span>
+                            </div>
+                            <div class="space-y-2">
+                                @foreach ($detail->orderReturns as $ret)
+                                    <div class="bg-amber-50/50 border border-amber-200 rounded-xl p-3 text-xs">
+                                        <div class="flex justify-between items-center font-semibold text-amber-900 border-b border-amber-100 pb-1.5 mb-2">
+                                            <span class="font-mono">{{ $ret->return_number }}</span>
+                                            <span class="uppercase tracking-wider text-[10px] px-1.5 py-0.5 rounded bg-amber-200 text-amber-900">{{ $ret->return_type }}</span>
+                                        </div>
+                                        <p class="text-[#787774] mb-2"><span class="font-medium text-apeiron-ink">Alasan:</span> {{ $ret->reason }}</p>
+                                        <div class="space-y-1">
+                                            @foreach ($ret->items as $retItem)
+                                                <div class="flex justify-between items-center bg-white p-1.5 rounded border border-amber-100">
+                                                    <span>{{ $retItem->quantity_returned }}× {{ $retItem->orderItem->product->product_name ?? 'Item' }}</span>
+                                                    <div class="flex items-center gap-1.5">
+                                                        <span class="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase
+                                                            {{ $retItem->disposition === 'restock' ? 'bg-emerald-100 text-emerald-800' : ($retItem->disposition === 'quarantine' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800') }}">
+                                                            {{ $retItem->disposition }}
+                                                        </span>
+                                                        <span class="tabular-nums font-semibold">Rp {{ number_format($retItem->refund_amount, 0, ',', '.') }}</span>
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+
+                    {{-- RIWAYAT PENGEMBALIAN DANA (REFUND) --}}
+                    @if ($detail->paymentRefunds && $detail->paymentRefunds->isNotEmpty())
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <p class="text-xs font-bold text-rose-700 uppercase tracking-wider">Riwayat Pengembalian Dana (Refund)</p>
+                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800">
+                                    Rp {{ number_format($detail->paymentRefunds->sum('amount'), 0, ',', '.') }}
+                                </span>
+                            </div>
+                            <div class="space-y-2">
+                                @foreach ($detail->paymentRefunds as $ref)
+                                    <div class="bg-rose-50/50 border border-rose-200 rounded-xl p-3 text-xs">
+                                        <div class="flex justify-between items-center font-semibold text-rose-900 border-b border-rose-100 pb-1.5 mb-1.5">
+                                            <span class="font-mono">{{ $ref->refund_number }}</span>
+                                            <span class="tabular-nums font-bold text-rose-700">Rp {{ number_format($ref->amount, 0, ',', '.') }}</span>
+                                        </div>
+                                        <div class="grid grid-cols-2 gap-2 text-[#787774] text-[11px]">
+                                            <div>Metode: <span class="font-semibold text-apeiron-ink uppercase">{{ $ref->refund_method }}</span></div>
+                                            <div>Status: <span class="font-semibold text-emerald-700 uppercase">{{ $ref->financial_status }}</span></div>
+                                            @if ($ref->is_method_override)
+                                                <div class="col-span-2 text-rose-600 font-medium">Override Kas Tunai: {{ $ref->method_override_reason ?? 'Disetujui Supervisor' }}</div>
+                                            @endif
+                                            @if ($ref->approvedByUser)
+                                                <div class="col-span-2 text-slate-500">Disetujui oleh: <span class="font-medium text-apeiron-ink">{{ $ref->approvedByUser->name }}</span></div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
 
                     <div>
                         <p class="text-xs font-bold text-[#6B6A66] uppercase tracking-wider mb-2">Rincian Pembayaran
@@ -391,12 +469,17 @@
                                 {{ number_format($detail->subtotal_amount, 0, ',', '.') }}</span></div>
                         @if ($detail->discount_amount > 0)
                             <div class="flex justify-between text-rose-600"><span>Diskon</span><span
-                                    class="tabular-nums">- Rp
-                                    {{ number_format($detail->discount_amount, 0, ',', '.') }}</span></div>
+                                     class="tabular-nums">- Rp
+                                     {{ number_format($detail->discount_amount, 0, ',', '.') }}</span></div>
                         @endif
                         <div class="flex justify-between text-[#787774]"><span>Pajak</span><span
                                 class="tabular-nums">Rp {{ number_format($detail->tax_amount, 0, ',', '.') }}</span>
                         </div>
+                        @if ($detail->service_charge_amount > 0)
+                            <div class="flex justify-between text-[#787774]"><span>Service Charge</span><span
+                                    class="tabular-nums">Rp {{ number_format($detail->service_charge_amount, 0, ',', '.') }}</span>
+                            </div>
+                        @endif
                         <div
                             class="flex justify-between font-bold text-apeiron-ink text-base pt-2 mt-1 border-t border-[#E9E9E7]">
                             <span>Total Tagihan</span><span class="tabular-nums">Rp
@@ -404,23 +487,33 @@
                     </div>
                 </div>
 
-                <div class="p-4 border-t border-[#E9E9E7] bg-white shrink-0 flex gap-3">
+                <div class="p-4 border-t border-[#E9E9E7] bg-white shrink-0 flex flex-wrap gap-2">
                     <button type="button" wire:click="closeDetail"
-                        class="flex-1 min-h-[44px] rounded-xl border border-[#E9E9E7] bg-white text-sm font-semibold text-[#787774] hover:bg-[#F7F7F5] transition-all duration-200 active:scale-95">
+                        class="min-h-[44px] px-4 rounded-xl border border-[#E9E9E7] bg-white text-sm font-semibold text-[#787774] hover:bg-[#F7F7F5] transition-all duration-200 active:scale-95">
                         Tutup
                     </button>
+                    @if (in_array($detail->order_status->value, ['paid', 'completed'], true))
+                        <button type="button" wire:click="openReturnModal({{ $detail->id }})"
+                            class="min-h-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-amber-600 text-white text-sm font-bold hover:bg-amber-700 transition-all duration-200 active:scale-95 shadow-sm">
+                            <span class="material-symbols-rounded text-[18px]">keyboard_return</span> Retur &amp; Refund
+                        </button>
+                    @endif
                     @if ($detail->order_status->value === 'paid' && auth()->user()->can('void', $detail))
                         <button type="button" wire:click="$set('voidingOrderId', {{ $detail->id }})"
-                            class="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl bg-rose-600 text-white text-sm font-bold hover:bg-rose-700 transition-all duration-200 active:scale-95 shadow-sm">
+                            class="min-h-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-rose-600 text-white text-sm font-bold hover:bg-rose-700 transition-all duration-200 active:scale-95 shadow-sm">
                             <span class="material-symbols-rounded text-[18px]">cancel</span> Batalkan (Void)
                         </button>
                     @endif
                     @if (in_array($detail->order_status->value, ['paid', 'completed'], true))
-                        <a href="{{ route('transaction.receipt', $detail->order_code) }}" target="_blank"
-                            rel="noopener"
-                            class="flex-1 min-h-[44px] inline-flex items-center justify-center gap-2 rounded-xl bg-apeiron-ink text-white text-sm font-bold hover:bg-[#111111] transition-all duration-200 active:scale-95 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2">
-                            <span class="material-symbols-rounded text-[18px]">print</span> Cetak Ulang Struk
-                        </a>
+                        <button type="button" wire:click="requestReprint({{ $detail->id }})"
+                            class="min-h-[44px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-apeiron-ink text-white text-sm font-bold hover:bg-[#111111] transition-all duration-200 active:scale-95 shadow-sm">
+                            <span class="material-symbols-rounded text-[18px]">print</span>
+                            @if (($detail->print_count ?? 0) > 0)
+                                Cetak Ulang Struk (#{{ ($detail->print_count ?? 0) + 1 }})
+                            @else
+                                Cetak Struk
+                            @endif
+                        </button>
                     @endif
                 </div>
             </div>
@@ -435,14 +528,26 @@
             <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-[#E9E9E7]">
                 <h3 id="void-modal-title" class="font-bold text-lg text-rose-600 mb-2">Batalkan (Void) Pesanan</h3>
                 <p class="text-sm text-[#787774] mb-4">Aksi ini akan mengubah status pesanan menjadi Void dan
-                    mengembalikan semua stok secara otomatis. Silakan tuliskan alasan pembatalan.</p>
+                    mengembalikan semua stok secara otomatis. Diperlukan alasan pembatalan dan verifikasi PIN Supervisor.</p>
 
                 <form wire:submit.prevent="voidOrder">
-                    <label for="void-reason-input" class="sr-only">Alasan pembatalan (void) pesanan</label>
-                    <textarea id="void-reason-input" wire:model="voidReason" rows="3" required minlength="5"
-                        aria-label="Alasan pembatalan (void) pesanan"
-                        placeholder="Alasan pembatalan (min. 5 karakter)..."
-                        class="w-full rounded-xl border border-[#E9E9E7] p-3 text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 mb-4 shadow-sm"></textarea>
+                    <div class="space-y-3 mb-4">
+                        <div>
+                            <label for="void-reason-input" class="block text-xs font-semibold text-slate-700 uppercase mb-1">Alasan Pembatalan</label>
+                            <textarea id="void-reason-input" wire:model="voidReason" rows="3" required minlength="5"
+                                placeholder="Alasan pembatalan (min. 5 karakter)..."
+                                class="w-full rounded-xl border border-[#E9E9E7] p-3 text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 shadow-sm"></textarea>
+                            @error('voidReason') <span class="text-xs text-rose-600">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div>
+                            <label for="void-pin-input" class="block text-xs font-semibold text-slate-700 uppercase mb-1">PIN Supervisor / Manager</label>
+                            <input type="password" id="void-pin-input" wire:model="supervisorPin" required maxlength="6"
+                                placeholder="PIN Supervisor (4-6 digit)"
+                                class="w-full rounded-xl border border-[#E9E9E7] px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500 focus:border-rose-500 shadow-sm">
+                            @error('supervisorPin') <span class="text-xs text-rose-600">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
 
                     <div class="flex justify-end gap-3">
                         <button type="button" wire:click="$set('voidingOrderId', null)"
@@ -461,4 +566,197 @@
             </div>
         </div>
     @endif
+
+    {{-- ==================== MODAL RETURN & REFUND ==================== --}}
+    @if ($showReturnModal)
+        <div class="fixed inset-0 z-[60] flex items-center justify-center bg-apeiron-ink/40 backdrop-blur-sm p-4 overflow-y-auto"
+            role="dialog" aria-modal="true" aria-labelledby="return-modal-title">
+            <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl border border-[#E9E9E7] my-auto">
+                <div class="px-6 py-4 border-b border-[#E9E9E7] flex justify-between items-center shrink-0">
+                    <div>
+                        <h3 id="return-modal-title" class="font-bold text-lg text-apeiron-ink">Pengajuan Retur &amp; Refund</h3>
+                        <p class="text-xs text-[#787774]">Pilih item yang diretur, disposisi inventori, dan metode pengembalian dana</p>
+                    </div>
+                    <button type="button" wire:click="closeReturnModal" class="p-1 rounded-lg text-[#9B9A97] hover:bg-slate-100">
+                        <span class="material-symbols-rounded text-[20px]">close</span>
+                    </button>
+                </div>
+
+                <div class="p-6 overflow-y-auto flex-1 space-y-5">
+                    @if ($returnErrorMessage)
+                        <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold">
+                            {{ $returnErrorMessage }}
+                        </div>
+                    @endif
+
+                    {{-- Item selection table --}}
+                    <div>
+                        <h4 class="text-xs font-bold text-[#6B6A66] uppercase tracking-wider mb-2">1. Pilih Item &amp; Disposisi</h4>
+                        <div class="space-y-3">
+                            @foreach ($returnItems as $id => $item)
+                                <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <label class="flex items-center gap-2 cursor-pointer">
+                                            <input type="checkbox" wire:model.live="returnItems.{{ $id }}.selected"
+                                                class="rounded border-slate-300 text-apeiron-ink focus:ring-apeiron-ink">
+                                            <span class="text-sm font-semibold text-apeiron-ink">{{ $item['product_name'] }}</span>
+                                        </label>
+                                        <span class="text-xs text-slate-500">Sisa: <strong class="text-slate-700">{{ $item['remaining_qty'] }}</strong> pcs</span>
+                                    </div>
+
+                                    @if (!empty($item['selected']))
+                                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-slate-200 text-xs">
+                                            <div>
+                                                <label class="block text-[11px] text-slate-500 mb-1">Jumlah Retur</label>
+                                                <input type="number" wire:model.live="returnItems.{{ $id }}.qty"
+                                                    min="1" max="{{ $item['remaining_qty'] }}"
+                                                    class="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs font-bold">
+                                            </div>
+                                            <div>
+                                                <label class="block text-[11px] text-slate-500 mb-1">Disposisi Inventori</label>
+                                                <select wire:model.live="returnItems.{{ $id }}.disposition"
+                                                    class="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs">
+                                                    @if (empty($item['is_recipe_product']))
+                                                        <option value="restock">Restock (Kembali Layak Jual)</option>
+                                                    @endif
+                                                    <option value="quarantine">Karantina (Pemeriksaan)</option>
+                                                    <option value="write_off_waste">Write-Off (Buang/Rusak)</option>
+                                                </select>
+                                                @if (!empty($item['is_recipe_product']))
+                                                    <span class="text-[10px] text-amber-700 block mt-0.5 font-medium">*Resep F&B: Larangan Restock</span>
+                                                @endif
+                                            </div>
+                                            <div>
+                                                <label class="block text-[11px] text-slate-500 mb-1">Alasan Disposisi</label>
+                                                <input type="text" wire:model="returnItems.{{ $id }}.disposition_reason"
+                                                    placeholder="Opsional (cth: basi, salah saji)"
+                                                    class="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs">
+                                            </div>
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Refund Allocations --}}
+                    <div>
+                        <h4 class="text-xs font-bold text-[#6B6A66] uppercase tracking-wider mb-2">2. Alokasi Pengembalian Dana (Refund)</h4>
+                        <div class="space-y-3">
+                            @foreach ($refundAllocations as $pId => $alloc)
+                                <div class="p-3 rounded-xl border border-slate-200 bg-slate-50/50 space-y-2 text-xs">
+                                    <div class="flex justify-between items-center">
+                                        <span class="font-semibold text-slate-800">Pembayaran #{{ $pId }} (Metode Asal: <strong class="uppercase">{{ $alloc['orig_method'] }}</strong>)</span>
+                                        <span class="text-slate-500">Maksimal: <strong class="text-slate-800">Rp {{ number_format($alloc['max_amount'], 0, ',', '.') }}</strong></span>
+                                    </div>
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                                        <div>
+                                            <label class="block text-[11px] text-slate-500 mb-1">Nominal Refund (Rp)</label>
+                                            <input type="number" wire:model.live="refundAllocations.{{ $pId }}.amount"
+                                                min="1" max="{{ $alloc['max_amount'] }}"
+                                                class="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs font-bold">
+                                        </div>
+                                        <div>
+                                            <label class="block text-[11px] text-slate-500 mb-1">Metode Pengembalian</label>
+                                            <select wire:model.live="refundAllocations.{{ $pId }}.refund_method"
+                                                class="w-full rounded-lg border border-slate-200 px-2 py-1.5 text-xs">
+                                                <option value="{{ $alloc['orig_method'] }}">Asal ({{ ucfirst($alloc['orig_method']) }})</option>
+                                                @if ($alloc['orig_method'] !== 'cash')
+                                                    <option value="cash">Tunai (Cash Refund Exception)</option>
+                                                @endif
+                                            </select>
+                                        </div>
+                                    </div>
+                                    @if ($alloc['refund_method'] === 'cash' && $alloc['orig_method'] !== 'cash')
+                                        <div>
+                                            <label class="block text-[11px] text-rose-600 font-medium mb-1">Alasan Pengecualian Refund Tunai *</label>
+                                            <input type="text" wire:model="refundAllocations.{{ $pId }}.method_override_reason"
+                                                placeholder="Wajib diisi (cth: EDC offline, permintaan darurat pelanggan)"
+                                                class="w-full rounded-lg border border-rose-300 px-2 py-1.5 text-xs">
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    {{-- Form Footer Inputs --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-200">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Alasan Retur / Refund *</label>
+                            <input type="text" wire:model="returnReason" placeholder="Minimal 5 karakter..."
+                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">PIN Supervisor / Manager *</label>
+                            <input type="password" wire:model="returnSupervisorPin" maxlength="6" placeholder="PIN Otorisasi (4-6 digit)"
+                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-4 border-t border-[#E9E9E7] bg-white shrink-0 flex justify-end gap-3">
+                    <button type="button" wire:click="closeReturnModal"
+                        class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                        Batal
+                    </button>
+                    <button type="button" wire:click="processReturn"
+                        wire:loading.attr="disabled" wire:target="processReturn"
+                        class="px-5 py-2 rounded-xl bg-amber-600 text-white text-sm font-bold hover:bg-amber-700 shadow-sm disabled:opacity-50 flex items-center gap-2">
+                        <span wire:loading wire:target="processReturn" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                        <span wire:loading.remove wire:target="processReturn">Proses Retur &amp; Refund</span>
+                        <span wire:loading wire:target="processReturn">Memproses...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- ==================== MODAL REPRINT ==================== --}}
+    @if ($showReprintModal)
+        <div class="fixed inset-0 z-[60] flex items-center justify-center bg-apeiron-ink/40 backdrop-blur-sm p-4"
+            role="dialog" aria-modal="true" aria-labelledby="reprint-modal-title">
+            <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-[#E9E9E7]">
+                <h3 id="reprint-modal-title" class="font-bold text-lg text-apeiron-ink mb-1">
+                    Cetak Ulang Struk (#{{ $reprintOrderPrintCount + 1 }})
+                </h3>
+                <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 mb-4">
+                    Struk ini sudah dicetak <strong>{{ $reprintOrderPrintCount }} kali</strong>. Struk berikutnya akan diberi tanda watermark <strong>*** COPY / CETAK ULANG #{{ $reprintOrderPrintCount + 1 }} ***</strong> dan tercatat di audit log.
+                </div>
+
+                <div class="space-y-3 mb-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Alasan Cetak Ulang *</label>
+                        <input type="text" wire:model="reprintReason" placeholder="Cth: Kertas macet, permintaan kasir/pelanggan..."
+                            class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm">
+                        @error('reprintReason') <span class="text-xs text-rose-600">{{ $message }}</span> @enderror
+                    </div>
+
+                    @if ($reprintOrderPrintCount >= 2)
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">PIN Supervisor *</label>
+                            <input type="password" wire:model="reprintSupervisorPin" maxlength="6" placeholder="PIN Supervisor untuk cetak ulang &gt;2x"
+                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm">
+                            @error('reprintSupervisorPin') <span class="text-xs text-rose-600">{{ $message }}</span> @enderror
+                        </div>
+                    @endif
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" wire:click="closeReprintModal"
+                        class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+                        Batal
+                    </button>
+                    <button type="button" wire:click="confirmReprint"
+                        wire:loading.attr="disabled" wire:target="confirmReprint"
+                        class="px-5 py-2 rounded-xl bg-apeiron-ink text-white text-sm font-bold hover:bg-[#111111] shadow-sm disabled:opacity-50 flex items-center gap-2">
+                        <span wire:loading wire:target="confirmReprint" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                        <span wire:loading.remove wire:target="confirmReprint">Cetak Sekarang</span>
+                        <span wire:loading wire:target="confirmReprint">Memproses...</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
+

@@ -5,6 +5,7 @@ namespace Tests\Feature\Auth;
 use App\Models\ActivityLog;
 use App\Models\EmailOutbox;
 use App\Models\Role;
+use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\UserOAuthIdentity;
@@ -30,7 +31,7 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
     {
         $tenant = Tenant::create([
             'name' => 'Kopi Kafe',
-            'slug' => 'kopi-kafe-' . uniqid(),
+            'slug' => 'kopi-kafe-'.uniqid(),
             'status' => 'pending',
             'onboarding_status' => Tenant::ONBOARDING_BUSINESS_PROFILE,
             'access_status' => Tenant::ACCESS_PENDING,
@@ -39,7 +40,7 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
             'country_code' => 'ID',
         ]);
 
-        \App\Models\Store::withoutTenantScope()->create([
+        Store::withoutTenantScope()->create([
             'tenant_id' => $tenant->id,
             'name' => 'Kopi Kafe Pusat',
             'code' => 'MAIN-01',
@@ -50,7 +51,7 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
             'is_initial' => true,
         ]);
 
-        $ownerRole = new Role();
+        $ownerRole = new Role;
         $ownerRole->tenant_id = $tenant->id;
         $ownerRole->name = 'Owner';
         $ownerRole->description = 'Tenant Owner';
@@ -58,7 +59,7 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
         $ownerRole->is_active = true;
         $ownerRole->save();
 
-        $user = new User();
+        $user = new User;
         $user->tenant_id = $tenant->id;
         $user->role_id = $ownerRole->id;
         $user->name = 'Owner Kafe';
@@ -96,7 +97,7 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
     {
         [$tenant, $user] = $this->createTenantWithOwner();
 
-        $sub = 'google-sub-' . Str::random(16);
+        $sub = 'google-sub-'.Str::random(16);
         UserOAuthIdentity::create([
             'tenant_id' => $tenant->id,
             'user_id' => $user->id,
@@ -110,8 +111,8 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
             'last_used_at' => null,
         ]);
 
-        $state = 'test_state_' . Str::random(16);
-        $nonce = 'test_nonce_' . Str::random(16);
+        $state = 'test_state_'.Str::random(16);
+        $nonce = 'test_nonce_'.Str::random(16);
 
         Cache::put("oauth_state:{$state}", [
             'state' => $state,
@@ -141,7 +142,7 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
     public function test_replaying_consumed_state_is_rejected(): void
     {
         [$tenant, $user] = $this->createTenantWithOwner();
-        $sub = 'google-sub-' . Str::random(16);
+        $sub = 'google-sub-'.Str::random(16);
         UserOAuthIdentity::create([
             'tenant_id' => $tenant->id,
             'user_id' => $user->id,
@@ -155,8 +156,8 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
             'last_used_at' => null,
         ]);
 
-        $state = 'replay_state_' . Str::random(16);
-        $nonce = 'replay_nonce_' . Str::random(16);
+        $state = 'replay_state_'.Str::random(16);
+        $nonce = 'replay_nonce_'.Str::random(16);
 
         Cache::put("oauth_state:{$state}", [
             'state' => $state,
@@ -191,7 +192,7 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
     public function test_apple_form_post_callback_without_csrf_failure(): void
     {
         [$tenant, $user] = $this->createTenantWithOwner('apple.user@example.test');
-        $sub = 'apple-sub-' . Str::random(16);
+        $sub = 'apple-sub-'.Str::random(16);
 
         UserOAuthIdentity::create([
             'tenant_id' => $tenant->id,
@@ -206,8 +207,8 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
             'last_used_at' => null,
         ]);
 
-        $state = 'apple_state_' . Str::random(16);
-        $nonce = 'apple_nonce_' . Str::random(16);
+        $state = 'apple_state_'.Str::random(16);
+        $nonce = 'apple_nonce_'.Str::random(16);
 
         Cache::put("oauth_state:{$state}", [
             'state' => $state,
@@ -238,9 +239,9 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
 
     public function test_apple_capture_name_on_first_registration_and_subsequent_login_without_user_payload(): void
     {
-        $sub = 'apple-unique-sub-' . Str::random(16);
-        $state = 'apple_reg_state_' . Str::random(16);
-        $nonce = 'apple_reg_nonce_' . Str::random(16);
+        $sub = 'apple-unique-sub-'.Str::random(16);
+        $state = 'apple_reg_state_'.Str::random(16);
+        $nonce = 'apple_reg_nonce_'.Str::random(16);
 
         Cache::put("oauth_state:{$state}", [
             'state' => $state,
@@ -277,8 +278,8 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
         Auth::logout();
 
         // 2. Login berikutnya: Apple TIDAK menyertakan payload 'user'
-        $loginState = 'apple_login_state_' . Str::random(16);
-        $loginNonce = 'apple_login_nonce_' . Str::random(16);
+        $loginState = 'apple_login_state_'.Str::random(16);
+        $loginNonce = 'apple_login_nonce_'.Str::random(16);
 
         Cache::put("oauth_state:{$loginState}", [
             'state' => $loginState,
@@ -308,9 +309,9 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
 
     public function test_apple_private_relay_email_sets_flag_and_authenticates(): void
     {
-        $sub = 'apple-relay-sub-' . Str::random(16);
-        $state = 'relay_state_' . Str::random(16);
-        $nonce = 'relay_nonce_' . Str::random(16);
+        $sub = 'apple-relay-sub-'.Str::random(16);
+        $state = 'relay_state_'.Str::random(16);
+        $nonce = 'relay_nonce_'.Str::random(16);
 
         Cache::put("oauth_state:{$state}", [
             'state' => $state,
@@ -347,8 +348,8 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
 
     public function test_unregistered_account_on_login_is_rejected_zero_auto_provisioning(): void
     {
-        $state = 'unknown_state_' . Str::random(16);
-        $nonce = 'unknown_nonce_' . Str::random(16);
+        $state = 'unknown_state_'.Str::random(16);
+        $nonce = 'unknown_nonce_'.Str::random(16);
 
         Cache::put("oauth_state:{$state}", [
             'state' => $state,
@@ -360,7 +361,7 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
         ], now()->addMinutes(10));
 
         OAuthService::fakeTokenPayload('google', [
-            'sub' => 'unknown-sub-' . Str::random(16),
+            'sub' => 'unknown-sub-'.Str::random(16),
             'email' => 'new.stranger@example.test',
             'email_verified' => true,
             'nonce' => $nonce,
@@ -385,8 +386,8 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
     {
         [$tenant, $user] = $this->createTenantWithOwner('existing.owner@domain.test');
 
-        $state = 'autolink_state_' . Str::random(16);
-        $nonce = 'autolink_nonce_' . Str::random(16);
+        $state = 'autolink_state_'.Str::random(16);
+        $nonce = 'autolink_nonce_'.Str::random(16);
 
         Cache::put("oauth_state:{$state}", [
             'state' => $state,
@@ -426,9 +427,9 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
         [$tenant, $user] = $this->createTenantWithOwner();
 
         // 1. Tautkan akun Google dari profil
-        $linkSub = 'google-link-sub-' . Str::random(16);
-        $state = 'link_state_' . Str::random(16);
-        $nonce = 'link_nonce_' . Str::random(16);
+        $linkSub = 'google-link-sub-'.Str::random(16);
+        $state = 'link_state_'.Str::random(16);
+        $nonce = 'link_nonce_'.Str::random(16);
 
         Cache::put("oauth_state:{$state}", [
             'state' => $state,

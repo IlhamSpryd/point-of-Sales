@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * @property int $id
@@ -59,6 +60,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         'pending_email_requested_at',
         'password_changed_at',
         'phone_number',
+        'password',
         'password_hash',
         'pin_hash',
         'join_date',
@@ -87,8 +89,6 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
             'email_verified_at' => 'datetime',
             'pending_email_requested_at' => 'datetime',
             'password_changed_at' => 'datetime',
-            'password' => 'hashed',
-            'password_hash' => 'hashed',
             'pin_hash' => 'hashed', // Amankan PIN seperti password
             'two_factor_secret' => 'encrypted',
             'two_factor_recovery_codes' => 'encrypted:array',
@@ -116,6 +116,20 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
     {
         $this->attributes['pending_email'] = $value;
         $this->attributes['pending_email_normalized'] = $value !== null ? EmailNormalizer::normalize($value) : null;
+    }
+
+    public function setPasswordAttribute($value): void
+    {
+        $hash = $value !== null ? (Hash::needsRehash($value) ? Hash::make($value) : $value) : null;
+        $this->attributes['password'] = $hash;
+        $this->attributes['password_hash'] = $hash;
+    }
+
+    public function setPasswordHashAttribute($value): void
+    {
+        $hash = $value !== null ? (Hash::needsRehash($value) ? Hash::make($value) : $value) : null;
+        $this->attributes['password_hash'] = $hash;
+        $this->attributes['password'] = $hash;
     }
 
     public function isLockedOut(): bool

@@ -8,10 +8,10 @@ use App\Models\ExportTask;
 use App\Models\Role;
 use App\Models\User;
 use App\Services\Context\TenantContext;
-use App\Services\DatabaseErrorClassifier;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Tests\Support\TwoTenantFixture;
 use Tests\TestCase;
@@ -35,7 +35,7 @@ class TenantIsolationSecurityTest extends TestCase
         $context = app(TenantContext::class);
         $context->clear();
 
-        $userModel = new User();
+        $userModel = new User;
 
         // Tanpa tenant context dan tanpa bypass, resolusi user WAJIB return null (404)
         $resolved = $userModel->resolveRouteBinding($this->userAOwner->id);
@@ -231,7 +231,7 @@ class TenantIsolationSecurityTest extends TestCase
 
         // Simulasikan QueryException non-duplicate (mis. kegagalan koneksi atau error 1213/deadlock)
         ChannelOrderLog::creating(function () {
-            throw new \Illuminate\Database\QueryException(
+            throw new QueryException(
                 'mysql',
                 'insert into channel_order_logs ...',
                 [],
@@ -254,7 +254,7 @@ class TenantIsolationSecurityTest extends TestCase
      */
     public function test_midtrans_logs_are_sanitized_without_exposing_signature(): void
     {
-        \Illuminate\Support\Facades\Log::spy();
+        Log::spy();
 
         Config::set('services.midtrans.server_key', 'test-server-key');
 
@@ -270,11 +270,12 @@ class TenantIsolationSecurityTest extends TestCase
 
         $this->postJson(route('midtrans.notification'), $payload);
 
-        \Illuminate\Support\Facades\Log::shouldHaveReceived('info')
+        Log::shouldHaveReceived('info')
             ->withArgs(function ($message, $context) {
                 if ($message !== 'Midtrans webhook received:') {
                     return true;
                 }
+
                 // Pastikan signature_key dan customer_email TIDAK ada di context
                 return ! isset($context['signature_key'])
                     && ! isset($context['customer_email'])

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\ProvisioningController;
 use App\Http\Controllers\Api\WebhookController;
+use App\Http\Controllers\DeviceController;
 use Illuminate\Support\Facades\Route;
 
 // throttle:120,1 sebelum verify.webhook -- pola identik
@@ -23,6 +24,6 @@ Route::post('/v1/provisioning/registrations', [ProvisioningController::class, 's
     ->middleware(['throttle:10,1', 'verify.provisioning']);
 
 // Terminal kasir fisik pairing / aktivasi endpoint
-Route::post('/devices/pair', [\App\Http\Controllers\DeviceController::class, 'pair'])
+Route::post('/devices/pair', [DeviceController::class, 'pair'])
     ->middleware('throttle:10,1')
     ->name('api.devices.pair');

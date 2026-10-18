@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Domain2;
 
-use App\Enums\OrderStatus;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Payment;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;

@@ -14,7 +14,6 @@ use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Context\TenantContext;
-use App\Services\SystemUserResolver;
 use App\Services\TransactionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -24,8 +23,11 @@ class ProcessWebhookOrderJobIdempotencyTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected Product $product;
+
     protected User $systemUser;
 
     protected function afterSubclassSetUp(): void

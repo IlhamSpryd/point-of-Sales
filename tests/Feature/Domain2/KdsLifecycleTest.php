@@ -25,9 +25,13 @@ class KdsLifecycleTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $staffA;
+
     protected User $staffB;
+
     protected Product $product;
 
     protected function afterSubclassSetUp(): void

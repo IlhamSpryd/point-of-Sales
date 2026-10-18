@@ -3,11 +3,8 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\OwnerOnboardingToken;
-use App\Models\Tenant;
 use App\Models\User;
-use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Tests\TestCase;
@@ -19,6 +16,7 @@ class E2EOnboardingAndLoginTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     private string $secret = 'test-provisioning-secret-apeiron-e2e';
+
     private string $path = '/api/v1/provisioning/registrations';
 
     protected function afterSubclassSetUp(): void

@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * sehingga pivot ini WAJIB men-stamp tenant_id pada setiap attach/sync —
  * kalau tidak, composite FK product_ingredients_product_id_composite_foreign
  * akan menolak baris tersebut.
+ *
+ * @property float|string $quantity_required
  */
 class ProductIngredient extends Pivot
 {

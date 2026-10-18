@@ -1,12 +1,20 @@
 <?php
+
 namespace Tests;
+
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Tests\Support\RunsAfterSubclassSetUp;
 use Tests\Support\WithDefaultTenant;
+
 abstract class TestCase extends BaseTestCase
 {
-    use WithDefaultTenant;
     use RunsAfterSubclassSetUp;
+    use WithDefaultTenant;
+
+    /**
+     * Tables to preserve during DatabaseTruncation.
+     */
+    protected array $exceptTables = ['plans', 'plan_entitlements'];
 
     /**
      * Tenant/store default di-inject SETELAH setUp() subclass selesai.

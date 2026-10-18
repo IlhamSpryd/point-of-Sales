@@ -37,7 +37,23 @@ class OrderItem extends Model
     /**
      * Kumpulan atribut pembentuk rincian pesanan.
      */
-    protected $fillable = ['order_id', 'product_id', 'qty', 'order_price', 'order_subtotal', 'options', 'notes', 'preparation_status', 'processed_by', 'tenant_id', 'store_id'];
+    protected $fillable = [
+        'order_id',
+        'product_id',
+        'qty',
+        'order_price',
+        'order_subtotal',
+        'options',
+        'notes',
+        'preparation_status',
+        'processed_by',
+        'tenant_id',
+        'store_id',
+        'item_discount_id',
+        'item_discount_amount',
+        'allocated_order_discount_amount',
+        'net_line_total',
+    ];
 
     /**
      * BARU: "options" disimpan sebagai JSON di database, tapi otomatis
@@ -48,6 +64,9 @@ class OrderItem extends Model
         return [
             'options' => 'array',
             'preparation_status' => PreparationStatus::class,
+            'item_discount_amount' => 'decimal:2',
+            'allocated_order_discount_amount' => 'decimal:2',
+            'net_line_total' => 'decimal:2',
         ];
     }
 
@@ -57,6 +76,14 @@ class OrderItem extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    /**
+     * Relasi (BelongsTo): Diskon spesifik per baris produk jika ada.
+     */
+    public function itemDiscount(): BelongsTo
+    {
+        return $this->belongsTo(Discount::class, 'item_discount_id');
     }
 
     /**

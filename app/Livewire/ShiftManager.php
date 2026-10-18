@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire;
 
-// [OMEGA-NODE1] Import QueryException untuk menangkap pelanggaran unique
-// constraint DB (shifts_one_open_per_user_unique) sebagai sinyal otoritatif
-// "shift sudah open", bukan lagi sekadar pengecekan aplikasi | 2026-09-21
 use App\Livewire\Concerns\RequiresTenantContext;
+use App\Models\Device;
 use App\Models\Shift;
+use App\Models\ShiftHandover;
+use App\Models\User;
+use App\Services\CashierPinService;
+use App\Services\Context\TenantContext;
 use App\Services\ShiftService;
-use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
@@ -21,11 +24,61 @@ class ShiftManager extends Component
     #[Locked]
     public $activeShift;
 
+    #[Locked]
+    public ?int $deviceId = null;
+
+    public ?int $selectedDeviceId = null;
+
     public $opening_balance = 0;
 
     public $closing_balance = 0;
 
     public $notes = '';
+
+    public string $cashierPin = '';
+
+    public string $supervisorPin = '';
+
+    // Cash Drawer Movement state
+    public string $movementType = 'cash_in';
+
+    public $movementAmount = 0;
+
+    public string $movementCategory = 'restock_change';
+
+    public string $movementReason = '';
+
+    public string $movementSupervisorPin = '';
+
+    public bool $isMovementModalOpen = false;
+
+    // Shift Handover state
+    public ?int $handoverToUserId = null;
+
+    public ?int $toUserId = null;
+
+    public ?int $handoverShiftId = null;
+
+    public $handoverCountedCash = 0;
+
+    public $countedCashAtHandover = null;
+
+    public string $handoverNotes = '';
+
+    public string $handoverCashierPin = '';
+
+    public ?int $activeHandoverId = null;
+
+    public bool $isHandoverModalOpen = false;
+
+    // Force Close state
+    public ?int $forceClosingShiftId = null;
+
+    public string $forceCloseReason = '';
+
+    public string $forceCloseSupervisorPin = '';
+
+    public bool $isForceCloseModalOpen = false;
 
     public function boot(): void
     {
@@ -45,28 +98,43 @@ class ShiftManager extends Component
 
     public function loadActiveShift()
     {
-        $this->activeShift = Shift::where('user_id', auth()->id())
-            ->where('status', 'open')
+        $userId = auth()->id();
+        $this->activeShift = Shift::where(function ($q) use ($userId) {
+            $q->where('active_cashier_id', $userId)
+                ->orWhere(function ($sub) use ($userId) {
+                    $sub->whereNull('active_cashier_id')->where('user_id', $userId);
+                });
+        })
+            ->whereIn('status', ['open', 'handover_pending', 'closing'])
             ->first();
+
+        if ($this->activeShift && $this->activeShift->device_id) {
+            $this->deviceId = $this->activeShift->device_id;
+            $this->selectedDeviceId = $this->activeShift->device_id;
+        }
     }
 
-    // [OMEGA-NODE1] Zero-Trust hardening: dua lapis pertahanan | 2026-09-21
-    // Lapis 1 (exists check) = UX shortcut murah untuk kasus umum.
-    // Lapis 2 (try/catch QueryException) = SATU-SATUNYA yang benar-benar
-    // menutup celah race -- ditegakkan oleh constraint
-    // `shifts_one_open_per_user_unique` di database, bukan oleh urutan
-    // eksekusi PHP yang bisa diselang request paralel.
-    public function openShift()
+    public function openShift(?string $pin = null)
     {
-        // [D2-BE-004] Otorisasi policy buka shift.
         Gate::authorize('open', Shift::class);
 
         $user = auth()->user();
-        if ($user && $user->pin_hash === null) {
+        $pinToVerify = $pin ?? $this->cashierPin;
+
+        if ($user && ! app(CashierPinService::class)->hasPin($user)) {
             $this->dispatch('toast', message: 'Kasir wajib menyetel PIN Kasir sebelum dapat membuka shift.', type: 'error');
             $this->dispatch('require-pin-setup');
 
             return;
+        }
+
+        if (! empty($pinToVerify)) {
+            if (! app(CashierPinService::class)->verifyPin($user, $pinToVerify)) {
+                $this->addError('cashierPin', 'PIN Kasir salah.');
+                $this->dispatch('toast', message: 'PIN Kasir salah.', type: 'error');
+
+                return;
+            }
         }
 
         $this->validate([
@@ -74,12 +142,29 @@ class ShiftManager extends Component
         ]);
 
         try {
-            // [D2-BE-008] Logika domain didelegasikan ke ShiftService (thin caller).
-            $opened = app(ShiftService::class)
-                ->openShift((int) auth()->id(), (int) $this->opening_balance);
+            $tenantId = app(TenantContext::class)->requireTenantId();
+            $storeId = app(TenantContext::class)->getStoreId();
+            $shiftService = app(ShiftService::class);
+            $devId = $this->selectedDeviceId ?? $this->deviceId;
+
+            if ($devId !== null && ! empty($pinToVerify)) {
+                $opened = $shiftService->openShift(
+                    $tenantId,
+                    $storeId ?? 1,
+                    $devId,
+                    (int) $user->id,
+                    (int) $this->opening_balance,
+                    $pinToVerify
+                );
+            } else {
+                $opened = $shiftService->openShift((int) $user->id, (int) $this->opening_balance);
+            }
         } catch (\DomainException $e) {
             $this->dispatch('toast', message: $e->getMessage(), type: 'error');
-            $this->dispatch('require-pin-setup');
+
+            return;
+        } catch (ValidationException $e) {
+            $this->dispatch('toast', message: collect($e->errors())->flatten()->first(), type: 'error');
 
             return;
         }
@@ -90,6 +175,8 @@ class ShiftManager extends Component
 
             return;
         }
+
+        $this->cashierPin = '';
         $this->loadActiveShift();
         $this->dispatch('toast', message: 'Shift berhasil dibuka.', type: 'success');
     }
@@ -102,14 +189,14 @@ class ShiftManager extends Component
         }
 
         try {
-            app(\App\Services\CashierPinService::class)->setPin($user, $pin);
+            app(CashierPinService::class)->setPin($user, $pin);
             $this->dispatch('toast', message: 'PIN Kasir berhasil disetel.', type: 'success');
         } catch (\InvalidArgumentException $e) {
             $this->dispatch('toast', message: $e->getMessage(), type: 'error');
         }
     }
 
-    public function closeShift()
+    public function closeShift(?string $pin = null)
     {
         $this->loadActiveShift();
 
@@ -121,16 +208,42 @@ class ShiftManager extends Component
 
         Gate::authorize('close', $this->activeShift);
 
-        // [OMEGA-NODE1] integer, bukan numeric -- Rupiah tidak punya
-        // subunit desimal praktis (konsisten dengan pola BIGINT UNSIGNED
-        // yang sudah ditegakkan di kolom finansial orders) | 2026-09-21
+        $pinToVerify = $pin ?? $this->cashierPin;
+        $user = auth()->user();
+
+        if (! empty($pinToVerify)) {
+            if (! app(CashierPinService::class)->verifyPin($user, $pinToVerify, $this->activeShift)) {
+                $this->addError('cashierPin', 'PIN Kasir salah.');
+                $this->dispatch('toast', message: 'PIN Kasir salah.', type: 'error');
+
+                return;
+            }
+        }
+
         $this->validate([
             'closing_balance' => 'required|integer|min:0',
             'notes' => 'nullable|string|max:1000',
         ]);
 
         $shiftService = app(ShiftService::class);
-        $closedShift = $shiftService->closeShift((int) auth()->id(), (int) $this->closing_balance, $this->notes);
+
+        try {
+            if ($this->activeShift->device_id !== null && ! empty($pinToVerify)) {
+                $closedShift = $shiftService->closeShift(
+                    $this->activeShift->id,
+                    $this->activeShift->device_id,
+                    (int) $user->id,
+                    (int) $this->closing_balance,
+                    $pinToVerify
+                );
+            } else {
+                $closedShift = $shiftService->closeShift((int) $user->id, (int) $this->closing_balance, $this->notes);
+            }
+        } catch (\DomainException $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+
+            return;
+        }
 
         $this->loadActiveShift();
 
@@ -143,24 +256,241 @@ class ShiftManager extends Component
         $this->opening_balance = 0;
         $this->closing_balance = 0;
         $this->notes = '';
+        $this->cashierPin = '';
 
         $this->dispatch('toast', message: 'Shift berhasil ditutup.', type: 'success');
+    }
+
+    public function initiateHandover(?string $pin = null)
+    {
+        $this->loadActiveShift();
+        if ($this->handoverToUserId === null && $this->toUserId !== null) {
+            $this->handoverToUserId = $this->toUserId;
+        }
+        if (! $this->activeShift && $this->handoverShiftId) {
+            $this->activeShift = Shift::find($this->handoverShiftId);
+        }
+        if (! $this->activeShift) {
+            $this->dispatch('toast', message: 'Tidak ada shift aktif untuk diserahterimakan.', type: 'error');
+
+            return;
+        }
+
+        Gate::authorize('handover', $this->activeShift);
+
+        if ($this->countedCashAtHandover !== null) {
+            $this->handoverCountedCash = $this->countedCashAtHandover;
+        }
+
+        $this->validate([
+            'handoverToUserId' => 'required|integer',
+            'handoverCountedCash' => 'required|integer|min:0',
+            'handoverNotes' => 'nullable|string|max:500',
+        ]);
+
+        $pinToVerify = $pin ?? ($this->handoverCashierPin ?: $this->cashierPin);
+        $user = auth()->user();
+
+        try {
+            $handover = app(ShiftService::class)->initiateHandover(
+                $this->activeShift->id,
+                (int) $user->id,
+                (int) $this->handoverToUserId,
+                (int) $this->handoverCountedCash,
+                $pinToVerify,
+                $this->handoverNotes
+            );
+
+            $this->activeHandoverId = $handover->id;
+            $this->loadActiveShift();
+            $this->cashierPin = '';
+            $this->dispatch('toast', message: 'Serah terima shift berhasil diinisiasi.', type: 'success');
+        } catch (\DomainException|ValidationException $e) {
+            $message = $e instanceof ValidationException ? collect($e->errors())->flatten()->first() : $e->getMessage();
+            $this->dispatch('toast', message: $message, type: 'error');
+        }
+    }
+
+    public function recordCashMovement(): void
+    {
+        $this->loadActiveShift();
+        if (! $this->activeShift || $this->activeShift->status !== 'open') {
+            $this->dispatch('toast', message: 'Hanya shift aktif yang dapat mencatat pergerakan kas.', type: 'error');
+
+            return;
+        }
+
+        Gate::authorize('recordCashMovement', $this->activeShift);
+
+        $this->validate([
+            'movementType' => 'required|in:cash_in,cash_out',
+            'movementAmount' => 'required|integer|min:1',
+            'movementCategory' => 'required|string|max:100',
+            'movementReason' => 'required|string|min:3|max:255',
+        ]);
+
+        $user = auth()->user();
+        $pin = $this->movementSupervisorPin ?: null;
+
+        // If Cash Out / Drop, verify supervisor PIN if provided or required
+        if ($this->movementType === 'cash_out' && ! empty($this->movementSupervisorPin)) {
+            $isSupValid = app(CashierPinService::class)->verifySupervisorPin((int) $user->id, $this->movementSupervisorPin, $this->activeShift->tenant_id);
+            if (! $isSupValid) {
+                $this->addError('movementSupervisorPin', 'PIN Supervisor tidak sah.');
+                $this->dispatch('toast', message: 'PIN Supervisor tidak sah.', type: 'error');
+
+                return;
+            }
+        }
+
+        try {
+            app(ShiftService::class)->recordCashMovement(
+                $this->activeShift->id,
+                $this->activeShift->device_id ?? 1,
+                (int) $user->id,
+                $this->movementType,
+                $this->movementCategory,
+                (int) $this->movementAmount,
+                $this->movementReason,
+                $pin
+            );
+
+            $this->movementAmount = 0;
+            $this->movementReason = '';
+            $this->movementSupervisorPin = '';
+            $this->isMovementModalOpen = false;
+            $this->loadActiveShift();
+            $this->dispatch('toast', message: 'Pergerakan kas berhasil dicatat.', type: 'success');
+        } catch (\DomainException|\InvalidArgumentException|ValidationException $e) {
+            $msg = $e instanceof ValidationException ? collect($e->errors())->flatten()->first() : $e->getMessage();
+            $this->dispatch('toast', message: $msg, type: 'error');
+        }
+    }
+
+    public function cancelHandover(int $handoverId)
+    {
+        try {
+            app(ShiftService::class)->cancelHandover($handoverId, (int) auth()->id());
+            $this->activeHandoverId = null;
+            $this->loadActiveShift();
+            $this->dispatch('toast', message: 'Serah terima shift dibatalkan.', type: 'success');
+        } catch (\DomainException $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+        }
+    }
+
+    public function acceptHandover(int $handoverId, ?string $toPin = null, ?string $supPin = null, ?int $supUserId = null)
+    {
+        $pinToVerify = $toPin ?? $this->cashierPin;
+        $user = auth()->user();
+
+        try {
+            app(ShiftService::class)->acceptHandover(
+                $handoverId,
+                (int) $user->id,
+                $pinToVerify,
+                $supPin ?? $this->supervisorPin,
+                $supUserId
+            );
+
+            $this->activeHandoverId = null;
+            $this->cashierPin = '';
+            $this->supervisorPin = '';
+            $this->loadActiveShift();
+            $this->dispatch('toast', message: 'Serah terima shift berhasil diterima.', type: 'success');
+        } catch (\DomainException|ValidationException $e) {
+            $message = $e instanceof ValidationException ? collect($e->errors())->flatten()->first() : $e->getMessage();
+            $this->dispatch('toast', message: $message, type: 'error');
+        }
+    }
+
+    public function forceCloseShift(?string $reason = null, ?string $supPin = null, ?int $shiftId = null)
+    {
+        $this->loadActiveShift();
+        $targetShiftId = $shiftId ?? $this->forceClosingShiftId;
+        $targetShift = $targetShiftId ? Shift::find($targetShiftId) : ($this->activeShift ?? Shift::where('status', 'open')->first());
+        if (! $targetShift) {
+            $this->dispatch('toast', message: 'Tidak ada shift aktif untuk ditutup paksa.', type: 'error');
+
+            return;
+        }
+
+        Gate::authorize('forceClose', $targetShift);
+
+        $actualReason = $reason ?? $this->forceCloseReason;
+        $pinToVerify = $supPin ?? $this->forceCloseSupervisorPin ?: $this->supervisorPin;
+        $user = auth()->user();
+
+        if (empty($actualReason)) {
+            $this->addError('forceCloseReason', 'Alasan penutupan paksa wajib diisi.');
+            $this->dispatch('toast', message: 'Alasan penutupan paksa wajib diisi.', type: 'error');
+
+            return;
+        }
+
+        try {
+            app(ShiftService::class)->forceCloseShift(
+                $targetShift->id,
+                (int) $user->id,
+                (int) $this->closing_balance,
+                $pinToVerify,
+                $actualReason
+            );
+
+            $this->loadActiveShift();
+            $this->forceCloseReason = '';
+            $this->forceCloseSupervisorPin = '';
+            $this->isForceCloseModalOpen = false;
+            $this->dispatch('toast', message: 'Shift berhasil ditutup paksa oleh supervisor.', type: 'success');
+        } catch (\DomainException|ValidationException $e) {
+            $message = $e instanceof ValidationException ? collect($e->errors())->flatten()->first() : $e->getMessage();
+            $this->dispatch('toast', message: $message, type: 'error');
+        }
     }
 
     public function render()
     {
         $cashSales = 0;
         $expectedCash = 0;
+        $cashMovements = collect();
+        $handovers = collect();
+        $pendingHandover = null;
 
         if ($this->activeShift) {
             $summary = app(ShiftService::class)->getCashSummary($this->activeShift);
             $cashSales = $summary['cash_sales'];
             $expectedCash = $summary['expected_cash'];
+            $cashMovements = $this->activeShift->cashDrawerMovements()->with(['createdBy', 'approvedBy'])->latest()->get();
+            $handovers = ShiftHandover::where('shift_id', $this->activeShift->id)->with(['fromUser', 'toUser'])->latest()->get();
+            $pendingHandover = ShiftHandover::where('shift_id', $this->activeShift->id)->where('status', 'pending')->first();
         }
+
+        $tenantId = app(TenantContext::class)->getTenantId();
+        $storeId = app(TenantContext::class)->getStoreId();
+
+        $deviceQuery = Device::query();
+        if ($tenantId !== null) {
+            $deviceQuery->where('tenant_id', $tenantId);
+        }
+        if ($storeId !== null) {
+            $deviceQuery->where('store_id', $storeId);
+        }
+        $devices = $deviceQuery->where('is_active', true)->get();
+
+        $userQuery = User::query();
+        if ($tenantId !== null) {
+            $userQuery->where('tenant_id', $tenantId);
+        }
+        $eligibleCashiers = $userQuery->where('id', '!=', auth()->id())->get();
 
         return view('livewire.shift-manager', [
             'cashSales' => $cashSales,
             'expectedCash' => $expectedCash,
+            'cashMovements' => $cashMovements,
+            'handovers' => $handovers,
+            'pendingHandover' => $pendingHandover,
+            'devices' => $devices,
+            'eligibleCashiers' => $eligibleCashiers,
         ]);
     }
 }

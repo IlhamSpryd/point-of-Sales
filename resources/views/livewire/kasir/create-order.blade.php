@@ -30,6 +30,25 @@
     @keydown.window.f2.prevent="focusSearch()" @keydown.window.f4.prevent="triggerPay()"
     class="flex flex-col h-[calc(100vh-64px)] lg:h-screen overflow-hidden min-h-0 bg-white">
 
+    {{-- Operational Context Banner --}}
+    @if(!$this->activeShift)
+        <div class="bg-rose-600 text-white px-4 py-2 text-xs font-bold flex items-center justify-between shrink-0 shadow-sm z-40">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-rounded text-[18px]">lock</span>
+                <span>Terminal POS Belum Membuka Shift: Kasir wajib membuka shift sebelum dapat memproses transaksi penjualan.</span>
+            </div>
+            <a href="{{ route('shifts.index') }}" class="underline hover:text-white/80 bg-white/20 px-3 py-1 rounded-lg">Buka Shift Kasir &rarr;</a>
+        </div>
+    @elseif($this->activeShift->status === 'handover_pending')
+        <div class="bg-amber-600 text-white px-4 py-2 text-xs font-bold flex items-center justify-between shrink-0 shadow-sm z-40">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-rounded text-[18px]">pending_actions</span>
+                <span>Shift Sedang Dalam Proses Serah Terima (Handover): Konfirmasi penerimaan shift atau batalkan serah terima terlebih dahulu.</span>
+            </div>
+            <a href="{{ route('shifts.index') }}" class="underline hover:text-white/80 bg-white/20 px-3 py-1 rounded-lg">Ke Manajemen Shift &rarr;</a>
+        </div>
+    @endif
+
     <!-- Struktur Utama: Layout Kiri (Produk) & Kanan (Keranjang) -->
     <div class="flex flex-col lg:flex-row flex-1 w-full overflow-hidden relative min-h-0 bg-white">
 
@@ -41,7 +60,14 @@
                 <!-- Bagian Header: Menampilkan informasi singkat -->
                 <header
                     class="flex justify-between items-center px-4 lg:px-6 h-[72px] border-b border-gray-100 shrink-0">
-                    <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-3">
+                        {{-- Indikator Perangkat / Shift Aktif --}}
+                        <div class="hidden xl:flex items-center gap-1.5 px-3 py-1.5 bg-gray-50 border border-gray-200/80 rounded-xl text-xs font-bold text-gray-700">
+                            <span class="w-2 h-2 rounded-full {{ $this->activeShift && $this->activeShift->status === 'open' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500' }}"></span>
+                            <span>{{ $this->activeShift?->device?->device_name ?? 'POS Terminal' }}</span>
+                            <span class="text-gray-400">|</span>
+                            <span class="font-mono">Shift #{{ $this->activeShift?->id ?? '-' }}</span>
+                        </div>
 
                         <!-- Tipe Pesanan & Meja (Seamless style) -->
                         <div class="hidden sm:flex items-center gap-3">
@@ -98,10 +124,25 @@
                         </div>
                     </div>
 
-                    <!-- Search Bar -->
-                    <div class="flex-1 sm:flex-none sm:w-64 xl:w-72">
-                        <x-search-input wire:model.live.debounce.300ms="search" id="search-input"
-                            placeholder="Cari produk / scan / kode POS-... (Tarik Pesanan)" />
+                    <!-- Search Bar & Parked Cart Buttons -->
+                    <div class="flex items-center gap-2">
+                        <div class="flex-1 sm:flex-none sm:w-56 xl:w-64">
+                            <x-search-input wire:model.live.debounce.300ms="search" id="search-input"
+                                placeholder="Cari produk / scan / kode POS-..." />
+                        </div>
+                        <button type="button" wire:click="$set('isParkModalOpen', true)" :disabled="{{ count($cart) === 0 ? 'true' : 'false' }}"
+                            class="disabled:opacity-40 disabled:cursor-not-allowed px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all flex items-center gap-1 shadow-sm" title="Tahan Keranjang Saat Ini">
+                            <span class="material-symbols-rounded text-[18px]">pause_circle</span>
+                            <span class="hidden md:inline">Tahan</span>
+                        </button>
+                        <button type="button" wire:click="$set('isParkedListOpen', true)"
+                            class="relative px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all flex items-center gap-1 shadow-sm" title="Daftar Keranjang Tertunda">
+                            <span class="material-symbols-rounded text-[18px]">inbox</span>
+                            <span class="hidden md:inline">Tertunda</span> ({{ $this->parkedCarts->count() }})
+                            @if($this->parkedCarts->count() > 0)
+                                <span class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-rose-500 rounded-full animate-pulse"></span>
+                            @endif
+                        </button>
                     </div>
                 </header>
 
@@ -385,6 +426,21 @@
                             </div>
                         @endif
 
+                        {{-- Alert Revalidasi Keranjang Tertunda --}}
+                        @if(!empty($resumeWarnings))
+                            <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 space-y-1">
+                                <div class="flex items-center justify-between font-bold">
+                                    <span class="flex items-center gap-1"><span class="material-symbols-rounded text-[16px] text-amber-600">warning</span> Peringatan Revalidasi Keranjang:</span>
+                                    <button type="button" wire:click="$set('resumeWarnings', [])" class="text-amber-500 hover:text-amber-800 font-bold">&times;</button>
+                                </div>
+                                <ul class="list-disc list-inside space-y-0.5 text-[11px]">
+                                    @foreach($resumeWarnings as $warn)
+                                        <li>{{ $warn }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
                         @if (count($this->cartLines) === 0)
                             <div class="h-full flex flex-col justify-center items-center opacity-70">
                                 <span
@@ -426,6 +482,15 @@
                                             <div>
                                                 <span class="text-[14px] font-black text-apeiron-ink whitespace-nowrap">Rp
                                                     {{ number_format($line['order_price'], 0, ',', '.') }}</span>
+                                                @if (!$pendingOrderId)
+                                                    <div class="mt-1 flex items-center gap-1">
+                                                        <span class="text-[10px] text-gray-400 font-medium">Diskon:</span>
+                                                        <input type="number" min="0" placeholder="Rp 0"
+                                                            value="{{ $this->cart[$line['index']]['item_discount_amount'] ?? '' }}"
+                                                            wire:change="setItemDiscount({{ $line['index'] }}, $event.target.value)"
+                                                            class="text-[11px] font-mono px-2 py-0.5 border border-gray-200 rounded-lg w-20 focus:ring-1 focus:ring-gray-900 bg-gray-50/50">
+                                                    </div>
+                                                @endif
                                             </div>
                                             <div
                                                 class="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg p-0.5 shadow-sm">
@@ -464,10 +529,11 @@
                                 <select wire:model.live="selectedDiscountId"
                                     @disabled((bool) $pendingOrderId)
                                     class="w-full h-10 pl-4 pr-9 bg-gray-100/80 border border-gray-200/50 rounded-xl outline-none text-[13px] font-bold text-gray-700 hover:bg-gray-200/50 hover:text-apeiron-ink focus:bg-white focus:border-gray-300 focus:ring-0 appearance-none transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-                                    <option value="">+ Tambah Diskon</option>
+                                    <option value="">+ Tambah Diskon Voucher</option>
                                     @foreach ($this->activeDiscounts as $d)
                                         <option value="{{ $d->id }}">{{ $d->name }}
                                             ({{ $d->type === 'percentage' ? $d->value . '%' : 'Rp ' . number_format($d->value, 0, ',', '.') }})
+                                            {{ !$d->is_stackable ? ' [Non-stackable]' : '' }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -481,7 +547,25 @@
                             </div>
                         @endif
 
-                            <div class="flex flex-col gap-1.5 p-3 rounded-xl border border-gray-100 bg-gray-50/60 shadow-inner">
+                        {{-- Manual Discount Override Badge / Trigger --}}
+                        <div>
+                            @if($appliedManualDiscount > 0)
+                                <div class="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs">
+                                    <div class="min-w-0">
+                                        <span class="font-bold text-emerald-800">Diskon Manual: Rp {{ number_format($appliedManualDiscount, 0, ',', '.') }}</span>
+                                        <span class="text-[10px] text-emerald-600 block truncate">{{ $appliedManualDiscountReason }}</span>
+                                    </div>
+                                    <button type="button" wire:click="removeManualDiscount" class="text-emerald-700 hover:text-rose-600 font-bold p-1 text-sm leading-none" title="Hapus Diskon Manual">&times;</button>
+                                </div>
+                            @elseif(!$pendingOrderId)
+                                <button type="button" wire:click="$set('isManualDiscountModalOpen', true)"
+                                    class="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 transition-colors">
+                                    <span class="material-symbols-rounded text-[15px]">edit_note</span> + Override Diskon Manual (Supervisor)
+                                </button>
+                            @endif
+                        </div>
+
+                        <div class="flex flex-col gap-1.5 p-3 rounded-xl border border-gray-100 bg-gray-50/60 shadow-inner">
                             <div class="flex justify-between items-center">
                                 <span class="text-xs text-gray-500 font-medium">Subtotal</span>
                                 <span class="text-xs font-medium text-gray-600 tabular-nums">Rp
@@ -549,10 +633,17 @@
                                 </div>
                             @enderror
 
+                            @if(!$this->canCheckout && count($this->cartLines) > 0)
+                                <div class="p-2 bg-rose-50 text-rose-700 rounded-lg text-[11px] font-bold flex items-center gap-1.5">
+                                    <span class="material-symbols-rounded text-[16px]">lock</span>
+                                    <span>{{ !$this->activeShift ? 'Shift belum dibuka. Buka shift di Shift Kasir.' : 'Shift sedang dalam proses serah terima.' }}</span>
+                                </div>
+                            @endif
+
                             <button wire:click="submitOrder" id="btn-bayar"
                                 wire:loading.attr="disabled" wire:target="submitOrder"
                                 class="w-full h-12 bg-apeiron-ink hover:bg-[#111111] text-white rounded-xl font-bold text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2"
-                                @disabled(count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId))>
+                                @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId))>
                                 <span wire:loading wire:target="submitOrder" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
                                 <span wire:loading.remove wire:target="submitOrder">Bayar Sekarang</span>
                                 <span wire:loading wire:target="submitOrder">Memproses...</span>
@@ -565,10 +656,17 @@
                                 </div>
                             @enderror
 
+                            @if(!$this->canCheckout && count($this->cartLines) > 0)
+                                <div class="p-2 bg-rose-50 text-rose-700 rounded-lg text-[11px] font-bold flex items-center gap-1.5">
+                                    <span class="material-symbols-rounded text-[16px]">lock</span>
+                                    <span>{{ !$this->activeShift ? 'Shift belum dibuka. Buka shift di Shift Kasir.' : 'Shift sedang dalam proses serah terima.' }}</span>
+                                </div>
+                            @endif
+
                             <button type="button" id="btn-proses-bayar"
                                 class="w-full h-12 bg-apeiron-ink hover:bg-[#111111] text-white rounded-xl font-bold text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2"
                                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }} }); $dispatch('open-modal', 'checkout-payment')"
-                                @disabled(count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId))>
+                                @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId))>
                                 Proses Pembayaran
                             </button>
                         @endif
@@ -1054,6 +1152,145 @@
             document.addEventListener('livewire:init', registerTransactionSuccessListener);
         }
     </script>
+
+    {{-- Modal Park / Hold Cart --}}
+    @if($isParkModalOpen)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+            <div class="bg-white rounded-3xl p-6 md:p-8 border border-[#E9E9E7] shadow-2xl max-w-md w-full">
+                <h3 class="text-lg font-bold text-apeiron-ink mb-1 flex items-center gap-2">
+                    <span class="material-symbols-rounded text-apeiron-ink">pause_circle</span> Tahan Keranjang (Hold)
+                </h3>
+                <p class="text-xs text-gray-500 mb-5">Simpan keranjang ini untuk dilanjutkan nanti tanpa kehilangan pilihan item pelanggan.</p>
+
+                <form wire:submit.prevent="parkCurrentCart" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Label / Nama Pelanggan</label>
+                        <input type="text" wire:model="holdReference" class="w-full px-4 py-3 bg-gray-50 border border-[#E9E9E7] rounded-xl text-xs font-bold text-apeiron-ink" placeholder="Contoh: Meja 4 / Pak Budi (opsional)">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Catatan Tambahan</label>
+                        <textarea wire:model="holdNotes" rows="2" class="w-full px-4 py-3 bg-gray-50 border border-[#E9E9E7] rounded-xl text-xs text-apeiron-ink" placeholder="Contoh: Menunggu teman datang..."></textarea>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-2">
+                        <button type="button" wire:click="$set('isParkModalOpen', false)" class="px-4 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-apeiron-ink text-white text-xs font-bold hover:bg-[#111111] shadow-sm">
+                            Simpan & Tahan Keranjang
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+
+    {{-- Modal Daftar Keranjang Tertunda --}}
+    @if($isParkedListOpen)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+            <div class="bg-white rounded-3xl p-6 md:p-8 border border-[#E9E9E7] shadow-2xl max-w-xl w-full max-h-[85vh] flex flex-col">
+                <div class="flex items-center justify-between pb-4 border-b border-gray-100 shrink-0">
+                    <div>
+                        <h3 class="text-lg font-bold text-apeiron-ink flex items-center gap-2">
+                            <span class="material-symbols-rounded text-apeiron-ink">inbox</span> Keranjang Tertunda
+                        </h3>
+                        <p class="text-xs text-gray-500">Daftar pesanan pelanggan yang sedang ditahan di cabang ini.</p>
+                    </div>
+                    <button type="button" wire:click="$set('isParkedListOpen', false)" class="text-gray-400 hover:text-gray-600 p-1">
+                        <span class="material-symbols-rounded">close</span>
+                    </button>
+                </div>
+
+                <div class="overflow-y-auto flex-1 custom-scrollbar py-4 space-y-3">
+                    @forelse($this->parkedCarts as $pc)
+                        @php
+                            $pPayload = $pc->cart_payload;
+                            $pItems = $pPayload['items'] ?? $pPayload;
+                            $pCount = is_array($pItems) ? array_sum(array_column($pItems, 'qty')) : 0;
+                        @endphp
+                        <div class="p-4 rounded-2xl border border-gray-200 bg-gray-50/50 hover:bg-white hover:border-gray-300 transition-all flex items-center justify-between gap-4">
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-sm text-apeiron-ink">{{ $pc->hold_reference }}</span>
+                                    <span class="text-[10px] font-bold px-2 py-0.5 rounded-md bg-gray-200 text-gray-700 uppercase">{{ $pc->order_type }}</span>
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    {{ $pCount }} item &bull; Ditahan {{ $pc->parked_at->format('H:i') }} ({{ $pc->parked_at->diffForHumans() }})
+                                </p>
+                                @if($pc->notes)
+                                    <p class="text-xs text-gray-400 italic mt-0.5">{{ $pc->notes }}</p>
+                                @endif
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <button type="button" wire:click="resumeCart({{ $pc->id }})" class="px-3.5 py-2 rounded-xl bg-apeiron-ink text-white text-xs font-bold hover:bg-[#111111] shadow-sm flex items-center gap-1 active:scale-95 transition-all">
+                                    <span class="material-symbols-rounded text-[16px]">play_arrow</span> Lanjutkan
+                                </button>
+                                <button type="button" wire:click="discardHeldCart({{ $pc->id }})" class="p-2 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 active:scale-95 transition-all" title="Hapus Keranjang">
+                                    <span class="material-symbols-rounded text-[18px]">delete</span>
+                                </button>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="py-12 text-center text-gray-400">
+                            <span class="material-symbols-rounded text-[40px] text-gray-300 mb-2 block">inbox</span>
+                            <p class="text-xs font-semibold">Tidak ada keranjang tertunda saat ini.</p>
+                        </div>
+                    @endforelse
+                </div>
+
+                <div class="pt-3 border-t border-gray-100 flex justify-end shrink-0">
+                    <button type="button" wire:click="$set('isParkedListOpen', false)" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+                        Tutup
+                    </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    {{-- Modal Manual Discount Override --}}
+    @if($isManualDiscountModalOpen)
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-fade-in">
+            <div class="bg-white rounded-3xl p-6 md:p-8 border border-[#E9E9E7] shadow-2xl max-w-md w-full">
+                <div class="flex items-center gap-2 text-apeiron-ink mb-2">
+                    <span class="material-symbols-rounded text-[24px]">verified_user</span>
+                    <h3 class="text-lg font-bold">Manual Discount Override</h3>
+                </div>
+                <p class="text-xs text-gray-500 mb-5">
+                    Pemberian diskon manual di luar master voucher memerlukan alasan sah dan verifikasi PIN Supervisor/Manager.
+                </p>
+
+                <form wire:submit.prevent="applyManualDiscount" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Nominal Diskon (Rp)</label>
+                        <input type="number" wire:model="manualDiscountAmount" required min="1" max="{{ $this->subtotal }}" class="w-full px-4 py-3 bg-gray-50 border border-[#E9E9E7] rounded-xl font-mono font-bold text-base text-apeiron-ink" placeholder="0">
+                        @error('manualDiscountAmount') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Alasan Pemberian Diskon</label>
+                        <textarea wire:model="manualDiscountReason" required rows="2" class="w-full px-4 py-3 bg-gray-50 border border-[#E9E9E7] rounded-xl text-xs text-apeiron-ink" placeholder="Contoh: Kompensasi keterlambatan sajian / diskon VIP..."></textarea>
+                        @error('manualDiscountReason') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-rose-600 mb-1">PIN Supervisor (Wajib Otorisasi)</label>
+                        <input type="password" wire:model="manualDiscountSupervisorPin" maxlength="6" required class="w-full px-4 py-3 bg-rose-50/50 border border-rose-200 rounded-xl text-center font-mono font-bold text-sm tracking-widest text-rose-900" placeholder="••••••">
+                        @error('manualDiscountSupervisorPin') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2 pt-2">
+                        <button type="button" wire:click="$set('isManualDiscountModalOpen', false)" class="px-4 py-2.5 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-5 py-2.5 rounded-xl bg-apeiron-ink text-white text-xs font-bold hover:bg-[#111111] shadow-sm">
+                            Terapkan Diskon
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
 </div>
 
 <style>

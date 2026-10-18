@@ -39,7 +39,7 @@ class ReportServiceMultiStoreTest extends TestCase
         $today = Carbon::today();
 
         // Create paid order in Store A
-        Order::create([
+        Order::forceCreate([
             'tenant_id' => $this->tenantA->id,
             'store_id' => $this->storeA->id,
             'user_id' => $this->userAOwner->id,
@@ -53,7 +53,7 @@ class ReportServiceMultiStoreTest extends TestCase
 
         // Create paid order in Store A2 (same tenant, different store)
         $context->runAs($this->tenantA->id, $this->storeA2->id, function () use ($today) {
-            Order::create([
+            Order::forceCreate([
                 'tenant_id' => $this->tenantA->id,
                 'store_id' => $this->storeA2->id,
                 'user_id' => $this->userAOwner->id,
@@ -68,7 +68,7 @@ class ReportServiceMultiStoreTest extends TestCase
 
         // Create paid order in Tenant B (should NEVER be included)
         $context->runAs($this->tenantB->id, $this->storeB->id, function () use ($today) {
-            Order::create([
+            Order::forceCreate([
                 'tenant_id' => $this->tenantB->id,
                 'store_id' => $this->storeB->id,
                 'user_id' => $this->userBBarista->id,

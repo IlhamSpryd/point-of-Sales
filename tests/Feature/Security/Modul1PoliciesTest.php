@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Security;
 
+use App\Enums\ExportTaskStatus;
 use App\Models\ExportTask;
 use App\Models\Role;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\UserInvitation;
+use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
 use Tests\TestCase;
@@ -24,7 +26,7 @@ class Modul1PoliciesTest extends TestCase
     {
         $tenant = Tenant::create([
             'name' => 'Kedai Policy',
-            'slug' => 'kedai-policy-' . uniqid(),
+            'slug' => 'kedai-policy-'.uniqid(),
             'status' => 'active',
             'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             'access_status' => Tenant::ACCESS_ACTIVE,
@@ -55,21 +57,21 @@ class Modul1PoliciesTest extends TestCase
             'is_initial' => false,
         ]);
 
-        $ownerRole = new Role();
+        $ownerRole = new Role;
         $ownerRole->tenant_id = $tenant->id;
         $ownerRole->name = 'Owner';
         $ownerRole->permissions = ['*'];
         $ownerRole->is_active = true;
         $ownerRole->save();
 
-        $kasirRole = new Role();
+        $kasirRole = new Role;
         $kasirRole->tenant_id = $tenant->id;
         $kasirRole->name = 'Kasir';
         $kasirRole->permissions = ['pos.order.create'];
         $kasirRole->is_active = true;
         $kasirRole->save();
 
-        $owner = new User();
+        $owner = new User;
         $owner->tenant_id = $tenant->id;
         $owner->role_id = $ownerRole->id;
         $owner->name = 'Owner Policy';
@@ -80,7 +82,7 @@ class Modul1PoliciesTest extends TestCase
         $owner->email_verified_at = now();
         $owner->save();
 
-        $kasir = new User();
+        $kasir = new User;
         $kasir->tenant_id = $tenant->id;
         $kasir->role_id = $kasirRole->id;
         $kasir->name = 'Kasir Policy';
@@ -161,14 +163,14 @@ class Modul1PoliciesTest extends TestCase
     {
         [$tenant, $store1, $store2, $owner, $kasir] = $this->createTenantHierarchy();
 
-        $context = app(\App\Services\Context\TenantContext::class);
+        $context = app(TenantContext::class);
 
         $taskByKasir = $context->runAs($tenant->id, $store1->id, function () use ($tenant, $kasir) {
             return ExportTask::create([
                 'tenant_id' => $tenant->id,
                 'requested_by' => $kasir->id,
                 'type' => 'sales_summary',
-                'status' => \App\Enums\ExportTaskStatus::Completed,
+                'status' => ExportTaskStatus::Completed,
                 'file_path' => "exports/tenant_{$tenant->id}/sales.csv",
             ]);
         });
@@ -185,7 +187,7 @@ class Modul1PoliciesTest extends TestCase
                 'tenant_id' => $tenant->id,
                 'requested_by' => $owner->id,
                 'type' => 'sales_summary',
-                'status' => \App\Enums\ExportTaskStatus::Completed,
+                'status' => ExportTaskStatus::Completed,
                 'file_path' => "exports/tenant_{$tenant->id}/owner_sales.csv",
             ]);
         });

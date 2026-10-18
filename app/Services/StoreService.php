@@ -7,7 +7,6 @@ namespace App\Services;
 use App\Models\Device;
 use App\Models\Shift;
 use App\Models\Store;
-use App\Models\User;
 use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Database\Eloquent\Builder;
@@ -67,7 +66,7 @@ class StoreService
             if (empty($store->code)) {
                 $latest = Store::withoutTenantScope()->where('tenant_id', $tenantId)->latest('id')->first();
                 $nextId = $latest ? $latest->id + 1 : 1;
-                $store->code = 'STR-' . str_pad((string) $nextId, 3, '0', STR_PAD_LEFT);
+                $store->code = 'STR-'.str_pad((string) $nextId, 3, '0', STR_PAD_LEFT);
             }
 
             $store->save();

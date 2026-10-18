@@ -10,6 +10,7 @@ use App\Http\Controllers\Auth\OAuthController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
+use App\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
@@ -33,7 +34,6 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\StoreSwitchController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\TransactionController;
-use App\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserInvitationController;
 use App\Livewire\ChannelMappingManager;
@@ -135,6 +135,13 @@ Route::middleware('guest')->group(function () {
     Route::post('reset-password', [NewPasswordController::class, 'store'])->name('password.store');
 });
 
+// Tantangan Autentikasi Dua Faktor (2FA / TOTP)
+// Dapat diakses oleh pengguna pending-login 2FA maupun pengguna terautentikasi (step-up challenge)
+Route::get('/two-factor-challenge', [TwoFactorAuthenticationController::class, 'challenge'])->name('two-factor.challenge');
+Route::post('/two-factor-challenge', [TwoFactorAuthenticationController::class, 'verifyChallenge'])
+    ->middleware('throttle:6,1')
+    ->name('two-factor.verify');
+
 Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
@@ -153,12 +160,7 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
         ->middleware('require.two_factor')
         ->name('profile.destroy');
 
-    // Autentikasi Dua Faktor (2FA / TOTP)
-    Route::get('/two-factor-challenge', [TwoFactorAuthenticationController::class, 'challenge'])->name('two-factor.challenge');
-    Route::post('/two-factor-challenge', [TwoFactorAuthenticationController::class, 'verifyChallenge'])
-        ->middleware('throttle:6,1')
-        ->name('two-factor.verify');
-
+    // Pengaturan 2FA profil pengguna (memerlukan auth penuh)
     Route::post('/profile/two-factor/enable', [TwoFactorAuthenticationController::class, 'enable'])
         ->middleware('throttle:6,1')
         ->name('two-factor.enable');
@@ -207,6 +209,7 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
         Route::middleware('role:Owner,Manager')->group(function () {
             Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
             Route::get('/reports/sales', [ReportController::class, 'index'])->name('reports.sales');
+            Route::post('/reports/sales/eod-close', [ReportController::class, 'closeEod'])->name('reports.eod-close');
         });
 
         // Kasir POS
@@ -272,6 +275,10 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
             Route::post('/shifts/open', [ShiftController::class, 'open'])->name('shifts.open');
             Route::post('/shifts/{shift}/close', [ShiftController::class, 'close'])->name('shifts.close');
             Route::post('/shifts/{shift}/movement', [ShiftController::class, 'recordCashMovement'])->name('shifts.movement');
+            Route::post('/shifts/{shift}/handover', [ShiftController::class, 'initiateHandover'])->name('shifts.handover');
+            Route::post('/shifts/handover/{handoverId}/accept', [ShiftController::class, 'acceptHandover'])->name('shifts.handover.accept');
+            Route::post('/shifts/handover/{handoverId}/cancel', [ShiftController::class, 'cancelHandover'])->name('shifts.handover.cancel');
+            Route::post('/shifts/{shift}/force-close', [ShiftController::class, 'forceClose'])->name('shifts.force-close');
             Route::get('/shifts/{shift}', [ShiftController::class, 'show'])->name('shifts.show');
         });
 
@@ -280,6 +287,7 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
             Route::get('/orders', [TransactionController::class, 'index'])->name('orders.index');
             Route::get('/orders/{orderNumber}', [TransactionController::class, 'show'])->name('orders.show');
             Route::post('/orders/{orderNumber}/void', [TransactionController::class, 'void'])->name('orders.void');
+            Route::post('/orders/{orderNumber}/return', [TransactionController::class, 'returnAndRefund'])->name('orders.return');
         });
 
         // Diskon & Promo

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Context\TenantContext;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -18,6 +19,7 @@ class MultiTenantFoundationTest extends TestCase
     public function test_tenant_has_stores()
     {
         $tenant = Tenant::create(['name' => 'HQ Corp']);
+        app(TenantContext::class)->setTenantId($tenant->id);
         $store = Store::create([
             'tenant_id' => $tenant->id,
             'name' => 'Main Branch',
@@ -52,6 +54,7 @@ class MultiTenantFoundationTest extends TestCase
     public function test_user_can_access_multiple_stores_through_user_stores()
     {
         $tenant = Tenant::create(['name' => 'HQ Corp']);
+        app(TenantContext::class)->setTenantId($tenant->id);
         $store1 = Store::create(['tenant_id' => $tenant->id, 'name' => 'Store 1']);
         $store2 = Store::create(['tenant_id' => $tenant->id, 'name' => 'Store 2']);
 
@@ -71,6 +74,7 @@ class MultiTenantFoundationTest extends TestCase
     public function test_duplicate_user_store_assignment_is_rejected()
     {
         $tenant = Tenant::create(['name' => 'HQ Corp']);
+        app(TenantContext::class)->setTenantId($tenant->id);
         $store = Store::create(['tenant_id' => $tenant->id, 'name' => 'Store 1']);
         $user = User::factory()->create(['tenant_id' => $tenant->id]);
 

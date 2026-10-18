@@ -4,25 +4,25 @@ namespace Tests\Feature\Domain1;
 
 use App\Enums\OrderStatus;
 use App\Jobs\ProcessSalesReportExportJob;
-use App\Jobs\ProcessWebhookOrderJob;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\ExportTask;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Store;
 use App\Models\Table;
+use App\Models\Tenant;
+use App\Models\User;
 use App\Services\Context\TenantContext;
-use App\Services\DashboardService;
 use App\Services\MenuCacheService;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Tests\TestCase;
-use Throwable;
 
 /**
  * D1 DOMAIN 1 — ADVERSARIAL NEGATIVE TEST SUITE (12 tests).
@@ -60,16 +60,16 @@ class Domain1TenantIsolationTest extends TestCase
         $context = app(TenantContext::class);
         $context->clear();
 
-        $tenantA = \App\Models\Tenant::create(['name' => 'Tenant A Isolasi', 'readiness_status' => 'pending']);
-        $tenantB = \App\Models\Tenant::create(['name' => 'Tenant B Isolasi', 'readiness_status' => 'pending']);
+        $tenantA = Tenant::create(['name' => 'Tenant A Isolasi', 'readiness_status' => 'pending']);
+        $tenantB = Tenant::create(['name' => 'Tenant B Isolasi', 'readiness_status' => 'pending']);
         $this->tenantAId = (int) $tenantA->id;
         $this->tenantBId = (int) $tenantB->id;
 
         $context->runAs($this->tenantAId, null, function () use (&$storeAId) {
-            $storeAId = (int) \App\Models\Store::create(['name' => 'Store A1'])->id;
+            $storeAId = (int) Store::create(['name' => 'Store A1'])->id;
         });
         $context->runAs($this->tenantBId, null, function () use (&$storeBId) {
-            $storeBId = (int) \App\Models\Store::create(['name' => 'Store B1'])->id;
+            $storeBId = (int) Store::create(['name' => 'Store B1'])->id;
         });
         $this->storeAId = $storeAId;
         $this->storeBId = $storeBId;
@@ -85,7 +85,7 @@ class Domain1TenantIsolationTest extends TestCase
 
         // orders.user_id adalah NOT NULL tanpa default -> buat user kasir per tenant.
         $context->runAs($this->tenantAId, $this->storeAId, function () use (&$userAId) {
-            $userAId = (int) \App\Models\User::create([
+            $userAId = (int) User::create([
                 'name' => 'Kasir A',
                 'email' => 'kasir-a-'.uniqid().'@test.local',
                 'password' => 'password',
@@ -94,7 +94,7 @@ class Domain1TenantIsolationTest extends TestCase
             ])->id;
         });
         $context->runAs($this->tenantBId, $this->storeBId, function () use (&$userBId) {
-            $userBId = (int) \App\Models\User::create([
+            $userBId = (int) User::create([
                 'name' => 'Kasir B',
                 'email' => 'kasir-b-'.uniqid().'@test.local',
                 'password' => 'password',
@@ -212,7 +212,7 @@ class Domain1TenantIsolationTest extends TestCase
         $this->assertNull(Product::find($productB->id));
 
         // Insert langsung via DB harus ditolak FK komposit tenant.
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         DB::table('order_items')->insert([
             'order_id' => $orderA->id,
             'tenant_id' => $this->tenantAId,
@@ -237,7 +237,7 @@ class Domain1TenantIsolationTest extends TestCase
             ]);
         });
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         DB::table('orders')->insert([
             'order_code' => 'ORD-X-'.uniqid(),
             'idempotency_key' => 'idem-'.uniqid(),
@@ -364,7 +364,7 @@ class Domain1TenantIsolationTest extends TestCase
             $movementId = (int) DB::table('stock_movements')->max('id');
         });
 
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         DB::table('stock_movements')->where('id', $movementId)->update(['quantity' => 999]);
     }
 
@@ -383,7 +383,7 @@ class Domain1TenantIsolationTest extends TestCase
         $this->assertNotNull($ok->id);
 
         // Duplikat dalam tenant yang sama → ditolak unique constraint.
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         app(TenantContext::class)->runAs($this->tenantAId, $this->storeAId, function () {
             Category::create(['category_name' => 'Minuman Khas']);
         });
@@ -441,7 +441,7 @@ class Domain1TenantIsolationTest extends TestCase
         // 1. Verifikasi FORMAT kunci: kunci WAJIB menyertakan dimensi tenant + store.
         $reflect = null;
         $context->runAs($this->tenantAId, $this->storeAId, function () use ($service, &$reflect) {
-            $closure = \Closure::bind(fn (string $k) => $this->getTenantKey($k), $service, \App\Services\MenuCacheService::class);
+            $closure = \Closure::bind(fn (string $k) => $this->getTenantKey($k), $service, MenuCacheService::class);
             $reflect = $closure('pos:menu:catalog:v2');
         });
         $this->assertSame('pos:menu:'.$this->tenantAId.':store:'.$this->storeAId.':catalog:v2', $reflect);
@@ -475,7 +475,7 @@ class Domain1TenantIsolationTest extends TestCase
     /** NEG-13: User Tenant A is denied (403/404) when attempting to download an ExportTask belonging to Tenant B. */
     public function test_export_download_idor(): void
     {
-        $userA = \App\Models\User::find($this->userAId);
+        $userA = User::find($this->userAId);
         $taskB = app(TenantContext::class)->runAs($this->tenantBId, $this->storeBId, function () {
             return ExportTask::create([
                 'type' => 'sales_report',
@@ -560,7 +560,7 @@ class Domain1TenantIsolationTest extends TestCase
         $this->assertNotNull($newTable->id);
 
         // Attempting to create duplicate active table name must throw QueryException
-        $this->expectException(\Illuminate\Database\QueryException::class);
+        $this->expectException(QueryException::class);
         app(TenantContext::class)->runAs($this->tenantAId, $this->storeAId, function () {
             Table::create([
                 'table_name' => 'MEJA-VIP',

@@ -10,7 +10,6 @@ use App\Models\Ingredient;
 use App\Models\IngredientRestockForecast;
 use App\Models\Order;
 use App\Models\Payment;
-use App\Models\Product;
 use App\Models\Role;
 use App\Models\Store;
 use App\Models\Tenant;
@@ -25,8 +24,11 @@ class DashboardV2RedesignTest extends TestCase
     use RefreshDatabase;
 
     private Tenant $tenant;
+
     private Store $store1;
+
     private Store $store2;
+
     private User $ownerUser;
 
     protected function afterSubclassSetUp(): void

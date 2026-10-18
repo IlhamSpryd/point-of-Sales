@@ -1,18 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/BackfillBalances.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/BackfillBalances.php
-
-		-
 			message: '#^Offset ''bom'' on array\{cat\: 0\|1\|2\|3\|4\|5\|6\|7\|8\|9\|10\|11\|12\|13\|14\|15, name\: ''Almond Cream…''\|''Americano Hot''\|''Avocado Espresso…''\|''Burnt Basque…''\|''Butter Croissant…''\|''Butterscotch Cream…''\|''Caffe Latte Hot''\|''Caffe Mocha Belgian''\|''Cappuccino Hot''\|''Caramel Crunch…''\|''Chamomile Dream…''\|''Chicken Caesar…''\|''Chicken Teriyaki…''\|''Cinnamon Morning…''\|''Cireng Krispi Bumbu…''\|''Classic Black Cold…''\|''Classic Tiramisu Cup''\|''Creamy Fettuccine…''\|''Crispy Chicken…''\|''Dark Chocolate…''\|''Earl Grey Supreme…''\|''Espresso Double Shot''\|''Espresso Single Shot''\|''Fudgy Dark Choco…''\|''Gyudon Beef…''\|''Hazelnut Praline…''\|''Iced Americano''\|''Iced Caffe Latte''\|''Iced Cappuccino''\|''Iced Dark Chocolate…''\|''Iced Lemon Mint Tea''\|''Iced Lychee Tea…''\|''Iced Matcha Uji…''\|''Japanese Iced Drip…''\|''Jasmine Green…''\|''Kopi Pandan Wangi…''\|''Kopi Rindu Aren…''\|''Long Black Hot''\|''Matcha Cream Frappe''\|''Matcha Uji Latte Hot''\|''Mie Goreng Dok\-dok…''\|''Mocha Chip Frappe''\|''Nasi Goreng Rindu…''\|''Pain au Chocolat''\|''Piccolo Latte''\|''Red Velvet…''\|''Salted Caramel…''\|''Smoked Beef &…''\|''Spaghetti Aglio…''\|''Sparkling Lemon…''\|''Taro Gourmet Latte…''\|''Truffle Fries with…''\|''Truffle Scrambled…''\|''V60 Aceh Gayo…''\|''V60 Bali Kintamani…''\|''V60 Ethiopia…''\|''V60 Toraja Sapan…''\|''Vanilla Bean Latte''\|''White Velvet Cold…'', price\: 22000\|26000\|28000\|30000\|32000\|34000\|35000\|36000\|37000\|38000\|40000\|42000\|45000\|46000\|48000\|52000\|55000\|58000, has_bom\: true, bom\: non\-empty\-list\<array\{ing\: ''ING\-9\-001''\|''ING\-9\-002''\|''ING\-9\-003''\|''ING\-9\-004''\|''ING\-9\-005''\|''ING\-9\-006''\|''ING\-9\-010''\|''ING\-9\-011''\|''ING\-9\-012''\|''ING\-9\-013''\|''ING\-9\-014''\|''ING\-9\-015''\|''ING\-9\-016''\|''ING\-9\-017''\|''ING\-9\-018''\|''ING\-9\-019''\|''ING\-9\-020''\|''ING\-9\-025''\|''ING\-9\-026''\|''ING\-9\-027''\|''ING\-9\-028''\|''ING\-9\-030''\|''ING\-9\-031''\|''ING\-9\-032''\|''ING\-9\-033''\|''ING\-9\-036''\|''ING\-9\-037''\|''ING\-9\-048'', qty\: 8\|10\|15\|18\|20\|24\|25\|30\|35\|40\|45\|50\|60\|80\|90\|100\|120\|130\|140\|150\|160\|180\|200\}\|array\{ing\: ''ING\-9\-021''\|''ING\-9\-022'', qty\: 5\}\|array\{ing\: ''ING\-9\-023'', qty\: 4\}\|array\{ing\: ''ING\-9\-024''\|''ING\-9\-029''\|''ING\-9\-035''\|''ING\-9\-038''\|''ING\-9\-039''\|''ING\-9\-040''\|''ING\-9\-041''\|''ING\-9\-042''\|''ING\-9\-043''\|''ING\-9\-044''\|''ING\-9\-045'', qty\: 1\|2\}\>\} in empty\(\) always exists and is not falsy\.$#'
 			identifier: empty.offset
 			count: 1
@@ -41,18 +29,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Console/Commands/PopulateApeironFullYearDataset.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 6
-			path: app/Console/Commands/ReconcileBalances.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$stock\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Console/Commands/ReconcileBalances.php
 
 		-
 			message: '#^Expression on left side of \?\? is not nullable\.$#'
@@ -91,76 +67,10 @@ parameters:
 			path: app/Exports/SalesExport.php
 
 		-
-			message: '#^Parameter \#1 \$user of class Illuminate\\Auth\\Events\\Verified constructor expects Illuminate\\Contracts\\Auth\\MustVerifyEmail, App\\Models\\User\|null given\.$#'
-			identifier: argument.type
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
 			count: 1
-			path: app/Http/Controllers/Auth/VerifyEmailController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/ExportTaskController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/ExportTaskController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/HomeController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Controllers/OwnerOnboardingController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$current_stock\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/RestockForecastController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/RestockForecastController.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$unit\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/RestockForecastController.php
-
-		-
-			message: '#^Cannot call method toDateString\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Http/Controllers/RestockForecastController.php
-
-		-
-			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: app/Http/Controllers/RestockForecastController.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\IngredientRestockForecast\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 1
-			path: app/Http/Controllers/RestockForecastController.php
-
-		-
-			message: '#^Using nullsafe method call on non\-nullable type string\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/RestockForecastController.php
+			path: app/Http/Controllers/Auth/TwoFactorAuthenticationController.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>current_stock" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -181,14 +91,8 @@ parameters:
 			path: app/Http/Controllers/RestockForecastController.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Controllers/StoreSwitchController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Controllers/StoreSwitchController.php
 
@@ -196,49 +100,7 @@ parameters:
 			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
-			path: app/Http/Controllers/StoreSwitchController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Http/Controllers/UserController.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
 			path: app/Http/Middleware/EnforceEmailVerification.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Middleware/EnforceEmailVerification.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/RoleMiddleware.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/SetTenantContext.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/SetTenantContext.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Middleware/SetTenantContext.php
 
 		-
 			message: '#^Call to function method_exists\(\) with App\\Models\\User and ''trashed'' will always evaluate to true\.$#'
@@ -253,40 +115,10 @@ parameters:
 			path: app/Http/Middleware/SetTenantContext.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Requests/StoreCategoryRequest.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Requests/StoreProductRequest.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Requests/StoreRoleRequest.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Requests/StoreRoleRequest.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Requests/StoreTableRequest.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Requests/StoreUserRequest.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -295,40 +127,10 @@ parameters:
 			path: app/Http/Requests/StoreUserRequest.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Requests/UpdateCategoryRequest.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Requests/UpdateProductRequest.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Requests/UpdateRoleRequest.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Requests/UpdateRoleRequest.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Http/Requests/UpdateTableRequest.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Http/Requests/UpdateUserRequest.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -379,42 +181,6 @@ parameters:
 			path: app/Jobs/ProcessWebhookOrderJob.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Livewire/AsyncExportButton.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/AsyncExportButton.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/AsyncExportButton.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ChannelMappingManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ChannelMappingManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ChannelMappingManager.php
-
-		-
 			message: '#^Call to function method_exists\(\) with App\\Models\\User and ''trashed'' will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -427,94 +193,10 @@ parameters:
 			path: app/Livewire/Concerns/RequiresTenantContext.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Livewire/DiscountManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/DiscountManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/DiscountManager.php
-
-		-
 			message: '#^Cannot call method format\(\) on string\.$#'
 			identifier: method.nonObject
 			count: 2
 			path: app/Livewire/DiscountManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Livewire/Inventory/IngredientLedger.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Inventory/IngredientLedger.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Inventory/IngredientLedger.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Livewire/Inventory/IngredientManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Inventory/IngredientManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Inventory/IngredientManager.php
-
-		-
-			message: '#^Property App\\Livewire\\Inventory\\IngredientManager\:\:\$cost_per_unit \(float\|null\) does not accept string\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Livewire/Inventory/IngredientManager.php
-
-		-
-			message: '#^Property App\\Livewire\\Inventory\\IngredientManager\:\:\$reorder_level \(float\|null\) does not accept string\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Livewire/Inventory/IngredientManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Livewire/Inventory/ModifierManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Inventory/ModifierManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Inventory/ModifierManager.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
@@ -537,7 +219,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Livewire\\Kasir\\CreateOrder\:\:\$discountAmount\.$#'
 			identifier: property.notFound
-			count: 2
+			count: 1
 			path: app/Livewire/Kasir/CreateOrder.php
 
 		-
@@ -549,37 +231,13 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Livewire\\Kasir\\CreateOrder\:\:\$subtotal\.$#'
 			identifier: property.notFound
-			count: 3
-			path: app/Livewire/Kasir/CreateOrder.php
-
-		-
-			message: '#^Access to an undefined property App\\Livewire\\Kasir\\CreateOrder\:\:\$taxAmount\.$#'
-			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Livewire/Kasir/CreateOrder.php
 
 		-
 			message: '#^Access to an undefined property App\\Livewire\\Kasir\\CreateOrder\:\:\$totalAmount\.$#'
 			identifier: property.notFound
 			count: 6
-			path: app/Livewire/Kasir/CreateOrder.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Livewire/Kasir/CreateOrder.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Kasir/CreateOrder.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
 			path: app/Livewire/Kasir/CreateOrder.php
 
 		-
@@ -631,136 +289,10 @@ parameters:
 			path: app/Livewire/Kasir/CreateOrder.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Livewire/Kasir/OrderHistory.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Kasir/OrderHistory.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Kasir/OrderHistory.php
-
-		-
-			message: '#^Negated boolean expression is always false\.$#'
-			identifier: booleanNot.alwaysFalse
-			count: 1
-			path: app/Livewire/Kasir/OrderHistory.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Livewire/Kds/Board.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Kds/Board.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/Kds/Board.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ShiftManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ShiftManager.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Livewire/ShiftManager.php
-
-		-
-			message: '#^Relation ''users'' is not found in App\\Models\\Store model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Models/ActivityLog.php
-
-		-
-			message: '#^Relation ''users'' is not found in App\\Models\\Store model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Models/CashDrawerMovement.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Category.php
-
-		-
-			message: '#^Parameter \#1 \$string of function str_pad expects string, \(float\|int\) given\.$#'
-			identifier: argument.type
-			count: 1
-			path: app/Models/Category.php
-
-		-
-			message: '#^Relation ''users'' is not found in App\\Models\\Store model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Models/ExportTask.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Ingredient\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Models/Ingredient.php
-
-		-
-			message: '#^Relation ''users'' is not found in App\\Models\\Store model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Models/IngredientStockMovement.php
-
-		-
-			message: '#^Relation ''users'' is not found in App\\Models\\Store model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Models/Order.php
-
-		-
-			message: '#^Relation ''users'' is not found in App\\Models\\Store model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Models/OrderItem.php
-
-		-
-			message: '#^Relation ''users'' is not found in App\\Models\\Store model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Models/OrderItemModifier.php
-
-		-
 			message: '#^Strict comparison using \!\=\= between Carbon\\Carbon and null will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: app/Models/OwnerOnboardingToken.php
-
-		-
-			message: '#^Relation ''users'' is not found in App\\Models\\Store model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Models/Payment.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Product\:\:\$tenant_id\.$#'
@@ -769,67 +301,7 @@ parameters:
 			path: app/Models/Product.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Models/Product.php
-
-		-
-			message: '#^Call to function is_array\(\) with string\|null will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: app/Models/Role.php
-
-		-
-			message: '#^Unreachable statement \- code above always terminates\.$#'
-			identifier: deadCode.unreachable
-			count: 1
-			path: app/Models/Role.php
-
-		-
-			message: '#^Relation ''users'' is not found in App\\Models\\Store model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Models/Shift.php
-
-		-
-			message: '#^Relation ''users'' is not found in App\\Models\\Store model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Models/StockBalance.php
-
-		-
-			message: '#^Relation ''users'' is not found in App\\Models\\Store model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Models/StockMovement.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Models/Store.php
-
-		-
-			message: '#^Relation ''users'' is not found in App\\Models\\Store model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Models/Table.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Category\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Policies/CategoryPolicy.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Policies/CategoryPolicy.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
 			identifier: property.notFound
 			count: 3
 			path: app/Policies/CategoryPolicy.php
@@ -847,18 +319,6 @@ parameters:
 			path: app/Policies/DiscountPolicy.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Policies/DiscountPolicy.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Policies/DiscountPolicy.php
-
-		-
 			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
@@ -871,82 +331,10 @@ parameters:
 			path: app/Policies/DiscountPolicy.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Ingredient\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Policies/IngredientPolicy.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Policies/IngredientPolicy.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Policies/IngredientPolicy.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 9
-			path: app/Policies/OrderPolicy.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$store_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Policies/OrderPolicy.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Policies/OrderPolicy.php
-
-		-
 			message: '#^Access to an undefined property App\\Models\\Product\:\:\$tenant_id\.$#'
 			identifier: property.notFound
 			count: 3
 			path: app/Policies/ProductPolicy.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Policies/ProductPolicy.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Policies/ProductPolicy.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Policies/ShiftPolicy.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Policies/ShiftPolicy.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Policies/TablePolicy.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Policies/TablePolicy.php
 
 		-
 			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
@@ -985,34 +373,28 @@ parameters:
 			path: app/Services/CartService.php
 
 		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: app/Services/CashierPinService.php
+
+		-
+			message: '#^Offset ''metadata'' on array\{shift_id\?\: int, store_id\?\: int, metadata\: array\<string, mixed\>\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Services/CashierPinService.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\Category\:\:\$tenant_id\.$#'
 			identifier: property.notFound
 			count: 2
 			path: app/Services/CategoryService.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/Context/StoreResolver.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/Context/TenantContext.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Services/Context/TenantContext.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/DashboardService.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$card_orders\.$#'
@@ -1093,6 +475,18 @@ parameters:
 			path: app/Services/DashboardService.php
 
 		-
+			message: '#^Method App\\Services\\EntitlementService\:\:resolveActivePlanForTenant\(\) should return App\\Models\\Plan\|null but returns Illuminate\\Database\\Eloquent\\Model\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/EntitlementService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>subscription_plan" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/EntitlementService.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_status\.$#'
 			identifier: property.notFound
 			count: 4
@@ -1108,42 +502,6 @@ parameters:
 			message: '#^Access to an undefined property App\\Models\\Tenant\:\:\$owner_user_id\.$#'
 			identifier: property.notFound
 			count: 3
-			path: app/Services/OwnershipTransferService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Services/OwnershipTransferService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 5
-			path: app/Services/OwnershipTransferService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_active\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/OwnershipTransferService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/OwnershipTransferService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$role_code\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Services/OwnershipTransferService.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:hasPermission\(\)\.$#'
-			identifier: method.notFound
-			count: 4
 			path: app/Services/OwnershipTransferService.php
 
 		-
@@ -1183,6 +541,18 @@ parameters:
 			path: app/Services/Printing/KitchenPrinterService.php
 
 		-
+			message: '#^Call to function is_string\(\) with App\\Enums\\PaymentMethod\|null will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Services/Printing/ReceiptPrinterService.php
+
+		-
+			message: '#^Instanceof between App\\Enums\\OrderStatus and App\\Enums\\OrderStatus will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: app/Services/Printing/ReceiptPrinterService.php
+
+		-
 			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -1201,9 +571,9 @@ parameters:
 			path: app/Services/ProductService.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$role\.$#'
-			identifier: property.notFound
-			count: 8
+			message: '#^Cannot access property \$value on int\.$#'
+			identifier: property.nonObject
+			count: 1
 			path: app/Services/ReportService.php
 
 		-
@@ -1211,6 +581,60 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 4
 			path: app/Services/ReportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ReturnRefundService.php
+
+		-
+			message: '#^Call to function is_string\(\) with App\\Enums\\PaymentMethod will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 2
+			path: app/Services/ReturnRefundService.php
+
+		-
+			message: '#^Offset ''amount'' on array\{payment_id\: int, amount\: float\|int, refund_method\?\: string\|null, is_method_override\?\: bool, method_override_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Services/ReturnRefundService.php
+
+		-
+			message: '#^Offset ''disposition'' on array\{order_item_id\: int, quantity\: int, disposition\: App\\Enums\\ReturnDispositionEnum\|string, disposition_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Services/ReturnRefundService.php
+
+		-
+			message: '#^Offset ''order_item_id'' on array\{order_item_id\: int, quantity\: int, disposition\: App\\Enums\\ReturnDispositionEnum\|string, disposition_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Services/ReturnRefundService.php
+
+		-
+			message: '#^Offset ''payment_id'' on array\{payment_id\: int, amount\: float\|int, refund_method\?\: string\|null, is_method_override\?\: bool, method_override_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: app/Services/ReturnRefundService.php
+
+		-
+			message: '#^Offset ''quantity'' on array\{order_item_id\: int, quantity\: int, disposition\: App\\Enums\\ReturnDispositionEnum\|string, disposition_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Services/ReturnRefundService.php
+
+		-
+			message: '#^Property App\\Models\\PaymentRefund\:\:\$settled_at \(string\|null\) does not accept Illuminate\\Support\\Carbon\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Services/ReturnRefundService.php
+
+		-
+			message: '#^Property App\\Models\\Product\:\:\$stock \(int\<0, max\>\) does not accept float\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Services/ReturnRefundService.php
 
 		-
 			message: '#^Match arm comparison between ''Cook'' and ''Cook'' is always true\.$#'
@@ -1225,8 +649,8 @@ parameters:
 			path: app/Services/RoleService.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Shift\:\:\$store_id\.$#'
-			identifier: property.notFound
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Role\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Services/ShiftService.php
 
@@ -1245,7 +669,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
 			identifier: property.notFound
-			count: 10
+			count: 7
 			path: app/Services/TransactionService.php
 
 		-
@@ -1257,7 +681,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pivot\.$#'
 			identifier: property.notFound
-			count: 2
+			count: 1
 			path: app/Services/TransactionService.php
 
 		-
@@ -1281,6 +705,18 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$selection_type\.$#'
 			identifier: property.notFound
+			count: 1
+			path: app/Services/TransactionService.php
+
+		-
+			message: '#^Call to an undefined method App\\Services\\Context\\TenantContext\:\:requireStoreId\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Services/TransactionService.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Enums\\PaymentAttemptStatus\:\:Expired, App\\Enums\\PaymentAttemptStatus\:\:Cancelled\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
 			count: 1
 			path: app/Services/TransactionService.php
 
@@ -1309,7 +745,25 @@ parameters:
 			path: app/Services/TransactionService.php
 
 		-
+			message: '#^Offset ''amount_tendered'' on array\{method\: App\\Enums\\PaymentMethod, amount\: int, reference_number\: string\|null, idempotency_key\: string\|null\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: app/Services/TransactionService.php
+
+		-
+			message: '#^Offset ''change_amount'' on array\{method\: App\\Enums\\PaymentMethod, amount\: int, reference_number\: string\|null, idempotency_key\: string\|null\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: app/Services/TransactionService.php
+
+		-
 			message: '#^Offset ''extra_price'' on array\{modifier_id\: int\<0, max\>, name\: string, extra_price\: int\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Services/TransactionService.php
+
+		-
+			message: '#^Offset ''item_discount_amount'' on array\{order_price\: int, qty\: mixed, order_subtotal\: \(float\|int\), product_id\: int\<0, max\>, options\: list\<array\{modifier_id\: int\<0, max\>, name\: string, extra_price\: int\}\>, notes\: mixed, needs_stock_deduction\: bool, item_discount_id\: mixed, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.offset
 			count: 1
 			path: app/Services/TransactionService.php
@@ -1321,14 +775,62 @@ parameters:
 			path: app/Services/TransactionService.php
 
 		-
-			message: '#^Offset ''needs_stock…'' on array\{order_price\: int, qty\: mixed, order_subtotal\: \(float\|int\), product_id\: int\<0, max\>, options\: list\<array\{modifier_id\: int\<0, max\>, name\: string, extra_price\: int\}\>, notes\: mixed, needs_stock_deduction\: bool\} on left side of \?\? always exists and is not nullable\.$#'
+			message: '#^Offset ''needs_stock…'' on array\{order_price\: int, qty\: mixed, order_subtotal\: \(float\|int\), product_id\: int\<0, max\>, options\: list\<array\{modifier_id\: int\<0, max\>, name\: string, extra_price\: int\}\>, notes\: mixed, needs_stock_deduction\: bool, item_discount_id\: mixed, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.offset
 			count: 1
 			path: app/Services/TransactionService.php
 
 		-
+			message: '#^Property App\\Models\\PaymentAttempt\:\:\$raw_response_meta \(string\|null\) does not accept array\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Services/TransactionService.php
+
+		-
+			message: '#^Property App\\Models\\PaymentAttempt\:\:\$settled_at \(string\|null\) does not accept Illuminate\\Support\\Carbon\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Services/TransactionService.php
+
+		-
+			message: '#^Property App\\Models\\PaymentAttempt\:\:\$status \(string\) does not accept App\\Enums\\PaymentAttemptStatus\:\:Cancelled\|App\\Enums\\PaymentAttemptStatus\:\:Expired\|App\\Enums\\PaymentAttemptStatus\:\:Failed\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Services/TransactionService.php
+
+		-
+			message: '#^Property App\\Models\\PaymentAttempt\:\:\$status \(string\) does not accept App\\Enums\\PaymentAttemptStatus\:\:Succeeded\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Services/TransactionService.php
+
+		-
 			message: '#^Property App\\Models\\Product\:\:\$stock \(int\<0, max\>\) does not accept float\.$#'
 			identifier: assign.propertyType
+			count: 1
+			path: app/Services/TransactionService.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: app/Services/TransactionService.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: app/Services/TransactionService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\PaymentAttemptStatus\:\:Succeeded will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Services/TransactionService.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\PaymentAttemptStatus\:\:Succeeded will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
 			count: 1
 			path: app/Services/TransactionService.php
 
@@ -1357,28 +859,34 @@ parameters:
 			path: app/Services/TransactionService.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\User\:\:\$tenant_id\.$#'
-			identifier: property.notFound
+			message: '#^Variable \$orderChangeForReceipt on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
 			count: 1
-			path: app/Services/UserService.php
+			path: app/Services/TransactionService.php
+
+		-
+			message: '#^Argument of an invalid type string supplied for foreach, only iterables are supported\.$#'
+			identifier: foreach.nonIterable
+			count: 1
+			path: app/Services/TwoFactorAuthService.php
+
+		-
+			message: '#^Property App\\Models\\User\:\:\$two_factor_confirmed_at \(string\|null\) does not accept Illuminate\\Support\\Carbon\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Services/TwoFactorAuthService.php
+
+		-
+			message: '#^Property App\\Models\\User\:\:\$two_factor_recovery_codes \(string\|null\) does not accept list\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Services/TwoFactorAuthService.php
 
 		-
 			message: '#^Call to an undefined method App\\Models\\User\:\:orders\(\)\.$#'
 			identifier: method.notFound
 			count: 1
 			path: app/Services/UserService.php
-
-		-
-			message: '#^Relation ''role'' is not found in App\\Models\\User model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Services/UserService.php
-
-		-
-			message: '#^Class Database\\Seeders\\ModifierSeeder not found\.$#'
-			identifier: class.notFound
-			count: 1
-			path: database/seeders/DatabaseSeeder.php
 
 		-
 			message: '#^Undefined variable\: \$tenant$#'

@@ -34,6 +34,11 @@ class CashDrawerMovement extends Model
         return $this->belongsTo(Shift::class);
     }
 
+    public function device(): BelongsTo
+    {
+        return $this->belongsTo(Device::class);
+    }
+
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');

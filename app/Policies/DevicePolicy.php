@@ -31,6 +31,15 @@ class DevicePolicy
         return $role->name === 'Manager';
     }
 
+    private function isAssignedToStore(User $user, int $storeId): bool
+    {
+        return DB::table('user_stores')
+            ->where('tenant_id', $user->tenant_id)
+            ->where('user_id', $user->id)
+            ->where('store_id', $storeId)
+            ->exists();
+    }
+
     public function viewAny(User $user): bool
     {
         return $this->isOwner($user) || $this->isManager($user);
@@ -46,11 +55,11 @@ class DevicePolicy
             return true;
         }
 
-        return DB::table('user_stores')
-            ->where('tenant_id', $user->tenant_id)
-            ->where('user_id', $user->id)
-            ->where('store_id', $device->store_id)
-            ->exists();
+        if ($this->isManager($user)) {
+            return $this->isAssignedToStore($user, (int) $device->store_id);
+        }
+
+        return false;
     }
 
     public function create(User $user): bool
@@ -60,7 +69,19 @@ class DevicePolicy
 
     public function update(User $user, Device $device): bool
     {
-        return ((int) $user->tenant_id === (int) $device->tenant_id) && ($this->isOwner($user) || $this->isManager($user));
+        if ((int) $user->tenant_id !== (int) $device->tenant_id) {
+            return false;
+        }
+
+        if ($this->isOwner($user)) {
+            return true;
+        }
+
+        if ($this->isManager($user)) {
+            return $this->isAssignedToStore($user, (int) $device->store_id);
+        }
+
+        return false;
     }
 
     public function delete(User $user, Device $device): bool
@@ -70,11 +91,35 @@ class DevicePolicy
 
     public function pair(User $user, Device $device): bool
     {
-        return ((int) $user->tenant_id === (int) $device->tenant_id) && ($this->isOwner($user) || $this->isManager($user));
+        if ((int) $user->tenant_id !== (int) $device->tenant_id) {
+            return false;
+        }
+
+        if ($this->isOwner($user)) {
+            return true;
+        }
+
+        if ($this->isManager($user)) {
+            return $this->isAssignedToStore($user, (int) $device->store_id);
+        }
+
+        return false;
     }
 
     public function revoke(User $user, Device $device): bool
     {
-        return ((int) $user->tenant_id === (int) $device->tenant_id) && ($this->isOwner($user) || $this->isManager($user));
+        if ((int) $user->tenant_id !== (int) $device->tenant_id) {
+            return false;
+        }
+
+        if ($this->isOwner($user)) {
+            return true;
+        }
+
+        if ($this->isManager($user)) {
+            return $this->isAssignedToStore($user, (int) $device->store_id);
+        }
+
+        return false;
     }
 }
