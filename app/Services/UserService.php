@@ -153,4 +153,28 @@ class UserService
             return $user->delete();
         });
     }
+
+    /**
+     * Mencabut akses cabang tertentu dari pengguna.
+     * Ditolak jika pengguna masih memiliki shift aktif di cabang tersebut.
+     */
+    public function revokeStoreAccess(User $user, int $storeId): void
+    {
+        $hasOpenShift = Shift::withoutGlobalScopes()
+            ->where('tenant_id', $user->tenant_id)
+            ->where('user_id', $user->id)
+            ->where('store_id', $storeId)
+            ->where('status', 'open')
+            ->exists();
+
+        if ($hasOpenShift) {
+            throw new \DomainException('Tidak dapat mencabut akses cabang untuk pengguna yang masih memiliki shift aktif di cabang ini. Silakan tutup shift terlebih dahulu.');
+        }
+
+        DB::table('user_stores')
+            ->where('tenant_id', $user->tenant_id)
+            ->where('user_id', $user->id)
+            ->where('store_id', $storeId)
+            ->delete();
+    }
 }

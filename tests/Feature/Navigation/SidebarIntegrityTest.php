@@ -111,13 +111,14 @@ class SidebarIntegrityTest extends TestCase
                 ->all();
         };
 
-        // 1. Owner sees all 18 items
+        // 1. Owner sees all 20 items (including stores & devices)
         $ownerRoutes = $getVisibleRoutes('Owner');
-        $this->assertCount(18, $ownerRoutes);
+        $this->assertCount(20, $ownerRoutes);
 
-        // 2. Manager sees 15 items (all except users, roles, settings)
+        // 2. Manager sees 16 items (all except users, roles, settings, stores)
         $managerRoutes = $getVisibleRoutes('Manager');
-        $this->assertCount(15, $managerRoutes);
+        $this->assertCount(16, $managerRoutes);
+        $this->assertNotContains('stores.index', $managerRoutes);
         $this->assertNotContains('users.index', $managerRoutes);
         $this->assertNotContains('roles.index', $managerRoutes);
         $this->assertNotContains('settings.index', $managerRoutes);

@@ -13,6 +13,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\ExportTaskController;
 use App\Http\Controllers\HomeController;
@@ -28,9 +29,11 @@ use App\Http\Controllers\RestockForecastController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\StoreController;
 use App\Http\Controllers\StoreSwitchController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserInvitationController;
 use App\Livewire\ChannelMappingManager;
@@ -146,7 +149,24 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->middleware('require.two_factor')
+        ->name('profile.destroy');
+
+    // Autentikasi Dua Faktor (2FA / TOTP)
+    Route::get('/two-factor-challenge', [TwoFactorAuthenticationController::class, 'challenge'])->name('two-factor.challenge');
+    Route::post('/two-factor-challenge', [TwoFactorAuthenticationController::class, 'verifyChallenge'])
+        ->middleware('throttle:6,1')
+        ->name('two-factor.verify');
+
+    Route::post('/profile/two-factor/enable', [TwoFactorAuthenticationController::class, 'enable'])
+        ->middleware('throttle:6,1')
+        ->name('two-factor.enable');
+    Route::post('/profile/two-factor/confirm', [TwoFactorAuthenticationController::class, 'confirm'])
+        ->middleware('throttle:6,1')
+        ->name('two-factor.confirm');
+    Route::delete('/profile/two-factor', [TwoFactorAuthenticationController::class, 'disable'])
+        ->name('two-factor.disable');
 
     // Verify-Before-Swap Email Change Workflow
     Route::post('/profile/email/request', [ProfileEmailChangeController::class, 'requestChange'])
@@ -220,8 +240,9 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
             Route::resource('categories', CategoryController::class);
         });
 
-        // Sistem (Users, Roles, Tables)
+        // Sistem (Stores, Users, Roles)
         Route::middleware('role:Owner')->group(function () {
+            Route::resource('stores', StoreController::class);
             Route::resource('users', UserController::class);
             Route::resource('roles', RoleController::class);
 
@@ -232,10 +253,15 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
             Route::delete('/users-invitations/{id}', [UserInvitationController::class, 'revoke'])->name('users.invitations.revoke');
         });
 
-        // Meja
+        // Meja & Perangkat Kasir (Devices)
         Route::middleware('role:Owner,Manager')->group(function () {
             Route::post('tables/{table}/regenerate-token', [TableController::class, 'regenerateToken'])->name('tables.regenerate-token');
             Route::resource('tables', TableController::class);
+
+            // Perangkat Kasir & Terminal POS
+            Route::post('devices/{device}/revoke', [DeviceController::class, 'revoke'])->name('devices.revoke');
+            Route::post('devices/{device}/regenerate-token', [DeviceController::class, 'regenerateToken'])->name('devices.regenerate-token');
+            Route::resource('devices', DeviceController::class);
         });
 
         // --- MODUL ENTERPRISE BARU ---
@@ -266,20 +292,20 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
             Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
         });
 
-        // Ekspor laporan asinkron (polling status + download)
-        Route::middleware('role:Owner,Manager')->group(function () {
+        // Ekspor laporan asinkron (polling status + download) — Dilindungi hak akses fitur async_export
+        Route::middleware(['role:Owner,Manager', 'enforce.entitlement:async_export'])->group(function () {
             Route::get('/exports/{exportTask}/status', [ExportTaskController::class, 'status'])->name('exports.status');
             Route::get('/exports/{exportTask}/download', [ExportTaskController::class, 'download'])->name('exports.download');
         });
 
-        // BI restock forecast (JSON read-only, dikonsumsi widget Node 2)
-        Route::middleware('role:Owner,Manager,Inventory')->group(function () {
+        // BI restock forecast (JSON read-only, dikonsumsi widget Node 2) — Dilindungi hak akses fitur restock_forecast
+        Route::middleware(['role:Owner,Manager,Inventory', 'enforce.entitlement:restock_forecast'])->group(function () {
             Route::get('/api/analytics/restock-forecasts', [RestockForecastController::class, 'index'])
                 ->name('analytics.restock-forecasts');
         });
 
-        // Channel Mapping Manager
-        Route::middleware('role:Owner,Manager')->group(function () {
+        // Channel Mapping Manager — Dilindungi hak akses fitur omnichannel
+        Route::middleware(['role:Owner,Manager', 'enforce.entitlement:omnichannel'])->group(function () {
             Route::get('/integrations/channel-mapping', ChannelMappingManager::class)->name('integrations.channel-mapping');
         });
 

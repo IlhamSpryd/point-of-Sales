@@ -116,6 +116,14 @@ return [
                 'scope' => 'store',
             ],
             [
+                'label' => 'Perangkat POS',
+                'icon' => 'devices',
+                'route' => 'devices.index',
+                'active' => 'devices.*',
+                'roles' => ['Owner', 'Manager'],
+                'scope' => 'store',
+            ],
+            [
                 'label' => 'Integrasi Channel',
                 'icon' => 'hub',
                 'route' => 'integrations.channel-mapping',
@@ -125,6 +133,14 @@ return [
             ],
         ],
         'Organisasi & Pengaturan' => [
+            [
+                'label' => 'Cabang',
+                'icon' => 'storefront',
+                'route' => 'stores.index',
+                'active' => 'stores.*',
+                'roles' => ['Owner'],
+                'scope' => 'tenant',
+            ],
             [
                 'label' => 'Pengguna',
                 'icon' => 'group',

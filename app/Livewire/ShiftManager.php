@@ -96,18 +96,16 @@ class ShiftManager extends Component
 
     public function setCashierPin(string $pin): void
     {
-        if (! preg_match('/^\d{4,6}$/', $pin)) {
-            $this->dispatch('toast', message: 'PIN Kasir harus berupa 4-6 digit angka.', type: 'error');
-
+        $user = auth()->user();
+        if (! $user) {
             return;
         }
 
-        $user = auth()->user();
-        if ($user) {
-            $user->update([
-                'pin_hash' => bcrypt($pin),
-            ]);
+        try {
+            app(\App\Services\CashierPinService::class)->setPin($user, $pin);
             $this->dispatch('toast', message: 'PIN Kasir berhasil disetel.', type: 'success');
+        } catch (\InvalidArgumentException $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
         }
     }
 

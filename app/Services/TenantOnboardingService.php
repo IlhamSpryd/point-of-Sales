@@ -9,6 +9,7 @@ use App\Models\Setting;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\EmailNormalizer;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -159,10 +160,10 @@ class TenantOnboardingService
      */
     public function resendOnboardingToken(string $email): bool
     {
-        $normalizedEmail = Str::lower(trim($email));
+        $normalizedEmail = EmailNormalizer::normalize($email);
 
         $user = User::withoutGlobalScopes()
-            ->where('email', $normalizedEmail)
+            ->where('email_normalized', $normalizedEmail)
             ->first();
 
         // Jika user tidak ada atau email sudah terverifikasi, return true tanpa membocorkan status
@@ -229,24 +230,15 @@ class TenantOnboardingService
         return true;
     }
 
-    private function recordAuditLog(int $tenantId, string $action, string $subjectType, int $subjectId, string $description): void
+    private function recordAuditLog(int $tenantId, string $action, string $subjectType, int $subjectId, string $description, ?int $userId = null): void
     {
-        try {
-            $storeId = Store::withoutTenantScope()->where('tenant_id', $tenantId)->orderBy('id')->value('id') ?? 1;
-
-            DB::table('activity_logs')->insert([
-                'tenant_id' => $tenantId,
-                'store_id' => $storeId,
-                'user_id' => auth()->id() ?? 1,
-                'action' => $action,
-                'subject_type' => $subjectType,
-                'subject_id' => $subjectId,
-                'description' => $description,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        } catch (\Throwable $e) {
-            Log::warning("Gagal mencatat audit log {$action}: ".$e->getMessage());
-        }
+        app(AuditTrailService::class)->log(
+            tenantId: $tenantId,
+            action: $action,
+            userId: $userId ?? auth()->id(),
+            subjectType: $subjectType,
+            subjectId: $subjectId,
+            description: $description
+        );
     }
 }

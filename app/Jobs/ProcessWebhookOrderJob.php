@@ -21,6 +21,7 @@ use App\Models\ChannelOrderLog;
 use App\Models\ChannelProductMapping;
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\Tenant;
 use App\Services\Context\TenantContext;
 use App\Services\DatabaseErrorClassifier;
 use App\Services\Omnichannel\ChannelOrderNormalizerFactory;
@@ -67,6 +68,13 @@ class ProcessWebhookOrderJob implements ShouldQueue
         // (fail-open pada queue worker berumur panjang membocorkan data).
         if (! $tenantId) {
             $this->fail('Channel order log tidak memiliki tenant_id; job ditolak (fail-closed).', warning: true);
+
+            return;
+        }
+
+        $tenant = Tenant::find($tenantId);
+        if (! $tenant || $tenant->trashed() || $tenant->isSuspended()) {
+            $this->fail('Tenant tidak ditemukan atau sedang disuspensi; job ditolak.', warning: true);
 
             return;
         }

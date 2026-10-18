@@ -32,13 +32,27 @@ class TransactionIntegrityTest extends TestCase
 
     private $transactionService;
 
+    private $role;
+
     protected function afterSubclassSetUp(): void
     {
         parent::afterSubclassSetUp();
 
         app(TenantContext::class)->runWithoutTenant(function () {
-            $this->tenant = Tenant::forceCreate(['name' => 'Tenant Core']);
+            $this->tenant = Tenant::forceCreate([
+                'name' => 'Tenant Core',
+                'status' => 'active',
+                'access_status' => Tenant::ACCESS_ACTIVE,
+                'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
+            ]);
             $this->store = Store::forceCreate(['tenant_id' => $this->tenant->id, 'name' => 'Store Core']);
+            $this->role = \App\Models\Role::forceCreate([
+                'tenant_id' => $this->tenant->id,
+                'name' => 'Kasir',
+                'description' => 'Role Kasir',
+                'permissions' => ['*'],
+                'is_active' => true,
+            ]);
             $category = Category::forceCreate(['tenant_id' => $this->tenant->id, 'category_name' => 'Cat']);
 
             $this->product = Product::forceCreate([
@@ -126,6 +140,7 @@ class TransactionIntegrityTest extends TestCase
     {
         $user = User::forceCreate([
             'tenant_id' => $this->tenant->id,
+            'role_id' => $this->role->id,
             'name' => 'Cashier',
             'email' => 'cashier@test.com',
             'password' => bcrypt('password'),
@@ -219,6 +234,7 @@ class TransactionIntegrityTest extends TestCase
     {
         $user = User::forceCreate([
             'tenant_id' => $this->tenant->id,
+            'role_id' => $this->role->id,
             'name' => 'Cashier2',
             'email' => 'cashier2@test.com',
             'password' => bcrypt('password'),
@@ -279,6 +295,7 @@ class TransactionIntegrityTest extends TestCase
     {
         $user = User::forceCreate([
             'tenant_id' => $this->tenant->id,
+            'role_id' => $this->role->id,
             'name' => 'Cashier3',
             'email' => 'cashier3@test.com',
             'password' => bcrypt('password'),

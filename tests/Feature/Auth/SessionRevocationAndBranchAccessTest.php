@@ -191,4 +191,61 @@ class SessionRevocationAndBranchAccessTest extends TestCase
             $this->assertStringContainsString('masih memiliki shift aktif', $e->getMessage());
         }
     }
+
+    public function test_cashier_cannot_switch_branch_with_open_shift(): void
+    {
+        [$tenant, $owner, $kasir, $store1, $store2] = $this->createTenantWithStoresAndUsers();
+        app(TenantContext::class)->setTenantId($tenant->id);
+        app(TenantContext::class)->setStoreId($store1->id);
+
+        Shift::create([
+            'tenant_id' => $tenant->id,
+            'store_id' => $store1->id,
+            'user_id' => $kasir->id,
+            'opening_balance' => 100000,
+            'status' => 'open',
+            'opened_at' => now(),
+        ]);
+
+        $this->actingAs($kasir);
+        $this->withSession(['active_store_id' => $store1->id]);
+
+        $response = $this->from('/transaction')->post(route('store.switch'), [
+            'store_id' => (string) $store2->id,
+        ]);
+
+        $response->assertSessionHasErrors('store_id');
+    }
+
+    public function test_cannot_revoke_store_access_when_cashier_has_open_shift_in_that_store(): void
+    {
+        [$tenant, $owner, $kasir, $store1, $store2] = $this->createTenantWithStoresAndUsers();
+        app(TenantContext::class)->setTenantId($tenant->id);
+        app(TenantContext::class)->setStoreId($store1->id);
+
+        Shift::create([
+            'tenant_id' => $tenant->id,
+            'store_id' => $store1->id,
+            'user_id' => $kasir->id,
+            'opening_balance' => 100000,
+            'status' => 'open',
+            'opened_at' => now(),
+        ]);
+
+        $userService = app(UserService::class);
+
+        try {
+            $userService->revokeStoreAccess($kasir, $store1->id);
+            $this->fail('Seharusnya gagal mencabut akses cabang yang shift-nya masih buka.');
+        } catch (\DomainException $e) {
+            $this->assertStringContainsString('masih memiliki shift aktif', $e->getMessage());
+        }
+
+        $userService->revokeStoreAccess($kasir, $store2->id);
+        $this->assertDatabaseMissing('user_stores', [
+            'tenant_id' => $tenant->id,
+            'user_id' => $kasir->id,
+            'store_id' => $store2->id,
+        ]);
+    }
 }

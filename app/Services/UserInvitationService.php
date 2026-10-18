@@ -17,6 +17,12 @@ use Illuminate\Validation\ValidationException;
 
 class UserInvitationService
 {
+    public function __construct(
+        protected ?EntitlementService $entitlementService = null
+    ) {
+        $this->entitlementService = $this->entitlementService ?? app(EntitlementService::class);
+    }
+
     /**
      * Menerbitkan undangan karyawan baru dengan Privacy-Preserving Cross-Tenant Guard [4B].
      *
@@ -25,6 +31,8 @@ class UserInvitationService
     public function issueInvitation(User $inviter, array $data): UserInvitation
     {
         $tenantId = (int) $inviter->tenant_id;
+        $this->entitlementService->assertCanInviteEmployee($tenantId);
+
         $name = trim($data['name']);
         $email = trim($data['email']);
         $emailNormalized = EmailNormalizer::normalize($email);

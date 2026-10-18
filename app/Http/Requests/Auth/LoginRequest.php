@@ -4,6 +4,8 @@ namespace App\Http\Requests\Auth;
 
 use App\Models\Store;
 use App\Models\User;
+use App\Services\AuditTrailService;
+use App\Support\EmailNormalizer;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -49,8 +51,9 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $email = Str::lower($this->string('email'));
-        $userCandidate = User::withoutGlobalScopes()->where('email', $email)->first();
+        $rawEmail = $this->string('email');
+        $normalizedEmail = EmailNormalizer::normalize($rawEmail);
+        $userCandidate = User::withoutGlobalScopes()->where('email_normalized', $normalizedEmail)->first();
 
         // 1. Cek apakah user terkunci di level database (15 menit)
         if ($userCandidate && $userCandidate->isLockedOut()) {
@@ -61,28 +64,22 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        if (! Auth::attempt(['email' => $email, 'password' => $this->string('password')], $this->boolean('remember'))) {
+        $attemptEmail = $userCandidate ? $userCandidate->email : $rawEmail;
+        if (! Auth::attempt(['email' => $attemptEmail, 'password' => $this->string('password')], $this->boolean('remember'))) {
             // Hit rate limiter dengan decay 15 menit (900 detik) sesuai PRD OD-09
             RateLimiter::hit($this->throttleKey(), 900);
 
             if ($userCandidate) {
                 $isLocked = $userCandidate->recordFailedLogin(5, 15);
                 if ($isLocked) {
-                    try {
-                        DB::table('activity_logs')->insert([
-                            'tenant_id' => $userCandidate->tenant_id,
-                            'store_id' => Store::withoutTenantScope()->where('tenant_id', $userCandidate->tenant_id)->orderBy('id')->value('id') ?? 1,
-                            'user_id' => $userCandidate->id,
-                            'action' => 'user.auth_locked_out',
-                            'subject_type' => User::class,
-                            'subject_id' => $userCandidate->id,
-                            'description' => "Account {$userCandidate->email} locked for 15 minutes after 5 failed sign-in attempts.",
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-                    } catch (\Throwable $e) {
-                        Log::warning('Audit user.auth_locked_out failed: '.$e->getMessage());
-                    }
+                    app(AuditTrailService::class)->log(
+                        tenantId: (int) $userCandidate->tenant_id,
+                        action: 'user.auth_locked_out',
+                        userId: (int) $userCandidate->id,
+                        subjectType: User::class,
+                        subjectId: (int) $userCandidate->id,
+                        description: "Account {$userCandidate->email} locked for 15 minutes after 5 failed sign-in attempts."
+                    );
 
                     event(new Lockout($this));
                     throw ValidationException::withMessages([
@@ -132,8 +129,9 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited(): void
     {
-        $email = Str::lower($this->string('email'));
-        $userCandidate = User::withoutGlobalScopes()->where('email', $email)->first();
+        $rawEmail = $this->string('email');
+        $normalizedEmail = EmailNormalizer::normalize($rawEmail);
+        $userCandidate = User::withoutGlobalScopes()->where('email_normalized', $normalizedEmail)->first();
         if ($userCandidate && $userCandidate->isLockedOut()) {
             event(new Lockout($this));
             $seconds = now()->diffInSeconds($userCandidate->locked_until, false);
@@ -163,6 +161,8 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        $normalizedEmail = EmailNormalizer::normalize($this->string('email'));
+
+        return Str::transliterate($normalizedEmail.'|'.$this->ip());
     }
 }

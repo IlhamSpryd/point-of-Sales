@@ -24,7 +24,7 @@ class ShiftService
     public function openShift(int $userId, int $openingBalance): ?Shift
     {
         $user = User::withoutGlobalScopes()->find($userId);
-        if ($user && $user->pin_hash === null) {
+        if ($user && ! app(\App\Services\CashierPinService::class)->hasPin($user)) {
             throw new \DomainException('Kasir wajib menyetel PIN Kasir sebelum dapat membuka shift.');
         }
 

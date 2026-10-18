@@ -45,6 +45,14 @@ trait RequiresTenantContext
             abort(403, 'Your account is inactive or has been deleted.');
         }
 
+        // Block operational access when tenant is suspended
+        if ($tenant->isSuspended()) {
+            Auth::guard('web')->logout();
+            session()->invalidate();
+            session()->regenerateToken();
+            abort(403, 'Your business workspace is currently suspended. Please contact customer support.');
+        }
+
         $tenantContext = app(TenantContext::class);
         $tenantContext->setTenantId($tenantId);
 
