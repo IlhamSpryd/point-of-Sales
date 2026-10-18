@@ -6,6 +6,8 @@ use App\Models\Table;
 use App\Services\Context\TenantContext;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
@@ -40,8 +42,8 @@ class ResolveTableFromToken
 
         // Telemetri token legacy: catat event terstruktur jika meja valid masih memakai token non-UUID
         try {
-            if (! \Illuminate\Support\Str::isUuid((string) $table->secure_token)) {
-                \Illuminate\Support\Facades\Log::info('[SECURITY] Legacy QR token access detected', [
+            if (! Str::isUuid((string) $table->secure_token)) {
+                Log::info('[SECURITY] Legacy QR token access detected', [
                     'event' => 'legacy_qr_token_accessed',
                     'table_id' => $table->id,
                     'tenant_id' => $table->tenant_id,

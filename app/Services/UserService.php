@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Exports\UsersExport;
+use App\Models\Shift;
 use App\Models\User;
 use App\Services\Context\TenantContext;
 use Exception;
@@ -85,7 +86,7 @@ class UserService
                 || (isset($data['status']) && in_array($data['status'], ['suspended', 'inactive'], true));
 
             if ($isBeingDeactivated) {
-                $hasOpenShift = \App\Models\Shift::where('user_id', $user->id)
+                $hasOpenShift = Shift::where('user_id', $user->id)
                     ->where('status', 'open')
                     ->exists();
 
@@ -131,7 +132,7 @@ class UserService
             throw new Exception('Anda tidak dapat menghapus akun sendiri.');
         }
 
-        $hasOpenShift = \App\Models\Shift::where('user_id', $user->id)
+        $hasOpenShift = Shift::where('user_id', $user->id)
             ->where('status', 'open')
             ->exists();
 

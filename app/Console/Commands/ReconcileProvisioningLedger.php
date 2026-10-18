@@ -10,6 +10,7 @@ use App\Services\Context\TenantContext;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Domain 1 (DB-005 / DB-006) — rekonsiliasi klaim ledger provisioning yang
@@ -68,10 +69,10 @@ class ReconcileProvisioningLedger extends Command
                         });
                 })
                 // Atau baris non-terminal lain yang mungkin transaksi bisnisnya sebenarnya sudah commit
-                ->orWhere(function ($other) {
-                    $other->whereIn('status', [ProvisioningRequest::STATUS_PENDING, ProvisioningRequest::STATUS_FAILED])
-                        ->where('attempt_count', '>', 0);
-                });
+                    ->orWhere(function ($other) {
+                        $other->whereIn('status', [ProvisioningRequest::STATUS_PENDING, ProvisioningRequest::STATUS_FAILED])
+                            ->where('attempt_count', '>', 0);
+                    });
             })
             ->where('status', '!=', ProvisioningRequest::STATUS_COMPLETED)
             ->orderBy('id')
@@ -108,7 +109,7 @@ class ReconcileProvisioningLedger extends Command
 
                 if ($affected === 1) {
                     $completed++;
-                    \Illuminate\Support\Facades\Log::info('Provisioning ledger reconciled to completed from committed tenant.', [
+                    Log::info('Provisioning ledger reconciled to completed from committed tenant.', [
                         'idempotency_key' => $ledger->idempotency_key,
                         'tenant_id' => $facts['tenant_id'],
                         'user_id' => $facts['user_id'],
@@ -144,7 +145,7 @@ class ReconcileProvisioningLedger extends Command
 
                 if ($affected === 1) {
                     $released++;
-                    \Illuminate\Support\Facades\Log::warning('Provisioning ledger stale claim released to pending.', [
+                    Log::warning('Provisioning ledger stale claim released to pending.', [
                         'idempotency_key' => $ledger->idempotency_key,
                         'attempt_count' => $ledger->attempt_count,
                     ]);

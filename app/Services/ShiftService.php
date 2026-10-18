@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\CashDrawerMovement;
 use App\Models\Payment;
 use App\Models\Shift;
+use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 
@@ -22,7 +23,7 @@ class ShiftService
      */
     public function openShift(int $userId, int $openingBalance): ?Shift
     {
-        $user = \App\Models\User::withoutGlobalScopes()->find($userId);
+        $user = User::withoutGlobalScopes()->find($userId);
         if ($user && $user->pin_hash === null) {
             throw new \DomainException('Kasir wajib menyetel PIN Kasir sebelum dapat membuka shift.');
         }

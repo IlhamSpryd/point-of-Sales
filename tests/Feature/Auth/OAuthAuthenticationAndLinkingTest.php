@@ -487,4 +487,36 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
         // Pastikan akun Apple TIDAK terhapus
         $this->assertTrue(UserOAuthIdentity::where('user_id', $user->id)->where('provider', 'apple')->exists());
     }
+
+    public function test_profile_page_renders_oauth_linking_controls_and_status(): void
+    {
+        [$tenant, $user] = $this->createTenantWithOwner();
+
+        // 1. Awalnya belum tertaut
+        $res1 = $this->actingAs($user)->get(route('profile.edit'));
+        $res1->assertOk();
+        $res1->assertSee('Akun Tertaut (Google &amp; Apple SSO)', false);
+        $res1->assertSee('Tautkan Akun Google');
+        $res1->assertSee('Tautkan Akun Apple');
+
+        // 2. Tautkan Google
+        UserOAuthIdentity::create([
+            'tenant_id' => $tenant->id,
+            'user_id' => $user->id,
+            'provider' => 'google',
+            'provider_subject' => 'google-sub-12345',
+            'provider_email' => 'user.google@gmail.com',
+            'provider_email_normalized' => 'user.google@gmail.com',
+            'provider_email_verified' => true,
+            'is_private_relay' => false,
+            'linked_at' => now(),
+        ]);
+
+        // 3. Tampilan profil kini menampilkan status tertaut dan tombol lepas tautan
+        $res2 = $this->actingAs($user)->get(route('profile.edit'));
+        $res2->assertOk();
+        $res2->assertSee('user.google@gmail.com');
+        $res2->assertSee('Tertaut');
+        $res2->assertSee('btn-unlink-google', false);
+    }
 }

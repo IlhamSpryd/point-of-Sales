@@ -6,6 +6,8 @@ namespace App\Http\Controllers\Customer;
 
 use App\Events\WaiterCalled;
 use App\Http\Controllers\Controller;
+use App\Models\Table;
+use App\Services\Context\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -34,9 +36,9 @@ class WaiterCallController extends Controller
 
         Log::channel('stack')->info("[WAITER-CALL] Pelanggan di {$tableName} (ID:{$tableId}) memanggil staf.");
 
-        $table = \App\Models\Table::find($tableId);
-        $tenantId = $table ? $table->tenant_id : app(\App\Services\Context\TenantContext::class)->getTenantId();
-        $storeId = $table ? $table->store_id : app(\App\Services\Context\TenantContext::class)->getStoreId();
+        $table = Table::find($tableId);
+        $tenantId = $table ? $table->tenant_id : app(TenantContext::class)->getTenantId();
+        $storeId = $table ? $table->store_id : app(TenantContext::class)->getStoreId();
 
         // PATCH FOR P-09: Dispatch event push notification ke KDS/Kasir
         WaiterCalled::dispatch($tableId, $tableName, $tenantId, $storeId);

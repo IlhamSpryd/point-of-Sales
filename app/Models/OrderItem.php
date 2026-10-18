@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property int|float $order_subtotal
  * @property array<string, mixed>|null $options
  * @property string|null $notes
- * @property \App\Enums\PreparationStatus $preparation_status
+ * @property PreparationStatus $preparation_status
  * @property int|null $processed_by
  * @property int|null $tenant_id
  * @property int|null $store_id

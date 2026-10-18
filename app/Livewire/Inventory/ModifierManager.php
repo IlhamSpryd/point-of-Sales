@@ -6,6 +6,7 @@ use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Ingredient;
 use App\Models\Modifier;
 use App\Models\ModifierGroup;
+use App\Services\Context\TenantContext;
 use App\Services\MenuCacheService;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -112,7 +113,7 @@ class ModifierManager extends Component
             ModifierGroup::create($this->groupForm);
         }
 
-        app(\App\Services\MenuCacheService::class)->flush();
+        app(MenuCacheService::class)->flush();
 
         $this->resetGroupForm();
         $this->loadData();
@@ -122,7 +123,7 @@ class ModifierManager extends Component
     {
         Gate::authorize('manageRecipe', Ingredient::class);
         ModifierGroup::findOrFail($id)->delete();
-        app(\App\Services\MenuCacheService::class)->flush();
+        app(MenuCacheService::class)->flush();
         $this->loadData();
     }
 
@@ -175,7 +176,7 @@ class ModifierManager extends Component
     public function saveModifier()
     {
         Gate::authorize('manageRecipe', Ingredient::class);
-        $tenantId = app(\App\Services\Context\TenantContext::class)->requireTenantId();
+        $tenantId = app(TenantContext::class)->requireTenantId();
         $group = ModifierGroup::findOrFail($this->selectedGroupId);
 
         $this->validate([

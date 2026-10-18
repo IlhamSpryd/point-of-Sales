@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreUserInvitationRequest;
+use App\Models\User;
 use App\Models\UserInvitation;
 use App\Services\Context\TenantContext;
 use App\Services\UserInvitationService;
@@ -24,7 +25,7 @@ class UserInvitationController extends Controller
     public function index(Request $request): View
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
-        Gate::authorize('create', \App\Models\User::class);
+        Gate::authorize('create', User::class);
 
         $invitations = UserInvitation::where('tenant_id', $tenantId)
             ->with(['role', 'invitedBy', 'stores'])
@@ -50,7 +51,7 @@ class UserInvitationController extends Controller
      */
     public function resend(Request $request, int $id): RedirectResponse
     {
-        Gate::authorize('create', \App\Models\User::class);
+        Gate::authorize('create', User::class);
 
         $this->invitationService->resendInvitation($request->user(), $id);
 
@@ -63,7 +64,7 @@ class UserInvitationController extends Controller
      */
     public function revoke(Request $request, int $id): RedirectResponse
     {
-        Gate::authorize('create', \App\Models\User::class);
+        Gate::authorize('create', User::class);
 
         $this->invitationService->revokeInvitation($request->user(), $id);
 

@@ -12,9 +12,13 @@ use Illuminate\Support\Facades\DB;
 class EmailVerificationOtpService
 {
     public const CODE_TTL_MINUTES = 10;
+
     public const MAX_FAILED_ATTEMPTS = 5;
+
     public const COOLDOWN_SECONDS = 60;
+
     public const HOURLY_LIMIT = 5;
+
     public const DAILY_LIMIT = 10;
 
     /**

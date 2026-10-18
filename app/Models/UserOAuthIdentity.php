@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -16,10 +17,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $provider_email_normalized
  * @property bool $provider_email_verified
  * @property bool $is_private_relay
- * @property \Illuminate\Support\Carbon $linked_at
- * @property \Illuminate\Support\Carbon|null $last_used_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon $linked_at
+ * @property Carbon|null $last_used_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read User|null $user
+ * @property-read Tenant|null $tenant
  */
 class UserOAuthIdentity extends Model
 {
@@ -50,11 +53,17 @@ class UserOAuthIdentity extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);

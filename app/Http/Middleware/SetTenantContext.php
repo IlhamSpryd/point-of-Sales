@@ -7,6 +7,7 @@ use App\Services\Context\TenantContext;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Symfony\Component\HttpFoundation\Response;
 
 class SetTenantContext
@@ -35,7 +36,7 @@ class SetTenantContext
         // but we explicitly check trashed() if applicable, and is_active.
         if ((method_exists($user, 'trashed') && $user->trashed()) || ! $user->is_active || ($user->status ?? 'active') === 'suspended') {
             try {
-                \Illuminate\Support\Facades\DB::table('sessions')->where('user_id', $user->id)->delete();
+                DB::table('sessions')->where('user_id', $user->id)->delete();
             } catch (\Throwable) {
             }
             Auth::guard('web')->logout();
@@ -82,11 +83,7 @@ class SetTenantContext
                 return $next($request);
             }
 
-            if (view()->exists('home.no-access')) {
-                return response()->view('home.no-access', [], 403);
-            }
-
-            abort(403, 'Tidak ada cabang (store) yang dapat diakses untuk pengguna ini.');
+            return response()->view('home.no-access', [], 403);
         }
 
         $activeStoreId = $this->storeResolver->resolve(

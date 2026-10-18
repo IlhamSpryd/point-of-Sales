@@ -21,24 +21,40 @@ class PopulateApeironFullYearDataset extends Command
     protected $description = 'Populate Apeiron POS with 1 full year realistic dataset (70K orders, 8 stores, BOM, shifts, payments).';
 
     private int $tenantId = 9;
+
     private int $targetOrders = 1000000;
+
     private int $chunkSize = 1000;
+
     private bool $isDryRun = false;
 
     // In-memory data collections
     private array $stores = [];
+
     private array $users = [];
+
     private array $categories = [];
+
     private array $products = [];
+
     private array $ingredients = [];
+
     private array $productIngredients = [];
+
     private array $modifierGroups = [];
+
     private array $modifiers = [];
+
     private array $modifierIngredients = [];
+
     private array $modifierGroupProducts = [];
+
     private array $tables = [];
+
     private array $discounts = [];
+
     private array $customers = [];
+
     private array $loyaltyTiers = [];
 
     public function handle(): int
@@ -62,6 +78,7 @@ class PopulateApeironFullYearDataset extends Command
         $tenant = DB::table('tenants')->where('id', $this->tenantId)->first();
         if (! $tenant) {
             $this->error("Target tenant ID {$this->tenantId} does not exist in the database!");
+
             return 1;
         }
 
@@ -70,6 +87,7 @@ class PopulateApeironFullYearDataset extends Command
             $this->warn("Tenant {$this->tenantId} already has {$existingOrderCount} orders.");
             if (! $this->confirm('Tenant already has transactional records. Do you want to proceed and append synthetic dataset?', true)) {
                 $this->info('Operation cancelled by user.');
+
                 return 0;
             }
         }
@@ -81,7 +99,7 @@ class PopulateApeironFullYearDataset extends Command
         }
 
         try {
-            $this->info('▶ Stage 1: Configuring 8 Stores for Tenant ' . $this->tenantId);
+            $this->info('▶ Stage 1: Configuring 8 Stores for Tenant '.$this->tenantId);
             $this->setupStores();
 
             $this->info('▶ Stage 2: Provisioning Staff & Branch Assignments (48 Employees)');
@@ -115,11 +133,13 @@ class PopulateApeironFullYearDataset extends Command
             $this->info('');
             $this->info("✨ Mission Complete! Dataset successfully populated in {$elapsedMinutes} minutes.");
             $this->info('');
+
             return 0;
 
         } catch (\Throwable $e) {
-            $this->error('FATAL ERROR DURING SEEDING: ' . $e->getMessage());
+            $this->error('FATAL ERROR DURING SEEDING: '.$e->getMessage());
             $this->error($e->getTraceAsString());
+
             return 1;
         }
     }
@@ -173,7 +193,7 @@ class PopulateApeironFullYearDataset extends Command
             ->get()
             ->toArray();
 
-        $this->line("  ✓ Configured " . count($this->stores) . " operational branches for Tenant {$this->tenantId}.");
+        $this->line('  ✓ Configured '.count($this->stores)." operational branches for Tenant {$this->tenantId}.");
     }
 
     /**
@@ -188,12 +208,12 @@ class PopulateApeironFullYearDataset extends Command
         // Roles in tenant 9:
         // 22: Owner, 23: Manager, 24: Kasir, 25: Waiter, 26: Barista, 27: Inventory, 28: Supervisor, 29: Cook
         $firstNames = ['Budi', 'Siti', 'Agus', 'Dewi', 'Eko', 'Rini', 'Hendra', 'Nurul', 'Reza', 'Maya',
-                       'Fajar', 'Dian', 'Bambang', 'Putri', 'Ahmad', 'Ratna', 'Dimas', 'Sri', 'Bayu', 'Mega',
-                       'Aditya', 'Fitri', 'Rudi', 'Wulan', 'Gilang', 'Intan', 'Doni', 'Lestari', 'Yoga', 'Anisa',
-                       'Rian', 'Nadia', 'Teguh', 'Ayu', 'Aris', 'Tiara', 'Wahyu', 'Sari', 'Indra', 'Desi',
-                       'Farhan', 'Rika', 'Surya', 'Tari', 'Bagas', 'Hani', 'Lukman', 'Bella'];
+            'Fajar', 'Dian', 'Bambang', 'Putri', 'Ahmad', 'Ratna', 'Dimas', 'Sri', 'Bayu', 'Mega',
+            'Aditya', 'Fitri', 'Rudi', 'Wulan', 'Gilang', 'Intan', 'Doni', 'Lestari', 'Yoga', 'Anisa',
+            'Rian', 'Nadia', 'Teguh', 'Ayu', 'Aris', 'Tiara', 'Wahyu', 'Sari', 'Indra', 'Desi',
+            'Farhan', 'Rika', 'Surya', 'Tari', 'Bagas', 'Hani', 'Lukman', 'Bella'];
         $lastNames = ['Pratama', 'Santoso', 'Wijaya', 'Kusuma', 'Saputra', 'Hidayat', 'Nugroho', 'Wibowo',
-                      'Lestari', 'Purnomo', 'Setiawan', 'Hermawan', 'Susanto', 'Hartono', 'Gunawan', 'Suryono'];
+            'Lestari', 'Purnomo', 'Setiawan', 'Hermawan', 'Susanto', 'Hartono', 'Gunawan', 'Suryono'];
 
         $storeCount = count($this->stores);
         $empSeq = 4; // User 16, 17, 18 used counter 1, 2, 3
@@ -224,8 +244,8 @@ class PopulateApeironFullYearDataset extends Command
             $fn = $firstNames[($empSeq * 7) % count($firstNames)];
             $ln = $lastNames[($empSeq * 11) % count($lastNames)];
             $fullName = "{$fn} {$ln}";
-            $email = strtolower($fn) . '.' . strtolower($ln) . $empSeq . '@rindukopi.test';
-            $phone = '08' . rand(11, 29) . sprintf('%07d', $empSeq * 1234 % 9999999);
+            $email = strtolower($fn).'.'.strtolower($ln).$empSeq.'@rindukopi.test';
+            $phone = '08'.rand(11, 29).sprintf('%07d', $empSeq * 1234 % 9999999);
 
             if (! $existing) {
                 $newUserId = DB::table('users')->insertGetId([
@@ -292,7 +312,7 @@ class PopulateApeironFullYearDataset extends Command
             ->keyBy('id')
             ->toArray();
 
-        $this->line("  ✓ Provisioned " . count($this->users) . " employees with synchronized sequences.");
+        $this->line('  ✓ Provisioned '.count($this->users).' employees with synchronized sequences.');
     }
 
     /**
@@ -306,7 +326,7 @@ class PopulateApeironFullYearDataset extends Command
             'Milk-Based Coffee', 'Artisan Tea & Tisane', 'Non-Coffee Beverages', 'Frappe & Blended',
             'Fresh Baked Pastry', 'Artisan Croissants', 'Toast & Sandwiches', 'Heavy Rice Bowls',
             'Pasta & Western Mains', 'Indonesian Comfort Food', 'Light Bites & Platters',
-            'Desserts & Sweet Treats', 'Packaged Coffee Beans', 'Merchandise & Gear'
+            'Desserts & Sweet Treats', 'Packaged Coffee Beans', 'Merchandise & Gear',
         ];
 
         foreach ($categoryNames as $idx => $cName) {
@@ -425,158 +445,158 @@ class PopulateApeironFullYearDataset extends Command
             ->toArray();
 
         // Products definition
-        $catIds = array_values(array_map(fn($c) => $c->id, $this->categories));
+        $catIds = array_values(array_map(fn ($c) => $c->id, $this->categories));
 
         $productsData = [
             // Cat 1: Espresso Bar
             ['cat' => 0, 'name' => 'Espresso Single Shot', 'price' => 22000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-040', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-040', 'qty' => 1]]],
             ['cat' => 0, 'name' => 'Espresso Double Shot', 'price' => 28000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 24], ['ing' => 'ING-9-040', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 24], ['ing' => 'ING-9-040', 'qty' => 1]]],
             ['cat' => 0, 'name' => 'Americano Hot', 'price' => 28000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-040', 'qty' => 1], ['ing' => 'ING-9-043', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-040', 'qty' => 1], ['ing' => 'ING-9-043', 'qty' => 1]]],
             ['cat' => 0, 'name' => 'Iced Americano', 'price' => 30000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-048', 'qty' => 150], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1], ['ing' => 'ING-9-044', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-048', 'qty' => 150], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1], ['ing' => 'ING-9-044', 'qty' => 1]]],
             ['cat' => 0, 'name' => 'Long Black Hot', 'price' => 30000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 20], ['ing' => 'ING-9-040', 'qty' => 1], ['ing' => 'ING-9-043', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 20], ['ing' => 'ING-9-040', 'qty' => 1], ['ing' => 'ING-9-043', 'qty' => 1]]],
             ['cat' => 0, 'name' => 'Piccolo Latte', 'price' => 32000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 100], ['ing' => 'ING-9-040', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 100], ['ing' => 'ING-9-040', 'qty' => 1]]],
 
             // Cat 2: Signature Coffee
             ['cat' => 1, 'name' => 'Kopi Rindu Aren Dingin', 'price' => 32000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 140], ['ing' => 'ING-9-011', 'qty' => 25], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1], ['ing' => 'ING-9-044', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 140], ['ing' => 'ING-9-011', 'qty' => 25], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1], ['ing' => 'ING-9-044', 'qty' => 1]]],
             ['cat' => 1, 'name' => 'Kopi Pandan Wangi Latte', 'price' => 35000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 140], ['ing' => 'ING-9-015', 'qty' => 25], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1], ['ing' => 'ING-9-044', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 140], ['ing' => 'ING-9-015', 'qty' => 25], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1], ['ing' => 'ING-9-044', 'qty' => 1]]],
             ['cat' => 1, 'name' => 'Salted Caramel Macchiato', 'price' => 38000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 150], ['ing' => 'ING-9-013', 'qty' => 25], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1], ['ing' => 'ING-9-044', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 150], ['ing' => 'ING-9-013', 'qty' => 25], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1], ['ing' => 'ING-9-044', 'qty' => 1]]],
             ['cat' => 1, 'name' => 'Butterscotch Cream Espresso', 'price' => 40000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 20], ['ing' => 'ING-9-006', 'qty' => 120], ['ing' => 'ING-9-010', 'qty' => 30], ['ing' => 'ING-9-013', 'qty' => 20], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 20], ['ing' => 'ING-9-006', 'qty' => 120], ['ing' => 'ING-9-010', 'qty' => 30], ['ing' => 'ING-9-013', 'qty' => 20], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
             ['cat' => 1, 'name' => 'Avocado Espresso Float', 'price' => 45000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 100], ['ing' => 'ING-9-018', 'qty' => 10], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-042', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 100], ['ing' => 'ING-9-018', 'qty' => 10], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-042', 'qty' => 1]]],
 
             // Cat 3: Cold Brew Series
             ['cat' => 2, 'name' => 'Classic Black Cold Brew', 'price' => 35000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-002', 'qty' => 25], ['ing' => 'ING-9-048', 'qty' => 100], ['ing' => 'ING-9-039', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-002', 'qty' => 25], ['ing' => 'ING-9-048', 'qty' => 100], ['ing' => 'ING-9-039', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
             ['cat' => 2, 'name' => 'White Velvet Cold Brew', 'price' => 38000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-002', 'qty' => 25], ['ing' => 'ING-9-006', 'qty' => 60], ['ing' => 'ING-9-011', 'qty' => 15], ['ing' => 'ING-9-039', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-002', 'qty' => 25], ['ing' => 'ING-9-006', 'qty' => 60], ['ing' => 'ING-9-011', 'qty' => 15], ['ing' => 'ING-9-039', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
             ['cat' => 2, 'name' => 'Sparkling Lemon Cold Brew', 'price' => 40000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-002', 'qty' => 20], ['ing' => 'ING-9-016', 'qty' => 20], ['ing' => 'ING-9-048', 'qty' => 150], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-002', 'qty' => 20], ['ing' => 'ING-9-016', 'qty' => 20], ['ing' => 'ING-9-048', 'qty' => 150], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
 
             // Cat 4: Manual Brew
             ['cat' => 3, 'name' => 'V60 Aceh Gayo Natural', 'price' => 42000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-002', 'qty' => 15], ['ing' => 'ING-9-040', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-002', 'qty' => 15], ['ing' => 'ING-9-040', 'qty' => 1]]],
             ['cat' => 3, 'name' => 'V60 Toraja Sapan Washed', 'price' => 42000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-003', 'qty' => 15], ['ing' => 'ING-9-040', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-003', 'qty' => 15], ['ing' => 'ING-9-040', 'qty' => 1]]],
             ['cat' => 3, 'name' => 'V60 Bali Kintamani Anaerobic', 'price' => 45000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-004', 'qty' => 15], ['ing' => 'ING-9-040', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-004', 'qty' => 15], ['ing' => 'ING-9-040', 'qty' => 1]]],
             ['cat' => 3, 'name' => 'V60 Ethiopia Yirgacheffe G1', 'price' => 55000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-005', 'qty' => 15], ['ing' => 'ING-9-040', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-005', 'qty' => 15], ['ing' => 'ING-9-040', 'qty' => 1]]],
             ['cat' => 3, 'name' => 'Japanese Iced Drip Coffee', 'price' => 45000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-004', 'qty' => 18], ['ing' => 'ING-9-048', 'qty' => 150], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-004', 'qty' => 18], ['ing' => 'ING-9-048', 'qty' => 150], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
 
             // Cat 5: Milk-Based Coffee
             ['cat' => 4, 'name' => 'Caffe Latte Hot', 'price' => 35000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 180], ['ing' => 'ING-9-040', 'qty' => 1], ['ing' => 'ING-9-043', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 180], ['ing' => 'ING-9-040', 'qty' => 1], ['ing' => 'ING-9-043', 'qty' => 1]]],
             ['cat' => 4, 'name' => 'Iced Caffe Latte', 'price' => 37000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 160], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1], ['ing' => 'ING-9-044', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 160], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1], ['ing' => 'ING-9-044', 'qty' => 1]]],
             ['cat' => 4, 'name' => 'Cappuccino Hot', 'price' => 35000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 150], ['ing' => 'ING-9-040', 'qty' => 1], ['ing' => 'ING-9-043', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 150], ['ing' => 'ING-9-040', 'qty' => 1], ['ing' => 'ING-9-043', 'qty' => 1]]],
             ['cat' => 4, 'name' => 'Iced Cappuccino', 'price' => 37000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 130], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 130], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
             ['cat' => 4, 'name' => 'Vanilla Bean Latte', 'price' => 40000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 160], ['ing' => 'ING-9-012', 'qty' => 20], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 160], ['ing' => 'ING-9-012', 'qty' => 20], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
             ['cat' => 4, 'name' => 'Hazelnut Praline Latte', 'price' => 40000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 160], ['ing' => 'ING-9-014', 'qty' => 20], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 160], ['ing' => 'ING-9-014', 'qty' => 20], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
             ['cat' => 4, 'name' => 'Caffe Mocha Belgian', 'price' => 42000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 150], ['ing' => 'ING-9-018', 'qty' => 25], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-006', 'qty' => 150], ['ing' => 'ING-9-018', 'qty' => 25], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
 
             // Cat 6: Tea & Tisane
             ['cat' => 5, 'name' => 'Earl Grey Supreme Tea', 'price' => 28000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-021', 'qty' => 5], ['ing' => 'ING-9-040', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-021', 'qty' => 5], ['ing' => 'ING-9-040', 'qty' => 1]]],
             ['cat' => 5, 'name' => 'Jasmine Green Blossom', 'price' => 28000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-022', 'qty' => 5], ['ing' => 'ING-9-040', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-022', 'qty' => 5], ['ing' => 'ING-9-040', 'qty' => 1]]],
             ['cat' => 5, 'name' => 'Chamomile Dream Tisane', 'price' => 30000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-023', 'qty' => 4], ['ing' => 'ING-9-040', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-023', 'qty' => 4], ['ing' => 'ING-9-040', 'qty' => 1]]],
             ['cat' => 5, 'name' => 'Iced Lychee Tea Breeze', 'price' => 34000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-022', 'qty' => 5], ['ing' => 'ING-9-016', 'qty' => 20], ['ing' => 'ING-9-048', 'qty' => 150], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-022', 'qty' => 5], ['ing' => 'ING-9-016', 'qty' => 20], ['ing' => 'ING-9-048', 'qty' => 150], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
             ['cat' => 5, 'name' => 'Iced Lemon Mint Tea', 'price' => 32000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-021', 'qty' => 5], ['ing' => 'ING-9-024', 'qty' => 2], ['ing' => 'ING-9-016', 'qty' => 20], ['ing' => 'ING-9-048', 'qty' => 150], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-021', 'qty' => 5], ['ing' => 'ING-9-024', 'qty' => 2], ['ing' => 'ING-9-016', 'qty' => 20], ['ing' => 'ING-9-048', 'qty' => 150], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
 
             // Cat 7: Non-Coffee
             ['cat' => 6, 'name' => 'Matcha Uji Latte Hot', 'price' => 38000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-017', 'qty' => 8], ['ing' => 'ING-9-006', 'qty' => 180], ['ing' => 'ING-9-016', 'qty' => 15], ['ing' => 'ING-9-040', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-017', 'qty' => 8], ['ing' => 'ING-9-006', 'qty' => 180], ['ing' => 'ING-9-016', 'qty' => 15], ['ing' => 'ING-9-040', 'qty' => 1]]],
             ['cat' => 6, 'name' => 'Iced Matcha Uji Latte', 'price' => 40000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-017', 'qty' => 8], ['ing' => 'ING-9-006', 'qty' => 160], ['ing' => 'ING-9-016', 'qty' => 15], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-017', 'qty' => 8], ['ing' => 'ING-9-006', 'qty' => 160], ['ing' => 'ING-9-016', 'qty' => 15], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
             ['cat' => 6, 'name' => 'Dark Chocolate Belgian Hot', 'price' => 36000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-018', 'qty' => 25], ['ing' => 'ING-9-006', 'qty' => 180], ['ing' => 'ING-9-040', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-018', 'qty' => 25], ['ing' => 'ING-9-006', 'qty' => 180], ['ing' => 'ING-9-040', 'qty' => 1]]],
             ['cat' => 6, 'name' => 'Iced Dark Chocolate Signature', 'price' => 38000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-018', 'qty' => 25], ['ing' => 'ING-9-006', 'qty' => 160], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-018', 'qty' => 25], ['ing' => 'ING-9-006', 'qty' => 160], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
             ['cat' => 6, 'name' => 'Red Velvet Velvetine Iced', 'price' => 38000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-019', 'qty' => 25], ['ing' => 'ING-9-006', 'qty' => 160], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-019', 'qty' => 25], ['ing' => 'ING-9-006', 'qty' => 160], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
             ['cat' => 6, 'name' => 'Taro Gourmet Latte Iced', 'price' => 36000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-006', 'qty' => 160], ['ing' => 'ING-9-020', 'qty' => 25], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-006', 'qty' => 160], ['ing' => 'ING-9-020', 'qty' => 25], ['ing' => 'ING-9-048', 'qty' => 120], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-041', 'qty' => 1]]],
 
             // Cat 8: Frappe & Blended
             ['cat' => 7, 'name' => 'Mocha Chip Frappe', 'price' => 45000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-018', 'qty' => 25], ['ing' => 'ING-9-006', 'qty' => 120], ['ing' => 'ING-9-010', 'qty' => 30], ['ing' => 'ING-9-048', 'qty' => 180], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-042', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-018', 'qty' => 25], ['ing' => 'ING-9-006', 'qty' => 120], ['ing' => 'ING-9-010', 'qty' => 30], ['ing' => 'ING-9-048', 'qty' => 180], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-042', 'qty' => 1]]],
             ['cat' => 7, 'name' => 'Caramel Crunch Frappe', 'price' => 45000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-013', 'qty' => 30], ['ing' => 'ING-9-006', 'qty' => 120], ['ing' => 'ING-9-010', 'qty' => 30], ['ing' => 'ING-9-048', 'qty' => 180], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-042', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 18], ['ing' => 'ING-9-013', 'qty' => 30], ['ing' => 'ING-9-006', 'qty' => 120], ['ing' => 'ING-9-010', 'qty' => 30], ['ing' => 'ING-9-048', 'qty' => 180], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-042', 'qty' => 1]]],
             ['cat' => 7, 'name' => 'Matcha Cream Frappe', 'price' => 48000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-017', 'qty' => 10], ['ing' => 'ING-9-006', 'qty' => 120], ['ing' => 'ING-9-010', 'qty' => 30], ['ing' => 'ING-9-048', 'qty' => 180], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-042', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-017', 'qty' => 10], ['ing' => 'ING-9-006', 'qty' => 120], ['ing' => 'ING-9-010', 'qty' => 30], ['ing' => 'ING-9-048', 'qty' => 180], ['ing' => 'ING-9-038', 'qty' => 1], ['ing' => 'ING-9-042', 'qty' => 1]]],
 
             // Cat 9 & 10: Pastries & Croissants
             ['cat' => 8, 'name' => 'Cinnamon Morning Roll', 'price' => 28000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-030', 'qty' => 30], ['ing' => 'ING-9-031', 'qty' => 60], ['ing' => 'ING-9-029', 'qty' => 1], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-030', 'qty' => 30], ['ing' => 'ING-9-031', 'qty' => 60], ['ing' => 'ING-9-029', 'qty' => 1], ['ing' => 'ING-9-045', 'qty' => 1]]],
             ['cat' => 8, 'name' => 'Fudgy Dark Choco Brownie', 'price' => 32000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-018', 'qty' => 35], ['ing' => 'ING-9-030', 'qty' => 30], ['ing' => 'ING-9-031', 'qty' => 40], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-018', 'qty' => 35], ['ing' => 'ING-9-030', 'qty' => 30], ['ing' => 'ING-9-031', 'qty' => 40], ['ing' => 'ING-9-045', 'qty' => 1]]],
             ['cat' => 9, 'name' => 'Butter Croissant Classic', 'price' => 26000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-030', 'qty' => 45], ['ing' => 'ING-9-031', 'qty' => 60], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-030', 'qty' => 45], ['ing' => 'ING-9-031', 'qty' => 60], ['ing' => 'ING-9-045', 'qty' => 1]]],
             ['cat' => 9, 'name' => 'Almond Cream Croissant', 'price' => 36000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-030', 'qty' => 50], ['ing' => 'ING-9-031', 'qty' => 60], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-030', 'qty' => 50], ['ing' => 'ING-9-031', 'qty' => 60], ['ing' => 'ING-9-045', 'qty' => 1]]],
             ['cat' => 9, 'name' => 'Pain au Chocolat', 'price' => 32000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-030', 'qty' => 45], ['ing' => 'ING-9-031', 'qty' => 60], ['ing' => 'ING-9-018', 'qty' => 20], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-030', 'qty' => 45], ['ing' => 'ING-9-031', 'qty' => 60], ['ing' => 'ING-9-018', 'qty' => 20], ['ing' => 'ING-9-045', 'qty' => 1]]],
 
             // Cat 11: Sandwiches & Toast
             ['cat' => 10, 'name' => 'Truffle Scrambled Egg Brioche', 'price' => 45000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-035', 'qty' => 2], ['ing' => 'ING-9-029', 'qty' => 2], ['ing' => 'ING-9-030', 'qty' => 20], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-035', 'qty' => 2], ['ing' => 'ING-9-029', 'qty' => 2], ['ing' => 'ING-9-030', 'qty' => 20], ['ing' => 'ING-9-045', 'qty' => 1]]],
             ['cat' => 10, 'name' => 'Smoked Beef & Cheddar Toast', 'price' => 48000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-035', 'qty' => 2], ['ing' => 'ING-9-026', 'qty' => 60], ['ing' => 'ING-9-033', 'qty' => 30], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-035', 'qty' => 2], ['ing' => 'ING-9-026', 'qty' => 60], ['ing' => 'ING-9-033', 'qty' => 30], ['ing' => 'ING-9-045', 'qty' => 1]]],
             ['cat' => 10, 'name' => 'Chicken Caesar Croissant Sandwich', 'price' => 52000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-030', 'qty' => 40], ['ing' => 'ING-9-031', 'qty' => 50], ['ing' => 'ING-9-027', 'qty' => 80], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-030', 'qty' => 40], ['ing' => 'ING-9-031', 'qty' => 50], ['ing' => 'ING-9-027', 'qty' => 80], ['ing' => 'ING-9-045', 'qty' => 1]]],
 
             // Cat 12: Rice Bowls
             ['cat' => 11, 'name' => 'Gyudon Beef Yakiniku Bowl', 'price' => 58000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-025', 'qty' => 180], ['ing' => 'ING-9-026', 'qty' => 90], ['ing' => 'ING-9-029', 'qty' => 1], ['ing' => 'ING-9-036', 'qty' => 10], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-025', 'qty' => 180], ['ing' => 'ING-9-026', 'qty' => 90], ['ing' => 'ING-9-029', 'qty' => 1], ['ing' => 'ING-9-036', 'qty' => 10], ['ing' => 'ING-9-045', 'qty' => 1]]],
             ['cat' => 11, 'name' => 'Crispy Chicken Sambal Matah', 'price' => 48000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-025', 'qty' => 180], ['ing' => 'ING-9-027', 'qty' => 100], ['ing' => 'ING-9-037', 'qty' => 20], ['ing' => 'ING-9-032', 'qty' => 20], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-025', 'qty' => 180], ['ing' => 'ING-9-027', 'qty' => 100], ['ing' => 'ING-9-037', 'qty' => 20], ['ing' => 'ING-9-032', 'qty' => 20], ['ing' => 'ING-9-045', 'qty' => 1]]],
             ['cat' => 11, 'name' => 'Chicken Teriyaki Rice Bowl', 'price' => 48000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-025', 'qty' => 180], ['ing' => 'ING-9-027', 'qty' => 100], ['ing' => 'ING-9-011', 'qty' => 15], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-025', 'qty' => 180], ['ing' => 'ING-9-027', 'qty' => 100], ['ing' => 'ING-9-011', 'qty' => 15], ['ing' => 'ING-9-045', 'qty' => 1]]],
 
             // Cat 13: Pasta
             ['cat' => 12, 'name' => 'Spaghetti Aglio Olio Beef Slice', 'price' => 52000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-028', 'qty' => 100], ['ing' => 'ING-9-026', 'qty' => 50], ['ing' => 'ING-9-036', 'qty' => 15], ['ing' => 'ING-9-037', 'qty' => 10], ['ing' => 'ING-9-032', 'qty' => 20], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-028', 'qty' => 100], ['ing' => 'ING-9-026', 'qty' => 50], ['ing' => 'ING-9-036', 'qty' => 15], ['ing' => 'ING-9-037', 'qty' => 10], ['ing' => 'ING-9-032', 'qty' => 20], ['ing' => 'ING-9-045', 'qty' => 1]]],
             ['cat' => 12, 'name' => 'Creamy Fettuccine Carbonara', 'price' => 55000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-028', 'qty' => 100], ['ing' => 'ING-9-010', 'qty' => 50], ['ing' => 'ING-9-029', 'qty' => 1], ['ing' => 'ING-9-033', 'qty' => 20], ['ing' => 'ING-9-026', 'qty' => 40], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-028', 'qty' => 100], ['ing' => 'ING-9-010', 'qty' => 50], ['ing' => 'ING-9-029', 'qty' => 1], ['ing' => 'ING-9-033', 'qty' => 20], ['ing' => 'ING-9-026', 'qty' => 40], ['ing' => 'ING-9-045', 'qty' => 1]]],
 
             // Cat 14: Indonesian Comfort
             ['cat' => 13, 'name' => 'Nasi Goreng Rindu Spesial', 'price' => 46000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-025', 'qty' => 200], ['ing' => 'ING-9-027', 'qty' => 50], ['ing' => 'ING-9-029', 'qty' => 1], ['ing' => 'ING-9-036', 'qty' => 10], ['ing' => 'ING-9-037', 'qty' => 10], ['ing' => 'ING-9-032', 'qty' => 25], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-025', 'qty' => 200], ['ing' => 'ING-9-027', 'qty' => 50], ['ing' => 'ING-9-029', 'qty' => 1], ['ing' => 'ING-9-036', 'qty' => 10], ['ing' => 'ING-9-037', 'qty' => 10], ['ing' => 'ING-9-032', 'qty' => 25], ['ing' => 'ING-9-045', 'qty' => 1]]],
             ['cat' => 13, 'name' => 'Mie Goreng Dok-dok Jawa', 'price' => 42000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-028', 'qty' => 100], ['ing' => 'ING-9-029', 'qty' => 1], ['ing' => 'ING-9-027', 'qty' => 40], ['ing' => 'ING-9-037', 'qty' => 10], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-028', 'qty' => 100], ['ing' => 'ING-9-029', 'qty' => 1], ['ing' => 'ING-9-027', 'qty' => 40], ['ing' => 'ING-9-037', 'qty' => 10], ['ing' => 'ING-9-045', 'qty' => 1]]],
 
             // Cat 15: Light Bites
             ['cat' => 14, 'name' => 'Truffle Fries with Aioli', 'price' => 35000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-032', 'qty' => 40], ['ing' => 'ING-9-033', 'qty' => 20], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-032', 'qty' => 40], ['ing' => 'ING-9-033', 'qty' => 20], ['ing' => 'ING-9-045', 'qty' => 1]]],
             ['cat' => 14, 'name' => 'Crispy Chicken Wings (6 pcs)', 'price' => 42000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-027', 'qty' => 150], ['ing' => 'ING-9-031', 'qty' => 30], ['ing' => 'ING-9-032', 'qty' => 50], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-027', 'qty' => 150], ['ing' => 'ING-9-031', 'qty' => 30], ['ing' => 'ING-9-032', 'qty' => 50], ['ing' => 'ING-9-045', 'qty' => 1]]],
             ['cat' => 14, 'name' => 'Cireng Krispi Bumbu Rujak', 'price' => 28000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-031', 'qty' => 100], ['ing' => 'ING-9-032', 'qty' => 40], ['ing' => 'ING-9-011', 'qty' => 30], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-031', 'qty' => 100], ['ing' => 'ING-9-032', 'qty' => 40], ['ing' => 'ING-9-011', 'qty' => 30], ['ing' => 'ING-9-045', 'qty' => 1]]],
 
             // Cat 16: Desserts
             ['cat' => 15, 'name' => 'Classic Tiramisu Cup', 'price' => 38000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-001', 'qty' => 10], ['ing' => 'ING-9-010', 'qty' => 40], ['ing' => 'ING-9-018', 'qty' => 10], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-001', 'qty' => 10], ['ing' => 'ING-9-010', 'qty' => 40], ['ing' => 'ING-9-018', 'qty' => 10], ['ing' => 'ING-9-045', 'qty' => 1]]],
             ['cat' => 15, 'name' => 'Burnt Basque Cheesecake', 'price' => 42000, 'has_bom' => true,
-             'bom' => [['ing' => 'ING-9-010', 'qty' => 50], ['ing' => 'ING-9-029', 'qty' => 1], ['ing' => 'ING-9-045', 'qty' => 1]]],
+                'bom' => [['ing' => 'ING-9-010', 'qty' => 50], ['ing' => 'ING-9-029', 'qty' => 1], ['ing' => 'ING-9-045', 'qty' => 1]]],
 
             // Cat 17: Packaged Coffee Beans (NON-BOM, retail stock)
             ['cat' => 16, 'name' => 'House Blend Espresso Beans 250g', 'price' => 95000, 'has_bom' => false, 'stock' => 800],
@@ -662,7 +682,7 @@ class PopulateApeironFullYearDataset extends Command
             ->groupBy('product_id')
             ->toArray();
 
-        $this->line("  ✓ Created " . count($this->products) . " products (" . count($this->productIngredients) . " with BOM recipes).");
+        $this->line('  ✓ Created '.count($this->products).' products ('.count($this->productIngredients).' with BOM recipes).');
     }
 
     /**
@@ -735,7 +755,9 @@ class PopulateApeironFullYearDataset extends Command
 
         foreach ($modMap as $gName => $mods) {
             $gId = $this->modifierGroups[$gName]->id ?? null;
-            if (! $gId) continue;
+            if (! $gId) {
+                continue;
+            }
 
             foreach ($mods as $m) {
                 $existing = DB::table('modifiers')
@@ -900,7 +922,7 @@ class PopulateApeironFullYearDataset extends Command
             ->get()
             ->toArray();
 
-        $this->line("  ✓ Configured modifiers, tables (" . count($this->tables, COUNT_RECURSIVE) . "), and promotional discounts.");
+        $this->line('  ✓ Configured modifiers, tables ('.count($this->tables, COUNT_RECURSIVE).'), and promotional discounts.');
     }
 
     /**
@@ -949,7 +971,7 @@ class PopulateApeironFullYearDataset extends Command
         if ($existingCustCount < 1000) {
             $custBatch = [];
             $firstNames = ['Alya', 'Brandon', 'Clarissa', 'David', 'Elvira', 'Felix', 'Grace', 'Haikal', 'Irene', 'Jonathan',
-                           'Kania', 'Leonardo', 'Marsha', 'Nathan', 'Olivia', 'Patrick', 'Qonita', 'Raditya', 'Sabrina', 'Tristan'];
+                'Kania', 'Leonardo', 'Marsha', 'Nathan', 'Olivia', 'Patrick', 'Qonita', 'Raditya', 'Sabrina', 'Tristan'];
             $lastNames = ['Kusuma', 'Siregar', 'Wibisono', 'Tanjung', 'Lazuardi', 'Halim', 'Subagyo', 'Natawijaya', 'Pradana'];
 
             for ($c = $existingCustCount + 1; $c <= 1000; $c++) {
@@ -957,8 +979,8 @@ class PopulateApeironFullYearDataset extends Command
                 $fn = $firstNames[$c % count($firstNames)];
                 $ln = $lastNames[($c * 3) % count($lastNames)];
                 $name = "{$fn} {$ln}";
-                $phone = '08' . rand(12, 98) . sprintf('%08d', ($c * 7919) % 99999999);
-                $email = strtolower($fn) . '.' . strtolower($ln) . $c . '@gmail.com';
+                $phone = '08'.rand(12, 98).sprintf('%08d', ($c * 7919) % 99999999);
+                $email = strtolower($fn).'.'.strtolower($ln).$c.'@gmail.com';
                 $joinDate = Carbon::parse('2025-10-14')->addDays($c % 300)->toDateString();
 
                 $custBatch[] = [
@@ -967,11 +989,11 @@ class PopulateApeironFullYearDataset extends Command
                     'name' => $name,
                     'phone' => $phone,
                     'email' => $email,
-                    'date_of_birth' => '199' . rand(0, 9) . '-' . sprintf('%02d', rand(1, 12)) . '-' . sprintf('%02d', rand(1, 28)),
+                    'date_of_birth' => '199'.rand(0, 9).'-'.sprintf('%02d', rand(1, 12)).'-'.sprintf('%02d', rand(1, 28)),
                     'join_date' => $joinDate,
                     'is_active' => 1,
-                    'created_at' => $joinDate . ' 10:00:00',
-                    'updated_at' => $joinDate . ' 10:00:00',
+                    'created_at' => $joinDate.' 10:00:00',
+                    'updated_at' => $joinDate.' 10:00:00',
                 ];
 
                 if (count($custBatch) >= 500) {
@@ -991,7 +1013,7 @@ class PopulateApeironFullYearDataset extends Command
             ->get()
             ->toArray();
 
-        $this->line("  ✓ Set up " . count($this->customers) . " registered loyalty customers.");
+        $this->line('  ✓ Set up '.count($this->customers).' registered loyalty customers.');
     }
 
     /**
@@ -1011,6 +1033,7 @@ class PopulateApeironFullYearDataset extends Command
                 $shiftsLookup["{$dateKey}:{$s->store_id}:{$shiftNum}"] = $s;
             }
             $this->line("  ✓ Loaded {$existingShiftCount} existing shifts.");
+
             return $shiftsLookup;
         }
 
@@ -1115,10 +1138,10 @@ class PopulateApeironFullYearDataset extends Command
                 'category' => 'restock_change',
                 'amount' => 100000,
                 'reason' => 'Pecahan uang kembalian pagi dari kas utama',
-                'receipt_reference' => 'CDM-' . $s->id . '-IN',
+                'receipt_reference' => 'CDM-'.$s->id.'-IN',
                 'created_by' => $s->user_id,
                 'approved_by' => 16,
-                'idempotency_key' => 'cdm:in:' . $s->id,
+                'idempotency_key' => 'cdm:in:'.$s->id,
                 'created_at' => Carbon::parse($s->opened_at)->addMinutes(10)->toDateTimeString(),
                 'updated_at' => Carbon::parse($s->opened_at)->addMinutes(10)->toDateTimeString(),
             ];
@@ -1132,10 +1155,10 @@ class PopulateApeironFullYearDataset extends Command
                     'category' => 'petty_expense',
                     'amount' => 35000,
                     'reason' => 'Beli es batu tambahan darurat & sabun cuci',
-                    'receipt_reference' => 'CDM-' . $s->id . '-OUT',
+                    'receipt_reference' => 'CDM-'.$s->id.'-OUT',
                     'created_by' => $s->user_id,
                     'approved_by' => 16,
-                    'idempotency_key' => 'cdm:out:' . $s->id,
+                    'idempotency_key' => 'cdm:out:'.$s->id,
                     'created_at' => Carbon::parse($s->opened_at)->addHours(3)->toDateTimeString(),
                     'updated_at' => Carbon::parse($s->opened_at)->addHours(3)->toDateTimeString(),
                 ];
@@ -1151,7 +1174,8 @@ class PopulateApeironFullYearDataset extends Command
             DB::table('cash_drawer_movements')->insert($cdmBatch);
         }
 
-        $this->line("  ✓ Seeded " . count($shifts) . " shifts with cash drawer movements.");
+        $this->line('  ✓ Seeded '.count($shifts).' shifts with cash drawer movements.');
+
         return $shiftsLookup;
     }
 
@@ -1163,6 +1187,7 @@ class PopulateApeironFullYearDataset extends Command
         $existingOrderCount = DB::table('orders')->where('tenant_id', $this->tenantId)->count();
         if ($existingOrderCount >= $this->targetOrders) {
             $this->warn("Already found {$existingOrderCount} orders. Skipping generation.");
+
             return ['ingredient_usage' => [], 'product_usage' => [], 'customer_orders' => []];
         }
 
@@ -1174,14 +1199,14 @@ class PopulateApeironFullYearDataset extends Command
         $holidays = array_flip([
             '2025-12-25', '2026-01-01', '2026-01-29', '2026-03-14', '2026-03-28',
             '2026-03-29', '2026-03-30', '2026-03-31', '2026-05-01', '2026-05-13',
-            '2026-06-01', '2026-08-17', '2026-09-17'
+            '2026-06-01', '2026-08-17', '2026-09-17',
         ]);
 
         $hourWeights = [
             7 => 5, 8 => 10, 9 => 8, 10 => 6,
             11 => 10, 12 => 18, 13 => 15, 14 => 8,
             15 => 6, 16 => 5, 17 => 8,
-            18 => 12, 19 => 18, 20 => 14, 21 => 8, 22 => 3
+            18 => 12, 19 => 18, 20 => 14, 21 => 8, 22 => 3,
         ];
 
         $productList = array_values($this->products);
@@ -1217,7 +1242,7 @@ class PopulateApeironFullYearDataset extends Command
                     $hour = $this->weightedRandom($hourWeights);
                     $minute = rand(0, 59);
                     $second = rand(0, 59);
-                    $orderTime = "{$dateStr} " . sprintf('%02d:%02d:%02d', $hour, $minute, $second);
+                    $orderTime = "{$dateStr} ".sprintf('%02d:%02d:%02d', $hour, $minute, $second);
 
                     $shiftNum = $hour < 15 ? 1 : 2;
                     $shiftKey = "{$dateStr}:{$sStore->id}:{$shiftNum}";
@@ -1324,7 +1349,9 @@ class PopulateApeironFullYearDataset extends Command
                     $orderChange = 0;
                     if ($paymentMethod === 'cash' && ! $isSplit) {
                         $cashReceived = (int) (ceil($orderAmount / 10000) * 10000);
-                        if ($cashReceived < $orderAmount) $cashReceived = $orderAmount;
+                        if ($cashReceived < $orderAmount) {
+                            $cashReceived = $orderAmount;
+                        }
                         $orderChange = $cashReceived - $orderAmount;
                         if ($shiftId) {
                             $shiftCashSales[$shiftId] = ($shiftCashSales[$shiftId] ?? 0) + $orderAmount;
@@ -1400,7 +1427,7 @@ class PopulateApeironFullYearDataset extends Command
                                 'status' => 'captured',
                                 'captured_at' => $orderTime,
                                 'processed_by' => $userId,
-                                'idempotency_key' => 'pay:' . $orderCode . ':0',
+                                'idempotency_key' => 'pay:'.$orderCode.':0',
                                 'created_at' => $orderTime,
                                 'updated_at' => null,
                             ],
@@ -1413,7 +1440,7 @@ class PopulateApeironFullYearDataset extends Command
                                 'status' => 'captured',
                                 'captured_at' => $orderTime,
                                 'processed_by' => $userId,
-                                'idempotency_key' => 'pay:' . $orderCode . ':1',
+                                'idempotency_key' => 'pay:'.$orderCode.':1',
                                 'created_at' => $orderTime,
                                 'updated_at' => null,
                             ],
@@ -1432,7 +1459,7 @@ class PopulateApeironFullYearDataset extends Command
                             'status' => 'captured',
                             'captured_at' => $orderTime,
                             'processed_by' => $userId,
-                            'idempotency_key' => 'pay:' . $orderCode . ':0',
+                            'idempotency_key' => 'pay:'.$orderCode.':0',
                             'created_at' => $orderTime,
                             'updated_at' => null,
                         ]);
@@ -1462,7 +1489,7 @@ class PopulateApeironFullYearDataset extends Command
         $this->info('');
 
         // Reconcile shifts
-        $this->line("  ✓ Updating shift closing balances with accurate cash totals...");
+        $this->line('  ✓ Updating shift closing balances with accurate cash totals...');
         foreach ($shiftsLookup as $s) {
             $cashSales = $shiftCashSales[$s->id] ?? 0;
             $cashIn = 100000;
@@ -1669,7 +1696,7 @@ class PopulateApeironFullYearDataset extends Command
                 ]);
         }
 
-        $this->line("  ✓ Recorded stock ledger & balances with zero drift.");
+        $this->line('  ✓ Recorded stock ledger & balances with zero drift.');
     }
 
     /**
@@ -1679,7 +1706,7 @@ class PopulateApeironFullYearDataset extends Command
     {
         $custBalance = [];
 
-        usort($customerOrders, fn($a, $b) => strcmp($a['date'], $b['date']));
+        usort($customerOrders, fn ($a, $b) => strcmp($a['date'], $b['date']));
 
         $bar = $this->output->createProgressBar(count($customerOrders));
         $bar->setFormat(' Loyalty Ledger: %current%/%max% [%bar%] %percent:3s%%');
@@ -1687,7 +1714,9 @@ class PopulateApeironFullYearDataset extends Command
         foreach ($customerOrders as $co) {
             $cId = $co['customer_id'];
             $earned = (int) floor($co['subtotal'] / 1000);
-            if ($earned <= 0) $earned = 1;
+            if ($earned <= 0) {
+                $earned = 1;
+            }
 
             $current = $custBalance[$cId] ?? 0;
             $newBal = $current + $earned;
@@ -1700,7 +1729,7 @@ class PopulateApeironFullYearDataset extends Command
                 'type' => 'earn',
                 'points' => $earned,
                 'balance_after' => $newBal,
-                'reference' => 'Poin belanja order ' . $co['order_code'],
+                'reference' => 'Poin belanja order '.$co['order_code'],
                 'entry_hash' => '',
                 'created_by' => null,
                 'created_at' => $co['date'],
@@ -1732,7 +1761,7 @@ class PopulateApeironFullYearDataset extends Command
             }
         }
 
-        $this->line("  ✓ Chained loyalty ledger & synchronized " . count($accounts) . " loyalty accounts.");
+        $this->line('  ✓ Chained loyalty ledger & synchronized '.count($accounts).' loyalty accounts.');
     }
 
     /**
@@ -1743,7 +1772,7 @@ class PopulateApeironFullYearDataset extends Command
         $this->info('  Running database validation suite...');
         $this->call('pos:verify-database', ['--allow-skipped' => true]);
 
-        $this->info('  Running inventory reconciliation for Tenant ' . $this->tenantId . '...');
+        $this->info('  Running inventory reconciliation for Tenant '.$this->tenantId.'...');
         $this->call('inventory:reconcile-balances', ['--tenant' => $this->tenantId]);
     }
 
@@ -1758,6 +1787,7 @@ class PopulateApeironFullYearDataset extends Command
                 return $val;
             }
         }
+
         return array_key_first($weights);
     }
 }

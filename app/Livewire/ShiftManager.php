@@ -6,10 +6,8 @@ namespace App\Livewire;
 // constraint DB (shifts_one_open_per_user_unique) sebagai sinyal otoritatif
 // "shift sudah open", bukan lagi sekadar pengecekan aplikasi | 2026-09-21
 use App\Livewire\Concerns\RequiresTenantContext;
-use App\Models\CashDrawerMovement;
-use App\Policies\ShiftPolicy;
-use App\Models\Payment;
 use App\Models\Shift;
+use App\Services\ShiftService;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -61,12 +59,13 @@ class ShiftManager extends Component
     public function openShift()
     {
         // [D2-BE-004] Otorisasi policy buka shift.
-        Gate::authorize('open', \App\Models\Shift::class);
+        Gate::authorize('open', Shift::class);
 
         $user = auth()->user();
         if ($user && $user->pin_hash === null) {
             $this->dispatch('toast', message: 'Kasir wajib menyetel PIN Kasir sebelum dapat membuka shift.', type: 'error');
             $this->dispatch('require-pin-setup');
+
             return;
         }
 
@@ -76,17 +75,19 @@ class ShiftManager extends Component
 
         try {
             // [D2-BE-008] Logika domain didelegasikan ke ShiftService (thin caller).
-            $opened = app(\App\Services\ShiftService::class)
+            $opened = app(ShiftService::class)
                 ->openShift((int) auth()->id(), (int) $this->opening_balance);
         } catch (\DomainException $e) {
             $this->dispatch('toast', message: $e->getMessage(), type: 'error');
             $this->dispatch('require-pin-setup');
+
             return;
         }
 
         if ($opened === null) {
             $this->loadActiveShift();
             $this->dispatch('toast', message: 'Anda sudah memiliki shift yang sedang aktif.', type: 'info');
+
             return;
         }
         $this->loadActiveShift();
@@ -97,6 +98,7 @@ class ShiftManager extends Component
     {
         if (! preg_match('/^\d{4,6}$/', $pin)) {
             $this->dispatch('toast', message: 'PIN Kasir harus berupa 4-6 digit angka.', type: 'error');
+
             return;
         }
 
@@ -129,7 +131,7 @@ class ShiftManager extends Component
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        $shiftService = app(\App\Services\ShiftService::class);
+        $shiftService = app(ShiftService::class);
         $closedShift = $shiftService->closeShift((int) auth()->id(), (int) $this->closing_balance, $this->notes);
 
         $this->loadActiveShift();
@@ -153,7 +155,7 @@ class ShiftManager extends Component
         $expectedCash = 0;
 
         if ($this->activeShift) {
-            $summary = app(\App\Services\ShiftService::class)->getCashSummary($this->activeShift);
+            $summary = app(ShiftService::class)->getCashSummary($this->activeShift);
             $cashSales = $summary['cash_sales'];
             $expectedCash = $summary['expected_cash'];
         }

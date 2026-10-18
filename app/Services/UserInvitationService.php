@@ -9,18 +9,18 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Models\UserInvitation;
 use App\Models\UserInvitationStore;
+use App\Models\UserOAuthIdentity;
 use App\Support\EmailNormalizer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class UserInvitationService
 {
     /**
      * Menerbitkan undangan karyawan baru dengan Privacy-Preserving Cross-Tenant Guard [4B].
      *
-     * @param array{name: string, email: string, role_id: int, store_ids: array<int>} $data
+     * @param  array{name: string, email: string, role_id: int, store_ids: array<int>}  $data
      */
     public function issueInvitation(User $inviter, array $data): UserInvitation
     {
@@ -29,7 +29,7 @@ class UserInvitationService
         $email = trim($data['email']);
         $emailNormalized = EmailNormalizer::normalize($email);
         $roleId = (int) $data['role_id'];
-        $storeIds = array_map('intval', $data['store_ids'] ?? []);
+        $storeIds = array_map('intval', $data['store_ids']);
 
         // 1. Validasi Keberadaan dan Kepemilikan Role (bukan Owner)
         $role = Role::withoutTenantScope()
@@ -157,13 +157,15 @@ class UserInvitationService
 
             $invitationUrl = route('invitations.accept', ['token' => $plaintextToken]);
 
+            $tenantName = $inviter->tenant ? $inviter->tenant->name : 'Apeiron POS';
+
             EmailOutbox::create([
                 'tenant_id' => $tenantId,
                 'user_id' => null,
                 'recipient_email' => $email,
-                'subject' => 'Undangan Bergabung ke ' . ($inviter->tenant?->name ?? 'Apeiron POS'),
+                'subject' => 'Undangan Bergabung ke '.$tenantName,
                 'event_type' => 'employee_invitation',
-                'body_text' => "Halo {$name},\n\nAnda diundang untuk bergabung ke " . ($inviter->tenant?->name ?? 'Apeiron POS') . ".\nSilakan klik tautan berikut untuk mengaktifkan akun Anda:\n{$invitationUrl}\n\nTautan berlaku hingga: " . $invitation->expires_at->toIso8601String(),
+                'body_text' => "Halo {$name},\n\nAnda diundang untuk bergabung ke {$tenantName}.\nSilakan klik tautan berikut untuk mengaktifkan akun Anda:\n{$invitationUrl}\n\nTautan berlaku hingga: ".$invitation->expires_at->toIso8601String(),
                 'status' => 'pending',
             ]);
 
@@ -221,7 +223,7 @@ class UserInvitationService
      * Menerima dan mengaktifkan akun staf dari token undangan.
      * Mengabaikan seluruh parameter privilege dari klien (Anti-Tampering).
      *
-     * @param array{password: string, password_confirmation?: string} $data
+     * @param  array{password: string, password_confirmation?: string}  $data
      */
     public function acceptInvitation(string $plaintextToken, array $data): User
     {
@@ -276,7 +278,7 @@ class UserInvitationService
             }
 
             // Anti-tampering: Hanya gunakan data dari $invitation di database, abaikan input klien selain password!
-            $password = $data['password'] ?? '';
+            $password = (string) $data['password'];
             if (strlen($password) < 8) {
                 throw ValidationException::withMessages([
                     'password' => 'Kata sandi minimal 8 karakter.',
@@ -289,7 +291,7 @@ class UserInvitationService
 
             $employeeId = EmployeeIdGenerator::next($invitation->tenant_id);
 
-            $user = new User();
+            $user = new User;
             $user->tenant_id = $invitation->tenant_id;
             $user->role_id = $invitation->role_id;
             $user->name = $invitation->name;
@@ -366,7 +368,7 @@ class UserInvitationService
             Tenant::where('id', $invitation->tenant_id)->lockForUpdate()->first();
             $employeeId = EmployeeIdGenerator::next($invitation->tenant_id);
 
-            $user = new User();
+            $user = new User;
             $user->tenant_id = $invitation->tenant_id;
             $user->role_id = $invitation->role_id;
             $user->name = ! empty($claims['name']) ? $claims['name'] : $invitation->name;
@@ -394,7 +396,7 @@ class UserInvitationService
             }
 
             // Tautkan identitas OAuth
-            \App\Models\UserOAuthIdentity::create([
+            UserOAuthIdentity::create([
                 'tenant_id' => $invitation->tenant_id,
                 'user_id' => $user->id,
                 'provider' => $provider,

@@ -9,7 +9,6 @@ use App\Models\Setting;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\Context\TenantContext;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -111,7 +110,7 @@ class TenantOnboardingService
                 ->first();
 
             if ($store === null) {
-                $store = new Store();
+                $store = new Store;
                 $store->tenant_id = $tenant->id;
                 $store->is_initial = true;
             }

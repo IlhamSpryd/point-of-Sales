@@ -2,11 +2,14 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Models\Store;
 use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -66,9 +69,9 @@ class LoginRequest extends FormRequest
                 $isLocked = $userCandidate->recordFailedLogin(5, 15);
                 if ($isLocked) {
                     try {
-                        \Illuminate\Support\Facades\DB::table('activity_logs')->insert([
+                        DB::table('activity_logs')->insert([
                             'tenant_id' => $userCandidate->tenant_id,
-                            'store_id' => \App\Models\Store::withoutTenantScope()->where('tenant_id', $userCandidate->tenant_id)->orderBy('id')->value('id') ?? 1,
+                            'store_id' => Store::withoutTenantScope()->where('tenant_id', $userCandidate->tenant_id)->orderBy('id')->value('id') ?? 1,
                             'user_id' => $userCandidate->id,
                             'action' => 'user.auth_locked_out',
                             'subject_type' => User::class,
@@ -78,7 +81,7 @@ class LoginRequest extends FormRequest
                             'updated_at' => now(),
                         ]);
                     } catch (\Throwable $e) {
-                        \Illuminate\Support\Facades\Log::warning('Audit user.auth_locked_out failed: '.$e->getMessage());
+                        Log::warning('Audit user.auth_locked_out failed: '.$e->getMessage());
                     }
 
                     event(new Lockout($this));

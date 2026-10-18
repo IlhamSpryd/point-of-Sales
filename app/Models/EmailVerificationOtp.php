@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -16,14 +17,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $action
  * @property int $attempts
  * @property int $max_attempts
- * @property \Illuminate\Support\Carbon $expires_at
- * @property \Illuminate\Support\Carbon|null $consumed_at
- * @property \Illuminate\Support\Carbon|null $superseded_at
- * @property \Illuminate\Support\Carbon|null $locked_at
+ * @property Carbon $expires_at
+ * @property Carbon|null $consumed_at
+ * @property Carbon|null $superseded_at
+ * @property Carbon|null $locked_at
  * @property string|null $ip_address
  * @property string|null $user_agent
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class EmailVerificationOtp extends Model
 {

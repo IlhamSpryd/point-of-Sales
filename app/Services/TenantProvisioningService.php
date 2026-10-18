@@ -184,18 +184,18 @@ class TenantProvisioningService
             'join_date' => now()->toDateString(),
         ]);
 
-            return $user;
-        }
+        return $user;
+    }
 
-        private function provisionBaselineSettings(Tenant $tenant, ?Store $store): void
-        {
-            $baseline = [
-                ['key' => 'business_name', 'value' => $tenant->name, 'type' => 'string'],
-                ['key' => 'default_sales_channel', 'value' => 'DINE_IN', 'type' => 'string'],
-                ['key' => 'tax_enabled', 'value' => 'false', 'type' => 'boolean'],
-            ];
+    private function provisionBaselineSettings(Tenant $tenant, ?Store $store): void
+    {
+        $baseline = [
+            ['key' => 'business_name', 'value' => $tenant->name, 'type' => 'string'],
+            ['key' => 'default_sales_channel', 'value' => 'DINE_IN', 'type' => 'string'],
+            ['key' => 'tax_enabled', 'value' => 'false', 'type' => 'boolean'],
+        ];
 
-            foreach ($baseline as $setting) {
+        foreach ($baseline as $setting) {
             Setting::query()->firstOrCreate(
                 ['tenant_id' => $tenant->id, 'key' => $setting['key']],
                 ['value' => $setting['value'], 'type' => $setting['type']],

@@ -36,6 +36,7 @@ class StoreCheckoutRequest extends FormRequest
             $tableId = session('current_table_id');
             if (! $tableId) {
                 $validator->errors()->add('table', 'Sesi meja tidak ditemukan, silakan scan ulang QR Code.');
+
                 return;
             }
 

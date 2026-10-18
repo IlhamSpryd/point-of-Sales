@@ -26,17 +26,17 @@ class OwnershipTransferService
      * 4. Tepat 1 user aktif dengan role kanonikal ROL-OWNER per tenant.
      * 5. Atomicity & Fail-Closed: seluruh mutasi dan audit trail berada dalam transaksi yang sama.
      *
-     * @param Tenant $tenant Target tenant yang kepemilikannya akan ditransfer
-     * @param User $actor Aktor yang mengeksekusi transfer (Legal Owner aktif atau Super-Admin terotorisasi)
-     * @param User $newOwner Kandidat pemilik baru (harus aktif, tidak terhapus, terikat pada tenant)
-     * @param string|null $reason Alasan transfer untuk audit trail
-     * @param array $options Opsi tambahan:
-     *                       - 'store_id' (int|null): Store eksplisit untuk atribusi audit log jika diperlukan
-     *                       - 'demote_to_role_code' (string): Kode role untuk demosi old owner (default: ROL-MANAGER)
-     *                       - 'reconcile_legacy_owners' (bool): Jika true, mendemosi anomali user lama ber-role ROL-OWNER
-     *                       - 'idempotent' (bool): Jika true, transfer ke owner yang sama dianggap no-op sukses
-     *                       - 'simulate_audit_failure' (bool): Untuk uji integritas rollback audit trail
-     * @return void
+     * @param  Tenant  $tenant  Target tenant yang kepemilikannya akan ditransfer
+     * @param  User  $actor  Aktor yang mengeksekusi transfer (Legal Owner aktif atau Super-Admin terotorisasi)
+     * @param  User  $newOwner  Kandidat pemilik baru (harus aktif, tidak terhapus, terikat pada tenant)
+     * @param  string|null  $reason  Alasan transfer untuk audit trail
+     * @param  array  $options  Opsi tambahan:
+     *                          - 'store_id' (int|null): Store eksplisit untuk atribusi audit log jika diperlukan
+     *                          - 'demote_to_role_code' (string): Kode role untuk demosi old owner (default: ROL-MANAGER)
+     *                          - 'reconcile_legacy_owners' (bool): Jika true, mendemosi anomali user lama ber-role ROL-OWNER
+     *                          - 'idempotent' (bool): Jika true, transfer ke owner yang sama dianggap no-op sukses
+     *                          - 'simulate_audit_failure' (bool): Untuk uji integritas rollback audit trail
+     *
      * @throws OwnershipTransferException
      */
     public function transferOwnership(
@@ -117,7 +117,7 @@ class OwnershipTransferService
                     return; // Idempotent no-op
                 }
                 throw new OwnershipTransferException(
-                    "Kandidat sudah merupakan legal owner aktif untuk tenant ini."
+                    'Kandidat sudah merupakan legal owner aktif untuk tenant ini.'
                 );
             }
 
@@ -254,9 +254,6 @@ class OwnershipTransferService
      * Memvalidasi otorisasi aktor berdasarkan state aktual database yang terkunci.
      * Menggunakan keadaan database terpercaya (fresh & locked), bukan in-memory stale.
      *
-     * @param Tenant $lockedTenant
-     * @param User $lockedActor
-     * @return void
      * @throws OwnershipTransferException
      */
     private function validateActorAuthorization(Tenant $lockedTenant, User $lockedActor): void
@@ -336,14 +333,6 @@ class OwnershipTransferService
      * Mencatat entri audit trail ke activity_logs yang terlindungi trigger.
      * Mematuhi skema fisik store_id NOT NULL tanpa mengasumsikan representasi semantik sewenang-wenang.
      *
-     * @param Tenant $tenant
-     * @param User $actor
-     * @param User $newOwner
-     * @param int|null $oldOwnerId
-     * @param string|null $reason
-     * @param array $roleTransitions
-     * @param array $options
-     * @return void
      * @throws OwnershipTransferException
      */
     private function recordAuditTrail(
@@ -412,7 +401,7 @@ class OwnershipTransferService
             'action' => 'tenant.ownership_transferred',
             'subject_type' => Tenant::class,
             'subject_id' => $tenant->id,
-            'description' => "Legal ownership tenant {$tenant->id} ditransfer dari " . ($oldOwnerId !== null ? "User {$oldOwnerId}" : 'NONE') . " ke User {$newOwner->id}.",
+            'description' => "Legal ownership tenant {$tenant->id} ditransfer dari ".($oldOwnerId !== null ? "User {$oldOwnerId}" : 'NONE')." ke User {$newOwner->id}.",
             'old_values' => json_encode(['owner_user_id' => $oldOwnerId]),
             'new_values' => json_encode(['owner_user_id' => $newOwner->id]),
             'metadata' => json_encode([

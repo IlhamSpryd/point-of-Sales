@@ -3,7 +3,6 @@
 namespace App\Http\Requests;
 
 use App\Models\Role;
-use App\Models\Store;
 use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -18,7 +17,8 @@ class StoreUserInvitationRequest extends FormRequest
         }
 
         $role = $user->role;
-        return $role?->name === 'Owner' || (bool) ($role?->is_admin ?? false);
+
+        return $role !== null && ($role->name === 'Owner' || (bool) $role->is_admin);
     }
 
     public function rules(): array

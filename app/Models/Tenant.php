@@ -10,24 +10,39 @@ class Tenant extends Model
     use SoftDeletes;
 
     public const ONBOARDING_PENDING = 'pending';
+
     public const ONBOARDING_PENDING_VERIFICATION = 'pending_verification';
+
     public const ONBOARDING_BUSINESS_PROFILE = 'onboarding_business_profile';
+
     public const ONBOARDING_INITIAL_BRANCH = 'onboarding_initial_branch';
+
     public const ONBOARDING_COMPLETED = 'completed';
 
     public const ACCESS_PENDING = 'pending';
+
     public const ACCESS_PROVISIONING = 'provisioning';
+
     public const ACCESS_ACTIVE = 'active';
+
     public const ACCESS_SUSPENDED = 'suspended';
+
     public const ACCESS_SUSPENDED_ADMIN = 'suspended_admin';
+
     public const ACCESS_SUSPENDED_BILLING = 'suspended_billing';
+
     public const ACCESS_OFFBOARDED = 'offboarded';
 
     public const SUBSCRIPTION_TRIAL = 'trialing';
+
     public const SUBSCRIPTION_TRIALING = 'trialing';
+
     public const SUBSCRIPTION_ACTIVE = 'active';
+
     public const SUBSCRIPTION_PAST_DUE = 'past_due';
+
     public const SUBSCRIPTION_CANCELED = 'canceled';
+
     public const SUBSCRIPTION_UNPAID = 'unpaid';
 
     protected $fillable = [

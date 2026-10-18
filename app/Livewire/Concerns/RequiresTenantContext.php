@@ -5,6 +5,7 @@ namespace App\Livewire\Concerns;
 use App\Services\Context\StoreResolver;
 use App\Services\Context\TenantContext;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 trait RequiresTenantContext
 {
@@ -18,7 +19,7 @@ trait RequiresTenantContext
 
         if ((method_exists($user, 'trashed') && $user->trashed()) || ! $user->is_active || ($user->status ?? 'active') === 'suspended') {
             try {
-                \Illuminate\Support\Facades\DB::table('sessions')->where('user_id', $user->id)->delete();
+                DB::table('sessions')->where('user_id', $user->id)->delete();
             } catch (\Throwable) {
             }
             Auth::guard('web')->logout();

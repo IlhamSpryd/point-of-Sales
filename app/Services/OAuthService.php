@@ -13,11 +13,15 @@ use RuntimeException;
 class OAuthService
 {
     public const PROVIDER_GOOGLE = 'google';
+
     public const PROVIDER_APPLE = 'apple';
 
     public const INTENT_LOGIN = 'login';
+
     public const INTENT_REGISTER_OWNER = 'register_owner';
+
     public const INTENT_LINK_ACCOUNT = 'link_account';
+
     public const INTENT_ACCEPT_INVITATION = 'accept_invitation';
 
     /**
@@ -33,7 +37,7 @@ class OAuthService
     /**
      * Set payload palsu untuk pengujian tanpa memanggil endpoint provider eksternal.
      *
-     * @param array<string, mixed>|callable $payload
+     * @param  array<string, mixed>|callable  $payload
      */
     public static function fakeTokenPayload(string $provider, array|callable $payload): void
     {
@@ -165,7 +169,7 @@ class OAuthService
             ]);
 
             if (! $response->successful()) {
-                throw new RuntimeException('Failed to exchange Google authorization code: ' . $response->body());
+                throw new RuntimeException('Failed to exchange Google authorization code: '.$response->body());
             }
 
             return (string) $response->json('id_token');
@@ -190,7 +194,7 @@ class OAuthService
             $payload = is_callable($fake) ? $fake($idToken, $expectedNonce) : $fake;
 
             if (($payload['nonce'] ?? '') !== $expectedNonce) {
-                throw new RuntimeException("OIDC nonce mismatch. Expected {$expectedNonce}, got " . ($payload['nonce'] ?? 'null'));
+                throw new RuntimeException("OIDC nonce mismatch. Expected {$expectedNonce}, got ".($payload['nonce'] ?? 'null'));
             }
 
             $email = $payload['email'] ?? '';
@@ -225,7 +229,7 @@ class OAuthService
 
         // 1. Validasi Algoritma Header (RS256)
         if (($header['alg'] ?? '') !== 'RS256') {
-            throw new RuntimeException("Unsupported JWS algorithm: " . ($header['alg'] ?? 'null'));
+            throw new RuntimeException('Unsupported JWS algorithm: '.($header['alg'] ?? 'null'));
         }
 
         // 2. Validasi Nonce
@@ -302,6 +306,7 @@ class OAuthService
 
             try {
                 $response = Http::timeout(5)->get($url);
+
                 return $response->json('keys') ?? [];
             } catch (\Throwable $e) {
                 return [];
@@ -332,33 +337,33 @@ class OAuthService
         $modulusDer = $this->asn1Integer($modulus);
         $exponentDer = $this->asn1Integer($exponent);
 
-        $rsaPublicKeyDer = $this->asn1Sequence($modulusDer . $exponentDer);
+        $rsaPublicKeyDer = $this->asn1Sequence($modulusDer.$exponentDer);
 
         // AlgorithmIdentifier OID: 1.2.840.113549.1.1.1 (rsaEncryption) with NULL parameter
         $rsaAlgorithmIdentifier = "\x30\x0d\x06\x09\x2a\x86\x48\x86\xf7\x0d\x01\x01\x01\x05\x00";
 
         // Bit string containing the RSA public key
-        $bitString = "\x03" . $this->asn1Length(strlen($rsaPublicKeyDer) + 1) . "\x00" . $rsaPublicKeyDer;
+        $bitString = "\x03".$this->asn1Length(strlen($rsaPublicKeyDer) + 1)."\x00".$rsaPublicKeyDer;
 
         // SubjectPublicKeyInfo sequence
-        $spkiDer = $this->asn1Sequence($rsaAlgorithmIdentifier . $bitString);
+        $spkiDer = $this->asn1Sequence($rsaAlgorithmIdentifier.$bitString);
 
-        return "-----BEGIN PUBLIC KEY-----\n" . chunk_split(base64_encode($spkiDer), 64, "\n") . "-----END PUBLIC KEY-----\n";
+        return "-----BEGIN PUBLIC KEY-----\n".chunk_split(base64_encode($spkiDer), 64, "\n")."-----END PUBLIC KEY-----\n";
     }
 
     private function asn1Integer(string $bytes): string
     {
         // If highest bit is 1, prefix with 0x00 to mark as positive integer
-        if (ord($bytes[0]) > 0x7f) {
-            $bytes = "\x00" . $bytes;
+        if (ord($bytes[0]) > 0x7F) {
+            $bytes = "\x00".$bytes;
         }
 
-        return "\x02" . $this->asn1Length(strlen($bytes)) . $bytes;
+        return "\x02".$this->asn1Length(strlen($bytes)).$bytes;
     }
 
     private function asn1Sequence(string $bytes): string
     {
-        return "\x30" . $this->asn1Length(strlen($bytes)) . $bytes;
+        return "\x30".$this->asn1Length(strlen($bytes)).$bytes;
     }
 
     private function asn1Length(int $length): string
@@ -368,7 +373,8 @@ class OAuthService
         }
 
         $temp = ltrim(pack('N', $length), "\x00");
-        return chr(0x80 | strlen($temp)) . $temp;
+
+        return chr(0x80 | strlen($temp)).$temp;
     }
 
     private function base64UrlDecode(string $input): string

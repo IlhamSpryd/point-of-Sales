@@ -55,7 +55,7 @@ class RegisteredUserController extends Controller
         ]);
 
         $normalizedEmail = EmailNormalizer::normalize($request->string('email'));
-        $lockKey = 'lock:identity:email:' . hash('sha256', $normalizedEmail);
+        $lockKey = 'lock:identity:email:'.hash('sha256', $normalizedEmail);
         $lock = Cache::lock($lockKey, 10);
 
         if (! $lock->get()) {
@@ -93,12 +93,12 @@ class RegisteredUserController extends Controller
                 // Buat Tenant baru (status belum onboarded)
                 $businessName = trim((string) $request->input('business_name', ''));
                 if ($businessName === '') {
-                    $businessName = $request->string('name') . "'s Business";
+                    $businessName = $request->string('name')."'s Business";
                 }
 
                 $tenant = Tenant::create([
                     'name' => $businessName,
-                    'slug' => Str::slug($businessName) . '-' . Str::lower(Str::random(6)),
+                    'slug' => Str::slug($businessName).'-'.Str::lower(Str::random(6)),
                     'status' => 'pending',
                     'onboarding_status' => Tenant::ONBOARDING_PENDING_VERIFICATION,
                     'access_status' => Tenant::ACCESS_PENDING,
@@ -110,7 +110,7 @@ class RegisteredUserController extends Controller
                 app(TenantContext::class)->setTenantId($tenant->id);
 
                 // Buat Role Owner untuk tenant ini
-                $ownerRole = new Role();
+                $ownerRole = new Role;
                 $ownerRole->tenant_id = $tenant->id;
                 $ownerRole->name = 'Owner';
                 $ownerRole->description = 'Tenant Owner';
@@ -119,7 +119,7 @@ class RegisteredUserController extends Controller
                 $ownerRole->save();
 
                 // Buat User Owner (belum terverifikasi)
-                $user = new User();
+                $user = new User;
                 $user->tenant_id = $tenant->id;
                 $user->role_id = $ownerRole->id;
                 $user->name = $request->string('name');

@@ -4,7 +4,6 @@ namespace App\Livewire;
 
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Discount;
-use App\Policies\DiscountPolicy;
 use App\Services\Context\TenantContext;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;

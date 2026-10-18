@@ -12,7 +12,7 @@ if (! extension_loaded('bcmath')) {
         {
             $number = trim($number);
             if ($number === '' || ! preg_match('/^([+-]?)(\d*)(?:\.(\d*))?$/', $number, $m)) {
-                throw new \ValueError("bcmath: nilai numerik tidak valid: '{$number}'");
+                throw new ValueError("bcmath: nilai numerik tidak valid: '{$number}'");
             }
             $sign = $m[1] === '-' ? -1 : 1;
             $int = $m[2] === '' ? '0' : ltrim($m[2], '0');
@@ -20,6 +20,7 @@ if (! extension_loaded('bcmath')) {
                 $int = '0';
             }
             $frac = $m[3] ?? '';
+
             return [$sign, $int, $frac];
         }
 
@@ -73,6 +74,7 @@ if (! extension_loaded('bcmath')) {
                 if ($clean === '') {
                     return '0';
                 }
+
                 return ($sign === -1 ? '-' : '').$clean;
             }
 
@@ -111,6 +113,7 @@ if (! extension_loaded('bcmath')) {
                 }
             }
             $out = ltrim(implode('', $res), '0');
+
             return $out === '' ? '0' : $out;
         }
     }
@@ -132,12 +135,14 @@ if (! extension_loaded('bcmath')) {
                 $val2 = $s2 * (int) $d2;
                 $sum = $val1 + $val2;
                 $sign = $sum < 0 ? -1 : 1;
+
                 return _bc_format($sign, (string) abs($sum), $maxDec, $s);
             }
 
             // Fallback float/string jika sangat besar
             $sum = ($s1 * (float) $d1) + ($s2 * (float) $d2);
             $sign = $sum < 0 ? -1 : 1;
+
             return _bc_format($sign, (string) abs((int) $sum), $maxDec, $s);
         }
     }
@@ -159,11 +164,13 @@ if (! extension_loaded('bcmath')) {
                 $val2 = (-$s2) * (int) $d2;
                 $diff = $val1 + $val2;
                 $sign = $diff < 0 ? -1 : 1;
+
                 return _bc_format($sign, (string) abs($diff), $maxDec, $s);
             }
 
             $diff = ($s1 * (float) $d1) - ($s2 * (float) $d2);
             $sign = $diff < 0 ? -1 : 1;
+
             return _bc_format($sign, (string) abs((int) $diff), $maxDec, $s);
         }
     }
@@ -181,10 +188,12 @@ if (! extension_loaded('bcmath')) {
 
             if (strlen($d1) < 9 && strlen($d2) < 9) {
                 $prod = (int) $d1 * (int) $d2;
+
                 return _bc_format($sign, (string) abs($prod), $dec, $s);
             }
 
             $prodStr = _bc_str_mul($d1, $d2);
+
             return _bc_format($sign, $prodStr, $dec, $s);
         }
     }
@@ -199,7 +208,7 @@ if (! extension_loaded('bcmath')) {
             $d2 = $i2.$f2;
             $d2Int = (int) $d2;
             if ($d2Int === 0) {
-                throw new \DivisionByZeroError('Division by zero');
+                throw new DivisionByZeroError('Division by zero');
             }
 
             $dec1 = strlen($f1);
@@ -215,6 +224,7 @@ if (! extension_loaded('bcmath')) {
             }
             $q = intdiv($num, $denom);
             $sign = ($s1 * $s2 === -1) ? -1 : 1;
+
             return _bc_format($sign, (string) abs($q), $s + 1, $s);
         }
     }
@@ -227,6 +237,7 @@ if (! extension_loaded('bcmath')) {
             if ($diff === '0' || preg_match('/^0(?:\.0*)?$/', $diff)) {
                 return 0;
             }
+
             return str_starts_with($diff, '-') ? -1 : 1;
         }
     }

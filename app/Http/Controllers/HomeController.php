@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Tenant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\View;
@@ -31,7 +32,7 @@ class HomeController extends Controller
             }
 
             if ($tenant && ! $tenant->isOnboardingCompleted()) {
-                if ($tenant->onboarding_status === \App\Models\Tenant::ONBOARDING_INITIAL_BRANCH) {
+                if ($tenant->onboarding_status === Tenant::ONBOARDING_INITIAL_BRANCH) {
                     return redirect()->route('onboarding.initial-branch');
                 }
 

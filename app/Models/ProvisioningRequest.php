@@ -5,35 +5,35 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 /**
-  * Domain 1 — idempotency ledger untuk request provisioning S2S.
-  *
-  * Siklus status (lihat docs/architecture/PROVISIONING.md):
-  *
-  *   pending ──claim atomik──► processing ──commit bisnis sukses──► completed
-  *      ▲                          │
-  *      │                          └── gagal transient ──► failed (boleh diretry)
-  *      └──────── release klaim (reconcile) ────┘
-  *
-  * Aturan yang ditegakkan kode pemanggil:
-  *  - `processing` hanya boleh diubah oleh pemilik klaim: setiap UPDATE
-  *    terminal menyertakan `attempt_count` hasil klaim sebagai fencing token,
-  *    sehingga worker yang lambat tidak dapat menimpa klaim yang lebih baru.
-  *  - `completed` bersifat terminal: tidak ada jalur kode yang menurunkannya.
-  *  - `failed` dengan `error_message = 'email_already_in_use'` adalah
-  *    kegagalan bisnis PERMANEN (409), bukan transient (boleh diretry).
-  */
- class ProvisioningRequest extends Model
- {
-     public const STATUS_PENDING = 'pending';
+ * Domain 1 — idempotency ledger untuk request provisioning S2S.
+ *
+ * Siklus status (lihat docs/architecture/PROVISIONING.md):
+ *
+ *   pending ──claim atomik──► processing ──commit bisnis sukses──► completed
+ *      ▲                          │
+ *      │                          └── gagal transient ──► failed (boleh diretry)
+ *      └──────── release klaim (reconcile) ────┘
+ *
+ * Aturan yang ditegakkan kode pemanggil:
+ *  - `processing` hanya boleh diubah oleh pemilik klaim: setiap UPDATE
+ *    terminal menyertakan `attempt_count` hasil klaim sebagai fencing token,
+ *    sehingga worker yang lambat tidak dapat menimpa klaim yang lebih baru.
+ *  - `completed` bersifat terminal: tidak ada jalur kode yang menurunkannya.
+ *  - `failed` dengan `error_message = 'email_already_in_use'` adalah
+ *    kegagalan bisnis PERMANEN (409), bukan transient (boleh diretry).
+ */
+class ProvisioningRequest extends Model
+{
+    public const STATUS_PENDING = 'pending';
 
-     public const STATUS_PROCESSING = 'processing';
+    public const STATUS_PROCESSING = 'processing';
 
-     public const STATUS_COMPLETED = 'completed';
+    public const STATUS_COMPLETED = 'completed';
 
-     public const STATUS_FAILED = 'failed';
+    public const STATUS_FAILED = 'failed';
 
-     /** Penanda kegagalan bisnis permanen (dibedakan dari transient). */
-     public const ERROR_EMAIL_ALREADY_IN_USE = 'email_already_in_use';
+    /** Penanda kegagalan bisnis permanen (dibedakan dari transient). */
+    public const ERROR_EMAIL_ALREADY_IN_USE = 'email_already_in_use';
 
     protected $fillable = [
         'idempotency_key',

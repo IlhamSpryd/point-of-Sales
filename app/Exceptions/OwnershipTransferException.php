@@ -6,6 +6,4 @@ namespace App\Exceptions;
 
 use RuntimeException;
 
-class OwnershipTransferException extends RuntimeException
-{
-}
+class OwnershipTransferException extends RuntimeException {}

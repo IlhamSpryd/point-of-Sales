@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * Model Table merepresentasikan satu meja fisik di coffeeshop.
@@ -26,9 +28,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property bool $is_active
  * @property string $operational_status
  * @property string $secure_token
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  */
 class Table extends Model
 {
@@ -74,7 +76,7 @@ class Table extends Model
             // KUNCI KEAMANAN & MULTI-TENANCY: Auto-generate Secure Token sebagai UUID acak berentropi tinggi.
             // Mencegah kolisi antar meja/tenant dengan nama sama dan mencegah penebakan token URL (OR-008).
             if (empty($table->secure_token)) {
-                $table->secure_token = (string) \Illuminate\Support\Str::uuid();
+                $table->secure_token = (string) Str::uuid();
             }
         });
     }

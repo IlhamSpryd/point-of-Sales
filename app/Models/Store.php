@@ -7,6 +7,7 @@ use App\Models\Concerns\ScopedToTenant;
 use App\Services\Context\TenantContext;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -21,10 +22,10 @@ use Illuminate\Support\Facades\DB;
  * @property string|null $phone
  * @property bool $is_active
  * @property bool $is_initial
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
- * @property-read \App\Models\Tenant|null $tenant
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
+ * @property-read Tenant|null $tenant
  */
 class Store extends Model
 {

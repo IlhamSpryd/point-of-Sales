@@ -13,7 +13,6 @@ use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Context\TenantContext;
-use App\Services\DatabaseErrorClassifier;
 use App\Support\EmailNormalizer;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
@@ -288,7 +287,7 @@ class ProvisioningService
                     ['email_sent_to' => $data['owner_email']],
                     (app()->environment('local', 'testing') && ! empty($result['onboarding_token']))
                         ? [
-                            'activation_url' => url('/onboarding/set-password/' . $result['onboarding_token']),
+                            'activation_url' => url('/onboarding/set-password/'.$result['onboarding_token']),
                             'onboarding_token' => $result['onboarding_token'],
                         ]
                         : []

@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -54,7 +55,7 @@ class NewPasswordController extends Controller
 
                 // Purge active sessions pada database driver
                 try {
-                    \Illuminate\Support\Facades\DB::table('sessions')->where('user_id', $user->id)->delete();
+                    DB::table('sessions')->where('user_id', $user->id)->delete();
                 } catch (\Throwable) {
                     // Session table might not exist in array/memory driver
                 }

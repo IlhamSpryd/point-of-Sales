@@ -6,6 +6,7 @@ namespace App\Exports;
 
 use App\Enums\OrderStatus;
 use App\Models\Order;
+use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Concerns\FromQuery;
@@ -41,8 +42,8 @@ class SalesExport implements FromQuery, ShouldAutoSize, WithChunkReading, WithHe
 
     public function query(): Builder
     {
-        $tenantId = app(\App\Services\Context\TenantContext::class)->requireTenantId();
-        $storeId = app(\App\Services\Context\TenantContext::class)->getStoreId();
+        $tenantId = app(TenantContext::class)->requireTenantId();
+        $storeId = app(TenantContext::class)->getStoreId();
 
         $baseQuery = $this->allStores ? Order::allStores() : Order::query();
 

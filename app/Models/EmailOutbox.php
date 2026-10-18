@@ -55,7 +55,6 @@ class EmailOutbox extends Model
         'body_text' => 'encrypted',
     ];
 
-
     /** Klaim sudah kedaluwarsa (worker pengirim dianggap mati). */
     public function isClaimExpired(): bool
     {

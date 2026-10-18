@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -103,7 +104,7 @@ class EmployeeIdGenerator
                 return $val;
             } catch (\Throwable $e) {
                 $driverCode = 0;
-                if ($e instanceof \Illuminate\Database\QueryException) {
+                if ($e instanceof QueryException) {
                     $driverCode = DatabaseErrorClassifier::getDriverCode($e);
                 } elseif ($e instanceof \PDOException) {
                     $driverCode = (int) ($e->errorInfo[1] ?? 0);

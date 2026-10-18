@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\OtpRateLimitedException;
 use App\Models\EmailOutbox;
 use App\Models\User;
 use App\Services\EmailVerificationOtpService;
@@ -9,8 +10,6 @@ use App\Support\EmailNormalizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 class ProfileEmailChangeController extends Controller
 {
@@ -73,7 +72,7 @@ class ProfileEmailChangeController extends Controller
         // 5. Terbitkan 6-digit OTP ke email baru
         try {
             $this->otpService->issueOtp($user, 'email_change', $request->ip(), $request->userAgent());
-        } catch (\App\Exceptions\OtpRateLimitedException $e) {
+        } catch (OtpRateLimitedException $e) {
             return back()->with('error', $e->getMessage());
         }
 
@@ -90,7 +89,7 @@ class ProfileEmailChangeController extends Controller
 
         return back()->with([
             'status' => 'pending-email-otp-sent',
-            'success' => 'Kode OTP 6 digit telah dikirim ke ' . $newEmail . '. Silakan verifikasi kode untuk menyelesaikan perubahan email.',
+            'success' => 'Kode OTP 6 digit telah dikirim ke '.$newEmail.'. Silakan verifikasi kode untuk menyelesaikan perubahan email.',
         ]);
     }
 
@@ -124,7 +123,8 @@ class ProfileEmailChangeController extends Controller
                 if ($result->isLocked()) {
                     return back()->with('error', 'Kode terkunci karena terlalu banyak kesalahan percobaan. Silakan ajukan perubahan ulang.');
                 }
-                return back()->with('error', 'Kode OTP salah atau telah kedaluwarsa. Sisa percobaan: ' . $result->getRemainingAttempts());
+
+                return back()->with('error', 'Kode OTP salah atau telah kedaluwarsa. Sisa percobaan: '.$result->getRemainingAttempts());
             }
 
             // Verifikasi konflik sekali lagi di bawah lock
@@ -174,7 +174,7 @@ class ProfileEmailChangeController extends Controller
 
             return back()->with([
                 'status' => 'profile-email-updated',
-                'success' => 'Alamat email berhasil diperbarui menjadi ' . $newEmail . '.',
+                'success' => 'Alamat email berhasil diperbarui menjadi '.$newEmail.'.',
             ]);
         });
     }

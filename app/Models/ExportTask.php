@@ -9,6 +9,7 @@ use App\Models\Concerns\AssignsStore;
 use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToStore;
 use App\Models\Concerns\ScopedToTenant;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -23,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $file_path
  * @property int|null $file_size_bytes
  * @property string|null $error_message
- * @property \Carbon\CarbonInterface|null $completed_at
+ * @property CarbonInterface|null $completed_at
  */
 class ExportTask extends Model
 {

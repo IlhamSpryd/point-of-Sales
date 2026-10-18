@@ -6,7 +6,9 @@ use App\Models\Table;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 /**
  * TableService mengisolasi seluruh logika CRUD Meja dari Controller,
@@ -67,10 +69,10 @@ class TableService
     {
         return DB::transaction(function () use ($table) {
             $table->update([
-                'secure_token' => (string) \Illuminate\Support\Str::uuid(),
+                'secure_token' => (string) Str::uuid(),
             ]);
 
-            \Illuminate\Support\Facades\Cache::forget('pos:qr:table:'.$table->id);
+            Cache::forget('pos:qr:table:'.$table->id);
 
             return $table;
         });

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\ProvisioningNonce;
+use App\Services\DatabaseErrorClassifier;
 use Closure;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -120,7 +121,7 @@ class VerifyProvisioningSignature
             // Hanya pelanggaran duplicate key (ER_DUP_ENTRY / 1062) pada nonce
             // yang ditafsirkan sebagai replay. Error lain (FK, NOT NULL, dll)
             // tidak disamarkan sebagai replay nonce.
-            if (\App\Services\DatabaseErrorClassifier::isDuplicateEntry($e)) {
+            if (DatabaseErrorClassifier::isDuplicateEntry($e)) {
                 return $this->reject($request, 'nonce_replayed');
             }
 

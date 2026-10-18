@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Services\Context\TenantContext;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -20,8 +21,8 @@ class CategoriesExport implements FromCollection, ShouldAutoSize, WithHeadings, 
 
     public function collection(): Collection
     {
-        $tenantId = app(\App\Services\Context\TenantContext::class)->requireTenantId();
-        $storeId = app(\App\Services\Context\TenantContext::class)->getStoreId();
+        $tenantId = app(TenantContext::class)->requireTenantId();
+        $storeId = app(TenantContext::class)->getStoreId();
 
         $table = $this->query->getModel()->getTable();
         $this->query->where($table.'.tenant_id', $tenantId);

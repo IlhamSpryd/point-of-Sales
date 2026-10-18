@@ -7,6 +7,8 @@ use App\Models\Concerns\ScopedToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Str;
 
 /**
  * @property int $id
@@ -17,9 +19,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property array<string>|null $permissions
  * @property bool $is_active
  * @property bool $is_admin
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  */
 class Role extends Model
 {
@@ -63,7 +65,7 @@ class Role extends Model
                     }
                 }
 
-                $model->role_code = 'ROL-'.strtoupper(\Illuminate\Support\Str::random(6));
+                $model->role_code = 'ROL-'.strtoupper(Str::random(6));
             }
         });
     }

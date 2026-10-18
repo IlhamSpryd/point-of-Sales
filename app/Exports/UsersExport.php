@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Services\Context\TenantContext;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\FromCollection;
@@ -20,7 +21,7 @@ class UsersExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
 
     public function collection(): Collection
     {
-        $tenantId = app(\App\Services\Context\TenantContext::class)->requireTenantId();
+        $tenantId = app(TenantContext::class)->requireTenantId();
 
         $table = $this->query->getModel()->getTable();
         $this->query->where($table.'.tenant_id', $tenantId);

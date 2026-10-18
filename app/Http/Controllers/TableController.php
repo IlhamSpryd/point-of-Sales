@@ -6,8 +6,11 @@ use App\Http\Requests\StoreTableRequest;
 use App\Http\Requests\UpdateTableRequest;
 use App\Models\Table;
 use App\Services\TableService;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 /**
@@ -54,11 +57,11 @@ class TableController extends Controller
             $this->tableService->delete($table);
 
             return redirect()->route('tables.index')->with('success', 'Meja berhasil dihapus.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return redirect()->route('tables.index')->withErrors($e->validator);
         } catch (\Exception $e) {
-            if ($e instanceof \Illuminate\Database\QueryException) {
-                \Illuminate\Support\Facades\Log::error('Failed to delete table: '.$e->getMessage(), [
+            if ($e instanceof QueryException) {
+                Log::error('Failed to delete table: '.$e->getMessage(), [
                     'table_id' => $table->id,
                     'exception' => $e,
                 ]);
@@ -68,7 +71,7 @@ class TableController extends Controller
 
             return redirect()->route('tables.index')->with('error', $e->getMessage());
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Unexpected error deleting table: '.$e->getMessage(), [
+            Log::error('Unexpected error deleting table: '.$e->getMessage(), [
                 'table_id' => $table->id,
                 'exception' => $e,
             ]);

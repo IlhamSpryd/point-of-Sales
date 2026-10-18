@@ -13,14 +13,23 @@ use Illuminate\Database\QueryException;
 class DatabaseErrorClassifier
 {
     public const MYSQL_ER_DUP_ENTRY = 1062;
+
     public const MYSQL_ER_LOCK_WAIT_TIMEOUT = 1205;
+
     public const MYSQL_ER_LOCK_DEADLOCK = 1213;
+
     public const MYSQL_ER_BAD_NULL_ERROR = 1048;
+
     public const MYSQL_ER_NO_DEFAULT_FOR_FIELD = 1364;
+
     public const MYSQL_ER_ROW_IS_REFERENCED = 1451;
+
     public const MYSQL_ER_NO_REFERENCED_ROW = 1452;
+
     public const MYSQL_CR_CONNECTION_ERROR = 2002;
+
     public const MYSQL_CR_SERVER_GONE_ERROR = 2006;
+
     public const MYSQL_CR_SERVER_LOST = 2013;
 
     /**

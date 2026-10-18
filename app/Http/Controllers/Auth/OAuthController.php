@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\ActivityLog;
 use App\Models\EmailOutbox;
 use App\Models\Role;
 use App\Models\Tenant;
@@ -11,7 +10,7 @@ use App\Models\User;
 use App\Models\UserOAuthIdentity;
 use App\Services\Context\TenantContext;
 use App\Services\OAuthService;
-use App\Support\EmailNormalizer;
+use App\Services\UserInvitationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,6 +18,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class OAuthController extends Controller
 {
@@ -86,6 +86,7 @@ class OAuthController extends Controller
         // 2. Periksa error dari provider
         if ($request->has('error')) {
             $err = $request->input('error_description', $request->input('error'));
+
             return redirect()->route('login')
                 ->with('error', "Autentikasi ditolak oleh provider: {$err}");
         }
@@ -117,7 +118,7 @@ class OAuthController extends Controller
             $claims = $this->oauthService->verifyIdToken($provider, $idToken, $cachedState['nonce']);
         } catch (\Throwable $e) {
             return redirect()->route('login')
-                ->with('error', 'Verifikasi token OIDC gagal: ' . $e->getMessage());
+                ->with('error', 'Verifikasi token OIDC gagal: '.$e->getMessage());
         }
 
         // Jika Apple mengirimkan payload 'user' JSON pada login pertama
@@ -155,7 +156,7 @@ class OAuthController extends Controller
         }
 
         try {
-            $invitationService = app(\App\Services\UserInvitationService::class);
+            $invitationService = app(UserInvitationService::class);
             $user = $invitationService->acceptInvitationViaOAuth($invitationToken, $provider, $claims);
 
             Auth::login($user);
@@ -164,12 +165,12 @@ class OAuthController extends Controller
 
             return redirect()->route('dashboard')
                 ->with('success', 'Selamat datang! Akun karyawan Anda telah aktif.');
-        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $e) {
+        } catch (HttpException $e) {
             return redirect()->route('login')
-                ->with('error', $e->getMessage() ?: 'Gagal memproses aktivasi undangan via ' . ucfirst($provider) . '.');
+                ->with('error', $e->getMessage() ?: 'Gagal memproses aktivasi undangan via '.ucfirst($provider).'.');
         } catch (\Throwable $e) {
             return redirect()->route('login')
-                ->with('error', 'Gagal memproses aktivasi undangan: ' . $e->getMessage());
+                ->with('error', 'Gagal memproses aktivasi undangan: '.$e->getMessage());
         }
     }
 
@@ -213,10 +214,10 @@ class OAuthController extends Controller
             ->first();
 
         if ($existingUser !== null) {
-            $storeId = \Illuminate\Support\Facades\DB::table('stores')->where('tenant_id', $existingUser->tenant_id)->value('id');
+            $storeId = DB::table('stores')->where('tenant_id', $existingUser->tenant_id)->value('id');
 
             if ($storeId !== null) {
-                \Illuminate\Support\Facades\DB::table('activity_logs')->insert([
+                DB::table('activity_logs')->insert([
                     'tenant_id' => $existingUser->tenant_id,
                     'store_id' => $storeId,
                     'user_id' => $existingUser->id,
@@ -230,7 +231,7 @@ class OAuthController extends Controller
             }
 
             return redirect()->route('login')
-                ->with('error', "Akun " . ucfirst($provider) . " ini belum ditautkan. Silakan masuk menggunakan email dan password Anda, lalu tautkan akun " . ucfirst($provider) . " melalui menu Pengaturan Profil.");
+                ->with('error', 'Akun '.ucfirst($provider).' ini belum ditautkan. Silakan masuk menggunakan email dan password Anda, lalu tautkan akun '.ucfirst($provider).' melalui menu Pengaturan Profil.');
         }
 
         // KASUS 3: Belum tertaut dan email belum ada (Zero Auto-Provisioning Guard [REQ-SEC-20])
@@ -262,10 +263,10 @@ class OAuthController extends Controller
 
         if ($existingUser !== null) {
             return redirect()->route('login')
-                ->with('error', "Email {$claims['email']} sudah terdaftar. Silakan masuk menggunakan password Anda dan tautkan akun " . ucfirst($provider) . " di profil.");
+                ->with('error', "Email {$claims['email']} sudah terdaftar. Silakan masuk menggunakan password Anda dan tautkan akun ".ucfirst($provider).' di profil.');
         }
 
-        $lockKey = 'lock:identity:email:' . hash('sha256', $claims['email_normalized']);
+        $lockKey = 'lock:identity:email:'.hash('sha256', $claims['email_normalized']);
         $lock = Cache::lock($lockKey, 10);
 
         if (! $lock->get()) {
@@ -276,11 +277,11 @@ class OAuthController extends Controller
         try {
             return DB::transaction(function () use ($provider, $claims, $request) {
                 $ownerName = $claims['name'] ?: 'Owner';
-                $businessName = $ownerName . "'s Business";
+                $businessName = $ownerName."'s Business";
 
                 $tenant = Tenant::create([
                     'name' => $businessName,
-                    'slug' => Str::slug($businessName) . '-' . Str::lower(Str::random(6)),
+                    'slug' => Str::slug($businessName).'-'.Str::lower(Str::random(6)),
                     'status' => 'pending',
                     'onboarding_status' => Tenant::ONBOARDING_PENDING_VERIFICATION,
                     'access_status' => Tenant::ACCESS_PENDING,
@@ -291,7 +292,7 @@ class OAuthController extends Controller
 
                 app(TenantContext::class)->setTenantId($tenant->id);
 
-                $ownerRole = new Role();
+                $ownerRole = new Role;
                 $ownerRole->tenant_id = $tenant->id;
                 $ownerRole->name = 'Owner';
                 $ownerRole->description = 'Tenant Owner';
@@ -299,7 +300,7 @@ class OAuthController extends Controller
                 $ownerRole->is_active = true;
                 $ownerRole->save();
 
-                $user = new User();
+                $user = new User;
                 $user->tenant_id = $tenant->id;
                 $user->role_id = $ownerRole->id;
                 $user->name = $ownerName;
@@ -361,13 +362,13 @@ class OAuthController extends Controller
 
         if ($existingLink !== null) {
             return redirect()->route('profile.edit')
-                ->with('error', 'Akun ' . ucfirst($provider) . ' ini sudah ditautkan ke akun lain.');
+                ->with('error', 'Akun '.ucfirst($provider).' ini sudah ditautkan ke akun lain.');
         }
 
         // 2. Pastikan user belum menautkan provider yang sama
         if ($user->oauthIdentities()->where('provider', $provider)->exists()) {
             return redirect()->route('profile.edit')
-                ->with('error', 'Anda sudah menautkan akun ' . ucfirst($provider) . '.');
+                ->with('error', 'Anda sudah menautkan akun '.ucfirst($provider).'.');
         }
 
         // 3. Tautkan identitas
@@ -388,8 +389,8 @@ class OAuthController extends Controller
         EmailOutbox::create([
             'event_type' => 'oauth_account_linked',
             'recipient_email' => $user->email,
-            'subject' => 'Akun ' . ucfirst($provider) . ' Berhasil Ditautkan — Apeiron POS',
-            'body_text' => "Halo {$user->name},\n\nAkun " . ucfirst($provider) . " ({$claims['email']}) berhasil ditautkan ke akun Apeiron POS Anda.\n\nJika Anda tidak melakukan penautan ini, segera amankan akun Anda atau hubungi dukungan sistem.\n\nSalam,\nTim Apeiron POS",
+            'subject' => 'Akun '.ucfirst($provider).' Berhasil Ditautkan — Apeiron POS',
+            'body_text' => "Halo {$user->name},\n\nAkun ".ucfirst($provider)." ({$claims['email']}) berhasil ditautkan ke akun Apeiron POS Anda.\n\nJika Anda tidak melakukan penautan ini, segera amankan akun Anda atau hubungi dukungan sistem.\n\nSalam,\nTim Apeiron POS",
             'tenant_id' => $user->tenant_id,
             'user_id' => $user->id,
             'status' => EmailOutbox::STATUS_PENDING,
@@ -397,7 +398,7 @@ class OAuthController extends Controller
         ]);
 
         return redirect()->route('profile.edit')
-            ->with('success', 'Akun ' . ucfirst($provider) . ' berhasil ditautkan.');
+            ->with('success', 'Akun '.ucfirst($provider).' berhasil ditautkan.');
     }
 
     /**
@@ -426,6 +427,6 @@ class OAuthController extends Controller
             $identity->delete();
         }
 
-        return back()->with('success', 'Tautan akun ' . ucfirst($provider) . ' berhasil dilepas.');
+        return back()->with('success', 'Tautan akun '.ucfirst($provider).' berhasil dilepas.');
     }
 }

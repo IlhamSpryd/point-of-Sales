@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\ExportTaskStatus;
 use App\Models\ExportTask;
+use App\Services\Context\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -45,7 +46,7 @@ class ExportTaskController extends Controller
         // SEC-01: Verifikasi kepemilikan tenant server-side secara eksplisit (Defense-in-Depth).
         abort_unless($user && (int) $exportTask->tenant_id === (int) $user->tenant_id, 403);
 
-        $contextTenantId = app(\App\Services\Context\TenantContext::class)->getTenantId();
+        $contextTenantId = app(TenantContext::class)->getTenantId();
         if ($contextTenantId !== null) {
             abort_unless((int) $exportTask->tenant_id === $contextTenantId, 403);
         }

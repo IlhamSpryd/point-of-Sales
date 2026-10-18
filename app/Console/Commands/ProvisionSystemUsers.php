@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Context\TenantContext;
+use App\Services\SystemUserResolver;
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
@@ -20,8 +21,8 @@ class ProvisionSystemUsers extends Command
         $tenant = Tenant::findOrFail($tenantId);
 
         app(TenantContext::class)->runAs($tenantId, null, function () use ($tenantId) {
-            $selfOrderEmail = \App\Services\SystemUserResolver::selfOrderEmail($tenantId);
-            $channelEmail = \App\Services\SystemUserResolver::channelEmail($tenantId);
+            $selfOrderEmail = SystemUserResolver::selfOrderEmail($tenantId);
+            $channelEmail = SystemUserResolver::channelEmail($tenantId);
 
             $selfOrderUser = User::firstOrCreate(
                 ['email' => $selfOrderEmail, 'tenant_id' => $tenantId],

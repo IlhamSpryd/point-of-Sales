@@ -7,10 +7,15 @@ use App\Models\EmailVerificationOtp;
 class OtpVerificationResult
 {
     public const STATUS_VERIFIED = 'verified';
+
     public const STATUS_INVALID_CODE = 'invalid_code';
+
     public const STATUS_EXPIRED = 'expired';
+
     public const STATUS_LOCKED = 'locked';
+
     public const STATUS_NOT_FOUND = 'not_found';
+
     public const STATUS_SUPERSEDED = 'superseded';
 
     public function __construct(

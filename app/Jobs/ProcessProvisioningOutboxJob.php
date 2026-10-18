@@ -3,7 +3,9 @@
 namespace App\Jobs;
 
 use App\Models\EmailOutbox;
+use App\Models\EmailVerificationOtp;
 use App\Models\OwnerOnboardingToken;
+use App\Services\Context\TenantContext;
 use App\Services\ProvisioningService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -51,10 +53,11 @@ class ProcessProvisioningOutboxJob implements ShouldQueue
 
         if (empty($outbox->tenant_id)) {
             Log::error('EmailOutbox record missing tenant_id.', ['outbox_id' => $outbox->id]);
+
             return;
         }
 
-        $tenantContext = app(\App\Services\Context\TenantContext::class);
+        $tenantContext = app(TenantContext::class);
         $prevTenantId = $tenantContext->getTenantId();
         $prevStoreId = $tenantContext->getStoreId();
 
@@ -152,16 +155,16 @@ class ProcessProvisioningOutboxJob implements ShouldQueue
 
         if ($outbox->event_type === 'email_verification_otp') {
             $otp = null;
-            if (preg_match('/(\d{6})/', $outbox->subject . ' ' . $body, $m)) {
+            if (preg_match('/(\d{6})/', $outbox->subject.' '.$body, $m)) {
                 $codeHash = hash_hmac('sha256', $m[1], config('app.key'));
-                $otp = \App\Models\EmailVerificationOtp::where('tenant_id', $outbox->tenant_id)
+                $otp = EmailVerificationOtp::where('tenant_id', $outbox->tenant_id)
                     ->where('user_id', $outbox->user_id)
                     ->where('otp_code_hash', $codeHash)
                     ->first();
             }
 
             if (! $otp) {
-                $otp = \App\Models\EmailVerificationOtp::where('tenant_id', $outbox->tenant_id)
+                $otp = EmailVerificationOtp::where('tenant_id', $outbox->tenant_id)
                     ->where('user_id', $outbox->user_id)
                     ->where('email', $outbox->recipient_email)
                     ->latest('id')

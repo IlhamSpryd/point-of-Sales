@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -18,22 +19,27 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $name
  * @property string $token_hash
  * @property string $status
- * @property \Illuminate\Support\Carbon $expires_at
- * @property \Illuminate\Support\Carbon|null $accepted_at
- * @property \Illuminate\Support\Carbon|null $revoked_at
- * @property \Illuminate\Support\Carbon|null $superseded_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon $expires_at
+ * @property Carbon|null $accepted_at
+ * @property Carbon|null $revoked_at
+ * @property Carbon|null $superseded_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class UserInvitation extends Model
 {
     use HasFactory;
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_ACCEPTED = 'accepted';
+
     public const STATUS_REVOKED = 'revoked';
+
     public const STATUS_SUPERSEDED = 'superseded';
+
     public const STATUS_EXPIRED = 'expired';
+
     public const STATUS_BLOCKED_CROSS_TENANT = 'blocked_cross_tenant';
 
     protected $table = 'user_invitations';

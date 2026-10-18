@@ -6,6 +6,7 @@ use App\Models\Concerns\AssignsTenant;
 use App\Services\Context\TenantContext;
 use App\Services\EmployeeIdGenerator;
 use App\Support\EmailNormalizer;
+use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -42,10 +43,11 @@ use Illuminate\Support\Carbon;
  * @property-read Tenant|null $tenant
  * @property-read Role|null $role
  */
-class User extends Authenticatable
+class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVerifyEmail
 {
     use AssignsTenant;
     use HasFactory, Notifiable, SoftDeletes;
+    use MustVerifyEmail;
 
     protected $fillable = [
         'employee_id',

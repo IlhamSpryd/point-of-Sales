@@ -62,6 +62,6 @@ class EmailNormalizer
             }
         }
 
-        return $localPart . '@' . $domain;
+        return $localPart.'@'.$domain;
     }
 }

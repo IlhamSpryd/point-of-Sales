@@ -47,7 +47,7 @@ class CreateOrder extends Component
             abort(403, 'Anda tidak memiliki hak akses kasir.');
         }
 
-        if (Auth::user()?->pin_hash === null) {
+        if (Auth::user()->pin_hash === null) {
             session()->flash('warning', 'Kasir wajib menyetel PIN Kasir sebelum dapat membuka shift atau memproses transaksi.');
         }
     }
