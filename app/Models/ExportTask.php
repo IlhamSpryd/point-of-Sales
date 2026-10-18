@@ -34,7 +34,7 @@ class ExportTask extends Model
     use ScopedToTenant;
 
     protected $fillable = [
-        'requested_by', 'type', 'parameters', 'status',
+        'tenant_id', 'store_id', 'requested_by', 'type', 'parameters', 'status',
         'file_path', 'file_size_bytes', 'error_message', 'completed_at',
     ];
 

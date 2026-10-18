@@ -114,10 +114,10 @@ class BaselineTest extends TestCase
         dump("T7 Start. tenantA->id: {$this->tenantA->id}, context_tenant: ".$context->getTenantId());
 
         app(TenantContext::class)->runWithoutTenant(function () {
-            $this->orderA->update([
+            $this->orderA->forceFill([
                 'order_status' => 'paid',
                 'payment_method' => 'cash',
-            ]);
+            ])->save();
 
             Payment::forceCreate([
                 'order_id' => $this->orderA->id,

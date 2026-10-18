@@ -46,8 +46,8 @@ trait TwoTenantFixture
         app(TenantContext::class)->clear();
         app(TenantContext::class)->runWithoutTenant(function () {
             Model::unguard();
-
-            $this->tenantA = Tenant::create([
+            try {
+                $this->tenantA = Tenant::create([
                 'name' => 'Tenant A',
                 'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
                 'access_status' => Tenant::ACCESS_ACTIVE,
@@ -171,6 +171,9 @@ trait TwoTenantFixture
                 'processed_by' => $this->userBBarista->id,
                 'idempotency_key' => 'payment-test-B-1',
             ]);
+            } finally {
+                Model::reguard();
+            }
         });
     }
 }
