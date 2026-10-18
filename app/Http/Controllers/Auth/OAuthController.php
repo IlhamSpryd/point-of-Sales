@@ -8,6 +8,7 @@ use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\UserOAuthIdentity;
+use App\Services\AuditTrailService;
 use App\Services\Context\TenantContext;
 use App\Services\OAuthService;
 use App\Services\UserInvitationService;
@@ -214,21 +215,14 @@ class OAuthController extends Controller
             ->first();
 
         if ($existingUser !== null) {
-            $storeId = DB::table('stores')->where('tenant_id', $existingUser->tenant_id)->value('id');
-
-            if ($storeId !== null) {
-                DB::table('activity_logs')->insert([
-                    'tenant_id' => $existingUser->tenant_id,
-                    'store_id' => $storeId,
-                    'user_id' => $existingUser->id,
-                    'action' => 'oauth_auto_link_blocked',
-                    'description' => "Percobaan login {$provider} ditolak karena belum ditautkan ke akun eksisting.",
-                    'ip_address' => $request->ip(),
-                    'user_agent' => $request->userAgent(),
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-            }
+            app(AuditTrailService::class)->log(
+                tenantId: (int) $existingUser->tenant_id,
+                action: 'oauth_auto_link_blocked',
+                userId: (int) $existingUser->id,
+                description: "Percobaan login {$provider} ditolak karena belum ditautkan ke akun eksisting.",
+                ipAddress: $request->ip(),
+                userAgent: $request->userAgent()
+            );
 
             return redirect()->route('login')
                 ->with('error', 'Akun '.ucfirst($provider).' ini belum ditautkan. Silakan masuk menggunakan email dan password Anda, lalu tautkan akun '.ucfirst($provider).' melalui menu Pengaturan Profil.');

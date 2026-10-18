@@ -4,6 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use App\Models\Store;
 use App\Models\User;
+use App\Services\AuditTrailService;
 use App\Support\EmailNormalizer;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
@@ -71,21 +72,14 @@ class LoginRequest extends FormRequest
             if ($userCandidate) {
                 $isLocked = $userCandidate->recordFailedLogin(5, 15);
                 if ($isLocked) {
-                    try {
-                        DB::table('activity_logs')->insert([
-                            'tenant_id' => $userCandidate->tenant_id,
-                            'store_id' => Store::withoutTenantScope()->where('tenant_id', $userCandidate->tenant_id)->orderBy('id')->value('id') ?? 1,
-                            'user_id' => $userCandidate->id,
-                            'action' => 'user.auth_locked_out',
-                            'subject_type' => User::class,
-                            'subject_id' => $userCandidate->id,
-                            'description' => "Account {$userCandidate->email} locked for 15 minutes after 5 failed sign-in attempts.",
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
-                    } catch (\Throwable $e) {
-                        Log::warning('Audit user.auth_locked_out failed: '.$e->getMessage());
-                    }
+                    app(AuditTrailService::class)->log(
+                        tenantId: (int) $userCandidate->tenant_id,
+                        action: 'user.auth_locked_out',
+                        userId: (int) $userCandidate->id,
+                        subjectType: User::class,
+                        subjectId: (int) $userCandidate->id,
+                        description: "Account {$userCandidate->email} locked for 15 minutes after 5 failed sign-in attempts."
+                    );
 
                     event(new Lockout($this));
                     throw ValidationException::withMessages([

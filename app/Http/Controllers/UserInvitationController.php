@@ -25,7 +25,7 @@ class UserInvitationController extends Controller
     public function index(Request $request): View
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
-        Gate::authorize('create', User::class);
+        Gate::authorize('viewAny', UserInvitation::class);
 
         $invitations = UserInvitation::where('tenant_id', $tenantId)
             ->with(['role', 'invitedBy', 'stores'])
@@ -51,7 +51,7 @@ class UserInvitationController extends Controller
      */
     public function resend(Request $request, int $id): RedirectResponse
     {
-        Gate::authorize('create', User::class);
+        Gate::authorize('create', UserInvitation::class);
 
         $this->invitationService->resendInvitation($request->user(), $id);
 
@@ -64,7 +64,7 @@ class UserInvitationController extends Controller
      */
     public function revoke(Request $request, int $id): RedirectResponse
     {
-        Gate::authorize('create', User::class);
+        Gate::authorize('create', UserInvitation::class);
 
         $this->invitationService->revokeInvitation($request->user(), $id);
 

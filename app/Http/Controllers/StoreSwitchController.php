@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Shift;
+use App\Models\Store;
 use App\Services\Context\StoreResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 
 class StoreSwitchController extends Controller
@@ -63,6 +65,13 @@ class StoreSwitchController extends Controller
             if (! in_array($storeId, $allowed, true)) {
                 abort(403, 'Anda tidak memiliki hak akses ke cabang ini.');
             }
+
+            $targetStore = Store::withoutTenantScope()->where('tenant_id', $tenantId)->find($storeId);
+            if (! $targetStore) {
+                abort(404, 'Cabang tidak ditemukan.');
+            }
+
+            Gate::authorize('switch', $targetStore);
             $request->session()->put('active_store_id', $storeId);
         }
 

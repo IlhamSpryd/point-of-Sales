@@ -9,6 +9,7 @@ use App\Models\ExportTask;
 use App\Services\Context\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -41,19 +42,9 @@ class ExportTaskController extends Controller
 
     private function authorizeAccess(Request $request, ExportTask $exportTask): void
     {
+        Gate::authorize('download', $exportTask);
+
         $user = $request->user();
-
-        // SEC-01: Verifikasi kepemilikan tenant server-side secara eksplisit (Defense-in-Depth).
-        abort_unless($user && (int) $exportTask->tenant_id === (int) $user->tenant_id, 403);
-
-        $contextTenantId = app(TenantContext::class)->getTenantId();
-        if ($contextTenantId !== null) {
-            abort_unless((int) $exportTask->tenant_id === $contextTenantId, 403);
-        }
-
-        $isOwnerOrManager = in_array($user->role?->name, ['Owner', 'Manager'], true);
-
-        abort_unless($isOwnerOrManager || (int) $exportTask->requested_by === (int) $user->id, 403);
 
         // Validasi direktori penyimpanan terisolasi per tenant (mencegah path traversal dan kebocoran lintas tenant)
         if ($exportTask->file_path) {

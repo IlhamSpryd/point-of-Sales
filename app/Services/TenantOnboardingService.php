@@ -230,24 +230,15 @@ class TenantOnboardingService
         return true;
     }
 
-    private function recordAuditLog(int $tenantId, string $action, string $subjectType, int $subjectId, string $description): void
+    private function recordAuditLog(int $tenantId, string $action, string $subjectType, int $subjectId, string $description, ?int $userId = null): void
     {
-        try {
-            $storeId = Store::withoutTenantScope()->where('tenant_id', $tenantId)->orderBy('id')->value('id') ?? 1;
-
-            DB::table('activity_logs')->insert([
-                'tenant_id' => $tenantId,
-                'store_id' => $storeId,
-                'user_id' => auth()->id() ?? 1,
-                'action' => $action,
-                'subject_type' => $subjectType,
-                'subject_id' => $subjectId,
-                'description' => $description,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        } catch (\Throwable $e) {
-            Log::warning("Gagal mencatat audit log {$action}: ".$e->getMessage());
-        }
+        app(AuditTrailService::class)->log(
+            tenantId: $tenantId,
+            action: $action,
+            userId: $userId ?? auth()->id(),
+            subjectType: $subjectType,
+            subjectId: $subjectId,
+            description: $description
+        );
     }
 }
