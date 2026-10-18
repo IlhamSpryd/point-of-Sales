@@ -68,12 +68,17 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         'failed_login_attempts',
         'locked_until',
         'last_login_at',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
     ];
 
     protected $hidden = [
         'password_hash',
         'pin_hash',
         'remember_token',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     protected function casts(): array
@@ -85,12 +90,20 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
             'password' => 'hashed',
             'password_hash' => 'hashed',
             'pin_hash' => 'hashed', // Amankan PIN seperti password
+            'two_factor_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted:array',
+            'two_factor_confirmed_at' => 'datetime',
             'join_date' => 'date',
             'last_login_at' => 'datetime',
             'is_active' => 'boolean',
             'failed_login_attempts' => 'integer',
             'locked_until' => 'datetime',
         ];
+    }
+
+    public function hasTwoFactorEnabled(): bool
+    {
+        return ! empty($this->two_factor_secret) && $this->two_factor_confirmed_at !== null;
     }
 
     public function setEmailAttribute(?string $value): void

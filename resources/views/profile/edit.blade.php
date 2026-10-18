@@ -12,6 +12,10 @@
         </div>
 
         <div class="card-surface p-6 md:p-8">
+            @include('profile.partials.two-factor-authentication-form')
+        </div>
+
+        <div class="card-surface p-6 md:p-8">
             @include('profile.partials.manage-oauth-identities-form')
         </div>
 

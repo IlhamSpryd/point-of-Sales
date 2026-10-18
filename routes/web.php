@@ -33,6 +33,7 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\StoreSwitchController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserInvitationController;
 use App\Livewire\ChannelMappingManager;
@@ -148,7 +149,24 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
 
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])
+        ->middleware('require.two_factor')
+        ->name('profile.destroy');
+
+    // Autentikasi Dua Faktor (2FA / TOTP)
+    Route::get('/two-factor-challenge', [TwoFactorAuthenticationController::class, 'challenge'])->name('two-factor.challenge');
+    Route::post('/two-factor-challenge', [TwoFactorAuthenticationController::class, 'verifyChallenge'])
+        ->middleware('throttle:6,1')
+        ->name('two-factor.verify');
+
+    Route::post('/profile/two-factor/enable', [TwoFactorAuthenticationController::class, 'enable'])
+        ->middleware('throttle:6,1')
+        ->name('two-factor.enable');
+    Route::post('/profile/two-factor/confirm', [TwoFactorAuthenticationController::class, 'confirm'])
+        ->middleware('throttle:6,1')
+        ->name('two-factor.confirm');
+    Route::delete('/profile/two-factor', [TwoFactorAuthenticationController::class, 'disable'])
+        ->name('two-factor.disable');
 
     // Verify-Before-Swap Email Change Workflow
     Route::post('/profile/email/request', [ProfileEmailChangeController::class, 'requestChange'])

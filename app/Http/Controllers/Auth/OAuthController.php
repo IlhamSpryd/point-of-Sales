@@ -406,19 +406,33 @@ class OAuthController extends Controller
         }
 
         // Anti-lockout guard:
-        // Wajib memiliki minimal satu metode login lain (password_hash ATAU provider OAuth lain)
-        $hasPassword = ! empty($user->password_hash);
+        // Wajib memiliki minimal satu metode login lain (password_hash/password ATAU provider OAuth lain)
+        $hasPassword = ! empty($user->password_hash) || ! empty($user->password);
         $otherProvidersCount = $user->oauthIdentities()
             ->where('provider', '!=', $provider)
             ->count();
 
         if (! $hasPassword && $otherProvidersCount === 0) {
+            app(\App\Services\AuditTrailService::class)->log(
+                tenantId: (int) $user->tenant_id,
+                action: 'oauth.unlink_blocked',
+                userId: $user->id,
+                description: "Percobaan pelepasan akun OAuth {$provider} diblokir oleh anti-lockout guard (tidak ada kata sandi dan merupakan metode login terakhir).",
+            );
+
             return back()->with('error', 'Tidak dapat melepas tautan akun ini karena merupakan satu-satunya metode login Anda. Silakan tentukan kata sandi terlebih dahulu.');
         }
 
         $identity = $user->oauthIdentities()->where('provider', $provider)->first();
         if ($identity !== null) {
             $identity->delete();
+
+            app(\App\Services\AuditTrailService::class)->log(
+                tenantId: (int) $user->tenant_id,
+                action: 'oauth.unlinked',
+                userId: $user->id,
+                description: 'Tautan akun '.ucfirst($provider).' berhasil dilepas.',
+            );
         }
 
         return back()->with('success', 'Tautan akun '.ucfirst($provider).' berhasil dilepas.');
