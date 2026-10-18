@@ -1252,7 +1252,7 @@ class PopulateApeironFullYearDataset extends Command
                     $shiftId = $shift?->id;
 
                     $typeRoll = rand(1, 100);
-                    $orderType = $typeRoll <= 60 ? 'dine_in' : ($typeRoll <= 90 ? 'take_away' : 'delivery');
+                    $orderType = $typeRoll <= 60 ? 'dine_in' : ($typeRoll <= 90 ? 'takeaway' : 'delivery');
                     $tableId = ($orderType === 'dine_in' && ! empty($storeTables)) ? $storeTables[array_rand($storeTables)]->id : null;
 
                     $isMember = rand(1, 100) <= 40;

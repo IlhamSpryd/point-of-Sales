@@ -110,7 +110,9 @@ class ShiftSeeder extends Seeder
             }
         }
 
+        DB::statement('SET FOREIGN_KEY_CHECKS=0');
         DB::table('shifts')->truncate();
+        DB::statement('SET FOREIGN_KEY_CHECKS=1');
 
         $bar = $this->command->getOutput()->createProgressBar(count($rows));
         $bar->setFormat(' Shifts: %current%/%max% [%bar%] %percent:3s%%');
