@@ -274,20 +274,20 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
             Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
         });
 
-        // Ekspor laporan asinkron (polling status + download)
-        Route::middleware('role:Owner,Manager')->group(function () {
+        // Ekspor laporan asinkron (polling status + download) — Dilindungi hak akses fitur async_export
+        Route::middleware(['role:Owner,Manager', 'enforce.entitlement:async_export'])->group(function () {
             Route::get('/exports/{exportTask}/status', [ExportTaskController::class, 'status'])->name('exports.status');
             Route::get('/exports/{exportTask}/download', [ExportTaskController::class, 'download'])->name('exports.download');
         });
 
-        // BI restock forecast (JSON read-only, dikonsumsi widget Node 2)
-        Route::middleware('role:Owner,Manager,Inventory')->group(function () {
+        // BI restock forecast (JSON read-only, dikonsumsi widget Node 2) — Dilindungi hak akses fitur restock_forecast
+        Route::middleware(['role:Owner,Manager,Inventory', 'enforce.entitlement:restock_forecast'])->group(function () {
             Route::get('/api/analytics/restock-forecasts', [RestockForecastController::class, 'index'])
                 ->name('analytics.restock-forecasts');
         });
 
-        // Channel Mapping Manager
-        Route::middleware('role:Owner,Manager')->group(function () {
+        // Channel Mapping Manager — Dilindungi hak akses fitur omnichannel
+        Route::middleware(['role:Owner,Manager', 'enforce.entitlement:omnichannel'])->group(function () {
             Route::get('/integrations/channel-mapping', ChannelMappingManager::class)->name('integrations.channel-mapping');
         });
 

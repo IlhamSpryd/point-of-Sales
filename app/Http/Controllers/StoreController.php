@@ -41,11 +41,18 @@ class StoreController extends Controller
 
     public function store(StoreStoreRequest $request): RedirectResponse
     {
-        $store = $this->storeService->store($request->validated());
+        try {
+            $store = $this->storeService->store($request->validated());
 
-        return redirect()
-            ->route('stores.index')
-            ->with('success', "Cabang '{$store->name}' berhasil ditambahkan.");
+            return redirect()
+                ->route('stores.index')
+                ->with('success', "Cabang '{$store->name}' berhasil ditambahkan.");
+        } catch (DomainException $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
+        }
     }
 
     public function edit(Store $store): View

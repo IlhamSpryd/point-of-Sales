@@ -59,11 +59,18 @@ class DeviceController extends Controller
         $validated = $request->validated();
         $store = Store::withoutTenantScope()->findOrFail($validated['store_id']);
 
-        $device = $this->deviceService->registerDevice($store, $validated);
+        try {
+            $device = $this->deviceService->registerDevice($store, $validated);
 
-        return redirect()
-            ->route('devices.show', $device)
-            ->with('success', "Perangkat '{$device->device_name}' berhasil didaftarkan. Gunakan token pairing untuk menghubungkan kasir fisik.");
+            return redirect()
+                ->route('devices.show', $device)
+                ->with('success', "Perangkat '{$device->device_name}' berhasil didaftarkan. Gunakan token pairing untuk menghubungkan kasir fisik.");
+        } catch (DomainException $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
+        }
     }
 
     public function show(Device $device): View

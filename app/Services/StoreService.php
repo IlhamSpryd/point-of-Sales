@@ -18,7 +18,8 @@ use Illuminate\Support\Facades\DB;
 class StoreService
 {
     public function __construct(
-        protected AuditTrailService $auditTrail
+        protected AuditTrailService $auditTrail,
+        protected EntitlementService $entitlementService
     ) {}
 
     /**
@@ -55,6 +56,8 @@ class StoreService
     public function store(array $data): Store
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
+
+        $this->entitlementService->assertCanCreateStore($tenantId);
 
         return DB::transaction(function () use ($tenantId, $data) {
             $store = new Store($data);

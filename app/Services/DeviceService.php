@@ -18,7 +18,8 @@ use Illuminate\Support\Str;
 class DeviceService
 {
     public function __construct(
-        protected AuditTrailService $auditTrail
+        protected AuditTrailService $auditTrail,
+        protected EntitlementService $entitlementService
     ) {}
 
     /**
@@ -67,6 +68,8 @@ class DeviceService
         if ((int) $store->tenant_id !== (int) $tenantId) {
             throw new DomainException('Cabang tidak valid untuk tenant yang sedang aktif.');
         }
+
+        $this->entitlementService->assertCanCreateDevice($tenantId, (int) $store->id);
 
         return DB::transaction(function () use ($tenantId, $store, $data) {
             $pairingToken = strtoupper(Str::random(12)); // 12-char high-entropy alphanumeric token

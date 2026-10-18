@@ -40,10 +40,16 @@ class UserInvitationController extends Controller
      */
     public function store(StoreUserInvitationRequest $request): RedirectResponse
     {
-        $this->invitationService->issueInvitation($request->user(), $request->validated());
+        try {
+            $this->invitationService->issueInvitation($request->user(), $request->validated());
 
-        return redirect()->route('users.index')
-            ->with('success', 'Undangan karyawan berhasil dikirim.');
+            return redirect()->route('users.index')
+                ->with('success', 'Undangan karyawan berhasil dikirim.');
+        } catch (\DomainException $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
+        }
     }
 
     /**

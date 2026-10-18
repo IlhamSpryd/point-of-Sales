@@ -38,6 +38,7 @@ class BranchCrudAndIsolationTest extends TestCase
             'status' => 'active',
             'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             'access_status' => Tenant::ACCESS_ACTIVE,
+            'subscription_plan' => 'pro',
         ]);
 
         $context = app(TenantContext::class);

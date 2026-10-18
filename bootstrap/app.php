@@ -50,6 +50,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'enforce.email.verification' => EnforceEmailVerification::class,
             'ensure.onboarding.completed' => \App\Http\Middleware\EnsureOnboardingCompleted::class,
             'verify.provisioning' => VerifyProvisioningSignature::class,
+            'enforce.entitlement' => \App\Http\Middleware\EnforceEntitlement::class,
         ]);
 
         $middleware->priority([
