@@ -104,6 +104,7 @@ class UserSeeder extends Seeder
                     'name' => $name,
                     'phone_number' => '08'.$faker->numerify('##########'),
                     'email' => $email,
+                    'email_normalized' => \App\Support\EmailNormalizer::normalize($email),
                     'email_verified_at' => $now,
                     'password' => $hashedPassword,
                     'pin_hash' => Hash::make($generatePin()),

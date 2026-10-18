@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Casts\OrderTypeCast;
 use App\Enums\OrderStatus;
 use App\Enums\OrderType;
 use App\Enums\PaymentMethod;
@@ -71,7 +72,7 @@ class Order extends Model
     {
         return [
             'order_date' => 'date',
-            'order_type' => OrderType::class,
+            'order_type' => OrderTypeCast::class,
             'order_status' => OrderStatus::class,
             'payment_method' => PaymentMethod::class,
             'voided_at' => 'datetime',
