@@ -104,4 +104,20 @@ class Device extends Model
     {
         return $this->status === self::STATUS_PAIRED && ! empty($this->device_fingerprint);
     }
+
+    /**
+     * Resolusi implicit route model binding untuk Device.
+     * Mengabaikan StoreScope agar resource dapat ditemukan untuk evaluasi
+     * hak akses lintas-cabang oleh DevicePolicy, namun tetap mempertahankan TenantScope.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  mixed  $value
+     * @param  string|null  $field
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        return $query->withoutGlobalScope(\App\Models\Scopes\StoreScope::class)
+            ->where($field ?? $this->getRouteKeyName(), $value);
+    }
 }

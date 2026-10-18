@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\Shift;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
@@ -75,10 +76,15 @@ class CashierPinService
 
     /**
      * Memverifikasi PIN kasir dengan perlindungan rate limiting brute-force.
+     * Mengaitkan context shift yang tervalidasi pada pencatatan audit lockout.
+     *
+     * @param  User  $user  Pengguna kasir yang diverifikasi
+     * @param  string  $pin  PIN numerik yang dimasukkan
+     * @param  int|Shift|null  $shiftContext  ID Shift atau instance Shift (opsional)
      *
      * @throws ValidationException jika akun terkunci akibat terlalu banyak percobaan salah.
      */
-    public function verifyPin(User $user, string $pin): bool
+    public function verifyPin(User $user, string $pin, int|Shift|null $shiftContext = null): bool
     {
         $throttleKey = $this->throttleKey($user);
 
@@ -99,13 +105,17 @@ class CashierPinService
             RateLimiter::hit($throttleKey, self::DECAY_SECONDS);
 
             if ($this->isLockedOut($user)) {
+                $shiftAudit = $this->resolveShiftContextForAudit($user, $shiftContext);
+
                 $this->auditTrail->log(
                     tenantId: (int) $user->tenant_id,
                     action: 'cashier.pin_locked_out',
                     userId: (int) $user->id,
+                    storeId: $shiftAudit['store_id'] ?? null,
                     subjectType: User::class,
                     subjectId: (int) $user->id,
-                    description: "PIN Kasir untuk user #{$user->id} ({$user->name}) terkunci selama 15 menit setelah 5 percobaan salah."
+                    description: "PIN Kasir untuk user #{$user->id} ({$user->name}) terkunci selama 15 menit setelah 5 percobaan salah." . (isset($shiftAudit['shift_id']) ? " (Shift #{$shiftAudit['shift_id']})" : ''),
+                    metadata: $shiftAudit['metadata'] ?? null
                 );
 
                 $seconds = RateLimiter::availableIn($throttleKey);
@@ -123,6 +133,79 @@ class CashierPinService
         RateLimiter::clear($throttleKey);
 
         return true;
+    }
+
+    /**
+     * Memvalidasi dan menyelesaikan context shift untuk audit lockout tanpa
+     * mempercayai input mentah. Hanya dieksekusi saat ambang batas lockout tercapai.
+     *
+     * @return array{shift_id?: int, store_id?: int, metadata: array<string, mixed>}
+     */
+    private function resolveShiftContextForAudit(User $user, int|Shift|null $shiftContext): array
+    {
+        $result = [
+            'metadata' => [
+                'lockout_threshold' => self::MAX_ATTEMPTS,
+                'decay_seconds' => self::DECAY_SECONDS,
+            ],
+        ];
+
+        if ($shiftContext instanceof Shift) {
+            $matchesTenant = (int) $shiftContext->tenant_id === (int) $user->tenant_id;
+            $matchesUser = (int) $shiftContext->user_id === (int) $user->id;
+
+            if ($matchesTenant && $matchesUser) {
+                $result['shift_id'] = (int) $shiftContext->id;
+                $result['store_id'] = (int) $shiftContext->store_id;
+                $result['metadata']['shift_id'] = (int) $shiftContext->id;
+                $result['metadata']['shift_status'] = $shiftContext->status;
+                $result['metadata']['shift_store_id'] = (int) $shiftContext->store_id;
+            } else {
+                $result['metadata']['unverified_shift_id'] = (int) $shiftContext->id;
+                $result['metadata']['shift_validation'] = 'mismatch_tenant_or_user';
+            }
+
+            return $result;
+        }
+
+        if (is_int($shiftContext)) {
+            $shift = Shift::withoutGlobalScopes()
+                ->where('tenant_id', $user->tenant_id)
+                ->where('user_id', $user->id)
+                ->where('id', $shiftContext)
+                ->first();
+
+            if ($shift) {
+                $result['shift_id'] = (int) $shift->id;
+                $result['store_id'] = (int) $shift->store_id;
+                $result['metadata']['shift_id'] = (int) $shift->id;
+                $result['metadata']['shift_status'] = $shift->status;
+                $result['metadata']['shift_store_id'] = (int) $shift->store_id;
+            } else {
+                $result['metadata']['unverified_shift_id'] = $shiftContext;
+                $result['metadata']['shift_validation'] = 'shift_not_found_or_unauthorized';
+            }
+
+            return $result;
+        }
+
+        // Jika null, cek apakah user memiliki shift aktif terbuka saat ini
+        $activeShift = Shift::withoutGlobalScopes()
+            ->where('tenant_id', $user->tenant_id)
+            ->where('user_id', $user->id)
+            ->where('status', 'open')
+            ->first();
+
+        if ($activeShift) {
+            $result['shift_id'] = (int) $activeShift->id;
+            $result['store_id'] = (int) $activeShift->store_id;
+            $result['metadata']['shift_id'] = (int) $activeShift->id;
+            $result['metadata']['shift_status'] = 'open';
+            $result['metadata']['shift_store_id'] = (int) $activeShift->store_id;
+            $result['metadata']['shift_resolved_from'] = 'active_open_shift';
+        }
+
+        return $result;
     }
 
     /**

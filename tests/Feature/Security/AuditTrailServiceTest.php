@@ -171,4 +171,125 @@ class AuditTrailServiceTest extends TestCase
         }
         $this->assertTrue($deleteFailed, 'Trigger append-only seharusnya mencegah DELETE.');
     }
+
+    public function test_sensitive_credentials_are_redacted_in_old_and_new_values_and_metadata(): void
+    {
+        [$tenant, $store, $user] = $this->createTenantFixture();
+        $service = app(AuditTrailService::class);
+
+        $sentinelPassword = 'SECRET_PASSWORD_SENTINEL_XYZ_987';
+        $sentinelPin = 'PIN_SENTINEL_999999';
+        $sentinelToken = 'TOKEN_PAIRING_SENTINEL_ABC_123';
+        $sentinelSecret = 'TOTP_SECRET_SENTINEL_456';
+        $sentinelOtp = 'OTP_SENTINEL_654321';
+        $sentinelRecovery = 'RECOVERY_SENTINEL_CODE_1';
+
+        $oldValues = [
+            'name' => 'Old Kasir Name',
+            'email' => 'kasir@example.com',
+            'password' => $sentinelPassword,
+            'pin_hash' => $sentinelPin,
+            'pairing_token' => $sentinelToken,
+            'pairing_token_expires_at' => '2026-12-31 23:59:59',
+            'nested' => [
+                'two_factor_secret' => $sentinelSecret,
+                'twoFactorRecoveryCodes' => [$sentinelRecovery],
+                'deep' => [
+                    'OTP' => $sentinelOtp,
+                    'is_active' => true,
+                ],
+            ],
+        ];
+
+        $newValues = [
+            'name' => 'New Kasir Name',
+            'Password' => $sentinelPassword,
+            'cashier_pin' => $sentinelPin,
+            'twoFactorSecret' => $sentinelSecret,
+            'apiKey' => 'APIKEY_SENTINEL_LIVE_999',
+        ];
+
+        $metadata = [
+            'client' => 'web-pos',
+            'authToken' => 'BEARER_SENTINEL_TOKEN_XYZ',
+            'safe_info' => 'operational_log',
+        ];
+
+        $id = $service->log(
+            tenantId: $tenant->id,
+            action: 'user.security_update',
+            userId: $user->id,
+            storeId: $store->id,
+            description: 'Uji sanitasi data sensitif pada audit log.',
+            oldValues: $oldValues,
+            newValues: $newValues,
+            metadata: $metadata
+        );
+
+        $this->assertNotNull($id);
+
+        $log = DB::table('activity_logs')->where('id', $id)->first();
+        $this->assertNotNull($log);
+
+        $rawRowJson = json_encode($log);
+
+        // Buktikan tidak ada sentinel rahasia yang tersimpan di kolom database
+        $this->assertStringNotContainsString($sentinelPassword, $rawRowJson);
+        $this->assertStringNotContainsString($sentinelPin, $rawRowJson);
+        $this->assertStringNotContainsString($sentinelToken, $rawRowJson);
+        $this->assertStringNotContainsString($sentinelSecret, $rawRowJson);
+        $this->assertStringNotContainsString($sentinelOtp, $rawRowJson);
+        $this->assertStringNotContainsString($sentinelRecovery, $rawRowJson);
+        $this->assertStringNotContainsString('APIKEY_SENTINEL_LIVE_999', $rawRowJson);
+        $this->assertStringNotContainsString('BEARER_SENTINEL_TOKEN_XYZ', $rawRowJson);
+
+        // Buktikan field non-sensitif tetap utuh
+        $storedOld = json_decode($log->old_values, true);
+        $this->assertEquals('Old Kasir Name', $storedOld['name']);
+        $this->assertEquals('kasir@example.com', $storedOld['email']);
+        $this->assertEquals('2026-12-31 23:59:59', $storedOld['pairing_token_expires_at']);
+        $this->assertEquals('[REDACTED]', $storedOld['password']);
+        $this->assertEquals('[REDACTED]', $storedOld['pin_hash']);
+        $this->assertEquals('[REDACTED]', $storedOld['pairing_token']);
+        $this->assertEquals('[REDACTED]', $storedOld['nested']['two_factor_secret']);
+        $this->assertEquals('[REDACTED]', $storedOld['nested']['twoFactorRecoveryCodes']);
+        $this->assertEquals('[REDACTED]', $storedOld['nested']['deep']['OTP']);
+        $this->assertTrue($storedOld['nested']['deep']['is_active']);
+
+        $storedNew = json_decode($log->new_values, true);
+        $this->assertEquals('New Kasir Name', $storedNew['name']);
+        $this->assertEquals('[REDACTED]', $storedNew['Password']);
+        $this->assertEquals('[REDACTED]', $storedNew['cashier_pin']);
+        $this->assertEquals('[REDACTED]', $storedNew['twoFactorSecret']);
+        $this->assertEquals('[REDACTED]', $storedNew['apiKey']);
+
+        $storedMeta = json_decode($log->metadata, true);
+        $this->assertEquals('web-pos', $storedMeta['client']);
+        $this->assertEquals('operational_log', $storedMeta['safe_info']);
+        $this->assertEquals('[REDACTED]', $storedMeta['authToken']);
+    }
+
+    public function test_handles_null_empty_and_non_sensitive_payloads_cleanly(): void
+    {
+        [$tenant, $store, $user] = $this->createTenantFixture();
+        $service = app(AuditTrailService::class);
+
+        $id = $service->log(
+            tenantId: $tenant->id,
+            action: 'clean.payload_test',
+            userId: $user->id,
+            storeId: $store->id,
+            oldValues: null,
+            newValues: [],
+            metadata: null
+        );
+
+        $this->assertNotNull($id);
+
+        $log = DB::table('activity_logs')->where('id', $id)->first();
+        $this->assertNull($log->old_values);
+        $this->assertEquals('[]', $log->new_values);
+        $this->assertNull($log->metadata);
+    }
 }
+

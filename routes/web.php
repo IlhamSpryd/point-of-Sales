@@ -135,6 +135,13 @@ Route::middleware('guest')->group(function () {
     Route::post('reset-password', [NewPasswordController::class, 'store'])->name('password.store');
 });
 
+// Tantangan Autentikasi Dua Faktor (2FA / TOTP)
+// Dapat diakses oleh pengguna pending-login 2FA maupun pengguna terautentikasi (step-up challenge)
+Route::get('/two-factor-challenge', [TwoFactorAuthenticationController::class, 'challenge'])->name('two-factor.challenge');
+Route::post('/two-factor-challenge', [TwoFactorAuthenticationController::class, 'verifyChallenge'])
+    ->middleware('throttle:6,1')
+    ->name('two-factor.verify');
+
 Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
@@ -153,12 +160,7 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
         ->middleware('require.two_factor')
         ->name('profile.destroy');
 
-    // Autentikasi Dua Faktor (2FA / TOTP)
-    Route::get('/two-factor-challenge', [TwoFactorAuthenticationController::class, 'challenge'])->name('two-factor.challenge');
-    Route::post('/two-factor-challenge', [TwoFactorAuthenticationController::class, 'verifyChallenge'])
-        ->middleware('throttle:6,1')
-        ->name('two-factor.verify');
-
+    // Pengaturan 2FA profil pengguna (memerlukan auth penuh)
     Route::post('/profile/two-factor/enable', [TwoFactorAuthenticationController::class, 'enable'])
         ->middleware('throttle:6,1')
         ->name('two-factor.enable');

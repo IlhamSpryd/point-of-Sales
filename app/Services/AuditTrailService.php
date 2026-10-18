@@ -63,6 +63,11 @@ class AuditTrailService
             $resolvedIp = $ipAddress ?? (request()?->ip() ?? '127.0.0.1');
             $resolvedUserAgent = $userAgent ?? request()?->userAgent();
 
+            // 4. Sanitasi terpusat old_values, new_values, dan metadata
+            $sanitizedOldValues = $this->sanitizePayload($oldValues);
+            $sanitizedNewValues = $this->sanitizePayload($newValues);
+            $sanitizedMetadata = $this->sanitizePayload($metadata);
+
             $id = DB::table('activity_logs')->insertGetId([
                 'tenant_id' => $tenantId,
                 'store_id' => $resolvedStoreId,
@@ -71,11 +76,11 @@ class AuditTrailService
                 'subject_type' => $subjectType,
                 'subject_id' => $subjectId,
                 'description' => $description,
-                'old_values' => $oldValues !== null ? json_encode($oldValues) : null,
-                'new_values' => $newValues !== null ? json_encode($newValues) : null,
+                'old_values' => $sanitizedOldValues !== null ? json_encode($sanitizedOldValues) : null,
+                'new_values' => $sanitizedNewValues !== null ? json_encode($sanitizedNewValues) : null,
                 'ip_address' => $resolvedIp ? substr($resolvedIp, 0, 45) : null,
                 'user_agent' => $resolvedUserAgent ? substr($resolvedUserAgent, 0, 500) : null,
-                'metadata' => ! empty($metadata) ? json_encode($metadata) : null,
+                'metadata' => ! empty($sanitizedMetadata) ? json_encode($sanitizedMetadata) : null,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -182,4 +187,95 @@ class AuditTrailService
         // E. Fallback terakhir jika belum ada store yang tersimpan sama sekali (pre-branch onboarding)
         return 1;
     }
+
+    /**
+     * Sanitasi terpusat untuk payload audit agar tidak membocorkan kredensial atau rahasia.
+     *
+     * @param  array<string, mixed>|null  $payload
+     * @return array<string, mixed>|null
+     */
+    public function sanitizePayload(?array $payload): ?array
+    {
+        if ($payload === null) {
+            return null;
+        }
+
+        try {
+            return $this->redactSensitiveData($payload);
+        } catch (\Throwable $e) {
+            Log::warning('[AUDIT-TRAIL] Gagal melakukan sanitasi payload audit: '.$e->getMessage());
+
+            return ['_sanitization_error' => 'Payload could not be safely sanitized'];
+        }
+    }
+
+    /**
+     * Rekursif menyaring array bertingkat.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function redactSensitiveData(array $data): array
+    {
+        $sanitized = [];
+
+        foreach ($data as $key => $value) {
+            if ($this->isSensitiveKey((string) $key)) {
+                $sanitized[$key] = '[REDACTED]';
+            } elseif (is_array($value)) {
+                $sanitized[$key] = $this->redactSensitiveData($value);
+            } else {
+                $sanitized[$key] = $value;
+            }
+        }
+
+        return $sanitized;
+    }
+
+    /**
+     * Mendeteksi apakah nama key mengandung identifier kredensial rahasia (case-insensitive & format-agnostic).
+     */
+    public function isSensitiveKey(string $key): bool
+    {
+        $normalized = strtolower(str_replace(['_', '-', ' ', '.'], '', $key));
+
+        // Pertahankan metadata operasional/waktu non-sensitif yang memuat substring kata kunci
+        if (
+            str_ends_with($normalized, 'expiresat') ||
+            str_ends_with($normalized, 'expiredat') ||
+            str_ends_with($normalized, 'expiresin') ||
+            str_ends_with($normalized, 'count') ||
+            str_ends_with($normalized, 'length')
+        ) {
+            return false;
+        }
+
+        $sensitivePatterns = [
+            'password',
+            'passwd',
+            'pin',
+            'secret',
+            'token',
+            'otp',
+            'totp',
+            'recoverycode',
+            'recoverycodes',
+            'cvv',
+            'cvc',
+            'cardnumber',
+            'creditcard',
+            'authorization',
+            'apikey',
+            'privatekey',
+        ];
+
+        foreach ($sensitivePatterns as $pattern) {
+            if (str_contains($normalized, $pattern)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }
+

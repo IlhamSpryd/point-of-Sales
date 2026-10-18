@@ -5,10 +5,13 @@ declare(strict_types=1);
 namespace Tests\Feature\Security;
 
 use App\Models\Role;
+use App\Models\Shift;
+use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\CashierPinService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
@@ -157,4 +160,168 @@ class CashierPinServiceTest extends TestCase
         // Sekarang PIN benar kembali diterima
         $this->assertTrue($service->verifyPin($kasir, '1234'));
     }
+
+    public function test_pin_lockout_records_verified_shift_context_in_audit_log(): void
+    {
+        [$tenant, $kasir] = $this->createCashierFixture();
+        $service = app(CashierPinService::class);
+
+        $store = Store::withoutTenantScope()->create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Cabang PIN',
+            'code' => 'PIN-01',
+            'is_initial' => true,
+            'is_active' => true,
+        ]);
+
+        $shift = Shift::withoutGlobalScopes()->create([
+            'tenant_id' => $tenant->id,
+            'store_id' => $store->id,
+            'user_id' => $kasir->id,
+            'opening_balance' => 100000,
+            'status' => 'open',
+            'opened_at' => now(),
+        ]);
+
+        $service->setPin($kasir, '1122');
+        $kasir->refresh();
+
+        // Lakukan 5 percobaan salah dengan menyertakan shift context
+        for ($i = 0; $i < 4; $i++) {
+            $service->verifyPin($kasir, '0000', $shift);
+        }
+
+        try {
+            $service->verifyPin($kasir, '0000', $shift);
+        } catch (ValidationException $e) {
+            // expected
+        }
+
+        $this->assertTrue($service->isLockedOut($kasir));
+
+        // Audit log mencatat activity dengan shift context
+        $log = DB::table('activity_logs')
+            ->where('tenant_id', $tenant->id)
+            ->where('action', 'cashier.pin_locked_out')
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($log);
+        $this->assertEquals($store->id, $log->store_id);
+        $this->assertEquals($kasir->id, $log->user_id);
+        $this->assertStringContainsString("Shift #{$shift->id}", $log->description);
+
+        $meta = json_decode($log->metadata, true);
+        $this->assertEquals($shift->id, $meta['shift_id']);
+        $this->assertEquals('open', $meta['shift_status']);
+        $this->assertEquals($store->id, $meta['shift_store_id']);
+
+        // Pastikan PIN tidak pernah ada di log
+        $rawLog = json_encode($log);
+        $this->assertStringNotContainsString('1122', $rawLog);
+        $this->assertStringNotContainsString('0000', $rawLog);
+    }
+
+    public function test_pin_lockout_rejects_unauthorized_shift_context_from_another_user(): void
+    {
+        [$tenant, $kasir] = $this->createCashierFixture();
+        $service = app(CashierPinService::class);
+
+        $store = Store::withoutTenantScope()->create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Cabang PIN 2',
+            'code' => 'PIN-02',
+            'is_initial' => true,
+            'is_active' => true,
+        ]);
+
+        // Buat shift milik user lain
+        $otherKasir = User::factory()->create([
+            'tenant_id' => $tenant->id,
+        ]);
+
+        $otherShift = Shift::withoutGlobalScopes()->create([
+            'tenant_id' => $tenant->id,
+            'store_id' => $store->id,
+            'user_id' => $otherKasir->id,
+            'opening_balance' => 50000,
+            'status' => 'open',
+            'opened_at' => now(),
+        ]);
+
+        $service->setPin($kasir, '4321');
+        $kasir->refresh();
+
+        for ($i = 0; $i < 4; $i++) {
+            $service->verifyPin($kasir, '9999', $otherShift);
+        }
+
+        try {
+            $service->verifyPin($kasir, '9999', $otherShift);
+        } catch (ValidationException $e) {
+            // expected
+        }
+
+        $log = DB::table('activity_logs')
+            ->where('tenant_id', $tenant->id)
+            ->where('action', 'cashier.pin_locked_out')
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($log);
+        $meta = json_decode($log->metadata, true);
+        // Shift tidak diasosiasikan sebagai shift valid karena mismatch user
+        $this->assertArrayNotHasKey('shift_id', $meta);
+        $this->assertEquals('mismatch_tenant_or_user', $meta['shift_validation']);
+        $this->assertEquals($otherShift->id, $meta['unverified_shift_id']);
+    }
+
+    public function test_pin_lockout_resolves_active_open_shift_when_context_is_null(): void
+    {
+        [$tenant, $kasir] = $this->createCashierFixture();
+        $service = app(CashierPinService::class);
+
+        $store = Store::withoutTenantScope()->create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Cabang Auto Shift',
+            'code' => 'PIN-03',
+            'is_initial' => true,
+            'is_active' => true,
+        ]);
+
+        $activeShift = Shift::withoutGlobalScopes()->create([
+            'tenant_id' => $tenant->id,
+            'store_id' => $store->id,
+            'user_id' => $kasir->id,
+            'opening_balance' => 200000,
+            'status' => 'open',
+            'opened_at' => now(),
+        ]);
+
+        $service->setPin($kasir, '5566');
+        $kasir->refresh();
+
+        // Panggil tanpa context shift (null)
+        for ($i = 0; $i < 4; $i++) {
+            $service->verifyPin($kasir, '0000');
+        }
+
+        try {
+            $service->verifyPin($kasir, '0000');
+        } catch (ValidationException $e) {
+            // expected
+        }
+
+        $log = DB::table('activity_logs')
+            ->where('tenant_id', $tenant->id)
+            ->where('action', 'cashier.pin_locked_out')
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($log);
+        $meta = json_decode($log->metadata, true);
+        $this->assertEquals($activeShift->id, $meta['shift_id']);
+        $this->assertEquals('active_open_shift', $meta['shift_resolved_from']);
+    }
 }
+
