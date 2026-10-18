@@ -30,4 +30,25 @@ enum OrderType: string
             self::SelfOrder => 'success',
         };
     }
+
+    /**
+     * Coerce loose/legacy string inputs to a canonical OrderType.
+     * Maps legacy 'take_away' to Takeaway.
+     */
+    public static function coerce(mixed $value): ?self
+    {
+        if ($value instanceof self) {
+            return $value;
+        }
+
+        if (! is_string($value)) {
+            return null;
+        }
+
+        if ($value === 'take_away') {
+            return self::Takeaway;
+        }
+
+        return self::tryFrom($value);
+    }
 }

@@ -4,6 +4,7 @@ namespace Database\Seeders\Pos;
 
 use App\Models\Tenant;
 use App\Services\Context\TenantContext;
+use App\Support\EmailNormalizer;
 use Faker\Factory as Faker;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -104,6 +105,7 @@ class UserSeeder extends Seeder
                     'name' => $name,
                     'phone_number' => '08'.$faker->numerify('##########'),
                     'email' => $email,
+                    'email_normalized' => EmailNormalizer::normalize($email),
                     'email_verified_at' => $now,
                     'password' => $hashedPassword,
                     'pin_hash' => Hash::make($generatePin()),
