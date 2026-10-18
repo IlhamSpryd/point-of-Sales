@@ -52,6 +52,14 @@ class DatabaseErrorClassifier
     }
 
     /**
+     * Alias untuk isDuplicateEntry — apakah error merupakan pelanggaran unique constraint.
+     */
+    public static function isUniqueConstraintViolation(QueryException $e, ?string $constraintOrIndex = null): bool
+    {
+        return self::isDuplicateEntry($e, $constraintOrIndex);
+    }
+
+    /**
      * Apakah error merupakan foreign key constraint violation (1451 / 1452)?
      */
     public static function isForeignKeyViolation(QueryException $e): bool

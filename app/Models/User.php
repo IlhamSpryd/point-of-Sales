@@ -5,9 +5,11 @@ namespace App\Models;
 use App\Models\Concerns\AssignsTenant;
 use App\Services\Context\TenantContext;
 use App\Services\EmployeeIdGenerator;
+use App\Support\EmailNormalizer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -20,6 +22,11 @@ use Illuminate\Support\Carbon;
  * @property string|null $employee_id
  * @property string $name
  * @property string $email
+ * @property string $email_normalized
+ * @property string|null $pending_email
+ * @property string|null $pending_email_normalized
+ * @property Carbon|null $pending_email_requested_at
+ * @property Carbon|null $password_changed_at
  * @property string|null $phone_number
  * @property string|null $password_hash
  * @property string|null $pin_hash
@@ -44,6 +51,11 @@ class User extends Authenticatable
         'employee_id',
         'name',
         'email',
+        'email_normalized',
+        'pending_email',
+        'pending_email_normalized',
+        'pending_email_requested_at',
+        'password_changed_at',
         'phone_number',
         'password_hash',
         'pin_hash',
@@ -66,6 +78,8 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'pending_email_requested_at' => 'datetime',
+            'password_changed_at' => 'datetime',
             'password' => 'hashed',
             'password_hash' => 'hashed',
             'pin_hash' => 'hashed', // Amankan PIN seperti password
@@ -75,6 +89,18 @@ class User extends Authenticatable
             'failed_login_attempts' => 'integer',
             'locked_until' => 'datetime',
         ];
+    }
+
+    public function setEmailAttribute(?string $value): void
+    {
+        $this->attributes['email'] = $value;
+        $this->attributes['email_normalized'] = EmailNormalizer::normalize($value);
+    }
+
+    public function setPendingEmailAttribute(?string $value): void
+    {
+        $this->attributes['pending_email'] = $value;
+        $this->attributes['pending_email_normalized'] = $value !== null ? EmailNormalizer::normalize($value) : null;
     }
 
     public function isLockedOut(): bool
@@ -144,6 +170,15 @@ class User extends Authenticatable
 
             $model->employee_id = EmployeeIdGenerator::next((int) $model->tenant_id);
         });
+
+        static::saving(function ($model) {
+            if (! empty($model->email) && empty($model->email_normalized)) {
+                $model->email_normalized = EmailNormalizer::normalize($model->email);
+            }
+            if (! empty($model->pending_email) && empty($model->pending_email_normalized)) {
+                $model->pending_email_normalized = EmailNormalizer::normalize($model->pending_email);
+            }
+        });
     }
 
     /**
@@ -165,6 +200,21 @@ class User extends Authenticatable
     public function stores(): BelongsToMany
     {
         return $this->belongsToMany(Store::class, 'user_stores');
+    }
+
+    public function emailVerificationOtps(): HasMany
+    {
+        return $this->hasMany(EmailVerificationOtp::class);
+    }
+
+    public function oauthIdentities(): HasMany
+    {
+        return $this->hasMany(UserOAuthIdentity::class);
+    }
+
+    public function sentInvitations(): HasMany
+    {
+        return $this->hasMany(UserInvitation::class, 'invited_by_user_id');
     }
 
     /**

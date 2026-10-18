@@ -14,6 +14,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Context\TenantContext;
 use App\Services\DatabaseErrorClassifier;
+use App\Support\EmailNormalizer;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -133,8 +134,12 @@ class ProvisioningService
         // User TIDAK memakai ScopedToTenant global (BD-7: login by email),
         // tetapi query tetap dijalankan tanpa konteks agar tidak bergantung
         // pada scope model.
-        $emailOwner = $this->tenantContext->runWithoutTenant(function () use ($data) {
-            return User::where('email', $data['owner_email'])->first();
+        $normalizedEmail = EmailNormalizer::normalize($data['owner_email']);
+        $emailOwner = $this->tenantContext->runWithoutTenant(function () use ($normalizedEmail) {
+            return User::withoutGlobalScopes()
+                ->where('email_normalized', $normalizedEmail)
+                ->whereNull('deleted_at')
+                ->first();
         });
         if ($emailOwner !== null) {
             $this->finaliseLedger($idempotencyKey, $fencingToken, [
@@ -183,7 +188,10 @@ class ProvisioningService
                 if ($e instanceof QueryException && DatabaseErrorClassifier::isDuplicateEntry($e)) {
                     // Cek apakah email benturan dengan user yang sudah ada
                     $emailConflict = $this->tenantContext->runWithoutTenant(
-                        fn () => User::withTrashed()->where('email', $data['owner_email'])->first()
+                        fn () => User::withoutGlobalScopes()
+                            ->where('email_normalized', $normalizedEmail)
+                            ->whereNull('deleted_at')
+                            ->first()
                     );
 
                     if ($emailConflict !== null) {

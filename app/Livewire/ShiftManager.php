@@ -62,12 +62,28 @@ class ShiftManager extends Component
     {
         // [D2-BE-004] Otorisasi policy buka shift.
         Gate::authorize('open', \App\Models\Shift::class);
+
+        $user = auth()->user();
+        if ($user && $user->pin_hash === null) {
+            $this->dispatch('toast', message: 'Kasir wajib menyetel PIN Kasir sebelum dapat membuka shift.', type: 'error');
+            $this->dispatch('require-pin-setup');
+            return;
+        }
+
         $this->validate([
             'opening_balance' => 'required|integer|min:0',
         ]);
-        // [D2-BE-008] Logika domain didelegasikan ke ShiftService (thin caller).
-        $opened = app(\App\Services\ShiftService::class)
-            ->openShift((int) auth()->id(), (int) $this->opening_balance);
+
+        try {
+            // [D2-BE-008] Logika domain didelegasikan ke ShiftService (thin caller).
+            $opened = app(\App\Services\ShiftService::class)
+                ->openShift((int) auth()->id(), (int) $this->opening_balance);
+        } catch (\DomainException $e) {
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
+            $this->dispatch('require-pin-setup');
+            return;
+        }
+
         if ($opened === null) {
             $this->loadActiveShift();
             $this->dispatch('toast', message: 'Anda sudah memiliki shift yang sedang aktif.', type: 'info');
@@ -75,6 +91,22 @@ class ShiftManager extends Component
         }
         $this->loadActiveShift();
         $this->dispatch('toast', message: 'Shift berhasil dibuka.', type: 'success');
+    }
+
+    public function setCashierPin(string $pin): void
+    {
+        if (! preg_match('/^\d{4,6}$/', $pin)) {
+            $this->dispatch('toast', message: 'PIN Kasir harus berupa 4-6 digit angka.', type: 'error');
+            return;
+        }
+
+        $user = auth()->user();
+        if ($user) {
+            $user->update([
+                'pin_hash' => bcrypt($pin),
+            ]);
+            $this->dispatch('toast', message: 'PIN Kasir berhasil disetel.', type: 'success');
+        }
     }
 
     public function closeShift()

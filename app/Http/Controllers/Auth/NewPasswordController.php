@@ -45,6 +45,7 @@ class NewPasswordController extends Controller
                 $user->forceFill([
                     'password' => $hash,
                     'password_hash' => $hash,
+                    'password_changed_at' => now(),
                     'remember_token' => Str::random(60),
                     'failed_login_attempts' => 0,
                     'locked_until' => null,

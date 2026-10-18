@@ -31,3 +31,4 @@ Schedule::command('orders:reconcile-midtrans')->everyTenMinutes();
 Schedule::command('emails:process-outbox')->everyMinute();
 Schedule::command('provisioning:prune-nonces')->everyTenMinutes();
 Schedule::command('provisioning:reconcile')->everyFiveMinutes();
+Schedule::command('identity:prune-challenges')->dailyAt('04:00');

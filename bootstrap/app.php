@@ -72,6 +72,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // di MidtransNotificationController, bukan oleh CSRF.
         $middleware->validateCsrfTokens(except: [
             'midtrans/notification',
+            'auth/oauth/apple/callback',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

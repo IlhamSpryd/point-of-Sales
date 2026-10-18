@@ -47,4 +47,9 @@ class UserPolicy
 
         return $this->isOwner($user) && (int) $user->tenant_id === (int) $model->tenant_id;
     }
+
+    public function manageInvitations(User $user): bool
+    {
+        return $this->isOwner($user);
+    }
 }

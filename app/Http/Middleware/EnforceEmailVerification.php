@@ -42,6 +42,7 @@ class EnforceEmailVerification
             'verification.notice',
             'verification.verify',
             'verification.send',
+            'verification.otp',
             'home', // pendaratan netral agar tidak 403 — diberi notice verifikasi
         ];
         if ($request->routeIs($allowed)) {

@@ -80,6 +80,20 @@ class UserService
     public function update(User $user, array $data): User
     {
         return DB::transaction(function () use ($user, $data) {
+            // Cegah penonaktifan atau penangguhan kasir jika masih memiliki shift aktif
+            $isBeingDeactivated = (isset($data['is_active']) && ! $data['is_active'])
+                || (isset($data['status']) && in_array($data['status'], ['suspended', 'inactive'], true));
+
+            if ($isBeingDeactivated) {
+                $hasOpenShift = \App\Models\Shift::where('user_id', $user->id)
+                    ->where('status', 'open')
+                    ->exists();
+
+                if ($hasOpenShift) {
+                    throw new \DomainException('Tidak dapat menonaktifkan kasir yang masih memiliki shift aktif. Silakan tutup shift terlebih dahulu.');
+                }
+            }
+
             if (empty($data['password'])) {
                 unset($data['password']);
             } else {
@@ -97,7 +111,7 @@ class UserService
             $user->update($data);
 
             // Invalidate active sessions jika password diubah, role diubah, atau user dinonaktifkan
-            if (isset($data['password_hash']) || (isset($data['is_active']) && ! $data['is_active']) || isset($data['role_id'])) {
+            if (isset($data['password_hash']) || (isset($data['is_active']) && ! $data['is_active']) || isset($data['role_id']) || isset($data['status'])) {
                 try {
                     DB::table('sessions')->where('user_id', $user->id)->delete();
                 } catch (\Throwable) {
@@ -115,6 +129,14 @@ class UserService
     {
         if ($user->id === Auth::id()) {
             throw new Exception('Anda tidak dapat menghapus akun sendiri.');
+        }
+
+        $hasOpenShift = \App\Models\Shift::where('user_id', $user->id)
+            ->where('status', 'open')
+            ->exists();
+
+        if ($hasOpenShift) {
+            throw new \DomainException('Tidak dapat menghapus kasir yang masih memiliki shift aktif. Silakan tutup shift terlebih dahulu.');
         }
 
         if ($user->orders()->exists()) {

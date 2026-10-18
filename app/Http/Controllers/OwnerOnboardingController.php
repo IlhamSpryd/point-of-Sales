@@ -106,6 +106,7 @@ class OwnerOnboardingController extends Controller
             $user->forceFill([
                 'password_hash' => Hash::make($request->string('password')),
                 'email_verified_at' => now(), // Verifikasi email sekaligus aktivasi
+                'is_active' => true,
                 'failed_login_attempts' => 0,
                 'locked_until' => null,
             ])->save();

@@ -6,8 +6,10 @@ use App\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Auth\OAuthController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
@@ -57,15 +59,32 @@ Route::post('/onboarding/set-password/{token}', [OwnerOnboardingController::clas
     ->middleware('throttle:6,1')
     ->name('onboarding.set-password.store');
 
-// P0-01 & SEC-01: Lockdown route legacy /register pada monolit POS
-Route::get('/register', function () {
-    return redirect()->route('login')
-        ->with('info', 'New business registration is processed through the official marketing portal.');
-})->name('register');
+// Owner Self-Registration & OTP Lifecycle
+Route::get('/register', [RegisteredUserController::class, 'create'])
+    ->name('register');
+Route::post('/register', [RegisteredUserController::class, 'store'])
+    ->middleware('throttle:6,1');
 
-Route::post('/register', function () {
-    abort(405, 'Direct public registration is disabled on this Point of Sale terminal.');
-});
+// 6-digit OTP verification
+Route::post('/verify-email/otp', [VerifyEmailController::class, 'verifyOtp'])
+    ->middleware(['auth', 'tenant.context', 'throttle:10,1'])
+    ->name('verification.otp');
+
+// Google & Apple OAuth Routes
+Route::get('/auth/oauth/{provider}/redirect', [OAuthController::class, 'redirect'])
+    ->name('oauth.redirect');
+Route::get('/auth/oauth/google/callback', [OAuthController::class, 'googleCallback'])
+    ->name('oauth.callback.google');
+Route::post('/auth/oauth/apple/callback', [OAuthController::class, 'appleCallback'])
+    ->name('oauth.callback.apple');
+
+// Employee Invitation Acceptance Lifecycle
+Route::get('/invitations/{token}/accept', [\App\Http\Controllers\UserInvitationController::class, 'showAccept'])
+    ->middleware('throttle:10,1')
+    ->name('invitations.accept');
+Route::post('/invitations/{token}/accept', [\App\Http\Controllers\UserInvitationController::class, 'processAccept'])
+    ->middleware('throttle:6,1')
+    ->name('invitations.process-accept');
 
 // Self-service resend token aktivasi (unauthenticated & rate limited throttle:3,15)
 Route::post('/onboarding/resend-token', [OwnerOnboardingController::class, 'resend'])
@@ -125,6 +144,23 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
+    // Verify-Before-Swap Email Change Workflow
+    Route::post('/profile/email/request', [\App\Http\Controllers\ProfileEmailChangeController::class, 'requestChange'])
+        ->middleware('throttle:6,1')
+        ->name('profile.email.request');
+    Route::post('/profile/email/verify', [\App\Http\Controllers\ProfileEmailChangeController::class, 'verifyChange'])
+        ->middleware('throttle:10,1')
+        ->name('profile.email.verify');
+    Route::post('/profile/email/cancel', [\App\Http\Controllers\ProfileEmailChangeController::class, 'cancelChange'])
+        ->name('profile.email.cancel');
+
+    Route::post('/profile/oauth/{provider}/link', function (string $provider, \Illuminate\Http\Request $request) {
+        $request->query->set('intent', \App\Services\OAuthService::INTENT_LINK_ACCOUNT);
+        return app(\App\Http\Controllers\Auth\OAuthController::class)->redirect($request, $provider);
+    })->name('profile.oauth.link');
+    Route::delete('/profile/oauth/{provider}', [\App\Http\Controllers\Auth\OAuthController::class, 'unlink'])
+        ->name('profile.oauth.unlink');
+
     // Penggantian Cabang (Store Switcher)
     Route::post('/switch-store', StoreSwitchController::class)->name('store.switch');
 
@@ -183,6 +219,12 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
     Route::middleware('role:Owner')->group(function () {
         Route::resource('users', UserController::class);
         Route::resource('roles', RoleController::class);
+
+        // Undangan Karyawan
+        Route::get('/users-invitations', [\App\Http\Controllers\UserInvitationController::class, 'index'])->name('users.invitations.index');
+        Route::post('/users-invitations', [\App\Http\Controllers\UserInvitationController::class, 'store'])->name('users.invitations.store');
+        Route::post('/users-invitations/{id}/resend', [\App\Http\Controllers\UserInvitationController::class, 'resend'])->name('users.invitations.resend');
+        Route::delete('/users-invitations/{id}', [\App\Http\Controllers\UserInvitationController::class, 'revoke'])->name('users.invitations.revoke');
     });
 
     // Meja

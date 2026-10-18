@@ -54,6 +54,7 @@ class EnsureOnboardingCompleted
             'verification.notice',
             'verification.verify',
             'verification.send',
+            'verification.otp',
             'logout',
         ];
 

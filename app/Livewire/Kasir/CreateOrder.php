@@ -46,6 +46,10 @@ class CreateOrder extends Component
         if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager', 'Kasir', 'Admin'], true)) {
             abort(403, 'Anda tidak memiliki hak akses kasir.');
         }
+
+        if (Auth::user()?->pin_hash === null) {
+            session()->flash('warning', 'Kasir wajib menyetel PIN Kasir sebelum dapat membuka shift atau memproses transaksi.');
+        }
     }
 
     public ?string $orderType = null;   // 'dine_in' | 'takeaway'

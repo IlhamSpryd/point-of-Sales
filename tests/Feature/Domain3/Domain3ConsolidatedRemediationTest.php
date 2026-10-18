@@ -199,7 +199,6 @@ class Domain3ConsolidatedRemediationTest extends TestCase
 
         $productRival = Product::create([
             'tenant_id' => $tenantRival->id,
-            'store_id' => $storeRival->id,
             'category_id' => $categoryRival->id,
             'product_name' => 'Rival Coffee',
             'product_price' => 20000,
@@ -279,7 +278,6 @@ class Domain3ConsolidatedRemediationTest extends TestCase
 
         $product = Product::create([
             'tenant_id' => $this->tenant->id,
-            'store_id' => $this->storeA->id,
             'category_id' => $category->id,
             'product_name' => 'Specialty Tea',
             'product_price' => 50000,

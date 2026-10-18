@@ -30,6 +30,9 @@ return [
     // Phase 14: Shadow balances authority flag
     'stock_balances_authoritative' => env('POS_STOCK_BALANCES_AUTHORITATIVE', false),
 
+    // Sprint 2: Owner self-registration flag (defaults to false for terminal lockdown)
+    'allow_web_registration' => env('POS_ALLOW_WEB_REGISTRATION', false),
+
     /*
     |------------------------------------------------------------------
     | Domain 1 — Tenant provisioning

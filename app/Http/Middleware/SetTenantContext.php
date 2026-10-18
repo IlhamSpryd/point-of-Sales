@@ -33,7 +33,11 @@ class SetTenantContext
         // 2. Validate user is active and not soft-deleted
         // Note: soft-deleted models might be excluded by default global scope,
         // but we explicitly check trashed() if applicable, and is_active.
-        if (method_exists($user, 'trashed') && $user->trashed() || ! $user->is_active) {
+        if ((method_exists($user, 'trashed') && $user->trashed()) || ! $user->is_active || ($user->status ?? 'active') === 'suspended') {
+            try {
+                \Illuminate\Support\Facades\DB::table('sessions')->where('user_id', $user->id)->delete();
+            } catch (\Throwable) {
+            }
             Auth::guard('web')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
@@ -68,6 +72,22 @@ class SetTenantContext
         $sessionStoreId = $request->session()->get('active_store_id');
         $isOwner = $user->role?->name === 'Owner' || (bool) ($user->role?->is_admin ?? false);
         $wantsAllStores = $isOwner && ($sessionStoreId === 'all' || $sessionStoreId === null);
+
+        if (empty($allowed)) {
+            if ($isOwner && ! $tenant->isOnboardingCompleted()) {
+                $this->tenantContext->setStoreId(null);
+                $request->session()->put('active_store_id', null);
+                $this->tenantContext->setAllowedStoreIds([]);
+
+                return $next($request);
+            }
+
+            if (view()->exists('home.no-access')) {
+                return response()->view('home.no-access', [], 403);
+            }
+
+            abort(403, 'Tidak ada cabang (store) yang dapat diakses untuk pengguna ini.');
+        }
 
         $activeStoreId = $this->storeResolver->resolve(
             $allowed,

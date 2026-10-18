@@ -37,7 +37,15 @@ class ShiftController extends Controller
             'opening_balance' => 'required|integer|min:0',
         ]);
 
-        $shift = $this->shiftService->openShift((int) Auth::id(), (int) $validated['opening_balance']);
+        try {
+            $shift = $this->shiftService->openShift((int) Auth::id(), (int) $validated['opening_balance']);
+        } catch (\DomainException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'require_pin_setup' => true,
+            ], 422);
+        }
 
         if (! $shift) {
             return response()->json([

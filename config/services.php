@@ -72,4 +72,18 @@ return [
         'register_url' => env('MARKETING_REGISTER_URL', 'http://localhost:8080/register'),
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID', 'test-google-client-id'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET', 'test-google-client-secret'),
+        'redirect_uri' => env('GOOGLE_REDIRECT_URI', 'http://localhost:8000/auth/oauth/google/callback'),
+    ],
+
+    'apple' => [
+        'client_id' => env('APPLE_CLIENT_ID', 'test-apple-client-id'),
+        'team_id' => env('APPLE_TEAM_ID', 'test-apple-team-id'),
+        'key_id' => env('APPLE_KEY_ID', 'test-apple-key-id'),
+        'private_key' => env('APPLE_PRIVATE_KEY'),
+        'redirect_uri' => env('APPLE_REDIRECT_URI', 'http://localhost:8000/auth/oauth/apple/callback'),
+    ],
+
 ];

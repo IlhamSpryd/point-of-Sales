@@ -12,6 +12,11 @@
                         <span class="material-symbols-rounded text-[18px]">download</span> Ekspor
                     </x-button>
                 </a>
+                <a href="{{ route('users.invitations.index') }}" class="flex-1 sm:flex-none" wire:navigate>
+                    <x-button variant="secondary" type="button" class="w-full h-10">
+                        <span class="material-symbols-rounded text-[18px]">mail</span> Undangan Staf
+                    </x-button>
+                </a>
                 <a href="{{ route('users.create') }}" class="flex-1 sm:flex-none" wire:navigate>
                     <x-button variant="primary" type="button" class="w-full h-10">
                         <span class="material-symbols-rounded text-[18px]">add</span> Tambah Pengguna

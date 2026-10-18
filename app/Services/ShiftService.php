@@ -22,6 +22,11 @@ class ShiftService
      */
     public function openShift(int $userId, int $openingBalance): ?Shift
     {
+        $user = \App\Models\User::withoutGlobalScopes()->find($userId);
+        if ($user && $user->pin_hash === null) {
+            throw new \DomainException('Kasir wajib menyetel PIN Kasir sebelum dapat membuka shift.');
+        }
+
         return DB::transaction(function () use ($userId, $openingBalance) {
             $existing = Shift::where('user_id', $userId)
                 ->where('status', 'open')

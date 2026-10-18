@@ -302,6 +302,7 @@ class Domain1AuditRemediationTest extends TestCase
                 'tenant_id' => 999999,
                 'name' => 'Orphan User Test',
                 'email' => 'orphan.test@example.com',
+                'email_normalized' => 'orphan.test@example.com',
                 'employee_id' => 'ORPH-001',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -442,7 +443,10 @@ class Domain1AuditRemediationTest extends TestCase
      */
     public function test_backoffice_owner_can_regenerate_table_token_on_demand(): void
     {
-        $tenant = Tenant::create(['name' => 'Kedai Regen']);
+        $tenant = Tenant::create([
+            'name' => 'Kedai Regen',
+            'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
+        ]);
         $store = Store::create(['tenant_id' => $tenant->id, 'name' => 'Cabang Regen']);
         $context = app(TenantContext::class);
 

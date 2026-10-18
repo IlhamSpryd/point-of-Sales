@@ -150,6 +150,31 @@ class ProcessProvisioningOutboxJob implements ShouldQueue
     {
         $body = $outbox->body_text;
 
+        if ($outbox->event_type === 'email_verification_otp') {
+            $otp = null;
+            if (preg_match('/(\d{6})/', $outbox->subject . ' ' . $body, $m)) {
+                $codeHash = hash_hmac('sha256', $m[1], config('app.key'));
+                $otp = \App\Models\EmailVerificationOtp::where('tenant_id', $outbox->tenant_id)
+                    ->where('user_id', $outbox->user_id)
+                    ->where('otp_code_hash', $codeHash)
+                    ->first();
+            }
+
+            if (! $otp) {
+                $otp = \App\Models\EmailVerificationOtp::where('tenant_id', $outbox->tenant_id)
+                    ->where('user_id', $outbox->user_id)
+                    ->where('email', $outbox->recipient_email)
+                    ->latest('id')
+                    ->first();
+            }
+
+            if (! $otp || (! $otp->isValid())) {
+                throw new \RuntimeException('otp_challenge_superseded_consumed_or_expired');
+            }
+
+            return $body;
+        }
+
         if ($outbox->event_type !== 'owner_onboarding') {
             return $body;
         }
@@ -275,6 +300,21 @@ class ProcessProvisioningOutboxJob implements ShouldQueue
         $query = EmailOutbox::whereKey($outbox->id)
             ->where('status', EmailOutbox::STATUS_PROCESSING)
             ->where('attempts', $outbox->attempts);
+
+        if (str_contains($e->getMessage(), 'otp_challenge_superseded')) {
+            $query->update([
+                'status' => EmailOutbox::STATUS_FAILED,
+                'last_error' => 'OTP superseded, consumed, or expired before delivery',
+                'next_attempt_at' => null,
+                'lease_expires_at' => null,
+            ]);
+
+            Log::info('Outbox email OTP dibatalkan karena sudah superseded, consumed, atau expired.', [
+                'outbox_id' => $outbox->id,
+            ]);
+
+            return;
+        }
 
         if ($exhausted) {
             $query->update([
