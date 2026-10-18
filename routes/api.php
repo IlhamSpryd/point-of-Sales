@@ -21,3 +21,8 @@ Route::post('/tenants/{tenant}/webhooks/{provider}/orders', [WebhookController::
 */
 Route::post('/v1/provisioning/registrations', [ProvisioningController::class, 'store'])
     ->middleware(['throttle:10,1', 'verify.provisioning']);
+
+// Terminal kasir fisik pairing / aktivasi endpoint
+Route::post('/devices/pair', [\App\Http\Controllers\DeviceController::class, 'pair'])
+    ->middleware('throttle:10,1')
+    ->name('api.devices.pair');

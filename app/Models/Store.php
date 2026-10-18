@@ -6,6 +6,7 @@ use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
 use App\Services\Context\TenantContext;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -99,5 +100,15 @@ class Store extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'user_stores');
+    }
+
+    public function devices(): HasMany
+    {
+        return $this->hasMany(Device::class);
+    }
+
+    public function tables(): HasMany
+    {
+        return $this->hasMany(Table::class);
     }
 }

@@ -13,6 +13,7 @@ use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\ExportTaskController;
 use App\Http\Controllers\HomeController;
@@ -28,6 +29,7 @@ use App\Http\Controllers\RestockForecastController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\StoreController;
 use App\Http\Controllers\StoreSwitchController;
 use App\Http\Controllers\TableController;
 use App\Http\Controllers\TransactionController;
@@ -220,8 +222,9 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
             Route::resource('categories', CategoryController::class);
         });
 
-        // Sistem (Users, Roles, Tables)
+        // Sistem (Stores, Users, Roles)
         Route::middleware('role:Owner')->group(function () {
+            Route::resource('stores', StoreController::class);
             Route::resource('users', UserController::class);
             Route::resource('roles', RoleController::class);
 
@@ -232,10 +235,15 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
             Route::delete('/users-invitations/{id}', [UserInvitationController::class, 'revoke'])->name('users.invitations.revoke');
         });
 
-        // Meja
+        // Meja & Perangkat Kasir (Devices)
         Route::middleware('role:Owner,Manager')->group(function () {
             Route::post('tables/{table}/regenerate-token', [TableController::class, 'regenerateToken'])->name('tables.regenerate-token');
             Route::resource('tables', TableController::class);
+
+            // Perangkat Kasir & Terminal POS
+            Route::post('devices/{device}/revoke', [DeviceController::class, 'revoke'])->name('devices.revoke');
+            Route::post('devices/{device}/regenerate-token', [DeviceController::class, 'regenerateToken'])->name('devices.regenerate-token');
+            Route::resource('devices', DeviceController::class);
         });
 
         // --- MODUL ENTERPRISE BARU ---
