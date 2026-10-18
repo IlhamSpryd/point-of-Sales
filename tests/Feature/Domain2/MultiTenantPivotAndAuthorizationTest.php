@@ -9,7 +9,11 @@ use App\Models\Discount;
 use App\Models\Ingredient;
 use App\Models\Modifier;
 use App\Models\ModifierGroup;
+use App\Models\ModifierIngredient;
 use App\Models\Order;
+use App\Models\Product;
+use App\Models\ProductIngredient;
+use App\Models\Role;
 use App\Models\Shift;
 use App\Models\Store;
 use App\Models\Tenant;
@@ -38,10 +42,15 @@ class MultiTenantPivotAndAuthorizationTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     protected Tenant $tenantA;
+
     protected Tenant $tenantB;
+
     protected Store $storeA;
+
     protected User $ownerA;
+
     protected User $kasirA;
+
     protected User $ownerB;
 
     protected function afterSubclassSetUp(): void
@@ -56,13 +65,13 @@ class MultiTenantPivotAndAuthorizationTest extends TestCase
         $context->setTenantId($this->tenantA->id);
         $context->setStoreId($this->storeA->id);
 
-        $roleAOwner = \App\Models\Role::forceCreate(['tenant_id' => $this->tenantA->id, 'name' => 'Owner', 'permissions' => []]);
-        $roleAKasir = \App\Models\Role::forceCreate(['tenant_id' => $this->tenantA->id, 'name' => 'Kasir', 'permissions' => []]);
+        $roleAOwner = Role::forceCreate(['tenant_id' => $this->tenantA->id, 'name' => 'Owner', 'permissions' => []]);
+        $roleAKasir = Role::forceCreate(['tenant_id' => $this->tenantA->id, 'name' => 'Kasir', 'permissions' => []]);
         $this->ownerA = User::factory()->create(['tenant_id' => $this->tenantA->id, 'role_id' => $roleAOwner->id]);
         $this->kasirA = User::factory()->create(['tenant_id' => $this->tenantA->id, 'role_id' => $roleAKasir->id]);
 
         $context->setTenantId($this->tenantB->id);
-        $roleBOwner = \App\Models\Role::forceCreate(['tenant_id' => $this->tenantB->id, 'name' => 'Owner', 'permissions' => []]);
+        $roleBOwner = Role::forceCreate(['tenant_id' => $this->tenantB->id, 'name' => 'Owner', 'permissions' => []]);
         $this->ownerB = User::factory()->create(['tenant_id' => $this->tenantB->id, 'role_id' => $roleBOwner->id]);
 
         $context->setTenantId($this->tenantA->id);
@@ -143,7 +152,7 @@ class MultiTenantPivotAndAuthorizationTest extends TestCase
     public function test_product_ingredient_pivot_stamps_tenant_id(): void
     {
         $category = Category::create(['tenant_id' => $this->tenantA->id, 'category_name' => 'C']);
-        $product = \App\Models\Product::create([
+        $product = Product::create([
             'tenant_id' => $this->tenantA->id,
             'category_id' => $category->id,
             'product_name' => 'P1',
@@ -161,7 +170,7 @@ class MultiTenantPivotAndAuthorizationTest extends TestCase
         // attach lewat relasi ->using(ProductIngredient): tenant_id di-stamp otomatis.
         $product->ingredients()->attach($ingredient->id, ['quantity_required' => 10]);
 
-        $pivot = \App\Models\ProductIngredient::query()->first();
+        $pivot = ProductIngredient::query()->first();
         $this->assertNotNull($pivot);
         $this->assertSame((int) $this->tenantA->id, (int) $pivot->tenant_id);
     }
@@ -185,7 +194,7 @@ class MultiTenantPivotAndAuthorizationTest extends TestCase
 
         $modifier->ingredients()->attach($ingredient->id, ['quantity_required' => 20]);
 
-        $pivot = \App\Models\ModifierIngredient::query()->first();
+        $pivot = ModifierIngredient::query()->first();
         $this->assertNotNull($pivot);
         $this->assertSame((int) $this->tenantA->id, (int) $pivot->tenant_id);
     }

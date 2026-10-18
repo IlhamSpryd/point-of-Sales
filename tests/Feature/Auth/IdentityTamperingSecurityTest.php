@@ -6,12 +6,10 @@ use App\Models\Role;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Models\UserInvitation;
 use App\Services\Context\TenantContext;
 use App\Services\ShiftService;
 use App\Services\UserInvitationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class IdentityTamperingSecurityTest extends TestCase
@@ -24,7 +22,7 @@ class IdentityTamperingSecurityTest extends TestCase
     {
         $tenant = Tenant::create([
             'name' => 'Kedai Kopi Aman',
-            'slug' => 'kedai-aman-' . uniqid(),
+            'slug' => 'kedai-aman-'.uniqid(),
             'status' => 'active',
             'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             'access_status' => Tenant::ACCESS_ACTIVE,
@@ -44,21 +42,21 @@ class IdentityTamperingSecurityTest extends TestCase
             'is_initial' => true,
         ]);
 
-        $ownerRole = new Role();
+        $ownerRole = new Role;
         $ownerRole->tenant_id = $tenant->id;
         $ownerRole->name = 'Owner';
         $ownerRole->permissions = ['*'];
         $ownerRole->is_active = true;
         $ownerRole->save();
 
-        $kasirRole = new Role();
+        $kasirRole = new Role;
         $kasirRole->tenant_id = $tenant->id;
         $kasirRole->name = 'Kasir';
         $kasirRole->permissions = ['pos.order.create', 'shifts.manage'];
         $kasirRole->is_active = true;
         $kasirRole->save();
 
-        $owner = new User();
+        $owner = new User;
         $owner->tenant_id = $tenant->id;
         $owner->role_id = $ownerRole->id;
         $owner->name = 'Owner Aman';

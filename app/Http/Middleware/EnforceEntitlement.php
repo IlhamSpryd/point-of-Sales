@@ -19,7 +19,7 @@ class EnforceEntitlement
     /**
      * Menegakkan hak akses fitur berbayar (feature gate) berdasarkan paket langganan tenant.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next, string $featureCode): Response
     {

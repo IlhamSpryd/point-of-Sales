@@ -1,4 +1,5 @@
 <?php
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -7,7 +8,9 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (Schema::hasTable('email_outbox')) return;
+        if (Schema::hasTable('email_outbox')) {
+            return;
+        }
         Schema::create('email_outbox', function (Blueprint $table) {
             $table->id();
             $table->string('event_type', 50);
@@ -26,5 +29,9 @@ return new class extends Migration
             $table->index(['tenant_id', 'user_id']);
         });
     }
-    public function down(): void { Schema::dropIfExists('email_outbox'); }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('email_outbox');
+    }
 };

@@ -2,9 +2,6 @@
 
 namespace Tests\Feature\Domain1;
 
-use App\Models\EmailOutbox;
-use App\Models\EmployeeIdSequence;
-use App\Models\OwnerOnboardingToken;
 use App\Models\ProvisioningRequest;
 use App\Models\Tenant;
 use App\Models\User;
@@ -53,9 +50,9 @@ class ProvisioningRealConcurrencyTest extends TestCase
      */
     public function test_concurrent_employee_id_generation_produces_monotonic_unique_ids(): void
     {
-        $tenant = Tenant::create(['name' => 'Concurrency Employee Cafe ' . Str::random(6)]);
+        $tenant = Tenant::create(['name' => 'Concurrency Employee Cafe '.Str::random(6)]);
         $concurrency = 50;
-        $barrierDir = sys_get_temp_dir() . '/barrier-emp-' . bin2hex(random_bytes(5));
+        $barrierDir = sys_get_temp_dir().'/barrier-emp-'.bin2hex(random_bytes(5));
         mkdir($barrierDir, 0777, true);
 
         $root = base_path();
@@ -124,7 +121,7 @@ class ProvisioningRealConcurrencyTest extends TestCase
         rmdir($barrierDir);
 
         // Verifikasi
-        $this->assertEmpty($errors, 'Errors occurred: ' . json_encode($errors));
+        $this->assertEmpty($errors, 'Errors occurred: '.json_encode($errors));
         $this->assertCount($concurrency, $results, "All {$concurrency} processes must return an employee ID");
 
         // Tidak ada ID duplikat
@@ -148,17 +145,17 @@ class ProvisioningRealConcurrencyTest extends TestCase
     public function test_concurrent_provisioning_with_same_idempotency_key_creates_exactly_one_tenant(): void
     {
         $concurrency = 2;
-        $key = 'conc-race-' . bin2hex(random_bytes(8));
-        $email = 'conc-owner-' . bin2hex(random_bytes(5)) . '@example.test';
+        $key = 'conc-race-'.bin2hex(random_bytes(8));
+        $email = 'conc-owner-'.bin2hex(random_bytes(5)).'@example.test';
         $payload = [
             'tenant_name' => 'Concurrency Provisioning Cafe',
             'owner_name' => 'Concurrency Owner',
             'owner_email' => $email,
             'owner_phone' => '081234567890',
         ];
-        $fingerprint = hash('sha256', 'POST|/api/v1/provisioning/registrations|' . json_encode($payload, JSON_UNESCAPED_SLASHES));
+        $fingerprint = hash('sha256', 'POST|/api/v1/provisioning/registrations|'.json_encode($payload, JSON_UNESCAPED_SLASHES));
 
-        $barrierDir = sys_get_temp_dir() . '/barrier-prov-' . bin2hex(random_bytes(5));
+        $barrierDir = sys_get_temp_dir().'/barrier-prov-'.bin2hex(random_bytes(5));
         mkdir($barrierDir, 0777, true);
 
         $pids = [];
@@ -242,17 +239,17 @@ class ProvisioningRealConcurrencyTest extends TestCase
         $iterations = 20;
 
         for ($iter = 1; $iter <= $iterations; $iter++) {
-            $key = "conc-iter-{$iter}-" . bin2hex(random_bytes(6));
-            $email = "conc-iter-{$iter}-" . bin2hex(random_bytes(4)) . "@example.test";
+            $key = "conc-iter-{$iter}-".bin2hex(random_bytes(6));
+            $email = "conc-iter-{$iter}-".bin2hex(random_bytes(4)).'@example.test';
             $payload = [
                 'tenant_name' => "Concurrency Iteration {$iter} Cafe",
                 'owner_name' => "Owner {$iter}",
                 'owner_email' => $email,
                 'owner_phone' => '081234567890',
             ];
-            $fingerprint = hash('sha256', 'POST|/api/v1/provisioning/registrations|' . json_encode($payload, JSON_UNESCAPED_SLASHES));
+            $fingerprint = hash('sha256', 'POST|/api/v1/provisioning/registrations|'.json_encode($payload, JSON_UNESCAPED_SLASHES));
 
-            $barrierDir = sys_get_temp_dir() . "/barrier-iter-{$iter}-" . bin2hex(random_bytes(4));
+            $barrierDir = sys_get_temp_dir()."/barrier-iter-{$iter}-".bin2hex(random_bytes(4));
             mkdir($barrierDir, 0777, true);
 
             $pids = [];
@@ -296,4 +293,3 @@ class ProvisioningRealConcurrencyTest extends TestCase
         }
     }
 }
-

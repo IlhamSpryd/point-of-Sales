@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Tests\Feature\Domain2;
 
 use App\Enums\OrderStatus;
+use App\Models\Category;
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\Role;
 use App\Models\Shift;
 use App\Models\Store;
@@ -21,11 +23,17 @@ class IdempotencyPortabilityTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenantA;
+
     protected Tenant $tenantB;
+
     protected Store $storeA;
+
     protected Store $storeB;
+
     protected User $cashierA;
+
     protected User $cashierB;
+
     protected Shift $shiftA;
 
     protected function afterSubclassSetUp(): void
@@ -47,12 +55,12 @@ class IdempotencyPortabilityTest extends TestCase
         $this->cashierA = User::factory()->create(['tenant_id' => $this->tenantA->id, 'role_id' => $roleA->id]);
         $this->cashierA->stores()->attach($this->storeA->id, ['tenant_id' => $this->tenantA->id]);
 
-        $categoryA = \App\Models\Category::create([
+        $categoryA = Category::create([
             'tenant_id' => $this->tenantA->id,
             'category_name' => 'Food',
         ]);
 
-        $this->productA = \App\Models\Product::forceCreate([
+        $this->productA = Product::forceCreate([
             'tenant_id' => $this->tenantA->id,
             'category_id' => $categoryA->id,
             'product_name' => 'Burger',
@@ -83,7 +91,7 @@ class IdempotencyPortabilityTest extends TestCase
         ]);
     }
 
-    protected \App\Models\Product $productA;
+    protected Product $productA;
 
     public function test_existing_order_with_same_idempotency_key_returns_idempotent_success(): void
     {

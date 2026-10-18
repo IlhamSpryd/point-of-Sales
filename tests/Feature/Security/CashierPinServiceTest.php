@@ -27,7 +27,7 @@ class CashierPinServiceTest extends TestCase
     {
         $tenant = Tenant::create([
             'name' => 'Kedai PIN Test',
-            'slug' => 'kedai-pin-' . uniqid(),
+            'slug' => 'kedai-pin-'.uniqid(),
             'status' => 'active',
             'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             'access_status' => Tenant::ACCESS_ACTIVE,
@@ -36,14 +36,14 @@ class CashierPinServiceTest extends TestCase
             'country_code' => 'ID',
         ]);
 
-        $role = new Role();
+        $role = new Role;
         $role->tenant_id = $tenant->id;
         $role->name = 'Kasir';
         $role->permissions = ['pos.order.create'];
         $role->is_active = true;
         $role->save();
 
-        $kasir = new User();
+        $kasir = new User;
         $kasir->tenant_id = $tenant->id;
         $kasir->role_id = $role->id;
         $kasir->name = 'Kasir PIN';
@@ -324,4 +324,3 @@ class CashierPinServiceTest extends TestCase
         $this->assertEquals('active_open_shift', $meta['shift_resolved_from']);
     }
 }
-

@@ -114,7 +114,7 @@ class CashierPinService
                     storeId: $shiftAudit['store_id'] ?? null,
                     subjectType: User::class,
                     subjectId: (int) $user->id,
-                    description: "PIN Kasir untuk user #{$user->id} ({$user->name}) terkunci selama 15 menit setelah 5 percobaan salah." . (isset($shiftAudit['shift_id']) ? " (Shift #{$shiftAudit['shift_id']})" : ''),
+                    description: "PIN Kasir untuk user #{$user->id} ({$user->name}) terkunci selama 15 menit setelah 5 percobaan salah.".(isset($shiftAudit['shift_id']) ? " (Shift #{$shiftAudit['shift_id']})" : ''),
                     metadata: $shiftAudit['metadata'] ?? null
                 );
 
@@ -238,5 +238,38 @@ class CashierPinService
     public function throttleKey(User $user): string
     {
         return "pos:cashier_pin_throttle:{$user->tenant_id}:{$user->id}";
+    }
+
+    /**
+     * Memverifikasi PIN supervisor atau manager untuk otorisasi aksi sensitif (EOD, reprint lanjutan).
+     *
+     * @throws ValidationException
+     */
+    public function verifySupervisorPin(int $userId, string $pin, int $tenantId): bool
+    {
+        $user = User::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('id', $userId)
+            ->first();
+
+        if (! $user) {
+            throw ValidationException::withMessages([
+                'pin' => 'Pengguna supervisor tidak ditemukan atau tidak terafiliasi dengan tenant ini.',
+            ]);
+        }
+
+        if (! $this->hasPin($user)) {
+            throw ValidationException::withMessages([
+                'pin' => 'Supervisor belum memiliki PIN aktif.',
+            ]);
+        }
+
+        if (! $this->verifyPin($user, $pin)) {
+            throw ValidationException::withMessages([
+                'pin' => 'PIN supervisor tidak valid.',
+            ]);
+        }
+
+        return true;
     }
 }

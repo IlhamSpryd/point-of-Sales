@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Security;
 
-use App\Models\ActivityLog;
 use App\Models\Device;
 use App\Models\Role;
 use App\Models\Shift;
@@ -23,9 +22,13 @@ class BranchCrudAndIsolationTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     private Tenant $tenantA;
+
     private Store $initialStoreA;
+
     private User $ownerA;
+
     private User $managerA;
+
     private User $kasirA;
 
     protected function afterSubclassSetUp(): void

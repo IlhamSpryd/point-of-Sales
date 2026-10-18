@@ -8,6 +8,7 @@ use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
 use App\Services\Context\TenantContext;
 use App\Services\MenuCacheService;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -18,6 +19,8 @@ use Illuminate\Support\Facades\DB;
 /**
  * Model Product untuk memetakan rekaman setiap komoditas atau
  * barang dagangan yang diperjualbelikan pada antarmuka sistem.
+ *
+ * @property-read Collection<int, Ingredient> $ingredients
  */
 class Product extends Model
 {

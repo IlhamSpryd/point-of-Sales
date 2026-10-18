@@ -13,7 +13,7 @@ class RequireTwoFactorChallenge
     /**
      * Mengharuskan konfirmasi 2FA segar pada aksi berisiko tinggi bagi pengguna yang mengaktifkan 2FA.
      *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
+     * @param  Closure(Request): (Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {

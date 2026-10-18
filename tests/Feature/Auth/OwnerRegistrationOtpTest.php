@@ -6,7 +6,6 @@ use App\Models\EmailOutbox;
 use App\Models\EmailVerificationOtp;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Services\EmailVerificationOtpService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 

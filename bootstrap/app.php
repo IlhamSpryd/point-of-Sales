@@ -1,7 +1,10 @@
 <?php
 
 use App\Http\Middleware\EnforceEmailVerification;
+use App\Http\Middleware\EnforceEntitlement;
+use App\Http\Middleware\EnsureOnboardingCompleted;
 use App\Http\Middleware\EnsureTableSession;
+use App\Http\Middleware\RequireTwoFactorChallenge;
 use App\Http\Middleware\ResolveTableFromToken;
 use App\Http\Middleware\RoleMiddleware;
 use App\Http\Middleware\SecurityHeaders;
@@ -48,10 +51,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'verify.webhook' => VerifyWebhookSignature::class,
             'tenant.context' => SetTenantContext::class,
             'enforce.email.verification' => EnforceEmailVerification::class,
-            'ensure.onboarding.completed' => \App\Http\Middleware\EnsureOnboardingCompleted::class,
+            'ensure.onboarding.completed' => EnsureOnboardingCompleted::class,
             'verify.provisioning' => VerifyProvisioningSignature::class,
-            'enforce.entitlement' => \App\Http\Middleware\EnforceEntitlement::class,
-            'require.two_factor' => \App\Http\Middleware\RequireTwoFactorChallenge::class,
+            'enforce.entitlement' => EnforceEntitlement::class,
+            'require.two_factor' => RequireTwoFactorChallenge::class,
         ]);
 
         $middleware->priority([

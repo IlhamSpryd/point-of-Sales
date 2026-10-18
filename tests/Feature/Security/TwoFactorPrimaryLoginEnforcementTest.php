@@ -11,8 +11,6 @@ use App\Models\User;
 use App\Services\Context\TenantContext;
 use App\Services\TwoFactorAuthService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -23,11 +21,17 @@ class TwoFactorPrimaryLoginEnforcementTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private User $userWithoutMfa;
+
     private User $userWithMfa;
+
     private TwoFactorAuthService $twoFactorService;
+
     private string $mfaSecret;
+
     private array $mfaRecoveryCodes;
 
     protected function afterSubclassSetUp(): void
@@ -38,7 +42,7 @@ class TwoFactorPrimaryLoginEnforcementTest extends TestCase
 
         $this->tenant = Tenant::create([
             'name' => 'MFA Test Tenant',
-            'slug' => 'mfa-test-tenant-' . uniqid(),
+            'slug' => 'mfa-test-tenant-'.uniqid(),
             'status' => 'active',
             'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             'access_status' => Tenant::ACCESS_ACTIVE,

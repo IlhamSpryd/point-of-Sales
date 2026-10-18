@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\ActivityLog;
 use App\Models\Store;
 use App\Models\User;
 use App\Services\Context\TenantContext;
@@ -60,8 +59,8 @@ class AuditTrailService
             $resolvedStoreId = $this->resolveStoreId($tenantId, $storeId, $resolvedUserId);
 
             // 3. Fallback IP dan User Agent dari HTTP request jika ada
-            $resolvedIp = $ipAddress ?? (request()?->ip() ?? '127.0.0.1');
-            $resolvedUserAgent = $userAgent ?? request()?->userAgent();
+            $resolvedIp = $ipAddress ?? (request()->ip() ?? '127.0.0.1');
+            $resolvedUserAgent = $userAgent ?? request()->userAgent();
 
             // 4. Sanitasi terpusat old_values, new_values, dan metadata
             $sanitizedOldValues = $this->sanitizePayload($oldValues);
@@ -278,4 +277,3 @@ class AuditTrailService
         return false;
     }
 }
-

@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Domain2;
 
 use App\Enums\PaymentMethod;
-use App\Models\Category;
 use App\Models\Discount;
 use App\Models\Order;
-use App\Models\Product;
 use App\Models\Shift;
 use App\Models\Table;
 use App\Services\Context\TenantContext;
@@ -202,6 +200,9 @@ class HttpEntryPointAndBladeIntegrityTest extends TestCase
      */
     public function test_store_checkout_request_validation(): void
     {
+        app(TenantContext::class)->setTenantId($this->tenantA->id);
+        app(TenantContext::class)->setStoreId($this->storeA->id);
+
         $tableA = Table::create([
             'tenant_id' => $this->tenantA->id,
             'store_id' => $this->storeA->id,

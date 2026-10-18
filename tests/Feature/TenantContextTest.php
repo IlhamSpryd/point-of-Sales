@@ -2,11 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Http\Middleware\SetTenantContext;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use RuntimeException;
 use Tests\TestCase;
 
@@ -48,21 +50,27 @@ class TenantContextTest extends TestCase
     {
         $tenant = Tenant::create(['name' => 'Test Tenant']);
         $store = Store::create(['tenant_id' => $tenant->id, 'name' => 'Main']);
-        $user = User::factory()->create(['tenant_id' => $tenant->id, 'is_active' => true]);
+        $user = User::factory()->create(['tenant_id' => $tenant->id, 'is_active' => true, 'email_verified_at' => now()]);
         $user->stores()->attach($store->id, ['tenant_id' => $tenant->id]);
 
-        $this->actingAs($user);
+        $middleware = app(SetTenantContext::class);
+        $request = Request::create('/home');
+        $session = $this->app['session']->driver();
+        $session->setId('test-session');
+        $session->start();
+        $request->setLaravelSession($session);
+        $request->setUserResolver(fn () => $user);
 
-        // Accessing a route that uses the tenant.context middleware
-        $response = $this->get('/home');
+        $response = $middleware->handle($request, function () use ($tenant, $store) {
+            $context = $this->app->make(TenantContext::class);
+            $this->assertTrue($context->hasTenant());
+            $this->assertEquals($tenant->id, $context->getTenantId());
+            $this->assertEquals($store->id, $context->getStoreId());
 
-        $response->assertStatus(200);
+            return response('OK', 200);
+        });
 
-        // Verify context is set
-        $context = $this->app->make(TenantContext::class);
-        $this->assertTrue($context->hasTenant());
-        $this->assertEquals($tenant->id, $context->getTenantId());
-        $this->assertEquals($store->id, $context->getStoreId());
+        $this->assertEquals(200, $response->getStatusCode());
     }
 
     public function test_authenticated_user_without_tenant_is_rejected()
@@ -88,7 +96,9 @@ class TenantContextTest extends TestCase
         $tenant = Tenant::create(['name' => 'Test Tenant']);
         $user = User::factory()->create([
             'tenant_id' => $tenant->id,
-            'password' => bcrypt('password123'),
+            'password' => 'password123',
+            'is_active' => true,
+            'email_verified_at' => now(),
         ]);
 
         // Trying to login
@@ -105,22 +115,16 @@ class TenantContextTest extends TestCase
     {
         $tenantA = Tenant::create(['name' => 'Test Tenant A']);
         $storeA = Store::create(['tenant_id' => $tenantA->id, 'name' => 'Main A']);
-        $userA = User::factory()->create(['tenant_id' => $tenantA->id, 'is_active' => true]);
+        $userA = User::factory()->create(['tenant_id' => $tenantA->id, 'is_active' => true, 'email_verified_at' => now()]);
         $userA->stores()->attach($storeA->id, ['tenant_id' => $tenantA->id]);
 
-        // First request sets context to A
+        // First request sets context during processing, and terminates cleanly
         $this->actingAs($userA);
         $this->get('/home')->assertStatus(200);
 
+        // After request termination, SetTenantContext::terminate ensures context is cleared
         $context = $this->app->make(TenantContext::class);
-        $this->assertEquals($tenantA->id, $context->getTenantId());
-
-        // We simulate a new lifecycle by resetting the app/container for a moment,
-        // or we just trust the test suite's isolation. In reality, testing scoped
-        // binding directly shows that if we resolve it from a fresh container, it's fresh.
-        // Let's clear the context manually if needed, or check its fresh state in another test.
-        // Wait, TestCase tearDown/setUp handles container flushing. Let's just prove clearing works:
-        $context->clear();
         $this->assertFalse($context->hasTenant());
+        $this->assertNull($context->getTenantId());
     }
 }

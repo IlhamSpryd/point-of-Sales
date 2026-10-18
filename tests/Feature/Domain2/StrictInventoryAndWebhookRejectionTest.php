@@ -21,6 +21,7 @@ use App\Services\Context\TenantContext;
 use App\Services\TransactionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 /**
@@ -41,10 +42,15 @@ class StrictInventoryAndWebhookRejectionTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $cashier;
+
     protected Shift $shift;
+
     protected Product $product;
+
     protected Ingredient $ingredient;
 
     protected function afterSubclassSetUp(): void
@@ -246,7 +252,7 @@ class StrictInventoryAndWebhookRejectionTest extends TestCase
                 'payments' => [['method' => 'ewallet', 'amount' => 66600]],
             ], $this->cashier->id);
             $this->fail('Modifier BOM shortage must be rejected.');
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             $this->assertStringContainsStringIgnoringCase('tidak mencukupi', collect($e->errors())->flatten()->first());
         }
 

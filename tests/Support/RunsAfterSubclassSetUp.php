@@ -2,7 +2,7 @@
 
 namespace Tests\Support;
 
-use ReflectionMethod;
+use Illuminate\Foundation\Testing\TestCase;
 
 /**
  * RunsAfterSubclassSetUp.
@@ -39,6 +39,7 @@ trait RunsAfterSubclassSetUp
             $uses = class_uses_recursive($class->getName());
             if (in_array(RunsAfterSubclassSetUp::class, $uses, true)) {
                 $class = $class->getParentClass();
+
                 continue;
             }
 
@@ -50,7 +51,7 @@ trait RunsAfterSubclassSetUp
                 }
             }
 
-            if ($class->getName() === \Illuminate\Foundation\Testing\TestCase::class) {
+            if ($class->getName() === TestCase::class) {
                 break;
             }
 

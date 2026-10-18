@@ -11,7 +11,9 @@ use App\Models\ProvisioningRequest;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Context\TenantContext;
+use App\Services\DatabaseErrorClassifier;
 use App\Services\ProvisioningService;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
@@ -52,8 +54,8 @@ class ProvisioningHardenedIntegrityTest extends TestCase
     public function test_stale_worker_with_expired_fencing_token_rolls_back_and_refuses_commit(): void
     {
         $payload = $this->validPayload();
-        $key = 'stale-worker-test-' . Str::random(8);
-        $fingerprint = hash('sha256', 'POST|/api/v1/provisioning/registrations|' . json_encode($payload, JSON_UNESCAPED_SLASHES));
+        $key = 'stale-worker-test-'.Str::random(8);
+        $fingerprint = hash('sha256', 'POST|/api/v1/provisioning/registrations|'.json_encode($payload, JSON_UNESCAPED_SLASHES));
 
         // Worker 1 mengklaim attempt 1
         $ledger = ProvisioningRequest::create([
@@ -91,8 +93,8 @@ class ProvisioningHardenedIntegrityTest extends TestCase
     public function test_stale_worker_exception_rolls_back_all_partial_writes(): void
     {
         $payload = $this->validPayload();
-        $key = 'stale-rollback-' . Str::random(8);
-        $fingerprint = hash('sha256', 'POST|/api/v1/provisioning/registrations|' . json_encode($payload, JSON_UNESCAPED_SLASHES));
+        $key = 'stale-rollback-'.Str::random(8);
+        $fingerprint = hash('sha256', 'POST|/api/v1/provisioning/registrations|'.json_encode($payload, JSON_UNESCAPED_SLASHES));
 
         // Buat ledger awal
         ProvisioningRequest::create([
@@ -272,9 +274,9 @@ class ProvisioningHardenedIntegrityTest extends TestCase
      */
     public function test_reconcile_resets_orphaned_processing_to_pending(): void
     {
-        $key = 'reconcile-reset-' . Str::random(8);
+        $key = 'reconcile-reset-'.Str::random(8);
         $payload = $this->validPayload();
-        $fingerprint = hash('sha256', 'POST|/api/v1/provisioning/registrations|' . json_encode($payload, JSON_UNESCAPED_SLASHES));
+        $fingerprint = hash('sha256', 'POST|/api/v1/provisioning/registrations|'.json_encode($payload, JSON_UNESCAPED_SLASHES));
 
         $ledger = ProvisioningRequest::create([
             'idempotency_key' => $key,
@@ -312,8 +314,8 @@ class ProvisioningHardenedIntegrityTest extends TestCase
                 'nonce' => $nonce,
                 'expires_at_epoch' => time() + 600,
             ]);
-        } catch (\Illuminate\Database\QueryException $e) {
-            $duplicateCaught = \App\Services\DatabaseErrorClassifier::isDuplicateEntry($e);
+        } catch (QueryException $e) {
+            $duplicateCaught = DatabaseErrorClassifier::isDuplicateEntry($e);
         }
 
         $this->assertTrue($duplicateCaught, 'Duplicate nonce must be correctly classified by DatabaseErrorClassifier');
@@ -325,7 +327,7 @@ class ProvisioningHardenedIntegrityTest extends TestCase
      */
     public function test_email_outbox_encryption_round_trip(): void
     {
-        $token = 'secret-onboarding-token-' . Str::random(32);
+        $token = 'secret-onboarding-token-'.Str::random(32);
         $plainBody = "Gunakan token aktivasi rahasia: {$token}";
 
         $outbox = EmailOutbox::create([

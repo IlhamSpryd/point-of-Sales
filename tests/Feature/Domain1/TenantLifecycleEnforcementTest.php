@@ -33,7 +33,7 @@ class TenantLifecycleEnforcementTest extends TestCase
     {
         $tenant = Tenant::create([
             'name' => 'Kedai Kopi Uji',
-            'slug' => 'kedai-uji-' . uniqid(),
+            'slug' => 'kedai-uji-'.uniqid(),
             'status' => $status,
             'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             'access_status' => $accessStatus,
@@ -53,14 +53,14 @@ class TenantLifecycleEnforcementTest extends TestCase
             'is_initial' => true,
         ]);
 
-        $role = new Role();
+        $role = new Role;
         $role->tenant_id = $tenant->id;
         $role->name = 'Owner';
         $role->permissions = ['*'];
         $role->is_active = true;
         $role->save();
 
-        $user = new User();
+        $user = new User;
         $user->tenant_id = $tenant->id;
         $user->role_id = $role->id;
         $user->name = 'Owner Test';
@@ -189,7 +189,7 @@ class TenantLifecycleEnforcementTest extends TestCase
         $payload = ['id' => 'EXT-SUSPENDED-01', 'items' => []];
         $rawBody = json_encode($payload);
         $timestamp = (string) time();
-        $signature = hash_hmac('sha256', $rawBody . $timestamp, 'secret_test_key_123');
+        $signature = hash_hmac('sha256', $rawBody.$timestamp, 'secret_test_key_123');
 
         $response = $this->postJson(
             "/api/tenants/{$tenant->id}/webhooks/grabfood/orders",

@@ -189,9 +189,15 @@ class CheckoutController extends Controller
                     ->where('tenant_id', $tenantId);
                 $product = $productQuery->first();
 
-                if (! $product || ! $product->is_active) {
+                if (! $product) {
                     throw ValidationException::withMessages([
                         'items' => 'Produk tidak tersedia di cabang/tenant ini.',
+                    ]);
+                }
+
+                if (! $product->is_active) {
+                    throw ValidationException::withMessages([
+                        'items' => "Produk '{$product->product_name}' telah dinonaktifkan dan tidak dapat dipesan.",
                     ]);
                 }
 

@@ -5,14 +5,13 @@ namespace Tests\Feature;
 use App\Exceptions\OtpRateLimitedException;
 use App\Jobs\ProcessProvisioningOutboxJob;
 use App\Models\EmailOutbox;
-use App\Models\EmailVerificationOtp;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\Context\TenantContext;
 use App\Services\EmailVerificationOtpService;
 use App\Services\OtpVerificationResult;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
@@ -21,7 +20,9 @@ class EmailVerificationOtpServiceTest extends TestCase
     use RefreshDatabase;
 
     protected EmailVerificationOtpService $service;
+
     protected User $user;
+
     protected Tenant $tenant;
 
     protected function afterSubclassSetUp(): void
@@ -35,6 +36,8 @@ class EmailVerificationOtpServiceTest extends TestCase
             'status' => 'active',
             'onboarding_status' => Tenant::ONBOARDING_PENDING_VERIFICATION,
         ]);
+
+        app(TenantContext::class)->setTenantId($this->tenant->id);
 
         $this->user = User::create([
             'tenant_id' => $this->tenant->id,

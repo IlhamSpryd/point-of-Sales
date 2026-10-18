@@ -75,7 +75,7 @@ class DeviceService
             $pairingToken = strtoupper(Str::random(12)); // 12-char high-entropy alphanumeric token
             $expiresAt = Carbon::now()->addHours(24);
 
-            $device = new Device();
+            $device = new Device;
             $device->tenant_id = $tenantId;
             $device->store_id = $store->id;
             $device->device_name = $data['device_name'];

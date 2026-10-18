@@ -20,7 +20,9 @@ class SalesReportExportRetryTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $user;
 
     protected function afterSubclassSetUp(): void

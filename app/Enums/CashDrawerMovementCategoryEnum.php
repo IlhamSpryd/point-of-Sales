@@ -11,4 +11,5 @@ enum CashDrawerMovementCategoryEnum: string
     case OwnerWithdrawal = 'owner_withdrawal';
     case BankDeposit = 'bank_deposit';
     case Correction = 'correction';
+    case Refund = 'refund';
 }

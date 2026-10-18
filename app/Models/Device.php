@@ -8,9 +8,12 @@ use App\Models\Concerns\AssignsStore;
 use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToStore;
 use App\Models\Concerns\ScopedToTenant;
+use App\Models\Scopes\StoreScope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
@@ -46,11 +49,15 @@ class Device extends Model
     use SoftDeletes;
 
     public const TYPE_POS_TERMINAL = 'pos_terminal';
+
     public const TYPE_KDS_DISPLAY = 'kds_display';
+
     public const TYPE_WAITER_TABLET = 'waiter_tablet';
 
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_PAIRED = 'paired';
+
     public const STATUS_REVOKED = 'revoked';
 
     protected $fillable = [
@@ -85,7 +92,7 @@ class Device extends Model
             if (empty($device->device_code)) {
                 $latest = static::withTrashed()->withoutGlobalScopes()->latest('id')->first();
                 $nextId = $latest ? $latest->id + 1 : 1;
-                $device->device_code = 'DEV-' . str_pad((string) $nextId, 3, '0', STR_PAD_LEFT);
+                $device->device_code = 'DEV-'.str_pad((string) $nextId, 3, '0', STR_PAD_LEFT);
             }
         });
     }
@@ -100,6 +107,31 @@ class Device extends Model
         return $this->belongsTo(Tenant::class);
     }
 
+    public function shifts(): HasMany
+    {
+        return $this->hasMany(Shift::class);
+    }
+
+    public function orders(): HasMany
+    {
+        return $this->hasMany(Order::class, 'created_by_device_id');
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function cashDrawerMovements(): HasMany
+    {
+        return $this->hasMany(CashDrawerMovement::class);
+    }
+
+    public function handovers(): HasMany
+    {
+        return $this->hasMany(ShiftHandover::class);
+    }
+
     public function isPaired(): bool
     {
         return $this->status === self::STATUS_PAIRED && ! empty($this->device_fingerprint);
@@ -110,14 +142,14 @@ class Device extends Model
      * Mengabaikan StoreScope agar resource dapat ditemukan untuk evaluasi
      * hak akses lintas-cabang oleh DevicePolicy, namun tetap mempertahankan TenantScope.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  Builder  $query
      * @param  mixed  $value
      * @param  string|null  $field
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     public function resolveRouteBindingQuery($query, $value, $field = null)
     {
-        return $query->withoutGlobalScope(\App\Models\Scopes\StoreScope::class)
+        return $query->withoutGlobalScope(StoreScope::class)
             ->where($field ?? $this->getRouteKeyName(), $value);
     }
 }

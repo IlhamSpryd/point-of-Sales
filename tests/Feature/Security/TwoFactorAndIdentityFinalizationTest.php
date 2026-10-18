@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Security;
 
-use App\Models\ActivityLog;
 use App\Models\Role;
 use App\Models\Store;
 use App\Models\Tenant;
@@ -13,7 +12,6 @@ use App\Models\UserOAuthIdentity;
 use App\Services\Context\TenantContext;
 use App\Services\TwoFactorAuthService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
@@ -24,9 +22,13 @@ class TwoFactorAndIdentityFinalizationTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private User $owner;
+
     private Role $ownerRole;
+
     private TwoFactorAuthService $twoFactorService;
 
     protected function afterSubclassSetUp(): void

@@ -23,10 +23,15 @@ class StoreTransactionRequestTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected Product $product;
+
     protected Customer $customer;
+
     protected Discount $discount;
+
     protected Table $table;
 
     protected function afterSubclassSetUp(): void
@@ -109,7 +114,7 @@ class StoreTransactionRequestTest extends TestCase
             'idempotency_key' => (string) Str::uuid(),
         ];
 
-        $request = new StoreTransactionRequest();
+        $request = new StoreTransactionRequest;
         $validator = Validator::make($payload, $request->rules());
 
         $this->assertTrue($validator->passes(), 'Validator must pass with optional checkout parameters and split payments');

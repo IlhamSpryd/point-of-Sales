@@ -27,9 +27,13 @@ class TransactionRollbackTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $cashier;
+
     protected Shift $shift;
+
     protected Product $product;
 
     protected function afterSubclassSetUp(): void

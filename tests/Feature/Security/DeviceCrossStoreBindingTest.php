@@ -21,11 +21,17 @@ class DeviceCrossStoreBindingTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     private Tenant $tenantA;
+
     private Store $store1;
+
     private Store $store2;
+
     private User $ownerA;
+
     private User $managerStore1;
+
     private User $kasirStore1;
+
     private Device $deviceStore2;
 
     protected function afterSubclassSetUp(): void
@@ -34,7 +40,7 @@ class DeviceCrossStoreBindingTest extends TestCase
 
         $this->tenantA = Tenant::create([
             'name' => 'Resto Multi Cabang',
-            'slug' => 'resto-multi-cabang-' . uniqid(),
+            'slug' => 'resto-multi-cabang-'.uniqid(),
             'status' => 'active',
             'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             'access_status' => Tenant::ACCESS_ACTIVE,
@@ -196,7 +202,7 @@ class DeviceCrossStoreBindingTest extends TestCase
     {
         $tenantB = Tenant::create([
             'name' => 'Tenant Lain',
-            'slug' => 'tenant-lain-' . uniqid(),
+            'slug' => 'tenant-lain-'.uniqid(),
             'status' => 'active',
             'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             'access_status' => Tenant::ACCESS_ACTIVE,

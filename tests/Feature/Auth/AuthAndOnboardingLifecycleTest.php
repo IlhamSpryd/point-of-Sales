@@ -2,10 +2,8 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\ActivityLog;
 use App\Models\OwnerOnboardingToken;
 use App\Models\Role;
-use App\Models\Setting;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
@@ -35,7 +33,7 @@ class AuthAndOnboardingLifecycleTest extends TestCase
             'country_code' => 'ID',
         ]);
 
-        $ownerRole = new Role();
+        $ownerRole = new Role;
         $ownerRole->tenant_id = $tenant->id;
         $ownerRole->name = 'Owner';
         $ownerRole->description = 'Tenant Owner';
@@ -43,7 +41,7 @@ class AuthAndOnboardingLifecycleTest extends TestCase
         $ownerRole->is_active = true;
         $ownerRole->save();
 
-        $user = new User();
+        $user = new User;
         $user->tenant_id = $tenant->id;
         $user->role_id = $ownerRole->id;
         $user->name = 'Budi Pemilik';

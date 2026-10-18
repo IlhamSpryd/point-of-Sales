@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -30,7 +31,7 @@ class AuthenticatedSessionController extends Controller
 
         // [M1-MVC-003] Kebijakan MFA: Pengguna dengan 2FA aktif wajib menyelesaikan challenge
         // sebelum memperoleh sesi aplikasi terautentikasi penuh.
-        if ($user instanceof \App\Models\User && $user->hasTwoFactorEnabled()) {
+        if ($user instanceof User && $user->hasTwoFactorEnabled()) {
             $userId = (int) $user->id;
             $remember = $request->boolean('remember');
 

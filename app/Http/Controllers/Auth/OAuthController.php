@@ -413,7 +413,7 @@ class OAuthController extends Controller
             ->count();
 
         if (! $hasPassword && $otherProvidersCount === 0) {
-            app(\App\Services\AuditTrailService::class)->log(
+            app(AuditTrailService::class)->log(
                 tenantId: (int) $user->tenant_id,
                 action: 'oauth.unlink_blocked',
                 userId: $user->id,
@@ -427,7 +427,7 @@ class OAuthController extends Controller
         if ($identity !== null) {
             $identity->delete();
 
-            app(\App\Services\AuditTrailService::class)->log(
+            app(AuditTrailService::class)->log(
                 tenantId: (int) $user->tenant_id,
                 action: 'oauth.unlinked',
                 userId: $user->id,

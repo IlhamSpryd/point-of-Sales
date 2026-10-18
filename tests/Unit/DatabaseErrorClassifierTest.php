@@ -69,9 +69,9 @@ class DatabaseErrorClassifierTest extends TestCase
 
     public function test_identifies_connection_errors(): void
     {
-        $e1 = $this->createQueryException('HY000', 2002, "Connection refused");
-        $e2 = $this->createQueryException('HY000', 2006, "MySQL server has gone away");
-        $e3 = $this->createQueryException('HY000', 2013, "Lost connection to MySQL server during query");
+        $e1 = $this->createQueryException('HY000', 2002, 'Connection refused');
+        $e2 = $this->createQueryException('HY000', 2006, 'MySQL server has gone away');
+        $e3 = $this->createQueryException('HY000', 2013, 'Lost connection to MySQL server during query');
 
         $this->assertTrue(DatabaseErrorClassifier::isConnectionError($e1));
         $this->assertTrue(DatabaseErrorClassifier::isConnectionError($e2));

@@ -20,6 +20,7 @@ class ProcessMonthlyExportJobDirectoryTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
 
     protected function afterSubclassSetUp(): void

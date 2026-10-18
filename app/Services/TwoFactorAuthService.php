@@ -6,8 +6,6 @@ namespace App\Services;
 
 use App\Models\User;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Crypt;
-use Illuminate\Support\Str;
 
 class TwoFactorAuthService
 {
@@ -36,9 +34,9 @@ class TwoFactorAuthService
     public function getQrCodeUri(User $user, string $secret): string
     {
         $issuer = config('app.name', 'Apeiron POS');
-        $label = rawurlencode($issuer) . ':' . rawurlencode($user->email);
+        $label = rawurlencode($issuer).':'.rawurlencode($user->email);
 
-        return "otpauth://totp/{$label}?secret={$secret}&issuer=" . rawurlencode($issuer) . '&algorithm=SHA1&digits=6&period=30';
+        return "otpauth://totp/{$label}?secret={$secret}&issuer=".rawurlencode($issuer).'&algorithm=SHA1&digits=6&period=30';
     }
 
     /**
@@ -50,7 +48,7 @@ class TwoFactorAuthService
     {
         $codes = [];
         for ($i = 0; $i < $count; $i++) {
-            $codes[] = strtoupper(bin2hex(random_bytes(3))) . '-' . strtoupper(bin2hex(random_bytes(3)));
+            $codes[] = strtoupper(bin2hex(random_bytes(3))).'-'.strtoupper(bin2hex(random_bytes(3)));
         }
 
         return $codes;
@@ -138,7 +136,7 @@ class TwoFactorAuthService
                     tenantId: (int) $user->tenant_id,
                     action: 'two_factor.recovery_code_used',
                     userId: $user->id,
-                    description: "Kode pemulihan darurat 2FA digunakan oleh {$user->name}. Sisa kode: " . count($recoveryCodes)
+                    description: "Kode pemulihan darurat 2FA digunakan oleh {$user->name}. Sisa kode: ".count($recoveryCodes)
                 );
 
                 return true;

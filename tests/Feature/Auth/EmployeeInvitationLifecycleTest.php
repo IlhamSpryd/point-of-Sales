@@ -12,8 +12,6 @@ use App\Models\UserInvitationStore;
 use App\Services\Context\TenantContext;
 use App\Services\UserInvitationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class EmployeeInvitationLifecycleTest extends TestCase
@@ -26,7 +24,7 @@ class EmployeeInvitationLifecycleTest extends TestCase
     {
         $tenant = Tenant::create([
             'name' => 'Kopi Kafe',
-            'slug' => 'kopi-kafe-' . uniqid(),
+            'slug' => 'kopi-kafe-'.uniqid(),
             'status' => 'active',
             'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             'access_status' => Tenant::ACCESS_ACTIVE,
@@ -57,7 +55,7 @@ class EmployeeInvitationLifecycleTest extends TestCase
             'is_initial' => false,
         ]);
 
-        $ownerRole = new Role();
+        $ownerRole = new Role;
         $ownerRole->tenant_id = $tenant->id;
         $ownerRole->name = 'Owner';
         $ownerRole->description = 'Tenant Owner';
@@ -65,7 +63,7 @@ class EmployeeInvitationLifecycleTest extends TestCase
         $ownerRole->is_active = true;
         $ownerRole->save();
 
-        $kasirRole = new Role();
+        $kasirRole = new Role;
         $kasirRole->tenant_id = $tenant->id;
         $kasirRole->name = 'Kasir';
         $kasirRole->description = 'POS Cashier';
@@ -73,7 +71,7 @@ class EmployeeInvitationLifecycleTest extends TestCase
         $kasirRole->is_active = true;
         $kasirRole->save();
 
-        $owner = new User();
+        $owner = new User;
         $owner->tenant_id = $tenant->id;
         $owner->role_id = $ownerRole->id;
         $owner->name = 'Owner Kafe';

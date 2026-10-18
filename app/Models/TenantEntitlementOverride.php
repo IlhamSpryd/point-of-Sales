@@ -9,7 +9,17 @@ use App\Models\Concerns\ScopedToTenant;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property string $feature_code
+ * @property string $feature_type
+ * @property string $value
+ * @property Carbon|null $expires_at
+ * @property string|null $reason
+ */
 class TenantEntitlementOverride extends Model
 {
     use AssignsTenant;

@@ -9,7 +9,6 @@ use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\AuditTrailService;
-use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -24,7 +23,7 @@ class AuditTrailServiceTest extends TestCase
     {
         $tenant = Tenant::create([
             'name' => 'Kedai Audit',
-            'slug' => 'kedai-audit-' . uniqid(),
+            'slug' => 'kedai-audit-'.uniqid(),
             'status' => 'active',
             'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             'access_status' => Tenant::ACCESS_ACTIVE,
@@ -44,7 +43,7 @@ class AuditTrailServiceTest extends TestCase
             'is_initial' => true,
         ]);
 
-        $role = new Role();
+        $role = new Role;
         $role->tenant_id = $tenant->id;
         $role->name = 'Owner';
         $role->permissions = ['*'];
@@ -52,7 +51,7 @@ class AuditTrailServiceTest extends TestCase
         $role->save();
 
         $unique = uniqid();
-        $user = new User();
+        $user = new User;
         $user->tenant_id = $tenant->id;
         $user->role_id = $role->id;
         $user->name = 'Owner Audit';
@@ -126,7 +125,7 @@ class AuditTrailServiceTest extends TestCase
         );
 
         $this->assertNotNull($id);
-        
+
         $log = DB::table('activity_logs')->where('id', $id)->first();
         // user_id harus NULL agar tidak melanggar foreign key komposit (tenant_id, user_id)
         $this->assertNull($log->user_id);
@@ -292,4 +291,3 @@ class AuditTrailServiceTest extends TestCase
         $this->assertNull($log->metadata);
     }
 }
-

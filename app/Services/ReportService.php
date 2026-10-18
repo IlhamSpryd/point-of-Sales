@@ -6,13 +6,21 @@ namespace App\Services;
 
 use App\Enums\ExportTaskStatus;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentAttemptStatus;
+use App\Enums\PaymentStatusEnum;
 use App\Exports\SalesExport;
 use App\Jobs\ProcessSalesReportExportJob;
+use App\Models\EodSettlement;
 use App\Models\ExportTask;
 use App\Models\Order;
+use App\Models\Payment;
+use App\Models\PaymentAttempt;
+use App\Models\PaymentRefund;
+use App\Models\Shift;
 use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -112,5 +120,213 @@ class ReportService
         ProcessSalesReportExportJob::dispatch($task, $tenantContext->getTenantId(), $storeId);
 
         return $task;
+    }
+
+    /**
+     * Melakukan penutupan buku akhir hari (End-of-Day / Z-Report Closing).
+     */
+    public function closeEndOfDay(
+        int $tenantId,
+        int $storeId,
+        string $businessDate,
+        int $managerUserId,
+        string $pin,
+        ?string $notes = null
+    ): EodSettlement {
+        // 1. Verifikasi PIN Manager/Owner
+        app(CashierPinService::class)->verifySupervisorPin($managerUserId, $pin, $tenantId);
+
+        return DB::transaction(function () use ($tenantId, $storeId, $businessDate, $managerUserId, $notes) {
+            // 2. Cek apakah sudah pernah ditutup untuk tanggal ini
+            $alreadyClosed = EodSettlement::where('tenant_id', $tenantId)
+                ->where('store_id', $storeId)
+                ->where('business_date', $businessDate)
+                ->where('status', EodSettlement::STATUS_CLOSED)
+                ->exists();
+
+            if ($alreadyClosed) {
+                throw ValidationException::withMessages([
+                    'eod' => "End-of-Day untuk tanggal {$businessDate} di cabang ini sudah ditutup sebelumnya.",
+                ]);
+            }
+
+            // 3. Validasi bahwa SELURUH shift di cabang terkait pada tanggal tersebut sudah closed (AC-5.2)
+            $openShiftsCount = Shift::where('tenant_id', $tenantId)
+                ->where('store_id', $storeId)
+                ->whereDate('opened_at', $businessDate)
+                ->where('status', '!=', 'closed')
+                ->lockForUpdate()
+                ->count();
+
+            if ($openShiftsCount > 0) {
+                throw ValidationException::withMessages([
+                    'eod' => 'Tidak dapat melakukan End-of-Day closing: masih ada shift yang belum ditutup pada tanggal ini.',
+                ]);
+            }
+
+            // 4. Validasi tidak ada transaksi pending provider / timeout
+            $pendingAttemptsCount = PaymentAttempt::where('tenant_id', $tenantId)
+                ->where('store_id', $storeId)
+                ->whereDate('created_at', $businessDate)
+                ->whereIn('status', [PaymentAttemptStatus::UnknownTimeout, PaymentAttemptStatus::PendingProvider])
+                ->count();
+
+            if ($pendingAttemptsCount > 0) {
+                throw ValidationException::withMessages([
+                    'eod' => 'Masih ada transaksi pembayaran yang berstatus pending/timeout. Selesaikan rekonsiliasi sebelum EOD.',
+                ]);
+            }
+
+            // 5. Agregasi Order & Penjualan
+            $paidOrders = Order::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('store_id', $storeId)
+                ->whereDate('order_date', $businessDate)
+                ->where('order_status', OrderStatus::Paid->value)
+                ->get();
+
+            $grossSales = (float) $paidOrders->sum('subtotal_amount');
+            $totalDiscounts = (float) $paidOrders->sum('discount_amount');
+            $totalTax = (float) $paidOrders->sum('tax_amount');
+            $totalServiceCharge = (float) $paidOrders->sum('service_charge_amount');
+
+            $voidedOrders = Order::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('store_id', $storeId)
+                ->whereDate('order_date', $businessDate)
+                ->where('order_status', OrderStatus::Void->value)
+                ->get();
+            $totalVoids = (float) $voidedOrders->sum('order_amount');
+
+            // Agregasi Refund & Retur
+            $completedRefunds = PaymentRefund::where('tenant_id', $tenantId)
+                ->where('store_id', $storeId)
+                ->whereDate('created_at', $businessDate)
+                ->where('request_status', 'completed')
+                ->get();
+            $totalReturnsRefunds = (float) $completedRefunds->sum('amount');
+
+            // Net sales = Gross Sales - Total Discounts - Total Returns/Refunds
+            $netSales = max(0.00, $grossSales - $totalDiscounts - $totalReturnsRefunds);
+
+            // Agregasi Shift & Kas Laci
+            $closedShifts = Shift::where('tenant_id', $tenantId)
+                ->where('store_id', $storeId)
+                ->whereDate('opened_at', $businessDate)
+                ->where('status', 'closed')
+                ->get();
+
+            $totalShiftsCount = $closedShifts->count();
+            $expectedCashTotal = (float) $closedShifts->sum('expected_cash');
+            $countedCashTotal = (float) $closedShifts->sum('closing_balance');
+            $cashDiscrepancyTotal = (float) $closedShifts->sum('cash_difference');
+
+            // Payment Breakdown Snapshot
+            $payments = Payment::where('tenant_id', $tenantId)
+                ->where('store_id', $storeId)
+                ->whereDate('created_at', $businessDate)
+                ->whereIn('status', [PaymentStatusEnum::Captured, 'settled'])
+                ->get();
+
+            $paymentBreakdown = [];
+            foreach ($payments->groupBy('payment_method') as $method => $group) {
+                $methodStr = is_string($method) ? $method : ($method->value ?? (string) $method);
+                $paymentBreakdown[$methodStr] = [
+                    'count' => $group->count(),
+                    'total' => (float) $group->sum('amount'),
+                ];
+            }
+
+            // 6. Simpan EOD Settlement
+            $eod = EodSettlement::create([
+                'tenant_id' => $tenantId,
+                'store_id' => $storeId,
+                'business_date' => $businessDate,
+                'status' => EodSettlement::STATUS_CLOSED,
+                'total_shifts_count' => $totalShiftsCount,
+                'gross_sales' => $grossSales,
+                'total_discounts' => $totalDiscounts,
+                'total_returns_refunds' => $totalReturnsRefunds,
+                'total_voids' => $totalVoids,
+                'net_sales' => $netSales,
+                'total_tax' => $totalTax,
+                'total_service_charge' => $totalServiceCharge,
+                'expected_cash_total' => $expectedCashTotal,
+                'counted_cash_total' => $countedCashTotal,
+                'cash_discrepancy_total' => $cashDiscrepancyTotal,
+                'payment_breakdown_snapshot' => $paymentBreakdown,
+                'closed_by_user_id' => $managerUserId,
+                'closed_at' => now(),
+                'notes' => $notes,
+            ]);
+
+            app(AuditTrailService::class)->log(
+                tenantId: $tenantId,
+                action: 'store.eod_closed',
+                userId: $managerUserId,
+                storeId: $storeId,
+                subjectType: EodSettlement::class,
+                subjectId: $eod->id,
+                description: "End-of-Day untuk tanggal {$businessDate} cabang {$storeId} ditutup oleh Manager #{$managerUserId}",
+                metadata: [
+                    'business_date' => $businessDate,
+                    'net_sales' => $netSales,
+                    'total_shifts' => $totalShiftsCount,
+                    'cash_discrepancy' => $cashDiscrepancyTotal,
+                ]
+            );
+
+            return $eod;
+        });
+    }
+
+    /**
+     * Mengambil ringkasan detail penjualan untuk EOD dan pelaporan.
+     *
+     * @return array<string, float|int>
+     */
+    public function getDetailedSalesSummary(Carbon $start, Carbon $end, ?int $storeId = null): array
+    {
+        $tenantId = app(TenantContext::class)->requireTenantId();
+
+        $orderQuery = Order::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->whereBetween('order_date', [$start, $end]);
+
+        if ($storeId !== null) {
+            $orderQuery->where('store_id', $storeId);
+        }
+
+        $paidOrders = (clone $orderQuery)->where('order_status', OrderStatus::Paid->value)->get();
+        $voidedOrders = (clone $orderQuery)->where('order_status', OrderStatus::Void->value)->get();
+
+        $grossSales = (float) $paidOrders->sum('subtotal_amount');
+        $totalDiscounts = (float) $paidOrders->sum('discount_amount');
+        $totalTax = (float) $paidOrders->sum('tax_amount');
+        $totalServiceCharge = (float) $paidOrders->sum('service_charge_amount');
+        $totalVoids = (float) $voidedOrders->sum('order_amount');
+
+        $refundQuery = PaymentRefund::where('tenant_id', $tenantId)
+            ->whereBetween('created_at', [$start->copy()->startOfDay(), $end->copy()->endOfDay()])
+            ->where('request_status', 'completed');
+
+        if ($storeId !== null) {
+            $refundQuery->where('store_id', $storeId);
+        }
+
+        $totalReturnsRefunds = (float) $refundQuery->sum('amount');
+        $netSales = max(0.00, $grossSales - $totalDiscounts - $totalReturnsRefunds);
+
+        return [
+            'gross_sales' => $grossSales,
+            'total_discounts' => $totalDiscounts,
+            'total_voids' => $totalVoids,
+            'total_returns_refunds' => $totalReturnsRefunds,
+            'net_sales' => $netSales,
+            'total_tax' => $totalTax,
+            'total_service_charge' => $totalServiceCharge,
+            'paid_orders_count' => $paidOrders->count(),
+            'voided_orders_count' => $voidedOrders->count(),
+        ];
     }
 }

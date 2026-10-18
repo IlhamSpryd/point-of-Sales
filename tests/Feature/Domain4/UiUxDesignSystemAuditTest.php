@@ -30,9 +30,13 @@ class UiUxDesignSystemAuditTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected Role $kasirRole;
+
     protected User $cashierUser;
+
     protected Product $product;
 
     protected function afterSubclassSetUp(): void
@@ -243,7 +247,7 @@ class UiUxDesignSystemAuditTest extends TestCase
         $this->assertSame('secondary', OrderType::Takeaway->badgeType());
 
         // OrderHistory Livewire component parity with OrderStatus::badgeType
-        $orderHistory = new OrderHistory();
+        $orderHistory = new OrderHistory;
         foreach (OrderStatus::cases() as $status) {
             $this->assertSame($status->badgeType(), $orderHistory->statusBadgeType($status));
         }

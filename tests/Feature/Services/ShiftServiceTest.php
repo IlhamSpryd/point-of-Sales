@@ -11,6 +11,7 @@ use App\Models\Shift;
 use App\Services\Context\TenantContext;
 use App\Services\ShiftService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\Support\TwoTenantFixture;
 use Tests\TestCase;
 
@@ -48,7 +49,7 @@ class ShiftServiceTest extends TestCase
             'shift_id' => $shift->id,
             'user_id' => $this->userAOwner->id,
             'order_code' => 'TEST-SHIFT-ORD-1',
-            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
+            'idempotency_key' => (string) Str::uuid(),
             'order_date' => now()->toDateString(),
             'order_type' => 'dine_in',
             'order_status' => 'paid',

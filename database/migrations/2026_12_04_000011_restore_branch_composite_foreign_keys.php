@@ -119,7 +119,7 @@ return new class extends Migration
                     Schema::table($table, function (Blueprint $t) use ($fkName) {
                         $t->dropForeign($fkName);
                     });
-                } catch (\Throwable) {
+                } catch (Throwable) {
                 }
             }
         };

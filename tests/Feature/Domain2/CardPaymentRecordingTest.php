@@ -7,8 +7,6 @@ namespace Tests\Feature\Domain2;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Models\Category;
-use App\Models\Order;
-use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Role;
 use App\Models\Shift;
@@ -25,9 +23,13 @@ class CardPaymentRecordingTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $cashier;
+
     protected Product $product;
+
     protected Shift $shift;
 
     protected function afterSubclassSetUp(): void

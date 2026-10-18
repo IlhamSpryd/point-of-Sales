@@ -21,13 +21,16 @@ class Discount extends Model
 
     protected $fillable = [
         'code', 'name', 'type', 'value', 'max_discount_amount',
-        'min_purchase_amount', 'is_active', 'valid_from', 'valid_until',
+        'min_purchase_amount', 'usage_limit', 'is_stackable', 'scope',
+        'is_active', 'valid_from', 'valid_until', 'tenant_id', 'store_id',
     ];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
+            'is_stackable' => 'boolean',
+            'usage_limit' => 'integer',
             'valid_from' => 'datetime',
             'valid_until' => 'datetime',
         ];
@@ -37,5 +40,33 @@ class Discount extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    /** Relasi (HasMany): Catatan riwayat penggunaan kuota voucher. */
+    public function redemptions(): HasMany
+    {
+        return $this->hasMany(DiscountRedemption::class);
+    }
+
+    /**
+     * Menghitung pemakaian kuota yang aktif (applied).
+     */
+    public function getAppliedRedemptionsCount(): int
+    {
+        return $this->redemptions()
+            ->where('status', DiscountRedemption::STATUS_APPLIED)
+            ->count();
+    }
+
+    /**
+     * Memeriksa apakah kuota voucher masih tersedia.
+     */
+    public function hasAvailableQuota(): bool
+    {
+        if ($this->usage_limit === null) {
+            return true;
+        }
+
+        return $this->getAppliedRedemptionsCount() < $this->usage_limit;
     }
 }

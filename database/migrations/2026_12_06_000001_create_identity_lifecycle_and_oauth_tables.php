@@ -29,7 +29,7 @@ return new class extends Migration
 
         if (! Schema::hasColumn('users', 'email_active_key')) {
             // Virtual generated column: bernilai email_normalized jika baris aktif (deleted_at IS NULL), bernilai NULL jika soft-deleted
-            DB::statement("ALTER TABLE `users` ADD COLUMN `email_active_key` VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci GENERATED ALWAYS AS (IF(`deleted_at` IS NULL, `email_normalized`, NULL)) VIRTUAL AFTER `email_normalized`");
+            DB::statement('ALTER TABLE `users` ADD COLUMN `email_active_key` VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci GENERATED ALWAYS AS (IF(`deleted_at` IS NULL, `email_normalized`, NULL)) VIRTUAL AFTER `email_normalized`');
         }
 
         if (! Schema::hasIndex('users', 'uq_users_email_active_global')) {

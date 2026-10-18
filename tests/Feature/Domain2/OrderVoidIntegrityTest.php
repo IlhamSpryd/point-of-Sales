@@ -25,8 +25,11 @@ class OrderVoidIntegrityTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $cashier;
+
     protected Role $adminRole;
 
     protected function afterSubclassSetUp(): void

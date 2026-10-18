@@ -30,8 +30,11 @@ class TenantEntitlementAndQuotaTest extends TestCase
     protected bool $optOutFromDefaultTenant = true;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private User $owner;
+
     private EntitlementService $entitlementService;
 
     protected function afterSubclassSetUp(): void

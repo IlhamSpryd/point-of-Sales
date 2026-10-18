@@ -15,20 +15,25 @@ use App\Enums\IngredientStockMovementTypeEnum;
 use App\Enums\LoyaltyLedgerTypeEnum;
 use App\Enums\OrderStatus;
 use App\Enums\OrderType;
+use App\Enums\PaymentAttemptStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatusEnum;
 use App\Enums\StockMovementType;
 use App\Models\ActivityLog;
+use App\Models\CashDrawerMovement;
 use App\Models\Customer;
 use App\Models\CustomerLoyaltyAccount;
 use App\Models\Discount;
+use App\Models\DiscountRedemption;
 use App\Models\Ingredient;
 use App\Models\IngredientStockMovement;
 use App\Models\LoyaltyLedger;
 use App\Models\Modifier;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\ParkedCart;
 use App\Models\Payment;
+use App\Models\PaymentAttempt;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Shift;
@@ -39,12 +44,14 @@ use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Midtrans\Config;
 use Midtrans\Snap;
+use Midtrans\Transaction;
 
 class TransactionService
 {
@@ -82,12 +89,39 @@ class TransactionService
     {
         return DB::transaction(function () use ($data, $userId) {
             // [OMEGA-NODE1] Shift-lock guard (UNCHANGED).
+            $shift = null;
             if (! empty($data['shift_id'])) {
                 $shift = Shift::lockForUpdate()->find($data['shift_id']);
 
                 if (! $shift || $shift->status !== 'open') {
                     throw ValidationException::withMessages([
                         'shift' => 'Shift Anda baru saja ditutup. Transaksi ini dibatalkan, silakan buka shift baru sebelum melanjutkan.',
+                    ]);
+                }
+            }
+
+            $resolvedDeviceId = $data['device_id'] ?? $data['created_by_device_id'] ?? $shift?->device_id;
+
+            // [INCREMENT 4] Validasi & penguncian ParkedCart jika checkout berasal dari keranjang tertunda
+            $parkedCart = null;
+            if (! empty($data['parked_cart_id'])) {
+                $parkedCart = ParkedCart::where('id', $data['parked_cart_id'])->lockForUpdate()->first();
+
+                if (! $parkedCart) {
+                    throw ValidationException::withMessages([
+                        'parked_cart' => 'Keranjang tertunda tidak ditemukan.',
+                    ]);
+                }
+
+                if ($parkedCart->status === ParkedCart::STATUS_CONVERTED) {
+                    throw ValidationException::withMessages([
+                        'parked_cart' => 'Keranjang ini sudah di-checkout menjadi order lain.',
+                    ]);
+                }
+
+                if (in_array($parkedCart->status, [ParkedCart::STATUS_DISCARDED, ParkedCart::STATUS_EXPIRED], true)) {
+                    throw ValidationException::withMessages([
+                        'parked_cart' => "Keranjang ini sudah {$parkedCart->status} dan tidak dapat di-checkout.",
                     ]);
                 }
             }
@@ -134,6 +168,10 @@ class TransactionService
                         'extra_price' => $group->first()['extra_price'] ?? 0,
                         'options' => $group->first()['options'] ?? null,
                         'notes' => $group->first()['notes'] ?? null,
+                        'item_discount_id' => $group->first()['item_discount_id'] ?? null,
+                        'item_discount_amount' => $group->sum(function ($it) {
+                            return (float) ($it['item_discount_amount'] ?? 0);
+                        }),
                     ];
                 })
                 ->values()
@@ -259,6 +297,25 @@ class TransactionService
                 $subtotalAmount += $itemSubtotal;
 
                 $lineIndex = count($lines);
+
+                // Hitung diskon level item jika ada
+                $itemDiscountAmount = (float) ($item['item_discount_amount'] ?? 0);
+                if (! empty($item['item_discount_id']) && $itemDiscountAmount <= 0) {
+                    $itemDiscount = Discount::find($item['item_discount_id']);
+                    if ($itemDiscount && $itemDiscount->is_active) {
+                        if ($itemDiscount->type === 'percentage') {
+                            $calc = (int) round($itemSubtotal * ($itemDiscount->value / 100));
+                            if ($itemDiscount->max_discount_amount) {
+                                $calc = min($calc, $itemDiscount->max_discount_amount);
+                            }
+                            $itemDiscountAmount = $calc;
+                        } else {
+                            $itemDiscountAmount = min((int) $itemSubtotal, $itemDiscount->value);
+                        }
+                    }
+                }
+                $effectiveLineSubtotal = max(0, $itemSubtotal - $itemDiscountAmount);
+
                 $lines[] = [
                     'order_price' => $unitPrice,
                     'qty' => $item['quantity'],
@@ -267,6 +324,9 @@ class TransactionService
                     'options' => $verifiedOptions,
                     'notes' => $item['notes'] ?? null,
                     'needs_stock_deduction' => ! $hasBom,
+                    'item_discount_id' => $item['item_discount_id'] ?? null,
+                    'item_discount_amount' => $itemDiscountAmount,
+                    'effective_subtotal' => $effectiveLineSubtotal,
                 ];
                 $bomBreakdownByLineIndex[$lineIndex] = [];
 
@@ -402,11 +462,14 @@ class TransactionService
                 }
             }
 
-            // Validasi & Hitung Diskon
+            // Validasi & Hitung Diskon Order
             $discountAmount = 0;
             $discountId = $data['discount_id'] ?? null;
+            $discount = null;
+            $totalItemDiscounts = array_sum(array_column($lines, 'item_discount_amount'));
+
             if ($discountId) {
-                $discount = Discount::find($discountId);
+                $discount = Discount::where('id', $discountId)->lockForUpdate()->first();
                 $now = now();
                 $isValidDiscount = $discount && $discount->is_active && $subtotalAmount >= $discount->min_purchase_amount;
 
@@ -417,18 +480,59 @@ class TransactionService
                     $isValidDiscount = false;
                 }
 
+                // [OQ-05 Opsi A] Validasi aturan penggabungan (stacking) diskon item vs diskon order
+                if ($isValidDiscount && $totalItemDiscounts > 0 && ! $discount->is_stackable) {
+                    throw ValidationException::withMessages([
+                        'discount_id' => 'Voucher diskon ini tidak dapat digabungkan dengan diskon produk.',
+                    ]);
+                }
+
+                // [INV-11 / AC-4.1] Validasi kuota di bawah penguncian baris (FOR UPDATE)
+                if ($isValidDiscount && $discount->usage_limit !== null) {
+                    $appliedCount = DiscountRedemption::where('discount_id', $discount->id)
+                        ->where('status', DiscountRedemption::STATUS_APPLIED)
+                        ->count();
+
+                    if ($appliedCount >= $discount->usage_limit) {
+                        throw ValidationException::withMessages([
+                            'discount_id' => 'Kuota voucher telah habis.',
+                        ]);
+                    }
+                }
+
                 if ($isValidDiscount) {
+                    $baseForOrderDiscount = $discount->is_stackable ? max(0, $subtotalAmount - $totalItemDiscounts) : $subtotalAmount;
                     if ($discount->type === 'percentage') {
-                        $calc = (int) round($subtotalAmount * ($discount->value / 100));
+                        $calc = (int) round($baseForOrderDiscount * ($discount->value / 100));
                         if ($discount->max_discount_amount) {
                             $calc = min($calc, $discount->max_discount_amount);
                         }
                         $discountAmount = $calc;
                     } else {
-                        $discountAmount = min((int) $subtotalAmount, $discount->value);
+                        $discountAmount = min((int) $baseForOrderDiscount, $discount->value);
                     }
                 } else {
                     $discountId = null; // Batalkan diskon jika tidak valid/tidak memenuhi syarat
+                }
+            }
+
+            // [INCREMENT 4] Alokasi proporsional diskon order ke setiap baris item (Largest Remainder Method)
+            $totalEffectiveSubtotal = array_sum(array_column($lines, 'effective_subtotal'));
+            $allocatedOrderDiscounts = [];
+            $runningAllocated = 0;
+            $lineCount = count($lines);
+
+            foreach ($lines as $idx => $line) {
+                if ($discountAmount <= 0 || $totalEffectiveSubtotal <= 0) {
+                    $allocatedOrderDiscounts[$idx] = 0.00;
+                } elseif ($idx === $lineCount - 1) {
+                    // Penyerapan sisa sen/Rupiah terakhir agar total alokasi persis sama dengan discount_amount
+                    $allocatedOrderDiscounts[$idx] = max(0, $discountAmount - $runningAllocated);
+                } else {
+                    $ratio = $line['effective_subtotal'] / $totalEffectiveSubtotal;
+                    $alloc = (int) round($discountAmount * $ratio);
+                    $runningAllocated += $alloc;
+                    $allocatedOrderDiscounts[$idx] = $alloc;
                 }
             }
 
@@ -523,15 +627,26 @@ class TransactionService
                 'table_id' => $data['table_id'] ?? null,
                 'customer_id' => $data['customer_id'] ?? null,
                 'order_type' => $data['order_type'] ?? OrderType::DineIn->value,
+                'origin_channel' => $data['origin_channel'] ?? 'pos_cashier',
+                'source_reference' => $data['source_reference'] ?? null,
+                'created_by_device_id' => $resolvedDeviceId,
             ]);
 
-            // Buat order items (UNCHANGED bentuknya).
+            // Buat order items
             $createdItems = [];
-            foreach ($lines as $line) {
-                $orderItem = OrderItem::create(array_merge(Arr::except($line, ['needs_stock_deduction']), [
+            foreach ($lines as $idx => $line) {
+                $itemDiscountAmount = (float) ($line['item_discount_amount'] ?? 0.00);
+                $allocatedOrderDiscount = (float) ($allocatedOrderDiscounts[$idx] ?? 0.00);
+                $netLineTotal = max(0, (float) $line['order_subtotal'] - $itemDiscountAmount - $allocatedOrderDiscount);
+
+                $orderItem = OrderItem::create(array_merge(Arr::except($line, ['needs_stock_deduction', 'effective_subtotal']), [
                     'order_id' => $order->id,
                     'tenant_id' => app(TenantContext::class)->requireTenantId(),
                     'store_id' => app(TenantContext::class)->getStoreId(),
+                    'item_discount_id' => $line['item_discount_id'] ?? null,
+                    'item_discount_amount' => $itemDiscountAmount,
+                    'allocated_order_discount_amount' => $allocatedOrderDiscount,
+                    'net_line_total' => $netLineTotal,
                 ]));
                 $createdItems[] = $orderItem;
 
@@ -603,9 +718,13 @@ class TransactionService
                     Payment::create([
                         'tenant_id' => $order->tenant_id,
                         'store_id' => $order->store_id,
+                        'device_id' => $resolvedDeviceId,
                         'order_id' => $order->id,
+                        'shift_id' => $order->shift_id,
                         'payment_method' => $leg['method'],
                         'amount' => $leg['amount'],
+                        'amount_tendered' => $leg['amount_tendered'] ?? $leg['amount'],
+                        'change_amount' => $leg['change_amount'] ?? 0,
                         'reference_number' => $leg['reference_number'],
                         'status' => PaymentStatusEnum::Captured,
                         'captured_at' => now(),
@@ -618,17 +737,16 @@ class TransactionService
                 // SATU baris di ledger `payments` agar tabel ini konsisten
                 // jadi sumber kebenaran untuk SEMUA order Paid, bukan hanya
                 // yang lewat jalur split.
-                // PERLU TINDAK LANJUT (di luar cakupan hari ini): jalur
-                // non-cash Midtrans (order Pending) BELUM mencatat baris
-                // `payments` -- semestinya di-insert oleh
-                // updateStatusFromMidtransNotification() saat transisi ke
-                // Paid, agar `payments` lengkap untuk SEMUA metode.
                 Payment::create([
                     'tenant_id' => $order->tenant_id,
                     'store_id' => $order->store_id,
+                    'device_id' => $resolvedDeviceId,
                     'order_id' => $order->id,
+                    'shift_id' => $order->shift_id,
                     'payment_method' => PaymentMethod::from($dominantPaymentMethod),
                     'amount' => $totalAmount,
+                    'amount_tendered' => $cashReceivedForReceipt ?? $totalAmount,
+                    'change_amount' => $orderChangeForReceipt ?? 0,
                     'status' => PaymentStatusEnum::Captured,
                     'captured_at' => now(),
                     'processed_by' => $userId,
@@ -642,6 +760,30 @@ class TransactionService
             // di sini -- lihat PERLU TINDAK LANJUT di Fase 1.
             if (! empty($data['customer_id']) && $initialStatus === OrderStatus::Paid) {
                 $this->grantLoyaltyPoints((int) $data['customer_id'], $order, $subtotalAmount);
+            }
+
+            // [INCREMENT 4] Catat ledger pemakaian kuota voucher (DiscountRedemption)
+            if ($discountId && $discount && $discountAmount > 0) {
+                DiscountRedemption::create([
+                    'tenant_id' => $order->tenant_id,
+                    'store_id' => $order->store_id,
+                    'discount_id' => $discount->id,
+                    'order_id' => $order->id,
+                    'customer_id' => $order->customer_id,
+                    'redeemed_by_user_id' => $userId,
+                    'discount_code_snapshot' => $discount->code,
+                    'amount_discounted' => $discountAmount,
+                    'status' => DiscountRedemption::STATUS_APPLIED,
+                    'redeemed_at' => now(),
+                ]);
+            }
+
+            // [INCREMENT 4] Tandai ParkedCart sebagai converted jika order berasal dari hold cart
+            if ($parkedCart) {
+                $parkedCart->update([
+                    'status' => ParkedCart::STATUS_CONVERTED,
+                    'converted_order_id' => $order->id,
+                ]);
             }
 
             // PATCH FOR S-02/S-14: Snap Token Midtrans HANYA untuk jalur LEGACY non-cash TANPA
@@ -971,9 +1113,9 @@ class TransactionService
      * products.stock, BELUM ingredients.current_stock. Lihat Fase 1.1
      * finding CRITICAL/Backlog.)
      */
-    public function payPendingOrder(Order $order, array $rawPaymentLegs, ?int $userId = null, ?int $shiftId = null): Order
+    public function payPendingOrder(Order $order, array $rawPaymentLegs, ?int $userId = null, ?int $shiftId = null, ?int $deviceId = null): Order
     {
-        return DB::transaction(function () use ($order, $rawPaymentLegs, $userId, $shiftId) {
+        return DB::transaction(function () use ($order, $rawPaymentLegs, $userId, $shiftId, $deviceId) {
             $order = Order::lockForUpdate()->findOrFail($order->id);
 
             if ($order->order_status->isFinal()) {
@@ -988,6 +1130,7 @@ class TransactionService
                 ]);
             }
 
+            $resolvedDeviceId = $deviceId;
             if ($shiftId) {
                 $shift = Shift::lockForUpdate()->find($shiftId);
                 if (! $shift || $shift->status !== 'open') {
@@ -995,6 +1138,7 @@ class TransactionService
                         'shift' => 'Shift Anda baru saja ditutup. Transaksi ini dibatalkan.',
                     ]);
                 }
+                $resolvedDeviceId = $resolvedDeviceId ?? $shift->device_id;
             }
 
             $parsedPaymentLegs = $this->parsePaymentLegs($rawPaymentLegs);
@@ -1016,9 +1160,13 @@ class TransactionService
                 Payment::create([
                     'tenant_id' => $order->tenant_id,
                     'store_id' => $order->store_id,
+                    'device_id' => $resolvedDeviceId,
                     'order_id' => $order->id,
+                    'shift_id' => $shiftId ?? $order->shift_id,
                     'payment_method' => $leg['method'],
                     'amount' => $leg['amount'],
+                    'amount_tendered' => $leg['amount_tendered'] ?? $leg['amount'],
+                    'change_amount' => $leg['change_amount'] ?? 0,
                     'reference_number' => $leg['reference_number'],
                     'status' => PaymentStatusEnum::Captured,
                     'captured_at' => now(),
@@ -1106,6 +1254,277 @@ class TransactionService
         }, attempts: 3);
     }
 
+    public function initiatePaymentAttempt(
+        Order $order,
+        PaymentMethod|string $method,
+        string|int $amount,
+        string $idempotencyKey,
+        ?int $deviceId = null,
+        ?int $shiftId = null,
+        ?int $userId = null,
+        ?string $provider = null,
+    ): PaymentAttempt {
+        $tenantContext = app(TenantContext::class);
+        $tenantId = (int) ($order->tenant_id ?? $tenantContext->requireTenantId());
+        $storeId = (int) ($order->store_id ?? $tenantContext->requireStoreId());
+
+        // AC-2.1: Idempotency per-tenant
+        $existing = PaymentAttempt::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('idempotency_key', $idempotencyKey)
+            ->first();
+
+        if ($existing) {
+            return $existing;
+        }
+
+        $rawMethod = $method instanceof PaymentMethod ? $method->value : (string) $method;
+        $numAmount = (int) $amount;
+
+        if ($numAmount <= 0) {
+            throw new \InvalidArgumentException('Nominal pembayaran harus lebih besar dari 0.');
+        }
+
+        if (! $provider) {
+            $provider = match (strtolower($rawMethod)) {
+                'cash' => 'cash',
+                'qris', 'midtrans', 'bank_transfer', 'ewallet' => 'midtrans',
+                'card' => 'manual_edc',
+                default => 'midtrans',
+            };
+        }
+
+        // AC-2.2: provider_order_id unik per percobaan
+        $providerOrderId = null;
+        if ($provider === 'midtrans') {
+            $existingCount = PaymentAttempt::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('order_id', $order->id)
+                ->where('provider', 'midtrans')
+                ->count();
+            $providerOrderId = $order->order_code.($existingCount > 0 ? '-ATT'.($existingCount + 1) : '');
+        }
+
+        return DB::transaction(function () use (
+            $order, $rawMethod, $numAmount, $idempotencyKey,
+            $deviceId, $shiftId, $userId, $provider, $providerOrderId,
+            $tenantId, $storeId
+        ) {
+            $lockedOrder = Order::withoutGlobalScopes()->where('id', $order->id)->lockForUpdate()->firstOrFail();
+
+            $remaining = $lockedOrder->getRemainingBalance();
+            if ($numAmount > $remaining) {
+                throw ValidationException::withMessages([
+                    'amount' => 'Nominal pembayaran (Rp'.number_format($numAmount, 0, ',', '.').') melebihi sisa tagihan (Rp'.number_format($remaining, 0, ',', '.').').',
+                ]);
+            }
+
+            return PaymentAttempt::create([
+                'tenant_id' => $tenantId,
+                'store_id' => $storeId,
+                'order_id' => $lockedOrder->id,
+                'device_id' => $deviceId ?? $lockedOrder->created_by_device_id,
+                'shift_id' => $shiftId ?? $lockedOrder->shift_id,
+                'idempotency_key' => $idempotencyKey,
+                'provider' => $provider,
+                'payment_method' => $rawMethod,
+                'provider_order_id' => $providerOrderId,
+                'amount' => $numAmount,
+                'currency' => 'IDR',
+                'status' => PaymentAttemptStatus::Initiated,
+                'initiated_by_user_id' => $userId ?? Auth::id() ?? $lockedOrder->user_id,
+            ]);
+        });
+    }
+
+    public function settlePaymentAttempt(PaymentAttempt $attempt, array $providerMeta = []): Payment
+    {
+        $tenantContext = app(TenantContext::class);
+
+        return $tenantContext->runAs($attempt->tenant_id, $attempt->store_id, function () use ($attempt, $providerMeta) {
+            return DB::transaction(function () use ($attempt, $providerMeta) {
+                $order = Order::withoutGlobalScopes()->where('id', $attempt->order_id)->lockForUpdate()->firstOrFail();
+                $lockedAttempt = PaymentAttempt::withoutGlobalScopes()->where('id', $attempt->id)->lockForUpdate()->firstOrFail();
+
+                if ($lockedAttempt->status === PaymentAttemptStatus::Succeeded && $lockedAttempt->payment_id) {
+                    return Payment::withoutGlobalScopes()->findOrFail($lockedAttempt->payment_id);
+                }
+
+                if (in_array($lockedAttempt->status, [PaymentAttemptStatus::Expired, PaymentAttemptStatus::Cancelled], true)) {
+                    throw new \DomainException("Percobaan pembayaran #{$lockedAttempt->id} sudah kedaluwarsa atau dibatalkan.");
+                }
+
+                $tendered = isset($providerMeta['amount_tendered']) ? (int) $providerMeta['amount_tendered'] : (int) $lockedAttempt->amount;
+                $change = isset($providerMeta['change_amount']) ? (int) $providerMeta['change_amount'] : 0;
+                $appliedAmount = (int) $lockedAttempt->amount;
+
+                $pmEnum = PaymentMethod::tryFrom($lockedAttempt->payment_method) ?? PaymentMethod::Cash;
+
+                $payment = Payment::forceCreate([
+                    'tenant_id' => $order->tenant_id,
+                    'store_id' => $order->store_id,
+                    'order_id' => $order->id,
+                    'shift_id' => $lockedAttempt->shift_id ?? $order->shift_id,
+                    'device_id' => $lockedAttempt->device_id ?? $order->created_by_device_id,
+                    'payment_method' => $pmEnum,
+                    'amount' => $appliedAmount,
+                    'amount_tendered' => $tendered,
+                    'change_amount' => $change,
+                    'reference_number' => $providerMeta['transaction_id'] ?? $lockedAttempt->provider_order_id ?? $lockedAttempt->idempotency_key,
+                    'status' => PaymentStatusEnum::Captured,
+                    'captured_at' => now(),
+                    'processed_by' => $lockedAttempt->initiated_by_user_id,
+                    'idempotency_key' => 'attempt-settle-'.$lockedAttempt->id,
+                ]);
+
+                $lockedAttempt->status = PaymentAttemptStatus::Succeeded;
+                $lockedAttempt->payment_id = $payment->id;
+                $lockedAttempt->provider_transaction_id = $providerMeta['transaction_id'] ?? $lockedAttempt->provider_transaction_id;
+                $lockedAttempt->raw_response_meta = $providerMeta;
+                $lockedAttempt->settled_at = now();
+                $lockedAttempt->save();
+
+                if ($pmEnum === PaymentMethod::Cash && ($lockedAttempt->shift_id ?? $order->shift_id)) {
+                    $shiftId = (int) ($lockedAttempt->shift_id ?? $order->shift_id);
+                    $netCash = $tendered - $change;
+                    if ($netCash > 0) {
+                        $activeShift = Shift::withoutGlobalScopes()->where('id', $shiftId)->lockForUpdate()->first();
+                        if ($activeShift && $activeShift->status === 'open') {
+                            CashDrawerMovement::forceCreate([
+                                'tenant_id' => $order->tenant_id,
+                                'store_id' => $order->store_id,
+                                'device_id' => $lockedAttempt->device_id ?? $order->created_by_device_id,
+                                'shift_id' => $activeShift->id,
+                                'created_by' => $lockedAttempt->initiated_by_user_id ?? $order->user_id,
+                                'type' => 'cash_in',
+                                'category' => 'restock_change',
+                                'amount' => $netCash,
+                                'reason' => "Pembayaran pesanan #{$order->order_code}",
+                            ]);
+                        }
+                    }
+                }
+
+                $totalCaptured = Payment::withoutGlobalScopes()
+                    ->where('order_id', $order->id)
+                    ->whereIn('status', [PaymentStatusEnum::Captured, 'settled'])
+                    ->sum('amount');
+
+                if ($totalCaptured >= (int) $order->order_amount) {
+                    $order->forceFill([
+                        'order_status' => OrderStatus::Paid,
+                        'payment_method' => $pmEnum,
+                        'cash_received' => $tendered,
+                        'order_change' => $change,
+                    ])->save();
+                }
+
+                return $payment;
+            });
+        });
+    }
+
+    public function handleMidtransWebhook(array $verifiedPayload): void
+    {
+        $orderId = (string) ($verifiedPayload['order_id'] ?? '');
+        $transactionStatus = (string) ($verifiedPayload['transaction_status'] ?? '');
+        $fraudStatus = $verifiedPayload['fraud_status'] ?? null;
+        $grossAmount = isset($verifiedPayload['gross_amount']) ? (int) round((float) $verifiedPayload['gross_amount']) : null;
+
+        if (! $orderId || ! $transactionStatus) {
+            return;
+        }
+
+        $attempt = PaymentAttempt::withoutGlobalScopes()->where('provider_order_id', $orderId)->first();
+        $order = null;
+
+        if ($attempt) {
+            $order = Order::withoutGlobalScopes()->where('id', $attempt->order_id)->first();
+        } else {
+            $order = Order::withoutGlobalScopes()->where('order_code', $orderId)->first();
+        }
+
+        if (! $order) {
+            Log::warning('handleMidtransWebhook: Order tidak ditemukan untuk payload:', ['order_id' => $orderId]);
+
+            return;
+        }
+
+        $tenantContext = app(TenantContext::class);
+        $tenantContext->runAs($order->tenant_id, $order->store_id, function () use ($order, $attempt, $transactionStatus, $fraudStatus, $grossAmount, $verifiedPayload) {
+            DB::transaction(function () use ($order, $attempt, $transactionStatus, $fraudStatus, $grossAmount, $verifiedPayload) {
+                $lockedOrder = Order::withoutGlobalScopes()->where('id', $order->id)->lockForUpdate()->firstOrFail();
+
+                // AC-2.3: Idempotensi webhook - jika order sudah Paid / final dan settlement tiba lagi, abaikan
+                if ($lockedOrder->order_status->isFinal()) {
+                    if ($attempt && $attempt->status !== PaymentAttemptStatus::Succeeded) {
+                        $attempt->status = PaymentAttemptStatus::Succeeded;
+                        $attempt->save();
+                    }
+
+                    return;
+                }
+
+                // Validasi gross_amount jika tersedia
+                $expectedAmount = $attempt ? (int) $attempt->amount : (int) $lockedOrder->order_amount;
+                if ($grossAmount !== null && $grossAmount !== $expectedAmount) {
+                    Log::critical('handleMidtransWebhook: GROSS AMOUNT MISMATCH', [
+                        'order_id' => $lockedOrder->id,
+                        'expected' => $expectedAmount,
+                        'got' => $grossAmount,
+                    ]);
+
+                    return;
+                }
+
+                if (in_array($transactionStatus, ['capture', 'settlement'], true) && $fraudStatus !== 'challenge') {
+                    if ($attempt) {
+                        $this->settlePaymentAttempt($attempt, [
+                            'transaction_id' => $verifiedPayload['transaction_id'] ?? null,
+                            'transaction_status' => $transactionStatus,
+                            'gross_amount' => $grossAmount,
+                            'raw' => $verifiedPayload,
+                        ]);
+                    } else {
+                        $this->updateStatusFromMidtransNotification(
+                            orderCode: $lockedOrder->order_code,
+                            transactionStatus: $transactionStatus,
+                            fraudStatus: $fraudStatus,
+                            grossAmount: $grossAmount
+                        );
+                    }
+                } elseif (in_array($transactionStatus, ['expire', 'cancel', 'deny'], true)) {
+                    if ($attempt) {
+                        $attempt->status = match ($transactionStatus) {
+                            'expire' => PaymentAttemptStatus::Expired,
+                            'cancel' => PaymentAttemptStatus::Cancelled,
+                            default => PaymentAttemptStatus::Failed,
+                        };
+                        $attempt->raw_response_meta = $verifiedPayload;
+                        $attempt->save();
+                    }
+
+                    if (! $attempt || $lockedOrder->paymentAttempts()->where('status', PaymentAttemptStatus::Succeeded)->doesntExist()) {
+                        $this->updateStatusFromMidtransNotification(
+                            orderCode: $lockedOrder->order_code,
+                            transactionStatus: $transactionStatus,
+                            fraudStatus: $fraudStatus,
+                            grossAmount: $grossAmount
+                        );
+                    }
+                }
+            }, attempts: 3);
+        });
+    }
+
+    public function getMidtransTransactionStatus(string $orderId): object
+    {
+        Config::$serverKey = config('services.midtrans.server_key');
+        Config::$isProduction = config('services.midtrans.is_production', false);
+
+        return (object) Transaction::status($orderId);
+    }
+
     // [OMEGA-NODE9] PATCH FOR M-04: Official Void Workflow.
     // PATCH FOR F-01 (TOCTOU): re-check status SETELAH lock didapat.
     // PATCH FOR F-02: reverse payments + loyalty ledger saat void.
@@ -1119,6 +1538,33 @@ class TransactionService
         }
 
         $tenantContext->runAs($order->tenant_id, $order->store_id, function () use ($order, $reason, $userId) {
+            // AC-2.4: Periksa apakah ada PaymentAttempt berstatus unknown_timeout atau pending_provider
+            $timeoutAttempts = PaymentAttempt::withoutGlobalScopes()
+                ->where('order_id', $order->id)
+                ->whereIn('status', [PaymentAttemptStatus::UnknownTimeout, PaymentAttemptStatus::PendingProvider])
+                ->get();
+
+            foreach ($timeoutAttempts as $attempt) {
+                if ($attempt->provider === 'midtrans') {
+                    try {
+                        $checkId = $attempt->provider_order_id ?? $order->order_code;
+                        $midtransStatus = $this->getMidtransTransactionStatus($checkId);
+                        $txStatus = (string) ($midtransStatus->transaction_status ?? '');
+                        if (in_array($txStatus, ['capture', 'settlement'], true)) {
+                            $this->settlePaymentAttempt($attempt, [
+                                'transaction_id' => $midtransStatus->transaction_id ?? null,
+                                'transaction_status' => $txStatus,
+                                'gross_amount' => $midtransStatus->gross_amount ?? null,
+                            ]);
+                            throw new \DomainException('Tidak dapat membatalkan pesanan (void): transaksi pembayaran telah berhasil diselesaikan (settlement) di Midtrans.');
+                        }
+                    } catch (\DomainException $de) {
+                        throw $de;
+                    } catch (\Throwable $e) {
+                        Log::warning("Gagal rekonsiliasi status Midtrans sebelum void: {$e->getMessage()}");
+                    }
+                }
+            }
             // Pre-check sebagai fail-fast UX saja (BUKAN penjaga tunggal).
             if ($order->order_status !== OrderStatus::Paid) {
                 throw new \Exception('Hanya pesanan yang sudah lunas (Paid) yang dapat di-void.');
@@ -1177,6 +1623,8 @@ class TransactionService
                     Payment::forceCreate([
                         'tenant_id' => $lockedOrder->tenant_id,
                         'store_id' => $lockedOrder->store_id,
+                        'device_id' => $payment->device_id,
+                        'shift_id' => $payment->shift_id,
                         'order_id' => $lockedOrder->id,
                         'payment_method' => $payment->payment_method,
                         'amount' => $payment->amount,
@@ -1191,6 +1639,18 @@ class TransactionService
                 // 4. PATCH FOR F-02: Reverse loyalty points if any were granted.
                 if ($lockedOrder->customer_id) {
                     $this->reverseLoyaltyPointsForOrder($lockedOrder, $userId);
+                }
+
+                // [INCREMENT 4] Kembalikan kuota voucher jika order memakai diskon
+                if ($lockedOrder->discount_id) {
+                    Discount::where('id', $lockedOrder->discount_id)->lockForUpdate()->first();
+
+                    DiscountRedemption::where('order_id', $lockedOrder->id)
+                        ->where('status', DiscountRedemption::STATUS_APPLIED)
+                        ->update([
+                            'status' => DiscountRedemption::STATUS_VOIDED_REVERSED,
+                            'reversed_at' => now(),
+                        ]);
                 }
 
                 // 5. Record to Activity Log

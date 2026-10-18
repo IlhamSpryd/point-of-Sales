@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Security;
 
 use App\Exceptions\OwnershipTransferException;
-use App\Models\ActivityLog;
 use App\Models\Role;
 use App\Models\Tenant;
 use App\Models\User;
@@ -13,8 +12,11 @@ use App\Services\Context\TenantContext;
 use App\Services\OwnershipTransferService;
 use App\Services\RoleService;
 use Exception;
+use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\RefreshDatabaseState;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Tests\Support\TwoTenantFixture;
@@ -61,14 +63,14 @@ class OwnershipTransferServiceTest extends TestCase
 
     protected function refreshTestDatabase(): void
     {
-        if (! \Illuminate\Foundation\Testing\RefreshDatabaseState::$migrated) {
+        if (! RefreshDatabaseState::$migrated) {
             $this->migrateDatabases();
 
-            $this->app[\Illuminate\Contracts\Console\Kernel::class]->setArtisan(null);
+            $this->app[Kernel::class]->setArtisan(null);
 
             $this->updateLocalCacheOfInMemoryDatabases();
 
-            \Illuminate\Foundation\Testing\RefreshDatabaseState::$migrated = true;
+            RefreshDatabaseState::$migrated = true;
         }
 
         // Jalankan DDL pengujian SEBELUM beginDatabaseTransaction() agar tidak merusak Savepoint MySQL InnoDB
@@ -86,7 +88,7 @@ class OwnershipTransferServiceTest extends TestCase
         parent::afterSubclassSetUp();
 
         $this->setupTwoTenants();
-        \Illuminate\Database\Eloquent\Model::reguard();
+        Model::reguard();
         $this->service = app(OwnershipTransferService::class);
 
         // Provisioning 8 standard canonical roles untuk Tenant A & B
@@ -539,7 +541,7 @@ class OwnershipTransferServiceTest extends TestCase
         $this->assertNull($newTenant->fresh()->owner_user_id);
 
         // Verifikasi statis bahwa owner_user_id tidak terdaftar di $fillable
-        $this->assertNotContains('owner_user_id', (new Tenant())->getFillable());
+        $this->assertNotContains('owner_user_id', (new Tenant)->getFillable());
 
         // Verifikasi relasi owner() tetap berfungsi dengan integritas utuh
         $this->assertInstanceOf(User::class, $this->tenantA->owner);

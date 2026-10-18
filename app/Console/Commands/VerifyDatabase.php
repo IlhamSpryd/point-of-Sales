@@ -15,7 +15,7 @@ class VerifyDatabase extends Command
      */
     protected $signature = 'pos:verify-database {--allow-skipped : Do not fail if scripts are empty or skipped}';
 
-    protected $aliases = ['db:verify'];
+    protected $aliases = ['db:verify', 'app:verify-database'];
 
     /**
      * The console command description.
