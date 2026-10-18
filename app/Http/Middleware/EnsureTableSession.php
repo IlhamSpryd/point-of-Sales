@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Middleware;
 
 use App\Models\Table;
+use App\Models\Tenant;
 use App\Services\Context\TenantContext;
 use Closure;
 use Illuminate\Http\Request;
@@ -48,6 +49,19 @@ class EnsureTableSession
 
         if (! $table->tenant_id) {
             abort(403, 'Meja tidak terhubung dengan tenant mana pun.');
+        }
+
+        $tenant = Tenant::find($table->tenant_id);
+        if (! $tenant || $tenant->trashed() || $tenant->isSuspended()) {
+            $request->session()->forget(['current_table_id', 'current_table_name', 'current_tenant_id', 'current_store_id']);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Layanan pemesanan sedang tidak aktif atau ditangguhkan.',
+                ], 403);
+            }
+            abort(403, 'Layanan pemesanan sedang tidak aktif atau ditangguhkan.');
         }
 
         // DOMAIN 1 TENANCY HARDENING: Validasi batas tenant agar sesi tidak dapat diarahkan ke meja tenant lain

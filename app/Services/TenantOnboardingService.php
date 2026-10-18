@@ -9,6 +9,7 @@ use App\Models\Setting;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Support\EmailNormalizer;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -159,10 +160,10 @@ class TenantOnboardingService
      */
     public function resendOnboardingToken(string $email): bool
     {
-        $normalizedEmail = Str::lower(trim($email));
+        $normalizedEmail = EmailNormalizer::normalize($email);
 
         $user = User::withoutGlobalScopes()
-            ->where('email', $normalizedEmail)
+            ->where('email_normalized', $normalizedEmail)
             ->first();
 
         // Jika user tidak ada atau email sudah terverifikasi, return true tanpa membocorkan status

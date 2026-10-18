@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Models\Shift;
 use App\Services\Context\StoreResolver;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\ValidationException;
 
 class StoreSwitchController extends Controller
 {
@@ -34,6 +36,22 @@ class StoreSwitchController extends Controller
         $target = $request->input('store_id');
         $allowed = $storeResolver->allowedStoreIdsFor($user, $tenantId);
         $isOwner = $user->role?->name === 'Owner' || (bool) ($user->role?->is_admin ?? false);
+
+        // Cegah beralih cabang jika masih memiliki shift aktif di cabang lain
+        $openShift = Shift::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $user->id)
+            ->where('status', 'open')
+            ->first();
+
+        if ($openShift) {
+            $targetStoreId = $target === 'all' ? null : (int) $target;
+            if ($target === 'all' || $targetStoreId !== (int) $openShift->store_id) {
+                throw ValidationException::withMessages([
+                    'store_id' => 'Tidak dapat beralih cabang saat masih memiliki shift aktif. Silakan tutup shift terlebih dahulu.',
+                ]);
+            }
+        }
 
         if ($target === 'all') {
             if (! $isOwner) {

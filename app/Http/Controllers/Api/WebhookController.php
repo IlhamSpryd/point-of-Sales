@@ -50,10 +50,17 @@ class WebhookController extends Controller
         $tenantId = reset($uniqueTenants);
 
         // 4. Verifikasi keberadaan dan keabsahan tenant di database
-        if (! Tenant::where('id', $tenantId)->exists()) {
+        $tenant = Tenant::find($tenantId);
+        if (! $tenant || $tenant->trashed()) {
             Log::warning("Webhook rejected: tenant #{$tenantId} not found.");
 
             return response()->json(['message' => 'Tenant not found'], 404);
+        }
+
+        if ($tenant->isSuspended()) {
+            Log::warning("Webhook rejected: tenant #{$tenantId} is suspended.");
+
+            return response()->json(['message' => 'Tenant is suspended'], 403);
         }
 
         // 5. Verifikasi store jika disertakan pemanggil atau dari body

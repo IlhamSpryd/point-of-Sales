@@ -4,6 +4,7 @@ namespace App\Http\Requests\Auth;
 
 use App\Models\Store;
 use App\Models\User;
+use App\Support\EmailNormalizer;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -49,8 +50,9 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $email = Str::lower($this->string('email'));
-        $userCandidate = User::withoutGlobalScopes()->where('email', $email)->first();
+        $rawEmail = $this->string('email');
+        $normalizedEmail = EmailNormalizer::normalize($rawEmail);
+        $userCandidate = User::withoutGlobalScopes()->where('email_normalized', $normalizedEmail)->first();
 
         // 1. Cek apakah user terkunci di level database (15 menit)
         if ($userCandidate && $userCandidate->isLockedOut()) {
@@ -61,7 +63,8 @@ class LoginRequest extends FormRequest
             ]);
         }
 
-        if (! Auth::attempt(['email' => $email, 'password' => $this->string('password')], $this->boolean('remember'))) {
+        $attemptEmail = $userCandidate ? $userCandidate->email : $rawEmail;
+        if (! Auth::attempt(['email' => $attemptEmail, 'password' => $this->string('password')], $this->boolean('remember'))) {
             // Hit rate limiter dengan decay 15 menit (900 detik) sesuai PRD OD-09
             RateLimiter::hit($this->throttleKey(), 900);
 
@@ -132,8 +135,9 @@ class LoginRequest extends FormRequest
      */
     public function ensureIsNotRateLimited(): void
     {
-        $email = Str::lower($this->string('email'));
-        $userCandidate = User::withoutGlobalScopes()->where('email', $email)->first();
+        $rawEmail = $this->string('email');
+        $normalizedEmail = EmailNormalizer::normalize($rawEmail);
+        $userCandidate = User::withoutGlobalScopes()->where('email_normalized', $normalizedEmail)->first();
         if ($userCandidate && $userCandidate->isLockedOut()) {
             event(new Lockout($this));
             $seconds = now()->diffInSeconds($userCandidate->locked_until, false);
@@ -163,6 +167,8 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->string('email')).'|'.$this->ip());
+        $normalizedEmail = EmailNormalizer::normalize($this->string('email'));
+
+        return Str::transliterate($normalizedEmail.'|'.$this->ip());
     }
 }

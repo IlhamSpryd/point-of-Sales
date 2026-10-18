@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Table;
+use App\Models\Tenant;
 use App\Services\Context\TenantContext;
 use Closure;
 use Illuminate\Http\Request;
@@ -34,6 +35,11 @@ class ResolveTableFromToken
 
         if (! $table->tenant_id) {
             abort(404, 'Meja tidak terhubung dengan tenant mana pun.');
+        }
+
+        $tenant = Tenant::find($table->tenant_id);
+        if (! $tenant || $tenant->trashed() || $tenant->isSuspended()) {
+            abort(403, 'Layanan pemesanan sedang tidak aktif atau ditangguhkan.');
         }
 
         $context = app(TenantContext::class);

@@ -65,6 +65,14 @@ class SetTenantContext
             abort(403, 'Your account is inactive or has been deleted.'); // Keep messages generic
         }
 
+        // 5b. Block operational access when tenant is suspended (billing, admin, or manual)
+        if ($tenant->isSuspended()) {
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            abort(403, 'Your business workspace is currently suspended. Please contact customer support.');
+        }
+
         // 6. Set TenantContext
         $this->tenantContext->setTenantId($tenantId);
 
