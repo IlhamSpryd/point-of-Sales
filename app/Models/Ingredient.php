@@ -111,7 +111,7 @@ class Ingredient extends Model
     }
 
     /**
-     * [OMEGA-NODE1] FIX PRASYARAT BOM: Hapus 'unit_of_measurement' dari pivot.
+     * FIX PRASYARAT BOM: Hapus 'unit_of_measurement' dari pivot.
      */
     public function products(): BelongsToMany
     {

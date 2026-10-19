@@ -31,10 +31,10 @@ use Illuminate\Support\Facades\Log;
  *    `SystemUserResolver::selfOrder()` abort 500 bila akun tidak ada.
  *
  * Kontrak yang ditegakkan sekarang:
- *  - Owner user + role Owner (permission ['*'])          → WAJIB
- *  - 8 role standar (RoleService::provisionDefaultRoles) → WAJIB
- *  - Store pertama + store setting baseline              → WAJIB
- *  - User sistem self-order & channel order              → WAJIB
+ *  - Owner user + role Owner (permission ['*']): WAJIB
+ *  - 8 role standar (RoleService::provisionDefaultRoles): WAJIB
+ *  - Store pertama + store setting baseline: WAJIB
+ *  - User sistem self-order & channel order: WAJIB
  *
  * Semua dibuat di dalam transaksi provisioning yang sama. Bila salah satu
  * gagal, seluruh transaksi rollback — tenant tidak pernah "setengah siap".

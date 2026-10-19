@@ -212,7 +212,7 @@ class ProvisioningDomainTest extends TestCase
         // Request pertama: berhasil
         $this->postProvision($payload, $headers)->assertStatus(201);
         // Request kedua: nonce yang sama (signature valid, timestamp fresh)
-        // → HARUS ditolak (anti-replay), TIDAK membuat tenant kedua.
+        // HARUS ditolak (anti-replay), TIDAK membuat tenant kedua.
         $this->postProvision($payload, $headers)->assertStatus(409);
         $this->assertDatabaseCount('tenants', 1);
     }
@@ -240,7 +240,7 @@ class ProvisioningDomainTest extends TestCase
         $tenantId = $first->json('tenant_id');
 
         // Nonce baru (bukan replay transport) TAPI key idempotency sama +
-        // payload sama → hasil sama, tidak ada tenant kedua.
+        // payload sama: hasil sama, tidak ada tenant kedua.
         $secondHeaders = $this->signedHeaders($payload, ['X-Idempotency-Key' => 'idem-key-fixed-0001']);
         $second = $this->postProvision($payload, $secondHeaders);
 
@@ -268,7 +268,7 @@ class ProvisioningDomainTest extends TestCase
     public function test_parallel_requests_same_key_do_not_double_provision(): void
     {
         // Simulasi race: request A menang INSERT ledger; request B tiba saat
-        // A masih transaksi. PK duplikat → jalur responseForExisting.
+        // A masih transaksi. PK duplikat: jalur responseForExisting.
         $payload = $this->validPayload();
 
         // Pra-insert ledger 'processing' seperti request A yang sedang dalam transaksi bisnis.
@@ -283,7 +283,7 @@ class ProvisioningDomainTest extends TestCase
         ]);
 
         $headers = $this->signedHeaders($payload, ['X-Idempotency-Key' => 'race-key-long-0001']);
-        // Request B dengan payload IDENTIK pada processing state (lease aktif) → 200 pending
+        // Request B dengan payload IDENTIK pada processing state (lease aktif): 200 pending
         // (bukan provisioning kedua); ini adalah state-machine test, bukan proses paralel.
         $response = $this->postProvision($payload, $headers);
         $response->assertStatus(200);
@@ -297,7 +297,7 @@ class ProvisioningDomainTest extends TestCase
 
     public function test_exception_during_provisioning_rolls_back_everything(): void
     {
-        // Gangguan: email sudah terdaftar → 409, TIDAK membuat tenant (D1).
+        // Gangguan: email sudah terdaftar, menghasilkan 409, TIDAK membuat tenant (D1).
         // User wajib punya tenant_id. Kita buat tenant dummy dulu dan bypass
         // scope (karena seed dummy ini berada di luar flow provisioning).
         $preTenant = Tenant::create(['name' => 'Pre Tenant']);
@@ -366,7 +366,7 @@ class ProvisioningDomainTest extends TestCase
 
     public function test_retry_after_completed_commit_returns_same_result(): void
     {
-        // Case F.6: crash setelah commit sebelum ledger completed →
+        // Case F.6: crash setelah commit sebelum ledger completed:
         // disimulasikan lewat reconcile manual di sini (tenant ada, ledger
         // completed di-update). Pengujian inti: retry idempotent mengembalikan
         // tenant yang SAMA tanpa provisioning kedua.
@@ -394,7 +394,7 @@ class ProvisioningDomainTest extends TestCase
         $context->setStoreId(888);
 
         $payload = $this->validPayload();
-        // Provisioning dengan email konflik → exception path di service.
+        // Provisioning dengan email konflik: exception path di service.
         $this->postProvision($payload, $this->signedHeaders($payload));
 
         // Context harus pulih ke nilai semula (runAs finally).
@@ -528,14 +528,14 @@ class ProvisioningDomainTest extends TestCase
         $this->assertNotNull($owner->password_hash);
         $this->assertNotNull($owner->email_verified_at);
 
-        // Reuse → ditolak
+        // Reuse: ditolak
         $this->postJson("/onboarding/set-password/{$token}", [
             'password' => 'Another-Pass1!',
             'password_confirmation' => 'Another-Pass1!',
         ])->assertRedirect(route('login')); // redirect dengan error, password tidak berubah
         $this->assertTrue(Hash::check('Sup3r-Secret!', $owner->fresh()->password_hash));
 
-        // Expired → ditolak
+        // Expired: ditolak
         $record = OwnerOnboardingToken::first();
         $record->update(['consumed_at' => null, 'expires_at' => now()->subHour()]);
         $this->postJson("/onboarding/set-password/{$token}", [
@@ -575,7 +575,7 @@ class ProvisioningDomainTest extends TestCase
         $this->actingAs($owner);
 
         $response = $this->get('/dashboard');
-        // Owner unverified TIDAK mendapat akses penuh → diarahkan ke notice.
+        // Owner unverified TIDAK mendapat akses penuh: diarahkan ke notice.
         $response->assertRedirect(route('verification.notice'));
     }
 

@@ -56,7 +56,7 @@ class TransactionController extends Controller
         $idempotencyKey = $validated['idempotency_key'] ?? null;
 
         try {
-            // [OMEGA-NODE1] Zero-Trust shift guard: setiap transaksi Kasir
+            // Zero-Trust shift guard: setiap transaksi Kasir
             // WAJIB terikat ke shift yang sedang terbuka -- mencegah
             // "penjualan hantu" yang tidak pernah masuk rekonsiliasi kas
             // per-shift (ShiftManager). Melempar ValidationException jika

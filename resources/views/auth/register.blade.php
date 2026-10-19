@@ -96,32 +96,78 @@
             />
         </div>
 
-        <div>
+        <div x-data="{ show: false }">
             <label for="password" class="block text-xs font-medium text-zinc-700 mb-1.5">
                 {{ __('Password') }}
             </label>
-            <input
-                id="password"
-                type="password"
-                name="password"
-                required
-                placeholder="••••••••••••"
-                class="w-full h-10 px-3 rounded-md border border-zinc-200 bg-white text-zinc-900 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs"
-            />
+            <div class="relative">
+                <input
+                    id="password"
+                    :type="show ? 'text' : 'password'"
+                    name="password"
+                    required
+                    autocomplete="new-password"
+                    placeholder="••••••••••••"
+                    class="w-full h-10 pl-3 pr-10 rounded-md border border-zinc-200 bg-white text-zinc-900 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs"
+                />
+                <button
+                    type="button"
+                    @click="show = !show"
+                    class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-zinc-400 hover:text-zinc-600 focus:outline-none focus:text-zinc-900 rounded-md transition-colors cursor-pointer flex items-center justify-center"
+                    :aria-label="show ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
+                    :title="show ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
+                >
+                    <!-- Eye (Show Password) -->
+                    <svg x-show="!show" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    <!-- Eye Off (Hide Password) -->
+                    <svg x-show="show" style="display: none;" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                        <line x1="2" y1="2" x2="22" y2="22"/>
+                    </svg>
+                </button>
+            </div>
         </div>
 
-        <div>
+        <div x-data="{ show: false }">
             <label for="password_confirmation" class="block text-xs font-medium text-zinc-700 mb-1.5">
                 {{ __('Confirm Password') }}
             </label>
-            <input
-                id="password_confirmation"
-                type="password"
-                name="password_confirmation"
-                required
-                placeholder="••••••••••••"
-                class="w-full h-10 px-3 rounded-md border border-zinc-200 bg-white text-zinc-900 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs"
-            />
+            <div class="relative">
+                <input
+                    id="password_confirmation"
+                    :type="show ? 'text' : 'password'"
+                    name="password_confirmation"
+                    required
+                    autocomplete="new-password"
+                    placeholder="••••••••••••"
+                    class="w-full h-10 pl-3 pr-10 rounded-md border border-zinc-200 bg-white text-zinc-900 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs"
+                />
+                <button
+                    type="button"
+                    @click="show = !show"
+                    class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-zinc-400 hover:text-zinc-600 focus:outline-none focus:text-zinc-900 rounded-md transition-colors cursor-pointer flex items-center justify-center"
+                    :aria-label="show ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
+                    :title="show ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
+                >
+                    <!-- Eye (Show Password) -->
+                    <svg x-show="!show" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    <!-- Eye Off (Hide Password) -->
+                    <svg x-show="show" style="display: none;" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                        <line x1="2" y1="2" x2="22" y2="22"/>
+                    </svg>
+                </button>
+            </div>
         </div>
 
         <button

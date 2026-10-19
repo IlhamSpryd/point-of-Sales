@@ -36,7 +36,7 @@ class ProvisioningController extends Controller
         }
 
         // Fingerprint = hash(method | path | raw body) — disimpan di ledger;
-        // payload berbeda dengan key sama → 409 (D3).
+        // payload berbeda dengan key sama menghasilkan 409 (D3).
         $fingerprint = hash('sha256', implode('|', [
             strtoupper($request->getMethod()),
             '/'.$request->path(),

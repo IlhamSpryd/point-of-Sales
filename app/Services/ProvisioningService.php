@@ -24,8 +24,8 @@ use Illuminate\Support\Str;
  * Domain 1 — Provisioning tenant baru dari website marketing.
  *
  * Urutan WAJIB (keputusan D2):
- *   validasi → Tenant → runAs(tenant) → Role Owner → Store (+hook balances)
- *   → User Owner → audit record → commit.
+ *   validasi, Tenant, runAs(tenant), Role Owner, Store (+hook balances),
+ *   User Owner, audit record, commit.
  *
  * Idempotency (D3) — DUA penulisan yang berbeda tujuan:
  *  1. KLAIM atas baris ledger (di luar transaksi bisnis), menyimpan siapa
@@ -38,7 +38,7 @@ use Illuminate\Support\Str;
  * baru maupun baris yang sudah `completed` (DB-006).
  *
  * Concurrency: dua request paralel dengan key sama — yang kedua gagal INSERT
- * ledger (unique duplikat) atau kalah klaim → dijawab sesuai semantik
+ * ledger (unique duplikat) atau kalah klaim: dijawab sesuai semantik
  * idempotency (bukan provisioning kedua). Database constraint adalah
  * pertahanan terakhir; cache/lock apa pun hanya optimasi (D6/F6).
  */
@@ -571,7 +571,7 @@ class ProvisioningService
      */
     private function responseForExisting(ProvisioningRequest $existing, string $fingerprint): ?array
     {
-        // Key sama, payload berbeda → 409 (D3).
+        // Key sama, payload berbeda: 409 (D3).
         if ($existing->request_fingerprint !== $fingerprint) {
             return [
                 'status' => 409,
@@ -611,7 +611,7 @@ class ProvisioningService
             }
 
             // Transient error (mis. database): boleh diretry dengan key yang
-            // sama → serahkan ke claim().
+            // sama: serahkan ke claim().
             return null;
         }
 

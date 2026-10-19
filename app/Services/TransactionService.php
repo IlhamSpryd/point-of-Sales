@@ -1,6 +1,6 @@
 <?php
 
-// [OMEGA-NODE1] Refactor checkout inti: BOM ingredient deduction (ganti
+// Refactor checkout inti: BOM ingredient deduction (ganti
 // pemotongan products.stock untuk produk ber-resep), Split Payments
 // (ledger `payments` multi-leg), dan Loyalty Points (ledger append-only
 // `loyalty_ledger`) -- seluruhnya dalam SATU DB::transaction() dengan
@@ -56,7 +56,7 @@ use Midtrans\Transaction;
 class TransactionService
 {
     /**
-     * [OMEGA-NODE1] Kontrak baru $data (SEMUA field baru bersifat OPSIONAL,
+     * Kontrak baru $data (SEMUA field baru bersifat OPSIONAL,
      * caller lama tetap jalan tanpa perubahan):
      *
      *   'payments' => [
@@ -88,7 +88,7 @@ class TransactionService
     public function createTransaction(array $data, int $userId): Order
     {
         return DB::transaction(function () use ($data, $userId) {
-            // [OMEGA-NODE1] Shift-lock guard (UNCHANGED).
+            // Shift-lock guard (UNCHANGED).
             $shift = null;
             if (! empty($data['shift_id'])) {
                 $shift = Shift::lockForUpdate()->find($data['shift_id']);
@@ -126,7 +126,7 @@ class TransactionService
                 }
             }
 
-            // [OMEGA-NODE7] Validasi STRUKTURAL split payment dilakukan
+            // Validasi STRUKTURAL split payment dilakukan
             // SEDINI MUNGKIN -- sebelum mengunci satu pun baris Product
             // atau Ingredient -- agar payload yang jelas cacat gagal cepat
             // tanpa menahan lock (selaras mandat Zero-Latency Concurrency).
@@ -193,7 +193,7 @@ class TransactionService
             $modifierIds = array_unique($modifierIds);
             $modifiersWithBom = Modifier::whereIn('id', $modifierIds)->with('ingredients')->get()->keyBy('id');
 
-            // [OMEGA-NODE7] Eager-load resep BOM (ingredients + pivot
+            // Eager-load resep BOM (ingredients + pivot
             // quantity_required) BERSAMAAN dengan row-lock Product yang
             // sudah ada. Baris resep (`product_ingredients`) adalah master
             // data dan TIDAK dikunci di sini -- hanya
@@ -232,7 +232,7 @@ class TransactionService
 
                 $hasBom = $product->ingredients->isNotEmpty();
 
-                // [OMEGA-NODE7] LEGACY STOCK PATH: produk TANPA resep BOM
+                // LEGACY STOCK PATH: produk TANPA resep BOM
                 // tetap memakai model lama (potong products.stock langsung,
                 // divalidasi di sini juga seperti sebelumnya). Produk yang
                 // SUDAH punya resep TIDAK PERNAH lagi menyentuh
@@ -262,7 +262,7 @@ class TransactionService
                     }
                 }
 
-                // [OMEGA-NODE9] SEC FIX CRITICAL: extra_price & options[].
+                // SEC FIX CRITICAL: extra_price & options[].
                 // extra_price dari client TIDAK PERNAH dipakai langsung --
                 // StoreTransactionRequest hanya memvalidasi BENTUK/keberadaan
                 // modifier_id, bukan nilainya. Hitung ulang dari
@@ -368,7 +368,7 @@ class TransactionService
                 }
             }
 
-            // [OMEGA-NODE7] BOM LOCKING & DEDUCTION.
+            // BOM LOCKING & DEDUCTION.
             // Diurutkan ASCENDING by id, pola deadlock-avoidance yang SAMA
             // dengan lock Product di atas. Kontrak urutan lock global untuk
             // Service ini:
@@ -538,7 +538,7 @@ class TransactionService
 
             ['tax_amount' => $taxAmount, 'total_amount' => $totalAmount] = $this->calculateOrderTotals($subtotalAmount, $discountAmount);
 
-            // [OMEGA-NODE7] RESOLUSI METODE PEMBAYARAN.
+            // RESOLUSI METODE PEMBAYARAN.
             $dominantPaymentMethod = 'cash';
             $cashReceivedForReceipt = null;
             $orderChangeForReceipt = 0;
@@ -556,7 +556,7 @@ class TransactionService
 
                 $finalPaymentLegs = $parsedPaymentLegs;
 
-                // [OMEGA-NODE1] "Dominant method" untuk kolom ringkas
+                // "Dominant method" untuk kolom ringkas
                 // orders.payment_method (legacy, single-value, dipertahankan
                 // demi laporan/dashboard/receipt existing yang belum
                 // diperbarui). KETERBATASAN DIKETAHUI: App\Enums\PaymentMethod
@@ -684,7 +684,7 @@ class TransactionService
                 }
             }
 
-            // [OMEGA-NODE7] Ledger bahan baku granular, SETELAH order_item
+            // Ledger bahan baku granular, SETELAH order_item
             // benar-benar punya id (FK order_item_id butuh baris nyata).
             foreach ($lines as $i => $line) {
                 $breakdown = $bomBreakdownByLineIndex[$i] ?? [];
@@ -712,7 +712,7 @@ class TransactionService
                 }
             }
 
-            // [OMEGA-NODE7] LEDGER PEMBAYARAN.
+            // LEDGER PEMBAYARAN.
             if (! empty($finalPaymentLegs)) {
                 foreach ($finalPaymentLegs as $i => $leg) {
                     Payment::create([
@@ -733,7 +733,7 @@ class TransactionService
                     ]);
                 }
             } elseif ($initialStatus === OrderStatus::Paid) {
-                // [OMEGA-NODE7] Jalur legacy TUNAI tunggal -- tetap dicatat
+                // Jalur legacy TUNAI tunggal -- tetap dicatat
                 // SATU baris di ledger `payments` agar tabel ini konsisten
                 // jadi sumber kebenaran untuk SEMUA order Paid, bukan hanya
                 // yang lewat jalur split.
@@ -754,7 +754,7 @@ class TransactionService
                 ]);
             }
 
-            // [OMEGA-NODE7] LOYALTY POINTS -- hanya untuk order yang
+            // LOYALTY POINTS -- hanya untuk order yang
             // LANGSUNG Paid pada panggilan ini (cash / split payment).
             // Order Pending (Midtrans non-cash) SENGAJA tidak diberi poin
             // di sini -- lihat PERLU TINDAK LANJUT di Fase 1.
@@ -861,13 +861,13 @@ class TransactionService
 
             return $order;
         }, attempts: 3);
-        // [OMEGA-NODE1] attempts: 3 ditambahkan (sebelumnya default 1) --
+        // attempts: 3 ditambahkan (sebelumnya default 1) --
         // permukaan lock kini lebih besar (Ingredients, Customer). Lihat
         // Fase 1.4 poin 6 untuk trade-off retry vs pemanggilan Snap ganda.
     }
 
     /**
-     * [OMEGA-NODE7] Validasi & normalisasi STRUKTURAL leg pembayaran
+     * Validasi & normalisasi STRUKTURAL leg pembayaran
      * (bentuk, enum, nominal positif) -- TIDAK memvalidasi jumlah total
      * (butuh totalAmount yang belum diketahui saat method ini dipanggil).
      *
@@ -916,7 +916,7 @@ class TransactionService
     }
 
     /**
-     * [OMEGA-NODE7] Memberikan poin loyalty untuk SATU order yang baru
+     * Memberikan poin loyalty untuk SATU order yang baru
      * saja Paid. Menulis HANYA ke `loyalty_ledger` -- `customer_loyalty_accounts`
      * DISINKRONKAN OTOMATIS oleh trigger `trg_loyalty_ledger_sync_account`;
      * JANGAN PERNAH menulis manual ke tabel cache itu dari sini.
@@ -929,7 +929,7 @@ class TransactionService
      */
     private function grantLoyaltyPoints(int $customerId, Order $order, int $subtotalAmount): void
     {
-        // [OMEGA-NODE7] Serialisasi race FIRST-EARN: customer_loyalty_accounts
+        // Serialisasi race FIRST-EARN: customer_loyalty_accounts
         // hanya tercipta lewat trigger AFTER INSERT pada loyalty_ledger,
         // sehingga TIDAK ADA baris untuk dikunci pada earn PERTAMA seorang
         // pelanggan -- lockForUpdate() pada baris yang belum ada tidak
@@ -940,7 +940,7 @@ class TransactionService
         $customer = Customer::where('id', $customerId)->lockForUpdate()->first();
 
         if (! $customer) {
-            Log::warning('[OMEGA-NODE7] Loyalty skip: customer tidak ditemukan.', [
+            Log::warning('Loyalty skip: customer tidak ditemukan.', [
                 'customer_id' => $customerId,
                 'order_code' => $order->order_code,
             ]);
@@ -1050,13 +1050,13 @@ class TransactionService
     // PUBLIC -- dipanggil dari Livewire computed property untuk preview. (UNCHANGED)
     public function resolveOrderItemLine(Product $product, array $modifierIds, int $qty, ?string $notes): array
     {
-        // [OMEGA-NODE1] PATCH FOR M-10: pakai koleksi yang sudah (atau baru
+        // PATCH FOR M-10: pakai koleksi yang sudah (atau baru
         // sekali) di-load, bukan query fresh modifierGroups() setiap panggil
         // -- ini offender utama N+1 di CreateOrder::cartLines(). | 2026-09-24
         $productGroups = $product->modifierGroups;
         $requiredGroupIds = $productGroups->where('is_required', true)->pluck('id');
 
-        // [OMEGA-NODE1] PATCH FOR M-10: modifier_group_id sudah kolom biasa
+        // PATCH FOR M-10: modifier_group_id sudah kolom biasa
         // di tabel modifiers -- ->with('modifierGroup') tidak diperlukan lagi.
         $selectedModifiers = Modifier::whereIn('id', $modifierIds)->get();
         $selectedGroupIds = $selectedModifiers->pluck('modifier_group_id')->unique();
@@ -1069,7 +1069,7 @@ class TransactionService
             }
         }
 
-        // [OMEGA-NODE1] PATCH FOR M-01 (ADDENDUM): tolak modifier yang bukan
+        // PATCH FOR M-01 (ADDENDUM): tolak modifier yang bukan
         // milik SATU PUN grup varian produk ini. Sebelumnya modifier "asing"
         // (mis. milik produk lain) lolos tanpa error karena tidak pernah
         // dihitung di loop required-group maupun single-select manapun.
@@ -1525,7 +1525,7 @@ class TransactionService
         return (object) Transaction::status($orderId);
     }
 
-    // [OMEGA-NODE9] PATCH FOR M-04: Official Void Workflow.
+    // PATCH FOR M-04: Official Void Workflow.
     // PATCH FOR F-01 (TOCTOU): re-check status SETELAH lock didapat.
     // PATCH FOR F-02: reverse payments + loyalty ledger saat void.
     public function voidOrder(Order $order, string $reason, int $userId): void
@@ -1715,7 +1715,7 @@ class TransactionService
         $account?->refresh();
     }
 
-    // [OMEGA-NODE1] PATCH FOR M-03: sebelumnya fungsi ini HANYA mengembalikan
+    // PATCH FOR M-03: sebelumnya fungsi ini HANYA mengembalikan
     // products.stock (jalur legacy). Order dengan BOM (produk atau varian)
     // yang kedaluwarsa/gagal tidak pernah mengembalikan ingredients.current_stock,
     // menyebabkan stok bahan baku bocor setiap kali self-order dibatalkan. | 2026-09-24
@@ -1751,7 +1751,7 @@ class TransactionService
             $product = $products->get($item->product_id);
 
             if (! $product) {
-                Log::critical('[OMEGA-NODE1] Stock restore GAGAL: produk tidak ditemukan.', [
+                Log::critical('Stock restore GAGAL: produk tidak ditemukan.', [
                     'order_code' => $order->order_code,
                     'order_item_id' => $item->id,
                     'product_id' => $item->product_id,

@@ -1,6 +1,6 @@
 <?php
 
-// [OMEGA-NODE2] Refactor Kiosk Kasir: dukungan pemilihan pelanggan (loyalti)
+// Refactor Kiosk Kasir: dukungan pemilihan pelanggan (loyalti)
 // dan Split Payment exact-sum via TransactionService::createTransaction().
 // Skenario "Tarik Pesanan" TETAP memakai pembayaran tunggal lama -- lihat
 // SYNC ALERT Node 1 untuk rencana migrasinya ke split payment. | 2026-09-22
@@ -85,7 +85,7 @@ class CreateOrder extends Component
 
     public ?string $pendingNotes = null;
 
-    // [OMEGA-NODE2] Customer selection (Loyalty) -- HANYA berlaku untuk
+    // Customer selection (Loyalty) -- HANYA berlaku untuk
     // skenario Walk-in Baru (lihat SYNC ALERT #3 di Phase 1 untuk alasan
     // skenario Tarik Pesanan belum mendukung ini).
     #[Locked]
@@ -205,7 +205,7 @@ class CreateOrder extends Component
             ];
         }
 
-        // [OMEGA-NODE2] Skenario ini tidak mendukung customer_id/loyalti --
+        // Skenario ini tidak mendukung customer_id/loyalti --
         // pastikan tidak ada sisa pilihan pelanggan dari sesi sebelumnya.
         $this->customerId = null;
         $this->customerName = null;
@@ -227,7 +227,7 @@ class CreateOrder extends Component
         $this->dispatch('pos-cart-state-changed', dirty: false);
         $this->orderType = null;
         $this->tableId = null;
-        // [OMEGA-NODE2] Hygiene fix (lihat Phase 1 self-adversarial review):
+        // Hygiene fix (lihat Phase 1 self-adversarial review):
         // customer terpilih tidak boleh ikut terbawa ke pesanan berikutnya.
         $this->customerId = null;
         $this->customerName = null;
@@ -250,7 +250,7 @@ class CreateOrder extends Component
         return app(MenuCacheService::class)->getCatalog();
     }
 
-    // [OMEGA-NODE2] Pencarian pelanggan untuk Loyalty. Query DB tetap
+    // Pencarian pelanggan untuk Loyalty. Query DB tetap
     // dipertahankan server-side (tidak bisa full-client) tapi dibatasi
     // debounce 300ms + minimal 2 karakter di sisi Blade agar sesuai
     // prinsip Zero-Latency Concurrency sebisa mungkin.
@@ -894,7 +894,7 @@ class CreateOrder extends Component
     }
 
     /**
-     * [OMEGA-NODE2] Menerima $legs dari Alpine (Split Payment modal) untuk
+     * Menerima $legs dari Alpine (Split Payment modal) untuk
      * skenario Walk-in Baru. Skenario Tarik Pesanan tetap dilayani via
      * $this->paymentMethod/$this->cashReceived seperti sebelumnya --
      * $legs diabaikan sepenuhnya di cabang itu (lihat SYNC ALERT Node 1).
@@ -933,7 +933,7 @@ class CreateOrder extends Component
 
         $this->validate($rules);
 
-        // [OMEGA-NODE2] Idempotency guard -- pola direplikasi persis dari
+        // Idempotency guard -- pola direplikasi persis dari
         // TransactionController::store() agar kasir yang panik menekan
         // tombol berkali-kali tidak menghasilkan order duplikat.
         if ($idempotencyKey && Order::where('idempotency_key', $idempotencyKey)->exists()) {
@@ -958,7 +958,7 @@ class CreateOrder extends Component
 
             $transactionService = app(TransactionService::class);
 
-            // [OMEGA-NODE1] Zero-Trust shift guard, dipusatkan lewat Service
+            // Zero-Trust shift guard, dipusatkan lewat Service
             // agar identik dengan alur TransactionController::store().
             $shiftId = $transactionService->resolveOpenShiftOrFail((int) Auth::id());
 

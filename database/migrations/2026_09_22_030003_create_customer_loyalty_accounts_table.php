@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
-// [OMEGA-NODE7] Enterprise Data Architecture Expansion — Modul CRM & Loyalty | 2026-09-22
+// Enterprise Data Architecture Expansion — Modul CRM & Loyalty | 2026-09-22
 return new class extends Migration
 {
     /**

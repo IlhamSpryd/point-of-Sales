@@ -64,7 +64,7 @@ class Product extends Model
             }
         });
 
-        // [OMEGA-NODE3] Invalidasi cache OTOMATIS saat status ketersediaan
+        // Invalidasi cache OTOMATIS saat status ketersediaan
         // produk berubah. Menutup celah: TransactionService::createTransaction()
         // memotong `stock` lewat Product::decrement() (untuk produk TANPA
         // resep BOM) -- jalur ini TIDAK PERNAH melalui ProductService,
@@ -173,10 +173,10 @@ class Product extends Model
      * KUNCI INTEGRASI: menu self-order & kasir HANYA boleh menampilkan produk
      * yang benar-benar bisa dijual -- aktif, tidak di-soft-delete, stok ada.
      *
-     * [OMEGA-NODE1] CATATAN AUDIT: untuk produk ber-BOM, `stock` di sini TIDAK LAGI dipotong
+     * CATATAN AUDIT: untuk produk ber-BOM, `stock` di sini TIDAK LAGI dipotong
      * oleh TransactionService::createTransaction().
      *
-     * [OMEGA-NODE3] KETERBATASAN DIKETAHUI (di luar cakupan audit ini):
+     * KETERBATASAN DIKETAHUI (di luar cakupan audit ini):
      * untuk produk ber-BOM, ketersediaan sesungguhnya ditentukan oleh
      * `ingredients.current_stock`, BUKAN kolom `stock` di tabel ini --
      * kolom `stock` produk ber-BOM tidak lagi dimutakhirkan sama sekali
@@ -193,7 +193,7 @@ class Product extends Model
     }
 
     /**
-     * [OMEGA-NODE1] FIX PRASYARAT BOM: Hapus 'unit_of_measurement' karena tidak ada di tabel pivot.
+     * FIX PRASYARAT BOM: Hapus 'unit_of_measurement' karena tidak ada di tabel pivot.
      */
     public function ingredients(): BelongsToMany
     {

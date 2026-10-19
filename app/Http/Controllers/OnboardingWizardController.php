@@ -58,6 +58,7 @@ class OnboardingWizardController extends Controller
 
         return view('onboarding.business-profile', [
             'tenant' => $tenant,
+            'user' => $user,
             'businessName' => $tenant->name,
             'businessCategory' => $businessCategory,
             'countryCode' => $tenant->country_code ?? 'ID',

@@ -1,6 +1,6 @@
 <?php
 
-// [OMEGA-NODE4] Signing server untuk QZ Tray. Tanpa ini, setiap qz.websocket.connect()
+// Signing server untuk QZ Tray. Tanpa ini, setiap qz.websocket.connect()
 // memunculkan popup "Untrusted certificate" di kios -- silent print jadi tidak silent. | 2026-09-22
 
 namespace App\Http\Controllers;

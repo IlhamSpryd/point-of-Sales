@@ -434,4 +434,39 @@ class AuthAndOnboardingLifecycleTest extends TestCase
         $dashRes = $this->get('/dashboard');
         $dashRes->assertOk();
     }
+
+    /**
+     * UX: Step 1 displays verified summary card and allows streamlined submission without re-entering signup data.
+     */
+    public function test_onboarding_step1_displays_verified_summary_card_and_accepts_streamlined_submission(): void
+    {
+        [$tenant, $user] = $this->createTenantWithOwner('streamlined@example.test');
+        $user->update([
+            'password_hash' => Hash::make('CorrectPassword123!'),
+            'email_verified_at' => now(),
+            'phone_number' => '+6281234567890',
+        ]);
+
+        $this->actingAs($user);
+
+        // Visit Step 1
+        $response = $this->get(route('onboarding.business-profile'));
+        $response->assertOk();
+        $response->assertSee('Registered');
+        $response->assertSee('Kopi Nusantara');
+        $response->assertSee('Budi Pemilik');
+        $response->assertSee('+6281234567890');
+
+        // Submit form with only the new operational fields (category & timezone)
+        $submitRes = $this->post(route('onboarding.business-profile.store'), [
+            'business_category' => 'fnb_cafe',
+            'tenant_timezone' => 'Asia/Jakarta',
+        ]);
+
+        $submitRes->assertRedirect(route('onboarding.initial-branch'));
+
+        $tenant->refresh();
+        $this->assertEquals(Tenant::ONBOARDING_INITIAL_BRANCH, $tenant->onboarding_status);
+        $this->assertEquals('Kopi Nusantara', $tenant->name);
+    }
 }

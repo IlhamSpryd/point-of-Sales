@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Model Modifier merepresentasikan SATU opsi pilihan di dalam sebuah grup varian.
  * Contoh: "Ice", "Hot", "Less Sugar", "Oat Milk" (+Rp5.000).
  */
-// [OMEGA-NODE1] PATCH FOR M-02 (lihat ModifierGroup.php untuk alasan penuh). | 2026-09-24
+// PATCH FOR M-02 (lihat ModifierGroup.php untuk alasan penuh). | 2026-09-24
 class Modifier extends Model
 {
     use AssignsTenant;

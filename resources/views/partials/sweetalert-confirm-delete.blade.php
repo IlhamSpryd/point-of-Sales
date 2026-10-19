@@ -118,7 +118,7 @@
                 return;
             }
 
-            // Parse "methodName(arg1, arg2)" → call $wire.methodName(arg1, arg2)
+            // Parse "methodName(arg1, arg2)" to call $wire.methodName(arg1, arg2)
             const match = action.match(/^(\w+)\((.*)\)$/);
             if (!match) {
                 console.warn('[swal-delete] Format data-wire-action tidak valid:', action);
@@ -127,7 +127,7 @@
 
             const method = match[1];
             const rawArgs = match[2].trim();
-            // Parse argumen: angka → Number, string diapit kutip → String
+            // Parse argumen: angka menjadi Number, string diapit kutip menjadi String
             const args = rawArgs === '' ? [] : rawArgs.split(',').map(a => {
                 const trimmed = a.trim();
                 if (/^-?\d+(\.\d+)?$/.test(trimmed)) return Number(trimmed);

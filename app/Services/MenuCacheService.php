@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-// [OMEGA-NODE3] Rancang ulang strategi cache katalog menu -- Node 3 Performance & Caching | 2026-09-22
+// Rancang ulang strategi cache katalog menu -- Node 3 Performance & Caching | 2026-09-22
 
 namespace App\Services;
 

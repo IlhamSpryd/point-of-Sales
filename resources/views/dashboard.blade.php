@@ -232,7 +232,7 @@
 
                 <div class="mt-2">
                     <a href="{{ route('orders.index') }}" wire:navigate class="inline-block font-semibold text-[13px] text-[#202020] hover:underline">
-                        Lihat semua pesanan →
+                        Lihat semua pesanan
                     </a>
                 </div>
             </section>

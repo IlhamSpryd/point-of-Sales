@@ -42,7 +42,7 @@ class Order extends Model
     /**
      * Data isian order yang diizinkan untuk disisipkan ke dalam basis data secara bersamaan.
      *
-     * [OMEGA-NODE1] SENGAJA TIDAK memasukkan: order_status, payment_method,
+     * SENGAJA TIDAK memasukkan: order_status, payment_method,
      * snap_token, voided_by, void_reason, voided_at. Field-field ini adalah
      * transisi status/keuangan yang HANYA boleh diubah lewat forceFill()
      * eksplisit di TransactionService (titik tunggal kebenaran), BUKAN lewat

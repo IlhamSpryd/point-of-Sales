@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * contoh: "Pilihan Suhu", "Tingkat Gula", "Jenis Susu".
  * Satu grup ini bisa dipakai ulang oleh banyak produk berbeda.
  */
-// [OMEGA-NODE1] PATCH FOR M-02: SoftDeletes membuat ->delete() menjadi
+// PATCH FOR M-02: SoftDeletes membuat ->delete() menjadi
 // UPDATE deleted_at, BUKAN DELETE fisik -- sehingga FK CASCADE di
 // modifiers.modifier_group_id tidak pernah terpicu lagi dari jalur admin
 // biasa (ModifierManager::deleteGroup()). | 2026-09-24
@@ -35,7 +35,7 @@ class ModifierGroup extends Model
         ];
     }
 
-    // [OMEGA-NODE1] PATCH FOR M-02: saat grup di-soft-delete, ikut
+    // PATCH FOR M-02: saat grup di-soft-delete, ikut
     // soft-delete opsi di dalamnya agar tidak tampil "yatim" di katalog
     // meski grup induknya sudah diarsipkan.
     protected static function booted(): void
