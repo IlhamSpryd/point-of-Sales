@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Database\Seeders\Pos\Concerns\StampsTenantOnBulkInsert;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class CashDrawerMovementSeeder extends Seeder
@@ -33,7 +34,12 @@ class CashDrawerMovementSeeder extends Seeder
             ],
         ];
 
-        DB::table('cash_drawer_movements')->truncate();
+        Schema::withoutForeignKeyConstraints(function () {
+            if (Schema::hasTable('payment_refunds')) {
+                DB::table('payment_refunds')->truncate();
+            }
+            DB::table('cash_drawer_movements')->truncate();
+        });
         $rows = [];
         $total = 0;
 

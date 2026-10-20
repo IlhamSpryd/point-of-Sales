@@ -1,63 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToTenant;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\SoftDeletes;
-
 /**
- * Model Modifier merepresentasikan SATU opsi pilihan di dalam sebuah grup varian.
- * Contoh: "Ice", "Hot", "Less Sugar", "Oat Milk" (+Rp5.000).
+ * Backward compatibility wrapper for modular architecture.
+ *
+ * @see \App\Modules\Inventory\Models\Modifier
  */
-// PATCH FOR M-02 (lihat ModifierGroup.php untuk alasan penuh). | 2026-09-24
-class Modifier extends Model
-{
-    use AssignsTenant;
-    use ScopedToTenant;
-    use SoftDeletes;
-
-    protected $fillable = ['modifier_group_id', 'name', 'extra_price', 'is_default', 'is_active'];
-
-    protected function casts(): array
-    {
-        return [
-            'extra_price' => 'integer',
-            'is_default' => 'boolean',
-            'is_active' => 'boolean',
-        ];
-    }
-
-    /**
-     * Relasi (BelongsTo): Setiap opsi pasti tergabung ke satu grup varian induknya.
-     */
-    public function modifierGroup(): BelongsTo
-    {
-        return $this->belongsTo(ModifierGroup::class);
-    }
-
-    /**
-     * Relasi (BelongsToMany): Bahan baku ekstra (BOM) untuk modifier ini.
-     */
-    public function ingredients(): BelongsToMany
-    {
-        return $this->belongsToMany(Ingredient::class, 'modifier_ingredients')
-            ->using(ModifierIngredient::class)
-            ->withPivot('quantity_required', 'tenant_id')
-            ->withTimestamps();
-    }
-
-    /**
-     * Relasi (BelongsToMany): Rincian pesanan yang menggunakan modifier ini.
-     */
-    public function orderItems(): BelongsToMany
-    {
-        return $this->belongsToMany(OrderItem::class, 'order_item_modifiers')
-            ->using(OrderItemModifier::class)
-            ->withPivot('price_at_time', 'qty', 'tenant_id', 'store_id')
-            ->withTimestamps();
-    }
-}
+class Modifier extends \App\Modules\Inventory\Models\Modifier {}

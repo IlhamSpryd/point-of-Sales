@@ -1,17 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use App\Models\ActivityLog;
-
-class ActivityLogController extends Controller
-{
-    public function index()
-    {
-        $logs = ActivityLog::with('user')
-            ->latest()
-            ->paginate(15);
-
-        return view('activity-logs.index', compact('logs'));
-    }
-}
+/**
+ * Backward compatibility wrapper for modular architecture.
+ *
+ * @see \App\Modules\Settings\Controllers\ActivityLogController
+ */
+class ActivityLogController extends \App\Modules\Settings\Controllers\ActivityLogController {}

@@ -1,0 +1,60 @@
+<?php
+
+declare(strict_types=1);
+
+// Emergency Backend Hardening | 2026-09-21
+
+namespace App\Modules\Inventory\Models;
+
+use App\Enums\StockMovementType;
+use App\Models\Concerns\AssignsStore;
+use App\Models\Concerns\AssignsTenant;
+use App\Models\Concerns\ScopedToStore;
+use App\Models\Concerns\ScopedToTenant;
+use App\Models\Order;
+use App\Models\OrderItem;
+use App\Models\Product;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
+class StockMovement extends Model
+{
+    use AssignsStore, AssignsTenant;
+    use ScopedToStore;
+    use ScopedToTenant;
+
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'product_id',
+        'order_id',
+        'order_item_id',
+        'type',
+        'quantity',
+        'reason',
+        'idempotency_key',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'type' => StockMovementType::class,
+            'quantity' => 'integer',
+        ];
+    }
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class)->withTrashed();
+    }
+
+    public function order(): BelongsTo
+    {
+        return $this->belongsTo(Order::class);
+    }
+
+    public function orderItem(): BelongsTo
+    {
+        return $this->belongsTo(OrderItem::class);
+    }
+}

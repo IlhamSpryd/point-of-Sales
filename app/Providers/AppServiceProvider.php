@@ -24,6 +24,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->scoped(TenantContext::class, function () {
             return new TenantContext;
         });
+
+        $this->app->alias(TenantContext::class, \App\Core\Context\TenantContext::class);
     }
 
     /**
