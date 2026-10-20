@@ -359,7 +359,7 @@ class ReturnRefundService
                         $stockMovementId = $movement->id;
 
                         // Perbarui stok produk dan balance otoritatif
-                        $product->stock = (float) $product->stock + (float) $qty;
+                        $product->stock = (int) round((float) $product->stock + (float) $qty);
                         $product->save();
                     }
 

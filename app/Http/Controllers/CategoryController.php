@@ -1,11 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use App\Models\Category;
+use App\Services\AuditTrailService;
 use App\Services\CategoryService;
+use App\Services\Context\TenantContext;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -18,29 +22,39 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
  */
 class CategoryController extends Controller
 {
-    /**
-     * Mengikat class dengan Service menggunakan mekanisme Dependency Injection.
-     * Ini memastikan bahwa logika domain diletakkan pada layer servis (Service Layer).
-     */
     public function __construct(
-        protected CategoryService $categoryService
-    ) {}
+        protected CategoryService $categoryService,
+        protected ?AuditTrailService $auditTrail = null
+    ) {
+        $this->auditTrail ??= app(AuditTrailService::class);
+    }
 
     /**
      * Menampilkan list daftar indeks dari resource kategori.
      */
     public function index(Request $request): View|BinaryFileResponse
     {
+        $this->authorize('viewAny', Category::class);
+
         // Bila diinstruksikan oleh parameter url untuk ekspor csv, alihkan kontrol ke Service
         if ($request->has('export') && $request->export === 'csv') {
             return $this->categoryService->exportCsv($request);
         }
 
         // Dapatkan query berisi filter dari Service Layer, paginasikan hasilnya.
-        $categories = $this->categoryService->getFilteredQuery($request)->paginate(10)->withQueryString();
+        $categories = $this->categoryService->getFilteredQuery($request)->paginate(15)->withQueryString();
 
-        // Render view HTML serta kirim variabel "categories"
         return view('categories.index', compact('categories'));
+    }
+
+    /**
+     * Endpoint ekspor kategori terdedikasi.
+     */
+    public function export(Request $request): BinaryFileResponse
+    {
+        $this->authorize('viewAny', Category::class);
+
+        return $this->categoryService->exportCsv($request);
     }
 
     /**
@@ -48,7 +62,11 @@ class CategoryController extends Controller
      */
     public function create(): View
     {
-        return view('categories.create');
+        $this->authorize('create', Category::class);
+
+        $parentCategories = Category::orderBy('category_name')->get();
+
+        return view('categories.create', compact('parentCategories'));
     }
 
     /**
@@ -56,11 +74,24 @@ class CategoryController extends Controller
      */
     public function store(StoreCategoryRequest $request): RedirectResponse
     {
-        // Parameter HTTP masuk ke kelas Request untuk divalidasi.
-        // Array associative tervalidasi yang dihasilkan diteruskan ke objek servis.
-        $this->categoryService->store($request->validated());
+        $this->authorize('create', Category::class);
 
-        return redirect()->route('categories.index')->with('success', 'Category created successfully.');
+        $category = $this->categoryService->store($request->validated());
+
+        $tenantId = app(TenantContext::class)->requireTenantId();
+        $this->auditTrail->log(
+            tenantId: $tenantId,
+            action: 'category.created',
+            userId: auth()->id(),
+            storeId: app(TenantContext::class)->getStoreId(),
+            subjectType: Category::class,
+            subjectId: $category->id,
+            description: "Kategori '{$category->category_name}' ({$category->category_code}) berhasil dibuat.",
+            oldValues: null,
+            newValues: $category->toArray()
+        );
+
+        return redirect()->route('categories.index')->with('success', 'Kategori berhasil dibuat.');
     }
 
     /**
@@ -68,7 +99,11 @@ class CategoryController extends Controller
      */
     public function edit(Category $category): View
     {
-        return view('categories.edit', compact('category'));
+        $this->authorize('update', $category);
+
+        $parentCategories = Category::where('id', '!=', $category->id)->orderBy('category_name')->get();
+
+        return view('categories.edit', compact('category', 'parentCategories'));
     }
 
     /**
@@ -76,10 +111,25 @@ class CategoryController extends Controller
      */
     public function update(UpdateCategoryRequest $request, Category $category): RedirectResponse
     {
-        // Meneruskan instance Model ke service agar memori data tervalidasi di atasnya diperbarui.
-        $this->categoryService->update($category, $request->validated());
+        $this->authorize('update', $category);
 
-        return redirect()->route('categories.index')->with('success', 'Category updated successfully.');
+        $oldValues = $category->toArray();
+        $updated = $this->categoryService->update($category, $request->validated());
+
+        $tenantId = app(TenantContext::class)->requireTenantId();
+        $this->auditTrail->log(
+            tenantId: $tenantId,
+            action: 'category.updated',
+            userId: auth()->id(),
+            storeId: app(TenantContext::class)->getStoreId(),
+            subjectType: Category::class,
+            subjectId: $category->id,
+            description: "Kategori '{$category->category_name}' berhasil diperbarui.",
+            oldValues: $oldValues,
+            newValues: $updated->toArray()
+        );
+
+        return redirect()->route('categories.index')->with('success', 'Kategori berhasil diperbarui.');
     }
 
     /**
@@ -87,15 +137,29 @@ class CategoryController extends Controller
      */
     public function destroy(Category $category): RedirectResponse
     {
+        $this->authorize('delete', $category);
+
         try {
-            // Meneruskan data spesifik (Model) agar terhapus ke dalam Service.
+            $tenantId = app(TenantContext::class)->requireTenantId();
+            $catName = $category->category_name;
+            $catId = $category->id;
+
             $this->categoryService->delete($category);
 
-            return redirect()->route('categories.index')->with('success', 'Category deleted successfully.');
-        } catch (QueryException $e) {
+            $this->auditTrail->log(
+                tenantId: $tenantId,
+                action: 'category.deleted',
+                userId: auth()->id(),
+                storeId: app(TenantContext::class)->getStoreId(),
+                subjectType: Category::class,
+                subjectId: $catId,
+                description: "Kategori '{$catName}' berhasil dihapus."
+            );
+
+            return redirect()->route('categories.index')->with('success', 'Kategori berhasil dihapus.');
+        } catch (QueryException) {
             return redirect()->route('categories.index')->with('error', 'Data ini masih terhubung dengan data lain dan tidak dapat dihapus.');
         } catch (\Throwable $e) {
-            // Jika eksekusi Exception memunculkan galat (ex. kendala asing, Foreign Key) kembalikan galat.
             return redirect()->route('categories.index')->with('error', $e->getMessage());
         }
     }

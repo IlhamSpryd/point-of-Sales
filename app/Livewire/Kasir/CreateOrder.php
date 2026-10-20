@@ -20,6 +20,7 @@ use App\Models\Shift;
 use App\Models\Table;
 use App\Services\CartService;
 use App\Services\CashierPinService;
+use App\Services\CatalogPriceResolverService;
 use App\Services\Context\TenantContext;
 use App\Services\MenuCacheService;
 use App\Services\TransactionService;
@@ -297,7 +298,16 @@ class CreateOrder extends Component
             return;
         }
 
-        $this->selectingProductId = Product::findOrFail($productId)->id;
+        $product = Product::findOrFail($productId);
+        $storeId = app(TenantContext::class)->getStoreId();
+        $resolver = app(CatalogPriceResolverService::class);
+        if (! $resolver->isAvailableInStore($product, $storeId)) {
+            $this->addError('cart', "Produk '{$product->product_name}' tidak tersedia di cabang ini.");
+
+            return;
+        }
+
+        $this->selectingProductId = $product->id;
         $this->pendingModifierIds = [];
 
         // Pre-select default modifiers
@@ -363,6 +373,13 @@ class CreateOrder extends Component
         $this->pendingQty = max(1, (int) $this->pendingQty);
 
         $product = Product::with('modifierGroups')->findOrFail($this->selectingProductId);
+        $storeId = app(TenantContext::class)->getStoreId();
+        $resolver = app(CatalogPriceResolverService::class);
+        if (! $resolver->isAvailableInStore($product, $storeId)) {
+            $this->addError('cart', "Produk '{$product->product_name}' tidak tersedia di cabang ini.");
+
+            return;
+        }
 
         if (! empty($this->pendingModifierIds)) {
             Modifier::whereIn('id', $this->pendingModifierIds)->get()->each(function ($mod) {
@@ -427,6 +444,13 @@ class CreateOrder extends Component
         }
 
         $product = Product::with('modifierGroups')->findOrFail($productId);
+        $storeId = app(TenantContext::class)->getStoreId();
+        $resolver = app(CatalogPriceResolverService::class);
+        if (! $resolver->isAvailableInStore($product, $storeId)) {
+            $this->addError('cart', "Produk '{$product->product_name}' tidak tersedia di cabang ini.");
+
+            return;
+        }
         $hasRequiredModifiers = $product->modifierGroups->where('is_required', true)->isNotEmpty();
         if ($hasRequiredModifiers) {
             $this->openModifierPicker($productId);
@@ -527,7 +551,12 @@ class CreateOrder extends Component
             $qty = max(1, (int) ($raw['qty'] ?? 1));
             $line = $service->resolveOrderItemLine(
                 $product,
-                $raw['modifier_ids'] ?? [], $qty, $raw['notes'] ?? null,
+                $raw['modifier_ids'] ?? [],
+                $qty,
+                $raw['notes'] ?? null,
+                $raw['product_variant_id'] ?? null,
+                $this->customerId,
+                'pos_cashier'
             );
 
             return [...$line, 'index' => $i];
@@ -1036,10 +1065,14 @@ class CreateOrder extends Component
                         $raw['modifier_ids'] ?? [],
                         max(1, (int) ($raw['qty'] ?? 1)),
                         $raw['notes'] ?? null,
+                        $raw['product_variant_id'] ?? null,
+                        $this->customerId,
+                        'pos_cashier'
                     );
 
                     $items[] = [
                         'product_id' => $line['product_id'],
+                        'product_variant_id' => $raw['product_variant_id'] ?? null,
                         'quantity' => $line['qty'],
                         'extra_price' => $line['order_price'] - $product->product_price,
                         'options' => $line['options'],

@@ -250,7 +250,10 @@
                                             $inCartQty = collect($this->cartLines)
                                                 ->where('product_id', $product->id)
                                                 ->sum('qty');
-                                            $isOutOfStock = !is_null($product->stock) && $product->stock <= 0;
+                                            $isOutOfStock = (bool) ($product->track_inventory ?? true)
+                                                && ! ($product->isService() || $product->isNonInventory() || $product->isBundle())
+                                                && !is_null($product->stock)
+                                                && $product->stock <= 0;
                                         @endphp
                                         <div wire:key="product-{{ $product->id }}"
                                             @if(!$isOutOfStock)

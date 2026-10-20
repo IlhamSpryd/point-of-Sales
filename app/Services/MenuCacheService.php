@@ -50,9 +50,32 @@ class MenuCacheService
         $key = $this->getTenantKey(self::KEY_CATALOG);
 
         return $this->getCache()->remember($key, self::TTL_SECONDS, function () {
-            return Category::with([
-                'products' => fn ($q) => $q->availableForOrder()->with('modifierGroups.modifiers'),
+            $context = app(TenantContext::class);
+            $storeId = $context->getStoreId();
+
+            $categories = Category::with([
+                'products' => function ($q) use ($storeId) {
+                    $q->availableForOrder()->with(['modifierGroups.modifiers', 'storeAssortments']);
+                    if ($storeId) {
+                        $q->whereDoesntHave('storeAssortments', function ($a) use ($storeId) {
+                            $a->where('store_id', $storeId)->where('is_available', false);
+                        });
+                    }
+                },
             ])->get();
+
+            if ($storeId) {
+                $resolver = app(CatalogPriceResolverService::class);
+                foreach ($categories as $cat) {
+                    foreach ($cat->products as $prod) {
+                        if ($prod instanceof Product) {
+                            $prod->product_price = (int) round($resolver->resolvePrice($prod, $storeId));
+                        }
+                    }
+                }
+            }
+
+            return $categories;
         });
     }
 
@@ -70,7 +93,7 @@ class MenuCacheService
         $key = $this->getTenantKey(self::KEY_ACTIVE_PRODUCTS);
 
         return $this->getCache()->remember($key, self::TTL_SECONDS, function () {
-            return Product::where('is_active', true)->with('category')->get();
+            return Product::where('is_active', true)->where('status', 'active')->with('category')->get();
         });
     }
 
@@ -101,11 +124,31 @@ class MenuCacheService
 
     private function buildMenuDisplayData(): array
     {
+        $context = app(TenantContext::class);
+        $storeId = $context->getStoreId();
+
+        $productQuery = Product::where('is_active', true)
+            ->where('status', 'active')
+            ->with(['category', 'modifierGroups.modifiers', 'storeAssortments']);
+
+        if ($storeId) {
+            $productQuery->whereDoesntHave('storeAssortments', function ($a) use ($storeId) {
+                $a->where('store_id', $storeId)->where('is_available', false);
+            });
+        }
+
+        $products = $productQuery->get();
+
+        if ($storeId) {
+            $resolver = app(CatalogPriceResolverService::class);
+            foreach ($products as $prod) {
+                $prod->product_price = (int) round($resolver->resolvePrice($prod, $storeId));
+            }
+        }
+
         return [
             'categories' => Category::all(),
-            'products' => Product::where('is_active', true)
-                ->with(['category', 'modifierGroups.modifiers'])
-                ->get(),
+            'products' => $products,
         ];
     }
 

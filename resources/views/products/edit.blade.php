@@ -1,4 +1,6 @@
 <x-app-layout>
+    @include('catalog.partials.sub-nav')
+
     <div class="flex items-center justify-between mb-6">
         <div>
             <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Ubah Produk</h4>
@@ -14,23 +16,49 @@
             @csrf
             @method('PUT')
 
-            <!-- Name & Category Row -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <x-form-label for="product_name">Nama Produk</x-form-label>
-                    <x-form-input type="text" id="product_name" name="product_name" 
-                           value="{{ old('product_name', $product->product_name) }}" 
-                           placeholder="Masukkan nama produk" required 
-                           class="{{ $errors->has('product_name') ? 'input-error' : '' }}" />
-                    @error('product_name')
+            <!-- Name Row -->
+            <div>
+                <x-form-label for="product_name">Nama Produk</x-form-label>
+                <x-form-input type="text" id="product_name" name="product_name"
+                       value="{{ old('product_name', $product->product_name) }}"
+                       placeholder="Masukkan nama produk" required
+                       class="{{ $errors->has('product_name') ? 'input-error' : '' }}" />
+                @error('product_name')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
+            </div>
+
+            <!-- SKU & Barcode Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <x-form-label for="product_code">Kode SKU / Kode Produk</x-form-label>
+                    <x-form-input type="text" id="product_code" name="product_code"
+                           value="{{ old('product_code', $product->product_code) }}"
+                           placeholder="Contoh: PRD-001"
+                           class="{{ $errors->has('product_code') ? 'input-error' : '' }}" />
+                    @error('product_code')
+                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <div>
+                    <x-form-label for="barcode">Barcode / EAN / UPC</x-form-label>
+                    <x-form-input type="text" id="barcode" name="barcode"
+                           value="{{ old('barcode', $product->barcode) }}"
+                           placeholder="Barcode produk (opsional)"
+                           class="{{ $errors->has('barcode') ? 'input-error' : '' }}" />
+                    @error('barcode')
+                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <!-- Category & Brand Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
                     <x-form-label for="category_id">Kategori</x-form-label>
                     <div class="relative">
-                        <select id="category_id" name="category_id" 
+                        <select id="category_id" name="category_id"
                                 class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('category_id') ? 'input-error' : '' }}" required>
                             <option value="">Pilih Kategori</option>
                             @foreach($categories as $category)
@@ -44,6 +72,151 @@
                         </div>
                     </div>
                     @error('category_id')
+                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                @enderror
+                </div>
+
+                <div>
+                    <x-form-label for="brand_id">Merek (Brand)</x-form-label>
+                    <div class="relative">
+                        <select id="brand_id" name="brand_id"
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('brand_id') ? 'input-error' : '' }}">
+                            <option value="">Tanpa Merek</option>
+                            @if(isset($brands))
+                                @foreach($brands as $brand)
+                                    <option value="{{ $brand->id }}" {{ old('brand_id', $product->brand_id) == $brand->id ? 'selected' : '' }}>
+                                        {{ $brand->brand_name ?? $brand->name }}
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
+                            <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                        </div>
+                    </div>
+                    @error('brand_id')
+                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <!-- Type & Status Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <x-form-label for="product_type">Tipe Produk</x-form-label>
+                    <div class="relative">
+                        <select id="product_type" name="product_type"
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('product_type') ? 'input-error' : '' }}">
+                            <option value="standard" {{ old('product_type', $product->product_type ?? 'standard') === 'standard' ? 'selected' : '' }}>Standard (Barang Jadi)</option>
+                            <option value="service" {{ old('product_type', $product->product_type) === 'service' ? 'selected' : '' }}>Jasa / Layanan</option>
+                            <option value="non_inventory" {{ old('product_type', $product->product_type) === 'non_inventory' ? 'selected' : '' }}>Non-Inventory</option>
+                            <option value="bundle" {{ old('product_type', $product->product_type) === 'bundle' ? 'selected' : '' }}>Paket (Bundle)</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
+                            <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                        </div>
+                    </div>
+                    @error('product_type')
+                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <x-form-label for="status">Status Lifecycle</x-form-label>
+                    <div class="relative">
+                        <select id="status" name="status"
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('status') ? 'input-error' : '' }}">
+                            <option value="active" {{ old('status', $product->status ?? 'active') === 'active' ? 'selected' : '' }}>Aktif (Siap Dijual)</option>
+                            <option value="draft" {{ old('status', $product->status) === 'draft' ? 'selected' : '' }}>Draf (Draft)</option>
+                            <option value="inactive" {{ old('status', $product->status) === 'inactive' ? 'selected' : '' }}>Non-Aktif (Inactive)</option>
+                            <option value="discontinued" {{ old('status', $product->status) === 'discontinued' ? 'selected' : '' }}>Diskualifikasi (Discontinued)</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
+                            <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                        </div>
+                    </div>
+                    @error('status')
+                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <!-- UoM & Tax Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <x-form-label for="base_uom_id">Satuan Dasar (Base UoM)</x-form-label>
+                    <div class="relative">
+                        <select id="base_uom_id" name="base_uom_id"
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('base_uom_id') ? 'input-error' : '' }}">
+                            <option value="">Pilih Satuan</option>
+                            @if(isset($uoms))
+                                @foreach($uoms as $uom)
+                                    <option value="{{ $uom->id }}" {{ old('base_uom_id', $product->base_uom_id) == $uom->id ? 'selected' : '' }}>
+                                        {{ $uom->uom_name ?? $uom->name }} ({{ $uom->code ?? $uom->symbol ?? '' }})
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
+                            <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                        </div>
+                    </div>
+                    @error('base_uom_id')
+                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <x-form-label for="tax_class_id">Kelas Pajak (Opsional)</x-form-label>
+                    <div class="relative">
+                        <select id="tax_class_id" name="tax_class_id"
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('tax_class_id') ? 'input-error' : '' }}">
+                            <option value="">-- Tanpa Pajak Khusus --</option>
+                            @if(isset($taxClasses))
+                                @foreach($taxClasses as $tc)
+                                    <option value="{{ $tc->id }}" {{ old('tax_class_id', $product->tax_class_id) == $tc->id ? 'selected' : '' }}>
+                                        {{ $tc->name }} ({{ number_format((float) $tc->rate_percent, 2) }}%)
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
+                            <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                        </div>
+                    </div>
+                    @error('tax_class_id')
+                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <!-- Cost & Costing Method Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <x-form-label for="standard_cost">Biaya Standar / HPP (Rp)</x-form-label>
+                    <x-form-input type="number" id="standard_cost" name="standard_cost"
+                           value="{{ old('standard_cost', $product->standard_cost ?? 0) }}" min="0" step="0.01"
+                           placeholder="0.00"
+                           class="{{ $errors->has('standard_cost') ? 'input-error' : '' }}" />
+                    @error('standard_cost')
+                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                @enderror
+                </div>
+
+                <div>
+                    <x-form-label for="costing_method">Metode Biaya (Costing Method)</x-form-label>
+                    <div class="relative">
+                        <select id="costing_method" name="costing_method"
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E9E9E7] bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('costing_method') ? 'input-error' : '' }}">
+                            <option value="fifo" {{ old('costing_method', $product->costing_method ?? 'fifo') === 'fifo' ? 'selected' : '' }}>FIFO (First In, First Out)</option>
+                            <option value="average" {{ old('costing_method', $product->costing_method) === 'average' ? 'selected' : '' }}>Rata-Rata (Average)</option>
+                            <option value="standard" {{ old('costing_method', $product->costing_method) === 'standard' ? 'selected' : '' }}>Standar (Standard Cost)</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
+                            <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                        </div>
+                    </div>
+                    @error('costing_method')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
                 </div>
@@ -71,6 +244,33 @@
                     @error('stock')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
+                </div>
+            </div>
+
+            <!-- Tax Inclusive & Cost Change Reason Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <x-form-label for="cost_change_reason">Alasan Perubahan Biaya Pokok (Jika HPP berubah)</x-form-label>
+                    <x-form-input type="text" id="cost_change_reason" name="cost_change_reason"
+                           value="{{ old('cost_change_reason') }}"
+                           placeholder="Contoh: Penyesuaian harga bahan baku supplier"
+                           class="{{ $errors->has('cost_change_reason') ? 'input-error' : '' }}" />
+                    @error('cost_change_reason')
+                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div class="flex flex-col justify-center">
+                    <x-form-label for="is_tax_inclusive">Perlakuan Pajak</x-form-label>
+                    <div class="flex items-center gap-3 mt-2">
+                        <label class="flex items-center cursor-pointer">
+                            <input type="checkbox" id="is_tax_inclusive" name="is_tax_inclusive" value="1" class="rounded border-[#E9E9E7] text-apeiron-ink focus:ring-[#37352F] h-4 w-4" {{ old('is_tax_inclusive', $product->is_tax_inclusive) ? 'checked' : '' }}>
+                            <span class="ml-2 text-sm font-medium text-apeiron-ink">Harga Jual Sudah Termasuk Pajak (Tax Inclusive)</span>
+                        </label>
+                    </div>
+                    @error('is_tax_inclusive')
+                        <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
 
@@ -241,5 +441,81 @@
                 </x-button>
             </div>
         </form>
+    </div>
+
+    <!-- Media Gallery Section -->
+    <div class="mt-6 bg-white border border-[#E9E9E7] rounded-xl shadow-sm overflow-hidden p-6">
+        <h5 class="text-base font-bold text-apeiron-ink mb-1">Galeri Media Produk</h5>
+        <p class="text-xs text-[#787774] mb-4">Kelola foto dan aset visual pendukung untuk produk ini.</p>
+
+        @if($product->media->isNotEmpty())
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                @foreach($product->media as $m)
+                    <div class="relative group rounded-xl border border-[#E9E9E7] overflow-hidden bg-[#F7F7F5] aspect-square flex flex-col justify-between p-2">
+                        <img src="{{ asset('storage/' . $m->file_path) }}" alt="{{ $m->alt_text ?? $product->product_name }}" class="w-full h-full object-cover rounded-lg absolute inset-0">
+                        <div class="relative z-10 flex justify-between items-start">
+                            @if($m->is_primary)
+                                <span class="px-2 py-0.5 text-[10px] font-bold uppercase rounded-md bg-emerald-500 text-white shadow-sm">Utama</span>
+                            @else
+                                <form action="{{ route('products.media.set-primary', [$product->id, $m->id]) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" class="px-2 py-0.5 text-[10px] font-medium rounded-md bg-black/60 hover:bg-black text-white transition-colors" title="Jadikan foto utama">
+                                        Set Utama
+                                    </button>
+                                </form>
+                            @endif
+                            <form action="{{ route('products.media.destroy', [$product->id, $m->id]) }}" method="POST" onsubmit="return confirm('Hapus media ini?')">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="p-1 rounded-md bg-rose-500/80 hover:bg-rose-600 text-white transition-colors shadow-sm" title="Hapus foto">
+                                    <span class="material-symbols-rounded text-[14px]">delete</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @else
+            <div class="text-center py-6 bg-[#F7F7F5] rounded-xl border border-[#E9E9E7] border-dashed">
+                <p class="text-sm text-primary-400">Belum ada media tersimpan dalam galeri produk ini.</p>
+            </div>
+        @endif
+    </div>
+
+    <!-- Cost History Section -->
+    <div class="mt-6 bg-white border border-[#E9E9E7] rounded-xl shadow-sm overflow-hidden p-6">
+        <h5 class="text-base font-bold text-apeiron-ink mb-1">Riwayat Perubahan Biaya Pokok (HPP)</h5>
+        <p class="text-xs text-[#787774] mb-4">Audit log pergeseran biaya standar dan metode kalkulasi produk ini.</p>
+
+        @if($product->costHistories->isNotEmpty())
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-apeiron-ink">
+                    <thead class="bg-[#F7F7F5] text-xs uppercase font-semibold text-[#787774] border-b border-[#E9E9E7]">
+                        <tr>
+                            <th class="px-4 py-2.5">Waktu Efektif</th>
+                            <th class="px-4 py-2.5">Metode</th>
+                            <th class="px-4 py-2.5">Biaya Lama</th>
+                            <th class="px-4 py-2.5">Biaya Baru</th>
+                            <th class="px-4 py-2.5">Alasan Perubahan</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-[#E9E9E7]">
+                        @foreach($product->costHistories as $ch)
+                            <tr class="hover:bg-[#F7F7F5]/50 transition-colors">
+                                <td class="px-4 py-2.5 text-xs text-[#787774]">{{ $ch->effective_at ? $ch->effective_at->format('d M Y H:i') : $ch->created_at->format('d M Y H:i') }}</td>
+                                <td class="px-4 py-2.5 font-mono text-xs uppercase">{{ $ch->costing_method }}</td>
+                                <td class="px-4 py-2.5 font-mono">Rp {{ number_format((float) $ch->old_cost, 2, ',', '.') }}</td>
+                                <td class="px-4 py-2.5 font-mono font-semibold text-emerald-600">Rp {{ number_format((float) $ch->new_cost, 2, ',', '.') }}</td>
+                                <td class="px-4 py-2.5 text-xs text-[#787774]">{{ $ch->reason ?? '-' }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @else
+            <div class="text-center py-6 bg-[#F7F7F5] rounded-xl border border-[#E9E9E7] border-dashed">
+                <p class="text-sm text-primary-400">Belum ada catatan riwayat perubahan biaya untuk produk ini.</p>
+            </div>
+        @endif
     </div>
 </x-app-layout>

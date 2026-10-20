@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Services\CatalogPriceResolverService;
+use App\Services\Context\TenantContext;
 use App\Services\MenuCacheService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
@@ -40,9 +42,10 @@ class MenuController extends Controller
      */
     public function modifiers(Product $product): JsonResponse
     {
-        // Jaga-jaga: tolak akses ke produk yang sudah dinonaktifkan admin,
-        // walaupun pelanggan tahu ID produknya secara langsung dari URL.
-        if (! $product->is_active) {
+        $storeId = session('current_store_id') ?? app(TenantContext::class)->getStoreId();
+        $resolver = app(CatalogPriceResolverService::class);
+
+        if (! $resolver->isAvailableInStore($product, $storeId)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Produk ini sudah tidak tersedia.',
@@ -50,13 +53,14 @@ class MenuController extends Controller
         }
 
         $product->load('modifierGroups.modifiers');
+        $resolvedPrice = $resolver->resolvePrice($product, $storeId);
 
         return response()->json([
             'success' => true,
             'product' => [
                 'id' => $product->id,
                 'name' => $product->product_name,
-                'price' => $product->product_price,
+                'price' => $resolvedPrice,
             ],
             'modifier_groups' => $product->modifierGroups,
         ]);

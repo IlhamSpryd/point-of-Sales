@@ -49,6 +49,15 @@ class CartService
             throw ValidationException::withMessages(['product_id' => 'Produk tidak ditemukan di cabang ini.']);
         }
 
+        if (! $product->is_active || $product->status !== 'active') {
+            throw ValidationException::withMessages(['product_id' => 'Produk tidak dalam status aktif dan tidak dapat dipesan.']);
+        }
+
+        $priceResolver = app(CatalogPriceResolverService::class);
+        if (! $priceResolver->isAvailableInStore($product, $storeId)) {
+            throw ValidationException::withMessages(['product_id' => 'Produk tidak tersedia di cabang ini.']);
+        }
+
         // Validasi keanggotaan grup + is_required + selection_type single/multiple.
         // Melempar ValidationException jika payload tidak sah — persis aturan Kasir.
         app(TransactionService::class)->resolveOrderItemLine($product, $modifierIds, $qty, null);
@@ -72,8 +81,9 @@ class CartService
         $lineId = md5($product->id.'-'.implode('-', $sortedIds));
 
         // Total tambahan harga dari semua modifier yang dipilih (misal: Oat Milk +5000).
+        $basePrice = $priceResolver->resolvePrice($product, $storeId);
         $extraPrice = $modifiers->sum('extra_price');
-        $unitPrice = $product->product_price + $extraPrice;
+        $unitPrice = $basePrice + $extraPrice;
 
         $cart = $this->getCartArray();
 
@@ -95,7 +105,7 @@ class CartService
                 'product_id' => $product->id,
                 'product_name' => $product->product_name,
                 'product_photo' => $product->product_photo,
-                'base_price' => $product->product_price,
+                'base_price' => $basePrice,
                 'qty' => min(self::MAX_LINE_QTY, $qty),
                 'notes' => $notes ? mb_substr($notes, 0, 255) : null,
                 'options' => $modifiers->map(fn (Modifier $m) => [
@@ -434,8 +444,18 @@ class CartService
                 $productId = $item['product_id'] ?? null;
                 $product = Product::withTrashed()->find($productId);
 
-                if (! $product || $product->trashed() || ! $product->is_active) {
+                if (! $product || $product->trashed() || ! $product->is_active || $product->status !== 'active') {
                     $warnings[] = "Produk '".($item['product_name'] ?? 'ID: '.$productId)."' sudah tidak aktif atau dihapus.";
+                    $hasBlockingIssues = true;
+                    $item['is_available'] = false;
+                    $revalidatedItems[$key] = $item;
+
+                    continue;
+                }
+
+                $resolver = app(CatalogPriceResolverService::class);
+                if (! $resolver->isAvailableInStore($product, $storeId)) {
+                    $warnings[] = "Produk '{$product->product_name}' sudah tidak tersedia di cabang ini.";
                     $hasBlockingIssues = true;
                     $item['is_available'] = false;
                     $revalidatedItems[$key] = $item;
@@ -457,35 +477,40 @@ class CartService
                 }
 
                 $extraPrice = (int) $modifiers->sum('extra_price');
-                $newUnitPrice = (int) ($product->product_price + $extraPrice);
+                $resolvedBasePrice = (int) $resolver->resolvePrice($product, $storeId);
+                $newUnitPrice = $resolvedBasePrice + $extraPrice;
                 $oldUnitPrice = (int) ($item['unit_price'] ?? $item['base_price'] ?? 0);
 
                 if ($newUnitPrice !== $oldUnitPrice) {
                     $warnings[] = "Harga produk '{$product->product_name}' berubah dari Rp".number_format($oldUnitPrice, 0, ',', '.').' menjadi Rp'.number_format($newUnitPrice, 0, ',', '.').'.';
-                    $item['base_price'] = (int) $product->product_price;
+                    $item['base_price'] = $resolvedBasePrice;
                     $item['unit_price'] = $newUnitPrice;
                 }
 
                 // Re-validasi stok
                 $requestedQty = (int) ($item['qty'] ?? $item['quantity'] ?? 1);
-                if ($product->ingredients()->exists()) {
-                    foreach ($product->ingredients as $ingredient) {
-                        $requiredBOM = (float) bcmul((string) $ingredient->pivot->quantity_required, (string) $requestedQty, 4);
-                        if ((float) $ingredient->current_stock < $requiredBOM) {
-                            $warnings[] = "Bahan baku '{$ingredient->name}' untuk produk '{$product->product_name}' tidak mencukupi (sisa: {$ingredient->current_stock}).";
+                $needsInventoryCheck = $product->track_inventory && ! $product->isService() && ! $product->isNonInventory();
+
+                if ($needsInventoryCheck) {
+                    if ($product->ingredients()->exists()) {
+                        foreach ($product->ingredients as $ingredient) {
+                            $requiredBOM = (float) bcmul((string) $ingredient->pivot->quantity_required, (string) $requestedQty, 4);
+                            if ((float) $ingredient->current_stock < $requiredBOM) {
+                                $warnings[] = "Bahan baku '{$ingredient->name}' untuk produk '{$product->product_name}' tidak mencukupi (sisa: {$ingredient->current_stock}).";
+                                $hasBlockingIssues = true;
+                                $item['is_available'] = false;
+                                $item['insufficient_stock'] = true;
+                                break;
+                            }
+                        }
+                    } else {
+                        $availableStock = (int) $product->stock;
+                        if ($availableStock < $requestedQty) {
+                            $warnings[] = "Stok produk '{$product->product_name}' tidak mencukupi (tersedia: {$availableStock}, diminta: {$requestedQty}).";
                             $hasBlockingIssues = true;
                             $item['is_available'] = false;
                             $item['insufficient_stock'] = true;
-                            break;
                         }
-                    }
-                } else {
-                    $availableStock = (int) $product->stock;
-                    if ($availableStock < $requestedQty) {
-                        $warnings[] = "Stok produk '{$product->product_name}' tidak mencukupi (tersedia: {$availableStock}, diminta: {$requestedQty}).";
-                        $hasBlockingIssues = true;
-                        $item['is_available'] = false;
-                        $item['insufficient_stock'] = true;
                     }
                 }
 

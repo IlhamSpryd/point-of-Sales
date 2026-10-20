@@ -66,22 +66,6 @@ return [
                 'scope' => 'tenant',
             ],
             [
-                'label' => 'Kategori',
-                'icon' => 'category',
-                'route' => 'categories.index',
-                'active' => 'categories.*',
-                'roles' => ['Owner', 'Manager', 'Inventory'],
-                'scope' => 'tenant',
-            ],
-            [
-                'label' => 'Varian & Modifier',
-                'icon' => 'tune',
-                'route' => 'inventory.modifiers',
-                'active' => 'inventory.modifiers',
-                'roles' => ['Owner', 'Manager', 'Inventory'],
-                'scope' => 'tenant',
-            ],
-            [
                 'label' => 'Bahan Baku',
                 'icon' => 'egg_alt',
                 'route' => 'inventory.ingredients',

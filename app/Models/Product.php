@@ -8,7 +8,9 @@ use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
 use App\Services\Context\TenantContext;
 use App\Services\MenuCacheService;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -20,21 +22,92 @@ use Illuminate\Support\Facades\DB;
  * Model Product untuk memetakan rekaman setiap komoditas atau
  * barang dagangan yang diperjualbelikan pada antarmuka sistem.
  *
+ * @property int $id
+ * @property int $tenant_id
+ * @property string $product_name
+ * @property string|null $product_code
+ * @property string|null $sku
+ * @property string|null $barcode
+ * @property int|null $category_id
+ * @property int|null $brand_id
+ * @property int|null $base_uom_id
+ * @property string $product_type
+ * @property int|float $product_price
+ * @property string $costing_method
+ * @property float|null $standard_cost
+ * @property int|null $tax_class_id
+ * @property bool $is_tax_inclusive
+ * @property bool $track_inventory
+ * @property int $stock
+ * @property string $status
+ * @property bool $is_active
+ * @property-read Category|null $category
+ * @property-read Brand|null $brand
+ * @property-read UnitOfMeasure|null $baseUom
+ * @property-read TaxClass|null $taxClass
+ * @property-read Collection<int, ProductVariant> $variants
  * @property-read Collection<int, Ingredient> $ingredients
  */
 class Product extends Model
 {
     use AssignsTenant;
+    use HasFactory;
     use ScopedToTenant;
     use SoftDeletes;
+
+    protected $attributes = [
+        'status' => 'active',
+        'is_active' => true,
+        'has_variants' => false,
+        'track_inventory' => true,
+    ];
 
     /**
      * Atribut yang diizinkan untuk diisi massal oleh aplikasi.
      */
     protected $fillable = [
-        'category_id', 'product_name', 'product_photo', 'product_price',
-        'product_description', 'stock', 'is_active', 'product_code',
+        'category_id',
+        'brand_id',
+        'base_uom_id',
+        'product_name',
+        'name',
+        'product_code',
+        'barcode',
+        'product_type',
+        'status',
+        'has_variants',
+        'track_inventory',
+        'product_photo',
+        'product_price',
+        'price',
+        'costing_method',
+        'standard_cost',
+        'tax_class_id',
+        'is_tax_inclusive',
+        'product_description',
+        'stock',
+        'is_active',
     ];
+
+    public function setNameAttribute($value): void
+    {
+        $this->attributes['product_name'] = $value;
+    }
+
+    public function getNameAttribute(): ?string
+    {
+        return $this->attributes['product_name'] ?? null;
+    }
+
+    public function setPriceAttribute($value): void
+    {
+        $this->attributes['product_price'] = $value;
+    }
+
+    public function getPriceAttribute(): mixed
+    {
+        return $this->attributes['product_price'] ?? null;
+    }
 
     protected static function booted()
     {
@@ -141,6 +214,9 @@ class Product extends Model
     {
         return [
             'is_active' => 'boolean',
+            'has_variants' => 'boolean',
+            'track_inventory' => 'boolean',
+            'standard_cost' => 'decimal:2',
         ];
     }
 
@@ -150,6 +226,44 @@ class Product extends Model
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
+    public function baseUom(): BelongsTo
+    {
+        return $this->belongsTo(UnitOfMeasure::class, 'base_uom_id');
+    }
+
+    public function unitConversions(): HasMany
+    {
+        return $this->hasMany(ProductUnitConversion::class);
+    }
+
+    public function taxClass(): BelongsTo
+    {
+        return $this->belongsTo(TaxClass::class, 'tax_class_id');
+    }
+
+    public function costHistories(): HasMany
+    {
+        return $this->hasMany(ProductCostHistory::class)->orderBy('effective_at', 'desc');
+    }
+
+    public function media(): HasMany
+    {
+        return $this->hasMany(ProductMedia::class)->orderBy('is_primary', 'desc')->orderBy('sort_order', 'asc');
+    }
+
+    /**
+     * @return HasMany<StoreProductAssortment, $this>
+     */
+    public function storeAssortments(): HasMany
+    {
+        return $this->hasMany(StoreProductAssortment::class);
     }
 
     /**
@@ -189,7 +303,67 @@ class Product extends Model
      */
     public function scopeAvailableForOrder($query)
     {
-        return $query->where('is_active', true)->where('stock', '>', 0);
+        return $query->where('is_active', true)
+            ->where('status', 'active')
+            ->where(function ($q) {
+                $q->where('track_inventory', false)
+                    ->orWhereIn('product_type', ['service', 'non_inventory', 'bundle'])
+                    ->orWhere('stock', '>', 0);
+            });
+    }
+
+    public function scopeSellable(Builder $query): Builder
+    {
+        return $query->where('is_active', true)->where('status', 'active');
+    }
+
+    public function isSellable(): bool
+    {
+        return $this->is_active && $this->status === 'active';
+    }
+
+    public function isPhysical(): bool
+    {
+        return $this->product_type === 'standard';
+    }
+
+    public function isService(): bool
+    {
+        return $this->product_type === 'service';
+    }
+
+    public function isNonInventory(): bool
+    {
+        return $this->product_type === 'non_inventory';
+    }
+
+    public function isBundle(): bool
+    {
+        return $this->product_type === 'bundle';
+    }
+
+    /**
+     * Relasi ke varian-varian spesifik (ADR-01).
+     */
+    public function variants(): HasMany
+    {
+        return $this->hasMany(ProductVariant::class, 'product_id')->orderBy('sort_order', 'asc');
+    }
+
+    /**
+     * Relasi ke komponen penyusun bundel/kit jika produk bertipe bundle (ADR-04).
+     */
+    public function bundleItems(): HasMany
+    {
+        return $this->hasMany(ProductBundleItem::class, 'bundle_product_id')->orderBy('sort_order', 'asc');
+    }
+
+    /**
+     * Relasi ke bundel-bundel di mana produk ini menjadi salah satu komponennya.
+     */
+    public function bundleComponentOf(): HasMany
+    {
+        return $this->hasMany(ProductBundleItem::class, 'component_product_id');
     }
 
     /**

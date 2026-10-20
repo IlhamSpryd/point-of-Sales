@@ -133,7 +133,19 @@
                     @foreach ($items as $item)
                         @php
                             $routeExists = \Illuminate\Support\Facades\Route::has($item['route']);
-                            $isActive = $routeExists && request()->routeIs($item['active']);
+                            $activePatterns = (array) $item['active'];
+                            if ($item['route'] === 'products.index') {
+                                $activePatterns = array_merge($activePatterns, [
+                                    'categories.*',
+                                    'inventory.modifiers',
+                                    'brands.*',
+                                    'units-of-measure.*',
+                                    'tax-classes.*',
+                                    'price-lists.*',
+                                    'assortments.*',
+                                ]);
+                            }
+                            $isActive = $routeExists && request()->routeIs(...$activePatterns);
                             $scope = $item['scope'] ?? 'store';
                             $rowBase =
                                 'group relative flex items-center rounded-xl text-[13px] whitespace-nowrap transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#37352F]';

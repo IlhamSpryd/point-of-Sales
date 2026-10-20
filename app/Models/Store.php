@@ -118,4 +118,9 @@ class Store extends Model
     {
         return $this->hasMany(EodSettlement::class);
     }
+
+    public function productAssortments(): HasMany
+    {
+        return $this->hasMany(StoreProductAssortment::class);
+    }
 }

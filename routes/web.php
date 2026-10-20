@@ -12,6 +12,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeviceController;
@@ -21,6 +22,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\MidtransNotificationController;
 use App\Http\Controllers\OnboardingWizardController;
 use App\Http\Controllers\OwnerOnboardingController;
+use App\Http\Controllers\PriceListController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileEmailChangeController;
@@ -31,9 +33,12 @@ use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ShiftController;
 use App\Http\Controllers\StoreController;
+use App\Http\Controllers\StoreProductAssortmentController;
 use App\Http\Controllers\StoreSwitchController;
 use App\Http\Controllers\TableController;
+use App\Http\Controllers\TaxClassController;
 use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\UnitOfMeasureController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserInvitationController;
 use App\Livewire\ChannelMappingManager;
@@ -239,8 +244,23 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
                 Route::get('/modifiers', ModifierManager::class)->name('modifiers');
             });
 
+            Route::post('products/import', [ProductController::class, 'import'])->name('products.import');
+            Route::post('products/bulk-update', [ProductController::class, 'bulkUpdate'])->name('products.bulk-update');
+            Route::get('products/export', [ProductController::class, 'export'])->name('products.export');
+            Route::delete('products/{product}/media/{media}', [ProductController::class, 'destroyMedia'])->name('products.media.destroy');
+            Route::post('products/{product}/media/{media}/set-primary', [ProductController::class, 'setPrimaryMedia'])->name('products.media.set-primary');
             Route::resource('products', ProductController::class);
+
+            Route::get('categories/export', [CategoryController::class, 'export'])->name('categories.export');
             Route::resource('categories', CategoryController::class);
+
+            Route::resource('brands', BrandController::class)->except(['show']);
+            Route::resource('units-of-measure', UnitOfMeasureController::class)->except(['show']);
+            Route::resource('tax-classes', TaxClassController::class)->except(['show']);
+            Route::resource('price-lists', PriceListController::class);
+
+            Route::get('assortments', [StoreProductAssortmentController::class, 'index'])->name('assortments.index');
+            Route::post('assortments', [StoreProductAssortmentController::class, 'update'])->name('assortments.update');
         });
 
         // Sistem (Stores, Users, Roles)

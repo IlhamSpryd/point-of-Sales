@@ -185,6 +185,25 @@ input[type="number"]::-webkit-outer-spin-button {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
+.catalog-nav-tab-active {
+    background-color: #202020 !important;
+    color: #ffffff !important;
+}
+
+.catalog-nav-tab-active .material-symbols-rounded {
+    color: #ffffff !important;
+}
+
+.catalog-nav-tab-inactive {
+    color: #6B6A66;
+    background-color: transparent;
+}
+
+.catalog-nav-tab-inactive:hover {
+    color: #202020;
+    background-color: #F7F7F5;
+}
+
 .data-table {
     width: 100%;
     border-collapse: separate;

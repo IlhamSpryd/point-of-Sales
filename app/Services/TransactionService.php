@@ -164,6 +164,7 @@ class TransactionService
 
                     return [
                         'product_id' => $group->first()['product_id'],
+                        'product_variant_id' => $group->first()['product_variant_id'] ?? null,
                         'quantity' => $qty,
                         'extra_price' => $group->first()['extra_price'] ?? 0,
                         'options' => $group->first()['options'] ?? null,
@@ -215,6 +216,9 @@ class TransactionService
                 ? $this->lockProductBalances($productIds, $storeIdForStock)
                 : collect();
 
+            $activeStoreId = $data['store_id'] ?? $storeIdForStock;
+            $catalogPriceResolver = app(CatalogPriceResolverService::class);
+
             foreach ($mergedItems as $item) {
                 $product = $products->find($item['product_id']);
 
@@ -224,20 +228,27 @@ class TransactionService
                     ]);
                 }
 
-                if (! $product->is_active) {
+                if (! $product->is_active || $product->status !== 'active') {
                     throw ValidationException::withMessages([
-                        'items' => 'Produk "'.$product->product_name.'" sudah dinonaktifkan dan tidak dapat dijual.',
+                        'items' => 'Produk "'.$product->product_name.'" tidak dalam status aktif dan tidak dapat dijual.',
+                    ]);
+                }
+
+                if (! $catalogPriceResolver->isAvailableInStore($product, $activeStoreId)) {
+                    throw ValidationException::withMessages([
+                        'items' => 'Produk "'.$product->product_name.'" tidak tersedia di cabang ini.',
                     ]);
                 }
 
                 $hasBom = $product->ingredients->isNotEmpty();
+                $needsStockDeduction = ! $hasBom && $product->track_inventory && ! $product->isService() && ! $product->isNonInventory() && ! $product->isBundle();
 
-                // LEGACY STOCK PATH: produk TANPA resep BOM
+                // LEGACY STOCK PATH: produk TANPA resep BOM yang melacak inventori
                 // tetap memakai model lama (potong products.stock langsung,
                 // divalidasi di sini juga seperti sebelumnya). Produk yang
-                // SUDAH punya resep TIDAK PERNAH lagi menyentuh
-                // products.stock -- lihat SYNC ALERT staleness di Fase 1.
-                if (! $hasBom) {
+                // SUDAH punya resep atau service/non_inventory/bundle TIDAK PERNAH
+                // menyentuh products.stock.
+                if ($needsStockDeduction) {
                     if ((bool) config('pos.stock_balances_authoritative', false)) {
                         // [PHASE 14] Balance row adalah otoritas; products.stock
                         // ditulis sebagai mirror dalam statement yang sama.
@@ -292,7 +303,17 @@ class TransactionService
                     }
                 }
 
-                $unitPrice = $product->product_price + $serverExtraPrice;
+                $variantId = $item['product_variant_id'] ?? null;
+                $baseProductPrice = $catalogPriceResolver->resolvePrice(
+                    $product,
+                    $activeStoreId,
+                    $variantId,
+                    $item['quantity'],
+                    $data['customer_id'] ?? null,
+                    null,
+                    $data['origin_channel'] ?? 'pos_cashier'
+                );
+                $unitPrice = $baseProductPrice + $serverExtraPrice;
                 $itemSubtotal = $unitPrice * $item['quantity'];
                 $subtotalAmount += $itemSubtotal;
 
@@ -321,9 +342,10 @@ class TransactionService
                     'qty' => $item['quantity'],
                     'order_subtotal' => $itemSubtotal,
                     'product_id' => $product->id,
+                    'product_variant_id' => $variantId,
                     'options' => $verifiedOptions,
                     'notes' => $item['notes'] ?? null,
-                    'needs_stock_deduction' => ! $hasBom,
+                    'needs_stock_deduction' => $needsStockDeduction,
                     'item_discount_id' => $item['item_discount_id'] ?? null,
                     'item_discount_amount' => $itemDiscountAmount,
                     'effective_subtotal' => $effectiveLineSubtotal,
@@ -635,7 +657,7 @@ class TransactionService
             // Buat order items
             $createdItems = [];
             foreach ($lines as $idx => $line) {
-                $itemDiscountAmount = (float) ($line['item_discount_amount'] ?? 0.00);
+                $itemDiscountAmount = (float) $line['item_discount_amount'];
                 $allocatedOrderDiscount = (float) ($allocatedOrderDiscounts[$idx] ?? 0.00);
                 $netLineTotal = max(0, (float) $line['order_subtotal'] - $itemDiscountAmount - $allocatedOrderDiscount);
 
@@ -650,7 +672,7 @@ class TransactionService
                 ]));
                 $createdItems[] = $orderItem;
 
-                if ($line['needs_stock_deduction'] ?? false) {
+                if (! empty($line['needs_stock_deduction'])) {
                     DB::table('stock_movements')->insert([
                         'tenant_id' => app(TenantContext::class)->requireTenantId(),
                         'store_id' => app(TenantContext::class)->getStoreId(),
@@ -759,7 +781,7 @@ class TransactionService
             // Order Pending (Midtrans non-cash) SENGAJA tidak diberi poin
             // di sini -- lihat PERLU TINDAK LANJUT di Fase 1.
             if (! empty($data['customer_id']) && $initialStatus === OrderStatus::Paid) {
-                $this->grantLoyaltyPoints((int) $data['customer_id'], $order, $subtotalAmount);
+                $this->grantLoyaltyPoints((int) $data['customer_id'], $order, (int) round($subtotalAmount));
             }
 
             // [INCREMENT 4] Catat ledger pemakaian kuota voucher (DiscountRedemption)
@@ -1048,8 +1070,15 @@ class TransactionService
     }
 
     // PUBLIC -- dipanggil dari Livewire computed property untuk preview. (UNCHANGED)
-    public function resolveOrderItemLine(Product $product, array $modifierIds, int $qty, ?string $notes): array
-    {
+    public function resolveOrderItemLine(
+        Product $product,
+        array $modifierIds,
+        int $qty,
+        ?string $notes,
+        ?int $variantId = null,
+        ?int $customerId = null,
+        ?string $channel = 'pos_cashier'
+    ): array {
         // PATCH FOR M-10: pakai koleksi yang sudah (atau baru
         // sekali) di-load, bukan query fresh modifierGroups() setiap panggil
         // -- ini offender utama N+1 di CreateOrder::cartLines(). | 2026-09-24
@@ -1090,12 +1119,23 @@ class TransactionService
             }
         }
 
+        $storeId = app(TenantContext::class)->getStoreId();
+        $baseProductPrice = app(CatalogPriceResolverService::class)->resolvePrice(
+            $product,
+            $storeId,
+            $variantId,
+            $qty,
+            $customerId,
+            null,
+            $channel
+        );
         $extraPrice = $selectedModifiers->sum('extra_price');
-        $unitPrice = $product->product_price + $extraPrice;
+        $unitPrice = $baseProductPrice + $extraPrice;
         $lineSubtotal = $unitPrice * $qty;
 
         return [
             'product_id' => $product->id,
+            'product_variant_id' => $variantId,
             'product_name' => $product->product_name,
             'qty' => $qty,
             'order_price' => $unitPrice,
@@ -1760,9 +1800,9 @@ class TransactionService
                 continue;
             }
 
-            // HANYA produk TANPA BOM yang stok products.stock-nya dikembalikan.
+            // HANYA produk TANPA BOM yang melacak inventori yang stok products.stock-nya dikembalikan.
             $hasBom = $product->ingredients->isNotEmpty();
-            if ($hasBom) {
+            if ($hasBom || ! $product->track_inventory || $product->isService() || $product->isNonInventory()) {
                 continue;
             }
 
@@ -1946,7 +1986,7 @@ class TransactionService
         // (Phase 13) yang menghitung delta dari kolom legacy -- sehingga
         // MIRROR kolom legacy di bawah otomatis memperbarui balance sekali
         // tanpa double-write.
-        $product->stock = (float) $product->stock + (float) $delta;
+        $product->stock = (int) round((float) $product->stock + (float) $delta);
         $product->save();
     }
 

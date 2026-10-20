@@ -111,13 +111,13 @@ class SidebarIntegrityTest extends TestCase
                 ->all();
         };
 
-        // 1. Owner sees all 20 items (including stores & devices)
+        // 1. Owner sees 18 items (categories & modifiers consolidated into Product contextual sub-nav)
         $ownerRoutes = $getVisibleRoutes('Owner');
-        $this->assertCount(20, $ownerRoutes);
+        $this->assertCount(18, $ownerRoutes);
 
-        // 2. Manager sees 16 items (all except users, roles, settings, stores)
+        // 2. Manager sees 14 items (all except users, roles, settings, stores)
         $managerRoutes = $getVisibleRoutes('Manager');
-        $this->assertCount(16, $managerRoutes);
+        $this->assertCount(14, $managerRoutes);
         $this->assertNotContains('stores.index', $managerRoutes);
         $this->assertNotContains('users.index', $managerRoutes);
         $this->assertNotContains('roles.index', $managerRoutes);
@@ -137,13 +137,11 @@ class SidebarIntegrityTest extends TestCase
             $waiterRoutes
         );
 
-        // 5. Inventory staff sees catalog and inventory items
+        // 5. Inventory staff sees catalog and inventory items (consolidated)
         $inventoryRoutes = $getVisibleRoutes('Inventory');
         $this->assertEqualsCanonicalizing(
             [
                 'products.index',
-                'categories.index',
-                'inventory.modifiers',
                 'inventory.ingredients',
                 'inventory.ledger',
             ],

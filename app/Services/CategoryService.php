@@ -9,6 +9,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 
 /**
@@ -21,10 +22,13 @@ class CategoryService
 
     public function getFilteredQuery(Request $request): Builder
     {
-        $query = Category::query()->latest('id');
+        $query = Category::query()->with('parent')->latest('id');
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where('category_name', 'like', "%{$search}%");
+            $query->where(function ($q) use ($search) {
+                $q->where('category_name', 'like', "%{$search}%")
+                    ->orWhere('category_code', 'like', "%{$search}%");
+            });
         }
 
         return $query;
@@ -53,6 +57,26 @@ class CategoryService
     public function update(Category $category, array $data): Category
     {
         return DB::transaction(function () use ($category, $data) {
+            if (isset($data['parent_id'])) {
+                $parentId = (int) $data['parent_id'];
+                if ($parentId === (int) $category->id) {
+                    throw ValidationException::withMessages([
+                        'parent_id' => 'Kategori tidak dapat menjadi induk bagi dirinya sendiri.',
+                    ]);
+                }
+
+                // DAG check: cegah siklus hierarki (A -> B -> A)
+                $current = Category::find($parentId);
+                while ($current && $current->parent_id !== null) {
+                    if ((int) $current->parent_id === (int) $category->id) {
+                        throw ValidationException::withMessages([
+                            'parent_id' => 'Kategori induk tidak boleh membentuk siklus hierarki.',
+                        ]);
+                    }
+                    $current = Category::find($current->parent_id);
+                }
+            }
+
             $category->update($data);
             $storeId = app(TenantContext::class)->getStoreId();
             $this->menuCache->flush((int) $category->tenant_id, $storeId);
@@ -61,9 +85,22 @@ class CategoryService
         });
     }
 
+    public function createCategory(array $data): Category
+    {
+        return $this->store($data);
+    }
+
+    public function updateCategory(Category $category, array $data): Category
+    {
+        return $this->update($category, $data);
+    }
+
     public function delete(Category $category): bool
     {
         return DB::transaction(function () use ($category) {
+            if ($category->children()->exists()) {
+                throw new Exception('Tidak dapat menghapus kategori "'.$category->category_name.'" karena masih memiliki subkategori.');
+            }
             if ($category->products()->exists()) {
                 throw new Exception('Tidak dapat menghapus kategori "'.$category->category_name.'" karena masih memiliki '.$category->products()->count().' produk.');
             }

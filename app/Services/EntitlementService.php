@@ -7,6 +7,7 @@ namespace App\Services;
 use App\Models\Device;
 use App\Models\Plan;
 use App\Models\PlanEntitlement;
+use App\Models\Product;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\TenantEntitlementOverride;
@@ -28,6 +29,8 @@ class EntitlementService
     public const QUOTA_MAX_DEVICES_PER_STORE = 'max_devices_per_store';
 
     public const QUOTA_MAX_EMPLOYEES = 'max_employees';
+
+    public const QUOTA_MAX_PRODUCTS = 'max_products';
 
     /**
      * Memeriksa apakah tenant memiliki hak akses ke suatu fitur berbayar.
@@ -172,6 +175,46 @@ class EntitlementService
     }
 
     /**
+     * Memastikan tenant belum melampaui batas kuota produk.
+     * Hanya membatasi jika ada konfigurasi kuota eksplisit di override atau plan entitlement.
+     *
+     * @throws DomainException
+     */
+    public function assertCanCreateProduct(int $tenantId): void
+    {
+        $hasExplicitQuota = TenantEntitlementOverride::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('feature_code', self::QUOTA_MAX_PRODUCTS)
+            ->exists();
+
+        if (! $hasExplicitQuota) {
+            $plan = $this->resolveActivePlanForTenant($tenantId);
+            if ($plan) {
+                $hasExplicitQuota = PlanEntitlement::where('plan_id', $plan->id)
+                    ->where('feature_code', self::QUOTA_MAX_PRODUCTS)
+                    ->exists();
+            }
+        }
+
+        if (! $hasExplicitQuota) {
+            return;
+        }
+
+        $quota = $this->getQuota($tenantId, self::QUOTA_MAX_PRODUCTS);
+        if ($quota === PHP_INT_MAX) {
+            return;
+        }
+
+        $currentCount = Product::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->count();
+
+        if ($currentCount >= $quota) {
+            throw new DomainException("Batas kuota produk ({$quota}) untuk paket langganan Anda telah tercapai. Silakan upgrade paket Anda untuk menambah produk baru.");
+        }
+    }
+
+    /**
      * Membersihkan cache entitlement dan kuota untuk tenant.
      */
     public function clearCache(int $tenantId): void
@@ -186,6 +229,7 @@ class EntitlementService
             self::QUOTA_MAX_STORES,
             self::QUOTA_MAX_DEVICES_PER_STORE,
             self::QUOTA_MAX_EMPLOYEES,
+            self::QUOTA_MAX_PRODUCTS,
         ];
 
         foreach ($features as $f) {
