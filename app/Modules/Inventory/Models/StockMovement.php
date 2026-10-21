@@ -14,9 +14,30 @@ use App\Models\Concerns\ScopedToTenant;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\Store;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int $product_id
+ * @property int|null $order_id
+ * @property int|null $order_item_id
+ * @property StockMovementType|string $type
+ * @property int $quantity
+ * @property string|null $unit_cost
+ * @property string|null $reason
+ * @property string $idempotency_key
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Product|null $product
+ * @property-read Store|null $store
+ * @property-read Order|null $order
+ * @property-read OrderItem|null $orderItem
+ */
 class StockMovement extends Model
 {
     use AssignsStore, AssignsTenant;
@@ -31,6 +52,7 @@ class StockMovement extends Model
         'order_item_id',
         'type',
         'quantity',
+        'unit_cost',
         'reason',
         'idempotency_key',
     ];
@@ -40,6 +62,7 @@ class StockMovement extends Model
         return [
             'type' => StockMovementType::class,
             'quantity' => 'integer',
+            'unit_cost' => 'decimal:4',
         ];
     }
 
@@ -56,5 +79,10 @@ class StockMovement extends Model
     public function orderItem(): BelongsTo
     {
         return $this->belongsTo(OrderItem::class);
+    }
+
+    public function store(): BelongsTo
+    {
+        return $this->belongsTo(Store::class);
     }
 }

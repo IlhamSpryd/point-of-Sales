@@ -354,7 +354,7 @@ class Domain1TenantIsolationTest extends TestCase
                 'tenant_id' => $this->tenantAId,
                 'store_id' => $this->storeAId,
                 'product_id' => $product->id,
-                'type' => 'in',
+                'type' => 'goods_receipt',
                 'quantity' => 5,
                 'reason' => 'seed',
                 'idempotency_key' => 'seed-'.uniqid(),

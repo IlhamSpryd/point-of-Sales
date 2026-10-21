@@ -71,7 +71,15 @@ class RestockPredictionService
         $stockoutAt = $projectedDays !== null ? $now->copy()->addSeconds((int) round($projectedDays * 86400)) : null;
 
         $forwardNeed = $avgDaily * self::FORECAST_HORIZON_DAYS;
-        $buffer = (float) $ingredient->current_stock - (float) $ingredient->reorder_level;
+
+        // Integrasi parameter reorder cabang (INC-4.1): prioritaskan akumulasi reorder_point cabang jika disetel
+        $branchReorderPointSum = (float) DB::table('ingredient_stock_balances')
+            ->where('tenant_id', $tenantId)
+            ->where('ingredient_id', $ingredient->id)
+            ->sum('reorder_point');
+
+        $effectiveReorderLevel = $branchReorderPointSum > 0 ? $branchReorderPointSum : (float) ($ingredient->reorder_level ?? 0);
+        $buffer = (float) $ingredient->current_stock - $effectiveReorderLevel;
 
         IngredientRestockForecast::updateOrCreate(
             ['ingredient_id' => $ingredient->id, 'tenant_id' => $tenantId],

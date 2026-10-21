@@ -198,7 +198,7 @@ class MenuCacheService
         return str_replace('pos:menu:', "pos:menu:{$tenantId}:".($storeId !== null ? "store:{$storeId}:" : 'all:'), $key);
     }
 
-    private function getTenantKey(string $key, ?int $tenantId = null, ?int $storeId = null): string
+    protected function getTenantKey(string $key, ?int $tenantId = null, ?int $storeId = null): string
     {
         $context = app(TenantContext::class);
         $tenantId = $tenantId ?? $context->getTenantId();

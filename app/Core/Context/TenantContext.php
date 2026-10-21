@@ -70,6 +70,15 @@ class TenantContext
         return $this->tenantId;
     }
 
+    public function requireStoreId(): int
+    {
+        if ($this->storeId === null) {
+            throw new RuntimeException('Store context has not been set for this request.');
+        }
+
+        return $this->storeId;
+    }
+
     public function setStoreId(?int $storeId): void
     {
         $this->storeId = $storeId;

@@ -33,6 +33,21 @@ class StockBalance extends Model
 
     protected $guarded = [];
 
+    protected function casts(): array
+    {
+        return [
+            'quantity' => 'decimal:4',
+            'baseline_quantity' => 'decimal:4',
+            'baseline_movement_id' => 'integer',
+            'min_stock_level' => 'decimal:4',
+            'reorder_point' => 'decimal:4',
+            'max_stock_level' => 'decimal:4',
+            'average_unit_cost' => 'decimal:4',
+            'last_unit_cost' => 'decimal:4',
+            'last_movement_id' => 'integer',
+        ];
+    }
+
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);

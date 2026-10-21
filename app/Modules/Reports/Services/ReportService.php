@@ -9,6 +9,7 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentAttemptStatus;
 use App\Enums\PaymentStatusEnum;
 use App\Exports\SalesExport;
+use App\Jobs\ProcessInventoryLedgerExportJob;
 use App\Jobs\ProcessSalesReportExportJob;
 use App\Models\EodSettlement;
 use App\Models\ExportTask;
@@ -120,6 +121,47 @@ class ReportService
 
         $storeId = $resolvedAllStores ? null : $tenantContext->getStoreId();
         ProcessSalesReportExportJob::dispatch($task, $tenantContext->getTenantId(), $storeId);
+
+        return $task;
+    }
+
+    /**
+     * Memasukkan tugas ekspor Kartu Stok / Ledger Mutasi Inventori ke dalam antrean (asinkron).
+     */
+    public function queueInventoryLedgerExport(
+        Carbon $start,
+        Carbon $end,
+        ?int $requestedBy = null,
+        ?int $storeId = null,
+        string $itemType = 'all',
+        ?int $itemId = null
+    ): ExportTask {
+        if ($start->diffInDays($end) > self::MAX_EXPORT_RANGE_DAYS) {
+            throw ValidationException::withMessages([
+                'range' => 'Rentang tanggal ekspor maksimal '.self::MAX_EXPORT_RANGE_DAYS.' hari. Silakan pecah menjadi beberapa ekspor.',
+            ]);
+        }
+
+        $tenantContext = app(TenantContext::class);
+        $tenantId = (int) ($tenantContext->getTenantId() ?? auth()->user()?->tenant_id);
+        $resolvedStoreId = $storeId ?? $tenantContext->getStoreId();
+
+        $task = ExportTask::create([
+            'tenant_id' => $tenantId,
+            'store_id' => $resolvedStoreId,
+            'requested_by' => $requestedBy ?? auth()->id(),
+            'type' => 'inventory_ledger',
+            'parameters' => [
+                'start' => $start->toDateString(),
+                'end' => $end->toDateString(),
+                'store_id' => $resolvedStoreId,
+                'item_type' => $itemType,
+                'item_id' => $itemId,
+            ],
+            'status' => ExportTaskStatus::Pending,
+        ]);
+
+        ProcessInventoryLedgerExportJob::dispatch($task, $tenantId, $resolvedStoreId);
 
         return $task;
     }
