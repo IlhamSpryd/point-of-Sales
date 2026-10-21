@@ -2,7 +2,9 @@
 
 namespace App\Modules\Settings\Services;
 
+use App\Services\Context\TenantContext;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Domain 1 (TX-010) — Klasifikasi database error spesifik MySQL/InnoDB.
@@ -109,7 +111,54 @@ class DatabaseErrorClassifier
      */
     public static function isLockConflict(QueryException $e): bool
     {
-        return self::isDeadlock($e) || self::isLockWaitTimeout($e);
+        $isConflict = self::isDeadlock($e) || self::isLockWaitTimeout($e);
+
+        if ($isConflict) {
+            self::recordConflictTelemetry($e);
+        }
+
+        return $isConflict;
+    }
+
+    /**
+     * Alias eksplisit untuk isLockConflict — apakah error berupa deadlock (1213) atau lock timeout (1205).
+     */
+    public static function isDeadlockOrLockTimeout(QueryException $e): bool
+    {
+        return self::isLockConflict($e);
+    }
+
+    /**
+     * Catat telemetri konkurensi terstruktur untuk APM (Datadog/NewRelic/Prometheus/Loki)
+     * saat terjadi konflik kunci InnoDB tanpa membocorkan PII pelanggan.
+     */
+    public static function recordConflictTelemetry(QueryException $e, ?string $context = null): void
+    {
+        try {
+            $code = self::getDriverCode($e);
+            $type = match ($code) {
+                self::MYSQL_ER_LOCK_DEADLOCK => 'deadlock',
+                self::MYSQL_ER_LOCK_WAIT_TIMEOUT => 'lock_wait_timeout',
+                default => 'other_conflict',
+            };
+
+            $tenantContext = app()->bound(TenantContext::class)
+                ? app(TenantContext::class)
+                : null;
+
+            Log::channel('daily')->warning('[CONCURRENCY_TELEMETRY] InnoDB lock conflict detected', [
+                'event' => 'database_lock_conflict',
+                'conflict_type' => $type,
+                'driver_code' => $code,
+                'tenant_id' => $tenantContext?->getTenantId(),
+                'store_id' => $tenantContext?->getStoreId(),
+                'context' => $context ?? (app()->runningInConsole() ? 'cli' : request()->path()),
+                'sql_signature' => substr($e->getSql(), 0, 200),
+                'occurred_at' => now()->toIso8601String(),
+            ]);
+        } catch (\Throwable) {
+            // Fail-safe: telemetri tidak boleh menginterupsi alur eksepsi utama
+        }
     }
 
     /**

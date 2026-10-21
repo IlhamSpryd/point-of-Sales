@@ -132,7 +132,7 @@
 
     <div class="mt-8 pt-6 border-t border-zinc-100 text-xs text-zinc-500 leading-relaxed">
         <a href="{{ route('login') }}" class="text-zinc-950 font-medium hover:underline underline-offset-4">
-            ← {{ __('Back to sign in') }}
+            {{ __('Back to sign in') }}
         </a>
     </div>
 </x-guest-layout>

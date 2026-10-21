@@ -157,7 +157,7 @@
             <button
                 type="submit"
                 id="btn-masuk"
-                class="w-full h-10 px-4 rounded-md font-medium transition-colors flex items-center justify-center gap-2 bg-apeiron-ink hover:bg-[#111111] text-white text-sm cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed shadow-xs active:scale-[0.99]"
+                class="w-full h-10 px-4 rounded-md font-medium transition-colors flex items-center justify-center gap-2 bg-apeiron-ink hover:bg-[#111111] text-white text-[13px] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed shadow-xs active:scale-[0.99]"
                 :disabled="isLoading"
                 :class="{ 'opacity-70 cursor-not-allowed': isLoading }"
                 :aria-busy="isLoading"

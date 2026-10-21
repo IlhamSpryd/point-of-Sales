@@ -1,4 +1,5 @@
 <div>
+    @include('inventory.partials.sub-nav')
     {{-- Header & Aksi Utama --}}
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>

@@ -1,4 +1,5 @@
 <div>
+    @include('inventory.partials.sub-nav')
     @if($showModal)
     <div class="flex items-center justify-between mb-6">
         <div>
