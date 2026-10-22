@@ -4,17 +4,32 @@ namespace App\Providers;
 
 use App\Http\Middleware\SetTenantContext;
 use App\Models\GoodsReceipt;
+use App\Models\GoodsReceivedNote;
+use App\Models\Ingredient;
+use App\Models\Product;
+use App\Models\PurchaseOrder;
+use App\Models\PurchaseRequest;
+use App\Models\PurchaseReturn;
 use App\Models\StockAdjustment;
 use App\Models\StockOpname;
 use App\Models\StockTransfer;
+use App\Models\Supplier;
+use App\Models\SupplierInvoice;
 use App\Models\SupplierReturn;
 use App\Policies\GoodsReceiptPolicy;
+use App\Policies\GrnPolicy;
+use App\Policies\PurchaseOrderPolicy;
+use App\Policies\PurchaseRequestPolicy;
+use App\Policies\PurchaseReturnPolicy;
 use App\Policies\StockAdjustmentPolicy;
 use App\Policies\StockOpnamePolicy;
 use App\Policies\StockTransferPolicy;
+use App\Policies\SupplierInvoicePolicy;
+use App\Policies\SupplierPolicy;
 use App\Policies\SupplierReturnPolicy;
 use App\Services\Context\TenantContext;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
@@ -60,6 +75,23 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(\App\Modules\Inventory\Models\StockTransfer::class, StockTransferPolicy::class);
         Gate::policy(SupplierReturn::class, SupplierReturnPolicy::class);
         Gate::policy(\App\Modules\Inventory\Models\SupplierReturn::class, SupplierReturnPolicy::class);
+        Gate::policy(Supplier::class, SupplierPolicy::class);
+        Gate::policy(\App\Modules\Purchasing\Models\Supplier::class, SupplierPolicy::class);
+        Gate::policy(PurchaseRequest::class, PurchaseRequestPolicy::class);
+        Gate::policy(\App\Modules\Purchasing\Models\PurchaseRequest::class, PurchaseRequestPolicy::class);
+        Gate::policy(PurchaseOrder::class, PurchaseOrderPolicy::class);
+        Gate::policy(\App\Modules\Purchasing\Models\PurchaseOrder::class, PurchaseOrderPolicy::class);
+        Gate::policy(GoodsReceivedNote::class, GrnPolicy::class);
+        Gate::policy(\App\Modules\Purchasing\Models\GoodsReceivedNote::class, GrnPolicy::class);
+        Gate::policy(SupplierInvoice::class, SupplierInvoicePolicy::class);
+        Gate::policy(\App\Modules\Purchasing\Models\SupplierInvoice::class, SupplierInvoicePolicy::class);
+        Gate::policy(PurchaseReturn::class, PurchaseReturnPolicy::class);
+        Gate::policy(\App\Modules\Purchasing\Models\PurchaseReturn::class, PurchaseReturnPolicy::class);
+
+        Relation::morphMap([
+            'product' => Product::class,
+            'ingredient' => Ingredient::class,
+        ]);
 
         // PATCH FOR S-06: gagal cepat saat boot produksi jika server key kosong.
         if ($this->app->isProduction() && blank(config('services.midtrans.server_key'))) {

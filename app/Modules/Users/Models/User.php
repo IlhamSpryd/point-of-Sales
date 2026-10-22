@@ -224,6 +224,11 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         return $this->belongsTo(Role::class);
     }
 
+    public function hasPermission(string $permission): bool
+    {
+        return (bool) $this->role?->hasPermission($permission);
+    }
+
     /**
      * @return BelongsTo<Tenant, $this>
      */
