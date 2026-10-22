@@ -106,8 +106,9 @@ class ShiftService
                 }
             }
 
-            // Cek shift aktif pada kasir
+            // Cek shift aktif pada kasir (scoped per cabang sesuai DB-001)
             $userShift = Shift::where('tenant_id', $tenantId)
+                ->where('store_id', $storeId)
                 ->where(function ($q) use ($cashierUserId) {
                     $q->where('active_cashier_id', $cashierUserId)
                         ->orWhere(function ($sub) use ($cashierUserId) {

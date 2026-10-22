@@ -145,6 +145,103 @@ SELECT 'FAIL' AS result, COUNT(*) AS issues FROM (
     FROM supplier_return_items sri
     LEFT JOIN supplier_returns sr ON sri.supplier_return_id = sr.id
     WHERE sr.id IS NULL
+
+    UNION ALL
+
+    -- 18. M5 Purchase Requests missing tenant or store
+    SELECT pr.id, 'm5_pr_missing_tenant_or_store' AS reason
+    FROM purchase_requests pr
+    LEFT JOIN tenants t ON pr.tenant_id = t.id
+    LEFT JOIN stores s ON pr.store_id = s.id
+    WHERE t.id IS NULL OR s.id IS NULL
+
+    UNION ALL
+
+    -- 19. M5 Purchase Request Lines missing parent
+    SELECT prl.id, 'm5_pr_line_missing_parent' AS reason
+    FROM purchase_request_lines prl
+    LEFT JOIN purchase_requests pr ON prl.purchase_request_id = pr.id
+    WHERE pr.id IS NULL
+
+    UNION ALL
+
+    -- 20. M5 Purchase Orders missing tenant, store, or supplier
+    SELECT po.id, 'm5_po_missing_parent_entities' AS reason
+    FROM purchase_orders po
+    LEFT JOIN tenants t ON po.tenant_id = t.id
+    LEFT JOIN stores s ON po.store_id = s.id
+    LEFT JOIN suppliers sup ON po.supplier_id = sup.id
+    WHERE t.id IS NULL OR s.id IS NULL OR sup.id IS NULL
+
+    UNION ALL
+
+    -- 21. M5 Purchase Order Lines missing parent
+    SELECT pol.id, 'm5_po_line_missing_parent' AS reason
+    FROM purchase_order_lines pol
+    LEFT JOIN purchase_orders po ON pol.purchase_order_id = po.id
+    WHERE po.id IS NULL
+
+    UNION ALL
+
+    -- 22. M5 Goods Received Notes missing tenant, store, or purchase_order
+    SELECT grn.id, 'm5_grn_missing_parent_entities' AS reason
+    FROM goods_received_notes grn
+    LEFT JOIN tenants t ON grn.tenant_id = t.id
+    LEFT JOIN stores s ON grn.store_id = s.id
+    LEFT JOIN purchase_orders po ON grn.purchase_order_id = po.id
+    WHERE t.id IS NULL OR s.id IS NULL OR po.id IS NULL
+
+    UNION ALL
+
+    -- 23. M5 Goods Received Note Lines missing parent
+    SELECT grnl.id, 'm5_grn_line_missing_parent' AS reason
+    FROM goods_received_note_lines grnl
+    LEFT JOIN goods_received_notes grn ON grnl.goods_received_note_id = grn.id
+    WHERE grn.id IS NULL
+
+    UNION ALL
+
+    -- 24. M5 Supplier Invoices missing tenant or supplier
+    SELECT si.id, 'm5_invoice_missing_tenant_or_supplier' AS reason
+    FROM supplier_invoices si
+    LEFT JOIN tenants t ON si.tenant_id = t.id
+    LEFT JOIN suppliers sup ON si.supplier_id = sup.id
+    WHERE t.id IS NULL OR sup.id IS NULL
+
+    UNION ALL
+
+    -- 25. M5 Supplier Invoice Lines missing parent
+    SELECT sil.id, 'm5_invoice_line_missing_parent' AS reason
+    FROM supplier_invoice_lines sil
+    LEFT JOIN supplier_invoices si ON sil.supplier_invoice_id = si.id
+    WHERE si.id IS NULL
+
+    UNION ALL
+
+    -- 26. M5 Purchase Debit Notes missing tenant or supplier
+    SELECT pdn.id, 'm5_debit_note_missing_tenant_or_supplier' AS reason
+    FROM purchase_debit_notes pdn
+    LEFT JOIN tenants t ON pdn.tenant_id = t.id
+    LEFT JOIN suppliers sup ON pdn.supplier_id = sup.id
+    WHERE t.id IS NULL OR sup.id IS NULL
+
+    UNION ALL
+
+    -- 27. M5 Purchase Additional Costs missing tenant or store
+    SELECT pac.id, 'm5_cost_missing_tenant_or_store' AS reason
+    FROM purchase_additional_costs pac
+    LEFT JOIN tenants t ON pac.tenant_id = t.id
+    LEFT JOIN stores s ON pac.store_id = s.id
+    WHERE t.id IS NULL OR s.id IS NULL
+
+    UNION ALL
+
+    -- 28. M5 Reorder Suggestions missing tenant or store
+    SELECT rs.id, 'm5_reorder_missing_tenant_or_store' AS reason
+    FROM reorder_suggestions rs
+    LEFT JOIN tenants t ON rs.tenant_id = t.id
+    LEFT JOIN stores s ON rs.store_id = s.id
+    WHERE t.id IS NULL OR s.id IS NULL
 ) orphans HAVING issues > 0
 UNION
 SELECT 'PASS' AS result, 0 AS issues
@@ -183,5 +280,27 @@ WHERE NOT EXISTS (
         SELECT sr.id FROM supplier_returns sr LEFT JOIN tenants t ON sr.tenant_id = t.id LEFT JOIN stores s ON sr.store_id = s.id WHERE t.id IS NULL OR s.id IS NULL
         UNION ALL
         SELECT sri.id FROM supplier_return_items sri LEFT JOIN supplier_returns sr ON sri.supplier_return_id = sr.id WHERE sr.id IS NULL
+        UNION ALL
+        SELECT pr.id FROM purchase_requests pr LEFT JOIN tenants t ON pr.tenant_id = t.id LEFT JOIN stores s ON pr.store_id = s.id WHERE t.id IS NULL OR s.id IS NULL
+        UNION ALL
+        SELECT prl.id FROM purchase_request_lines prl LEFT JOIN purchase_requests pr ON prl.purchase_request_id = pr.id WHERE pr.id IS NULL
+        UNION ALL
+        SELECT po.id FROM purchase_orders po LEFT JOIN tenants t ON po.tenant_id = t.id LEFT JOIN stores s ON po.store_id = s.id LEFT JOIN suppliers sup ON po.supplier_id = sup.id WHERE t.id IS NULL OR s.id IS NULL OR sup.id IS NULL
+        UNION ALL
+        SELECT pol.id FROM purchase_order_lines pol LEFT JOIN purchase_orders po ON pol.purchase_order_id = po.id WHERE po.id IS NULL
+        UNION ALL
+        SELECT grn.id FROM goods_received_notes grn LEFT JOIN tenants t ON grn.tenant_id = t.id LEFT JOIN stores s ON grn.store_id = s.id LEFT JOIN purchase_orders po ON grn.purchase_order_id = po.id WHERE t.id IS NULL OR s.id IS NULL OR po.id IS NULL
+        UNION ALL
+        SELECT grnl.id FROM goods_received_note_lines grnl LEFT JOIN goods_received_notes grn ON grnl.goods_received_note_id = grn.id WHERE grn.id IS NULL
+        UNION ALL
+        SELECT si.id FROM supplier_invoices si LEFT JOIN tenants t ON si.tenant_id = t.id LEFT JOIN suppliers sup ON si.supplier_id = sup.id WHERE t.id IS NULL OR sup.id IS NULL
+        UNION ALL
+        SELECT sil.id FROM supplier_invoice_lines sil LEFT JOIN supplier_invoices si ON sil.supplier_invoice_id = si.id WHERE si.id IS NULL
+        UNION ALL
+        SELECT pdn.id FROM purchase_debit_notes pdn LEFT JOIN tenants t ON pdn.tenant_id = t.id LEFT JOIN suppliers sup ON pdn.supplier_id = sup.id WHERE t.id IS NULL OR sup.id IS NULL
+        UNION ALL
+        SELECT pac.id FROM purchase_additional_costs pac LEFT JOIN tenants t ON pac.tenant_id = t.id LEFT JOIN stores s ON pac.store_id = s.id WHERE t.id IS NULL OR s.id IS NULL
+        UNION ALL
+        SELECT rs.id FROM reorder_suggestions rs LEFT JOIN tenants t ON rs.tenant_id = t.id LEFT JOIN stores s ON rs.store_id = s.id WHERE t.id IS NULL OR s.id IS NULL
     ) all_orphans
 );

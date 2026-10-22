@@ -664,8 +664,8 @@ class TransactionService
 
                 $orderItem = OrderItem::create(array_merge(Arr::except($line, ['needs_stock_deduction', 'effective_subtotal']), [
                     'order_id' => $order->id,
-                    'tenant_id' => app(TenantContext::class)->requireTenantId(),
-                    'store_id' => app(TenantContext::class)->getStoreId(),
+                    'tenant_id' => $order->tenant_id,
+                    'store_id' => $order->store_id,
                     'item_discount_id' => $line['item_discount_id'] ?? null,
                     'item_discount_amount' => $itemDiscountAmount,
                     'allocated_order_discount_amount' => $allocatedOrderDiscount,
@@ -675,8 +675,8 @@ class TransactionService
 
                 if (! empty($line['needs_stock_deduction'])) {
                     DB::table('stock_movements')->insert([
-                        'tenant_id' => app(TenantContext::class)->requireTenantId(),
-                        'store_id' => app(TenantContext::class)->getStoreId(),
+                        'tenant_id' => $order->tenant_id,
+                        'store_id' => $order->store_id,
                         'product_id' => $line['product_id'],
                         'order_id' => $order->id,
                         'order_item_id' => $orderItem->id,
@@ -696,8 +696,8 @@ class TransactionService
                             $modifierSync[$opt['modifier_id']] = [
                                 'price_at_time' => $opt['extra_price'] ?? 0,
                                 'qty' => $line['qty'],
-                                'tenant_id' => app(TenantContext::class)->requireTenantId(),
-                                'store_id' => app(TenantContext::class)->getStoreId(),
+                                'tenant_id' => $order->tenant_id,
+                                'store_id' => $order->store_id,
                             ];
                         }
                     }
