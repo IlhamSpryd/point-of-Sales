@@ -1,4 +1,5 @@
 <div>
+    @include('inventory.partials.sub-nav')
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
             <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Riwayat Stok Bahan Baku</h4>

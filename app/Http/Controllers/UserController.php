@@ -1,118 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreUserRequest;
-use App\Http\Requests\UpdateUserRequest;
-use App\Models\Role;
-use App\Models\User;
-use App\Services\Context\TenantContext;
-use App\Services\UserService;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-
 /**
- * UserController: Bertanggung jawab penuh menjembatani lalu lintas data UI
- * Pengguna dengan UserService guna memfasilitasi arsitektur Thin Controller.
+ * Backward compatibility wrapper for modular architecture.
+ *
+ * @see \App\Modules\Users\Controllers\UserController
  */
-class UserController extends Controller
-{
-    /**
-     * Dependency Injection untuk UserService.
-     * Logika bisnis dipisah ke Service Pattern agar Controller tetap tipis (Thin Controller).
-     */
-    public function __construct(
-        protected UserService $userService
-    ) {}
-
-    /**
-     * Menampilkan daftar semua resource user.
-     */
-    public function index(Request $request): View|BinaryFileResponse
-    {
-        // Cek request untuk ekspor CSV, lalu delegasikan pembuatannya ke Service.
-        if ($request->has('export') && $request->export === 'csv') {
-            return $this->userService->exportCsv($request);
-        }
-
-        // Mengambil data pengguna dengan filter dari UserService berserta paginasinya
-        $users = $this->userService->getFilteredQuery($request)->paginate(10)->withQueryString();
-
-        // Mengembalikan View dan mengirim data users
-        return view('users.index', compact('users'));
-    }
-
-    /**
-     * Menampilkan form pembuatan data resource baru.
-     */
-    public function create(): View
-    {
-        // Hanya role milik tenant pada konteks aktif (TenantScope global).
-        $roles = Role::orderBy('name')->get();
-
-        return view('users.create', compact('roles'));
-    }
-
-    /**
-     * Menyimpan entri resource baru ke dalam database.
-     */
-    public function store(StoreUserRequest $request): RedirectResponse
-    {
-        // Nilai masukan klien tervalidasi di Form Request (StoreUserRequest).
-        // Parameter tervalidasi dioper ke dalam UserService untuk proses penyimpanan aktual.
-        $this->userService->store($request->validated());
-
-        // Melakukan Redirect ke halaman list dengan pesan sukses.
-        return redirect()->route('users.index')->with('success', 'User created successfully.');
-    }
-
-    /**
-     * Menampilkan form untuk menyunting resource terkait.
-     */
-    public function edit(User $user): View
-    {
-        abort_if((int) $user->tenant_id !== (int) app(TenantContext::class)->requireTenantId(), 404);
-
-        // Hanya role milik tenant pada konteks aktif (TenantScope global).
-        $roles = Role::orderBy('name')->get();
-
-        return view('users.edit', compact('user', 'roles'));
-    }
-
-    /**
-     * Memperbarui perincian resource di dalam database.
-     */
-    public function update(UpdateUserRequest $request, User $user): RedirectResponse
-    {
-        abort_if((int) $user->tenant_id !== (int) app(TenantContext::class)->requireTenantId(), 404);
-
-        // Aturan update diserahkan ke Form Request, dan validasi data disalurkan
-        // kepada UserService yang akan menerapkan pembaharuan atas pengguna tersebut.
-        $this->userService->update($user, $request->validated());
-
-        return redirect()->route('users.index')->with('success', 'User updated successfully.');
-    }
-
-    /**
-     * Menghapus resource dari database.
-     */
-    public function destroy(User $user): RedirectResponse
-    {
-        abort_if((int) $user->tenant_id !== (int) app(TenantContext::class)->requireTenantId(), 404);
-
-        try {
-            // Mendelegasikan operasi penghapusan ke Service.
-            $this->userService->delete($user);
-
-            return redirect()->route('users.index')->with('success', 'User deleted successfully.');
-        } catch (QueryException $e) {
-            return redirect()->route('users.index')->with('error', 'Data ini masih terhubung dengan data lain dan tidak dapat dihapus.');
-        } catch (\Throwable $e) {
-            // Menangkap potensi Error Exception bila penghapusan gagal.
-            return redirect()->route('users.index')->with('error', $e->getMessage());
-        }
-    }
-}
+class UserController extends \App\Modules\Users\Controllers\UserController {}

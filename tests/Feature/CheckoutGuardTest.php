@@ -184,9 +184,9 @@ class CheckoutGuardTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->mock(CartService::class, function ($mock) {
+        $this->mock(CartService::class, function ($mock) use ($product) {
             $mock->shouldReceive('getItems')->andReturn([
-                ['product_id' => 1, 'qty' => 1, 'unit_price' => 550000, 'options' => []],
+                ['product_id' => $product->id, 'qty' => 1, 'unit_price' => 550000, 'options' => []],
             ]);
             $mock->shouldReceive('getTotalQty')->andReturn(1);
             $mock->shouldReceive('getSubtotal')->andReturn(550000);

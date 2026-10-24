@@ -1,25 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
 /**
- * Domain 1 — baris anti-replay nonce. Lihat migration untuk rationale.
+ * Backward compatibility wrapper for modular architecture.
+ *
+ * @see \App\Modules\Settings\Models\ProvisioningNonce
  */
-class ProvisioningNonce extends Model
-{
-    protected $primaryKey = 'nonce';
-
-    public $incrementing = false;
-
-    protected $keyType = 'string';
-
-    public $timestamps = true;
-
-    protected $fillable = ['nonce', 'expires_at_epoch'];
-
-    protected $casts = [
-        'expires_at_epoch' => 'integer',
-    ];
-}
+class ProvisioningNonce extends \App\Modules\Settings\Models\ProvisioningNonce {}

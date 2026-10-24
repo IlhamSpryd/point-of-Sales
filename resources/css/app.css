@@ -53,7 +53,7 @@
     --radius-sheet: 1.75rem;  /* bottom-sheet top corners */
     --radius-pill: 9999px;
 
-    /* ── Warm Accent — [OMEGA-NODE2] 2026-09-23. Dipakai SANGAT jarang:
+    /* ── Warm Accent — 2026-09-23. Dipakai SANGAT jarang:
        sorotan progres, ikon "perlu perhatian", badge warning. Bukan warna
        brand kedua — hanya satu titik penekanan, menggantikan tebakan
        amber-50/500/600/700 mentah yang berbeda di setiap file. ── */
@@ -183,6 +183,25 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .card-surface:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.catalog-nav-tab-active {
+    background-color: #202020 !important;
+    color: #ffffff !important;
+}
+
+.catalog-nav-tab-active .material-symbols-rounded {
+    color: #ffffff !important;
+}
+
+.catalog-nav-tab-inactive {
+    color: #6B6A66;
+    background-color: transparent;
+}
+
+.catalog-nav-tab-inactive:hover {
+    color: #202020;
+    background-color: #F7F7F5;
 }
 
 .data-table {

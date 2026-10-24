@@ -2,15 +2,15 @@
 
 namespace App\Livewire\Inventory;
 
+use App\Enums\StockAdjustmentReasonEnum;
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Ingredient;
-use App\Models\IngredientStockMovement;
 use App\Models\Store;
+use App\Modules\Inventory\Services\StockAdjustmentService;
 use App\Services\Context\TenantContext;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -160,89 +160,82 @@ class IngredientManager extends Component
         $this->showAdjustModal = true;
     }
 
-    public function saveAdjustment()
+    public function saveAdjustment(StockAdjustmentService $adjustmentService)
     {
-        Gate::authorize('adjustStock', Ingredient::findOrFail($this->adjustIngredientId));
+        $ingredient = Ingredient::findOrFail($this->adjustIngredientId);
+        Gate::authorize('adjustStock', $ingredient);
+
         $this->validate([
             'adjustQuantity' => 'required|numeric',
             'adjustType' => 'required|string|in:purchase_receipt,waste,adjustment',
             'adjustReason' => 'nullable|string|max:500',
         ]);
 
-        if ($this->adjustType === 'purchase_receipt' && (float) $this->adjustQuantity <= 0) {
-            $this->addError('adjustQuantity', 'Kuantitas penerimaan barang (purchase receipt) harus bernilai lebih dari 0.');
-
-            return;
-        }
-
-        if ($this->adjustQuantity == 0) {
+        $rawQty = (float) $this->adjustQuantity;
+        if ($rawQty == 0.0) {
             $this->addError('adjustQuantity', 'Kuantitas tidak boleh 0.');
 
             return;
         }
 
-        // Jika waste atau pemotongan, pastikan negatif
-        $qty = (float) $this->adjustQuantity;
-        if ($this->adjustType === 'waste' && $qty > 0) {
-            $qty = -$qty;
+        if ($this->adjustType === 'purchase_receipt' && $rawQty <= 0) {
+            $this->addError('adjustQuantity', 'Kuantitas penerimaan barang (purchase receipt) harus bernilai lebih dari 0.');
+
+            return;
         }
 
-        $storeId = app(TenantContext::class)->getStoreId();
+        // Tentukan arah mutasi & reason code resmi Modul 4
+        if ($this->adjustType === 'waste') {
+            $direction = 'OUT';
+            $reasonCode = StockAdjustmentReasonEnum::ProductionWaste;
+            $qty = abs($rawQty);
+        } elseif ($this->adjustType === 'purchase_receipt') {
+            $direction = 'IN';
+            $reasonCode = StockAdjustmentReasonEnum::OpeningStock;
+            $qty = abs($rawQty);
+        } else {
+            // General adjustment
+            if ($rawQty < 0) {
+                $direction = 'OUT';
+                $reasonCode = StockAdjustmentReasonEnum::Shrinkage;
+                $qty = abs($rawQty);
+            } else {
+                $direction = 'IN';
+                $reasonCode = StockAdjustmentReasonEnum::Found;
+                $qty = abs($rawQty);
+            }
+        }
+
+        $context = app(TenantContext::class);
+        $tenantId = $context->requireTenantId();
+        $storeId = $context->getStoreId() ?? (int) Store::where('tenant_id', $tenantId)->orderBy('id')->value('id');
+
+        if (! $storeId) {
+            $this->addError('adjustQuantity', 'Cabang aktif tidak ditemukan.');
+
+            return;
+        }
 
         try {
-            DB::transaction(function () use ($qty, $storeId) {
-                $ingredient = Ingredient::lockForUpdate()->findOrFail($this->adjustIngredientId);
-                $tenantId = app(TenantContext::class)->requireTenantId();
-
-                if ($storeId) {
-                    $defaultStoreId = Store::where('tenant_id', $tenantId)->orderBy('id')->value('id');
-                    $isFirstStore = ((int) $storeId === (int) $defaultStoreId);
-                    $initialQty = $isFirstStore ? (float) $ingredient->current_stock : 0.0;
-
-                    DB::table('ingredient_stock_balances')->insertOrIgnore([
-                        'tenant_id' => $tenantId,
-                        'store_id' => $storeId,
-                        'ingredient_id' => $ingredient->id,
-                        'quantity' => $initialQty,
-                        'baseline_quantity' => $initialQty,
-                        'baseline_movement_id' => 0,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-
-                    $balanceRow = DB::table('ingredient_stock_balances')
-                        ->where('tenant_id', $tenantId)
-                        ->where('store_id', $storeId)
-                        ->where('ingredient_id', $ingredient->id)
-                        ->lockForUpdate()
-                        ->first();
-
-                    $storeBalance = (float) ($balanceRow ? $balanceRow->quantity : $initialQty);
-
-                    if ($storeBalance + $qty < 0) {
-                        throw new \DomainException('Saldo stok cabang tidak mencukupi untuk pengurangan ini (stok saat ini: '.$storeBalance.').');
-                    }
-                } else {
-                    if ($ingredient->current_stock + $qty < 0) {
-                        throw new \DomainException('Stok bahan baku tidak mencukupi untuk pengurangan ini.');
-                    }
-                }
-
-                IngredientStockMovement::create([
-                    'ingredient_id' => $ingredient->id,
-                    'type' => $this->adjustType,
-                    'quantity' => $qty,
-                    'unit_cost' => $ingredient->cost_per_unit,
-                    'reason' => $this->adjustReason,
-                    'idempotency_key' => 'adj_'.Str::uuid()->toString(),
-                    'created_by' => Auth::id(),
-                ]);
-
-                // [CF-07 / D3-013] Hapus update manual duplikat DB::raw('quantity + qty').
-                // Listener Ingredient::saved() akan menambahkan delta ($qty) ke ingredient_stock_balances secara otomatis.
-                $ingredient->current_stock += $qty;
-                $ingredient->save();
-            });
+            $adjustmentService->createAndPostDirect(
+                tenantId: $tenantId,
+                storeId: $storeId,
+                data: [
+                    'reason_code' => $reasonCode,
+                    'notes' => $this->adjustReason ?: "Penyesuaian stok bahan baku {$ingredient->name}",
+                    'items' => [
+                        [
+                            'item_type' => 'ingredient',
+                            'ingredient_id' => $ingredient->id,
+                            'direction' => $direction,
+                            'quantity' => (string) $qty,
+                            'unit_cost_snapshot' => (string) ($ingredient->cost_per_unit ?? '0.0000'),
+                            'reason_note' => $this->adjustReason,
+                        ],
+                    ],
+                ],
+                userId: (int) (Auth::id() ?? 1)
+            );
         } catch (\DomainException $e) {
             $this->addError('adjustQuantity', $e->getMessage());
 

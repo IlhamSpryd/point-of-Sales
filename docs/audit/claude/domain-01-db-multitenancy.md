@@ -20,7 +20,7 @@ Status saya: auditor read-only, tidak mengubah file. Saya tidak mengimplementasi
 - Tabel provisioning sekarang dibuat oleh `2026_12_04_000001–4`. Migration `z_01–z_05` dijadikan no-op lewat guard `hasTable` dan guard baris `migrations`.
 - Tabel `employee_id_sequences` dan `EmployeeIdGenerator` (UPDATE atomik dengan `LAST_INSERT_ID`) menggantikan `max(id)+1`.
 - Kolom `tenants.provisioning_idempotency_key` dan `readiness_status` ditambahkan.
-- Ada FK komposit `(tenant_id,user_id)→users(tenant_id,id)` untuk token onboarding dan hasil ledger, serta unique `(tenant_id,user_id)` pada token.
+- Ada FK komposit `(tenant_id,user_id) REFERENCES users(tenant_id,id)` untuk token onboarding dan hasil ledger, serta unique `(tenant_id,user_id)` pada token.
 - `email_outbox.body_text` memakai cast `encrypted`, plus migration `000009` untuk enkripsi data lama.
 - Provisioning memakai fencing token `attempt_count` dan command `provisioning:reconcile`.
 - `TenantProvisioningService` membuat 8 role, 2 system user, dan 3 setting baseline.
@@ -62,7 +62,7 @@ Status saya: auditor read-only, tidak mengubah file. Saya tidak mengimplementasi
   - Resolver dan command `tenant:provision-system-users` mencari `channel.t{id}@system.local`.
   - Untuk tenant 1, service memakai key config `pos.self_order_system_email` / `pos.channel_order_system_email`. Resolver memakai `pos.system_users.*`, yang tidak ada di `config/pos.php`. Dua key itu tidak sama.
   - `evaluateReadiness` memeriksa email versi service sendiri, sehingga selalu "ready".
-- **Skenario:** Tenant baru lolos readiness. Webhook GrabFood/GoFood lalu memanggil `SystemUserResolver::channel` → tidak ketemu → `Log::critical` + `abort(500)`.
+- **Skenario:** Tenant baru lolos readiness. Webhook GrabFood/GoFood lalu memanggil `SystemUserResolver::channel`: tidak ketemu: `Log::critical` + `abort(500)`.
 - **Dampak:** Tenant "ready" yang tidak bisa memproses channel order. Test provisioning tidak menangkapnya karena memakai fungsi email milik service (tautologis).
 - **Remediasi:** Satu sumber kebenaran untuk nama email dan config key, dipakai bersama oleh service, resolver, dan command.
 - **Acceptance:** Setelah provisioning tenant N (termasuk id 1), `SystemUserResolver::selfOrder(N)` dan `::channel(N)` mengembalikan user tanpa exception.
@@ -78,7 +78,7 @@ Status saya: auditor read-only, tidak mengubah file. Saya tidak mengimplementasi
   - `RegisteredUserController` juga menulis `password` dan tidak punya `tenant_id`.
 - **Dampak:** Password baru setelah reset tidak berlaku, dan password lama tetap valid.
 - **Acceptance:** Setelah reset, login dengan password baru berhasil dan dengan password lama gagal.
-- **Test:** Aktivasi owner → reset password → `Auth::attempt` untuk kedua password.
+- **Test:** Aktivasi owner: reset password: `Auth::attempt` untuk kedua password.
 
 ### DB-018: Potensi deadlock alokasi employee_id
 
@@ -123,7 +123,7 @@ Status saya: auditor read-only, tidak mengubah file. Saya tidak mengimplementasi
 - **Severity:** Medium | **Confidence:** High | **Status:** OPEN | **Bukti:** static
 - **Lokasi:** `VerifyDatabase::handle`, `database/sql/verify/*.sql`
 - **Bukti:**&#x20;
-  - Script `01–05` dan `07–09` kosong → "SKIPPED" → tidak dihitung error → akhir run menampilkan "Database integrity is verified".
+  - Script `01–05` dan `07–09` kosong: "SKIPPED": tidak dihitung error: akhir run menampilkan "Database integrity is verified".
   - `10_security.sql` menandai FAIL untuk semua user dengan `pin_hash` atau `password_hash` NULL. Itu mencakup owner yang menunggu aktivasi dan system user.
   - Tidak ada filter `deleted_at`.
 - **Dampak:** Setiap tenant baru yang sehat terbaca FAIL, sementara pemeriksaan integritas lain tidak dijalankan sama sekali.
@@ -188,7 +188,7 @@ Status saya: auditor read-only, tidak mengubah file. Saya tidak mengimplementasi
 
 ## 5. Fresh install vs upgrade
 
-- **Fresh install:** Urutan lexical: `0001_*` → `2026_*` → `2026_12_04_000001–9` → `z_01–z_05`. Prefix `z_` (0x7a) sorting setelah `2` (0x32), jadi `z_*` jalan terakhir. `000001–4` membuat tabel. `000005` menambah FK (prasyarat unique `users(tenant_id,id)` sudah ada dari `2026_10_09_000000`). `000006–9` menambah sequence, kolom, dan hardening. Semua `z_*` lalu melompat. Tidak ditemukan alter-sebelum-create.
+- **Fresh install:** Urutan lexical: `0001_*`: `2026_*`: `2026_12_04_000001–9`: `z_01–z_05`. Prefix `z_` (0x7a) sorting setelah `2` (0x32), jadi `z_*` jalan terakhir. `000001–4` membuat tabel. `000005` menambah FK (prasyarat unique `users(tenant_id,id)` sudah ada dari `2026_10_09_000000`). `000006–9` menambah sequence, kolom, dan hardening. Semua `z_*` lalu melompat. Tidak ditemukan alter-sebelum-create.
 - **Upgrade, `z_*` sudah pernah jalan:** `000001–4` melompat lewat guard `hasTable`/baris `migrations`. `000005` melompat karena guard nama `z_05_...` cocok dengan nama file asli. `000006–9` jalan sebagai penambahan.
 - **Kesetaraan:** Definisi kolom dan nama FK `000001–5` identik dengan `z_01–05`. Kedua jalur berakhir di skema yang sama (analisis statis, belum dibuktikan dengan diff `information_schema`).
 - **Peringatan:** Mengganti nama atau menghapus migration yang sudah ter-deploy merusak riwayat. Guard saat ini bergantung pada nama string di tabel `migrations`, jadi nama file tidak boleh diubah lagi.
@@ -317,7 +317,7 @@ Tidak ada temuan Critical atau High. Tingkat tertinggi adalah Medium.
 - Dampak: integritas idempotency tidak terikat ke autentikasi (defense-in-depth). Email unik tetap mencegah tenant ganda, jadi dampaknya integritas/DoS, bukan duplikasi.
 - Rekomendasi: masukkan `X-Idempotency-Key` (dan idealnya host/audience) ke canonical. Ini perubahan protokol, jadi sinkronkan dengan situs marketing dan `PROVISIONING.md`.
 - Acceptance: request dengan key yang diubah menghasilkan 401 `unauthorized_request`.
-- Test: tampered idempotency header → 401, tanpa nonce tercatat.
+- Test: tampered idempotency header: 401, tanpa nonce tercatat.
 
 **SEC-015. Format enkripsi outbox tidak konsisten — Medium, Confidence Medium (belum dieksekusi), OPEN**
 
@@ -333,7 +333,7 @@ Tidak ada temuan Critical atau High. Tingkat tertinggi adalah Medium.
 - Lokasi: `AppServiceProvider.php:46` hanya menolak `config('mail.default') === 'log'`. `config/mail.php` mendefinisikan mailer `failover` = `[smtp, log]`.
 - Skenario: production dengan `MAIL_MAILER=failover`. Saat SMTP gagal, email berisi plaintext magic link tertulis ke log.
 - Rekomendasi: tolak juga `failover` atau `roundrobin` yang memuat `log` di production. Pertimbangkan pengecualian eksplisit untuk transport `log`/`array`.
-- Test: boot production dengan `failover` → exception.
+- Test: boot production dengan `failover`: exception.
 
 **SEC-017. Host dan scheme magic link diambil dari request — Medium, Confidence Medium, OPEN**
 
@@ -342,12 +342,12 @@ Tidak ada temuan Critical atau High. Tingkat tertinggi adalah Medium.
 - Rekomendasi: bangun URL dari `config('app.url')` (di sisi aplikasi) dan tetapkan allowlist host/proxy.
 - Test: request dengan `X-Forwarded-Host` asing menghasilkan link dengan host `APP_URL`.
 
-**SEC-018. Email milik user soft-deleted → respons 500 "retryable" berulang — Medium, Confidence Medium-High, OPEN**
+**SEC-018. Email milik user soft-deleted: respons 500 "retryable" berulang — Medium, Confidence Medium-High, OPEN**
 
 - Lokasi: `ProvisioningService.php:135` dan `:169` memakai `User::where('email')->first()` (User memakai `SoftDeletes`). `users.email` unik global (`0001_01_01_000000_create_users_table.php:14`).
 - Skenario: email user yang sudah soft-delete lolos pre-check, lalu INSERT memicu unique violation. Cek konflik tidak menemukan baris, jadi dianggap transient, retry 2×, lalu 500 `provisioning_failed` dengan `retryable: true`. Klien mencoba terus tanpa akhir.
 - Rekomendasi: gunakan `withTrashed()` dan perlakukan sebagai 409 `email_already_in_use` (atau putuskan kebijakan pemulihan email).
-- Test: soft-deleted owner → 409 permanen.
+- Test: soft-deleted owner: 409 permanen.
 
 **SEC-019. CI tidak menggagalkan build saat test gagal — Medium (proses), Confidence High, OPEN**
 
@@ -400,7 +400,7 @@ Tidak ada temuan Critical atau High. Tingkat tertinggi adalah Medium.
 
 - **SEC-008, tiga sub-masalah:**&#x20;
   1. Tidak ada bukti kepemilikan email sebelum tenant dibuat. Pihak lain bisa mendaftarkan email korban. Korban menerima email Apeiron berisi nama bisnis pilihan penyerang, dan email itu terkunci global karena `users.email` unik.
-  2. Token kedaluwarsa 48 jam → tidak ada route resend. `reissueFor` hanya bekerja untuk token yang belum kedaluwarsa. Hasilnya email terkunci permanen (409) sampai ada intervensi support.
+  2. Token kedaluwarsa 48 jam: tidak ada route resend. `reissueFor` hanya bekerja untuk token yang belum kedaluwarsa. Hasilnya email terkunci permanen (409) sampai ada intervensi support.
   3. 409 `email_already_in_use` menjadi oracle enumerasi bila situs marketing meneruskannya ke pengunjung.
   - Keputusan yang perlu diambil: verifikasi email di marketing sebelum memanggil API, atau kebijakan reclaim/resend untuk tenant yang tidak diaktivasi.
 - XD-02 (nested context): `runAs()` di dalam `runWithoutTenant()` membiarkan `isBypassed=true` (`TenantContext.php:139`). `TenantScope` tetap aktif karena `hasTenant()`, tetapi `StoreScope` (`StoreScope.php:22`) dan `DiscountStoreScope` melewati filter selama blok itu. Dalam provisioning ini hanya membuat data, jadi risikonya terbatas. Pemulihan `finally` terverifikasi secara statis. Jangan memakai pola ini untuk jalur baca.
@@ -477,10 +477,10 @@ Verdict tetap FAIL karena tiga alasan:
 | # | Langkah                                                                                                                                                | Transaksi                                         |
 | - | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------- |
 | 1 | Baca ledger, `responseForExisting()`, atau `INSERT` ledger `pending` (`attempt_count=0`)                                                               | autocommit                                        |
-| 2 | `claim()`: `UPDATE … WHERE status=:s AND attempt_count=:n` → `processing`, `attempt+1`, lease 10 mnt                                                   | autocommit, atomik                                |
+| 2 | `claim()`: `UPDATE … WHERE status=:s AND attempt_count=:n`: `processing`, `attempt+1`, lease 10 mnt                                                   | autocommit, atomik                                |
 | 3 | `committedProvisioning()`: cari tenant dengan `provisioning_idempotency_key`                                                                           | read                                              |
 | 4 | Pre-check email (`runWithoutTenant`)                                                                                                                   | read                                              |
-| 5 | **Transaksi bisnis** (maks. 2 percobaan): Tenant → Role Owner → Store → User owner (+employee_id) → token → outbox → `provisionBaseline` → ActivityLog | 1 `DB::transaction`, tanpa `attempts`             |
+| 5 | **Transaksi bisnis** (maks. 2 percobaan): Tenant: Role Owner: Store: User owner (+employee_id): token: outbox: `provisionBaseline`: ActivityLog | 1 `DB::transaction`, tanpa `attempts`             |
 | 6 | `finaliseLedger()`: `UPDATE … WHERE status='processing' AND attempt_count=:token`                                                                      | autocommit, **transaksi terpisah dari langkah 5** |
 | 7 | `refreshReadiness()` (best-effort), `dispatch` outbox job                                                                                              | di luar transaksi                                 |
 
@@ -514,7 +514,7 @@ Ledger dan bisnis tidak atomik satu sama lain secara desain. Jembatannya adalah 
 ### TX-001: Fencing tidak ditegakkan di dalam transaksi bisnis
 
 **Severity:** High. **Confidence:** Conditional (statis; bergantung pada unique index yang belum terlihat).\
-&#x20;**File/method:** `ProvisioningService::provision()` → `provisionWithinTransaction()`, `finaliseLedger()`; `ReconcileProvisioningLedger::handle()`.
+&#x20;**File/method:** `ProvisioningService::provision()`: `provisionWithinTransaction()`, `finaliseLedger()`; `ReconcileProvisioningLedger::handle()`.
 
 **Bukti:**
 
@@ -529,7 +529,7 @@ Ledger dan bisnis tidak atomik satu sama lain secara desain. Jembatannya adalah 
 1. W1 mengklaim (attempt 1, lease T+10), lalu tertahan di tengah transaksi (lock wait panjang, proses di-suspend, partisi jaringan ke DB).
 2. Pada T+10, W2 (retry klien atau reconcile) mengklaim attempt 2. `committedProvisioning()` kosong dan pre-check email lolos.
 3. W1 pulih lalu commit. W2 gagal `1062` pada `tenants.provisioning_idempotency_key` atau `users.email`.
-4. Catch W2: `User::where(email)` ada → `finaliseLedger(FAILED, email_already_in_use)` dengan token attempt 2 → **ledger menjadi gagal permanen**. `finaliseLedger` W1 no-op.
+4. Catch W2: `User::where(email)` ada: `finaliseLedger(FAILED, email_already_in_use)` dengan token attempt 2: **ledger menjadi gagal permanen**. `finaliseLedger` W1 no-op.
 
 **Dampak:**
 
@@ -540,7 +540,7 @@ Ledger dan bisnis tidak atomik satu sama lain secara desain. Jembatannya adalah 
 **Remediasi:**
 
 - Jadikan fence bagian dari transaksi bisnis. Langkah pertama: `SELECT … FOR UPDATE` baris ledger dan verifikasi `status='processing' AND attempt_count=:token`.
-- Langkah terakhir sebelum commit: UPDATE ledger → COMPLETED dengan hasil. Wajib `affected==1`, jika tidak lempar exception agar rollback.
+- Langkah terakhir sebelum commit: UPDATE ledger: COMPLETED dengan hasil. Wajib `affected==1`, jika tidak lempar exception agar rollback.
 - Cek `affected` pada setiap `finaliseLedger()`.
 - Perpanjang lease (heartbeat) atau samakan lease dengan `innodb_lock_wait_timeout` + batas request.
 - Kegagalan `email_already_in_use` hanya boleh ditulis bila bukan kolisi dengan hasil key yang sama (cek `provisioning_idempotency_key` terlebih dulu).
@@ -587,8 +587,8 @@ Ledger dan bisnis tidak atomik satu sama lain secara desain. Jembatannya adalah 
 
 **Regression test:**
 
-- Set baris PROCESSING dengan lease lewat → jalankan `emails:process-outbox` + job → status SENT.
-- Test dua worker yang berebut baris yang sama → tepat satu pengiriman (`Mail::fake`, lalu hitung).
+- Set baris PROCESSING dengan lease lewat: jalankan `emails:process-outbox` + job: status SENT.
+- Test dua worker yang berebut baris yang sama: tepat satu pengiriman (`Mail::fake`, lalu hitung).
 
 ### TX-003: Pertahanan constraint database tidak dapat diverifikasi
 
@@ -609,7 +609,7 @@ Seluruh jaminan "tidak ada duplikat" bersandar pada constraint yang tidak terlih
 
 **Remediasi:** Lampirkan migration dan hasil `SHOW CREATE TABLE` / `information_schema` untuk tabel di atas, plus `SELECT @@transaction_isolation, @@innodb_lock_wait_timeout`.
 
-**Acceptance criteria:** Setiap constraint di atas terbukti ada dan diuji pelanggarannya (percobaan INSERT duplikat → errno 1062).
+**Acceptance criteria:** Setiap constraint di atas terbukti ada dan diuji pelanggarannya (percobaan INSERT duplikat: errno 1062).
 
 ### TX-004: Test tidak membuktikan konkurensi, rollback parsial, maupun recovery
 
@@ -644,12 +644,12 @@ Faktor tambahan:
 
 **Regression test yang wajib ada:**
 
-1. 20 request paralel, key sama → 1 tenant, 1 ledger COMPLETED, 1 outbox row.
-2. Key sama + fingerprint beda, paralel → tepat 1 pemenang, sisanya 409.
-3. Fault injection di tengah transaksi bisnis (mis. setelah Store, sebelum Owner) → 0 baris sisa di semua tabel.
-4. Worker basi (token lama, status PROCESSING) memanggil `finaliseLedger` → baris tidak berubah (`affected=0`).
-5. Dua worker outbox pada baris yang sama → tepat 1 `Mail::raw`.
-6. 20 pembuatan user paralel pada tenant yang sama → 20 `employee_id` unik, 0 deadlock tak tertangani.
+1. 20 request paralel, key sama: 1 tenant, 1 ledger COMPLETED, 1 outbox row.
+2. Key sama + fingerprint beda, paralel: tepat 1 pemenang, sisanya 409.
+3. Fault injection di tengah transaksi bisnis (mis. setelah Store, sebelum Owner): 0 baris sisa di semua tabel.
+4. Worker basi (token lama, status PROCESSING) memanggil `finaliseLedger`: baris tidak berubah (`affected=0`).
+5. Dua worker outbox pada baris yang sama: tepat 1 `Mail::raw`.
+6. 20 pembuatan user paralel pada tenant yang sama: 20 `employee_id` unik, 0 deadlock tak tertangani.
 
 ### TX-005: Rotasi token di setiap percobaan; `dispatch()` tidak membawa token
 
@@ -681,9 +681,9 @@ Faktor tambahan:
 - Pengiriman sukses pertama tidak merotasi token (`send_attempts` tidak bertambah dua kali).
 - Pada kegagalan ambigu, tautan terakhir yang terkirim tetap valid sampai kedaluwarsa, atau owner dapat meminta kirim ulang.
 
-**Regression test:** Pengiriman sukses → satu rotasi paling banyak. Skenario timeout ambigu → status tautan terdokumentasi.
+**Regression test:** Pengiriman sukses: satu rotasi paling banyak. Skenario timeout ambigu: status tautan terdokumentasi.
 
-### TX-006: Risiko deadlock S→X pada alokasi `employee_id`
+### TX-006: Risiko deadlock S ke X (Shared to Exclusive) pada alokasi `employee_id`
 
 **Severity:** Medium. **Confidence:** Conditional (analisis perilaku InnoDB; tidak direproduksi).\
 &#x20;**File/method:** `EmployeeIdGenerator::next()` / `ensureSequenceRow()` / `allocate()`.
@@ -697,7 +697,7 @@ Faktor tambahan:
 
 **Remediasi:** Lakukan `UPDATE` lebih dulu dan `INSERT` baris baru hanya bila `affected=0`. Atau pakai satu statement `INSERT … ON DUPLICATE KEY UPDATE last_value = LAST_INSERT_ID(last_value+1)`. Beri `attempts: 3` pada transaksi pemanggil, atau tangkap 1213 secara eksplisit.
 
-**Acceptance criteria:** 50 pembuatan user paralel pada satu tenant → 0 deadlock, 50 ID unik berurutan.
+**Acceptance criteria:** 50 pembuatan user paralel pada satu tenant: 0 deadlock, 50 ID unik berurutan.
 
 **Regression test:** Lihat TX-004 #6, dengan guard hasil `SHOW ENGINE INNODB STATUS` (opsional).
 
@@ -722,7 +722,7 @@ Faktor tambahan:
 
 **Remediasi:** Pakai sequence atomik per tenant (pola `employee_id_sequences`), atau hasilkan kode setelah insert dari PK. Jangan memakai `MAX(id)`.
 
-**Acceptance criteria:** 10 provisioning paralel → 10 tenant sukses, 0 `provisioning_failed`.
+**Acceptance criteria:** 10 provisioning paralel: 10 tenant sukses, 0 `provisioning_failed`.
 
 ### TX-009: Cakupan reconcile dan ketergantungan scheduler
 
@@ -749,7 +749,7 @@ Faktor tambahan:
 
 **Remediasi:** Periksa `errorInfo[1] === 1062` plus nama index. Tangani 1205/1213 dengan retry terbatas di service. Atur timeout lock yang lebih pendek untuk jalur provisioning.
 
-**Acceptance criteria:** Test injeksi 1213 dan 1205 → respons terstruktur dan ledger FAILED transient, bukan 500 mentah. Test FK violation tidak dilaporkan sebagai kolisi email.
+**Acceptance criteria:** Test injeksi 1213 dan 1205: respons terstruktur dan ledger FAILED transient, bukan 500 mentah. Test FK violation tidak dilaporkan sebagai kolisi email.
 
 ### TX-011: Format enkripsi `body_text` outbox tidak konsisten
 
@@ -887,7 +887,7 @@ Jalur bahagia secara statis koheren: provisioning, token, outbox, email, magic l
 | 6 | Magic link         | `GET/POST onboarding.set-password` (`throttle:6,1`) menuju `OwnerOnboardingController::show/store`                                                                                                                                                                        | Cocok dengan URL yang dibangun            |
 | 7 | Redeem             | `findValidToken` lalu `DB::transaction`: `consume()` (UPDATE atomik `whereNull consumed_at`), lalu set `password_hash` (Hash::make) dan `email_verified_at`                                                                                                               | Kode terbaca                              |
 | 8 | Login              | `LoginRequest` (rate limit + `is_active`), `User::getAuthPassword()` = `password_hash ?? password`                                                                                                                                                                        | Konsisten                                 |
-| 9 | Akses POS          | Group `['auth','tenant.context','enforce.email.verification']`, lalu `/home` → Owner ke dashboard. `SetTenantContext` menetapkan TenantContext; `StoreResolver` memberi Owner semua store                                                                                 | Kode terbaca                              |
+| 9 | Akses POS          | Group `['auth','tenant.context','enforce.email.verification']`, lalu `/home`: Owner ke dashboard. `SetTenantContext` menetapkan TenantContext; `StoreResolver` memberi Owner semua store                                                                                 | Kode terbaca                              |
 
 Token: `Str::random(48)`, hash SHA-256 di DB, sekali pakai, TTL 48 jam, terikat tenant dan user.
 

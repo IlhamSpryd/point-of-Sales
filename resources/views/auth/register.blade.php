@@ -45,15 +45,15 @@
     <!-- Divider -->
     <div class="relative flex items-center justify-center mb-6">
         <div class="w-full border-t border-zinc-200"></div>
-        <span class="absolute bg-white px-3 text-xs text-zinc-400 uppercase tracking-wider">{{ __('or continue with email') }}</span>
+        <span class="absolute bg-white px-3 text-xs text-zinc-400">{{ __('or continue with email') }}</span>
     </div>
 
     <!-- Registration Form -->
-    <form method="POST" action="{{ route('register') }}" class="space-y-4">
+    <form method="POST" action="{{ route('register') }}" class="space-y-4" x-data="registerForm()" @submit="handleSubmit($el)" id="register-form">
         @csrf
 
         <div>
-            <label for="business_name" class="block text-xs font-medium text-zinc-700 mb-1.5">
+            <label for="business_name" class="block text-[13px] font-medium text-zinc-800 mb-1.5">
                 {{ __('Brand or Business Name') }}
             </label>
             <input
@@ -62,12 +62,12 @@
                 name="business_name"
                 value="{{ old('business_name') }}"
                 placeholder="e.g. Kopi Nusantara"
-                class="w-full h-10 px-3 rounded-md border border-zinc-200 bg-white text-zinc-900 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs"
+                class="field-input w-full h-10 px-3 rounded-md border border-zinc-300 bg-white text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs {{ $errors->has('business_name') ? 'field-input-error' : '' }}"
             />
         </div>
 
         <div>
-            <label for="name" class="block text-xs font-medium text-zinc-700 mb-1.5">
+            <label for="name" class="block text-[13px] font-medium text-zinc-800 mb-1.5">
                 {{ __('Owner Full Name') }}
             </label>
             <input
@@ -77,12 +77,12 @@
                 value="{{ old('name') }}"
                 required
                 placeholder="e.g. Budi Santoso"
-                class="w-full h-10 px-3 rounded-md border border-zinc-200 bg-white text-zinc-900 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs"
+                class="field-input w-full h-10 px-3 rounded-md border border-zinc-300 bg-white text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs {{ $errors->has('name') ? 'field-input-error' : '' }}"
             />
         </div>
 
         <div>
-            <label for="email" class="block text-xs font-medium text-zinc-700 mb-1.5">
+            <label for="email" class="block text-[13px] font-medium text-zinc-800 mb-1.5">
                 {{ __('Business Email Address') }}
             </label>
             <input
@@ -92,49 +92,114 @@
                 value="{{ old('email') }}"
                 required
                 placeholder="owner@domain.com"
-                class="w-full h-10 px-3 rounded-md border border-zinc-200 bg-white text-zinc-900 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs"
+                class="field-input w-full h-10 px-3 rounded-md border border-zinc-300 bg-white text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs {{ $errors->has('email') ? 'field-input-error' : '' }}"
             />
         </div>
 
-        <div>
-            <label for="password" class="block text-xs font-medium text-zinc-700 mb-1.5">
+        <div x-data="{ show: false }">
+            <label for="password" class="block text-[13px] font-medium text-zinc-800 mb-1.5">
                 {{ __('Password') }}
             </label>
-            <input
-                id="password"
-                type="password"
-                name="password"
-                required
-                placeholder="••••••••••••"
-                class="w-full h-10 px-3 rounded-md border border-zinc-200 bg-white text-zinc-900 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs"
-            />
+            <div class="relative">
+                <input
+                    id="password"
+                    :type="show ? 'text' : 'password'"
+                    name="password"
+                    required
+                    autocomplete="new-password"
+                    placeholder="••••••••••••"
+                    class="field-input w-full h-10 pl-3 pr-10 rounded-md border border-zinc-300 bg-white text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs {{ $errors->has('password') ? 'field-input-error' : '' }}"
+                />
+                <button
+                    type="button"
+                    @click="show = !show"
+                    class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-zinc-400 hover:text-zinc-600 focus:outline-none focus:text-zinc-900 rounded-md transition-colors cursor-pointer flex items-center justify-center"
+                    :aria-label="show ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
+                    :title="show ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
+                >
+                    <!-- Eye (Show Password) -->
+                    <svg x-show="!show" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    <!-- Eye Off (Hide Password) -->
+                    <svg x-show="show" style="display: none;" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                        <line x1="2" y1="2" x2="22" y2="22"/>
+                    </svg>
+                </button>
+            </div>
         </div>
 
-        <div>
-            <label for="password_confirmation" class="block text-xs font-medium text-zinc-700 mb-1.5">
+        <div x-data="{ show: false }">
+            <label for="password_confirmation" class="block text-[13px] font-medium text-zinc-800 mb-1.5">
                 {{ __('Confirm Password') }}
             </label>
-            <input
-                id="password_confirmation"
-                type="password"
-                name="password_confirmation"
-                required
-                placeholder="••••••••••••"
-                class="w-full h-10 px-3 rounded-md border border-zinc-200 bg-white text-zinc-900 text-sm focus:outline-none focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs"
-            />
+            <div class="relative">
+                <input
+                    id="password_confirmation"
+                    :type="show ? 'text' : 'password'"
+                    name="password_confirmation"
+                    required
+                    autocomplete="new-password"
+                    placeholder="••••••••••••"
+                    class="field-input w-full h-10 pl-3 pr-10 rounded-md border border-zinc-300 bg-white text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all shadow-2xs {{ $errors->has('password_confirmation') ? 'field-input-error' : '' }}"
+                />
+                <button
+                    type="button"
+                    @click="show = !show"
+                    class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-zinc-400 hover:text-zinc-600 focus:outline-none focus:text-zinc-900 rounded-md transition-colors cursor-pointer flex items-center justify-center"
+                    :aria-label="show ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
+                    :title="show ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
+                >
+                    <!-- Eye (Show Password) -->
+                    <svg x-show="!show" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                    <!-- Eye Off (Hide Password) -->
+                    <svg x-show="show" style="display: none;" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                        <line x1="2" y1="2" x2="22" y2="22"/>
+                    </svg>
+                </button>
+            </div>
         </div>
 
-        <button
-            type="submit"
-            style="background-color: #141413; color: #ffffff;"
-            class="w-full h-10 px-4 rounded-md font-medium transition-colors flex items-center justify-center gap-2 bg-apeiron-ink hover:bg-[#111111] text-white text-sm cursor-pointer shadow-xs active:scale-[0.99] mt-2"
-        >
-            <span>{{ __('Create Workspace') }}</span>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M5 12h14M12 5l7 7-7 7"/>
-            </svg>
-        </button>
+        {{-- Submit Button --}}
+        <div class="pt-1">
+            <button
+                type="submit"
+                id="btn-register"
+                class="w-full h-10 px-4 rounded-md font-medium transition-colors flex items-center justify-center gap-2 bg-apeiron-ink hover:bg-[#111111] text-white text-[13px] cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed shadow-xs active:scale-[0.99]"
+                :disabled="isLoading"
+                :class="{ 'opacity-70 cursor-not-allowed': isLoading }"
+                :aria-busy="isLoading"
+            >
+                <span x-show="isLoading" class="w-3.5 h-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true" x-cloak></span>
+                <span x-text="isLoading ? '{{ __('Registering...') }}' : '{{ __('Register business') }}'">{{ __('Register business') }}</span>
+            </button>
+        </div>
     </form>
+
+    <script>
+        function registerForm() {
+            return {
+                isLoading: false,
+                handleSubmit(formEl) {
+                    if (this.isLoading) return;
+                    this.isLoading = true;
+                    requestAnimationFrame(() => {
+                        formEl.submit();
+                    });
+                }
+            };
+        }
+    </script>
 
     <div class="mt-6 pt-4 border-t border-zinc-100 text-xs text-center text-zinc-500">
         {{ __('Already have an account?') }}
@@ -155,7 +220,7 @@
 
             <div class="relative z-10 my-auto max-w-xs space-y-8">
                 <div class="space-y-2">
-                    <p class="text-lg font-normal tracking-tight text-zinc-100 leading-snug">
+                    <p class="text-[19px] lg:text-[21px] font-normal tracking-tight text-zinc-100 leading-[1.45]">
                         Point of sale, inventory ledger, and shift reconciliation built for modern hospitality.
                     </p>
                 </div>

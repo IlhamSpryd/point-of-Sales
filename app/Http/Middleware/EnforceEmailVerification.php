@@ -13,10 +13,10 @@ use Symfony\Component\HttpFoundation\Response;
  * Pendekatan minimal-invasif (dokumentasi di PROVISIONING.md):
  *  - Terpasang pada grup web yang sudah 'auth' (SetTenantContext), tepat
  *    SETELAH konteks tenant diketahui.
- *  - Owner dikecualikan hanya bila belum verified → diarahkan ke halaman
+ *  - Owner dikecualikan hanya bila belum verified, maka diarahkan ke halaman
  *    notice verifikasi (bukan 403) supaya tidak merusak UX existing;
- *    akun STAF existing (Manager/Kasir/dll) tidak terpengaruh sama sekali
- *    → kompatibilitas mundur terjaga.
+ *    akun STAF existing (Manager/Kasir/dll) tidak terpengaruh sama sekali,
+ *    sehingga kompatibilitas mundur terjaga.
  *  - Aksi yang diizinkan Owner unverified: logout, verifikasi email,
  *    onboarding self (butuh minimal session read-only).
  */

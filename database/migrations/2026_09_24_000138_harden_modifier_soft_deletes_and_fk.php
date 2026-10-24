@@ -1,6 +1,6 @@
 <?php
 
-// [OMEGA-NODE1] PATCH FOR M-02: ModifierGroup/Modifier tidak memakai
+// PATCH FOR M-02: ModifierGroup/Modifier tidak memakai
 // SoftDeletes, sementara modifiers.modifier_group_id dan
 // order_item_modifiers.modifier_id keduanya cascadeOnDelete(). Admin
 // menghapus SATU grup varian menghancurkan riwayat order_item_modifiers

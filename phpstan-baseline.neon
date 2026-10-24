@@ -61,6 +61,12 @@ parameters:
 			path: app/Console/Commands/ReconcilePendingMidtransOrders.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Core/Context/TenantContext.php
+
+		-
 			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -71,30 +77,6 @@ parameters:
 			identifier: booleanAnd.rightAlwaysTrue
 			count: 1
 			path: app/Http/Controllers/Auth/TwoFactorAuthenticationController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>current_stock" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/RestockForecastController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/RestockForecastController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>unit" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/RestockForecastController.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Http/Controllers/StoreSwitchController.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -289,22 +271,532 @@ parameters:
 			path: app/Livewire/Kasir/CreateOrder.php
 
 		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: app/Modules/Auth/Controllers/Auth/TwoFactorAuthenticationController.php
+
+		-
+			message: '#^Method App\\Modules\\Auth\\Controllers\\OwnerOnboardingController\:\:findValidToken\(\) should return App\\Models\\OwnerOnboardingToken\|null but returns App\\Modules\\Auth\\Models\\OwnerOnboardingToken\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Modules/Auth/Controllers/OwnerOnboardingController.php
+
+		-
 			message: '#^Strict comparison using \!\=\= between Carbon\\Carbon and null will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
-			path: app/Models/OwnerOnboardingToken.php
+			path: app/Modules/Auth/Models/OwnerOnboardingToken.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Product\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Models/Product.php
+			message: '#^Argument of an invalid type string supplied for foreach, only iterables are supported\.$#'
+			identifier: foreach.nonIterable
+			count: 1
+			path: app/Modules/Auth/Services/TwoFactorAuthService.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Category\:\:\$tenant_id\.$#'
+			message: '#^Property App\\Models\\User\:\:\$two_factor_confirmed_at \(string\|null\) does not accept Illuminate\\Support\\Carbon\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Auth/Services/TwoFactorAuthService.php
+
+		-
+			message: '#^Property App\\Models\\User\:\:\$two_factor_recovery_codes \(string\|null\) does not accept list\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Auth/Services/TwoFactorAuthService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>current_stock" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Inventory/Controllers/RestockForecastController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Inventory/Controllers/RestockForecastController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>unit" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Inventory/Controllers/RestockForecastController.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany\:\:availableForOrder\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Modules/Products/Services/MenuCacheService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$card_orders\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Reports/Services/DashboardService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cash_orders\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Reports/Services/DashboardService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$ewallet_orders\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Reports/Services/DashboardService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jumlah\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Reports/Services/DashboardService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$last_month_earnings\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Reports/Services/DashboardService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$last_month_orders\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Reports/Services/DashboardService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$qris_orders\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Reports/Services/DashboardService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$this_month_earnings\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Reports/Services/DashboardService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$this_month_orders\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Reports/Services/DashboardService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Reports/Services/DashboardService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total_earnings\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Reports/Services/DashboardService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total_orders\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Reports/Services/DashboardService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Reports/Services/DashboardService.php
+
+		-
+			message: '#^Cannot access property \$value on int\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Modules/Reports/Services/ReportService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 4
+			path: app/Modules/Reports/Services/ReportService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Modules/Sales/Services/CartService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Modifier\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 2
+			path: app/Modules/Sales/Services/CartService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Modules/Sales/Services/CartService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_status\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Modules/Sales/Services/KdsService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/Printing/KitchenPrinterService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$table_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/Printing/KitchenPrinterService.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Modules/Sales/Services/Printing/KitchenPrinterService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>table_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Sales/Services/Printing/KitchenPrinterService.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type string\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Sales/Services/Printing/KitchenPrinterService.php
+
+		-
+			message: '#^Call to function is_string\(\) with App\\Enums\\PaymentMethod\|null will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Modules/Sales/Services/Printing/ReceiptPrinterService.php
+
+		-
+			message: '#^Instanceof between App\\Enums\\OrderStatus and App\\Enums\\OrderStatus will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: app/Modules/Sales/Services/Printing/ReceiptPrinterService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Sales/Services/Printing/ReceiptPrinterService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
+			message: '#^Call to function is_string\(\) with App\\Enums\\PaymentMethod will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 2
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
+			message: '#^Offset ''amount'' on array\{payment_id\: int, amount\: float\|int, refund_method\?\: string\|null, is_method_override\?\: bool, method_override_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
+			message: '#^Offset ''disposition'' on array\{order_item_id\: int, quantity\: int, disposition\: App\\Enums\\ReturnDispositionEnum\|string, disposition_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
+			message: '#^Offset ''order_item_id'' on array\{order_item_id\: int, quantity\: int, disposition\: App\\Enums\\ReturnDispositionEnum\|string, disposition_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
+			message: '#^Offset ''payment_id'' on array\{payment_id\: int, amount\: float\|int, refund_method\?\: string\|null, is_method_override\?\: bool, method_override_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
+			message: '#^Offset ''quantity'' on array\{order_item_id\: int, quantity\: int, disposition\: App\\Enums\\ReturnDispositionEnum\|string, disposition_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
+			message: '#^Property App\\Models\\PaymentRefund\:\:\$settled_at \(string\|null\) does not accept Illuminate\\Support\\Carbon\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Role\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Sales/Services/ShiftService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Order\:\:\$jumlah\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Order\:\:\$omzet\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 7
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pivot\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$points_multiplier\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$qty\.$#'
 			identifier: property.notFound
 			count: 3
-			path: app/Policies/CategoryPolicy.php
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$selection_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Call to an undefined method App\\Core\\Context\\TenantContext\:\:requireStoreId\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Enums\\PaymentAttemptStatus\:\:Expired, App\\Enums\\PaymentAttemptStatus\:\:Cancelled\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Call to function is_string\(\) with App\\Enums\\PaymentMethod will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Call to function is_string\(\) with App\\Enums\\PaymentMethod\|null will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Method App\\Modules\\Sales\\Services\\TransactionService\:\:lockIngredientBalances\(\) should return Illuminate\\Support\\Collection\<int, object\> but returns Illuminate\\Support\\Collection\<\(int\|string\), stdClass\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Method App\\Modules\\Sales\\Services\\TransactionService\:\:lockProductBalances\(\) should return Illuminate\\Support\\Collection\<int, object\> but returns Illuminate\\Support\\Collection\<\(int\|string\), stdClass\>\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Offset ''amount_tendered'' on array\{method\: App\\Enums\\PaymentMethod, amount\: int, reference_number\: string\|null, idempotency_key\: string\|null\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Offset ''change_amount'' on array\{method\: App\\Enums\\PaymentMethod, amount\: int, reference_number\: string\|null, idempotency_key\: string\|null\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Offset ''extra_price'' on array\{modifier_id\: int\<0, max\>, name\: string, extra_price\: int\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Offset ''modifier_id'' on array\{modifier_id\: int\<0, max\>, name\: string, extra_price\: int\} in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Property App\\Models\\PaymentAttempt\:\:\$raw_response_meta \(string\|null\) does not accept array\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Property App\\Models\\PaymentAttempt\:\:\$settled_at \(string\|null\) does not accept Illuminate\\Support\\Carbon\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Property App\\Models\\PaymentAttempt\:\:\$status \(string\) does not accept App\\Enums\\PaymentAttemptStatus\:\:Cancelled\|App\\Enums\\PaymentAttemptStatus\:\:Expired\|App\\Enums\\PaymentAttemptStatus\:\:Failed\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Property App\\Models\\PaymentAttempt\:\:\$status \(string\) does not accept App\\Enums\\PaymentAttemptStatus\:\:Succeeded\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Right side of && is always true\.$#'
+			identifier: booleanAnd.rightAlwaysTrue
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\PaymentAttemptStatus\:\:Succeeded will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\PaymentAttemptStatus\:\:Succeeded will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Ternary operator condition is always false\.$#'
+			identifier: ternary.alwaysFalse
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>current_points" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>points_multiplier" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Variable \$modifierSync in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Variable \$orderChangeForReceipt on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Settings/Controllers/StoreSwitchController.php
+
+		-
+			message: '#^Method App\\Modules\\Settings\\Services\\EntitlementService\:\:resolveActivePlanForTenant\(\) should return App\\Models\\Plan\|null but returns Illuminate\\Database\\Eloquent\\Model\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Modules/Settings/Services/EntitlementService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>subscription_plan" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Settings/Services/EntitlementService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Tenant\:\:\$owner_user_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Modules/Settings/Services/OwnershipTransferService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>role_code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Settings/Services/OwnershipTransferService.php
+
+		-
+			message: '#^If condition is always false\.$#'
+			identifier: if.alwaysFalse
+			count: 1
+			path: app/Modules/Users/Services/CashierPinService.php
+
+		-
+			message: '#^Offset ''metadata'' on array\{shift_id\?\: int, store_id\?\: int, metadata\: array\<string, mixed\>\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Modules/Users/Services/CashierPinService.php
+
+		-
+			message: '#^Match arm comparison between ''Cook'' and ''Cook'' is always true\.$#'
+			identifier: match.alwaysTrue
+			count: 1
+			path: app/Modules/Users/Services/RoleService.php
+
+		-
+			message: '#^Relation ''users'' is not found in App\\Models\\Role model\.$#'
+			identifier: larastan.relationExistence
+			count: 1
+			path: app/Modules/Users/Services/RoleService.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:orders\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Modules/Users/Services/UserService.php
 
 		-
 			message: '#^Access to an undefined property App\\Models\\Discount\:\:\$store_id\.$#'
@@ -331,12 +823,6 @@ parameters:
 			path: app/Policies/DiscountPolicy.php
 
 		-
-			message: '#^Access to an undefined property App\\Models\\Product\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Policies/ProductPolicy.php
-
-		-
 			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
 			identifier: notIdentical.alwaysTrue
 			count: 1
@@ -347,168 +833,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Policies/TablePolicy.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Product\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/CartService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/CartService.php
-
-		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,App\\Models\\Modifier\>\:\:map\(\) contains unresolvable type\.$#'
-			identifier: argument.unresolvableType
-			count: 2
-			path: app/Services/CartService.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: app/Services/CartService.php
-
-		-
-			message: '#^If condition is always false\.$#'
-			identifier: if.alwaysFalse
-			count: 1
-			path: app/Services/CashierPinService.php
-
-		-
-			message: '#^Offset ''metadata'' on array\{shift_id\?\: int, store_id\?\: int, metadata\: array\<string, mixed\>\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Services/CashierPinService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Category\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/CategoryService.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Services/Context/TenantContext.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$card_orders\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/DashboardService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cash_orders\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/DashboardService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$ewallet_orders\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/DashboardService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jumlah\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/DashboardService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$last_month_earnings\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/DashboardService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$last_month_orders\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/DashboardService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$qris_orders\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/DashboardService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$this_month_earnings\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/DashboardService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$this_month_orders\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/DashboardService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/DashboardService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total_earnings\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/DashboardService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total_orders\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/DashboardService.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Services/DashboardService.php
-
-		-
-			message: '#^Method App\\Services\\EntitlementService\:\:resolveActivePlanForTenant\(\) should return App\\Models\\Plan\|null but returns Illuminate\\Database\\Eloquent\\Model\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Services/EntitlementService.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>subscription_plan" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Services/EntitlementService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_status\.$#'
-			identifier: property.notFound
-			count: 4
-			path: app/Services/KdsService.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany\:\:availableForOrder\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Services/MenuCacheService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Tenant\:\:\$owner_user_id\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Services/OwnershipTransferService.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>role_code" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Services/OwnershipTransferService.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_name\.$#'
@@ -557,336 +881,6 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Services/Printing/ReceiptPrinterService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Product\:\:\$tenant_id\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ProductService.php
-
-		-
-			message: '#^Property App\\Models\\Product\:\:\$stock \(int\<0, max\>\) does not accept float\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Services/ProductService.php
-
-		-
-			message: '#^Cannot access property \$value on int\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: app/Services/ReportService.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 4
-			path: app/Services/ReportService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/ReturnRefundService.php
-
-		-
-			message: '#^Call to function is_string\(\) with App\\Enums\\PaymentMethod will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 2
-			path: app/Services/ReturnRefundService.php
-
-		-
-			message: '#^Offset ''amount'' on array\{payment_id\: int, amount\: float\|int, refund_method\?\: string\|null, is_method_override\?\: bool, method_override_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Services/ReturnRefundService.php
-
-		-
-			message: '#^Offset ''disposition'' on array\{order_item_id\: int, quantity\: int, disposition\: App\\Enums\\ReturnDispositionEnum\|string, disposition_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Services/ReturnRefundService.php
-
-		-
-			message: '#^Offset ''order_item_id'' on array\{order_item_id\: int, quantity\: int, disposition\: App\\Enums\\ReturnDispositionEnum\|string, disposition_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Services/ReturnRefundService.php
-
-		-
-			message: '#^Offset ''payment_id'' on array\{payment_id\: int, amount\: float\|int, refund_method\?\: string\|null, is_method_override\?\: bool, method_override_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 2
-			path: app/Services/ReturnRefundService.php
-
-		-
-			message: '#^Offset ''quantity'' on array\{order_item_id\: int, quantity\: int, disposition\: App\\Enums\\ReturnDispositionEnum\|string, disposition_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Services/ReturnRefundService.php
-
-		-
-			message: '#^Property App\\Models\\PaymentRefund\:\:\$settled_at \(string\|null\) does not accept Illuminate\\Support\\Carbon\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Services/ReturnRefundService.php
-
-		-
-			message: '#^Property App\\Models\\Product\:\:\$stock \(int\<0, max\>\) does not accept float\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Services/ReturnRefundService.php
-
-		-
-			message: '#^Match arm comparison between ''Cook'' and ''Cook'' is always true\.$#'
-			identifier: match.alwaysTrue
-			count: 1
-			path: app/Services/RoleService.php
-
-		-
-			message: '#^Relation ''users'' is not found in App\\Models\\Role model\.$#'
-			identifier: larastan.relationExistence
-			count: 1
-			path: app/Services/RoleService.php
-
-		-
-			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Role\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Services/ShiftService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Order\:\:\$jumlah\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Access to an undefined property App\\Models\\Order\:\:\$omzet\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
-			identifier: property.notFound
-			count: 7
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pivot\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$points_multiplier\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_id\.$#'
-			identifier: property.notFound
-			count: 2
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$qty\.$#'
-			identifier: property.notFound
-			count: 3
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$selection_type\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Call to an undefined method App\\Services\\Context\\TenantContext\:\:requireStoreId\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Enums\\PaymentAttemptStatus\:\:Expired, App\\Enums\\PaymentAttemptStatus\:\:Cancelled\} and true will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Call to function is_string\(\) with App\\Enums\\PaymentMethod will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Call to function is_string\(\) with App\\Enums\\PaymentMethod\|null will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Method App\\Services\\TransactionService\:\:lockIngredientBalances\(\) should return Illuminate\\Support\\Collection\<int, object\> but returns Illuminate\\Support\\Collection\<\(int\|string\), stdClass\>\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Method App\\Services\\TransactionService\:\:lockProductBalances\(\) should return Illuminate\\Support\\Collection\<int, object\> but returns Illuminate\\Support\\Collection\<\(int\|string\), stdClass\>\.$#'
-			identifier: return.type
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Offset ''amount_tendered'' on array\{method\: App\\Enums\\PaymentMethod, amount\: int, reference_number\: string\|null, idempotency_key\: string\|null\} on left side of \?\? does not exist\.$#'
-			identifier: nullCoalesce.offset
-			count: 2
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Offset ''change_amount'' on array\{method\: App\\Enums\\PaymentMethod, amount\: int, reference_number\: string\|null, idempotency_key\: string\|null\} on left side of \?\? does not exist\.$#'
-			identifier: nullCoalesce.offset
-			count: 2
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Offset ''extra_price'' on array\{modifier_id\: int\<0, max\>, name\: string, extra_price\: int\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Offset ''item_discount_amount'' on array\{order_price\: int, qty\: mixed, order_subtotal\: \(float\|int\), product_id\: int\<0, max\>, options\: list\<array\{modifier_id\: int\<0, max\>, name\: string, extra_price\: int\}\>, notes\: mixed, needs_stock_deduction\: bool, item_discount_id\: mixed, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Offset ''modifier_id'' on array\{modifier_id\: int\<0, max\>, name\: string, extra_price\: int\} in isset\(\) always exists and is not nullable\.$#'
-			identifier: isset.offset
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Offset ''needs_stock…'' on array\{order_price\: int, qty\: mixed, order_subtotal\: \(float\|int\), product_id\: int\<0, max\>, options\: list\<array\{modifier_id\: int\<0, max\>, name\: string, extra_price\: int\}\>, notes\: mixed, needs_stock_deduction\: bool, item_discount_id\: mixed, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Property App\\Models\\PaymentAttempt\:\:\$raw_response_meta \(string\|null\) does not accept array\.$#'
-			identifier: assign.propertyType
-			count: 2
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Property App\\Models\\PaymentAttempt\:\:\$settled_at \(string\|null\) does not accept Illuminate\\Support\\Carbon\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Property App\\Models\\PaymentAttempt\:\:\$status \(string\) does not accept App\\Enums\\PaymentAttemptStatus\:\:Cancelled\|App\\Enums\\PaymentAttemptStatus\:\:Expired\|App\\Enums\\PaymentAttemptStatus\:\:Failed\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Property App\\Models\\PaymentAttempt\:\:\$status \(string\) does not accept App\\Enums\\PaymentAttemptStatus\:\:Succeeded\.$#'
-			identifier: assign.propertyType
-			count: 2
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Property App\\Models\\Product\:\:\$stock \(int\<0, max\>\) does not accept float\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Result of && is always false\.$#'
-			identifier: booleanAnd.alwaysFalse
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Right side of && is always true\.$#'
-			identifier: booleanAnd.rightAlwaysTrue
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between string and App\\Enums\\PaymentAttemptStatus\:\:Succeeded will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Strict comparison using \=\=\= between string and App\\Enums\\PaymentAttemptStatus\:\:Succeeded will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Ternary operator condition is always false\.$#'
-			identifier: ternary.alwaysFalse
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>current_points" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 2
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>points_multiplier" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Variable \$modifierSync in empty\(\) always exists and is not falsy\.$#'
-			identifier: empty.variable
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Variable \$orderChangeForReceipt on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.variable
-			count: 1
-			path: app/Services/TransactionService.php
-
-		-
-			message: '#^Argument of an invalid type string supplied for foreach, only iterables are supported\.$#'
-			identifier: foreach.nonIterable
-			count: 1
-			path: app/Services/TwoFactorAuthService.php
-
-		-
-			message: '#^Property App\\Models\\User\:\:\$two_factor_confirmed_at \(string\|null\) does not accept Illuminate\\Support\\Carbon\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Services/TwoFactorAuthService.php
-
-		-
-			message: '#^Property App\\Models\\User\:\:\$two_factor_recovery_codes \(string\|null\) does not accept list\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: app/Services/TwoFactorAuthService.php
-
-		-
-			message: '#^Call to an undefined method App\\Models\\User\:\:orders\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: app/Services/UserService.php
 
 		-
 			message: '#^Undefined variable\: \$tenant$#'

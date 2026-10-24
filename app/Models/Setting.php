@@ -4,68 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToTenant;
-use App\Services\Context\TenantContext;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
-
 /**
- * @property int $id
- * @property int|null $tenant_id
- * @property string $key
- * @property string|null $value
- * @property string $type
- * @property string|null $description
- * @property Carbon|null $created_at
- * @property Carbon|null $updated_at
+ * Backward compatibility wrapper for modular architecture.
+ *
+ * @see \App\Modules\Settings\Models\Setting
  */
-class Setting extends Model
-{
-    use AssignsTenant;
-    use ScopedToTenant;
-
-    protected $fillable = ['tenant_id', 'key', 'value', 'type', 'description'];
-
-    private const CACHE_TTL = 3600;
-
-    /**
-     * Ambil nilai setting dengan casting otomatis sesuai kolom `type`.
-     * OPTIMASI: di-cache 1 jam karena setting bisnis (pajak, pembulatan, dll)
-     * SANGAT jarang berubah tapi berpotensi dibaca pada SETIAP transaksi kasir.
-     * Tanpa cache ini, setiap checkout menambah query DB murni untuk data statis.
-     */
-    public static function get(string $key, mixed $default = null): mixed
-    {
-        $tenantId = app(TenantContext::class)->requireTenantId();
-
-        return Cache::remember("pos:setting:{$tenantId}:{$key}", self::CACHE_TTL, function () use ($key, $default) {
-            $setting = static::where('key', $key)->first();
-            if (! $setting) {
-                return $default;
-            }
-
-            return match ($setting->type) {
-                'integer' => (int) $setting->value,
-                'float', 'double' => (float) $setting->value,
-                'boolean' => filter_var($setting->value, FILTER_VALIDATE_BOOLEAN),
-                'json' => json_decode($setting->value, true),
-                default => $setting->value,
-            };
-        });
-    }
-
-    public static function set(string $key, mixed $value, string $type = 'string'): void
-    {
-        $tenantId = app(TenantContext::class)->requireTenantId();
-
-        static::updateOrCreate(
-            ['tenant_id' => $tenantId, 'key' => $key],
-            ['value' => is_array($value) ? json_encode($value) : (string) $value, 'type' => $type]
-        );
-        // WAJIB: hapus cache lama agar perubahan setting langsung berlaku,
-        // tidak menunggu TTL 1 jam habis.
-        Cache::forget("pos:setting:{$tenantId}:{$key}");
-    }
-}
+class Setting extends \App\Modules\Settings\Models\Setting {}

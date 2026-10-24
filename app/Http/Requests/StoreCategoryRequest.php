@@ -20,6 +20,8 @@ class StoreCategoryRequest extends FormRequest
 
     public function rules(): array
     {
+        $tenantId = app(TenantContext::class)->requireTenantId();
+
         return [
             // Nama kategori unik PER TENANT (bukan global) — dua tenant boleh
             // sama-sama punya kategori "Minuman". Selaras dengan unique index
@@ -29,8 +31,23 @@ class StoreCategoryRequest extends FormRequest
                 'string',
                 'max:255',
                 Rule::unique('categories', 'category_name')
-                    ->where('tenant_id', app(TenantContext::class)->requireTenantId()),
+                    ->where('tenant_id', $tenantId),
             ],
+            'category_code' => [
+                'nullable',
+                'string',
+                'max:50',
+                Rule::unique('categories', 'category_code')
+                    ->where('tenant_id', $tenantId),
+            ],
+            'parent_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('categories', 'id')->where('tenant_id', $tenantId),
+            ],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'sort_order' => ['nullable', 'integer', 'min:0'],
+            'is_active' => ['nullable', 'boolean'],
         ];
     }
 }

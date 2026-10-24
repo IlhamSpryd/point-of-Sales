@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// [OMEGA-NODE1] Zero-Trust hardening: satu shift open per kasir | 2026-09-21
+// Zero-Trust hardening: satu shift open per kasir | 2026-09-21
 return new class extends Migration
 {
     /**

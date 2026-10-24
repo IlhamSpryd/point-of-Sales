@@ -16,7 +16,7 @@ class ExpireStaleCashSelfOrders extends Command
 
     public function handle(TransactionService $service): int
     {
-        // [OMEGA-NODE9] SEC FIX HIGH: sebelumnya hanya menyapu order
+        // SEC FIX HIGH: sebelumnya hanya menyapu order
         // self-order CASH. Order QRIS/E-wallet yang macet karena Snap
         // gagal terbuat (snap_token tetap NULL) sebelumnya tidak PERNAH
         // disapu, membuat stok/BOM menggantung permanen. | 2026-09-25

@@ -88,7 +88,7 @@ class ReconcileProvisioningLedger extends Command
             if ($facts !== null) {
                 // Bukti commit ditemukan (tenant + user committed) -> rekonsiliasi ke COMPLETED
                 if ($dryRun) {
-                    $this->line("[dry-run] complete {$ledger->idempotency_key} → tenant {$facts['tenant_id']}");
+                    $this->line("[dry-run] complete {$ledger->idempotency_key} to tenant {$facts['tenant_id']}");
                     $completed++;
 
                     continue;
@@ -114,7 +114,7 @@ class ReconcileProvisioningLedger extends Command
                         'tenant_id' => $facts['tenant_id'],
                         'user_id' => $facts['user_id'],
                     ]);
-                    $this->line("completed {$ledger->idempotency_key} → tenant {$facts['tenant_id']}");
+                    $this->line("completed {$ledger->idempotency_key} to tenant {$facts['tenant_id']}");
                 }
 
                 continue;

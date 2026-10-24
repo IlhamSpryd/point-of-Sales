@@ -31,13 +31,21 @@ class ProductPolicy
         return $this->canManage($user);
     }
 
-    public function update(User $user, Product $product): bool
+    public function update(User $user, ?Product $product = null): bool
     {
+        if ($product === null) {
+            return $this->canManage($user);
+        }
+
         return $this->canManage($user) && (int) $user->tenant_id === (int) $product->tenant_id;
     }
 
-    public function delete(User $user, Product $product): bool
+    public function delete(User $user, ?Product $product = null): bool
     {
+        if ($product === null) {
+            return $this->canManage($user);
+        }
+
         return $this->canManage($user) && (int) $user->tenant_id === (int) $product->tenant_id;
     }
 }

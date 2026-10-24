@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Exports;
 
 use App\Services\Context\TenantContext;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -26,36 +29,80 @@ class ProductsExport implements FromCollection, ShouldAutoSize, WithHeadings, Wi
 
         $table = $this->query->getModel()->getTable();
         $this->query->where($table.'.tenant_id', $tenantId);
-        if ($storeId !== null) {
+        if ($storeId !== null && Schema::hasColumn($table, 'store_id')) {
             $this->query->where($table.'.store_id', $storeId);
         }
 
-        return $this->query->with(['category' => function ($q) use ($tenantId) {
-            $q->where('tenant_id', $tenantId);
-        }])->get();
+        return $this->query->with([
+            'category' => fn ($q) => $q->where('tenant_id', $tenantId),
+            'brand' => fn ($q) => $q->where('tenant_id', $tenantId),
+            'baseUom' => fn ($q) => $q->where('tenant_id', $tenantId),
+            'taxClass' => fn ($q) => $q->where('tenant_id', $tenantId),
+        ])->get();
     }
 
     public function headings(): array
     {
         return [
             'ID',
+            'SKU',
             'Product Name',
+            'Barcode',
             'Category',
+            'Brand',
+            'Base UoM',
+            'Product Type',
             'Price (Rp)',
+            'Costing Method',
+            'Standard Cost (Rp)',
+            'Tax Class',
+            'Tax Inclusive',
+            'Track Inventory',
             'Stock',
             'Status',
         ];
     }
 
+    /**
+     * Mencegah CSV Formula Injection (Excel / LibreOffice injection).
+     */
+    private function sanitizeFormula(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (preg_match('/^[\=\+\-\@\t\r]/', $value)) {
+            return "'".$value;
+        }
+
+        return $value;
+    }
+
     public function map($product): array
     {
+        $categoryName = $product->category ? $product->category->category_name : '-';
+        $brandName = $product->brand ? $product->brand->name : '-';
+        $uomName = $product->baseUom ? $product->baseUom->name : '-';
+        $taxName = $product->taxClass ? $product->taxClass->name : '-';
+
         return [
             $product->id,
-            $product->product_name,
-            $product->category ? $product->category->category_name : '-',
+            $this->sanitizeFormula($product->product_code ?? $product->sku ?? null),
+            $this->sanitizeFormula($product->product_name),
+            $this->sanitizeFormula($product->barcode),
+            $this->sanitizeFormula($categoryName),
+            $this->sanitizeFormula($brandName),
+            $this->sanitizeFormula($uomName),
+            $product->product_type ?? 'standard',
             $product->product_price,
+            $product->costing_method ?? 'standard',
+            $product->standard_cost ?? 0.00,
+            $this->sanitizeFormula($taxName),
+            $product->is_tax_inclusive ? 'Yes' : 'No',
+            $product->track_inventory ? 'Yes' : 'No',
             $product->stock,
-            $product->is_active ? 'Active' : 'Inactive',
+            ucfirst((string) ($product->status ?? ($product->is_active ? 'Active' : 'Inactive'))),
         ];
     }
 
@@ -90,8 +137,9 @@ class ProductsExport implements FromCollection, ShouldAutoSize, WithHeadings, Wi
             ],
         ]);
 
-        // Price formatting
-        $sheet->getStyle("D2:D{$lastRow}")->getNumberFormat()->setFormatCode('#,##0');
+        // Price & Cost formatting
+        $sheet->getStyle("I2:I{$lastRow}")->getNumberFormat()->setFormatCode('#,##0');
+        $sheet->getStyle("K2:K{$lastRow}")->getNumberFormat()->setFormatCode('#,##0');
 
         return [];
     }
