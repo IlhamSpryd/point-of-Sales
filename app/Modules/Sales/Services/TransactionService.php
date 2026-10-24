@@ -1247,7 +1247,7 @@ class TransactionService
         ?int $grossAmount = null,
     ): Order {
         return DB::transaction(function () use ($orderCode, $transactionStatus, $fraudStatus, $grossAmount) {
-            $order = Order::where('order_code', $orderCode)->lockForUpdate()->firstOrFail();
+            $order = Order::withoutGlobalScopes()->where('order_code', $orderCode)->lockForUpdate()->firstOrFail();
 
             if ($order->order_status->isFinal()) {
                 return $order;

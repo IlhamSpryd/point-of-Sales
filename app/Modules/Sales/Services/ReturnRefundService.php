@@ -166,6 +166,18 @@ class ReturnRefundService
                     ->get()
                     ->keyBy('id');
 
+                $balancesAuthoritative = (bool) config('pos.stock_balances_authoritative', false);
+                $lockedProductBalances = $balancesAuthoritative && ! empty($productIds)
+                    ? DB::table('product_stock_balances')
+                        ->where('tenant_id', $lockedOrder->tenant_id)
+                        ->where('store_id', $lockedOrder->store_id)
+                        ->whereIn('product_id', $productIds)
+                        ->orderBy('product_id', 'asc')
+                        ->lockForUpdate()
+                        ->get()
+                        ->keyBy('product_id')
+                    : collect();
+
                 // 4. Validasi Kuantitas Retur & Disposisi (INV-08, AC-3.1)
                 if (empty($returnItemsWithDisposition)) {
                     throw ValidationException::withMessages([
@@ -348,23 +360,43 @@ class ReturnRefundService
 
                     // Restock produk ritel: Tambah StockMovement baru (+qty) dan perbarui StockBalance
                     if ($disposition->isRestock() && $product && $product->ingredients->isEmpty()) {
-                        $movement = StockMovement::create([
-                            'tenant_id' => $lockedOrder->tenant_id,
-                            'store_id' => $lockedOrder->store_id,
-                            'product_id' => $product->id,
-                            'order_id' => $lockedOrder->id,
-                            'order_item_id' => $orderItem->id,
-                            'type' => StockMovementType::RestoreCompensation,
-                            'quantity' => $qty,
-                            'reason' => "Restock retur item pesanan #{$lockedOrder->order_code} (Retur #{$returnNumber})",
-                            'idempotency_key' => "return_restock:{$returnNumber}:{$orderItem->id}",
-                        ]);
+                        $movement = StockMovement::firstOrCreate(
+                            ['idempotency_key' => "return_restock:{$returnNumber}:{$orderItem->id}"],
+                            [
+                                'tenant_id' => $lockedOrder->tenant_id,
+                                'store_id' => $lockedOrder->store_id,
+                                'product_id' => $product->id,
+                                'order_id' => $lockedOrder->id,
+                                'order_item_id' => $orderItem->id,
+                                'type' => StockMovementType::RestoreCompensation,
+                                'quantity' => $qty,
+                                'reason' => "Restock retur item pesanan #{$lockedOrder->order_code} (Retur #{$returnNumber})",
+                            ]
+                        );
 
                         $stockMovementId = $movement->id;
 
-                        // Perbarui stok produk dan balance otoritatif
-                        $product->stock = (int) round((float) $product->stock + (float) $qty);
-                        $product->save();
+                        if ($movement->wasRecentlyCreated) {
+                            if ($balancesAuthoritative) {
+                                $balance = $lockedProductBalances->get($product->id);
+                                if ($balance === null) {
+                                    DB::table('product_stock_balances')->insertOrIgnore([
+                                        'tenant_id' => $lockedOrder->tenant_id,
+                                        'store_id' => $lockedOrder->store_id,
+                                        'product_id' => $product->id,
+                                        'quantity' => 0,
+                                        'baseline_quantity' => 0,
+                                        'baseline_movement_id' => 0,
+                                        'created_at' => now(),
+                                        'updated_at' => now(),
+                                    ]);
+                                }
+                            }
+
+                            // Perbarui stok produk dan balance otoritatif
+                            $product->stock = (int) round((float) $product->stock + (float) $qty);
+                            $product->save();
+                        }
                     }
 
                     OrderReturnItem::forceCreate([

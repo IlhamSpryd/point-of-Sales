@@ -205,3 +205,29 @@ SELECT payment_method, COUNT(*) AS trx, SUM(order_amount) AS total
 FROM orders WHERE order_status = 'completed'
 GROUP BY payment_method ORDER BY total DESC;
 ```
+
+---
+
+> ## ⚠️ DEPRECATED — JANGAN DIPAKAI
+>
+> Seeder di atas adalah **jalur lama** dan memiliki masalah berat: `TRUNCATE`,
+> `migrate:fresh --seed` yang destruktif, drop/disable trigger, FK check off,
+> serta hardcoded tenant/store/role ID yang tidak kompatibel dengan skema
+> 119 tabel saat ini. Seluruh instruksi di atas **tidak boleh diikuti**.
+>
+> **Entry point dataset demo yang resmi sekarang:**
+>
+> ```bash
+> # Dry-run (tanpa menulis data)
+> php artisan pos:dataset:generate --dry-run --confirm-database=<nama_db>
+>
+> # Eksekusi 12 bulan x 2 akun demo
+> DB_DATABASE=<db> APP_ENV=testing php artisan pos:dataset:generate \
+>   --password='***' --confirm-database=<nama_db>
+>
+> # Verifikasi invariant
+> php artisan pos:dataset:generate --verify-only --confirm-database=<db>
+> ```
+>
+> Lihat `docs/dataset/implementationPlanDataset.md` §15-§18 untuk detail arsitektur,
+> konfigurasi (`config/dataset.php`), idempotensi/resume, dan hasil verifikasi.
