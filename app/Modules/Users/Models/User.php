@@ -112,6 +112,19 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         return ! empty($this->two_factor_secret) && $this->two_factor_confirmed_at !== null;
     }
 
+    public function setStoreIdAttribute($value): void
+    {
+        // Table users does not have a store_id column; user-store relations are linked via user_stores pivot.
+        // Capturing this mutator prevents SQLSTATE[42S22] Unknown column 'store_id' when Model::unguard() is active.
+    }
+
+    public function getStoreIdAttribute(): ?int
+    {
+        $store = $this->stores()->first();
+
+        return $store ? (int) $store->getKey() : null;
+    }
+
     public function setEmailAttribute(?string $value): void
     {
         $this->attributes['email'] = $value;

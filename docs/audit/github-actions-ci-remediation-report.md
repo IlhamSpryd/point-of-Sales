@@ -161,6 +161,20 @@
 
 ---
 
+### Masalah 11: Virtual Attribute store_id pada Model User (Run 40235192174)
+- **Job:** `Tests (MySQL nyata)`
+- **Langkah Gagal:** Suite Purchasing (`GrnPartialReceivingTest`, dsb.)
+- **Error:**
+  ```text
+  PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'store_id' in 'field list' (insert into users)
+  ```
+- **Akar Masalah:**
+  Tabel `users` tidak memiliki kolom `store_id`, melainkan relasi many-to-many melalui tabel pivot `user_stores`. Ketika test melakukan `User::create([... 'store_id' => ...])` dalam keadaan `Model::unguard()`, atribut `store_id` diteruskan mentah ke query INSERT SQL.
+- **Remediasi:**
+  Menambahkan mutator `setStoreIdAttribute($value)` dan accessor `getStoreIdAttribute(): ?int` pada model `App\Modules\Users\Models\User` yang mengabaikan nilai `store_id` saat persistensi basis data namun tetap menyediakannya secara virtual. Sekaligus membersihkan perbandingan `isset($user->store_id)` pada `DiscountPolicy` dan `TablePolicy` agar kompatibel dengan PHPStan.
+
+---
+
 ## 3. Ringkasan File yang Diubah
 
 | File | Alasan Perubahan |
@@ -176,6 +190,9 @@
 | `app/Modules/Purchasing/Services/LandedCostService.php` | Memperbaiki rounding alokasi biaya residual AT-13 2 desimal. |
 | `app/Modules/Settings/Models/Store.php` | Menambahkan mutator/accessor `status` untuk memetakan ke kolom `is_active`. |
 | `app/Modules/Users/Models/Role.php` | Menambahkan mutator `setIsAdminAttribute` untuk virtual attribute `is_admin`. |
+| `app/Modules/Users/Models/User.php` | Menambahkan mutator/accessor `store_id` untuk virtual attribute `store_id`. |
+| `app/Policies/DiscountPolicy.php` | Menyelaraskan perbandingan `isset($user->store_id)` untuk static analysis. |
+| `app/Policies/TablePolicy.php` | Menyelaraskan perbandingan `isset($user->store_id)` untuk static analysis. |
 | `tests/Feature/Domain1/ProvisioningRealConcurrencyTest.php` | Menambahkan atribut native PHP 8 `#[Group('chaos')]`. |
 | `tests/Feature/Domain2/TransactionConcurrencyTest.php` | Menambahkan atribut native PHP 8 `#[Group('chaos')]`. |
 | `tests/Feature/Domain2/ConcurrentDiscountQuotaRedemptionTest.php` | Menambahkan atribut native PHP 8 `#[Group('chaos')]`. |

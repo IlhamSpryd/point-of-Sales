@@ -33,7 +33,7 @@ class TablePolicy
             return true;
         }
 
-        if (isset($user->store_id) && $user->store_id !== null) {
+        if (isset($user->store_id)) {
             return (int) $user->store_id === (int) $table->store_id;
         }
 
