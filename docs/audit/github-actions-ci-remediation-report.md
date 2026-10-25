@@ -4,90 +4,56 @@
 
 - **Repository:** `IlhamSpryd/point-of-Sales`
 - **Workflow:** `CI` (`.github/workflows/tests.yml`)
-- **Failed Run ID:** `40228513839`
-- **Commit:** `953bf2946e8a4c51579edeedd69e8db801ea85fb` (Merge PR #6 ke `main`)
+- **Initial Failed Run ID:** `40228513839` (Commit `953bf29` pada `main`)
+- **Second Monitored Run ID:** `40230710413` (Commit `a0d90ea` pada `main`)
 - **Event:** `push`
 
-### Ringkasan Status Job pada Run 40228513839:
-1. **Job `Lint & Static Analysis` (ID: 121275038463):**
-   - Status: **BERHASIL (Passed / Green)** dalam 1m8s.
-   - Langkah yang lulus: setup PHP 8.3, Composer install, `.env` generation, Laravel Pint style check, PHPStan/Larastan analyse.
-2. **Job `Tests (MySQL nyata)` (ID: 121275038659):**
-   - Status: **GAGAL (Failed / Red)** pada langkah `Smoke test migrasi + seeder` (exit code 1).
-   - Langkah selanjutnya (`Test suite paralel`, `Chaos / concurrency suite`) tidak sempat dieksekusi karena pipeline dihentikan akibat kegagalan langkah smoke test.
+---
+
+## 2. Investigasi Root Cause dan Remediasi Bertahap
+
+### Masalah 1: Pelanggaran Check Constraint pada Seeder (Run 40228513839)
+- **Job:** `Tests (MySQL nyata)`
+- **Langkah Gagal:** `Smoke test migrasi + seeder` (`php artisan migrate:fresh --seed --force`)
+- **Error:**
+  ```text
+  SQLSTATE[HY000]: General error: 3819 Check constraint 'chk_sm_type_enum' is violated.
+  ```
+- **Akar Masalah:**
+  Pada migrasi `2027_01_02_000001_enhance_stock_balances_and_movements_for_module4.php` (baris 61–66), constraint `chk_sm_type_enum` membatasi tipe pergerakan stok menjadi 14 enum kanonik. Namun seeder `database/seeders/Pos/OrderSeeder.php` baris 464 menyisipkan `'type' => 'out'`.
+- **Remediasi:**
+  Mengubah `'type' => 'out'` menjadi `'type' => 'sale_deduction'` pada `database/seeders/Pos/OrderSeeder.php`.
+- **Hasil Verifikasi CI Remote (Run 40230710413):**
+  Langkah `Smoke test migrasi + seeder` **LULUS 100% (Green / ✓)**.
 
 ---
 
-## 2. Root Cause Analysis (Investigasi Bukti Log)
-
-Berdasarkan pemeriksaan log aktual via GitHub CLI (`gh run view 40228513839 --log-failed`), kegagalan terjadi saat eksekusi command:
-```bash
-php artisan migrate:fresh --seed --force
-```
-
-### Cuplikan Log Error:
-```text
-Tests (MySQL nyata)	Smoke test migrasi + seeder	2026-10-25T19:59:35.8683796Z In MySqlConnection.php line 53:
-Tests (MySQL nyata)	Smoke test migrasi + seeder	2026-10-25T19:59:35.8683972Z                                                                                
-Tests (MySQL nyata)	Smoke test migrasi + seeder	2026-10-25T19:59:35.8684224Z   SQLSTATE[HY000]: General error: 3819 Check constraint 'chk_sm_type_enum' is  
-Tests (MySQL nyata)	Smoke test migrasi + seeder	2026-10-25T19:59:35.8684414Z    violated.                                                                   
-Tests (MySQL nyata)	Smoke test migrasi + seeder	2026-10-25T19:59:35.8684579Z                                                                                
-Tests (MySQL nyata)	Smoke test migrasi + seeder	2026-10-25T19:59:35.8694712Z ##[error]Process completed with exit code 1.
-```
-
-### Akar Masalah:
-1. **Definisi Constraint Database:**
-   Pada migrasi `database/migrations/2027_01_02_000001_enhance_stock_balances_and_movements_for_module4.php` (baris 61–66):
-   ```sql
-   ALTER TABLE stock_movements ADD CONSTRAINT chk_sm_type_enum CHECK (type IN (
-       'restore_compensation','sale_deduction','initial_sync','adjustment',
-       'goods_receipt','goods_receipt_reversal','transfer_out','transfer_in',
-       'transfer_return_in','transfer_shrinkage','adjustment_in','adjustment_out',
-       'opname_adjustment','supplier_return_out'
-   ))
-   ```
-2. **Implementasi Seeder:**
-   Pada `database/seeders/Pos/OrderSeeder.php` baris 464, pemotongan stok untuk order status `paid` menyisipkan:
-   ```php
-   'type' => 'out',
-   ```
-3. **Penyebab Pelanggaran:**
-   String literal `'out'` bukan merupakan salah satu dari 14 nilai enum yang diizinkan oleh `chk_sm_type_enum`. Pada MySQL 8.0 nyata di runner GitHub Actions, CHECK constraint ditegakkan secara ketat sehingga query `INSERT INTO stock_movements` melemparkan exception fatal `SQLSTATE[HY000]: General error: 3819`.
+### Masalah 2: Hak Akses User MySQL & Konfigurasi Paratest Parallel (Run 40230710413)
+- **Job:** `Tests (MySQL nyata)`
+- **Langkah Gagal:** `Test suite (paralel, tanpa grup chaos)` (`php artisan test --parallel --exclude-group=chaos`)
+- **Error:**
+  ```text
+  Illuminate\Database\QueryException: SQLSTATE[HY000] [1045] Access denied for user 'laravel_pos'@'172.18.0.1' (using password: YES) (Connection: mysql, Host: 127.0.0.1, Port: 3306, Database: yovel_pos_test, SQL: drop database if exists `yovel_pos_test_test_1`)
+  ```
+- **Akar Masalah:**
+  1. File `phpunit.xml` menggunakan atribut `force="true"` untuk `DB_USERNAME=laravel_pos` dan `DB_DATABASE=yovel_pos_test`.
+  2. Saat runner GitHub Actions menjalankan `php artisan test --parallel`, Paratest mencoba membuat database paralel terisolasi (`yovel_pos_test_test_1`, `test_2`, dst.).
+  3. Namun, container layanan MySQL di GitHub Actions runner hanya memiliki user `root`, dan `laravel_pos` belum di-provisioning ataupun diberi hak `CREATE/DROP DATABASE`.
+  4. Selain itu, suite `TransactionConcurrencyTest` yang menguji process-level concurrency locking dan child-process fork belum dianotasi `@group chaos`, sehingga ikut terseret dalam eksekusi paratest paralel.
+- **Remediasi Terpadu:**
+  1. **`phpunit.xml`:** Mengubah `force="true"` menjadi `force="false"` dan menetapkan nilai default CI (`DB_USERNAME=root`, `DB_PASSWORD=root`, `DB_DATABASE=apeiron_pos_test`) sehingga environment variabel lokal tetap dapat override secara aman.
+  2. **`.github/workflows/tests.yml`:** Pada langkah *Pastikan database MySQL siap*, ditambahkan provisioning user `laravel_pos` dengan `GRANT ALL PRIVILEGES ON *.* WITH GRANT OPTION` baik dari `%` maupun `localhost`.
+  3. **`tests/Feature/Domain2/TransactionConcurrencyTest.php`:** Menambahkan anotasi `@group chaos` pada docblock class agar dieksekusi secara serial pada langkah khusus chaos suite (`php artisan test --group=chaos`) dan tidak bentrok dengan eksekusi paralel paratest.
 
 ---
 
-## 3. Remediasi Kode
+## 3. Ringkasan File yang Diubah
 
-### File yang Dimodifikasi:
-`database/seeders/Pos/OrderSeeder.php`
-
-### Diff Perbaikan:
-```diff
---- a/database/seeders/Pos/OrderSeeder.php
-+++ b/database/seeders/Pos/OrderSeeder.php
-@@ -461,7 +461,7 @@ public function run(): void
-                             'product_id' => $productId,
-                             'order_id' => $orderId,
-                             'order_item_id' => $oi['id'],
--                            'type' => 'out',
-+                            'type' => 'sale_deduction',
-                             'quantity' => -$itemQty,
-                             'reason' => 'Penjualan order #'.$orderId,
-                             'idempotency_key' => Str::uuid()->toString(),
-```
-
-### Justifikasi Arsitektur:
-- Nilai `'sale_deduction'` adalah representasi kanonik domain Apeiron POS untuk pengurangan stok akibat transaksi penjualan POS (sesuai `App\Enums\StockMovementType::SaleDeduction->value` dan spesifikasi ledger append-only `T-ISM1`).
-- Nilai ini sepenuhnya memenuhi constraint database `chk_sm_type_enum`.
-
----
-
-## 4. Verifikasi Lokal Sebelum Push
-
-1. **Static Analysis & Linting:**
-   - `vendor/bin/phpstan analyse --memory-limit=1G --no-progress`: LULUS (0 error).
-   - `vendor/bin/pint --test`: LULUS (0 style violations).
-   - `npm run build`: LULUS (Vite production build sukses, exit code 0).
-2. **Database Engine Test:**
-   - Dilakukan verifikasi terhadap database MySQL nyata (`yovel_pos_test`).
-   - Seluruh test feature (Auth, Security, Catalog, Inventory, TableManagement, Concurrency) dieksekusi dengan sukses.
+| File | Alasan Perubahan |
+|---|---|
+| `database/seeders/Pos/OrderSeeder.php` | Memperbaiki constraint violation `chk_sm_type_enum` (`sale_deduction`). |
+| `phpunit.xml` | Melepas hardcoded `force="true"` agar fleksibel antara CI runner dan mesin dev lokal. |
+| `.github/workflows/tests.yml` | Menjamin user `laravel_pos` & `root` memiliki akses penuh membuat database testing paralel. |
+| `tests/Feature/Domain2/TransactionConcurrencyTest.php` | Menandai suite sebagai `@group chaos` agar berjalan serial terisolasi. |
+| `app/Modules/Sales/Services/TransactionService.php` | Memperbaiki validasi meja sesuai `INV-TBL-03` dan `INV-TBL-04`. |
+| `docs/audit/*` | Dokumentasi komprehensif bukti audit, remediasi CI, dan pengujian. |

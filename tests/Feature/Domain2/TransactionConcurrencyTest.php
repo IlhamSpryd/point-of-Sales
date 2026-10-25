@@ -38,6 +38,8 @@ use Throwable;
  *
  * Menguji pencegahan race-condition, two-phase lock validation,
  * integritas ACID mutasi stok & ledger pada database MySQL terisolasi.
+ *
+ * @group chaos
  */
 class TransactionConcurrencyTest extends TestCase
 {

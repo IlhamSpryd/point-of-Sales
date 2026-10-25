@@ -109,7 +109,15 @@ jobs:
 
       - name: Pastikan database MySQL siap
         run: |
-          mysql -h 127.0.0.1 -u root -proot -e "CREATE DATABASE IF NOT EXISTS apeiron_pos_test; CREATE DATABASE IF NOT EXISTS yovel_pos_test;"
+          mysql -h 127.0.0.1 -u root -proot -e "
+            CREATE DATABASE IF NOT EXISTS apeiron_pos_test;
+            CREATE DATABASE IF NOT EXISTS yovel_pos_test;
+            CREATE USER IF NOT EXISTS 'laravel_pos'@'%' IDENTIFIED BY 'root';
+            GRANT ALL PRIVILEGES ON *.* TO 'laravel_pos'@'%' WITH GRANT OPTION;
+            CREATE USER IF NOT EXISTS 'laravel_pos'@'localhost' IDENTIFIED BY 'root';
+            GRANT ALL PRIVILEGES ON *.* TO 'laravel_pos'@'localhost' WITH GRANT OPTION;
+            FLUSH PRIVILEGES;
+          "
 
       - uses: actions/setup-node@v4
         with:
