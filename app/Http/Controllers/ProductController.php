@@ -1,119 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreProductRequest;
-use App\Http\Requests\UpdateProductRequest;
-use App\Models\Category;
-use App\Models\Ingredient;
-use App\Models\ModifierGroup;
-use App\Models\Product;
-use App\Services\ProductService;
-use Illuminate\Database\QueryException;
-use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
-use Illuminate\View\View;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
-
 /**
- * ProductController: Pengatur alur pertukaran formulir entitas Produk seraya mendelegasikan
- * kerumitan transaksi (termasuk penyimpanan gambar) sepenuhnya kepada ProductService.
+ * Backward compatibility wrapper for modular architecture.
+ *
+ * @see \App\Modules\Products\Controllers\ProductController
  */
-class ProductController extends Controller
-{
-    /**
-     * Dependency Injection untuk ProductService.
-     * Logika bisnis dipisah ke Service Pattern agar Controller tetap tipis (Thin Controller).
-     */
-    public function __construct(
-        protected ProductService $productService
-    ) {}
-
-    /**
-     * Menampilkan daftar semua kueri produk.
-     */
-    public function index(Request $request): View|BinaryFileResponse
-    {
-        // Cek request untuk ekspor CSV, lalu delegasikan ke Service.
-        if ($request->has('export') && $request->export === 'csv') {
-            return $this->productService->exportCsv($request);
-        }
-
-        // Mengambil data produk dengan filter dari Service berserta paginasinya
-        $products = $this->productService->getFilteredQuery($request)->paginate(10)->withQueryString();
-
-        // Mengembalikan View dengan membawa data produk
-        return view('products.index', compact('products'));
-    }
-
-    /**
-     * Menampilkan form untuk membuat resource baru.
-     */
-    public function create(): View
-    {
-        // Mengambil semua data kategori untuk kebutuhan dropdown pilihan
-        $categories = Category::all();
-        $ingredients = Ingredient::where('is_active', true)->orderBy('name')->get();
-        $modifierGroups = ModifierGroup::orderBy('name')->get();
-
-        return view('products.create', compact('categories', 'ingredients', 'modifierGroups'));
-    }
-
-    /**
-     * Menyimpan data resource baru ke database.
-     */
-    public function store(StoreProductRequest $request): RedirectResponse
-    {
-        // Parameter Request telah divalidasi oleh Form Request (StoreProductRequest).
-        // Lakukan pemanggilan logika penyimpanan utama yang berada di dalam ProductService.
-        $this->productService->store($request->validated(), $request->file('product_photo'));
-
-        // Redirect kembali ke halaman list produk beserta pesan sukses.
-        return redirect()->route('products.index')->with('success', 'Product created successfully.');
-    }
-
-    /**
-     * Menampilkan form untuk menyunting resource yang dipilih.
-     */
-    public function edit(Product $product): View
-    {
-        $categories = Category::all();
-        $ingredients = Ingredient::where('is_active', true)->orderBy('name')->get();
-        $modifierGroups = ModifierGroup::orderBy('name')->get();
-
-        // Muat relasi ingredients (BOM) beserta kuantitasnya dan modifierGroups
-        $product->load('ingredients', 'modifierGroups');
-
-        return view('products.edit', compact('product', 'categories', 'ingredients', 'modifierGroups'));
-    }
-
-    /**
-     * Memperbarui resource tertentu pada database.
-     */
-    public function update(UpdateProductRequest $request, Product $product): RedirectResponse
-    {
-        // Parameter input masuk melalui Form Request yang memegang aturan validasi.
-        // Data yang tervalidasi kemudian diteruskan ke ProductService.
-        $this->productService->update($product, $request->validated(), $request->file('product_photo'));
-
-        return redirect()->route('products.index')->with('success', 'Product updated successfully.');
-    }
-
-    /**
-     * Menghapus resource dari database.
-     */
-    public function destroy(Product $product): RedirectResponse
-    {
-        try {
-            // Meneruskan model untuk dihapus oleh ProductService.
-            $this->productService->delete($product);
-
-            return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
-        } catch (QueryException $e) {
-            return redirect()->route('products.index')->with('error', 'Data ini masih terhubung dengan data lain dan tidak dapat dihapus.');
-        } catch (\Throwable $e) {
-            // Menangkap semua pengecualian yang dilemparkan oleh Service
-            return redirect()->route('products.index')->with('error', $e->getMessage());
-        }
-    }
-}
+class ProductController extends \App\Modules\Products\Controllers\ProductController {}

@@ -3,9 +3,35 @@
 namespace App\Providers;
 
 use App\Http\Middleware\SetTenantContext;
+use App\Models\GoodsReceipt;
+use App\Models\GoodsReceivedNote;
+use App\Models\Ingredient;
+use App\Models\Product;
+use App\Models\PurchaseOrder;
+use App\Models\PurchaseRequest;
+use App\Models\PurchaseReturn;
+use App\Models\StockAdjustment;
+use App\Models\StockOpname;
+use App\Models\StockTransfer;
+use App\Models\Supplier;
+use App\Models\SupplierInvoice;
+use App\Models\SupplierReturn;
+use App\Policies\GoodsReceiptPolicy;
+use App\Policies\GrnPolicy;
+use App\Policies\PurchaseOrderPolicy;
+use App\Policies\PurchaseRequestPolicy;
+use App\Policies\PurchaseReturnPolicy;
+use App\Policies\StockAdjustmentPolicy;
+use App\Policies\StockOpnamePolicy;
+use App\Policies\StockTransferPolicy;
+use App\Policies\SupplierInvoicePolicy;
+use App\Policies\SupplierPolicy;
+use App\Policies\SupplierReturnPolicy;
 use App\Services\Context\TenantContext;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Livewire\Livewire;
@@ -24,6 +50,8 @@ class AppServiceProvider extends ServiceProvider
         $this->app->scoped(TenantContext::class, function () {
             return new TenantContext;
         });
+
+        $this->app->alias(TenantContext::class, \App\Core\Context\TenantContext::class);
     }
 
     /**
@@ -35,6 +63,34 @@ class AppServiceProvider extends ServiceProvider
             SetTenantContext::class,
             'tenant.context',
             'role',
+        ]);
+
+        Gate::policy(GoodsReceipt::class, GoodsReceiptPolicy::class);
+        Gate::policy(\App\Modules\Inventory\Models\GoodsReceipt::class, GoodsReceiptPolicy::class);
+        Gate::policy(StockAdjustment::class, StockAdjustmentPolicy::class);
+        Gate::policy(\App\Modules\Inventory\Models\StockAdjustment::class, StockAdjustmentPolicy::class);
+        Gate::policy(StockOpname::class, StockOpnamePolicy::class);
+        Gate::policy(\App\Modules\Inventory\Models\StockOpname::class, StockOpnamePolicy::class);
+        Gate::policy(StockTransfer::class, StockTransferPolicy::class);
+        Gate::policy(\App\Modules\Inventory\Models\StockTransfer::class, StockTransferPolicy::class);
+        Gate::policy(SupplierReturn::class, SupplierReturnPolicy::class);
+        Gate::policy(\App\Modules\Inventory\Models\SupplierReturn::class, SupplierReturnPolicy::class);
+        Gate::policy(Supplier::class, SupplierPolicy::class);
+        Gate::policy(\App\Modules\Purchasing\Models\Supplier::class, SupplierPolicy::class);
+        Gate::policy(PurchaseRequest::class, PurchaseRequestPolicy::class);
+        Gate::policy(\App\Modules\Purchasing\Models\PurchaseRequest::class, PurchaseRequestPolicy::class);
+        Gate::policy(PurchaseOrder::class, PurchaseOrderPolicy::class);
+        Gate::policy(\App\Modules\Purchasing\Models\PurchaseOrder::class, PurchaseOrderPolicy::class);
+        Gate::policy(GoodsReceivedNote::class, GrnPolicy::class);
+        Gate::policy(\App\Modules\Purchasing\Models\GoodsReceivedNote::class, GrnPolicy::class);
+        Gate::policy(SupplierInvoice::class, SupplierInvoicePolicy::class);
+        Gate::policy(\App\Modules\Purchasing\Models\SupplierInvoice::class, SupplierInvoicePolicy::class);
+        Gate::policy(PurchaseReturn::class, PurchaseReturnPolicy::class);
+        Gate::policy(\App\Modules\Purchasing\Models\PurchaseReturn::class, PurchaseReturnPolicy::class);
+
+        Relation::morphMap([
+            'product' => Product::class,
+            'ingredient' => Ingredient::class,
         ]);
 
         // PATCH FOR S-06: gagal cepat saat boot produksi jika server key kosong.

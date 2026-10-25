@@ -1,6 +1,6 @@
 <?php
 
-// PATCH FOR F-02/F-03: relax payments.amount CHECK (>0 → >=0) agar void
+// PATCH FOR F-02/F-03: relax payments.amount CHECK (>0 menjadi >=0) agar void
 // counter-entry bisa dicatat. Tambah 'voided' ke status CHECK.
 // PATCH FOR F-08: tighten order_items.preparation_status CHECK ke values
 // yang BENAR-BENAR dipakai oleh PreparationStatus enum PHP, hapus

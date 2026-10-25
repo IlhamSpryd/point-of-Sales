@@ -27,7 +27,6 @@
         <env name="DB_CONNECTION" value="mysql"/>
         <env name="DB_DATABASE" value="yovel_pos_test" force="false"/>
         <env name="DB_USERNAME" value="laravel_pos" force="false"/>
-        <env name="DB_PASSWORD" value="Ilhamsepriyadi08092003" force="false"/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
         <env name="QUEUE_CONNECTION" value="sync"/>

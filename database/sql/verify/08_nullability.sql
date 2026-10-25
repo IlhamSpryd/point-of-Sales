@@ -28,6 +28,38 @@ SELECT 'FAIL' AS result, COUNT(*) AS issues FROM (
     SELECT id, 'ingredient_stock_movements_tenant_or_store_null' AS reason FROM ingredient_stock_movements WHERE tenant_id IS NULL OR store_id IS NULL
     UNION ALL
     SELECT id, 'tables_tenant_or_store_null' AS reason FROM tables WHERE tenant_id IS NULL OR store_id IS NULL
+    UNION ALL
+    SELECT id, 'm5_suppliers_tenant_null' AS reason FROM suppliers WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT id, 'm5_pr_tenant_or_store_null' AS reason FROM purchase_requests WHERE tenant_id IS NULL OR store_id IS NULL
+    UNION ALL
+    SELECT id, 'm5_pr_lines_tenant_null' AS reason FROM purchase_request_lines WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT id, 'm5_po_tenant_or_store_null' AS reason FROM purchase_orders WHERE tenant_id IS NULL OR store_id IS NULL
+    UNION ALL
+    SELECT id, 'm5_po_lines_tenant_null' AS reason FROM purchase_order_lines WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT id, 'm5_grn_tenant_or_store_null' AS reason FROM goods_received_notes WHERE tenant_id IS NULL OR store_id IS NULL
+    UNION ALL
+    SELECT id, 'm5_grn_lines_tenant_null' AS reason FROM goods_received_note_lines WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT id, 'm5_invoices_tenant_null' AS reason FROM supplier_invoices WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT id, 'm5_invoice_lines_tenant_null' AS reason FROM supplier_invoice_lines WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT id, 'm5_returns_tenant_or_store_null' AS reason FROM purchase_returns WHERE tenant_id IS NULL OR store_id IS NULL
+    UNION ALL
+    SELECT id, 'm5_return_lines_tenant_null' AS reason FROM purchase_return_lines WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT id, 'm5_debit_notes_tenant_null' AS reason FROM purchase_debit_notes WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT id, 'm5_costs_tenant_or_store_null' AS reason FROM purchase_additional_costs WHERE tenant_id IS NULL OR store_id IS NULL
+    UNION ALL
+    SELECT id, 'm5_cost_allocations_tenant_null' AS reason FROM purchase_cost_allocations WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT id, 'm5_performance_logs_tenant_or_store_null' AS reason FROM supplier_performance_logs WHERE tenant_id IS NULL OR store_id IS NULL
+    UNION ALL
+    SELECT id, 'm5_reorder_tenant_or_store_null' AS reason FROM reorder_suggestions WHERE tenant_id IS NULL OR store_id IS NULL
 ) nulls HAVING issues > 0
 UNION
 SELECT 'PASS' AS result, 0 AS issues
@@ -55,4 +87,36 @@ WHERE NOT EXISTS (
     SELECT 1 FROM ingredient_stock_movements WHERE tenant_id IS NULL OR store_id IS NULL
     UNION ALL
     SELECT 1 FROM tables WHERE tenant_id IS NULL OR store_id IS NULL
+    UNION ALL
+    SELECT 1 FROM suppliers WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT 1 FROM purchase_requests WHERE tenant_id IS NULL OR store_id IS NULL
+    UNION ALL
+    SELECT 1 FROM purchase_request_lines WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT 1 FROM purchase_orders WHERE tenant_id IS NULL OR store_id IS NULL
+    UNION ALL
+    SELECT 1 FROM purchase_order_lines WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT 1 FROM goods_received_notes WHERE tenant_id IS NULL OR store_id IS NULL
+    UNION ALL
+    SELECT 1 FROM goods_received_note_lines WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT 1 FROM supplier_invoices WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT 1 FROM supplier_invoice_lines WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT 1 FROM purchase_returns WHERE tenant_id IS NULL OR store_id IS NULL
+    UNION ALL
+    SELECT 1 FROM purchase_return_lines WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT 1 FROM purchase_debit_notes WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT 1 FROM purchase_additional_costs WHERE tenant_id IS NULL OR store_id IS NULL
+    UNION ALL
+    SELECT 1 FROM purchase_cost_allocations WHERE tenant_id IS NULL
+    UNION ALL
+    SELECT 1 FROM supplier_performance_logs WHERE tenant_id IS NULL OR store_id IS NULL
+    UNION ALL
+    SELECT 1 FROM reorder_suggestions WHERE tenant_id IS NULL OR store_id IS NULL
 );

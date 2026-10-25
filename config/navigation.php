@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * Setiap entri WAJIB memiliki key: label, icon, route, active, roles, scope.
  * - `roles` HARUS 100% sinkron dengan middleware `role:` di routes/web.php.
- * - `active` berisi string pola untuk request()->routeIs() (bukan boolean).
+ * - `active` berisi string pola atau array pola untuk request()->routeIs().
  * - `scope` menandai cakupan data: 'store' (cabang aktif) atau 'tenant' (seluruh bisnis).
  * - Jangan tambahkan entri dengan route yang belum terdaftar di routes/web.php.
  *
@@ -16,11 +16,12 @@ declare(strict_types=1);
  *   2. tests/Feature/Navigation/SidebarIntegrityTest.php — validasi otomatis
  *
  * @see routes/web.php
+ * @see docs/implementationPlanSidebarNavigation.md
  */
 
 return [
     'sections' => [
-        'Overview' => [
+        'Pusat Kerja' => [
             [
                 'label' => 'Dashboard',
                 'icon' => 'space_dashboard',
@@ -29,8 +30,24 @@ return [
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'tenant',
             ],
+            [
+                'label' => 'Kasir (POS)',
+                'icon' => 'point_of_sale',
+                'route' => 'transaction.create',
+                'active' => 'transaction.*',
+                'roles' => ['Owner', 'Manager', 'Kasir'],
+                'scope' => 'store',
+            ],
+            [
+                'label' => 'Dapur (KDS)',
+                'icon' => 'restaurant_menu',
+                'route' => 'kds.index',
+                'active' => 'kds.*',
+                'roles' => ['Owner', 'Manager', 'Kasir', 'Barista', 'Waiter', 'Cook'],
+                'scope' => 'store',
+            ],
         ],
-        'Penjualan & Pesanan' => [
+        'Operasional Toko' => [
             [
                 'label' => 'Riwayat Pesanan',
                 'icon' => 'receipt_long',
@@ -39,6 +56,59 @@ return [
                 'roles' => ['Owner', 'Manager', 'Kasir', 'Waiter'],
                 'scope' => 'store',
             ],
+            [
+                'label' => 'Shift Kasir',
+                'icon' => 'lock_clock',
+                'route' => 'shifts.index',
+                'active' => 'shifts.*',
+                'roles' => ['Owner', 'Manager', 'Kasir', 'Supervisor'],
+                'scope' => 'store',
+            ],
+            [
+                'label' => 'Meja & QR',
+                'icon' => 'table_restaurant',
+                'route' => 'tables.index',
+                'active' => 'tables.*',
+                'roles' => ['Owner', 'Manager'],
+                'scope' => 'store',
+            ],
+        ],
+        'Suplai & Inventori' => [
+            [
+                'label' => 'Katalog Produk',
+                'icon' => 'inventory_2',
+                'route' => 'products.index',
+                'active' => [
+                    'products.*',
+                    'categories.*',
+                    'brands.*',
+                    'units-of-measure.*',
+                    'inventory.modifiers',
+                    'tax-classes.*',
+                    'assortments.*',
+                    'price-lists.*',
+                ],
+                'roles' => ['Owner', 'Manager', 'Inventory'],
+                'scope' => 'tenant',
+            ],
+            [
+                'label' => 'Inventori & Stok',
+                'icon' => 'warehouse',
+                'route' => 'inventory.ingredients',
+                'active' => [
+                    'inventory.ingredients*',
+                    'inventory.ledger*',
+                    'inventory.goods-receipts*',
+                    'inventory.adjustments*',
+                    'inventory.opnames*',
+                    'inventory.transfers*',
+                    'inventory.supplier-returns*',
+                ],
+                'roles' => ['Owner', 'Manager', 'Inventory'],
+                'scope' => 'store',
+            ],
+        ],
+        'Analitik & Penjualan' => [
             [
                 'label' => 'Laporan Penjualan',
                 'icon' => 'analytics',
@@ -56,64 +126,30 @@ return [
                 'scope' => 'store',
             ],
         ],
-        'Katalog & Inventori' => [
+        'Pengaturan & Kelola' => [
             [
-                'label' => 'Produk',
-                'icon' => 'inventory_2',
-                'route' => 'products.index',
-                'active' => 'products.*',
-                'roles' => ['Owner', 'Manager', 'Inventory'],
+                'label' => 'Cabang',
+                'icon' => 'storefront',
+                'route' => 'stores.index',
+                'active' => 'stores.*',
+                'roles' => ['Owner'],
                 'scope' => 'tenant',
             ],
             [
-                'label' => 'Kategori',
-                'icon' => 'category',
-                'route' => 'categories.index',
-                'active' => 'categories.*',
-                'roles' => ['Owner', 'Manager', 'Inventory'],
+                'label' => 'Pengguna',
+                'icon' => 'group',
+                'route' => 'users.index',
+                'active' => ['users.*', 'users.invitations.*'],
+                'roles' => ['Owner'],
                 'scope' => 'tenant',
             ],
             [
-                'label' => 'Varian & Modifier',
-                'icon' => 'tune',
-                'route' => 'inventory.modifiers',
-                'active' => 'inventory.modifiers',
-                'roles' => ['Owner', 'Manager', 'Inventory'],
+                'label' => 'Peran',
+                'icon' => 'admin_panel_settings',
+                'route' => 'roles.index',
+                'active' => 'roles.*',
+                'roles' => ['Owner'],
                 'scope' => 'tenant',
-            ],
-            [
-                'label' => 'Bahan Baku',
-                'icon' => 'egg_alt',
-                'route' => 'inventory.ingredients',
-                'active' => 'inventory.ingredients',
-                'roles' => ['Owner', 'Manager', 'Inventory'],
-                'scope' => 'store',
-            ],
-            [
-                'label' => 'Riwayat Stok',
-                'icon' => 'history',
-                'route' => 'inventory.ledger',
-                'active' => 'inventory.ledger',
-                'roles' => ['Owner', 'Manager', 'Inventory'],
-                'scope' => 'store',
-            ],
-        ],
-        'Operasional Toko' => [
-            [
-                'label' => 'Shift Kasir',
-                'icon' => 'lock_clock',
-                'route' => 'shifts.index',
-                'active' => 'shifts.*',
-                'roles' => ['Owner', 'Manager', 'Kasir', 'Supervisor'],
-                'scope' => 'store',
-            ],
-            [
-                'label' => 'Meja & QR',
-                'icon' => 'table_restaurant',
-                'route' => 'tables.index',
-                'active' => 'tables.*',
-                'roles' => ['Owner', 'Manager'],
-                'scope' => 'store',
             ],
             [
                 'label' => 'Perangkat POS',
@@ -131,40 +167,6 @@ return [
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'tenant',
             ],
-        ],
-        'Organisasi & Pengaturan' => [
-            [
-                'label' => 'Cabang',
-                'icon' => 'storefront',
-                'route' => 'stores.index',
-                'active' => 'stores.*',
-                'roles' => ['Owner'],
-                'scope' => 'tenant',
-            ],
-            [
-                'label' => 'Pengguna',
-                'icon' => 'group',
-                'route' => 'users.index',
-                'active' => 'users.*',
-                'roles' => ['Owner'],
-                'scope' => 'tenant',
-            ],
-            [
-                'label' => 'Peran',
-                'icon' => 'admin_panel_settings',
-                'route' => 'roles.index',
-                'active' => 'roles.*',
-                'roles' => ['Owner'],
-                'scope' => 'tenant',
-            ],
-            [
-                'label' => 'Pengaturan',
-                'icon' => 'settings',
-                'route' => 'settings.index',
-                'active' => 'settings.*',
-                'roles' => ['Owner'],
-                'scope' => 'tenant',
-            ],
             [
                 'label' => 'Audit Log',
                 'icon' => 'manage_search',
@@ -172,24 +174,6 @@ return [
                 'active' => 'activity-logs.*',
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'tenant',
-            ],
-        ],
-        'Terminal Kerja' => [
-            [
-                'label' => 'Kasir (POS)',
-                'icon' => 'point_of_sale',
-                'route' => 'transaction.create',
-                'active' => 'transaction.*',
-                'roles' => ['Owner', 'Manager', 'Kasir'],
-                'scope' => 'store',
-            ],
-            [
-                'label' => 'Dapur (KDS)',
-                'icon' => 'restaurant_menu',
-                'route' => 'kds.index',
-                'active' => 'kds.*',
-                'roles' => ['Owner', 'Manager', 'Kasir', 'Barista', 'Waiter', 'Cook'],
-                'scope' => 'store',
             ],
         ],
     ],

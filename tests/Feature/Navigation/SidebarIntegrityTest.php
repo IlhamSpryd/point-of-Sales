@@ -63,23 +63,22 @@ class SidebarIntegrityTest extends TestCase
         }
     }
 
-    public function test_navigation_sections_contain_expected_six_groups_and_valid_scope_metadata(): void
+    public function test_navigation_sections_contain_expected_five_pillars_and_valid_scope_metadata(): void
     {
         $sections = config('navigation.sections');
 
         $expectedGroups = [
-            'Overview',
-            'Penjualan & Pesanan',
-            'Katalog & Inventori',
+            'Pusat Kerja',
             'Operasional Toko',
-            'Organisasi & Pengaturan',
-            'Terminal Kerja',
+            'Suplai & Inventori',
+            'Analitik & Penjualan',
+            'Pengaturan & Kelola',
         ];
 
         $this->assertEquals(
             $expectedGroups,
             array_keys($sections),
-            'Navigation groups must match the 6-pillar Owner Information Architecture.'
+            'Navigation groups must match the 5-pillar Task-Oriented Information Architecture.'
         );
 
         foreach (collect($sections)->flatten(1) as $item) {
@@ -111,19 +110,18 @@ class SidebarIntegrityTest extends TestCase
                 ->all();
         };
 
-        // 1. Owner sees all 20 items (including stores & devices)
+        // 1. Owner sees 16 streamlined items with domain hub entry points
         $ownerRoutes = $getVisibleRoutes('Owner');
-        $this->assertCount(20, $ownerRoutes);
+        $this->assertCount(16, $ownerRoutes);
 
-        // 2. Manager sees 16 items (all except users, roles, settings, stores)
+        // 2. Manager sees 13 items (all except stores, users, roles)
         $managerRoutes = $getVisibleRoutes('Manager');
-        $this->assertCount(16, $managerRoutes);
+        $this->assertCount(13, $managerRoutes);
         $this->assertNotContains('stores.index', $managerRoutes);
         $this->assertNotContains('users.index', $managerRoutes);
         $this->assertNotContains('roles.index', $managerRoutes);
-        $this->assertNotContains('settings.index', $managerRoutes);
 
-        // 3. Kasir sees frontline operational items
+        // 3. Kasir sees frontline operational items (POS, KDS, Pesanan, Shift)
         $kasirRoutes = $getVisibleRoutes('Kasir');
         $this->assertEqualsCanonicalizing(
             ['transaction.create', 'shifts.index', 'kds.index', 'orders.index'],
@@ -137,18 +135,58 @@ class SidebarIntegrityTest extends TestCase
             $waiterRoutes
         );
 
-        // 5. Inventory staff sees catalog and inventory items
+        // 5. Inventory staff sees catalog and inventory hub items (consolidated)
         $inventoryRoutes = $getVisibleRoutes('Inventory');
         $this->assertEqualsCanonicalizing(
             [
                 'products.index',
-                'categories.index',
-                'inventory.modifiers',
                 'inventory.ingredients',
-                'inventory.ledger',
             ],
             $inventoryRoutes
         );
+
+        // 6. Barista & Cook see kitchen workstation (KDS)
+        $this->assertEqualsCanonicalizing(['kds.index'], $getVisibleRoutes('Barista'));
+        $this->assertEqualsCanonicalizing(['kds.index'], $getVisibleRoutes('Cook'));
+    }
+
+    public function test_inventory_sub_nav_renders_all_module_4_workflow_tabs(): void
+    {
+        $tenant = Tenant::create([
+            'name' => 'Inventory Nav Tenant',
+            'slug' => 'inv-nav-tenant',
+            'status' => 'active',
+            'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
+            'access_status' => Tenant::ACCESS_ACTIVE,
+        ]);
+        app(TenantContext::class)->setTenantId($tenant->id);
+
+        $store = Store::create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Inventory Nav Store',
+            'is_active' => true,
+        ]);
+        app(TenantContext::class)->setStoreId($store->id);
+
+        $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Inventory', 'permissions' => ['*']]);
+        $user = User::factory()->create(['tenant_id' => $tenant->id, 'role_id' => $role->id]);
+
+        DB::table('user_stores')->insert([
+            'tenant_id' => $tenant->id,
+            'user_id' => $user->id,
+            'store_id' => $store->id,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('inventory.ingredients'));
+        $response->assertOk();
+        $response->assertSee('Sub-navigasi Manajemen Inventori');
+        $response->assertSee('Bahan Baku');
+        $response->assertSee('Penerimaan Barang');
+        $response->assertSee('Penyesuaian Stok');
+        $response->assertSee('Stock Opname');
+        $response->assertSee('Transfer Antarcabang');
+        $response->assertSee('Retur Supplier');
+        $response->assertSee('Riwayat Mutasi');
     }
 
     public function test_rendered_sidebar_contains_wcag_and_accessibility_tokens(): void

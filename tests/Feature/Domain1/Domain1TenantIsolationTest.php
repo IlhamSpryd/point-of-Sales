@@ -255,7 +255,7 @@ class Domain1TenantIsolationTest extends TestCase
         ]);
     }
 
-    /** NEG-05: TenantContext kosong → semua kueri mengembalikan 0 (fail-closed). */
+    /** NEG-05: TenantContext kosong: semua kueri mengembalikan 0 (fail-closed). */
     public function test_empty_tenant_context_returns_zero_rows_everywhere(): void
     {
         $this->createContextFree();
@@ -292,7 +292,7 @@ class Domain1TenantIsolationTest extends TestCase
         $context = app(TenantContext::class);
         $context->clear();
 
-        // Job A: runAs lalu exception di dalam callback → finally mengembalikan null.
+        // Job A: runAs lalu exception di dalam callback: finally mengembalikan null.
         try {
             $context->runAs($this->tenantAId, $this->storeAId, function () {
                 throw new \RuntimeException('boom A');
@@ -354,7 +354,7 @@ class Domain1TenantIsolationTest extends TestCase
                 'tenant_id' => $this->tenantAId,
                 'store_id' => $this->storeAId,
                 'product_id' => $product->id,
-                'type' => 'in',
+                'type' => 'goods_receipt',
                 'quantity' => 5,
                 'reason' => 'seed',
                 'idempotency_key' => 'seed-'.uniqid(),
@@ -375,14 +375,14 @@ class Domain1TenantIsolationTest extends TestCase
             Category::create(['category_name' => 'Minuman Khas']);
         });
 
-        // Tenant B memakai nama kategori yang sama → HARUS diizinkan.
+        // Tenant B memakai nama kategori yang sama: HARUS diizinkan.
         $ok = null;
         app(TenantContext::class)->runAs($this->tenantBId, $this->storeBId, function () use (&$ok) {
             $ok = Category::create(['category_name' => 'Minuman Khas']);
         });
         $this->assertNotNull($ok->id);
 
-        // Duplikat dalam tenant yang sama → ditolak unique constraint.
+        // Duplikat dalam tenant yang sama: ditolak unique constraint.
         $this->expectException(QueryException::class);
         app(TenantContext::class)->runAs($this->tenantAId, $this->storeAId, function () {
             Category::create(['category_name' => 'Minuman Khas']);
@@ -466,7 +466,7 @@ class Domain1TenantIsolationTest extends TestCase
         $this->assertContains('Cache-Only-B', $namesB);
         $this->assertNotContains('Cache-Only-A', $namesB, 'Katalog cache Tenant A bocor ke Tenant B!');
 
-        // 4. Tanpa tenant → exception (fail-closed), bukan kunci global.
+        // 4. Tanpa tenant: exception (fail-closed), bukan kunci global.
         $context->clear();
         $this->expectException(\RuntimeException::class);
         $service->getCatalog();

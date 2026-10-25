@@ -139,7 +139,7 @@ return [
     */
 
     // PATCH FOR S-03: Whitelist Eloquent models cached by MenuCacheService.
-    // 'false' blocks ALL class unserialization → __PHP_Incomplete_Class on cache HIT.
+    // 'false' blocks ALL class unserialization, resulting in __PHP_Incomplete_Class on cache HIT.
     // Long-term: cache ->toArray() scalars instead of live models.
     'serializable_classes' => [
         Collection::class,

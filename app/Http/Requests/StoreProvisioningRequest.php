@@ -10,7 +10,7 @@ use Illuminate\Validation\Rule;
  * Field internal (tenant_id, role_id, permissions, email_verified_at,
  * is_active, idempotency KEY dari body, dsb) TIDAK diterima.
  *
- * D1: bila email sudah dipakai akun aktif → 409 (dicek di ProvisioningService,
+ * D1: bila email sudah dipakai akun aktif maka menghasilkan 409 (dicek di ProvisioningService,
  * bukan Rule::unique biasa, supaya response bermakna bisnis, bukan 422).
  */
 class StoreProvisioningRequest extends FormRequest

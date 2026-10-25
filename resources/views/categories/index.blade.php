@@ -3,17 +3,19 @@
     $canManage = in_array(auth()->user()?->role?->name, ['Owner', 'Manager', 'Inventory'], true);
 @endphp
 <x-app-layout>
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    @include('catalog.partials.sub-nav')
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Kategori</h4>
-            <p class="text-sm font-medium text-[#787774] mt-1">Kelola kategori produk</p>
+            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Kategori & Sub-Kategori</h4>
+            <p class="text-sm font-medium text-[#787774] mt-1">Kelola struktur klasifikasi komoditas produk Anda</p>
         </div>
         
         <x-list-toolbar search-action="{{ route('categories.index') }}" search-placeholder="Cari kategori...">
             <x-slot:actions>
-                <a href="{{ request()->fullUrlWithQuery(['export' => 'csv']) }}" class="flex-1 sm:flex-none">
+                <a href="{{ route('categories.export') }}" class="flex-1 sm:flex-none">
                     <x-button variant="secondary" type="button" class="w-full h-10">
-                        <span class="material-symbols-rounded text-[18px]">download</span> Ekspor
+                        <span class="material-symbols-rounded text-[18px]">download</span> Ekspor Excel
                     </x-button>
                 </a>
                 @if($canManage)
@@ -39,9 +41,10 @@
         {{-- Desktop/tablet-landscape: existing table --}}
         <x-data-table>
             <x-slot:head>
-                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">ID</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kode</th>
                 <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Nama Kategori</th>
-                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Dibuat Pada</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Induk (Parent)</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Status</th>
                 @if($canManage)
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
                 @endif
@@ -49,11 +52,21 @@
             
             @forelse($categories as $category)
                 <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
-                    <td class="px-6 py-4 font-medium text-apeiron-ink text-sm">{{ $category->category_code }}</td>
+                    <td class="px-6 py-4 font-mono font-semibold text-apeiron-ink text-xs">{{ $category->category_code }}</td>
                     <td class="px-6 py-4">
-                        <div class="font-medium text-apeiron-ink text-sm">{{ $category->category_name }}</div>
+                        <div class="font-semibold text-apeiron-ink text-sm">{{ $category->category_name }}</div>
+                        @if($category->description)
+                            <div class="text-xs text-[#787774] mt-0.5">{{ Str::limit($category->description, 50) }}</div>
+                        @endif
                     </td>
-                    <td class="px-6 py-4 text-sm text-[#787774]">{{ $category->created_at?->format('M d, Y') ?? '—' }}</td>
+                    <td class="px-6 py-4 text-sm text-[#787774]">{{ $category->parent?->category_name ?? '— (Kategori Utama)' }}</td>
+                    <td class="px-6 py-4">
+                        @if($category->is_active ?? true)
+                            <x-badge type="success">Aktif</x-badge>
+                        @else
+                            <x-badge type="secondary">Nonaktif</x-badge>
+                        @endif
+                    </td>
                     @if($canManage)
                         <td class="px-6 py-4 text-right space-x-2">
                             <a href="{{ route('categories.edit', $category->id) }}" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200 active:scale-90" aria-label="Ubah kategori" wire:navigate>

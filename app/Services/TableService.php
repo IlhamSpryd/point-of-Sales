@@ -1,80 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Models\Table;
-use Exception;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
-
 /**
- * TableService mengisolasi seluruh logika CRUD Meja dari Controller,
- * mengikuti pola Service Pattern yang sama seperti CategoryService/RoleService.
+ * Backward compatibility wrapper for modular architecture.
+ *
+ * @see \App\Modules\Customers\Services\TableService
  */
-class TableService
-{
-    public function getFilteredQuery(Request $request): Builder
-    {
-        $query = Table::query()->latest('id');
-        if ($request->has('search') && $request->search) {
-            $query->where('table_name', 'like', '%'.$request->search.'%');
-        }
-
-        return $query;
-    }
-
-    /**
-     * Membuat meja baru. secure_token TIDAK perlu diisi di sini —
-     * otomatis ter-generate oleh model event Table::booted().
-     */
-    public function store(array $data): Table
-    {
-        return DB::transaction(function () use ($data) {
-            return Table::create($data);
-        });
-    }
-
-    public function update(Table $table, array $data): Table
-    {
-        return DB::transaction(function () use ($table, $data) {
-            $table->update($data);
-
-            return $table;
-        });
-    }
-
-    /**
-     * Menghapus meja. Ditolak jika meja masih memiliki riwayat pesanan,
-     * demi menjaga integritas audit trail (sama seperti aturan Category/Role).
-     */
-    public function delete(Table $table): bool
-    {
-        return DB::transaction(function () use ($table) {
-            if ($table->orders()->exists()) {
-                throw new Exception('Tidak dapat menghapus meja "'.$table->table_name.'" karena masih memiliki riwayat pesanan.');
-            }
-
-            return $table->delete();
-        });
-    }
-
-    /**
-     * Memperbarui secure_token meja dengan UUID v4 baru (misal saat staf mencetak ulang QR).
-     * Menghapus cache QR lama secara atomik.
-     */
-    public function regenerateToken(Table $table): Table
-    {
-        return DB::transaction(function () use ($table) {
-            $table->update([
-                'secure_token' => (string) Str::uuid(),
-            ]);
-
-            Cache::forget('pos:qr:table:'.$table->id);
-
-            return $table;
-        });
-    }
-}
+class TableService extends \App\Modules\Customers\Services\TableService {}

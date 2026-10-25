@@ -1,4 +1,4 @@
-# [OMEGA-NODE6] CI/CD ketat: lint + static analysis + security -> test (MySQL nyata, paralel) -> chaos (serial) -> gate | 2026-09-20
+# CI/CD ketat: lint + static analysis + security -> test (MySQL nyata, paralel) -> chaos (serial) -> gate | 2026-09-20
 name: CI
 
 on:

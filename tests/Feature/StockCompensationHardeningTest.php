@@ -240,7 +240,7 @@ class StockCompensationHardeningTest extends TestCase
             ->where('store_id', $this->storeA->id)
             ->where('product_id', $this->productA->id)
             ->update(['quantity' => 10]);
-        $this->productA->update(['stock' => 10]);
+        $this->productA->update(['stock' => 10, 'product_price' => 20000]);
 
         $response = $this->actingAs($kasir)
             ->withSession(['active_store_id' => $this->storeA->id])

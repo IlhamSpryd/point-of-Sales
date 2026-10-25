@@ -106,20 +106,28 @@
     <div x-show="wide" class="px-3 pb-2 pt-1 border-b border-[#F1F1EF]">
         <x-branch-switcher :fullWidth="true" />
     </div>
+    <div x-show="!wide" x-cloak class="py-2 flex justify-center border-b border-[#F1F1EF]">
+        <button type="button" @click="expanded = true" title="Cabang Aktif (Klik untuk ubah)"
+            aria-label="Buka pilihan cabang"
+            class="w-10 h-10 flex items-center justify-center rounded-xl text-emerald-600 hover:bg-[#F7F7F5] transition-colors relative cursor-pointer">
+            <span class="material-symbols-rounded text-[20px]">storefront</span>
+            <span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+        </button>
+    </div>
 
     {{-- Navigasi --}}
     <nav class="flex-1 py-3 overflow-y-auto overflow-x-hidden scrollbar-hide" :class="wide ? 'px-3' : 'px-0'"
         aria-label="Navigasi utama">
         @foreach ($visibleMenu as $section => $items)
             @php
-                $isTerminalSection = ($section === 'Terminal Kerja');
+                $isWorkstation = ($section === 'Pusat Kerja');
             @endphp
-            <div class="{{ $loop->first ? '' : ($isTerminalSection ? 'mt-5 pt-3 border-t border-[#F1F1EF]' : 'mt-4') }}">
+            <div class="{{ $loop->first ? '' : ($isWorkstation ? 'mt-5 pt-3 border-t border-[#F1F1EF]' : 'mt-4') }}">
                 <div x-show="wide" class="px-3 pb-1 flex items-center justify-between">
                     <p class="text-[11px] font-semibold text-[#6B6A66] tracking-[0.02em] whitespace-nowrap uppercase">
                         {{ $section }}
                     </p>
-                    @if($isTerminalSection)
+                    @if($isWorkstation)
                         <span class="text-[9px] font-bold text-amber-700 bg-amber-50 border border-amber-200/60 rounded px-1.5 py-0.2 select-none">
                             Workstation
                         </span>
@@ -133,7 +141,8 @@
                     @foreach ($items as $item)
                         @php
                             $routeExists = \Illuminate\Support\Facades\Route::has($item['route']);
-                            $isActive = $routeExists && request()->routeIs($item['active']);
+                            $activePatterns = (array) $item['active'];
+                            $isActive = $routeExists && request()->routeIs(...$activePatterns);
                             $scope = $item['scope'] ?? 'store';
                             $rowBase =
                                 'group relative flex items-center rounded-xl text-[13px] whitespace-nowrap transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[#37352F]';

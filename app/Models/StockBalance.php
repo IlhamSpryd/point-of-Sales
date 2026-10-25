@@ -4,40 +4,9 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Models\Concerns\AssignsStore;
-use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToStore;
-use App\Models\Concerns\ScopedToTenant;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
 /**
- * [D2-BE-005] Saldo stok otoritatif per (tenant, store, product):
- * product_stock_balances. Primary key komposit (tanpa kolom id),
- * sehingga Operasi tulis selalu harus menyertakan tenant_id & store_id.
+ * Backward compatibility wrapper for modular architecture.
+ *
+ * @see \App\Modules\Inventory\Models\StockBalance
  */
-class StockBalance extends Model
-{
-    use AssignsStore;
-    use AssignsTenant;
-    use ScopedToStore;
-    use ScopedToTenant;
-
-    public $incrementing = false;
-
-    protected $table = 'product_stock_balances';
-
-    protected $primaryKey = null;
-
-    protected $guarded = [];
-
-    public function product(): BelongsTo
-    {
-        return $this->belongsTo(Product::class);
-    }
-
-    public function store(): BelongsTo
-    {
-        return $this->belongsTo(Store::class);
-    }
-}
+class StockBalance extends \App\Modules\Inventory\Models\StockBalance {}

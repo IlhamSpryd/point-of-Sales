@@ -4,11 +4,11 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-// [OMEGA-NODE3] Audit indexing throughput tinggi -- Node 3 Performance & Caching | 2026-09-22
+// Audit indexing throughput tinggi -- Node 3 Performance & Caching | 2026-09-22
 return new class extends Migration
 {
     /**
-     * [OMEGA-NODE3] HASIL AUDIT (lihat PHASE 1 pada laporan): dari 3 index
+     * HASIL AUDIT (lihat PHASE 1 pada laporan): dari 3 index
      * komposit yang diminta, HANYA `orders` yang merupakan celah nyata.
      * Dua lainnya SUDAH ditambahkan oleh migrasi-migrasi sebelumnya:
      *

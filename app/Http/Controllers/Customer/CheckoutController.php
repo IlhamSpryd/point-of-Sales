@@ -13,6 +13,7 @@ use App\Models\Setting;
 use App\Models\Table;
 use App\Models\User;
 use App\Services\CartService;
+use App\Services\CatalogPriceResolverService;
 use App\Services\Context\TenantContext;
 use App\Services\SystemUserResolver;
 use App\Services\TransactionService;
@@ -195,17 +196,26 @@ class CheckoutController extends Controller
                     ]);
                 }
 
-                if (! $product->is_active) {
+                if (! $product->is_active || $product->status !== 'active') {
                     throw ValidationException::withMessages([
                         'items' => "Produk '{$product->product_name}' telah dinonaktifkan dan tidak dapat dipesan.",
                     ]);
                 }
 
+                $resolver = app(CatalogPriceResolverService::class);
+                if (! $resolver->isAvailableInStore($product, $storeId)) {
+                    throw ValidationException::withMessages([
+                        'items' => "Produk '{$product->product_name}' tidak tersedia di cabang ini.",
+                    ]);
+                }
+
+                $resolvedBasePrice = $resolver->resolvePrice($product, $storeId);
+
                 return [
                     'product_id' => $product->id,
                     'quantity' => $item['qty'],
                     'extra_price' => (float) $serverExtraPrice,
-                    'unit_price' => $product->product_price + $serverExtraPrice,
+                    'unit_price' => $resolvedBasePrice + $serverExtraPrice,
                     'options' => $item['options'],
                     'notes' => $item['notes'] ?? null,
                 ];
@@ -219,7 +229,7 @@ class CheckoutController extends Controller
                 return back()->with('error', 'Layanan pemesanan mandiri sedang tidak tersedia. Silakan panggil staf.');
             }
 
-            // [OMEGA-NODE9] PATCH FOR M-05: Stale Price Protection.
+            // PATCH FOR M-05: Stale Price Protection.
             $liveSubtotal = 0;
             foreach ($transactionItems as $item) {
                 $liveSubtotal += ($item['unit_price'] * $item['quantity']);
@@ -265,7 +275,7 @@ class CheckoutController extends Controller
             // Pesan bisnis (stok/varian/harga): aman ditampilkan.
             return back()->with('error', collect($e->errors())->flatten()->first());
         } catch (QueryException $e) {
-            // PATCH FOR S-13: double-submit → order sudah ada, redirect ke success.
+            // PATCH FOR S-13: double-submit saat order sudah ada, redirect ke success.
             if (str_contains($e->getMessage(), 'idempotency_key')
                 && ($existing = Order::where('idempotency_key', $idempotencyKey)->first())) {
                 return redirect()->route('customer.checkout.success', $existing->order_code);

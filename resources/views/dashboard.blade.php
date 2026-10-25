@@ -2,14 +2,7 @@
     <div class="w-full min-h-full bg-white flex flex-col flex-1">
         {{-- TOP BAR --}}
         <header class="h-14 border-b border-[#E9E9E7] flex items-center justify-between px-6 sm:px-8 lg:px-12 shrink-0 bg-white sticky top-0 z-20">
-            <div class="flex items-center gap-3">
-                {{-- Mobile Drawer Trigger (disembunyikan di desktop) --}}
-                <button type="button" @click="sidebarMobileOpen = true" aria-label="Buka menu"
-                    class="lg:hidden w-9 h-9 flex flex-col justify-center gap-1 items-center rounded-lg hover:bg-[#F1F1EF] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
-                    <i class="block w-4 h-0.5 bg-[#37352F] rounded-full"></i>
-                    <i class="block w-4 h-0.5 bg-[#37352F] rounded-full"></i>
-                    <i class="block w-4 h-0.5 bg-[#37352F] rounded-full"></i>
-                </button>
+            <div class="flex items-center gap-3 pl-12 lg:pl-0">
                 <span class="font-semibold text-sm text-[#202020]">Dashboard</span>
             </div>
 
@@ -232,7 +225,7 @@
 
                 <div class="mt-2">
                     <a href="{{ route('orders.index') }}" wire:navigate class="inline-block font-semibold text-[13px] text-[#202020] hover:underline">
-                        Lihat semua pesanan →
+                        Lihat semua pesanan
                     </a>
                 </div>
             </section>

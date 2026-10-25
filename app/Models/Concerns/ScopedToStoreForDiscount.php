@@ -1,23 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models\Concerns;
 
-use App\Models\Scopes\DiscountStoreScope;
-use Illuminate\Database\Eloquent\Builder;
+use App\Core\Traits\ScopedToStoreForDiscount as CoreScopedToStoreForDiscount;
 
 /**
- * Discount: store_id NULL berarti berlaku tenant-wide; bila terisi,
- * hanya berlaku untuk cabang tersebut. Mode allStores() hanya untuk Owner.
+ * Backward compatibility wrapper.
+ *
+ * @see CoreScopedToStoreForDiscount
  */
 trait ScopedToStoreForDiscount
 {
-    public static function bootScopedToStoreForDiscount(): void
-    {
-        static::addGlobalScope(new DiscountStoreScope);
-    }
-
-    public static function allStores(): Builder
-    {
-        return static::withoutGlobalScope(DiscountStoreScope::class);
-    }
+    use CoreScopedToStoreForDiscount;
 }

@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Exports;
 
 use App\Services\Context\TenantContext;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Schema;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithHeadings;
@@ -26,16 +29,17 @@ class CategoriesExport implements FromCollection, ShouldAutoSize, WithHeadings, 
 
         $table = $this->query->getModel()->getTable();
         $this->query->where($table.'.tenant_id', $tenantId);
-        if ($storeId !== null) {
+        if ($storeId !== null && Schema::hasColumn($table, 'store_id')) {
             $this->query->where($table.'.store_id', $storeId);
         }
 
-        return $this->query->withCount(['products' => function ($q) use ($tenantId, $storeId) {
-            $q->where('tenant_id', $tenantId);
-            if ($storeId !== null) {
-                $q->where('store_id', $storeId);
-            }
-        }])->get();
+        return $this->query->with(['parent' => fn ($q) => $q->where('tenant_id', $tenantId)])
+            ->withCount(['products' => function ($q) use ($tenantId, $storeId) {
+                $q->where('tenant_id', $tenantId);
+                if ($storeId !== null && Schema::hasColumn('products', 'store_id')) {
+                    $q->where('store_id', $storeId);
+                }
+            }])->get();
     }
 
     public function headings(): array
@@ -43,16 +47,40 @@ class CategoriesExport implements FromCollection, ShouldAutoSize, WithHeadings, 
         return [
             'ID',
             'Category Name',
+            'Parent Category',
+            'Sort Order',
+            'Status',
             'Total Products',
             'Created At',
         ];
     }
 
+    /**
+     * Mencegah CSV Formula Injection (Excel / LibreOffice injection).
+     */
+    private function sanitizeFormula(?string $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (preg_match('/^[\=\+\-\@\t\r]/', $value)) {
+            return "'".$value;
+        }
+
+        return $value;
+    }
+
     public function map($category): array
     {
+        $parentName = $category->parent ? $category->parent->category_name : '-';
+
         return [
             $category->id,
-            $category->category_name,
+            $this->sanitizeFormula($category->category_name),
+            $this->sanitizeFormula($parentName),
+            $category->sort_order ?? 0,
+            $category->is_active ? 'Active' : 'Inactive',
             $category->products_count ?? 0,
             $category->created_at ? $category->created_at->format('d/m/Y H:i') : '-',
         ];

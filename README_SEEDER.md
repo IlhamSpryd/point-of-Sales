@@ -17,7 +17,7 @@ Seeder ini menghasilkan **data realistis 12 bulan penuh** untuk sistem POS "Apei
 | `modifiers` | ~27 | Opsi modifier |
 | `tables` | 30 | Meja di 6 area |
 | `customers` | 1,000 | 15% soft-deleted |
-| `loyalty_tiers` | 5 | Bronze → Diamond |
+| `loyalty_tiers` | 5 | Bronze sampai Diamond |
 | `discounts` | 15 | Promo realistis |
 | `shifts` | ~3,500-4,500 | 365 hari × 3 shift |
 | `orders` | **~50,000** | Weekday 80-150/hari, Weekend 180-280/hari |
@@ -80,40 +80,40 @@ php artisan tinker --execute "DB::statement('SET FOREIGN_KEY_CHECKS=0'); collect
 
 ```
 Phase 1: Master Data
-├── RoleSeeder          → roles (8 roles)
-├── UserSeeder          → users (33 employees)
-├── CategorySeeder      → categories (11)
-├── ProductSeeder       → products (133)
-├── IngredientSeeder    → ingredients (65)
-└── ProductIngredientSeeder → product_ingredients (~350)
+├── RoleSeeder          : roles (8 roles)
+├── UserSeeder          : users (33 employees)
+├── CategorySeeder      : categories (11)
+├── ProductSeeder       : products (133)
+├── IngredientSeeder    : ingredients (65)
+└── ProductIngredientSeeder : product_ingredients (~350)
 
 Phase 2: Modifiers & Venue
-├── ModifierSeeder      → modifier_groups + modifiers
-├── ModifierGroupProductSeeder → modifier_group_product
-├── ModifierIngredientSeeder   → modifier_ingredients
-└── TableSeeder         → tables (30)
+├── ModifierSeeder      : modifier_groups + modifiers
+├── ModifierGroupProductSeeder : modifier_group_product
+├── ModifierIngredientSeeder   : modifier_ingredients
+└── TableSeeder         : tables (30)
 
 Phase 3: Customers & Loyalty
-├── LoyaltyTierSeeder   → loyalty_tiers (5)
-├── CustomerSeeder      → customers (1000)
-└── DiscountSeeder      → discounts (15)
+├── LoyaltyTierSeeder   : loyalty_tiers (5)
+├── CustomerSeeder      : customers (1000)
+└── DiscountSeeder      : discounts (15)
 
 Phase 4: Shifts
-└── ShiftSeeder         → shifts (~4000)
+└── ShiftSeeder         : shifts (~4000)
 
 Phase 5: Orders (HEAVIEST)
-└── OrderSeeder         → orders + order_items + order_item_modifiers
+└── OrderSeeder         : orders + order_items + order_item_modifiers
                         + payments + stock_movements (all in one)
 
 Phase 6: Ingredient Movements
-└── IngredientStockMovementSeeder → ingredient_stock_movements (~400K)
+└── IngredientStockMovementSeeder : ingredient_stock_movements (~400K)
 
 Phase 7: Loyalty
-└── LoyaltyLedgerSeeder → loyalty_ledger + customer_loyalty_accounts
+└── LoyaltyLedgerSeeder : loyalty_ledger + customer_loyalty_accounts
 
 Phase 8: Supporting Data
-├── CashDrawerMovementSeeder → cash_drawer_movements
-└── ActivityLogSeeder   → activity_logs
+├── CashDrawerMovementSeeder : cash_drawer_movements
+└── ActivityLogSeeder   : activity_logs
 ```
 
 ---
@@ -150,8 +150,8 @@ Seeder otomatis mengatur:
 
 ### Trigger Management
 Beberapa seeder **sementara men-drop dan men-recreate triggers** pada tabel append-only:
-- `loyalty_ledger` → 4 triggers (hash chain, sync, no-update, no-delete)
-- `ingredient_stock_movements` → 2 triggers (no-update, no-delete)
+- `loyalty_ledger`: 4 triggers (hash chain, sync, no-update, no-delete)
+- `ingredient_stock_movements`: 2 triggers (no-update, no-delete)
 
 Triggers di-recreate otomatis setelah seeding selesai. Jangan interrupt proses di tengah jalan.
 
@@ -205,3 +205,29 @@ SELECT payment_method, COUNT(*) AS trx, SUM(order_amount) AS total
 FROM orders WHERE order_status = 'completed'
 GROUP BY payment_method ORDER BY total DESC;
 ```
+
+---
+
+> ## ⚠️ DEPRECATED — JANGAN DIPAKAI
+>
+> Seeder di atas adalah **jalur lama** dan memiliki masalah berat: `TRUNCATE`,
+> `migrate:fresh --seed` yang destruktif, drop/disable trigger, FK check off,
+> serta hardcoded tenant/store/role ID yang tidak kompatibel dengan skema
+> 119 tabel saat ini. Seluruh instruksi di atas **tidak boleh diikuti**.
+>
+> **Entry point dataset demo yang resmi sekarang:**
+>
+> ```bash
+> # Dry-run (tanpa menulis data)
+> php artisan pos:dataset:generate --dry-run --confirm-database=<nama_db>
+>
+> # Eksekusi 12 bulan x 2 akun demo
+> DB_DATABASE=<db> APP_ENV=testing php artisan pos:dataset:generate \
+>   --password='***' --confirm-database=<nama_db>
+>
+> # Verifikasi invariant
+> php artisan pos:dataset:generate --verify-only --confirm-database=<db>
+> ```
+>
+> Lihat `docs/dataset/implementationPlanDataset.md` §15-§18 untuk detail arsitektur,
+> konfigurasi (`config/dataset.php`), idempotensi/resume, dan hasil verifikasi.
