@@ -109,6 +109,30 @@
 
 ---
 
+### Masalah 7: Dukungan Atribut PHP 8 #[Group('chaos')] pada PHPUnit 12 (Run 40233503452)
+- **Job:** `Tests (MySQL nyata)`
+- **Langkah Gagal:** `Test suite (paralel, tanpa grup chaos)`
+- **Akar Masalah:**
+  Pada PHPUnit 12, dukungan terhadap tag PHPDoc docblock `@group` telah dihapus sepenuhnya dan digantikan oleh native PHP 8 attribute `#[Group('chaos')]`. Akibatnya, flag `--exclude-group=chaos` tidak mendeteksi suite yang hanya menggunakan docblock `@group chaos`, sehingga test concurrency multi-proses tetap tereksekusi pada paratest paralel.
+- **Remediasi:**
+  Menambahkan native attribute `#[Group('chaos')]` dari namespace `PHPUnit\Framework\Attributes\Group` pada `TransactionConcurrencyTest` dan `ConcurrentDiscountQuotaRedemptionTest`. Verifikasi `vendor/bin/phpunit --list-groups` mengonfirmasi grup `chaos (12 tests)` terdeteksi secara resmi.
+
+---
+
+### Masalah 8: Kompatibilitas Atribut Status pada Model Store (Run 40233503452)
+- **Job:** `Tests (MySQL nyata)`
+- **Langkah Gagal:** `ReorderSuggestionEngineTest` & `SupplierManagementTest`
+- **Error:**
+  ```text
+  PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'status' in 'field list'
+  ```
+- **Akar Masalah:**
+  Tabel `stores` tidak memiliki kolom `status`, melainkan `is_active` (boolean). Ketika beberapa test memanggil `Model::unguard()`, flag unguard bertahan statis di worker process sehingga atribut `'status' => 'active'` pada `Store::create([...])` tidak terfilter oleh `$fillable` dan diteruskan langsung ke statement SQL INSERT.
+- **Remediasi:**
+  Menambahkan mutator `setStatusAttribute($value)` dan accessor `getStatusAttribute()` pada model `App\Modules\Settings\Models\Store`. Mutator ini secara otomatis memetakan nilai status `'active'` ke kolom basis data `is_active` tanpa menyimpan kolom `status` ke dalam query SQL, sehingga aman baik dalam keadaan guarded maupun unguarded.
+
+---
+
 ## 3. Ringkasan File yang Diubah
 
 | File | Alasan Perubahan |
@@ -122,7 +146,9 @@
 | `database/migrations/2027_01_02_000005_create_stock_transfers_tables.php` | Mempersingkat `MESSAGE_TEXT` trigger XOR agar <= 128 karakter. |
 | `database/migrations/2027_01_02_000006_create_supplier_returns_tables.php` | Mempersingkat `MESSAGE_TEXT` trigger XOR agar <= 128 karakter. |
 | `app/Modules/Purchasing/Services/LandedCostService.php` | Memperbaiki rounding alokasi biaya residual AT-13 2 desimal. |
-| `tests/Feature/Domain2/ConcurrentDiscountQuotaRedemptionTest.php` | Menandai suite sebagai `@group chaos` untuk isolasi proses paralel. |
+| `app/Modules/Settings/Models/Store.php` | Menambahkan mutator/accessor `status` untuk memetakan ke kolom `is_active`. |
+| `tests/Feature/Domain2/TransactionConcurrencyTest.php` | Menambahkan atribut native PHP 8 `#[Group('chaos')]`. |
+| `tests/Feature/Domain2/ConcurrentDiscountQuotaRedemptionTest.php` | Menambahkan atribut native PHP 8 `#[Group('chaos')]`. |
 | `tests/Feature/ExampleTest.php` | Menambahkan `$optOutFromDefaultTenant = true`. |
 | `app/Modules/Sales/Services/TransactionService.php` | Memperbaiki validasi meja sesuai `INV-TBL-03` dan `INV-TBL-04`. |
 | `docs/audit/*` | Dokumentasi komprehensif bukti audit, remediasi CI, dan pengujian. |

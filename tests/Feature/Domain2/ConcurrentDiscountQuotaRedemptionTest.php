@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Concurrency;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 use Throwable;
 
@@ -39,6 +40,7 @@ use Throwable;
  *
  * @group chaos
  */
+#[Group('chaos')]
 class ConcurrentDiscountQuotaRedemptionTest extends TestCase
 {
     use DatabaseTruncation;

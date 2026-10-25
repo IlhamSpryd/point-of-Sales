@@ -103,6 +103,16 @@ class Store extends Model
         'is_initial' => 'boolean',
     ];
 
+    public function setStatusAttribute($value): void
+    {
+        $this->attributes['is_active'] = ($value === 'active' || $value === true || $value === 1);
+    }
+
+    public function getStatusAttribute(): string
+    {
+        return $this->is_active ? 'active' : 'inactive';
+    }
+
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
