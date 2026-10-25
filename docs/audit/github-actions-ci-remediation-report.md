@@ -175,6 +175,22 @@
 
 ---
 
+### Masalah 12: Virtual Attribute slug (Category) dan display_name (Product) (Run 40236044367)
+- **Job:** `Tests (MySQL nyata)`
+- **Langkah Gagal:** Suite Purchasing (`DirectPoPolicyTest`, dsb.)
+- **Error:**
+  ```text
+  PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'slug' in 'field list' (insert into categories)
+  PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'display_name' in 'field list' (insert into products)
+  ```
+- **Akar Masalah:**
+  Tabel `categories` menggunakan kolom `category_name` tanpa kolom `slug`, sedangkan tabel `products` menggunakan `product_name` tanpa kolom `display_name`. Ketika test memanggil `Category::create(['slug' => ...])` atau `Product::create(['display_name' => ...])` dalam status `Model::unguard()`, atribut tersebut dikirim mentah ke SQL INSERT.
+- **Remediasi:**
+  1. Menambahkan mutator/accessor `setSlugAttribute` & `getSlugAttribute` pada `App\Modules\Products\Models\Category`.
+  2. Menambahkan mutator/accessor `setDisplayNameAttribute` & `getDisplayNameAttribute` pada `App\Modules\Products\Models\Product` yang memetakan nilai ke `product_name` jika belum terisi tanpa memicu error kolom hilang.
+
+---
+
 ## 3. Ringkasan File yang Diubah
 
 | File | Alasan Perubahan |
@@ -191,6 +207,8 @@
 | `app/Modules/Settings/Models/Store.php` | Menambahkan mutator/accessor `status` untuk memetakan ke kolom `is_active`. |
 | `app/Modules/Users/Models/Role.php` | Menambahkan mutator `setIsAdminAttribute` untuk virtual attribute `is_admin`. |
 | `app/Modules/Users/Models/User.php` | Menambahkan mutator/accessor `store_id` untuk virtual attribute `store_id`. |
+| `app/Modules/Products/Models/Category.php` | Menambahkan mutator/accessor `slug` untuk virtual attribute `slug`. |
+| `app/Modules/Products/Models/Product.php` | Menambahkan mutator/accessor `display_name` untuk virtual attribute `display_name`. |
 | `app/Policies/DiscountPolicy.php` | Menyelaraskan perbandingan `isset($user->store_id)` untuk static analysis. |
 | `app/Policies/TablePolicy.php` | Menyelaraskan perbandingan `isset($user->store_id)` untuk static analysis. |
 | `tests/Feature/Domain1/ProvisioningRealConcurrencyTest.php` | Menambahkan atribut native PHP 8 `#[Group('chaos')]`. |

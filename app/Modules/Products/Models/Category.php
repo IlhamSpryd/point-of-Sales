@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 /**
  * Model Category berguna untuk menyimpan klasifikasi tipe
@@ -54,6 +55,16 @@ class Category extends Model
     public function getNameAttribute(): ?string
     {
         return $this->attributes['category_name'] ?? null;
+    }
+
+    public function setSlugAttribute($value): void
+    {
+        // Table categories does not have a slug column; virtual attribute ignored during insertion
+    }
+
+    public function getSlugAttribute(): ?string
+    {
+        return isset($this->attributes['category_name']) ? Str::slug((string) $this->attributes['category_name']) : null;
     }
 
     protected function casts(): array

@@ -117,6 +117,18 @@ class Product extends Model
         return $this->attributes['product_name'] ?? null;
     }
 
+    public function setDisplayNameAttribute($value): void
+    {
+        if (empty($this->attributes['product_name'])) {
+            $this->attributes['product_name'] = $value;
+        }
+    }
+
+    public function getDisplayNameAttribute(): ?string
+    {
+        return $this->attributes['product_name'] ?? null;
+    }
+
     public function setPriceAttribute($value): void
     {
         $this->attributes['product_price'] = $value;
