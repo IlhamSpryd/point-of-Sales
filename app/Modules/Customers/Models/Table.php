@@ -152,11 +152,27 @@ class Table extends Model
     }
 
     /**
-     * KUNCI INTEGRASI QR: route /order/{table} akan resolve pakai
-     * secure_token atau qr_token, TIDAK PERNAH pakai id mentah di URL publik.
+     * KUNCI INTEGRASI QR: route model binding mendukung id (backoffice),
+     * qr_token (QR scan publik), dan secure_token (legacy).
      */
+    public function resolveRouteBindingQuery($query, $value, $field = null)
+    {
+        if ($field) {
+            return parent::resolveRouteBindingQuery($query, $value, $field);
+        }
+
+        if (is_numeric($value)) {
+            return $query->where('id', (int) $value);
+        }
+
+        return $query->where(function ($q) use ($value) {
+            $q->where('qr_token', $value)
+                ->orWhere('secure_token', $value);
+        });
+    }
+
     public function getRouteKeyName(): string
     {
-        return 'qr_token';
+        return 'id';
     }
 }

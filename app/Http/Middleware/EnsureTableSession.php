@@ -28,7 +28,7 @@ class EnsureTableSession
         $sessionTenantId = $request->session()->get('current_tenant_id');
         $sessionStoreId = $request->session()->get('current_store_id');
 
-        if (! $tableId || $sessionVersion === null) {
+        if (! $tableId) {
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -57,16 +57,20 @@ class EnsureTableSession
         }
 
         // Validasi rotasi token: jika admin merotasi QR, versi berubah dan sesi lama harus ditolak seketika
-        if ((int) $table->qr_token_version !== (int) $sessionVersion) {
-            $this->clearSession($request, $sessionTenantId, $sessionStoreId, $tableId);
+        if ($sessionVersion !== null) {
+            if ((int) $table->qr_token_version !== (int) $sessionVersion) {
+                $this->clearSession($request, $sessionTenantId, $sessionStoreId, $tableId);
 
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'QR Code meja telah diperbarui/dirotasi oleh staf. Silakan scan ulang QR Code terbaru.',
-                ], 410);
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'QR Code meja telah diperbarui oleh staf. Silakan scan ulang QR Code fisik terbaru.',
+                    ], 410);
+                }
+                abort(410, 'QR Code meja telah diperbarui oleh staf. Silakan scan ulang QR Code fisik terbaru.');
             }
-            abort(410, 'QR Code meja telah diperbarui/dirotasi oleh staf. Silakan scan ulang QR Code terbaru.');
+        } else {
+            $request->session()->put('current_qr_token_version', (int) ($table->qr_token_version ?? 1));
         }
 
         if (! $table->tenant_id || ! $table->store_id) {
