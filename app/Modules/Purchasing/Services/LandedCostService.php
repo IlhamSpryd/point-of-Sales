@@ -262,7 +262,8 @@ class LandedCostService
 
                     if ($index < $lineCount) {
                         // Baris 1 s/d N-1: C_i = round(totalCost * (w_i / totalWeight), 2)
-                        $lineAlloc = bcmul($totalCost, $ratio, 2);
+                        $rawAlloc = bcmul($totalCost, $ratio, 6);
+                        $lineAlloc = number_format(round((float) $rawAlloc, 2), 2, '.', '');
                         $allocatedSum = bcadd($allocatedSum, $lineAlloc, 2);
 
                         $allocationsData[$line->id] = [

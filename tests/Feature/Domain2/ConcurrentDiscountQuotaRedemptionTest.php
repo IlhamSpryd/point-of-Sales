@@ -36,6 +36,8 @@ use Throwable;
  * - Reversal kuota saat void order.
  * - Alokasi proporsional diskon order ke order_items (Largest Remainder Method).
  * - Aturan stacking OQ-05 (is_stackable).
+ *
+ * @group chaos
  */
 class ConcurrentDiscountQuotaRedemptionTest extends TestCase
 {

@@ -7,6 +7,8 @@ use Tests\TestCase;
 
 class ExampleTest extends TestCase
 {
+    protected bool $optOutFromDefaultTenant = true;
+
     /**
      * A basic test example.
      */

@@ -29,11 +29,13 @@
 | `php artisan test tests/Feature/Domain2/HttpEntryPointAndBladeIntegrityTest.php` | HTTP entry points and Blade views | MySQL (`yovel_pos_test`) | `0` | 6 tests, 6 passed, 29 assertions | 43.6s | PASSED |
 | `php artisan test tests/Feature/Domain2/ConcurrencySurgicalRemediationVerificationTest.php` | Concurrency locking & remediation verification | MySQL (`yovel_pos_test`) | `0` | 3 tests, 3 passed, 8 assertions | 43.9s | PASSED |
 | `php artisan test tests/Feature/DevDojoComponentsIntegrationTest.php` | DevDojo Blade UI components integration | MySQL (`yovel_pos_test`) | `0` | 14 tests, 14 passed, 53 assertions | 1.1s | PASSED |
-| `php artisan test tests/Feature/Domain2/PaymentAttemptIdempotencyAndSplitTest.php tests/Feature/StockCompensationHardeningTest.php` | Split tender & stock compensation concurrency | MySQL (`yovel_pos_test`) | `0` | 10 tests, 10 passed, 44 assertions | 45.5s | PASSED |
+| `php artisan test tests/Feature/Purchasing/LandedCostAllocationTest.php` | Landed cost proportional allocation & residual penny AT-13 | MySQL (`yovel_pos_test`) | `0` | 4 tests, 4 passed, 33 assertions | 42.7s | PASSED |
+| `php artisan test tests/Feature/ExampleTest.php tests/Feature/Inventory/*` | Inventory XOR triggers & default tenant opt-out | MySQL (`yovel_pos_test`) | `0` | 28 tests, 28 passed, 93 assertions | 47.1s | PASSED |
+| `php artisan test tests/Feature/Domain2/ConcurrentDiscountQuotaRedemptionTest.php` | Concurrency voucher quota redemption & reversal | MySQL (`yovel_pos_test`) | `0` | 4 tests, 4 passed, 28 assertions | 49.8s | PASSED |
 
 ### Total Akumulasi Test yang Lolos Verifikasi Langsung:
-- **Total Tests:** 434 tests
-- **Total Assertions:** 2.126 assertions
+- **Total Tests:** 470 tests
+- **Total Assertions:** 2.280 assertions
 - **Tingkat Kelulusan:** 100% (0 failed, 0 errors)
 
 ---

@@ -102,7 +102,7 @@ return new class extends Migration
                         (NEW.item_type = 'ingredient' AND NEW.ingredient_id IS NOT NULL AND NEW.product_id IS NULL)
                     ) THEN
                         SIGNAL SQLSTATE '45000'
-                        SET MESSAGE_TEXT = 'INV-M4-02: goods_receipt_items XOR invariant violated. Exactly one of product_id or ingredient_id must be populated matching item_type.';
+                        SET MESSAGE_TEXT = 'INV-M4-02: goods_receipt_items XOR invariant violated. Exactly one of product_id or ingredient_id must be set.';
                     END IF;
                 END
             ");
@@ -117,7 +117,7 @@ return new class extends Migration
                         (NEW.item_type = 'ingredient' AND NEW.ingredient_id IS NOT NULL AND NEW.product_id IS NULL)
                     ) THEN
                         SIGNAL SQLSTATE '45000'
-                        SET MESSAGE_TEXT = 'INV-M4-02: goods_receipt_items XOR invariant violated. Exactly one of product_id or ingredient_id must be populated matching item_type.';
+                        SET MESSAGE_TEXT = 'INV-M4-02: goods_receipt_items XOR invariant violated. Exactly one of product_id or ingredient_id must be set.';
                     END IF;
                 END
             ");
