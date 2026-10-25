@@ -6,6 +6,7 @@ namespace App\Policies;
 
 use App\Models\Table;
 use App\Models\User;
+use App\Services\Context\TenantContext;
 
 class TablePolicy
 {
@@ -19,6 +20,11 @@ class TablePolicy
     private function hasStoreAccess(User $user, Table $table): bool
     {
         if ((int) $user->tenant_id !== (int) $table->tenant_id) {
+            return false;
+        }
+
+        $contextStoreId = app(TenantContext::class)->getStoreId();
+        if ($contextStoreId !== null && (int) $table->store_id !== (int) $contextStoreId) {
             return false;
         }
 

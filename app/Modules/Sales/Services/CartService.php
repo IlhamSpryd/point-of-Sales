@@ -283,7 +283,7 @@ class CartService
         $storeId = session('current_store_id') ?? app(TenantContext::class)->getStoreId();
         $tableId = session('current_table_id');
 
-        if ($tenantId !== null && $tableId !== null) {
+        if ($tenantId !== null && $storeId !== null && $tableId !== null) {
             return "customer_cart_{$tenantId}_{$storeId}_{$tableId}";
         }
 

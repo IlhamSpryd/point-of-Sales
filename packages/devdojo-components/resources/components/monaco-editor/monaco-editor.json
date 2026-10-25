@@ -1,0 +1,25 @@
+{
+    "name": "monaco-editor",
+    "label": "Monaco Editor",
+    "description": "The VS Code editor as a Blade component — syntax highlighting, themes, auto dark mode, and many languages. Lazy-loads its bundle on demand.",
+    "category": "Editors",
+    "dependencies": [],
+    "assets": true,
+    "props": [
+        { "name": "language", "type": "select", "default": "html", "options": ["html", "css", "javascript", "typescript", "json", "php", "markdown", "xml", "yaml", "sql", "python", "plaintext"], "description": "Language for syntax highlighting." },
+        { "name": "content", "type": "textarea", "default": "", "description": "Initial code in the editor." },
+        { "name": "theme", "type": "select", "default": "auto", "options": ["light", "dark", "auto"], "description": "Editor color theme. 'auto' follows the .dark class." },
+        { "name": "height", "type": "text", "default": "250", "description": "Editor height in px (or a CSS value)." },
+        { "name": "readOnly", "type": "boolean", "default": false, "description": "Make the editor read-only." },
+        { "name": "wordWrap", "type": "select", "default": "off", "options": ["off", "on"], "description": "Soft-wrap long lines." },
+        { "name": "lineNumbers", "type": "boolean", "default": true, "description": "Show the line-number gutter." },
+        { "name": "minimap", "type": "boolean", "default": false, "description": "Show the minimap." }
+    ],
+    "studio": {
+        "card": "<div class=\"text-sm text-foreground/60\">Loads the Monaco bundle — open the docs to preview.</div>"
+    },
+    "usage": "Requires the JS bundle: php artisan vendor:publish --tag=devdojo-assets",
+    "examples": [
+        { "title": "Basic", "description": "Syntax highlighting for JavaScript, with auto dark mode.", "file": "basic.blade.php", "height": "18rem" }
+    ]
+}

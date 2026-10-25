@@ -78,6 +78,7 @@ class Order extends Model
         'order_change',
         'cash_received',
         'table_id',
+        'table_number',
         'order_type',
         'discount_id',
         'origin_channel',

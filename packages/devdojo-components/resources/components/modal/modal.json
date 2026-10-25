@@ -1,0 +1,27 @@
+{
+    "name": "modal",
+    "label": "Modal",
+    "description": "An accessible, teleported dialog (role=\"dialog\", labelled by its header) with focus trapping, header/content/footer slots, and event-driven open/close.",
+    "category": "Overlays",
+    "dependencies": ["button"],
+    "props": [
+        { "name": "open", "type": "boolean", "default": false, "description": "Whether the modal is open on load." },
+        { "name": "closeButton", "type": "boolean", "default": true, "description": "Show the top-right close button." },
+        { "name": "zIndex", "type": "text", "default": "50", "description": "The stacking z-index for the overlay." }
+    ],
+    "slots": [
+        { "name": "trigger", "description": "Custom element that opens the modal." },
+        { "name": "header", "description": "Modal heading.", "default": "Modal Title" },
+        { "name": "content", "description": "Main modal body.", "default": "The main body content for your modal will go here." },
+        { "name": "footer", "description": "Action row, usually buttons." }
+    ],
+    "studio": {
+        "card": "<x-components.modal><x-slot:trigger><x-components.button variant=\"outline\" size=\"sm\">Open modal</x-components.button></x-slot:trigger><x-slot:header>Confirm changes</x-slot:header><x-slot:content>Are you sure you want to save these changes?</x-slot:content></x-components.modal>",
+        "container": "<div class=\"flex min-h-96 w-full items-center justify-center\">{{component}}</div>",
+        "defaults": { "open": true },
+        "height": "28rem"
+    },
+    "examples": [
+        { "title": "Confirmation dialog", "description": "A focus-trapped dialog with header, content and footer slots.", "file": "confirmation.blade.php", "height": "24rem" }
+    ]
+}

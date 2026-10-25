@@ -18,6 +18,8 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
         Route::get('/discounts', [DiscountController::class, 'index'])->name('discounts.index');
 
         // Meja Resto & QR Token
+        Route::post('tables/{table}/rotate-qr', [TableController::class, 'rotateQr'])->name('tables.rotate-qr');
+        Route::post('tables/{table}/release', [TableController::class, 'release'])->name('tables.release');
         Route::post('tables/{table}/regenerate-token', [TableController::class, 'regenerateToken'])->name('tables.regenerate-token');
         Route::resource('tables', TableController::class);
     });

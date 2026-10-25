@@ -12,13 +12,9 @@
     <title>Menu — {{ config('app.name', 'Apeiron System') }}</title>
     <link rel="icon" href="{{ asset('assets/images/logo.png') }}" type="image/png">
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+    <!-- Self-Hosted Fonts Preload -->
+    <link rel="preload" href="{{ asset('fonts/plus-jakarta-sans.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ asset('fonts/material-symbols-rounded.woff2') }}" as="font" type="font/woff2" crossorigin>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -80,8 +76,8 @@
 
                 @if ($tableName)
                     <span
-                        class="shrink-0 inline-flex items-center gap-1.5 rounded-full border border-apeiron-border bg-white px-3 py-1.5 text-xs font-semibold text-apeiron-muted shadow-sm">
-                        <span class="material-symbols-rounded text-[14px]">table_restaurant</span>
+                        class="shrink-0 inline-flex items-center gap-1.5 rounded-lg border border-apeiron-border bg-white px-2.5 py-1 text-xs font-medium text-apeiron-ink shadow-2xs">
+                        <span class="material-symbols-rounded text-[14px] text-apeiron-muted">table_restaurant</span>
                         {{ $tableName }}
                     </span>
                 @endif
@@ -119,18 +115,18 @@
             <div class="flex gap-2.5 overflow-x-auto scrollbar-hide px-4 py-2 items-center">
                 <button type="button" @click="activeCategory = 'all'"
                     :aria-pressed="(activeCategory === 'all').toString()"
-                    :class="activeCategory === 'all' ? 'bg-apeiron-ink text-white border-apeiron-ink shadow-md' :
+                    :class="activeCategory === 'all' ? 'bg-apeiron-ink text-white border-apeiron-ink shadow-sm' :
                         'bg-white text-gray-500 border-[#E9E9E7] hover:bg-gray-50'"
-                    class="shrink-0 flex items-center justify-center h-11 px-5 rounded-full border text-sm font-semibold whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
+                    class="shrink-0 flex items-center justify-center h-10 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
                     Semua Menu
                 </button>
                 @foreach ($visibleCategories as $cat)
                     <button type="button" @click="activeCategory = '{{ $cat->id }}'"
                         :aria-pressed="(activeCategory === '{{ $cat->id }}').toString()"
                         :class="activeCategory === '{{ $cat->id }}' ?
-                            'bg-apeiron-ink text-white border-apeiron-ink shadow-md' :
+                            'bg-apeiron-ink text-white border-apeiron-ink shadow-sm' :
                             'bg-white text-gray-500 border-[#E9E9E7] hover:bg-gray-50'"
-                        class="shrink-0 flex items-center justify-center h-11 px-5 rounded-full border text-sm font-semibold whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
+                        class="shrink-0 flex items-center justify-center h-10 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
                         {{ $cat->category_name }}
                     </button>
                 @endforeach

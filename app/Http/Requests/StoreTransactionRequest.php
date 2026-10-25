@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\OrderType;
 use App\Enums\PaymentMethod;
 use App\Models\Order;
 use App\Services\Context\TenantContext;
@@ -90,7 +91,8 @@ class StoreTransactionRequest extends FormRequest
                 'nullable',
                 'integer',
                 Rule::exists('tables', 'id')->where(function ($q) use ($tenantId, $storeId) {
-                    $q->where('tenant_id', $tenantId);
+                    $q->where('tenant_id', $tenantId)
+                        ->where('is_active', true);
                     if ($storeId !== null) {
                         $q->where('store_id', $storeId);
                     }
@@ -107,7 +109,7 @@ class StoreTransactionRequest extends FormRequest
                     }
                 }),
             ],
-            'order_type' => ['nullable', 'string', Rule::in(['dine_in', 'takeaway'])],
+            'order_type' => ['nullable', 'string', Rule::in(array_map(fn ($c) => $c->value, OrderType::cases()))],
             'idempotency_key' => ['required', 'string', 'max:64'],
         ];
     }

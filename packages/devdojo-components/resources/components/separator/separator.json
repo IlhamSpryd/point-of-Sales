@@ -1,0 +1,17 @@
+{
+    "name": "separator",
+    "label": "Separator",
+    "description": "A thin divider for separating content. Horizontal by default, vertical on demand, or with a centered label.",
+    "category": "Layout",
+    "dependencies": [],
+    "props": [
+        { "name": "vertical", "type": "boolean", "default": false, "description": "Render a vertical divider instead of horizontal." },
+        { "name": "label", "type": "text", "default": null, "description": "Optional centered text splitting the horizontal line." }
+    ],
+    "studio": {
+        "card": "<div class=\"w-full max-w-xs\"><x-components.separator label=\"OR\" /></div>"
+    },
+    "examples": [
+        { "title": "Horizontal, vertical & labeled", "description": "A thin divider — plain, vertical, or with a centered label.", "file": "basic.blade.php" }
+    ]
+}

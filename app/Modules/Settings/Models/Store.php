@@ -13,6 +13,7 @@ use App\Models\Table;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Context\TenantContext;
+use App\Services\EntitlementService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -130,5 +131,15 @@ class Store extends Model
     public function productAssortments(): HasMany
     {
         return $this->hasMany(StoreProductAssortment::class);
+    }
+
+    public function isTablesEnabled(): bool
+    {
+        return app(EntitlementService::class)->isTablesEnabled((int) $this->tenant_id, (int) $this->id);
+    }
+
+    public function isSelfOrderEnabled(): bool
+    {
+        return app(EntitlementService::class)->isSelfOrderEnabled((int) $this->tenant_id, (int) $this->id);
     }
 }

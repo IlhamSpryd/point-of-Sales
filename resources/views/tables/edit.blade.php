@@ -10,7 +10,7 @@
     </div>
 
     <div class="card-surface overflow-hidden w-full shrink-0">
-        <form action="{{ route('tables.update', $table->secure_token) }}" method="POST" x-data="{ submitting: false }" @submit="submitting = true" class="p-6 md:p-8 space-y-6">
+        <form action="{{ route('tables.update', $table->qr_token ?? $table->secure_token) }}" method="POST" x-data="{ submitting: false }" @submit="submitting = true" class="p-6 md:p-8 space-y-6">
             @csrf
             @method('PUT')
 
@@ -58,6 +58,7 @@
                             <option value="occupied" {{ old('operational_status', $table->operational_status) === 'occupied' ? 'selected' : '' }}>Occupied (Terisi)</option>
                             <option value="cleaning" {{ old('operational_status', $table->operational_status) === 'cleaning' ? 'selected' : '' }}>Cleaning (Pembersihan)</option>
                             <option value="reserved" {{ old('operational_status', $table->operational_status) === 'reserved' ? 'selected' : '' }}>Reserved (Dipesan)</option>
+                            <option value="disabled" {{ old('operational_status', $table->operational_status) === 'disabled' ? 'selected' : '' }}>Disabled (Nonaktif)</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-[#9B9A97]">
                             <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>

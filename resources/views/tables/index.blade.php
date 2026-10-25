@@ -1,8 +1,19 @@
 <x-app-layout>
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Manajemen Meja</h4>
-            <p class="text-sm font-medium text-[#787774] mt-1">Kelola meja & QR Code self-order</p>
+            <div class="flex items-center gap-2">
+                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Manajemen Meja</h4>
+                @php
+                    $activeStoreId = app(\App\Services\Context\TenantContext::class)->getStoreId();
+                    $activeStore = $activeStoreId ? \App\Models\Store::find($activeStoreId) : null;
+                @endphp
+                @if($activeStore)
+                    <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-[#F7F7F5] text-apeiron-ink border border-[#E9E9E7]">
+                        <span class="material-symbols-rounded text-[14px] text-[#787774]">storefront</span> {{ $activeStore->name }}
+                    </span>
+                @endif
+            </div>
+            <p class="text-sm font-medium text-[#787774] mt-1">Kelola meja & QR Code self-order untuk cabang aktif</p>
         </div>
         <x-list-toolbar search-action="{{ route('tables.index') }}" search-placeholder="Cari meja...">
             <x-slot:actions>
@@ -24,7 +35,7 @@
 
     <div class="card-surface flex flex-col flex-1 min-h-0">
         {{-- Desktop/tablet-landscape: existing table --}}
-        <x-data-table>
+        <x-data-table :hideOnMobile="true">
             <x-slot:head>
                 <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">ID Meja</th>
                 <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">Info Meja</th>
@@ -33,6 +44,9 @@
                 <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
             </x-slot:head>
                     @forelse($tables as $table)
+                        @php
+                            $routeToken = $table->qr_token ?? $table->secure_token;
+                        @endphp
                         <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
                             <td class="px-6 py-4 font-medium text-apeiron-ink text-sm whitespace-nowrap">{{ $table->table_code }}</td>
                             <td class="px-6 py-4">
@@ -57,30 +71,47 @@
                                                 'occupied' => 'Terisi',
                                                 'cleaning' => 'Pembersihan',
                                                 'reserved' => 'Dipesan',
+                                                'disabled' => 'Nonaktif',
                                             ];
                                         @endphp
                                         <x-badge :type="match($table->operational_status) {
-                                            'available' => 'success', 'occupied' => 'danger', 'cleaning' => 'warning', 'reserved' => 'info',
-                                        }">{{ $opLabels[$table->operational_status] }}</x-badge>
+                                            'available' => 'success', 'occupied' => 'danger', 'cleaning' => 'warning', 'reserved' => 'info', default => 'secondary'
+                                        }">{{ $opLabels[$table->operational_status] ?? $table->operational_status }}</x-badge>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="bg-white p-2 rounded-xl border border-[#E9E9E7] inline-block shadow-sm">
-                                    {!! Cache::remember('pos:qr:table:'.$table->id, 86400, fn() => (string) QrCode::size(80)->generate(rtrim(config('app.url'), '/') . route('customer.menu.index', ['token' => $table->secure_token], false))) !!}
+                                <div class="flex items-center gap-3">
+                                    <div class="bg-white p-2 rounded-xl border border-[#E9E9E7] inline-block shadow-sm">
+                                        {!! Cache::remember('pos:qr:table:'.$table->id, 86400, fn() => (string) QrCode::size(80)->generate(rtrim(config('app.url'), '/') . route('customer.menu.index', ['token' => $routeToken], false))) !!}
+                                    </div>
+                                    <div class="text-xs text-[#787774]">
+                                        <div class="font-semibold text-apeiron-ink">v{{ $table->qr_token_version ?? 1 }}</div>
+                                        @if($table->qr_rotated_at)
+                                            <div class="text-[11px] mt-0.5">Rotasi: {{ $table->qr_rotated_at->format('d/m H:i') }}</div>
+                                        @endif
+                                    </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-right space-x-2">
-                                <a href="{{ route('tables.edit', $table->secure_token) }}" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200 active:scale-90" aria-label="Ubah meja" wire:navigate>
+                                @if($table->operational_status === 'occupied')
+                                    <form action="{{ route('tables.release', $routeToken) }}" method="POST" class="inline-block">
+                                        @csrf
+                                        <button type="submit" onclick="return confirm('Bebaskan meja {{ $table->table_name }}? Pastikan pesanan sudah selesai.')" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors duration-200 active:scale-90" aria-label="Bebaskan Meja" title="Bebaskan Meja (Kosongkan)">
+                                            <span class="material-symbols-rounded text-[20px]">meeting_room</span>
+                                        </button>
+                                    </form>
+                                @endif
+                                <a href="{{ route('tables.edit', $routeToken) }}" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200 active:scale-90" aria-label="Ubah meja" wire:navigate>
                                     <span class="material-symbols-rounded text-[20px]">edit</span>
                                 </a>
-                                <form action="{{ route('tables.regenerate-token', $table->secure_token) }}" method="POST" class="inline-block">
+                                <form action="{{ route('tables.rotate-qr', $routeToken) }}" method="POST" class="inline-block">
                                     @csrf
-                                    <button type="submit" onclick="return confirm('Perbarui token QR meja {{ $table->table_name }}? QR code fisik harus dicetak ulang.')" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-amber-600 hover:bg-amber-50 transition-colors duration-200 active:scale-90" aria-label="Perbarui token QR" title="Perbarui token QR">
+                                    <button type="submit" onclick="return confirm('Rotasi token QR meja {{ $table->table_name }}? QR code fisik harus dicetak ulang dan sesi pelanggan sebelumnya akan diinvalidasi.')" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-amber-600 hover:bg-amber-50 transition-colors duration-200 active:scale-90" aria-label="Rotasi QR" title="Rotasi QR Code Meja">
                                         <span class="material-symbols-rounded text-[20px]">sync</span>
                                     </button>
                                 </form>
-                                <form id="delete-form-{{ $table->id }}" action="{{ route('tables.destroy', $table->secure_token) }}" method="POST" class="inline-block">
+                                <form id="delete-form-{{ $table->id }}" action="{{ route('tables.destroy', $routeToken) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')
                                     <button type="button" onclick="confirmDelete('delete-form-{{ $table->id }}', '{{ $table->table_name }}')" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90" aria-label="Hapus">
@@ -96,7 +127,7 @@
                                     <div class="w-14 h-14 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
                                         <span class="material-symbols-rounded text-[28px] text-[#C4C3C0]">table_restaurant</span>
                                     </div>
-                                    <p class="font-medium">Belum ada meja terdaftar.</p>
+                                    <p class="font-medium">Belum ada meja terdaftar untuk cabang ini.</p>
                                 </div>
                             </td>
                         </tr>
@@ -106,11 +137,14 @@
         {{-- Mobile/tablet-portrait: card list --}}
         <div class="lg:hidden flex flex-col gap-3 p-4 overflow-y-auto flex-1">
             @forelse($tables as $table)
+                @php
+                    $routeToken = $table->qr_token ?? $table->secure_token;
+                @endphp
                 <div class="card-surface p-4">
                     <div class="flex justify-between items-start mb-3">
                         <div class="flex flex-col">
                             <span class="font-bold text-apeiron-ink text-sm">{{ $table->table_name }}</span>
-                            <span class="text-xs text-[#787774]">{{ $table->table_code }}</span>
+                            <span class="text-xs text-[#787774]">{{ $table->table_code }} &bull; v{{ $table->qr_token_version ?? 1 }}</span>
                         </div>
                         <div class="flex flex-col items-end gap-1">
                             <x-badge :type="$table->is_active ? 'success' : 'secondary'">
@@ -122,33 +156,42 @@
                                     'occupied' => 'Terisi',
                                     'cleaning' => 'Pembersihan',
                                     'reserved' => 'Dipesan',
+                                    'disabled' => 'Nonaktif',
                                 ];
                             @endphp
                             <x-badge :type="match($table->operational_status) {
-                                'available' => 'success', 'occupied' => 'danger', 'cleaning' => 'warning', 'reserved' => 'info',
-                            }">{{ $opLabels[$table->operational_status] }}</x-badge>
+                                'available' => 'success', 'occupied' => 'danger', 'cleaning' => 'warning', 'reserved' => 'info', default => 'secondary'
+                            }">{{ $opLabels[$table->operational_status] ?? $table->operational_status }}</x-badge>
                         </div>
                     </div>
                     
                     <div class="flex items-center gap-4 pt-3 border-t border-[#E9E9E7]">
                         <div class="bg-white p-2 rounded-xl border border-[#E9E9E7] shadow-sm shrink-0">
-                            {!! Cache::remember('pos:qr:table:'.$table->id, 86400, fn() => (string) QrCode::size(60)->generate(rtrim(config('app.url'), '/') . route('customer.menu.index', ['token' => $table->secure_token], false))) !!}
+                            {!! Cache::remember('pos:qr:table:'.$table->id, 86400, fn() => (string) QrCode::size(60)->generate(rtrim(config('app.url'), '/') . route('customer.menu.index', ['token' => $routeToken], false))) !!}
                         </div>
                         <div class="flex-1 min-w-0">
                             <div class="text-sm font-medium text-apeiron-ink flex items-center gap-1.5 mb-1"><span class="material-symbols-rounded text-[16px] text-[#787774]">chair</span> {{ $table->capacity }} pax</div>
                             <div class="text-sm font-medium text-apeiron-ink flex items-center gap-1.5"><span class="material-symbols-rounded text-[16px] text-[#787774]">map</span> {{ $table->area }}</div>
                         </div>
                         <div class="flex flex-col gap-1 shrink-0">
-                            <a href="{{ route('tables.edit', $table->secure_token) }}" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200" aria-label="Ubah meja" wire:navigate>
+                            @if($table->operational_status === 'occupied')
+                                <form action="{{ route('tables.release', $routeToken) }}" method="POST">
+                                    @csrf
+                                    <button type="submit" onclick="return confirm('Bebaskan meja {{ $table->table_name }}?')" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors duration-200" aria-label="Bebaskan Meja" title="Bebaskan Meja">
+                                        <span class="material-symbols-rounded text-[18px]">meeting_room</span>
+                                    </button>
+                                </form>
+                            @endif
+                            <a href="{{ route('tables.edit', $routeToken) }}" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200" aria-label="Ubah meja" wire:navigate>
                                 <span class="material-symbols-rounded text-[18px]">edit</span>
                             </a>
-                            <form action="{{ route('tables.regenerate-token', $table->secure_token) }}" method="POST">
+                            <form action="{{ route('tables.rotate-qr', $routeToken) }}" method="POST">
                                 @csrf
-                                <button type="submit" onclick="return confirm('Perbarui token QR meja {{ $table->table_name }}? QR code fisik harus dicetak ulang.')" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-amber-600 hover:bg-amber-50 transition-colors duration-200" aria-label="Perbarui token QR" title="Perbarui token QR">
+                                <button type="submit" onclick="return confirm('Rotasi token QR meja {{ $table->table_name }}?')" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-amber-600 hover:bg-amber-50 transition-colors duration-200" aria-label="Rotasi QR" title="Rotasi QR">
                                     <span class="material-symbols-rounded text-[18px]">sync</span>
                                 </button>
                             </form>
-                            <form id="delete-form-mobile-{{ $table->id }}" action="{{ route('tables.destroy', $table->secure_token) }}" method="POST">
+                            <form id="delete-form-mobile-{{ $table->id }}" action="{{ route('tables.destroy', $routeToken) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
                                 <button type="button" onclick="confirmDelete('delete-form-mobile-{{ $table->id }}', '{{ $table->table_name }}')" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200" aria-label="Hapus">
@@ -163,7 +206,7 @@
                     <div class="w-12 h-12 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
                         <span class="material-symbols-rounded text-[24px] text-[#C4C3C0]">table_restaurant</span>
                     </div>
-                    <p class="font-medium">Belum ada meja terdaftar.</p>
+                    <p class="font-medium">Belum ada meja terdaftar untuk cabang ini.</p>
                 </div>
             @endforelse
         </div>

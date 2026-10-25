@@ -1,0 +1,25 @@
+{
+    "name": "radio",
+    "label": "Radio",
+    "description": "A radio control matching the checkbox API, with label, description, and clickable-row layouts.",
+    "category": "Forms",
+    "dependencies": [],
+    "props": [
+        { "name": "label", "type": "text", "default": null, "description": "Label text shown next to the radio." },
+        { "name": "description", "type": "text", "default": null, "description": "Secondary helper text under the label." },
+        { "name": "checked", "type": "boolean", "default": false, "description": "Whether the radio starts selected." },
+        { "name": "disabled", "type": "boolean", "default": false, "description": "Disable the radio." },
+        { "name": "clickable", "type": "boolean", "default": false, "description": "Make the whole row a single click target." },
+        { "name": "hideRadio", "type": "boolean", "default": false, "description": "Hide the visual dot." }
+    ],
+    "slots": [
+        { "name": "slot", "description": "Custom content instead of the label/description props." }
+    ],
+    "studio": {
+        "card": "<div class=\"flex w-full max-w-xs flex-col gap-3\"><x-components.radio name=\"plan\" label=\"Hobby\" description=\"For personal projects\" /><x-components.radio name=\"plan\" label=\"Pro\" description=\"For growing teams\" checked /></div>",
+        "defaults": { "label": "Email me about product updates" }
+    },
+    "examples": [
+        { "title": "Basic group", "description": "Mutually exclusive options sharing the same name.", "file": "basic.blade.php" }
+    ]
+}

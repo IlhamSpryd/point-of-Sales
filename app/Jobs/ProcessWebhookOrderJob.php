@@ -55,11 +55,16 @@ class ProcessWebhookOrderJob implements ShouldQueue
 
     public function handle(TransactionService $transactionService): void
     {
-        if ($this->log->status !== 'pending') {
+        $affected = ChannelOrderLog::withoutGlobalScopes()
+            ->where('id', $this->log->id)
+            ->where('status', 'pending')
+            ->update(['status' => 'processing']);
+
+        if ($affected === 0) {
             return;
         }
 
-        $this->log->update(['status' => 'processing']);
+        $this->log->status = 'processing';
 
         $tenantId = $this->tenantId ?? $this->log->tenant_id;
         $storeId = $this->storeId ?? $this->log->store_id;

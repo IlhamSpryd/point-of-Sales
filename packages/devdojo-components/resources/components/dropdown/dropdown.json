@@ -1,0 +1,26 @@
+{
+    "name": "dropdown",
+    "label": "Dropdown",
+    "description": "A click-to-open menu anchored to its trigger, with configurable position, alignment, and gap.",
+    "category": "Overlays",
+    "dependencies": [],
+    "props": [
+        { "name": "position", "type": "select", "default": "bottom", "options": ["bottom", "top", "left", "right"], "description": "Which side of the trigger the menu opens on." },
+        { "name": "align", "type": "select", "default": "left", "options": ["left", "center", "right"], "description": "Alignment of the menu relative to the trigger." },
+        { "name": "gap", "type": "text", "default": "2", "description": "Spacing between trigger and menu (Tailwind spacing units)." },
+        { "name": "animate", "type": "boolean", "default": true, "description": "Scale + fade the menu open from the corner nearest the trigger. Set false for a plain fade." },
+        { "name": "matchWidth", "type": "boolean", "default": false, "description": "Match the menu width to the trigger width (useful for full-width / select-style dropdowns)." }
+    ],
+    "slots": [
+        { "name": "trigger", "description": "The clickable element that opens the dropdown." },
+        { "name": "menu", "description": "Pre-styled menu container slot." },
+        { "name": "slot", "description": "Fallback menu content when no `menu` slot is given.", "default": "<a href=\"#\" class=\"block rounded-medium px-3 py-2 text-sm text-foreground/80 hover:bg-secondary\">Profile</a><a href=\"#\" class=\"block rounded-medium px-3 py-2 text-sm text-foreground/80 hover:bg-secondary\">Settings</a><a href=\"#\" class=\"block rounded-medium px-3 py-2 text-sm text-foreground/80 hover:bg-secondary\">Sign out</a>" }
+    ],
+    "studio": {
+        "card": "<x-components.dropdown><x-slot:trigger><x-components.button variant=\"outline\" size=\"sm\">Options</x-components.button></x-slot:trigger><a href=\"#\" class=\"block rounded-medium px-3 py-2 text-sm text-foreground/80 hover:bg-secondary\">Profile</a><a href=\"#\" class=\"block rounded-medium px-3 py-2 text-sm text-foreground/80 hover:bg-secondary\">Settings</a><a href=\"#\" class=\"block rounded-medium px-3 py-2 text-sm text-foreground/80 hover:bg-secondary\">Sign out</a></x-components.dropdown>",
+        "container": "<div class=\"flex min-h-96 w-full items-center justify-center\">{{component}}</div>"
+    },
+    "examples": [
+        { "title": "Basic menu", "description": "A click-to-open menu anchored to its trigger.", "file": "basic.blade.php", "height": "18rem" }
+    ]
+}

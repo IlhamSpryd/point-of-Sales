@@ -1,6 +1,7 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
+@import './fonts.css';
 @import 'tailwindcss';
 
+@import './components.css';
 @source '../views';
 @source '../**/*.blade.php';
 @source '../../storage/framework/views';
@@ -647,9 +648,10 @@ option {
        ═══════════════════════════════════════════════════════ */
     .chip {
         font-size: 11px;
-        font-weight: 600;
-        padding: 2px 8px;
-        border-radius: 999px;
+        font-weight: 500;
+        padding: 1.5px 6px;
+        border-radius: 4px;
+        border: 1px solid transparent;
         display: inline-flex;
         align-items: center;
         line-height: 1.45;
@@ -658,27 +660,32 @@ option {
     .chip.ok {
         background-color: #ECFDF5;
         color: #047857;
+        border-color: rgba(4, 120, 87, 0.15);
     }
     .chip.wt {
         background-color: #FBF3E7;
         color: #8A5A16;
+        border-color: rgba(138, 90, 22, 0.15);
     }
     .chip.danger {
         background-color: #FFF1F2;
         color: #BE123C;
+        border-color: rgba(190, 18, 60, 0.15);
     }
     .chip.stable {
         background-color: #F1F1EF;
         color: #6B6A66;
+        border-color: #E9E9E7;
     }
 
     .delta-badge {
         color: #047857;
         font-weight: 600;
         background-color: #ECFDF5;
-        border-radius: 999px;
-        padding: 2px 8px;
-        font-size: 12px;
+        border-radius: 4px;
+        border: 1px solid rgba(4, 120, 87, 0.15);
+        padding: 1.5px 6px;
+        font-size: 11px;
         display: inline-flex;
         align-items: center;
         gap: 2px;
@@ -686,6 +693,7 @@ option {
     .delta-badge.negative {
         color: #BE123C;
         background-color: #FFF1F2;
+        border-color: rgba(190, 18, 60, 0.15);
     }
 
     .restock-bar {

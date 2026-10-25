@@ -360,4 +360,63 @@ class PaymentAttemptIdempotencyAndSplitTest extends TestCase
         $this->assertCount(2, $payments);
         $this->assertEquals(100000, $payments->sum('amount'));
     }
+
+    /**
+     * [CONC-05 / INV-PAY-01] Settle payment attempt harus memblokir overpayment jika total captured melebihi total tagihan.
+     */
+    public function test_settle_payment_attempt_blocks_concurrent_overpayment_exceeding_order_amount(): void
+    {
+        $order = Order::forceCreate([
+            'tenant_id' => $this->tenantA->id,
+            'store_id' => $this->storeA->id,
+            'user_id' => $this->cashier->id,
+            'shift_id' => $this->shift->id,
+            'created_by_device_id' => $this->device->id,
+            'order_code' => 'ORD-OVERPAY-01',
+            'idempotency_key' => 'idemp-overpay-01',
+            'order_date' => now()->toDateString(),
+            'order_type' => 'dine_in',
+            'order_status' => OrderStatus::Pending,
+            'payment_method' => 'cash',
+            'subtotal_amount' => 100000,
+            'order_amount' => 100000,
+        ]);
+
+        // Simulasikan 2 attempts yang berhasil diinisiasi masing-masing Rp60.000
+        $attempt1 = PaymentAttempt::forceCreate([
+            'tenant_id' => $this->tenantA->id,
+            'store_id' => $this->storeA->id,
+            'order_id' => $order->id,
+            'device_id' => $this->device->id,
+            'shift_id' => $this->shift->id,
+            'idempotency_key' => 'attempt-race-1',
+            'provider' => 'manual',
+            'payment_method' => 'cash',
+            'amount' => 60000,
+            'status' => PaymentAttemptStatus::Initiated,
+            'initiated_by_user_id' => $this->cashier->id,
+        ]);
+
+        $attempt2 = PaymentAttempt::forceCreate([
+            'tenant_id' => $this->tenantA->id,
+            'store_id' => $this->storeA->id,
+            'order_id' => $order->id,
+            'device_id' => $this->device->id,
+            'shift_id' => $this->shift->id,
+            'idempotency_key' => 'attempt-race-2',
+            'provider' => 'manual',
+            'payment_method' => 'cash',
+            'amount' => 60000,
+            'status' => PaymentAttemptStatus::Initiated,
+            'initiated_by_user_id' => $this->cashier->id,
+        ]);
+
+        // Settle attempt 1 (Rp60.000) -> Berhasil
+        $this->transactionService->settlePaymentAttempt($attempt1);
+
+        // Settle attempt 2 (Rp60.000) -> Akan membuat total captured Rp120.000 > Rp100.000 -> HARUS DITOLAK
+        $this->expectException(\DomainException::class);
+        $this->expectExceptionMessage('akan melebihi total tagihan pesanan');
+        $this->transactionService->settlePaymentAttempt($attempt2);
+    }
 }

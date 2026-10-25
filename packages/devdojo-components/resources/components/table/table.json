@@ -1,0 +1,18 @@
+{
+    "name": "table",
+    "label": "Table",
+    "description": "A styled, horizontally scrollable data table. Compose with <x-table.columns> + <x-table.column> for the header and <x-table.row> + <x-table.cell> for the body.",
+    "category": "Display",
+    "dependencies": [],
+    "props": [],
+    "slots": [
+        { "name": "slot", "description": "Table content: <x-table.columns> header + <x-table.row> body.", "default": "<x-components.table.columns><x-components.table.column>Name</x-components.table.column><x-components.table.column>Status</x-components.table.column></x-components.table.columns><x-components.table.row><x-components.table.cell>Ada Lovelace</x-components.table.cell><x-components.table.cell>Active</x-components.table.cell></x-components.table.row><x-components.table.row><x-components.table.cell>Alan Turing</x-components.table.cell><x-components.table.cell>Invited</x-components.table.cell></x-components.table.row>" }
+    ],
+    "studio": {
+        "card": "<x-components.table><x-components.table.columns><x-components.table.column>Name</x-components.table.column><x-components.table.column>Status</x-components.table.column></x-components.table.columns><x-components.table.row><x-components.table.cell>Ada Lovelace</x-components.table.cell><x-components.table.cell>Active</x-components.table.cell></x-components.table.row></x-components.table>"
+    },
+    "usage": "Wrap header cells in <x-table.columns>; each data row is an <x-table.row> of <x-table.cell> elements.",
+    "examples": [
+        { "title": "Basic", "description": "A styled, horizontally scrollable data table.", "file": "basic.blade.php", "height": "18rem" }
+    ]
+}

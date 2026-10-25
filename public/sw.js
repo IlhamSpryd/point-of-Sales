@@ -1,10 +1,13 @@
-const CACHE_NAME = 'pos-v1';
+const CACHE_NAME = 'pos-v2';
 const ASSETS = [
     '/transaction',
     '/transaction/create',
     '/css/app.css',
     '/js/app.js',
     '/offline.html',
+    '/fonts/material-symbols-rounded.woff2',
+    '/fonts/plus-jakarta-sans.woff2',
+    '/fonts/playfair-display.woff2',
     'https://cdn.jsdelivr.net/npm/qz-tray@2.2.4/qz-tray.js'
 ];
 

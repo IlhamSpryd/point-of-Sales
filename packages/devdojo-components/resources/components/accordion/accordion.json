@@ -1,0 +1,18 @@
+{
+    "name": "accordion",
+    "label": "Accordion",
+    "description": "A set of stacked, collapsible sections. Expand any number of items, or set `exclusive` to keep only one open. Pairs with <x-accordion.item>.",
+    "category": "Layout",
+    "dependencies": [],
+    "props": [
+        { "name": "exclusive", "type": "boolean", "default": false, "description": "Allow only one item to be open at a time." }
+    ],
+    "slots": [
+        { "name": "slot", "description": "Accordion item(s), composed of <x-accordion.item>.", "default": "<x-components.accordion.item title=\"Getting started\">Add the accordion, then compose items inside it.</x-components.accordion.item><x-components.accordion.item title=\"Billing\" :open=\"true\">Manage your plan and payment details here.</x-components.accordion.item>" }
+    ],
+    "usage": "Compose with <x-accordion.item title=\"...\"> children; add `open` to start an item expanded, or pass a custom `icon`.",
+    "examples": [
+        { "title": "Basic", "description": "Any number of items can be open at once.", "file": "basic.blade.php" },
+        { "title": "Exclusive", "description": "Set exclusive to keep only one item open at a time.", "file": "exclusive.blade.php" }
+    ]
+}

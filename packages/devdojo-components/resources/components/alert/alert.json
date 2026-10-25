@@ -1,0 +1,25 @@
+{
+    "name": "alert",
+    "label": "Alert",
+    "description": "A contextual message box with six variants, built-in per-variant icons, title, and description.",
+    "category": "Feedback",
+    "dependencies": [],
+    "props": [
+        { "name": "variant", "type": "select", "default": "primary", "options": ["primary", "secondary", "destructive", "info", "success", "warning"], "description": "The color treatment of the alert." },
+        { "name": "icon", "type": "text", "default": null, "description": "Optional component name to render as a leading icon." },
+        { "name": "title", "type": "text", "default": "", "description": "Bold heading line." },
+        { "name": "description", "type": "text", "default": "", "description": "Body text (accepts HTML)." }
+    ],
+    "slots": [
+        { "name": "slot", "description": "Optional extra content below the title and description." }
+    ],
+    "studio": {
+        "card": "<div class=\"w-full max-w-sm\"><x-components.alert variant=\"info\" title=\"Heads up\" description=\"Your trial ends in 3 days.\" /></div>",
+        "container": "<div class=\"w-full max-w-lg mx-auto\">{{component}}</div>",
+        "defaults": { "title": "Heads up", "description": "This alert calls out something the user should notice." }
+    },
+    "examples": [
+        { "title": "Variants", "description": "Six contextual variants with built-in icons.", "file": "variants.blade.php" },
+        { "title": "With extra content", "description": "Add a link or button in the default slot below the description.", "file": "with-content.blade.php" }
+    ]
+}

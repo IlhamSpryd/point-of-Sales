@@ -1,0 +1,31 @@
+{
+    "name": "drawer",
+    "label": "Drawer",
+    "description": "A teleported slide-in panel from the left or right, with header, content and footer slots and optional parent scaling.",
+    "category": "Overlays",
+    "dependencies": ["button"],
+    "props": [
+        { "name": "position", "type": "select", "default": "right", "options": ["right", "left"], "description": "Which side the drawer slides in from." },
+        { "name": "open", "type": "boolean", "default": false, "description": "Whether the drawer is open on load." },
+        { "name": "parent", "type": "text", "default": null, "description": "Optional CSS selector of an element to subtly scale/dim while the drawer is open." },
+        { "name": "zIndex", "type": "text", "default": "50", "description": "The stacking z-index for the overlay." },
+        { "name": "header", "type": "text", "default": null, "description": "Header content. Can also be provided via the `header` named slot." },
+        { "name": "content", "type": "text", "default": null, "description": "Main content. Can also be provided via the `content` named slot." },
+        { "name": "footer", "type": "text", "default": null, "description": "Footer content, usually actions. Can also be provided via the `footer` named slot." }
+    ],
+    "slots": [
+        { "name": "slot", "description": "Fallback trigger content when no `trigger` slot is given." },
+        { "name": "trigger", "description": "The element that opens the drawer (default slot)." },
+        { "name": "header", "description": "Sticky header area." },
+        { "name": "content", "description": "Main scrollable content." },
+        { "name": "footer", "description": "Sticky footer, usually actions." }
+    ],
+    "studio": {
+        "card": "<x-components.drawer header=\"Drawer Title\" content=\"The main content for your drawer goes here.\"><x-slot:trigger><x-components.button variant=\"outline\" size=\"sm\">Open drawer</x-components.button></x-slot:trigger></x-components.drawer>",
+        "container": "<div class=\"flex min-h-96 w-full items-center justify-center\">{{component}}</div>",
+        "defaults": { "open": true, "header": "Drawer Title", "content": "The main content for your drawer goes here." }
+    },
+    "examples": [
+        { "title": "Left & right", "description": "Slide in from either side, with header, content and footer slots.", "file": "positions.blade.php", "height": "24rem" }
+    ]
+}

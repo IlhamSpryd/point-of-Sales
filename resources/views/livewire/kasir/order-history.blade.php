@@ -363,7 +363,8 @@
                         <div>
                             <div class="flex items-center justify-between mb-2">
                                 <p class="text-xs font-bold text-amber-700 uppercase tracking-wider">Riwayat Retur &amp; Disposisi</p>
-                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800">
+                                <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-amber-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                                     {{ $detail->orderReturns->count() }} Kali Retur
                                 </span>
                             </div>
@@ -400,7 +401,8 @@
                         <div>
                             <div class="flex items-center justify-between mb-2">
                                 <p class="text-xs font-bold text-rose-700 uppercase tracking-wider">Riwayat Pengembalian Dana (Refund)</p>
-                                <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800">
+                                <span class="inline-flex items-center gap-1.5 text-xs font-medium px-2 py-0.5 rounded-md bg-rose-50 border border-rose-200 text-rose-700">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
                                     Rp {{ number_format($detail->paymentRefunds->sum('amount'), 0, ',', '.') }}
                                 </span>
                             </div>

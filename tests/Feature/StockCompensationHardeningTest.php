@@ -247,6 +247,7 @@ class StockCompensationHardeningTest extends TestCase
             ->postJson(route('transaction.store'), [
                 'idempotency_key' => Str::uuid()->toString(),
                 'items' => [['product_id' => $this->productA->id, 'quantity' => 1]],
+                'order_type' => 'takeaway',
                 'payment_method' => 'cash',
                 'cash_received' => 25000,
             ]);

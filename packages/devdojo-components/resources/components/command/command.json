@@ -1,0 +1,29 @@
+{
+    "name": "command",
+    "label": "Command Palette",
+    "description": "A ⌘K / Ctrl+K command palette with fuzzy search, grouped items, keyboard navigation and a teleported overlay. Selecting an item dispatches a command-select event.",
+    "category": "Overlays",
+    "dependencies": [],
+    "props": [
+        { "name": "items", "type": "array", "default": [], "description": "Array of { title, value, group?, icon? (SVG string), shortcut? } objects." },
+        { "name": "placeholder", "type": "text", "default": "Type a command or search…", "description": "Search input placeholder." }
+    ],
+    "slots": [
+        { "name": "trigger", "description": "Custom trigger element that opens the palette." }
+    ],
+    "studio": {
+        "card": "<div class=\"inline-flex items-center gap-2 rounded-medium border border-foreground/10 bg-background px-3 py-2 text-sm text-foreground/50 shadow-xs\"><svg class=\"size-4\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"11\" cy=\"11\" r=\"8\" /><path d=\"m21 21-4.3-4.3\" /></svg><span>Type a command or search…</span><kbd class=\"ml-6 rounded-small border border-foreground/10 bg-secondary px-1.5 py-0.5 font-mono text-[10px] text-foreground/60\">⌘K</kbd></div>",
+        "container": "<div class=\"flex min-h-96 w-full items-center justify-center\">{{component}}</div>",
+        "defaults": {
+            "items": [
+                { "title": "Create new project", "value": "new-project", "group": "Actions" },
+                { "title": "Invite teammate", "value": "invite", "group": "Actions" },
+                { "title": "Go to settings", "value": "settings", "group": "Navigation" }
+            ]
+        }
+    },
+    "usage": "Open with ⌘K/Ctrl+K, a click on the trigger, or by dispatching a window 'command-open' event. Provide a custom trigger via <x-slot:trigger>. Listen for the 'command-select' event to act on a choice.",
+    "examples": [
+        { "title": "Basic", "description": "Press ⌘K/Ctrl+K or click the trigger to open the palette.", "file": "basic.blade.php", "height": "24rem" }
+    ]
+}

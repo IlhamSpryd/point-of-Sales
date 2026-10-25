@@ -1,0 +1,26 @@
+{
+    "name": "number-input",
+    "label": "Number Input",
+    "description": "A numeric field with minus/plus steppers that respect min, max, and step — works with wire:model and keyboard arrows.",
+    "category": "Forms",
+    "dependencies": ["label"],
+    "props": [
+        { "name": "label", "type": "text", "default": "", "description": "Label text rendered above the field." },
+        { "name": "min", "type": "number", "default": "", "description": "Lowest allowed value." },
+        { "name": "max", "type": "number", "default": "", "description": "Highest allowed value." },
+        { "name": "step", "type": "number", "default": 1, "description": "Amount each press changes the value by." },
+        { "name": "value", "type": "number", "default": "", "description": "Initial value." },
+        { "name": "placeholder", "type": "text", "default": "", "description": "Placeholder shown while empty." },
+        { "name": "disabled", "type": "boolean", "default": false, "description": "Disable the field and both steppers." }
+    ],
+    "slots": [],
+    "studio": {
+        "defaults": { "label": "Quantity", "value": 2, "min": 0, "max": 10 },
+        "card": "<div class=\"w-40\"><x-components.number-input value=\"2\" min=\"0\" max=\"10\" /></div>",
+        "container": "<div class=\"flex min-h-48 w-full max-w-56 items-center justify-center\">{{component}}</div>"
+    },
+    "usage": "Bind it with wire:model like any input; the steppers fire input/change events so bindings stay in sync.",
+    "examples": [
+        { "title": "Quantity & precision", "description": "Whole-number quantities, decimal steps, and a disabled state.", "file": "basic.blade.php", "height": "14rem" }
+    ]
+}

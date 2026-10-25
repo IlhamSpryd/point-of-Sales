@@ -1,13 +1,7 @@
 <div>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-apeiron-ink leading-tight">
-            {{ __('Manajemen Modifier & Add-ons') }}
-        </h2>
-    </x-slot>
+    @include('catalog.partials.sub-nav')
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
-            @include('catalog.partials.sub-nav')
+    <div class="space-y-6">
             
             @if($showGroupForm)
                 <!-- Full Page Group Form -->
@@ -179,16 +173,24 @@
                 </div>
 
             @else
-            <!-- Toolbar -->
-            <x-list-toolbar>
-                <x-slot name="actions">
-                    <x-button wire:click="createGroup" variant="primary">
-                        <span class="material-symbols-rounded text-[18px]">add</span> Tambah Grup Modifier
-                    </x-button>
-                </x-slot>
-            </x-list-toolbar>
+            <!-- Header Halaman & Toolbar -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                    <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Varian & Modifier</h4>
+                    <p class="text-sm font-medium text-[#787774] mt-1">Kelola grup varian, opsi rasa/ukuran, dan modifier tambahan produk</p>
+                </div>
+
+                <x-list-toolbar>
+                    <x-slot name="actions">
+                        <x-button wire:click="createGroup" variant="primary" type="button" class="w-full sm:w-auto h-10">
+                            <span class="material-symbols-rounded text-[18px]">add</span> Tambah Grup Modifier
+                        </x-button>
+                    </x-slot>
+                </x-list-toolbar>
+            </div>
 
             <!-- Loop Groups -->
+            <div class="space-y-6">
             @forelse($groups as $group)
             <div class="card-surface p-6">
                 <div class="flex items-center justify-between mb-4 pb-4 border-b border-apeiron-border">
@@ -260,9 +262,8 @@
                 description="Tambahkan grup modifier seperti 'Ukuran Gelas' atau 'Topping' untuk membuat variasi produk." 
             />
             @endforelse
+            </div>
             
             @endif
-
-        </div>
     </div>
 </div>

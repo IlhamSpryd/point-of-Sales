@@ -42,7 +42,9 @@ use App\Models\Store;
 use App\Models\Table;
 use App\Services\CatalogPriceResolverService;
 use App\Services\Context\TenantContext;
+use App\Services\EntitlementService;
 use Carbon\Carbon;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -88,802 +90,894 @@ class TransactionService
      */
     public function createTransaction(array $data, int $userId): Order
     {
-        return DB::transaction(function () use ($data, $userId) {
-            // Shift-lock guard (UNCHANGED).
-            $shift = null;
-            if (! empty($data['shift_id'])) {
-                $shift = Shift::lockForUpdate()->find($data['shift_id']);
+        $tenantId = app(TenantContext::class)->getTenantId() ?? ($data['tenant_id'] ?? null);
 
-                if (! $shift || $shift->status !== 'open') {
-                    throw ValidationException::withMessages([
-                        'shift' => 'Shift Anda baru saja ditutup. Transaksi ini dibatalkan, silakan buka shift baru sebelum melanjutkan.',
-                    ]);
-                }
+        // Idempotency pre-check (INV-TBL-06 / ADR-007): Jika order dengan idempotency_key sama sudah ada, kembalikan instan
+        if (! empty($data['idempotency_key']) && $tenantId !== null) {
+            $existingOrder = Order::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('idempotency_key', $data['idempotency_key'])
+                ->first();
+            if ($existingOrder) {
+                return $existingOrder;
             }
+        }
 
-            $resolvedDeviceId = $data['device_id'] ?? $data['created_by_device_id'] ?? $shift?->device_id;
+        try {
+            return DB::transaction(function () use ($data, $userId, $tenantId) {
+                $activeStoreId = $data['store_id'] ?? app(TenantContext::class)->getStoreId();
+                $tablesEnabled = app(EntitlementService::class)->isTablesEnabled((int) $tenantId, $activeStoreId ? (int) $activeStoreId : null);
+                $orderType = OrderType::coerce($data['order_type'] ?? null) ?? OrderType::DineIn;
 
-            // [INCREMENT 4] Validasi & penguncian ParkedCart jika checkout berasal dari keranjang tertunda
-            $parkedCart = null;
-            if (! empty($data['parked_cart_id'])) {
-                $parkedCart = ParkedCart::where('id', $data['parked_cart_id'])->lockForUpdate()->first();
+                $tableId = null;
+                $tableNumber = null;
+                $lockedTable = null;
 
-                if (! $parkedCart) {
-                    throw ValidationException::withMessages([
-                        'parked_cart' => 'Keranjang tertunda tidak ditemukan.',
-                    ]);
+                $hasActiveTables = false;
+                if ($tablesEnabled && $activeStoreId !== null) {
+                    $hasActiveTables = Table::withoutGlobalScopes()
+                        ->where('tenant_id', $tenantId)
+                        ->where('store_id', $activeStoreId)
+                        ->where('is_active', true)
+                        ->exists();
                 }
 
-                if ($parkedCart->status === ParkedCart::STATUS_CONVERTED) {
-                    throw ValidationException::withMessages([
-                        'parked_cart' => 'Keranjang ini sudah di-checkout menjadi order lain.',
-                    ]);
-                }
+                if (! $tablesEnabled || $orderType !== OrderType::DineIn) {
+                    // INV-TBL-03: Retail (tables_enabled = false) atau pesanan non-meja (Takeaway / Delivery) selalu memaksa table_id = null
+                    $tableId = null;
+                    $tableNumber = null;
+                } else {
+                    // Dine-In pada store yang mengaktifkan meja
+                    $requestedTableId = $data['table_id'] ?? null;
 
-                if (in_array($parkedCart->status, [ParkedCart::STATUS_DISCARDED, ParkedCart::STATUS_EXPIRED], true)) {
-                    throw ValidationException::withMessages([
-                        'parked_cart' => "Keranjang ini sudah {$parkedCart->status} dan tidak dapat di-checkout.",
-                    ]);
-                }
-            }
+                    if (! empty($requestedTableId)) {
+                        // Kunci baris Table (SELECT ... FOR UPDATE) sesuai urutan kunci kanonik (ADR-007)
+                        $lockedTable = Table::withoutGlobalScopes()
+                            ->where('tenant_id', $tenantId)
+                            ->where('store_id', $activeStoreId)
+                            ->where('id', $requestedTableId)
+                            ->lockForUpdate()
+                            ->first();
 
-            // Validasi STRUKTURAL split payment dilakukan
-            // SEDINI MUNGKIN -- sebelum mengunci satu pun baris Product
-            // atau Ingredient -- agar payload yang jelas cacat gagal cepat
-            // tanpa menahan lock (selaras mandat Zero-Latency Concurrency).
-            // Validasi "total leg == total tagihan" TIDAK bisa dilakukan di
-            // sini karena totalAmount belum diketahui; itu menyusul setelah
-            // calculateOrderTotals().
-            $parsedPaymentLegs = null;
-            if (! empty($data['payments']) && is_array($data['payments'])) {
-                $parsedPaymentLegs = $this->parsePaymentLegs($data['payments']);
-            }
+                        if (! $lockedTable) {
+                            throw ValidationException::withMessages([
+                                'table_id' => 'Meja tidak ditemukan atau bukan milik cabang ini.',
+                            ]);
+                        }
 
-            $subtotalAmount = 0;
-            $lines = [];
-            $bomBreakdownByLineIndex = [];
-            // Akumulator kebutuhan bahan baku lintas SELURUH baris order,
-            // keyed by ingredient_id => total qty (string bcmath, skala 4).
-            $ingredientRequirements = [];
-            $items = $data['items'] ?? [];
+                        if (! $lockedTable->is_active || $lockedTable->operational_status === 'disabled') {
+                            throw ValidationException::withMessages([
+                                'table_id' => 'Meja sedang tidak aktif dan tidak dapat digunakan.',
+                            ]);
+                        }
 
-            // Merge items yang sama agar stok tidak double-decrement (UNCHANGED).
-            $mergedItems = collect($items)
-                ->groupBy(function ($item) {
-                    $optionsSignature = ! empty($item['options']) ? json_encode($item['options']) : '';
-                    $notesSignature = ! empty($item['notes']) ? $item['notes'] : '';
-
-                    return $item['product_id'].'|'.$optionsSignature.'|'.$notesSignature;
-                })
-                ->map(function ($group) {
-                    $qty = $group->sum('quantity');
-                    if ((int) $qty < 1) {
+                        $tableId = $lockedTable->id;
+                        $tableNumber = $lockedTable->table_name;
+                    } elseif ($hasActiveTables) {
+                        // INV-TBL-04: Dine-In pada cabang dengan meja aktif wajib menyertakan table_id valid
                         throw ValidationException::withMessages([
-                            'cart' => 'Kuantitas produk tidak valid. Minimal 1.',
+                            'table_id' => 'Meja wajib dipilih untuk pesanan Dine-In.',
+                        ]);
+                    } else {
+                        // Cabang dengan tables_enabled tapi belum ada meja aktif
+                        $tableId = null;
+                        $tableNumber = null;
+                    }
+                }
+
+                // Shift-lock guard (UNCHANGED).
+                $shift = null;
+                if (! empty($data['shift_id'])) {
+                    $shift = Shift::lockForUpdate()->find($data['shift_id']);
+
+                    if (! $shift || $shift->status !== 'open') {
+                        throw ValidationException::withMessages([
+                            'shift' => 'Shift Anda baru saja ditutup. Transaksi ini dibatalkan, silakan buka shift baru sebelum melanjutkan.',
+                        ]);
+                    }
+                }
+
+                $resolvedDeviceId = $data['device_id'] ?? $data['created_by_device_id'] ?? $shift?->device_id;
+
+                // [INCREMENT 4] Validasi & penguncian ParkedCart jika checkout berasal dari keranjang tertunda
+                $parkedCart = null;
+                if (! empty($data['parked_cart_id'])) {
+                    $parkedCart = ParkedCart::where('id', $data['parked_cart_id'])->lockForUpdate()->first();
+
+                    if (! $parkedCart) {
+                        throw ValidationException::withMessages([
+                            'parked_cart' => 'Keranjang tertunda tidak ditemukan.',
                         ]);
                     }
 
-                    return [
-                        'product_id' => $group->first()['product_id'],
-                        'product_variant_id' => $group->first()['product_variant_id'] ?? null,
-                        'quantity' => $qty,
-                        'extra_price' => $group->first()['extra_price'] ?? 0,
-                        'options' => $group->first()['options'] ?? null,
-                        'notes' => $group->first()['notes'] ?? null,
-                        'item_discount_id' => $group->first()['item_discount_id'] ?? null,
-                        'item_discount_amount' => $group->sum(function ($it) {
-                            return (float) ($it['item_discount_amount'] ?? 0);
-                        }),
-                    ];
-                })
-                ->values()
-                ->all();
-
-            $productIds = collect($mergedItems)->pluck('product_id')->toArray();
-
-            // Collect all modifier IDs
-            $modifierIds = [];
-            foreach ($mergedItems as $item) {
-                if (! empty($item['options'])) {
-                    foreach ($item['options'] as $opt) {
-                        if (isset($opt['modifier_id'])) {
-                            $modifierIds[] = $opt['modifier_id'];
-                        }
+                    if ($parkedCart->status === ParkedCart::STATUS_CONVERTED) {
+                        throw ValidationException::withMessages([
+                            'parked_cart' => 'Keranjang ini sudah di-checkout menjadi order lain.',
+                        ]);
                     }
-                }
-            }
-            $modifierIds = array_unique($modifierIds);
-            $modifiersWithBom = Modifier::whereIn('id', $modifierIds)->with('ingredients')->get()->keyBy('id');
 
-            // Eager-load resep BOM (ingredients + pivot
-            // quantity_required) BERSAMAAN dengan row-lock Product yang
-            // sudah ada. Baris resep (`product_ingredients`) adalah master
-            // data dan TIDAK dikunci di sini -- hanya
-            // `ingredients.current_stock` yang dikunci, terpisah, di
-            // bawah, SETELAH lock Product selesai (disiplin urutan lock
-            // global: Shift -> Products -> Ingredients -> Customer/Loyalty).
-            $products = Product::whereIn('id', $productIds)
-                ->with('ingredients')
-                ->orderBy('id')
-                ->lockForUpdate()
-                ->get();
-
-            // [PHASE 14] Saat flag ON, kunci baris balance produk SEKALI SAJA
-            // dengan urutan deterministik (tenant_id, store_id, product_id ASC)
-            // SEBELUM loop item -- mencegah deadlock dan gap lock.
-            $balancesAuthoritative = (bool) config('pos.stock_balances_authoritative', false);
-            $storeIdForStock = app(TenantContext::class)->getStoreId();
-            $lockedProductBalances = $balancesAuthoritative
-                ? $this->lockProductBalances($productIds, $storeIdForStock)
-                : collect();
-
-            $activeStoreId = $data['store_id'] ?? $storeIdForStock;
-            $catalogPriceResolver = app(CatalogPriceResolverService::class);
-
-            foreach ($mergedItems as $item) {
-                $product = $products->find($item['product_id']);
-
-                if (! $product) {
-                    throw ValidationException::withMessages([
-                        'items' => 'Salah satu produk yang dipilih sudah tidak tersedia.',
-                    ]);
-                }
-
-                if (! $product->is_active || $product->status !== 'active') {
-                    throw ValidationException::withMessages([
-                        'items' => 'Produk "'.$product->product_name.'" tidak dalam status aktif dan tidak dapat dijual.',
-                    ]);
-                }
-
-                if (! $catalogPriceResolver->isAvailableInStore($product, $activeStoreId)) {
-                    throw ValidationException::withMessages([
-                        'items' => 'Produk "'.$product->product_name.'" tidak tersedia di cabang ini.',
-                    ]);
-                }
-
-                $hasBom = $product->ingredients->isNotEmpty();
-                $needsStockDeduction = ! $hasBom && $product->track_inventory && ! $product->isService() && ! $product->isNonInventory() && ! $product->isBundle();
-
-                // LEGACY STOCK PATH: produk TANPA resep BOM yang melacak inventori
-                // tetap memakai model lama (potong products.stock langsung,
-                // divalidasi di sini juga seperti sebelumnya). Produk yang
-                // SUDAH punya resep atau service/non_inventory/bundle TIDAK PERNAH
-                // menyentuh products.stock.
-                if ($needsStockDeduction) {
-                    if ((bool) config('pos.stock_balances_authoritative', false)) {
-                        // [PHASE 14] Balance row adalah otoritas; products.stock
-                        // ditulis sebagai mirror dalam statement yang sama.
-                        $balance = $lockedProductBalances->get($product->id);
-                        $available = $balance ? $balance->quantity : '0';
-
-                        if ($this->compareScaled((string) $available, (string) $item['quantity']) < 0) {
-                            throw ValidationException::withMessages([
-                                'items' => 'Stok produk "'.$product->product_name.'" tidak mencukupi. (Sisa: '.$available.')',
-                            ]);
-                        }
-
-                        $this->applyProductBalanceDelta($product, $balance, (string) (-1 * (float) $item['quantity']));
-                    } else {
-                        if ($product->stock < $item['quantity']) {
-                            throw ValidationException::withMessages([
-                                'items' => 'Stok produk "'.$product->product_name.'" tidak mencukupi. (Sisa: '.$product->stock.')',
-                            ]);
-                        }
-                        $product->stock -= $item['quantity'];
-                        $product->save();
+                    if (in_array($parkedCart->status, [ParkedCart::STATUS_DISCARDED, ParkedCart::STATUS_EXPIRED], true)) {
+                        throw ValidationException::withMessages([
+                            'parked_cart' => "Keranjang ini sudah {$parkedCart->status} dan tidak dapat di-checkout.",
+                        ]);
                     }
                 }
 
-                // SEC FIX CRITICAL: extra_price & options[].
-                // extra_price dari client TIDAK PERNAH dipakai langsung --
-                // StoreTransactionRequest hanya memvalidasi BENTUK/keberadaan
-                // modifier_id, bukan nilainya. Hitung ulang dari
-                // $modifiersWithBom (sudah dimuat dari DB) agar kasir tidak
-                // bisa mengirim modifier premium dengan extra_price:0.
-                // | 2026-09-25
-                $verifiedOptions = [];
-                $serverExtraPrice = 0;
+                // Validasi STRUKTURAL split payment dilakukan
+                // SEDINI MUNGKIN -- sebelum mengunci satu pun baris Product
+                // atau Ingredient -- agar payload yang jelas cacat gagal cepat
+                // tanpa menahan lock (selaras mandat Zero-Latency Concurrency).
+                // Validasi "total leg == total tagihan" TIDAK bisa dilakukan di
+                // sini karena totalAmount belum diketahui; itu menyusul setelah
+                // calculateOrderTotals().
+                $parsedPaymentLegs = null;
+                if (! empty($data['payments']) && is_array($data['payments'])) {
+                    $parsedPaymentLegs = $this->parsePaymentLegs($data['payments']);
+                }
 
-                if (! empty($item['options'])) {
-                    foreach ($item['options'] as $opt) {
-                        $modId = $opt['modifier_id'] ?? null;
-                        $mod = $modId ? $modifiersWithBom->get($modId) : null;
+                $subtotalAmount = 0;
+                $lines = [];
+                $bomBreakdownByLineIndex = [];
+                // Akumulator kebutuhan bahan baku lintas SELURUH baris order,
+                // keyed by ingredient_id => total qty (string bcmath, skala 4).
+                $ingredientRequirements = [];
+                $items = $data['items'] ?? [];
 
-                        if (! $mod || ! $mod->is_active) {
+                // Merge items yang sama agar stok tidak double-decrement (UNCHANGED).
+                $mergedItems = collect($items)
+                    ->groupBy(function ($item) {
+                        $optionsSignature = ! empty($item['options']) ? json_encode($item['options']) : '';
+                        $notesSignature = ! empty($item['notes']) ? $item['notes'] : '';
+
+                        return $item['product_id'].'|'.$optionsSignature.'|'.$notesSignature;
+                    })
+                    ->map(function ($group) {
+                        $qty = $group->sum('quantity');
+                        if ((int) $qty < 1) {
                             throw ValidationException::withMessages([
-                                'items' => 'Salah satu varian yang dipilih sudah tidak tersedia. Muat ulang halaman.',
+                                'cart' => 'Kuantitas produk tidak valid. Minimal 1.',
                             ]);
                         }
 
-                        $serverExtraPrice += (int) $mod->extra_price;
-                        $verifiedOptions[] = [
-                            'modifier_id' => $mod->id,
-                            'name' => $mod->name,
-                            'extra_price' => (int) $mod->extra_price,
+                        return [
+                            'product_id' => $group->first()['product_id'],
+                            'product_variant_id' => $group->first()['product_variant_id'] ?? null,
+                            'quantity' => $qty,
+                            'extra_price' => $group->first()['extra_price'] ?? 0,
+                            'options' => $group->first()['options'] ?? null,
+                            'notes' => $group->first()['notes'] ?? null,
+                            'item_discount_id' => $group->first()['item_discount_id'] ?? null,
+                            'item_discount_amount' => $group->sum(function ($it) {
+                                return (float) ($it['item_discount_amount'] ?? 0);
+                            }),
                         ];
-                    }
-                }
+                    })
+                    ->values()
+                    ->all();
 
-                $variantId = $item['product_variant_id'] ?? null;
-                $baseProductPrice = $catalogPriceResolver->resolvePrice(
-                    $product,
-                    $activeStoreId,
-                    $variantId,
-                    $item['quantity'],
-                    $data['customer_id'] ?? null,
-                    null,
-                    $data['origin_channel'] ?? 'pos_cashier'
-                );
-                $unitPrice = $baseProductPrice + $serverExtraPrice;
-                $itemSubtotal = $unitPrice * $item['quantity'];
-                $subtotalAmount += $itemSubtotal;
+                $productIds = collect($mergedItems)->pluck('product_id')->toArray();
 
-                $lineIndex = count($lines);
-
-                // Hitung diskon level item jika ada
-                $itemDiscountAmount = (float) ($item['item_discount_amount'] ?? 0);
-                if (! empty($item['item_discount_id']) && $itemDiscountAmount <= 0) {
-                    $itemDiscount = Discount::find($item['item_discount_id']);
-                    if ($itemDiscount && $itemDiscount->is_active) {
-                        if ($itemDiscount->type === 'percentage') {
-                            $calc = (int) round($itemSubtotal * ($itemDiscount->value / 100));
-                            if ($itemDiscount->max_discount_amount) {
-                                $calc = min($calc, $itemDiscount->max_discount_amount);
+                // Collect all modifier IDs
+                $modifierIds = [];
+                foreach ($mergedItems as $item) {
+                    if (! empty($item['options'])) {
+                        foreach ($item['options'] as $opt) {
+                            if (isset($opt['modifier_id'])) {
+                                $modifierIds[] = $opt['modifier_id'];
                             }
-                            $itemDiscountAmount = $calc;
-                        } else {
-                            $itemDiscountAmount = min((int) $itemSubtotal, $itemDiscount->value);
                         }
                     }
                 }
-                $effectiveLineSubtotal = max(0, $itemSubtotal - $itemDiscountAmount);
+                $modifierIds = array_unique($modifierIds);
+                $modifiersWithBom = Modifier::whereIn('id', $modifierIds)->with('ingredients')->get()->keyBy('id');
 
-                $lines[] = [
-                    'order_price' => $unitPrice,
-                    'qty' => $item['quantity'],
-                    'order_subtotal' => $itemSubtotal,
-                    'product_id' => $product->id,
-                    'product_variant_id' => $variantId,
-                    'options' => $verifiedOptions,
-                    'notes' => $item['notes'] ?? null,
-                    'needs_stock_deduction' => $needsStockDeduction,
-                    'item_discount_id' => $item['item_discount_id'] ?? null,
-                    'item_discount_amount' => $itemDiscountAmount,
-                    'effective_subtotal' => $effectiveLineSubtotal,
-                ];
-                $bomBreakdownByLineIndex[$lineIndex] = [];
+                // Eager-load resep BOM (ingredients + pivot
+                // quantity_required) BERSAMAAN dengan row-lock Product yang
+                // sudah ada. Baris resep (`product_ingredients`) adalah master
+                // data dan TIDAK dikunci di sini -- hanya
+                // `ingredients.current_stock` yang dikunci, terpisah, di
+                // bawah, SETELAH lock Product selesai (disiplin urutan lock
+                // global: Shift -> Products -> Ingredients -> Customer/Loyalty).
+                $products = Product::whereIn('id', $productIds)
+                    ->with('ingredients')
+                    ->orderBy('id')
+                    ->lockForUpdate()
+                    ->get();
 
-                if ($hasBom) {
-                    foreach ($product->ingredients as $ingredient) {
-                        $qtyNeeded = bcmul((string) $ingredient->pivot->quantity_required, (string) $item['quantity'], 4);
-                        $ingredientRequirements[$ingredient->id] = bcadd(
-                            $ingredientRequirements[$ingredient->id] ?? '0',
-                            $qtyNeeded,
-                            4
-                        );
-                        $bomBreakdownByLineIndex[$lineIndex][] = [
-                            'ingredient_id' => $ingredient->id,
-                            'qty' => $qtyNeeded,
-                        ];
+                // [PHASE 14] Saat flag ON, kunci baris balance produk SEKALI SAJA
+                // dengan urutan deterministik (tenant_id, store_id, product_id ASC)
+                // SEBELUM loop item -- mencegah deadlock dan gap lock.
+                $balancesAuthoritative = (bool) config('pos.stock_balances_authoritative', false);
+                $storeIdForStock = app(TenantContext::class)->getStoreId();
+                $lockedProductBalances = $balancesAuthoritative
+                    ? $this->lockProductBalances($productIds, $storeIdForStock)
+                    : collect();
+
+                $activeStoreId = $data['store_id'] ?? $storeIdForStock;
+                $catalogPriceResolver = app(CatalogPriceResolverService::class);
+
+                foreach ($mergedItems as $item) {
+                    $product = $products->find($item['product_id']);
+
+                    if (! $product) {
+                        throw ValidationException::withMessages([
+                            'items' => 'Salah satu produk yang dipilih sudah tidak tersedia.',
+                        ]);
                     }
-                }
 
-                if (! empty($item['options'])) {
-                    foreach ($item['options'] as $opt) {
-                        if (isset($opt['modifier_id'])) {
-                            $mod = $modifiersWithBom->get($opt['modifier_id']);
-                            if ($mod && $mod->ingredients->isNotEmpty()) {
-                                foreach ($mod->ingredients as $ingredient) {
-                                    $qtyNeeded = bcmul((string) $ingredient->pivot->quantity_required, (string) $item['quantity'], 4);
-                                    $ingredientRequirements[$ingredient->id] = bcadd(
-                                        $ingredientRequirements[$ingredient->id] ?? '0',
-                                        $qtyNeeded,
-                                        4
-                                    );
-                                    $bomBreakdownByLineIndex[$lineIndex][] = [
-                                        'ingredient_id' => $ingredient->id,
-                                        'qty' => $qtyNeeded,
-                                    ];
+                    if (! $product->is_active || $product->status !== 'active') {
+                        throw ValidationException::withMessages([
+                            'items' => 'Produk "'.$product->product_name.'" tidak dalam status aktif dan tidak dapat dijual.',
+                        ]);
+                    }
+
+                    if (! $catalogPriceResolver->isAvailableInStore($product, $activeStoreId)) {
+                        throw ValidationException::withMessages([
+                            'items' => 'Produk "'.$product->product_name.'" tidak tersedia di cabang ini.',
+                        ]);
+                    }
+
+                    $hasBom = $product->ingredients->isNotEmpty();
+                    $needsStockDeduction = ! $hasBom && $product->track_inventory && ! $product->isService() && ! $product->isNonInventory() && ! $product->isBundle();
+
+                    // LEGACY STOCK PATH: produk TANPA resep BOM yang melacak inventori
+                    // tetap memakai model lama (potong products.stock langsung,
+                    // divalidasi di sini juga seperti sebelumnya). Produk yang
+                    // SUDAH punya resep atau service/non_inventory/bundle TIDAK PERNAH
+                    // menyentuh products.stock.
+                    if ($needsStockDeduction) {
+                        if ((bool) config('pos.stock_balances_authoritative', false)) {
+                            // [PHASE 14] Balance row adalah otoritas; products.stock
+                            // ditulis sebagai mirror dalam statement yang sama.
+                            $balance = $lockedProductBalances->get($product->id);
+                            $available = $balance ? $balance->quantity : '0';
+
+                            if ($this->compareScaled((string) $available, (string) $item['quantity']) < 0) {
+                                throw ValidationException::withMessages([
+                                    'items' => 'Stok produk "'.$product->product_name.'" tidak mencukupi. (Sisa: '.$available.')',
+                                ]);
+                            }
+
+                            $this->applyProductBalanceDelta($product, $balance, (string) (-1 * (float) $item['quantity']));
+                        } else {
+                            if ($product->stock < $item['quantity']) {
+                                throw ValidationException::withMessages([
+                                    'items' => 'Stok produk "'.$product->product_name.'" tidak mencukupi. (Sisa: '.$product->stock.')',
+                                ]);
+                            }
+                            $product->stock -= $item['quantity'];
+                            $product->save();
+                        }
+                    }
+
+                    // SEC FIX CRITICAL: extra_price & options[].
+                    // extra_price dari client TIDAK PERNAH dipakai langsung --
+                    // StoreTransactionRequest hanya memvalidasi BENTUK/keberadaan
+                    // modifier_id, bukan nilainya. Hitung ulang dari
+                    // $modifiersWithBom (sudah dimuat dari DB) agar kasir tidak
+                    // bisa mengirim modifier premium dengan extra_price:0.
+                    // | 2026-09-25
+                    $verifiedOptions = [];
+                    $serverExtraPrice = 0;
+
+                    if (! empty($item['options'])) {
+                        foreach ($item['options'] as $opt) {
+                            $modId = $opt['modifier_id'] ?? null;
+                            $mod = $modId ? $modifiersWithBom->get($modId) : null;
+
+                            if (! $mod || ! $mod->is_active) {
+                                throw ValidationException::withMessages([
+                                    'items' => 'Salah satu varian yang dipilih sudah tidak tersedia. Muat ulang halaman.',
+                                ]);
+                            }
+
+                            $serverExtraPrice += (int) $mod->extra_price;
+                            $verifiedOptions[] = [
+                                'modifier_id' => $mod->id,
+                                'name' => $mod->name,
+                                'extra_price' => (int) $mod->extra_price,
+                            ];
+                        }
+                    }
+
+                    $variantId = $item['product_variant_id'] ?? null;
+                    $baseProductPrice = $catalogPriceResolver->resolvePrice(
+                        $product,
+                        $activeStoreId,
+                        $variantId,
+                        $item['quantity'],
+                        $data['customer_id'] ?? null,
+                        null,
+                        $data['origin_channel'] ?? 'pos_cashier'
+                    );
+                    $unitPrice = $baseProductPrice + $serverExtraPrice;
+                    $itemSubtotal = $unitPrice * $item['quantity'];
+                    $subtotalAmount += $itemSubtotal;
+
+                    $lineIndex = count($lines);
+
+                    // Hitung diskon level item jika ada
+                    $itemDiscountAmount = (float) ($item['item_discount_amount'] ?? 0);
+                    if (! empty($item['item_discount_id']) && $itemDiscountAmount <= 0) {
+                        $itemDiscount = Discount::find($item['item_discount_id']);
+                        if ($itemDiscount && $itemDiscount->is_active) {
+                            if ($itemDiscount->type === 'percentage') {
+                                $calc = (int) round($itemSubtotal * ($itemDiscount->value / 100));
+                                if ($itemDiscount->max_discount_amount) {
+                                    $calc = min($calc, $itemDiscount->max_discount_amount);
+                                }
+                                $itemDiscountAmount = $calc;
+                            } else {
+                                $itemDiscountAmount = min((int) $itemSubtotal, $itemDiscount->value);
+                            }
+                        }
+                    }
+                    $effectiveLineSubtotal = max(0, $itemSubtotal - $itemDiscountAmount);
+
+                    $lines[] = [
+                        'order_price' => $unitPrice,
+                        'qty' => $item['quantity'],
+                        'order_subtotal' => $itemSubtotal,
+                        'product_id' => $product->id,
+                        'product_variant_id' => $variantId,
+                        'options' => $verifiedOptions,
+                        'notes' => $item['notes'] ?? null,
+                        'needs_stock_deduction' => $needsStockDeduction,
+                        'item_discount_id' => $item['item_discount_id'] ?? null,
+                        'item_discount_amount' => $itemDiscountAmount,
+                        'effective_subtotal' => $effectiveLineSubtotal,
+                    ];
+                    $bomBreakdownByLineIndex[$lineIndex] = [];
+
+                    if ($hasBom) {
+                        foreach ($product->ingredients as $ingredient) {
+                            $qtyNeeded = bcmul((string) $ingredient->pivot->quantity_required, (string) $item['quantity'], 4);
+                            $ingredientRequirements[$ingredient->id] = bcadd(
+                                $ingredientRequirements[$ingredient->id] ?? '0',
+                                $qtyNeeded,
+                                4
+                            );
+                            $bomBreakdownByLineIndex[$lineIndex][] = [
+                                'ingredient_id' => $ingredient->id,
+                                'qty' => $qtyNeeded,
+                            ];
+                        }
+                    }
+
+                    if (! empty($item['options'])) {
+                        foreach ($item['options'] as $opt) {
+                            if (isset($opt['modifier_id'])) {
+                                $mod = $modifiersWithBom->get($opt['modifier_id']);
+                                if ($mod && $mod->ingredients->isNotEmpty()) {
+                                    foreach ($mod->ingredients as $ingredient) {
+                                        $qtyNeeded = bcmul((string) $ingredient->pivot->quantity_required, (string) $item['quantity'], 4);
+                                        $ingredientRequirements[$ingredient->id] = bcadd(
+                                            $ingredientRequirements[$ingredient->id] ?? '0',
+                                            $qtyNeeded,
+                                            4
+                                        );
+                                        $bomBreakdownByLineIndex[$lineIndex][] = [
+                                            'ingredient_id' => $ingredient->id,
+                                            'qty' => $qtyNeeded,
+                                        ];
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            // BOM LOCKING & DEDUCTION.
-            // Diurutkan ASCENDING by id, pola deadlock-avoidance yang SAMA
-            // dengan lock Product di atas. Kontrak urutan lock global untuk
-            // Service ini:
-            //   Shift -> Products -> Balance rows (tenant,store,item ASC)
-            //         -> Customer/LoyaltyAccount.
-            // Kode lain TIDAK BOLEH mengunci Ingredients sebelum Products,
-            // atau jaminan ini runtuh.
-            //
-            // PHASE 14 (pos.stock_balances_authoritative):
-            //  - ON  : baris `ingredient_stock_balances` / `product_stock_balances`
-            //          (PK tenant_id,store_id,item_id) adalah OTORITAS stok.
-            //          Baris item (products/ingredients) TIDAK dikunci lagi
-            //          untuk tujuan stok; kolom legacy ditulis sebagai MIRROR
-            //          dalam statement yang sama supaya hook cache menu dan UI
-            //          tetap hidup.
-            //  - OFF : perilaku lama persis (lock baris items).
-            $lockedIngredients = collect();
-            $lockedIngredientBalances = collect();
-            if (! empty($ingredientRequirements)) {
-                $ingredientIds = array_keys($ingredientRequirements);
-                sort($ingredientIds);
+                // BOM LOCKING & DEDUCTION.
+                // Diurutkan ASCENDING by id, pola deadlock-avoidance yang SAMA
+                // dengan lock Product di atas. Kontrak urutan lock global untuk
+                // Service ini:
+                //   Shift -> Products -> Balance rows (tenant,store,item ASC)
+                //         -> Customer/LoyaltyAccount.
+                // Kode lain TIDAK BOLEH mengunci Ingredients sebelum Products,
+                // atau jaminan ini runtuh.
+                //
+                // PHASE 14 (pos.stock_balances_authoritative):
+                //  - ON  : baris `ingredient_stock_balances` / `product_stock_balances`
+                //          (PK tenant_id,store_id,item_id) adalah OTORITAS stok.
+                //          Baris item (products/ingredients) TIDAK dikunci lagi
+                //          untuk tujuan stok; kolom legacy ditulis sebagai MIRROR
+                //          dalam statement yang sama supaya hook cache menu dan UI
+                //          tetap hidup.
+                //  - OFF : perilaku lama persis (lock baris items).
+                $lockedIngredients = collect();
+                $lockedIngredientBalances = collect();
+                if (! empty($ingredientRequirements)) {
+                    $ingredientIds = array_keys($ingredientRequirements);
+                    sort($ingredientIds);
 
-                if ($balancesAuthoritative) {
-                    // Lock balance rows (deterministik: tenant, store, item ASC).
-                    // is_active/arsip tetap divalidasi dari master data tanpa lock.
-                    $lockedIngredients = Ingredient::whereIn('id', $ingredientIds)->get()->keyBy('id');
-                    $lockedIngredientBalances = $this->lockIngredientBalances($ingredientIds, $storeIdForStock);
+                    if ($balancesAuthoritative) {
+                        // Lock balance rows (deterministik: tenant, store, item ASC).
+                        // is_active/arsip tetap divalidasi dari master data tanpa lock.
+                        $lockedIngredients = Ingredient::whereIn('id', $ingredientIds)->get()->keyBy('id');
+                        $lockedIngredientBalances = $this->lockIngredientBalances($ingredientIds, $storeIdForStock);
 
-                    foreach ($ingredientIds as $ingredientId) {
-                        $needed = $ingredientRequirements[$ingredientId];
-                        $ingredient = $lockedIngredients->get($ingredientId);
+                        foreach ($ingredientIds as $ingredientId) {
+                            $needed = $ingredientRequirements[$ingredientId];
+                            $ingredient = $lockedIngredients->get($ingredientId);
 
-                        if (! $ingredient) {
-                            throw ValidationException::withMessages([
-                                'items' => 'Bahan baku dengan ID '.$ingredientId.' tidak ditemukan atau sudah diarsipkan.',
-                            ]);
+                            if (! $ingredient) {
+                                throw ValidationException::withMessages([
+                                    'items' => 'Bahan baku dengan ID '.$ingredientId.' tidak ditemukan atau sudah diarsipkan.',
+                                ]);
+                            }
+
+                            if (! $ingredient->is_active) {
+                                throw ValidationException::withMessages([
+                                    'items' => 'Bahan baku "'.$ingredient->name.'" sedang dinonaktifkan dan tidak dapat dipakai.',
+                                ]);
+                            }
+
+                            $balance = $lockedIngredientBalances->get($ingredientId);
+                            $available = $balance ? $balance->quantity : '0';
+
+                            if ($this->compareScaled((string) $available, $needed) < 0) {
+                                throw ValidationException::withMessages([
+                                    'items' => 'Stok bahan baku "'.$ingredient->name.'" tidak mencukupi. '
+                                        .'(Dibutuhkan: '.$needed.' '.$ingredient->unit.', Tersedia: '.$available.' '.$ingredient->unit.')',
+                                ]);
+                            }
+
+                            // Deduct balance (authority) + mirror kolom legacy.
+                            $this->applyIngredientBalanceDelta($ingredient, $balance, (string) (-1 * (float) $needed));
                         }
+                    } else {
+                        $lockedIngredients = Ingredient::whereIn('id', $ingredientIds)
+                            ->orderBy('id')
+                            ->lockForUpdate()
+                            ->get()
+                            ->keyBy('id');
 
-                        if (! $ingredient->is_active) {
-                            throw ValidationException::withMessages([
-                                'items' => 'Bahan baku "'.$ingredient->name.'" sedang dinonaktifkan dan tidak dapat dipakai.',
-                            ]);
+                        foreach ($ingredientIds as $ingredientId) {
+                            $needed = $ingredientRequirements[$ingredientId];
+                            $ingredient = $lockedIngredients->get($ingredientId);
+
+                            if (! $ingredient) {
+                                throw ValidationException::withMessages([
+                                    'items' => 'Bahan baku dengan ID '.$ingredientId.' tidak ditemukan atau sudah diarsipkan.',
+                                ]);
+                            }
+
+                            if (! $ingredient->is_active) {
+                                throw ValidationException::withMessages([
+                                    'items' => 'Bahan baku "'.$ingredient->name.'" sedang dinonaktifkan dan tidak dapat dipakai.',
+                                ]);
+                            }
+
+                            if (bccomp((string) $ingredient->current_stock, $needed, 4) < 0) {
+                                throw ValidationException::withMessages([
+                                    'items' => 'Stok bahan baku "'.$ingredient->name.'" tidak mencukupi. '
+                                        .'(Dibutuhkan: '.$needed.' '.$ingredient->unit.', Tersedia: '.$ingredient->current_stock.' '.$ingredient->unit.')',
+                                ]);
+                            }
+
+                            $ingredient->current_stock = bcsub((string) $ingredient->current_stock, $needed, 4);
+                            $ingredient->save();
                         }
-
-                        $balance = $lockedIngredientBalances->get($ingredientId);
-                        $available = $balance ? $balance->quantity : '0';
-
-                        if ($this->compareScaled((string) $available, $needed) < 0) {
-                            throw ValidationException::withMessages([
-                                'items' => 'Stok bahan baku "'.$ingredient->name.'" tidak mencukupi. '
-                                    .'(Dibutuhkan: '.$needed.' '.$ingredient->unit.', Tersedia: '.$available.' '.$ingredient->unit.')',
-                            ]);
-                        }
-
-                        // Deduct balance (authority) + mirror kolom legacy.
-                        $this->applyIngredientBalanceDelta($ingredient, $balance, (string) (-1 * (float) $needed));
                     }
-                } else {
-                    $lockedIngredients = Ingredient::whereIn('id', $ingredientIds)
-                        ->orderBy('id')
-                        ->lockForUpdate()
-                        ->get()
-                        ->keyBy('id');
+                }
 
-                    foreach ($ingredientIds as $ingredientId) {
-                        $needed = $ingredientRequirements[$ingredientId];
-                        $ingredient = $lockedIngredients->get($ingredientId);
+                // Validasi & Hitung Diskon Order
+                $discountAmount = 0;
+                $discountId = $data['discount_id'] ?? null;
+                $discount = null;
+                $totalItemDiscounts = array_sum(array_column($lines, 'item_discount_amount'));
 
-                        if (! $ingredient) {
-                            throw ValidationException::withMessages([
-                                'items' => 'Bahan baku dengan ID '.$ingredientId.' tidak ditemukan atau sudah diarsipkan.',
-                            ]);
-                        }
+                if ($discountId) {
+                    $discount = Discount::where('id', $discountId)->lockForUpdate()->first();
+                    $now = now();
+                    $isValidDiscount = $discount && $discount->is_active && $subtotalAmount >= $discount->min_purchase_amount;
 
-                        if (! $ingredient->is_active) {
-                            throw ValidationException::withMessages([
-                                'items' => 'Bahan baku "'.$ingredient->name.'" sedang dinonaktifkan dan tidak dapat dipakai.',
-                            ]);
-                        }
-
-                        if (bccomp((string) $ingredient->current_stock, $needed, 4) < 0) {
-                            throw ValidationException::withMessages([
-                                'items' => 'Stok bahan baku "'.$ingredient->name.'" tidak mencukupi. '
-                                    .'(Dibutuhkan: '.$needed.' '.$ingredient->unit.', Tersedia: '.$ingredient->current_stock.' '.$ingredient->unit.')',
-                            ]);
-                        }
-
-                        $ingredient->current_stock = bcsub((string) $ingredient->current_stock, $needed, 4);
-                        $ingredient->save();
+                    if ($isValidDiscount && $discount->valid_from && $now->lt($discount->valid_from)) {
+                        $isValidDiscount = false;
                     }
-                }
-            }
+                    if ($isValidDiscount && $discount->valid_until && $now->gt($discount->valid_until)) {
+                        $isValidDiscount = false;
+                    }
 
-            // Validasi & Hitung Diskon Order
-            $discountAmount = 0;
-            $discountId = $data['discount_id'] ?? null;
-            $discount = null;
-            $totalItemDiscounts = array_sum(array_column($lines, 'item_discount_amount'));
-
-            if ($discountId) {
-                $discount = Discount::where('id', $discountId)->lockForUpdate()->first();
-                $now = now();
-                $isValidDiscount = $discount && $discount->is_active && $subtotalAmount >= $discount->min_purchase_amount;
-
-                if ($isValidDiscount && $discount->valid_from && $now->lt($discount->valid_from)) {
-                    $isValidDiscount = false;
-                }
-                if ($isValidDiscount && $discount->valid_until && $now->gt($discount->valid_until)) {
-                    $isValidDiscount = false;
-                }
-
-                // [OQ-05 Opsi A] Validasi aturan penggabungan (stacking) diskon item vs diskon order
-                if ($isValidDiscount && $totalItemDiscounts > 0 && ! $discount->is_stackable) {
-                    throw ValidationException::withMessages([
-                        'discount_id' => 'Voucher diskon ini tidak dapat digabungkan dengan diskon produk.',
-                    ]);
-                }
-
-                // [INV-11 / AC-4.1] Validasi kuota di bawah penguncian baris (FOR UPDATE)
-                if ($isValidDiscount && $discount->usage_limit !== null) {
-                    $appliedCount = DiscountRedemption::where('discount_id', $discount->id)
-                        ->where('status', DiscountRedemption::STATUS_APPLIED)
-                        ->count();
-
-                    if ($appliedCount >= $discount->usage_limit) {
+                    // [OQ-05 Opsi A] Validasi aturan penggabungan (stacking) diskon item vs diskon order
+                    if ($isValidDiscount && $totalItemDiscounts > 0 && ! $discount->is_stackable) {
                         throw ValidationException::withMessages([
-                            'discount_id' => 'Kuota voucher telah habis.',
+                            'discount_id' => 'Voucher diskon ini tidak dapat digabungkan dengan diskon produk.',
+                        ]);
+                    }
+
+                    // [INV-11 / AC-4.1] Validasi kuota di bawah penguncian baris (FOR UPDATE)
+                    if ($isValidDiscount && $discount->usage_limit !== null) {
+                        $appliedCount = DiscountRedemption::where('discount_id', $discount->id)
+                            ->where('status', DiscountRedemption::STATUS_APPLIED)
+                            ->count();
+
+                        if ($appliedCount >= $discount->usage_limit) {
+                            throw ValidationException::withMessages([
+                                'discount_id' => 'Kuota voucher telah habis.',
+                            ]);
+                        }
+                    }
+
+                    if ($isValidDiscount) {
+                        $baseForOrderDiscount = $discount->is_stackable ? max(0, $subtotalAmount - $totalItemDiscounts) : $subtotalAmount;
+                        if ($discount->type === 'percentage') {
+                            $calc = (int) round($baseForOrderDiscount * ($discount->value / 100));
+                            if ($discount->max_discount_amount) {
+                                $calc = min($calc, $discount->max_discount_amount);
+                            }
+                            $discountAmount = $calc;
+                        } else {
+                            $discountAmount = min((int) $baseForOrderDiscount, $discount->value);
+                        }
+                    } else {
+                        $discountId = null; // Batalkan diskon jika tidak valid/tidak memenuhi syarat
+                    }
+                }
+
+                // [INCREMENT 4] Alokasi proporsional diskon order ke setiap baris item (Largest Remainder Method)
+                $totalEffectiveSubtotal = array_sum(array_column($lines, 'effective_subtotal'));
+                $allocatedOrderDiscounts = [];
+                $runningAllocated = 0;
+                $lineCount = count($lines);
+
+                foreach ($lines as $idx => $line) {
+                    if ($discountAmount <= 0 || $totalEffectiveSubtotal <= 0) {
+                        $allocatedOrderDiscounts[$idx] = 0.00;
+                    } elseif ($idx === $lineCount - 1) {
+                        // Penyerapan sisa sen/Rupiah terakhir agar total alokasi persis sama dengan discount_amount
+                        $allocatedOrderDiscounts[$idx] = max(0, $discountAmount - $runningAllocated);
+                    } else {
+                        $ratio = $line['effective_subtotal'] / $totalEffectiveSubtotal;
+                        $alloc = (int) round($discountAmount * $ratio);
+                        $runningAllocated += $alloc;
+                        $allocatedOrderDiscounts[$idx] = $alloc;
+                    }
+                }
+
+                ['tax_amount' => $taxAmount, 'total_amount' => $totalAmount] = $this->calculateOrderTotals($subtotalAmount, $discountAmount);
+
+                // RESOLUSI METODE PEMBAYARAN.
+                $dominantPaymentMethod = 'cash';
+                $cashReceivedForReceipt = null;
+                $orderChangeForReceipt = 0;
+                $finalPaymentLegs = [];
+
+                if ($parsedPaymentLegs !== null) {
+                    $sumApplied = array_sum(array_column($parsedPaymentLegs, 'amount'));
+
+                    if ($sumApplied !== $totalAmount) {
+                        throw ValidationException::withMessages([
+                            'payments' => 'Total seluruh metode pembayaran (Rp'.number_format($sumApplied, 0, ',', '.')
+                                .') tidak sama dengan total tagihan (Rp'.number_format($totalAmount, 0, ',', '.').').',
+                        ]);
+                    }
+
+                    $finalPaymentLegs = $parsedPaymentLegs;
+
+                    // "Dominant method" untuk kolom ringkas
+                    // orders.payment_method (legacy, single-value, dipertahankan
+                    // demi laporan/dashboard/receipt existing yang belum
+                    // diperbarui). KETERBATASAN DIKETAHUI: App\Enums\PaymentMethod
+                    // (enum LAMA yang dipakai cast Order::payment_method) TIDAK
+                    // punya case 'card'. Jika leg terbesar bermetode Card, method
+                    // dominan di-fallback ke leg non-Card terbesar berikutnya
+                    // (atau 'qris' bila SELURUH leg Card) agar tidak melempar
+                    // ValueError setiap kali order ini dibaca ulang. Rincian
+                    // sesungguhnya (termasuk leg Card) tetap 100% akurat di
+                    // tabel `payments`. PERLU TINDAK LANJUT: satukan
+                    // App\Enums\PaymentMethod dengan App\Enums\PaymentMethod.
+                    $legsByAmountDesc = collect($finalPaymentLegs)->sortByDesc('amount');
+                    $dominantPaymentMethod = $legsByAmountDesc->first()['method']->value;
+
+                    $cashLegTotal = collect($finalPaymentLegs)->where('method', PaymentMethod::Cash)->sum('amount');
+                    $cashReceivedForReceipt = $cashLegTotal > 0 ? $cashLegTotal : null;
+                    $orderChangeForReceipt = 0; // kontrak exact-sum -- lihat docblock method ini
+
+                    $initialStatus = OrderStatus::Paid;
+                } else {
+                    // LEGACY PATH -- single payment_method.
+                    // [SPRINT-0] 'cash' punya dua sub-alur:
+                    //  - Kasir POS reguler: uang SUDAH diterima fisik saat ini -> validasi
+                    //    kecukupan tunai + langsung Paid.
+                    //  - Self-Order pelanggan (is_self_order_cash=true): 'cash' di sini
+                    //    adalah JANJI bayar di kasir, uang BELUM diterima -> lewati validasi
+                    //    kecukupan, status Pending, diselesaikan lewat payPendingOrder()
+                    //    (alur "Tarik Pesanan" yang sudah ada, TIDAK dibuat ulang).
+                    $dominantPaymentMethod = $data['payment_method'] ?? 'cash';
+                    $cashReceived = $data['cash_received'] ?? null;
+                    $isDeferredCash = $dominantPaymentMethod === 'cash' && ! empty($data['is_self_order_cash']);
+                    $isImmediateCash = $dominantPaymentMethod === 'cash' && ! $isDeferredCash;
+
+                    if ($isImmediateCash && (int) $cashReceived < $totalAmount) {
+                        throw ValidationException::withMessages([
+                            'cash_received' => 'Uang tunai yang diterima tidak mencukupi total tagihan.',
+                        ]);
+                    }
+
+                    $cashReceivedForReceipt = $isImmediateCash ? ($cashReceived ?? $totalAmount) : null;
+                    $orderChangeForReceipt = ($isImmediateCash && $cashReceived)
+                        ? max(0, (int) $cashReceived - $totalAmount)
+                        : 0;
+
+                    $initialStatus = $isImmediateCash ? OrderStatus::Paid : OrderStatus::Pending;
+                }
+
+                // Generate order code unik (UNCHANGED).
+                do {
+                    $orderCode = 'POS-'.strtoupper(Str::random(6)).'-'.rand(100, 999);
+                } while (Order::where('order_code', $orderCode)->exists());
+
+                $order = Order::forceCreate([
+                    'user_id' => $userId,
+                    'shift_id' => $data['shift_id'] ?? null,
+                    'order_code' => $orderCode,
+                    'idempotency_key' => $data['idempotency_key'] ?? (string) Str::uuid(),
+                    'order_date' => now()->toDateString(),
+                    'subtotal_amount' => $subtotalAmount,
+                    'discount_id' => $discountId,
+                    'discount_amount' => $discountAmount,
+                    'tax_amount' => $taxAmount,
+                    'order_amount' => $totalAmount,
+                    'cash_received' => $cashReceivedForReceipt,
+                    'order_change' => $orderChangeForReceipt,
+                    'order_status' => $initialStatus,
+                    'payment_method' => $dominantPaymentMethod,
+                    'table_id' => $tableId,
+                    'table_number' => $tableNumber,
+                    'customer_id' => $data['customer_id'] ?? null,
+                    'order_type' => $orderType->value,
+                    'origin_channel' => $data['origin_channel'] ?? 'pos_cashier',
+                    'source_reference' => $data['source_reference'] ?? null,
+                    'created_by_device_id' => $resolvedDeviceId,
+                ]);
+
+                if ($lockedTable !== null) {
+                    $lockedTable->update(['operational_status' => 'occupied']);
+                }
+
+                // Buat order items
+                $createdItems = [];
+                foreach ($lines as $idx => $line) {
+                    $itemDiscountAmount = (float) $line['item_discount_amount'];
+                    $allocatedOrderDiscount = (float) ($allocatedOrderDiscounts[$idx] ?? 0.00);
+                    $netLineTotal = max(0, (float) $line['order_subtotal'] - $itemDiscountAmount - $allocatedOrderDiscount);
+
+                    $orderItem = OrderItem::create(array_merge(Arr::except($line, ['needs_stock_deduction', 'effective_subtotal']), [
+                        'order_id' => $order->id,
+                        'tenant_id' => $order->tenant_id,
+                        'store_id' => $order->store_id,
+                        'item_discount_id' => $line['item_discount_id'] ?? null,
+                        'item_discount_amount' => $itemDiscountAmount,
+                        'allocated_order_discount_amount' => $allocatedOrderDiscount,
+                        'net_line_total' => $netLineTotal,
+                    ]));
+                    $createdItems[] = $orderItem;
+
+                    if (! empty($line['needs_stock_deduction'])) {
+                        DB::table('stock_movements')->insert([
+                            'tenant_id' => $order->tenant_id,
+                            'store_id' => $order->store_id,
+                            'product_id' => $line['product_id'],
+                            'order_id' => $order->id,
+                            'order_item_id' => $orderItem->id,
+                            'type' => 'sale_deduction',
+                            'quantity' => -$line['qty'],
+                            'reason' => 'Checkout via POS',
+                            'idempotency_key' => "sale:{$order->id}:{$orderItem->id}",
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
+
+                    if (! empty($line['options'])) {
+                        $modifierSync = [];
+                        foreach ($line['options'] as $opt) {
+                            if (isset($opt['modifier_id'])) {
+                                $modifierSync[$opt['modifier_id']] = [
+                                    'price_at_time' => $opt['extra_price'] ?? 0,
+                                    'qty' => $line['qty'],
+                                    'tenant_id' => $order->tenant_id,
+                                    'store_id' => $order->store_id,
+                                ];
+                            }
+                        }
+                        if (! empty($modifierSync)) {
+                            $orderItem->modifiers()->sync($modifierSync);
+                        }
+                    }
+                }
+
+                // Ledger bahan baku granular, SETELAH order_item
+                // benar-benar punya id (FK order_item_id butuh baris nyata).
+                foreach ($lines as $i => $line) {
+                    $breakdown = $bomBreakdownByLineIndex[$i] ?? [];
+                    if (empty($breakdown)) {
+                        continue;
+                    }
+
+                    $orderItemId = $createdItems[$i]->id;
+
+                    foreach ($breakdown as $consumption) {
+                        $ingredient = $lockedIngredients->get($consumption['ingredient_id']);
+                        $idempotencyKey = 'sale_deduction:'.$order->order_code.':'.$orderItemId.':'.$consumption['ingredient_id'];
+
+                        IngredientStockMovement::create([
+                            'ingredient_id' => $consumption['ingredient_id'],
+                            'order_id' => $order->id,
+                            'order_item_id' => $orderItemId,
+                            'type' => IngredientStockMovementTypeEnum::SaleDeduction,
+                            'quantity' => bcmul($consumption['qty'], '-1', 4), // signed: keluar = negatif
+                            'unit_cost' => $ingredient?->cost_per_unit,
+                            'reason' => 'Konsumsi otomatis saat penjualan order '.$order->order_code.'.',
+                            'idempotency_key' => $idempotencyKey,
+                            'created_by' => $userId,
                         ]);
                     }
                 }
 
-                if ($isValidDiscount) {
-                    $baseForOrderDiscount = $discount->is_stackable ? max(0, $subtotalAmount - $totalItemDiscounts) : $subtotalAmount;
-                    if ($discount->type === 'percentage') {
-                        $calc = (int) round($baseForOrderDiscount * ($discount->value / 100));
-                        if ($discount->max_discount_amount) {
-                            $calc = min($calc, $discount->max_discount_amount);
-                        }
-                        $discountAmount = $calc;
-                    } else {
-                        $discountAmount = min((int) $baseForOrderDiscount, $discount->value);
+                // LEDGER PEMBAYARAN.
+                if (! empty($finalPaymentLegs)) {
+                    foreach ($finalPaymentLegs as $i => $leg) {
+                        Payment::create([
+                            'tenant_id' => $order->tenant_id,
+                            'store_id' => $order->store_id,
+                            'device_id' => $resolvedDeviceId,
+                            'order_id' => $order->id,
+                            'shift_id' => $order->shift_id,
+                            'payment_method' => $leg['method'],
+                            'amount' => $leg['amount'],
+                            'amount_tendered' => $leg['amount_tendered'] ?? $leg['amount'],
+                            'change_amount' => $leg['change_amount'] ?? 0,
+                            'reference_number' => $leg['reference_number'],
+                            'status' => PaymentStatusEnum::Captured,
+                            'captured_at' => now(),
+                            'processed_by' => $userId,
+                            'idempotency_key' => $leg['idempotency_key'] ?? ('payment:'.$order->order_code.':'.$i),
+                        ]);
                     }
-                } else {
-                    $discountId = null; // Batalkan diskon jika tidak valid/tidak memenuhi syarat
-                }
-            }
-
-            // [INCREMENT 4] Alokasi proporsional diskon order ke setiap baris item (Largest Remainder Method)
-            $totalEffectiveSubtotal = array_sum(array_column($lines, 'effective_subtotal'));
-            $allocatedOrderDiscounts = [];
-            $runningAllocated = 0;
-            $lineCount = count($lines);
-
-            foreach ($lines as $idx => $line) {
-                if ($discountAmount <= 0 || $totalEffectiveSubtotal <= 0) {
-                    $allocatedOrderDiscounts[$idx] = 0.00;
-                } elseif ($idx === $lineCount - 1) {
-                    // Penyerapan sisa sen/Rupiah terakhir agar total alokasi persis sama dengan discount_amount
-                    $allocatedOrderDiscounts[$idx] = max(0, $discountAmount - $runningAllocated);
-                } else {
-                    $ratio = $line['effective_subtotal'] / $totalEffectiveSubtotal;
-                    $alloc = (int) round($discountAmount * $ratio);
-                    $runningAllocated += $alloc;
-                    $allocatedOrderDiscounts[$idx] = $alloc;
-                }
-            }
-
-            ['tax_amount' => $taxAmount, 'total_amount' => $totalAmount] = $this->calculateOrderTotals($subtotalAmount, $discountAmount);
-
-            // RESOLUSI METODE PEMBAYARAN.
-            $dominantPaymentMethod = 'cash';
-            $cashReceivedForReceipt = null;
-            $orderChangeForReceipt = 0;
-            $finalPaymentLegs = [];
-
-            if ($parsedPaymentLegs !== null) {
-                $sumApplied = array_sum(array_column($parsedPaymentLegs, 'amount'));
-
-                if ($sumApplied !== $totalAmount) {
-                    throw ValidationException::withMessages([
-                        'payments' => 'Total seluruh metode pembayaran (Rp'.number_format($sumApplied, 0, ',', '.')
-                            .') tidak sama dengan total tagihan (Rp'.number_format($totalAmount, 0, ',', '.').').',
-                    ]);
-                }
-
-                $finalPaymentLegs = $parsedPaymentLegs;
-
-                // "Dominant method" untuk kolom ringkas
-                // orders.payment_method (legacy, single-value, dipertahankan
-                // demi laporan/dashboard/receipt existing yang belum
-                // diperbarui). KETERBATASAN DIKETAHUI: App\Enums\PaymentMethod
-                // (enum LAMA yang dipakai cast Order::payment_method) TIDAK
-                // punya case 'card'. Jika leg terbesar bermetode Card, method
-                // dominan di-fallback ke leg non-Card terbesar berikutnya
-                // (atau 'qris' bila SELURUH leg Card) agar tidak melempar
-                // ValueError setiap kali order ini dibaca ulang. Rincian
-                // sesungguhnya (termasuk leg Card) tetap 100% akurat di
-                // tabel `payments`. PERLU TINDAK LANJUT: satukan
-                // App\Enums\PaymentMethod dengan App\Enums\PaymentMethod.
-                $legsByAmountDesc = collect($finalPaymentLegs)->sortByDesc('amount');
-                $dominantPaymentMethod = $legsByAmountDesc->first()['method']->value;
-
-                $cashLegTotal = collect($finalPaymentLegs)->where('method', PaymentMethod::Cash)->sum('amount');
-                $cashReceivedForReceipt = $cashLegTotal > 0 ? $cashLegTotal : null;
-                $orderChangeForReceipt = 0; // kontrak exact-sum -- lihat docblock method ini
-
-                $initialStatus = OrderStatus::Paid;
-            } else {
-                // LEGACY PATH -- single payment_method.
-                // [SPRINT-0] 'cash' punya dua sub-alur:
-                //  - Kasir POS reguler: uang SUDAH diterima fisik saat ini -> validasi
-                //    kecukupan tunai + langsung Paid.
-                //  - Self-Order pelanggan (is_self_order_cash=true): 'cash' di sini
-                //    adalah JANJI bayar di kasir, uang BELUM diterima -> lewati validasi
-                //    kecukupan, status Pending, diselesaikan lewat payPendingOrder()
-                //    (alur "Tarik Pesanan" yang sudah ada, TIDAK dibuat ulang).
-                $dominantPaymentMethod = $data['payment_method'] ?? 'cash';
-                $cashReceived = $data['cash_received'] ?? null;
-                $isDeferredCash = $dominantPaymentMethod === 'cash' && ! empty($data['is_self_order_cash']);
-                $isImmediateCash = $dominantPaymentMethod === 'cash' && ! $isDeferredCash;
-
-                if ($isImmediateCash && (int) $cashReceived < $totalAmount) {
-                    throw ValidationException::withMessages([
-                        'cash_received' => 'Uang tunai yang diterima tidak mencukupi total tagihan.',
-                    ]);
-                }
-
-                $cashReceivedForReceipt = $isImmediateCash ? ($cashReceived ?? $totalAmount) : null;
-                $orderChangeForReceipt = ($isImmediateCash && $cashReceived)
-                    ? max(0, (int) $cashReceived - $totalAmount)
-                    : 0;
-
-                $initialStatus = $isImmediateCash ? OrderStatus::Paid : OrderStatus::Pending;
-            }
-
-            // Generate order code unik (UNCHANGED).
-            do {
-                $orderCode = 'POS-'.strtoupper(Str::random(6)).'-'.rand(100, 999);
-            } while (Order::where('order_code', $orderCode)->exists());
-
-            $order = Order::forceCreate([
-                'user_id' => $userId,
-                'shift_id' => $data['shift_id'] ?? null,
-                'order_code' => $orderCode,
-                'idempotency_key' => $data['idempotency_key'] ?? (string) Str::uuid(),
-                'order_date' => now()->toDateString(),
-                'subtotal_amount' => $subtotalAmount,
-                'discount_id' => $discountId,
-                'discount_amount' => $discountAmount,
-                'tax_amount' => $taxAmount,
-                'order_amount' => $totalAmount,
-                'cash_received' => $cashReceivedForReceipt,
-                'order_change' => $orderChangeForReceipt,
-                'order_status' => $initialStatus,
-                'payment_method' => $dominantPaymentMethod,
-                'table_id' => $data['table_id'] ?? null,
-                'customer_id' => $data['customer_id'] ?? null,
-                'order_type' => $data['order_type'] ?? OrderType::DineIn->value,
-                'origin_channel' => $data['origin_channel'] ?? 'pos_cashier',
-                'source_reference' => $data['source_reference'] ?? null,
-                'created_by_device_id' => $resolvedDeviceId,
-            ]);
-
-            // Buat order items
-            $createdItems = [];
-            foreach ($lines as $idx => $line) {
-                $itemDiscountAmount = (float) $line['item_discount_amount'];
-                $allocatedOrderDiscount = (float) ($allocatedOrderDiscounts[$idx] ?? 0.00);
-                $netLineTotal = max(0, (float) $line['order_subtotal'] - $itemDiscountAmount - $allocatedOrderDiscount);
-
-                $orderItem = OrderItem::create(array_merge(Arr::except($line, ['needs_stock_deduction', 'effective_subtotal']), [
-                    'order_id' => $order->id,
-                    'tenant_id' => $order->tenant_id,
-                    'store_id' => $order->store_id,
-                    'item_discount_id' => $line['item_discount_id'] ?? null,
-                    'item_discount_amount' => $itemDiscountAmount,
-                    'allocated_order_discount_amount' => $allocatedOrderDiscount,
-                    'net_line_total' => $netLineTotal,
-                ]));
-                $createdItems[] = $orderItem;
-
-                if (! empty($line['needs_stock_deduction'])) {
-                    DB::table('stock_movements')->insert([
-                        'tenant_id' => $order->tenant_id,
-                        'store_id' => $order->store_id,
-                        'product_id' => $line['product_id'],
-                        'order_id' => $order->id,
-                        'order_item_id' => $orderItem->id,
-                        'type' => 'sale_deduction',
-                        'quantity' => -$line['qty'],
-                        'reason' => 'Checkout via POS',
-                        'idempotency_key' => "sale:{$order->id}:{$orderItem->id}",
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
-
-                if (! empty($line['options'])) {
-                    $modifierSync = [];
-                    foreach ($line['options'] as $opt) {
-                        if (isset($opt['modifier_id'])) {
-                            $modifierSync[$opt['modifier_id']] = [
-                                'price_at_time' => $opt['extra_price'] ?? 0,
-                                'qty' => $line['qty'],
-                                'tenant_id' => $order->tenant_id,
-                                'store_id' => $order->store_id,
-                            ];
-                        }
-                    }
-                    if (! empty($modifierSync)) {
-                        $orderItem->modifiers()->sync($modifierSync);
-                    }
-                }
-            }
-
-            // Ledger bahan baku granular, SETELAH order_item
-            // benar-benar punya id (FK order_item_id butuh baris nyata).
-            foreach ($lines as $i => $line) {
-                $breakdown = $bomBreakdownByLineIndex[$i] ?? [];
-                if (empty($breakdown)) {
-                    continue;
-                }
-
-                $orderItemId = $createdItems[$i]->id;
-
-                foreach ($breakdown as $consumption) {
-                    $ingredient = $lockedIngredients->get($consumption['ingredient_id']);
-                    $idempotencyKey = 'sale_deduction:'.$order->order_code.':'.$orderItemId.':'.$consumption['ingredient_id'];
-
-                    IngredientStockMovement::create([
-                        'ingredient_id' => $consumption['ingredient_id'],
-                        'order_id' => $order->id,
-                        'order_item_id' => $orderItemId,
-                        'type' => IngredientStockMovementTypeEnum::SaleDeduction,
-                        'quantity' => bcmul($consumption['qty'], '-1', 4), // signed: keluar = negatif
-                        'unit_cost' => $ingredient?->cost_per_unit,
-                        'reason' => 'Konsumsi otomatis saat penjualan order '.$order->order_code.'.',
-                        'idempotency_key' => $idempotencyKey,
-                        'created_by' => $userId,
-                    ]);
-                }
-            }
-
-            // LEDGER PEMBAYARAN.
-            if (! empty($finalPaymentLegs)) {
-                foreach ($finalPaymentLegs as $i => $leg) {
+                } elseif ($initialStatus === OrderStatus::Paid) {
+                    // Jalur legacy TUNAI tunggal -- tetap dicatat
+                    // SATU baris di ledger `payments` agar tabel ini konsisten
+                    // jadi sumber kebenaran untuk SEMUA order Paid, bukan hanya
+                    // yang lewat jalur split.
                     Payment::create([
                         'tenant_id' => $order->tenant_id,
                         'store_id' => $order->store_id,
                         'device_id' => $resolvedDeviceId,
                         'order_id' => $order->id,
                         'shift_id' => $order->shift_id,
-                        'payment_method' => $leg['method'],
-                        'amount' => $leg['amount'],
-                        'amount_tendered' => $leg['amount_tendered'] ?? $leg['amount'],
-                        'change_amount' => $leg['change_amount'] ?? 0,
-                        'reference_number' => $leg['reference_number'],
+                        'payment_method' => PaymentMethod::from($dominantPaymentMethod),
+                        'amount' => $totalAmount,
+                        'amount_tendered' => $cashReceivedForReceipt ?? $totalAmount,
+                        'change_amount' => $orderChangeForReceipt ?? 0,
                         'status' => PaymentStatusEnum::Captured,
                         'captured_at' => now(),
                         'processed_by' => $userId,
-                        'idempotency_key' => $leg['idempotency_key'] ?? ('payment:'.$order->order_code.':'.$i),
+                        'idempotency_key' => 'payment:'.$order->order_code.':0',
                     ]);
                 }
-            } elseif ($initialStatus === OrderStatus::Paid) {
-                // Jalur legacy TUNAI tunggal -- tetap dicatat
-                // SATU baris di ledger `payments` agar tabel ini konsisten
-                // jadi sumber kebenaran untuk SEMUA order Paid, bukan hanya
-                // yang lewat jalur split.
-                Payment::create([
-                    'tenant_id' => $order->tenant_id,
-                    'store_id' => $order->store_id,
-                    'device_id' => $resolvedDeviceId,
-                    'order_id' => $order->id,
-                    'shift_id' => $order->shift_id,
-                    'payment_method' => PaymentMethod::from($dominantPaymentMethod),
-                    'amount' => $totalAmount,
-                    'amount_tendered' => $cashReceivedForReceipt ?? $totalAmount,
-                    'change_amount' => $orderChangeForReceipt ?? 0,
-                    'status' => PaymentStatusEnum::Captured,
-                    'captured_at' => now(),
-                    'processed_by' => $userId,
-                    'idempotency_key' => 'payment:'.$order->order_code.':0',
-                ]);
-            }
 
-            // LOYALTY POINTS -- hanya untuk order yang
-            // LANGSUNG Paid pada panggilan ini (cash / split payment).
-            // Order Pending (Midtrans non-cash) SENGAJA tidak diberi poin
-            // di sini -- lihat PERLU TINDAK LANJUT di Fase 1.
-            if (! empty($data['customer_id']) && $initialStatus === OrderStatus::Paid) {
-                $this->grantLoyaltyPoints((int) $data['customer_id'], $order, (int) round($subtotalAmount));
-            }
-
-            // [INCREMENT 4] Catat ledger pemakaian kuota voucher (DiscountRedemption)
-            if ($discountId && $discount && $discountAmount > 0) {
-                DiscountRedemption::create([
-                    'tenant_id' => $order->tenant_id,
-                    'store_id' => $order->store_id,
-                    'discount_id' => $discount->id,
-                    'order_id' => $order->id,
-                    'customer_id' => $order->customer_id,
-                    'redeemed_by_user_id' => $userId,
-                    'discount_code_snapshot' => $discount->code,
-                    'amount_discounted' => $discountAmount,
-                    'status' => DiscountRedemption::STATUS_APPLIED,
-                    'redeemed_at' => now(),
-                ]);
-            }
-
-            // [INCREMENT 4] Tandai ParkedCart sebagai converted jika order berasal dari hold cart
-            if ($parkedCart) {
-                $parkedCart->update([
-                    'status' => ParkedCart::STATUS_CONVERTED,
-                    'converted_order_id' => $order->id,
-                ]);
-            }
-
-            // PATCH FOR S-02/S-14: Snap Token Midtrans HANYA untuk jalur LEGACY non-cash TANPA
-            // split payment. Panggilan HTTP Snap DIPINDAH ke afterCommit agar lock
-            // Product/Ingredient dilepas saat COMMIT (bukan ditahan selama latensi jaringan).
-            if (empty($finalPaymentLegs) && $dominantPaymentMethod !== 'cash') {
-                // PATCH FOR S-02: hitung adjustment agar sum(item_details) == gross_amount.
-                $roundingAdjustment = (int) $totalAmount - (int) $subtotalAmount - (int) $taxAmount;
-                $itemDetails = [
-                    ['id' => 'ORDER-'.$order->id, 'price' => (int) $subtotalAmount, 'quantity' => 1, 'name' => 'Pesanan POS'],
-                    ['id' => 'TAX-PPN',           'price' => (int) $taxAmount,      'quantity' => 1, 'name' => 'Pajak'],
-                ];
-                if ($roundingAdjustment !== 0) {
-                    $itemDetails[] = ['id' => 'ROUNDING', 'price' => $roundingAdjustment, 'quantity' => 1, 'name' => 'Pembulatan'];
+                // LOYALTY POINTS -- hanya untuk order yang
+                // LANGSUNG Paid pada panggilan ini (cash / split payment).
+                // Order Pending (Midtrans non-cash) SENGAJA tidak diberi poin
+                // di sini -- lihat PERLU TINDAK LANJUT di Fase 1.
+                if (! empty($data['customer_id']) && $initialStatus === OrderStatus::Paid) {
+                    $this->grantLoyaltyPoints((int) $data['customer_id'], $order, (int) round($subtotalAmount));
                 }
 
-                $snapParams = [
-                    'transaction_details' => [
-                        'order_id' => $order->order_code,
-                        'gross_amount' => (int) $totalAmount,
-                    ],
-                    'item_details' => $itemDetails,
-                    'customer_details' => [
-                        'first_name' => 'Pelanggan Walk-in',
-                    ],
-                    'expiry' => [
-                        'unit' => 'minutes',
-                        'duration' => 30,
-                    ],
-                ];
-
-                $enabledPayments = match ($dominantPaymentMethod) {
-                    'qris' => ['other_qris', 'gopay'],
-                    'ewallet' => ['gopay', 'shopeepay'],
-                    default => [],
-                };
-
-                if (! empty($enabledPayments)) {
-                    $snapParams['enabled_payments'] = $enabledPayments;
+                // [INCREMENT 4] Catat ledger pemakaian kuota voucher (DiscountRedemption)
+                if ($discountId && $discount && $discountAmount > 0) {
+                    DiscountRedemption::create([
+                        'tenant_id' => $order->tenant_id,
+                        'store_id' => $order->store_id,
+                        'discount_id' => $discount->id,
+                        'order_id' => $order->id,
+                        'customer_id' => $order->customer_id,
+                        'redeemed_by_user_id' => $userId,
+                        'discount_code_snapshot' => $discount->code,
+                        'amount_discounted' => $discountAmount,
+                        'status' => DiscountRedemption::STATUS_APPLIED,
+                        'redeemed_at' => now(),
+                    ]);
                 }
 
-                // PATCH FOR S-14: afterCommit agar lock dilepas lebih cepat.
-                $capturedOrder = $order;
-                $capturedParams = $snapParams;
-                DB::afterCommit(function () use ($capturedOrder, $capturedParams) {
-                    try {
-                        Config::$serverKey = config('services.midtrans.server_key');
-                        Config::$isProduction = config('services.midtrans.is_production', false);
-                        Config::$isSanitized = config('services.midtrans.is_sanitized', true);
-                        Config::$is3ds = config('services.midtrans.is_3ds', true);
+                // [INCREMENT 4] Tandai ParkedCart sebagai converted jika order berasal dari hold cart
+                if ($parkedCart) {
+                    $parkedCart->update([
+                        'status' => ParkedCart::STATUS_CONVERTED,
+                        'converted_order_id' => $order->id,
+                    ]);
+                }
 
-                        if (! config('services.midtrans.is_production', false)) {
-                            Config::$curlOptions = [
-                                CURLOPT_SSL_VERIFYHOST => 0,
-                                CURLOPT_SSL_VERIFYPEER => false,
-                                CURLOPT_HTTPHEADER => [],
-                            ];
-                        }
-
-                        $capturedOrder->forceFill(['snap_token' => Snap::getSnapToken($capturedParams)])->save();
-                    } catch (\Throwable $e) {
-                        Log::error('[SNAP] gagal membuat token', ['order' => $capturedOrder->order_code, 'error' => $e->getMessage()]);
-                        // Lepas reservasi stok. Butuh P-01 agar transisi 'cancel' lolos CHECK.
-                        try {
-                            app(self::class)->updateStatusFromMidtransNotification($capturedOrder->order_code, 'cancel', null);
-                        } catch (\Throwable $inner) {
-                            Log::critical('[SNAP] gagal membatalkan order setelah Snap gagal', [
-                                'order' => $capturedOrder->order_code,
-                                'error' => $inner->getMessage(),
-                            ]);
-                        }
+                // PATCH FOR S-02/S-14: Snap Token Midtrans HANYA untuk jalur LEGACY non-cash TANPA
+                // split payment. Panggilan HTTP Snap DIPINDAH ke afterCommit agar lock
+                // Product/Ingredient dilepas saat COMMIT (bukan ditahan selama latensi jaringan).
+                if (empty($finalPaymentLegs) && $dominantPaymentMethod !== 'cash') {
+                    // PATCH FOR S-02: hitung adjustment agar sum(item_details) == gross_amount.
+                    $roundingAdjustment = (int) $totalAmount - (int) $subtotalAmount - (int) $taxAmount;
+                    $itemDetails = [
+                        ['id' => 'ORDER-'.$order->id, 'price' => (int) $subtotalAmount, 'quantity' => 1, 'name' => 'Pesanan POS'],
+                        ['id' => 'TAX-PPN',           'price' => (int) $taxAmount,      'quantity' => 1, 'name' => 'Pajak'],
+                    ];
+                    if ($roundingAdjustment !== 0) {
+                        $itemDetails[] = ['id' => 'ROUNDING', 'price' => $roundingAdjustment, 'quantity' => 1, 'name' => 'Pembulatan'];
                     }
-                });
-            }
 
-            return $order;
-        }, attempts: 3);
+                    $snapParams = [
+                        'transaction_details' => [
+                            'order_id' => $order->order_code,
+                            'gross_amount' => (int) $totalAmount,
+                        ],
+                        'item_details' => $itemDetails,
+                        'customer_details' => [
+                            'first_name' => 'Pelanggan Walk-in',
+                        ],
+                        'expiry' => [
+                            'unit' => 'minutes',
+                            'duration' => 30,
+                        ],
+                    ];
+
+                    $enabledPayments = match ($dominantPaymentMethod) {
+                        'qris' => ['other_qris', 'gopay'],
+                        'ewallet' => ['gopay', 'shopeepay'],
+                        default => [],
+                    };
+
+                    if (! empty($enabledPayments)) {
+                        $snapParams['enabled_payments'] = $enabledPayments;
+                    }
+
+                    // PATCH FOR S-14: afterCommit agar lock dilepas lebih cepat.
+                    $capturedOrder = $order;
+                    $capturedParams = $snapParams;
+                    DB::afterCommit(function () use ($capturedOrder, $capturedParams) {
+                        try {
+                            Config::$serverKey = config('services.midtrans.server_key');
+                            Config::$isProduction = config('services.midtrans.is_production', false);
+                            Config::$isSanitized = config('services.midtrans.is_sanitized', true);
+                            Config::$is3ds = config('services.midtrans.is_3ds', true);
+
+                            if (! config('services.midtrans.is_production', false)) {
+                                Config::$curlOptions = [
+                                    CURLOPT_SSL_VERIFYHOST => 0,
+                                    CURLOPT_SSL_VERIFYPEER => false,
+                                    CURLOPT_HTTPHEADER => [],
+                                ];
+                            }
+
+                            $capturedOrder->forceFill(['snap_token' => Snap::getSnapToken($capturedParams)])->save();
+                        } catch (\Throwable $e) {
+                            Log::error('[SNAP] gagal membuat token', ['order' => $capturedOrder->order_code, 'error' => $e->getMessage()]);
+                            // Lepas reservasi stok. Butuh P-01 agar transisi 'cancel' lolos CHECK.
+                            try {
+                                app(self::class)->updateStatusFromMidtransNotification($capturedOrder->order_code, 'cancel', null);
+                            } catch (\Throwable $inner) {
+                                Log::critical('[SNAP] gagal membatalkan order setelah Snap gagal', [
+                                    'order' => $capturedOrder->order_code,
+                                    'error' => $inner->getMessage(),
+                                ]);
+                            }
+                        }
+                    });
+                }
+
+                return $order;
+            }, attempts: 3);
+        } catch (UniqueConstraintViolationException $e) {
+            // Tangkap race-condition duplikasi idempotency_key secara aman (ADR-007)
+            if (! empty($data['idempotency_key']) && $tenantId !== null) {
+                $existingOrder = Order::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->where('idempotency_key', $data['idempotency_key'])
+                    ->first();
+                if ($existingOrder) {
+                    return $existingOrder;
+                }
+            }
+            throw $e;
+        }
         // attempts: 3 ditambahkan (sebelumnya default 1) --
         // permukaan lock kini lebih besar (Ingredients, Customer). Lihat
         // Fase 1.4 poin 6 untuk trade-off retry vs pemanggilan Snap ganda.
@@ -1287,6 +1381,7 @@ class TransactionService
 
                     if (in_array($newStatus, [OrderStatus::Failed, OrderStatus::Cancelled, OrderStatus::Expired], true)) {
                         $this->restoreStockForOrder($order);
+                        $this->syncTableStatusOnOrderFinalized($order);
                     }
                 }
             }
@@ -1398,6 +1493,16 @@ class TransactionService
                 $tendered = isset($providerMeta['amount_tendered']) ? (int) $providerMeta['amount_tendered'] : (int) $lockedAttempt->amount;
                 $change = isset($providerMeta['change_amount']) ? (int) $providerMeta['change_amount'] : 0;
                 $appliedAmount = (int) $lockedAttempt->amount;
+
+                // [CONC-05 / INV-PAY-01] Validasi overpayment under lock sebelum membuat record Payment
+                $currentPaid = (int) Payment::withoutGlobalScopes()
+                    ->where('order_id', $order->id)
+                    ->whereIn('status', [PaymentStatusEnum::Captured, 'settled'])
+                    ->sum('amount');
+
+                if ($currentPaid + $appliedAmount > (int) $order->order_amount) {
+                    throw new \DomainException('Penyelesaian pembayaran sebesar Rp'.number_format($appliedAmount, 0, ',', '.').' akan melebihi total tagihan pesanan (Sudah dibayar: Rp'.number_format($currentPaid, 0, ',', '.').', Total tagihan: Rp'.number_format((int) $order->order_amount, 0, ',', '.').').');
+                }
 
                 $pmEnum = PaymentMethod::tryFrom($lockedAttempt->payment_method) ?? PaymentMethod::Cash;
 
@@ -1634,8 +1739,8 @@ class TransactionService
             }
 
             DB::transaction(function () use ($order, $reason, $userId) {
-                // 1. Lock dan RE-VALIDASI di dalam transaksi (F-01 fix).
-                $lockedOrder = Order::where('id', $order->id)->lockForUpdate()->first();
+                // 1. Lock dan RE-VALIDASI di dalam transaksi (F-01 fix, CONC-02).
+                $lockedOrder = Order::withoutGlobalScopes()->where('id', $order->id)->lockForUpdate()->first();
 
                 if (! $lockedOrder || $lockedOrder->order_status !== OrderStatus::Paid) {
                     throw new \Exception(
@@ -1652,6 +1757,7 @@ class TransactionService
 
                 // 2. Restore all BOM & Product Stocks
                 $this->restoreStockForOrder($lockedOrder);
+                $this->syncTableStatusOnOrderFinalized($lockedOrder);
 
                 // 3. PATCH FOR F-02: Reverse payment records.
                 // Payments table immutable (update/delete throws), jadi kita
@@ -2021,5 +2127,39 @@ class TransactionService
         // meneruskan delta ke baris balance store aktif.
         $ingredient->current_stock = bcadd((string) $ingredient->current_stock, $delta, 4);
         $ingredient->save();
+    }
+
+    /**
+     * Sinkronkan status meja menjadi 'available' secara atomik saat pesanan di-void/cancel/expired,
+     * jika tidak ada lagi pesanan aktif lain di meja tersebut.
+     */
+    public function syncTableStatusOnOrderFinalized(Order $order): void
+    {
+        if (! $order->table_id) {
+            return;
+        }
+
+        $table = Table::withoutGlobalScopes()
+            ->where('tenant_id', $order->tenant_id)
+            ->where('store_id', $order->store_id)
+            ->where('id', $order->table_id)
+            ->lockForUpdate()
+            ->first();
+
+        if (! $table) {
+            return;
+        }
+
+        $hasOtherActiveOrders = Order::withoutGlobalScopes()
+            ->where('tenant_id', $table->tenant_id)
+            ->where('store_id', $table->store_id)
+            ->where('table_id', $table->id)
+            ->where('id', '!=', $order->id)
+            ->whereIn('order_status', [OrderStatus::Pending, OrderStatus::Paid])
+            ->exists();
+
+        if (! $hasOtherActiveOrders && $table->operational_status === 'occupied') {
+            $table->update(['operational_status' => 'available']);
+        }
     }
 }

@@ -1,0 +1,18 @@
+{
+    "name": "pagination",
+    "label": "Pagination",
+    "description": "Page navigation with previous/next controls and a windowed list of page numbers (with ellipses). Feed it the current and total pages from your paginator.",
+    "category": "Navigation",
+    "dependencies": [],
+    "props": [
+        { "name": "currentPage", "type": "text", "default": "1", "description": "The active page number." },
+        { "name": "totalPages", "type": "text", "default": "1", "description": "Total number of pages." },
+        { "name": "baseUrl", "type": "text", "default": null, "description": "Base URL for page links; defaults to the current request URL with a ?page= query." }
+    ],
+    "studio": {
+        "defaults": { "currentPage": "4", "totalPages": "12" }
+    },
+    "examples": [
+        { "title": "Basic", "description": "Previous/next controls with a windowed list of page numbers.", "file": "basic.blade.php" }
+    ]
+}

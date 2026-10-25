@@ -1,0 +1,20 @@
+{
+    "name": "rating",
+    "label": "Rating",
+    "description": "An interactive star rating with hover preview and click-to-set (click the current value again to clear). Read-only mode for display. Works with wire:model or a plain form field.",
+    "category": "Forms",
+    "dependencies": [],
+    "props": [
+        { "name": "value", "type": "text", "default": "0", "description": "Initial number of selected stars." },
+        { "name": "max", "type": "text", "default": "5", "description": "Total number of stars." },
+        { "name": "readonly", "type": "boolean", "default": false, "description": "Display the rating without allowing changes." },
+        { "name": "name", "type": "text", "default": null, "description": "Name for a hidden input, for plain form submission." },
+        { "name": "size", "type": "select", "default": "md", "options": ["sm", "md", "lg"], "description": "Star size." }
+    ],
+    "studio": {
+        "defaults": { "value": "3" }
+    },
+    "examples": [
+        { "title": "Sizes & read-only", "description": "Interactive stars in two sizes, plus a read-only display mode.", "file": "basic.blade.php" }
+    ]
+}

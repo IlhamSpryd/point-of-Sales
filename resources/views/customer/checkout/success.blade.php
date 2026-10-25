@@ -41,7 +41,7 @@
             @endif
 
             {{-- F-11 ETA --}}
-            <div x-show="status === 'paid' && eta > 0" x-cloak class="mt-4 inline-flex items-center gap-1.5 rounded-full bg-orange-100 px-3 py-1.5 text-sm font-medium text-orange-800">
+            <div x-show="status === 'paid' && eta > 0" x-cloak class="mt-4 inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800">
                 <span class="material-symbols-rounded text-[16px]">timer</span>
                 <span>Estimasi siap dalam <span x-text="eta"></span> menit</span>
             </div>

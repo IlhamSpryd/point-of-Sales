@@ -1,0 +1,18 @@
+{
+    "name": "kbd",
+    "label": "Kbd",
+    "description": "A keyboard key cap for shortcut hints — pairs with menus, tooltips, and command palettes.",
+    "category": "Display",
+    "dependencies": [],
+    "props": [],
+    "slots": [
+        { "name": "slot", "default": "⌘K", "description": "The key label — a single key or symbol reads best." }
+    ],
+    "studio": {
+        "card": "<span class=\"flex items-center gap-2 text-sm text-foreground/60\"><span class=\"flex items-center gap-1\"><x-components.kbd>⌘</x-components.kbd><x-components.kbd>K</x-components.kbd></span> to open the palette</span>"
+    },
+    "usage": "Wrap each key in its own <x-kbd> and group combos with a small flex gap.",
+    "examples": [
+        { "title": "Shortcut hints", "description": "Single keys, combos, and named keys inside helper text.", "file": "basic.blade.php", "height": "10rem" }
+    ]
+}

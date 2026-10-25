@@ -14,15 +14,15 @@
         <x-list-toolbar search-action="{{ route('categories.index') }}" search-placeholder="Cari kategori...">
             <x-slot:actions>
                 <a href="{{ route('categories.export') }}" class="flex-1 sm:flex-none">
-                    <x-button variant="secondary" type="button" class="w-full h-10">
+                    <x-ui.button variant="secondary" class="w-full h-10">
                         <span class="material-symbols-rounded text-[18px]">download</span> Ekspor Excel
-                    </x-button>
+                    </x-ui.button>
                 </a>
                 @if($canManage)
                     <a href="{{ route('categories.create') }}" class="flex-1 sm:flex-none" wire:navigate>
-                        <x-button variant="primary" type="button" class="w-full h-10">
+                        <x-ui.button variant="primary" class="w-full h-10">
                             <span class="material-symbols-rounded text-[18px]">add</span> Tambah Kategori
-                        </x-button>
+                        </x-ui.button>
                     </a>
                 @endif
             </x-slot:actions>
@@ -30,16 +30,16 @@
     </div>
 
     @if(session('success'))
-        <x-alert type="success">{{ session('success') }}</x-alert>
+        <x-ui.alert variant="success" class="mb-4">{{ session('success') }}</x-ui.alert>
     @endif
 
     @if(session('error'))
-        <x-alert type="error">{{ session('error') }}</x-alert>
+        <x-ui.alert variant="destructive" class="mb-4">{{ session('error') }}</x-ui.alert>
     @endif
 
     <div class="card-surface flex flex-col flex-1 min-h-0">
         {{-- Desktop/tablet-landscape: existing table --}}
-        <x-data-table>
+        <x-data-table :hideOnMobile="true">
             <x-slot:head>
                 <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kode</th>
                 <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Nama Kategori</th>
@@ -62,9 +62,9 @@
                     <td class="px-6 py-4 text-sm text-[#787774]">{{ $category->parent?->category_name ?? '— (Kategori Utama)' }}</td>
                     <td class="px-6 py-4">
                         @if($category->is_active ?? true)
-                            <x-badge type="success">Aktif</x-badge>
+                            <x-ui.badge variant="success" :dot="true">Aktif</x-ui.badge>
                         @else
-                            <x-badge type="secondary">Nonaktif</x-badge>
+                            <x-ui.badge variant="secondary" :dot="true">Nonaktif</x-ui.badge>
                         @endif
                     </td>
                     @if($canManage)

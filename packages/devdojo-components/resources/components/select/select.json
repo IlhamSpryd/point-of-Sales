@@ -1,0 +1,20 @@
+{
+    "name": "select",
+    "label": "Select",
+    "description": "A styled native select with an optional label, placeholder and automatic validation errors. Pass <option> elements as the content. Works with wire:model.",
+    "category": "Forms",
+    "dependencies": ["label"],
+    "props": [
+        { "name": "label", "type": "text", "default": null, "description": "Optional label rendered above the control." },
+        { "name": "placeholder", "type": "text", "default": null, "description": "Optional disabled-style first option with an empty value." }
+    ],
+    "slots": [
+        { "name": "slot", "description": "<option> elements for the select.", "default": "<option value=\"free\">Free</option><option value=\"pro\">Pro</option><option value=\"enterprise\">Enterprise</option>" }
+    ],
+    "studio": {
+        "card": "<div class=\"w-full max-w-xs\"><x-components.select label=\"Plan\"><option value=\"free\">Free</option><option value=\"pro\" selected>Pro</option><option value=\"enterprise\">Enterprise</option></x-components.select></div>"
+    },
+    "examples": [
+        { "title": "Basic", "description": "A labeled select with a placeholder option.", "file": "basic.blade.php" }
+    ]
+}

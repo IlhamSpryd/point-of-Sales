@@ -1,0 +1,18 @@
+{
+    "name": "date-picker",
+    "label": "Date Picker",
+    "description": "A calendar date picker bound to a read-only input, with month navigation, today/selected highlighting and several display formats. The calendar is teleported so it never clips. Works with wire:model.",
+    "category": "Forms",
+    "dependencies": ["label"],
+    "props": [
+        { "name": "label", "type": "text", "default": null, "description": "Optional label above the field." },
+        { "name": "placeholder", "type": "text", "default": "Select a date", "description": "Placeholder shown before a date is chosen." },
+        { "name": "format", "type": "select", "default": "M d, Y", "options": ["M d, Y", "MM-DD-YYYY", "DD-MM-YYYY", "YYYY-MM-DD", "D d M, Y"], "description": "How the selected date is formatted." },
+        { "name": "value", "type": "text", "default": null, "description": "Initial date value (parseable date string)." },
+        { "name": "name", "type": "text", "default": null, "description": "Name for a hidden input, for plain form submission." }
+    ],
+    "examples": [
+        { "title": "Basic", "description": "A labeled field that opens a teleported calendar.", "file": "basic.blade.php" },
+        { "title": "Custom format", "description": "Pre-fill a value and control how it displays.", "file": "custom-format.blade.php" }
+    ]
+}

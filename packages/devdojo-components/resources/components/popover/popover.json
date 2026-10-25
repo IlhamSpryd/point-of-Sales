@@ -1,0 +1,25 @@
+{
+    "name": "popover",
+    "label": "Popover",
+    "description": "A teleported floating panel that follows its trigger on scroll and resize. The same engine that powers the dropdown, with full control over placement.",
+    "category": "Overlays",
+    "dependencies": [],
+    "props": [
+        { "name": "position", "type": "select", "default": "bottom", "options": ["bottom", "top", "left", "right"], "description": "Which side of the trigger the popover opens on." },
+        { "name": "align", "type": "select", "default": "left", "options": ["left", "center", "right", "bottom"], "description": "Alignment of the popover relative to the trigger." },
+        { "name": "gap", "type": "text", "default": "2", "description": "Spacing between trigger and popover (Tailwind spacing units)." },
+        { "name": "animate", "type": "boolean", "default": true, "description": "Scale + fade the panel open from the corner nearest the trigger. Set false for a plain fade." }
+    ],
+    "slots": [
+        { "name": "trigger", "description": "The clickable element that opens the popover." },
+        { "name": "content", "description": "Pre-styled panel container slot." },
+        { "name": "slot", "description": "Fallback panel content when no `content` slot is given.", "default": "Popover content goes here." }
+    ],
+    "studio": {
+        "card": "<x-components.popover><x-slot:trigger><x-components.button variant=\"outline\" size=\"sm\">Open popover</x-components.button></x-slot:trigger><x-slot:content>This popover panel is anchored to its trigger.</x-slot:content></x-components.popover>",
+        "container": "<div class=\"flex min-h-96 w-full items-center justify-center\">{{component}}</div>"
+    },
+    "examples": [
+        { "title": "Placements", "description": "Full control over which side the panel opens on.", "file": "placements.blade.php", "height": "18rem" }
+    ]
+}

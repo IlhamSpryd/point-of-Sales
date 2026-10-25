@@ -1,0 +1,18 @@
+{
+    "name": "toast",
+    "label": "Toast",
+    "description": "A global notification stack with progress bars, hover-to-pause, and four types. Trigger from JS, Blade sessions, or Livewire events. The stack is a polite aria-live region and every toast has a keyboard-accessible dismiss button.",
+    "category": "Feedback",
+    "dependencies": [],
+    "props": [
+        { "name": "duration", "type": "text", "default": "5000", "description": "How long each toast stays visible, in milliseconds." }
+    ],
+    "studio": {
+        "card": "<x-components.button variant=\"outline\" size=\"sm\" x-on:click=\"$dispatch('pop-toast', { message: 'Saved', type: 'success', description: 'Your changes are safe.' })\">Show a toast</x-components.button>",
+        "container": "<div class=\"flex min-h-64 items-center justify-center\"><x-components.button x-on:click=\"$dispatch('pop-toast', { message: 'Saved', type: 'success', description: 'Your changes are safe.' })\">Pop a toast</x-components.button>{{component}}</div>"
+    },
+    "usage": "Place <x-toast /> once in your layout. Then call toast('Saved!', 'success') in JS, dispatch a 'pop-toast' Livewire event, or flash session('toast').",
+    "examples": [
+        { "title": "Types", "description": "Click a button to pop a toast — success, error, warning or info.", "file": "types.blade.php" }
+    ]
+}

@@ -1,0 +1,20 @@
+{
+    "name": "input",
+    "label": "Input",
+    "description": "A text input with an optional label and automatic validation error display for Livewire and request errors.",
+    "category": "Forms",
+    "dependencies": ["label"],
+    "props": [
+        { "name": "type", "type": "text", "default": "text", "description": "The native input type (text, email, password, number, etc.)." },
+        { "name": "label", "type": "text", "default": null, "description": "Optional label rendered above the input." }
+    ],
+    "studio": {
+        "card": "<div class=\"w-full max-w-xs\"><x-components.input label=\"Email\" type=\"email\" placeholder=\"you@example.com\" /></div>",
+        "container": "<div class=\"w-full max-w-sm mx-auto\">{{component}}</div>",
+        "defaults": { "label": "Full name" }
+    },
+    "examples": [
+        { "title": "Basic", "description": "Text inputs with a label above the field.", "file": "basic.blade.php" },
+        { "title": "Without a label", "description": "Bare input, useful when the label is handled elsewhere.", "file": "without-label.blade.php" }
+    ]
+}

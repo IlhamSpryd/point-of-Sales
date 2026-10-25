@@ -90,7 +90,7 @@
                                 </label>
                             </div>
 
-                            @if ($orderType === 'dine_in')
+                            @if ($orderType === 'dine_in' && $this->isTablesEnabled)
                                 <div class="relative">
                                     <select wire:model="tableId"
                                         class="bg-gray-100/80 border border-gray-200/50 text-gray-700 font-bold text-[13px] rounded-xl hover:bg-gray-200/50 hover:text-apeiron-ink focus:bg-white focus:border-gray-300 focus:ring-0 block pl-4 pr-9 py-1.5 transition-all duration-200 min-h-[36px] appearance-none cursor-pointer">
@@ -164,7 +164,7 @@
                             </span>
                         </label>
                     </div>
-                    @if ($orderType === 'dine_in')
+                    @if ($orderType === 'dine_in' && $this->isTablesEnabled)
                         <div class="relative">
                             <select wire:model="tableId"
                                 class="w-full bg-gray-100/80 border border-gray-200/50 text-gray-700 font-bold text-[13px] rounded-xl hover:bg-gray-200/50 hover:text-apeiron-ink focus:bg-white focus:border-gray-300 focus:ring-0 block pl-4 pr-9 py-2 transition-all duration-200 min-h-[40px] appearance-none cursor-pointer">
@@ -269,7 +269,7 @@
                                             @if ($inCartQty > 0)
                                                 <div class="absolute -top-2 -right-2 z-20 flex">
                                                     <span
-                                                        class="bg-white border-2 border-white text-apeiron-ink text-[11px] font-bold min-w-[24px] h-6 px-1 rounded-full flex items-center justify-center shadow-md shadow-apeiron-ink/30">
+                                                        class="bg-white border-2 border-white text-apeiron-ink text-[11px] font-bold min-w-[20px] h-5 px-1.5 rounded-md flex items-center justify-center shadow-md shadow-apeiron-ink/20">
                                                         {{ $inCartQty }}
                                                     </span>
                                                 </div>
@@ -328,15 +328,15 @@
                     <div class="flex items-center gap-3">
                         <h2 class="text-xl font-bold text-apeiron-ink leading-none">Keranjang</h2>
                         <span
-                            class="bg-apeiron-ink text-white text-[11px] font-bold px-2.5 py-0.5 rounded-full transition-all duration-300 transform">{{ count($this->cartLines) }}</span>
+                            class="bg-apeiron-ink text-white text-[11px] font-medium px-2 py-0.5 rounded-md transition-all duration-300 transform">{{ count($this->cartLines) }}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         @if ($pendingOrderCode)
                             <span title="Self Order Code"
-                                class="text-[11px] font-semibold text-amber-600 bg-amber-50 px-3 py-1 rounded-full uppercase tracking-wider border border-amber-200 flex items-center gap-1 shadow-sm">
+                                class="text-xs font-medium text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 flex items-center gap-1">
                                 #{{ $pendingOrderCode }}
                                 <button wire:click="cancelPendingOrderMode"
-                                    class="hover:text-amber-800 hover:bg-amber-100 rounded-full p-0.5 transition-colors ml-1">
+                                    class="hover:text-amber-800 hover:bg-amber-100 rounded p-0.5 transition-colors ml-1" title="Batalkan Self Order">
                                     <span class="material-symbols-rounded text-[14px] block">close</span>
                                 </button>
                             </span>
@@ -646,7 +646,7 @@
                             <button wire:click="submitOrder" id="btn-bayar"
                                 wire:loading.attr="disabled" wire:target="submitOrder"
                                 class="w-full h-12 bg-apeiron-ink hover:bg-[#111111] text-white rounded-xl font-bold text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2"
-                                @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId))>
+                                @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
                                 <span wire:loading wire:target="submitOrder" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
                                 <span wire:loading.remove wire:target="submitOrder">Bayar Sekarang</span>
                                 <span wire:loading wire:target="submitOrder">Memproses...</span>
@@ -669,7 +669,7 @@
                             <button type="button" id="btn-proses-bayar"
                                 class="w-full h-12 bg-apeiron-ink hover:bg-[#111111] text-white rounded-xl font-bold text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2"
                                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }} }); $dispatch('open-modal', 'checkout-payment')"
-                                @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && !$tableId))>
+                                @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
                                 Proses Pembayaran
                             </button>
                         @endif

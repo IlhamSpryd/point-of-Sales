@@ -10,6 +10,7 @@ use App\Models\Table;
 use App\Services\Context\TenantContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -40,8 +41,10 @@ class WaiterCallController extends Controller
         $tenantId = $table ? $table->tenant_id : app(TenantContext::class)->getTenantId();
         $storeId = $table ? $table->store_id : app(TenantContext::class)->getStoreId();
 
-        // PATCH FOR P-09: Dispatch event push notification ke KDS/Kasir
-        WaiterCalled::dispatch($tableId, $tableName, $tenantId, $storeId);
+        // Dispatch event push notification ke KDS/Kasir inside afterCommit
+        DB::afterCommit(function () use ($tableId, $tableName, $tenantId, $storeId) {
+            WaiterCalled::dispatch($tableId, $tableName, $tenantId, $storeId);
+        });
 
         return response()->json(['message' => "Panggilan terkirim. Staf sedang menuju {$tableName}."]);
     }

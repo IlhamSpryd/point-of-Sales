@@ -22,6 +22,7 @@ use App\Services\CartService;
 use App\Services\CashierPinService;
 use App\Services\CatalogPriceResolverService;
 use App\Services\Context\TenantContext;
+use App\Services\EntitlementService;
 use App\Services\MenuCacheService;
 use App\Services\TransactionService;
 use Illuminate\Support\Facades\Auth;
@@ -145,9 +146,13 @@ class CreateOrder extends Component
     #[Locked]
     public ?int $shiftId = null;
 
+    #[Locked]
+    public ?int $activeStoreId = null;
+
     public function mount(): void
     {
         $this->idempotencyKey = (string) Str::uuid();
+        $this->activeStoreId = app(TenantContext::class)->getStoreId();
 
         $user = Auth::user();
         if ($user) {
@@ -167,7 +172,7 @@ class CreateOrder extends Component
 
     public function updatedOrderType(): void
     {
-        if ($this->orderType === 'takeaway') {
+        if ($this->orderType === 'takeaway' || ! $this->isTablesEnabled()) {
             $this->tableId = null; // dropdown meja disembunyikan otomatis via Blade
         }
     }
@@ -237,9 +242,39 @@ class CreateOrder extends Component
     }
 
     #[Computed]
+    public function isTablesEnabled(): bool
+    {
+        $tenantId = app(TenantContext::class)->getTenantId();
+        $storeId = app(TenantContext::class)->getStoreId();
+        if (! $tenantId || ! $storeId) {
+            return false;
+        }
+
+        return app(EntitlementService::class)->isTablesEnabled($tenantId, $storeId);
+    }
+
+    #[Computed]
     public function activeTables()
     {
-        return Table::where('is_active', true)->orderBy('table_name')->get();
+        if (! $this->isTablesEnabled()) {
+            return collect();
+        }
+
+        $tenantId = app(TenantContext::class)->getTenantId();
+        $storeId = app(TenantContext::class)->getStoreId();
+
+        $query = Table::query()
+            ->where('is_active', true)
+            ->where('operational_status', '!=', 'disabled');
+
+        if ($tenantId) {
+            $query->where('tenant_id', $tenantId);
+        }
+        if ($storeId) {
+            $query->where('store_id', $storeId);
+        }
+
+        return $query->orderBy('table_name')->get();
     }
 
     #[Computed]
@@ -945,6 +980,18 @@ class CreateOrder extends Component
             $rules['cashReceived'] = ['required', 'numeric', 'min:'.$this->totalAmount];
         }
 
+        // Stale branch state guard
+        $currentStoreId = app(TenantContext::class)->getStoreId();
+        if ($this->activeStoreId !== null && $currentStoreId !== null && (int) $this->activeStoreId !== (int) $currentStoreId) {
+            $this->addError('cart', 'Cabang aktif telah berubah dalam sesi Anda. Silakan muat ulang halaman sebelum melanjutkan.');
+
+            return;
+        }
+
+        if (! $this->isTablesEnabled() || $this->orderType !== 'dine_in') {
+            $this->tableId = null;
+        }
+
         if ($this->customerId) {
             Customer::findOrFail($this->customerId);
         }
@@ -952,11 +999,11 @@ class CreateOrder extends Component
             Discount::findOrFail($this->selectedDiscountId);
         }
         if ($this->tableId) {
-            Table::findOrFail($this->tableId);
+            Table::where('is_active', true)->findOrFail($this->tableId);
         }
 
-        // Jika bukan pending order, validasi meja diperlukan untuk dine_in
-        if (! $this->pendingOrderId && $this->orderType === 'dine_in') {
+        // Jika bukan pending order, validasi meja diperlukan untuk dine_in HANYA jika fitur meja aktif di cabang ini
+        if (! $this->pendingOrderId && $this->orderType === 'dine_in' && $this->isTablesEnabled()) {
             $rules['tableId'] = ['required'];
         }
 

@@ -103,7 +103,8 @@ class CheckoutController extends Controller
         }
 
         // === IDEMPOTENCY GUARD ===
-        $idempotencyKey = $request->session()->pull('checkout_idempotency_key');
+        // Pertahankan idempotency_key saat retry; hanya dihapus setelah order berhasil (CONC-04)
+        $idempotencyKey = $request->session()->get('checkout_idempotency_key');
         if (! $idempotencyKey || $idempotencyKey !== $request->input('_idempotency_key')) {
             return redirect()->route('customer.cart.index')
                 ->with('error', 'Pesanan sudah diproses. Jangan klik tombol bayar lebih dari sekali.');
@@ -263,6 +264,7 @@ class CheckoutController extends Controller
                 'cash_received' => null,
                 'is_self_order_cash' => $request->validated('payment_method') === 'cash',
                 'table_id' => $tableId,
+                'order_type' => 'dine_in',
                 'customer_id' => $customerId,
                 'idempotency_key' => $idempotencyKey,
             ], $systemUserId);
@@ -295,6 +297,9 @@ class CheckoutController extends Controller
 
         // PATCH FOR P-09: track order per sesi untuk otorisasi dan riwayat.
         session()->push('customer_orders', $order->order_code);
+
+        // Reset idempotency key sesi setelah order berhasil dibuat
+        $request->session()->forget('checkout_idempotency_key');
 
         // PATCH FOR U-03/P-19: snapshot keranjang sebelum clear.
         $this->cartService->snapshot();

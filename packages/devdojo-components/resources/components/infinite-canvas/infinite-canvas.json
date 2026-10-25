@@ -1,0 +1,24 @@
+{
+    "name": "infinite-canvas",
+    "label": "Infinite Canvas",
+    "description": "A pannable, zoomable infinite surface. Scroll or trackpad to glide with momentum, dispatch events to zoom or recenter, and drop any content in the middle. Optional dotted background.",
+    "category": "Layout",
+    "dependencies": [],
+    "props": [
+        { "name": "scale", "type": "text", "default": "100", "description": "Initial zoom as a percentage (100 = 1×)." },
+        { "name": "dotPattern", "type": "boolean", "default": false, "description": "Show a themed dotted-grid background." },
+        { "name": "centerCanvasOnResize", "type": "boolean", "default": false, "description": "Re-center the viewport whenever the window resizes." }
+    ],
+    "slots": [
+        { "name": "slot", "description": "Content placed at the center of the canvas.", "default": "<div class=\"rounded-medium border border-foreground/10 bg-card px-6 py-4 text-center shadow-xs\"><p class=\"text-sm font-medium text-foreground\">Infinite Canvas</p><p class=\"mt-1 text-xs text-foreground/60\">Scroll or drag to pan around.</p></div>" }
+    ],
+    "studio": {
+        "container": "<div class=\"h-[22rem] w-full overflow-hidden rounded-medium border border-foreground/10\">{{component}}</div>",
+        "card": "<div class=\"h-40 w-full overflow-hidden rounded-medium border border-foreground/10\"><x-components.infinite-canvas dot-pattern><div class=\"rounded-medium border border-foreground/10 bg-card px-4 py-2 text-center text-xs text-foreground/60 shadow-xs\">Pan me</div></x-components.infinite-canvas></div>",
+        "height": "24rem"
+    },
+    "usage": "Zoom and recenter from anywhere by dispatching window events: canvas-zoom-in, canvas-zoom-out, canvas-center, and canvas-position ({ x, y }).",
+    "examples": [
+        { "title": "Basic", "description": "Scroll or trackpad to glide across a dotted-grid canvas.", "file": "basic.blade.php", "height": "20rem" }
+    ]
+}

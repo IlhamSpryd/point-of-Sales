@@ -1,0 +1,17 @@
+{
+    "name": "avatar-upload",
+    "label": "Avatar Upload",
+    "description": "A circular avatar picker with a built-in crop-and-resize modal. Click the circle to choose a JPG or PNG, position it, and the cropped image syncs to a Livewire property.",
+    "category": "Forms",
+    "dependencies": [],
+    "props": [
+        { "name": "src", "type": "text", "default": null, "description": "Current avatar URL, shown as the initial preview." },
+        { "name": "size", "type": "text", "default": "14", "description": "Diameter on Tailwind's numeric scale (14 → 3.5rem / 56px)." },
+        { "name": "wireTarget", "type": "text", "default": null, "description": "Livewire property to set with the cropped base64 PNG after applying." },
+        { "name": "placeholder", "type": "text", "default": null, "description": "Fallback image URL shown when src is empty." }
+    ],
+    "usage": "Loads Croppie + Exif-JS from a CDN automatically. Use inside a Livewire component for wireTarget to work, then base64_decode() the value to store it.",
+    "examples": [
+        { "title": "Basic", "description": "Click the circle to choose a JPG or PNG; crop and resize before it's applied.", "file": "basic.blade.php" }
+    ]
+}

@@ -10,10 +10,9 @@
 
     <link rel="icon" href="{{ asset('assets/images/logo.png') }}" type="image/png">
 
-    <!-- Google Material Symbols (Rounded) -->
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-        rel="stylesheet" />
+    <!-- Self-Hosted Fonts Preload (Offline First & Zero External Latency) -->
+    <link rel="preload" href="{{ asset('fonts/plus-jakarta-sans.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ asset('fonts/material-symbols-rounded.woff2') }}" as="font" type="font/woff2" crossorigin>
 
 
 
@@ -46,6 +45,22 @@
 </head>
 
 <body class="font-sans antialiased bg-white text-apeiron-ink flex h-dvh overflow-hidden pos-layout-locked">
+
+    {{-- Aksesibilitas: Lewati ke konten utama (WCAG 2.4.1) --}}
+    <a href="#main-content"
+        class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#202020] focus:text-white focus:text-xs focus:font-semibold focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-[#37352F]">
+        Lewati ke konten utama
+    </a>
+
+    {{-- Indikator progress bar transisi navigasi Livewire SPA (wire:navigate) & Reset Scroll Top --}}
+    <div x-data="{ navigating: false }"
+        x-on:livewire:navigating.window="navigating = true"
+        x-on:livewire:navigated.window="navigating = false; const main = document.getElementById('main-content'); if (main) main.scrollTop = 0;"
+        x-show="navigating"
+        x-cloak
+        aria-hidden="true"
+        class="fixed top-0 left-0 right-0 h-0.5 bg-[#202020] z-50 animate-pulse transition-all duration-150">
+    </div>
 
     <div x-data="{ sidebarMobileOpen: false, expanded: localStorage.getItem('sidebarExpanded') !== 'false' }" x-init="$watch('expanded', val => localStorage.setItem('sidebarExpanded', val))" class="flex w-full h-full bg-white">
         <!-- Sidebar Navigation -->

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "88f5cd61024f6dad01f4c0ee27eb296b",
+    "content-hash": "356de23c7f2b5569817f63cb976b9de2",
     "packages": [
         {
             "name": "bacon/bacon-qr-code",
@@ -395,6 +395,75 @@
                 "source": "https://github.com/DASPRiD/Enum/tree/1.0.7"
             },
             "time": "2025-09-16T12:23:56+00:00"
+        },
+        {
+            "name": "devdojo/components",
+            "version": "1.0.0",
+            "dist": {
+                "type": "path",
+                "url": "packages/devdojo-components",
+                "reference": "771f9226b10241375dde585a375dd6bdda142b4a"
+            },
+            "require": {
+                "gehrisandro/tailwind-merge-php": "^1.2",
+                "illuminate/console": "^11.0|^12.0|^13.0",
+                "illuminate/filesystem": "^11.0|^12.0|^13.0",
+                "illuminate/support": "^11.0|^12.0|^13.0",
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "livewire/livewire": "^3.0|^4.0",
+                "orchestra/testbench": "^9.0|^10.0",
+                "pestphp/pest": "^2.0|^3.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "DevDojo\\Components\\ComponentsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "DevDojo\\Components\\": "src"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "DevDojo\\Components\\Tests\\": "tests"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/pest"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Tony Lea",
+                    "email": "tony@devdojo.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A beautifully crafted set of Blade UI components for Laravel. Browse, then add the ones you need straight into your app — you own the code.",
+            "homepage": "https://devdojo.com/components",
+            "keywords": [
+                "alpinejs",
+                "blade",
+                "components",
+                "devdojo",
+                "laravel",
+                "tailwindcss",
+                "ui"
+            ],
+            "transport-options": {
+                "symlink": false,
+                "relative": true
+            }
         },
         {
             "name": "dflydev/dot-access-data",
@@ -839,6 +908,71 @@
                 }
             ],
             "time": "2025-12-03T09:33:47+00:00"
+        },
+        {
+            "name": "gehrisandro/tailwind-merge-php",
+            "version": "v1.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/gehrisandro/tailwind-merge-php.git",
+                "reference": "400040c89bc958ed130699ee4db0213f689cd498"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/gehrisandro/tailwind-merge-php/zipball/400040c89bc958ed130699ee4db0213f689cd498",
+                "reference": "400040c89bc958ed130699ee4db0213f689cd498",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.2.0",
+                "psr/simple-cache": "^3.0"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.13.8",
+                "nunomaduro/collision": "^v8.9.1",
+                "pestphp/pest": "^v4.4.2",
+                "pestphp/pest-plugin-type-coverage": "^v4.0.3",
+                "phpstan/phpstan": "^2.1.42",
+                "rector/rector": "^2.3.9",
+                "symfony/var-dumper": "^v7.4.6"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/TailwindMerge.php"
+                ],
+                "psr-4": {
+                    "TailwindMerge\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Sandro Gehri",
+                    "email": "sandrogehri@gmail.com"
+                }
+            ],
+            "description": "TailwindMerge for PHP merges multiple Tailwind CSS classes by automatically resolving conflicts between them",
+            "keywords": [
+                "classes",
+                "merge",
+                "php",
+                "tailwindcss"
+            ],
+            "support": {
+                "issues": "https://github.com/gehrisandro/tailwind-merge-php/issues",
+                "source": "https://github.com/gehrisandro/tailwind-merge-php/tree/v1.2.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/gehrisandro",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-03-21T06:39:15+00:00"
         },
         {
             "name": "graham-campbell/result-type",

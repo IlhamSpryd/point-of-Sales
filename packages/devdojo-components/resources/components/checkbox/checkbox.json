@@ -1,0 +1,27 @@
+{
+    "name": "checkbox",
+    "label": "Checkbox",
+    "description": "An accessible checkbox with label, description, custom icon, and clickable-card layouts. Works with wire:model.",
+    "category": "Forms",
+    "dependencies": [],
+    "props": [
+        { "name": "label", "type": "text", "default": null, "description": "Label text shown next to the checkbox." },
+        { "name": "description", "type": "text", "default": null, "description": "Secondary helper text under the label." },
+        { "name": "checked", "type": "boolean", "default": false, "description": "Whether the checkbox starts checked." },
+        { "name": "disabled", "type": "boolean", "default": false, "description": "Disable the checkbox." },
+        { "name": "clickable", "type": "boolean", "default": false, "description": "Make the whole row a single click target." },
+        { "name": "icon", "type": "text", "default": null, "description": "An optional component name to use instead of the default checkmark." },
+        { "name": "hideCheckbox", "type": "boolean", "default": false, "description": "Hide the visual box (useful for custom toggles)." }
+    ],
+    "slots": [
+        { "name": "slot", "description": "Custom content instead of the label/description props." }
+    ],
+    "studio": {
+        "card": "<div class=\"w-full max-w-xs\"><x-components.checkbox label=\"Accept terms and conditions\" description=\"You agree to our Terms of Service and Privacy Policy.\" checked /></div>",
+        "defaults": { "label": "Accept terms and conditions" }
+    },
+    "examples": [
+        { "title": "Basic, checked & disabled", "description": "Label, description and disabled states.", "file": "basic.blade.php" },
+        { "title": "Clickable row", "description": "Make the whole row a single click target.", "file": "clickable-row.blade.php" }
+    ]
+}

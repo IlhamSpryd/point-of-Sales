@@ -1,0 +1,20 @@
+{
+    "name": "slider",
+    "label": "Slider",
+    "description": "A range slider for picking a value within a range. Themed with the primary accent color across browsers, with an optional label and live value readout. Works with wire:model.",
+    "category": "Forms",
+    "dependencies": [],
+    "props": [
+        { "name": "label", "type": "text", "default": null, "description": "Optional label rendered above the slider." },
+        { "name": "min", "type": "text", "default": "0", "description": "Minimum value." },
+        { "name": "max", "type": "text", "default": "100", "description": "Maximum value." },
+        { "name": "step", "type": "text", "default": "1", "description": "Increment between values." },
+        { "name": "showValue", "type": "boolean", "default": false, "description": "Show the current value next to the label." }
+    ],
+    "studio": {
+        "card": "<div class=\"w-full max-w-xs\"><x-components.slider label=\"Volume\" show-value value=\"40\" /></div>"
+    },
+    "examples": [
+        { "title": "Basic", "description": "A labeled slider with a live value readout, and a bare one.", "file": "basic.blade.php" }
+    ]
+}

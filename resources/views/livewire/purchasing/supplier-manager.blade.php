@@ -88,7 +88,7 @@
                             <span class="text-xs text-zinc-400 ml-1">({{ $supplier->currency_code }})</span>
                         </td>
                         <td class="px-6 py-4 text-center">
-                            <button wire:click="openCatalog({{ $supplier->id }})" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-colors">
+                            <button wire:click="openCatalog({{ $supplier->id }})" class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-colors">
                                 <span class="material-symbols-rounded text-sm">inventory_2</span>
                                 {{ $supplier->supplier_products_count }} Item
                             </button>

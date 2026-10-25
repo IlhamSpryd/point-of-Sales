@@ -1,0 +1,69 @@
+{
+    "name": "splitter",
+    "label": "Splitter",
+    "description": "A draggable split layout with resizable panes. Lay panes out horizontally or vertically with a slim, grabbable gutter between them. Nest splitters for complex layouts.",
+    "category": "Layout",
+    "dependencies": [],
+    "props": [
+        {
+            "name": "direction",
+            "type": "select",
+            "default": "horizontal",
+            "options": [
+                "horizontal",
+                "vertical"
+            ],
+            "description": "Lay panes side by side (horizontal) or stacked (vertical)."
+        },
+        {
+            "name": "gutterSize",
+            "type": "text",
+            "default": "8",
+            "description": "Thickness of the draggable gutter in pixels."
+        },
+        {
+            "name": "minSize",
+            "type": "text",
+            "default": "100",
+            "description": "Minimum size (px) each pane can shrink to."
+        },
+        {
+            "name": "pane:minSize",
+            "type": "text",
+            "default": "",
+            "description": "Per-pane minimum size in px (data-min-size); overrides the splitter-level minSize. Set 0 to allow full collapse."
+        },
+        {
+            "name": "storageKey",
+            "type": "text",
+            "default": "",
+            "description": "localStorage key holding an array of pane percentages. When set, the splitter restores that layout at init (before Split.js loads), so persisted layouts render on the first paint. Persist sizes yourself from the 'splitter-resized' event."
+        }
+    ],
+    "slots": [
+        {
+            "name": "slot",
+            "description": "Panes, composed of <x-splitter.pane>.",
+            "default": "<x-components.splitter.pane size=\"30\"><div class=\"flex h-full items-center justify-center text-sm text-foreground/60\">Pane A</div></x-components.splitter.pane><x-components.splitter.pane size=\"70\"><div class=\"flex h-full items-center justify-center text-sm text-foreground/60\">Pane B</div></x-components.splitter.pane>"
+        }
+    ],
+    "studio": {
+        "container": "<div class=\"h-64 w-full overflow-hidden rounded-medium border border-foreground/10\">{{component}}</div>",
+        "height": "18rem"
+    },
+    "usage": "Loads Split.js from a CDN automatically. Compose with <x-splitter.pane> children and give each an optional size to set its initial percentage. When the splitter sits inside a Livewire component, place an <x-splitter.gutter /> between each pair of panes (and wire:key the panes): Split.js adopts the server-rendered gutters, so Livewire morphs see the same children the server rendered and never move the panes — a moved pane reloads any iframe inside it. Dispatch window events to control it: 'splitter-set-sizes' ({sizes: [..]}) resizes panes programmatically, 'splitter-init' rebuilds, 'splitter-set-direction' flips orientation. The root element emits bubbling 'splitter-resized' ({sizes}) after drags and programmatic resizes, and 'splitter-initialized' ({sizes}) once Split.js is up.",
+    "examples": [
+        {
+            "title": "Horizontal",
+            "description": "Drag the seam to resize two side-by-side panes.",
+            "file": "horizontal.blade.php",
+            "height": "20rem"
+        },
+        {
+            "title": "Vertical",
+            "description": "Stack panes top to bottom instead.",
+            "file": "vertical.blade.php",
+            "height": "20rem"
+        }
+    ]
+}

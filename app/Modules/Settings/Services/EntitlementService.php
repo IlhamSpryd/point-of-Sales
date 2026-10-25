@@ -8,6 +8,7 @@ use App\Models\Device;
 use App\Models\Plan;
 use App\Models\PlanEntitlement;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\TenantEntitlementOverride;
@@ -23,6 +24,10 @@ class EntitlementService
     public const FEATURE_OMNICHANNEL = 'omnichannel';
 
     public const FEATURE_ASYNC_EXPORT = 'async_export';
+
+    public const FEATURE_TABLE_MANAGEMENT = 'table_management';
+
+    public const FEATURE_SELF_ORDER = 'self_order';
 
     public const QUOTA_MAX_STORES = 'max_stores';
 
@@ -223,6 +228,8 @@ class EntitlementService
             self::FEATURE_RESTOCK_FORECAST,
             self::FEATURE_OMNICHANNEL,
             self::FEATURE_ASYNC_EXPORT,
+            self::FEATURE_TABLE_MANAGEMENT,
+            self::FEATURE_SELF_ORDER,
         ];
 
         $quotas = [
@@ -239,6 +246,118 @@ class EntitlementService
         foreach ($quotas as $q) {
             Cache::forget("tenant:{$tenantId}:quota:{$q}");
         }
+    }
+
+    /**
+     * Memeriksa apakah manajemen meja aktif untuk tenant dan cabang spesifik.
+     * Mengimplementasikan 3 lapisan server-side (Entitlement, Setting/Config, Business Category).
+     */
+    public function isTablesEnabled(int $tenantId, ?int $storeId = null): bool
+    {
+        // 1. Cek Tenant Plan Entitlement jika didefinisikan eksplisit
+        $plan = $this->resolveActivePlanForTenant($tenantId);
+        if ($plan) {
+            $entitlement = PlanEntitlement::where('plan_id', $plan->id)
+                ->where('feature_code', self::FEATURE_TABLE_MANAGEMENT)
+                ->first();
+            if ($entitlement && in_array(strtolower((string) $entitlement->value), ['false', '0', 'no'], true)) {
+                return false;
+            }
+        }
+
+        // Cek tenant override
+        $override = TenantEntitlementOverride::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('feature_code', self::FEATURE_TABLE_MANAGEMENT)
+            ->first();
+        if ($override && (! $override->expires_at || $override->expires_at->isFuture())) {
+            if (in_array(strtolower((string) $override->value), ['false', '0', 'no'], true)) {
+                return false;
+            }
+            if (in_array(strtolower((string) $override->value), ['true', '1', 'yes'], true)) {
+                // If explicitly overridden to true, proceed to store check
+            }
+        }
+
+        // 2. Cek Konfigurasi Operasional Cabang
+        if ($storeId !== null) {
+            $storeSetting = Setting::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->whereIn('key', ["store.{$storeId}.tables_enabled", "store_{$storeId}_tables_enabled"])
+                ->first();
+            if ($storeSetting !== null) {
+                return filter_var($storeSetting->value, FILTER_VALIDATE_BOOLEAN);
+            }
+        }
+
+        $posSetting = Setting::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->whereIn('key', ['pos.tables_enabled', 'tables_enabled'])
+            ->first();
+        if ($posSetting !== null) {
+            return filter_var($posSetting->value, FILTER_VALIDATE_BOOLEAN);
+        }
+
+        // 3. Fallback berdasarkan kategori bisnis
+        $bizCat = Setting::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('key', 'business_category')
+            ->value('value');
+        if ($bizCat === 'retail_other' || $bizCat === 'fnb_cloud_kitchen') {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Memeriksa apakah QR Self-Order aktif untuk tenant dan cabang spesifik.
+     */
+    public function isSelfOrderEnabled(int $tenantId, ?int $storeId = null): bool
+    {
+        if (! $this->isTablesEnabled($tenantId, $storeId)) {
+            return false;
+        }
+
+        $plan = $this->resolveActivePlanForTenant($tenantId);
+        if ($plan) {
+            $entitlement = PlanEntitlement::where('plan_id', $plan->id)
+                ->where('feature_code', self::FEATURE_SELF_ORDER)
+                ->first();
+            if ($entitlement && in_array(strtolower((string) $entitlement->value), ['false', '0', 'no'], true)) {
+                return false;
+            }
+        }
+
+        $override = TenantEntitlementOverride::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('feature_code', self::FEATURE_SELF_ORDER)
+            ->first();
+        if ($override && (! $override->expires_at || $override->expires_at->isFuture())) {
+            if (in_array(strtolower((string) $override->value), ['false', '0', 'no'], true)) {
+                return false;
+            }
+        }
+
+        if ($storeId !== null) {
+            $storeSetting = Setting::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->whereIn('key', ["store.{$storeId}.self_order_enabled", "store_{$storeId}_self_order_enabled"])
+                ->first();
+            if ($storeSetting !== null) {
+                return filter_var($storeSetting->value, FILTER_VALIDATE_BOOLEAN);
+            }
+        }
+
+        $posSetting = Setting::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->whereIn('key', ['pos.self_order_enabled', 'self_order_enabled'])
+            ->first();
+        if ($posSetting !== null) {
+            return filter_var($posSetting->value, FILTER_VALIDATE_BOOLEAN);
+        }
+
+        return true;
     }
 
     /**

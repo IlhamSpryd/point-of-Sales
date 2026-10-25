@@ -71,9 +71,12 @@
                         <div class="flex items-center gap-2">
                             <h3 class="text-lg font-bold text-apeiron-ink">Shift #{{ $activeShift->id }}</h3>
                             @if($activeShift->status === 'handover_pending')
-                                <span class="text-xs font-bold bg-amber-50 border border-amber-200 text-amber-700 px-2.5 py-0.5 rounded-full">Serah Terima Tertunda</span>
+                                <span class="inline-flex items-center gap-1.5 text-xs font-medium bg-amber-50 border border-amber-200 text-amber-700 px-2 py-0.5 rounded-md">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                    Serah Terima Tertunda
+                                </span>
                             @else
-                                <span class="text-xs font-bold bg-emerald-50 border border-emerald-200 text-emerald-700 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                                <span class="inline-flex items-center gap-1.5 text-xs font-medium bg-emerald-50 border border-emerald-200 text-emerald-700 px-2 py-0.5 rounded-md">
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Aktif
                                 </span>
                             @endif

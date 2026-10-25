@@ -47,7 +47,7 @@
         
         <div class="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[#9B9A97] flex items-center justify-between border-b border-[#F1F1EF] mb-1">
             <span>Pilih Cakupan Cabang</span>
-            <span class="text-[10px] bg-[#F1F1EF] text-[#787774] font-semibold px-2 py-0.5 rounded-full">{{ count($stores) }} Cabang</span>
+            <span class="text-[10px] bg-[#F1F1EF] text-[#787774] font-medium px-1.5 py-0.5 rounded border border-[#E9E9E7]/60">{{ count($stores) }} Cabang</span>
         </div>
 
         <div class="max-h-72 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
@@ -63,7 +63,7 @@
                         <span class="material-symbols-rounded text-[20px] {{ $isAll ? 'text-amber-600' : 'text-amber-500' }}">domain</span>
                         <div class="truncate">
                             <p class="font-bold {{ $isAll ? 'text-amber-950' : 'text-apeiron-ink' }}">Semua Cabang (Konsolidasi)</p>
-                            <p class="text-[10px] {{ $isAll ? 'text-amber-700/80' : 'text-[#9B9A97]' }}">Total akumulasi seluruh 8 cabang</p>
+                            <p class="text-[10px] {{ $isAll ? 'text-amber-700/80' : 'text-[#9B9A97]' }}">Total akumulasi seluruh {{ count($stores) }} cabang</p>
                         </div>
                     </div>
                     @if($isAll)

@@ -1,0 +1,15 @@
+{
+    "name": "breadcrumbs",
+    "label": "Breadcrumbs",
+    "description": "A navigation trail showing the path to the current page, with chevron separators added automatically. Compose with <x-breadcrumbs.item>.",
+    "category": "Navigation",
+    "dependencies": [],
+    "props": [],
+    "slots": [
+        { "name": "slot", "description": "Breadcrumb items, composed of <x-breadcrumbs.item>.", "default": "<x-components.breadcrumbs.item href=\"#\">Home</x-components.breadcrumbs.item><x-components.breadcrumbs.item href=\"#\">Library</x-components.breadcrumbs.item><x-components.breadcrumbs.item current>Data</x-components.breadcrumbs.item>" }
+    ],
+    "usage": "Give each <x-breadcrumbs.item> an `href` for links; mark the final one with `current` to render it as the active page.",
+    "examples": [
+        { "title": "Basic", "description": "Chevron separators are added automatically between items.", "file": "basic.blade.php" }
+    ]
+}

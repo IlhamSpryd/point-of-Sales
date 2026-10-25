@@ -1,0 +1,23 @@
+{
+    "name": "sidebar",
+    "label": "Sidebar",
+    "description": "A collapsible application sidebar with offcanvas, icon, and floating variants, built from composable header/content/group/footer parts.",
+    "category": "Navigation",
+    "dependencies": [],
+    "props": [
+        { "name": "side", "type": "select", "default": "left", "options": ["left", "right"], "description": "Which edge of the viewport the sidebar is docked to." },
+        { "name": "variant", "type": "select", "default": "sidebar", "options": ["sidebar", "floating", "inset"], "description": "Visual style of the sidebar surface." },
+        { "name": "collapsible", "type": "select", "default": "offcanvas", "options": ["offcanvas", "icon", "none"], "description": "How the sidebar collapses: slide fully offscreen, shrink to icon-only, or stay fixed." }
+    ],
+    "slots": [
+        { "name": "slot", "description": "Sidebar content, composed of header/content/group/footer parts." }
+    ],
+    "studio": {
+        "card": "<div class=\"text-sm text-foreground/60\">Full-page layout — open the docs to preview.</div>",
+        "height": "32rem"
+    },
+    "usage": "Wrap with <x-sidebar.container> and compose the inside using <x-sidebar.header>, <x-sidebar.content>, <x-sidebar.group>, <x-sidebar.nav-item>, <x-sidebar.nav-dropdown>, <x-sidebar.footer>, <x-sidebar.trigger>, and <x-sidebar.toggle>.",
+    "examples": [
+        { "title": "Application layout", "description": "Compose header, content, group and footer inside the container.", "file": "basic.blade.php", "height": "24rem" }
+    ]
+}

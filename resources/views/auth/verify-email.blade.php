@@ -27,7 +27,7 @@
 
     <!-- Heading Block -->
     <div class="mb-6">
-        <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-zinc-100 text-[11px] font-medium text-zinc-700 mb-3">
+        <div class="inline-flex items-center gap-2 px-2 py-0.5 rounded-md border border-zinc-200/80 bg-zinc-50 text-[11px] font-medium text-zinc-700 mb-3">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
             {{ __('Two-Factor Email Verification') }}
         </div>

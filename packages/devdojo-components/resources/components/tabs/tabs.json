@@ -1,0 +1,17 @@
+{
+    "name": "tabs",
+    "label": "Tabs",
+    "description": "A segmented tab control for switching between panels of content. Compose with <x-tabs.list>, <x-tabs.tab> and <x-tabs.panel>.",
+    "category": "Layout",
+    "dependencies": [],
+    "props": [
+        { "name": "default", "type": "text", "default": null, "description": "The tab key to select initially. Defaults to the first tab." }
+    ],
+    "slots": [
+        { "name": "slot", "description": "Composed of <x-tabs.list>, <x-tabs.tab> and <x-tabs.panel>.", "default": "<x-components.tabs.list><x-components.tabs.tab tab=\"account\">Account</x-components.tabs.tab><x-components.tabs.tab tab=\"billing\">Billing</x-components.tabs.tab></x-components.tabs.list><x-components.tabs.panel tab=\"account\">Manage your account details here.</x-components.tabs.panel><x-components.tabs.panel tab=\"billing\">Manage your plan and payment details here.</x-components.tabs.panel>" }
+    ],
+    "usage": "Match each <x-tabs.tab tab=\"key\"> to an <x-tabs.panel tab=\"key\">. The first tab is selected automatically. Follows the WAI-ARIA tabs pattern: tabs and panels are linked via generated ids, and Arrow/Home/End keys move between tabs with a roving tabindex.",
+    "examples": [
+        { "title": "Basic", "description": "A segmented control switching between three panels.", "file": "basic.blade.php", "height": "18rem" }
+    ]
+}

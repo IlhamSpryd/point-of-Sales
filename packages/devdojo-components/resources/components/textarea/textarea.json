@@ -1,0 +1,20 @@
+{
+    "name": "textarea",
+    "label": "Textarea",
+    "description": "A multi-line text field with an optional label and automatic validation errors. Matches the input component's styling. Works with wire:model.",
+    "category": "Forms",
+    "dependencies": ["label"],
+    "props": [
+        { "name": "label", "type": "text", "default": null, "description": "Optional label rendered above the field." },
+        { "name": "rows", "type": "text", "default": "4", "description": "Initial visible number of text rows." }
+    ],
+    "slots": [
+        { "name": "slot", "description": "Initial textarea content (rendered inside the <textarea> tag)." }
+    ],
+    "studio": {
+        "card": "<div class=\"w-full max-w-sm\"><x-components.textarea label=\"Message\" placeholder=\"Tell us a little about your project…\" rows=\"3\" /></div>"
+    },
+    "examples": [
+        { "title": "Basic", "description": "A multi-line field matching the input styling.", "file": "basic.blade.php" }
+    ]
+}

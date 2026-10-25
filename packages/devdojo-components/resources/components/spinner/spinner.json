@@ -1,0 +1,19 @@
+{
+    "name": "spinner",
+    "label": "Spinner",
+    "description": "An accessible loading indicator in four sizes — the same spinner the button uses, available anywhere.",
+    "category": "Feedback",
+    "dependencies": [],
+    "props": [
+        { "name": "size", "type": "select", "options": ["xs", "sm", "md", "lg"], "default": "md", "description": "The diameter of the spinner." },
+        { "name": "label", "type": "text", "default": "Loading…", "description": "Screen-reader label announced while loading." }
+    ],
+    "slots": [],
+    "studio": {
+        "card": "<div class=\"flex items-center gap-4\"><x-components.spinner size=\"sm\" /><x-components.spinner /><x-components.spinner size=\"lg\" /></div>"
+    },
+    "usage": "Drop it into any loading state; pass classes like text-primary to tint it.",
+    "examples": [
+        { "title": "Sizes & tinting", "description": "Four sizes, tinted with any text color utility.", "file": "basic.blade.php", "height": "10rem" }
+    ]
+}

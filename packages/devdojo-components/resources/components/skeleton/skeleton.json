@@ -1,0 +1,17 @@
+{
+    "name": "skeleton",
+    "label": "Skeleton",
+    "description": "A pulsing placeholder for content that is still loading. Size it with utility classes, render a circle, or stack several text lines.",
+    "category": "Feedback",
+    "dependencies": [],
+    "props": [
+        { "name": "lines", "type": "text", "default": null, "description": "Render this many stacked line placeholders (the last is shorter)." },
+        { "name": "circle", "type": "boolean", "default": false, "description": "Render a circular placeholder (for avatars/icons)." }
+    ],
+    "studio": {
+        "card": "<div class=\"flex w-full max-w-xs items-center gap-3\"><x-components.skeleton circle class=\"h-10 w-10 shrink-0\" /><div class=\"flex-1\"><x-components.skeleton lines=\"2\" /></div></div>"
+    },
+    "examples": [
+        { "title": "Avatar & lines", "description": "A circular placeholder paired with stacked text lines.", "file": "basic.blade.php" }
+    ]
+}

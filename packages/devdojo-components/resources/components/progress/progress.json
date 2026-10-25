@@ -1,0 +1,19 @@
+{
+    "name": "progress",
+    "label": "Progress",
+    "description": "A horizontal progress bar for showing completion. Set a value (0–100), or use the indeterminate state for unknown-duration work. Three thicknesses.",
+    "category": "Feedback",
+    "dependencies": [],
+    "props": [
+        { "name": "value", "type": "text", "default": "0", "description": "Current progress amount." },
+        { "name": "max", "type": "text", "default": "100", "description": "The value representing 100% complete." },
+        { "name": "size", "type": "select", "default": "md", "options": ["sm", "md", "lg"], "description": "Thickness of the bar." },
+        { "name": "indeterminate", "type": "boolean", "default": false, "description": "Show a looping animation for work of unknown duration." }
+    ],
+    "studio": {
+        "defaults": { "value": "60" }
+    },
+    "examples": [
+        { "title": "Sizes & indeterminate", "description": "Three thicknesses, plus a looping animation for unknown-duration work.", "file": "basic.blade.php" }
+    ]
+}

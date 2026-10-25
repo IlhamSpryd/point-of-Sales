@@ -1,0 +1,23 @@
+{
+    "name": "button",
+    "label": "Button",
+    "description": "A versatile button with multiple variants, sizes, link support, and built-in Livewire loading states.",
+    "category": "Forms",
+    "dependencies": [],
+    "props": [
+        { "name": "type", "type": "select", "default": "button", "options": ["button", "submit", "a"], "description": "Renders a <button> or an <a> when set to 'a'." },
+        { "name": "variant", "type": "select", "default": "primary", "options": ["primary", "secondary", "destructive", "outline", "ghost", "link"], "description": "The visual style of the button." },
+        { "name": "size", "type": "select", "default": "md", "options": ["xs", "sm", "md", "lg", "xl", "2xl", "3xl"], "description": "The size of the button." },
+        { "name": "href", "type": "text", "default": "", "description": "Destination URL when type is 'a'." },
+        { "name": "loader", "type": "boolean", "default": false, "description": "Show a spinner while a wire:click / wire:target is running." },
+        { "name": "loading", "type": "boolean", "default": false, "description": "Force the loading spinner on." }
+    ],
+    "slots": [
+        { "name": "slot", "description": "The button label.", "default": "Button" }
+    ],
+    "examples": [
+        { "title": "Variants", "description": "Six visual styles for every intent.", "file": "variants.blade.php" },
+        { "title": "Sizes", "description": "From xs to xl.", "file": "sizes.blade.php" },
+        { "title": "Loading state", "description": "Force the spinner with the loading prop, or wire it to Livewire with loader.", "file": "loading.blade.php" }
+    ]
+}

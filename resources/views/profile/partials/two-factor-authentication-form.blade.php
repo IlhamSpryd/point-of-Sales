@@ -27,7 +27,7 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h3 class="text-sm font-semibold text-emerald-950">{{ __('2FA Sedang Aktif') }}</h3>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-100 text-emerald-800">
                                 {{ __('Dilindungi') }}
                             </span>
                         </div>
@@ -106,7 +106,7 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h3 class="text-sm font-semibold text-zinc-900">{{ __('Autentikasi Dua Faktor Belum Aktif') }}</h3>
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-600 border border-zinc-200">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600 border border-zinc-200">
                                 {{ __('Nonaktif') }}
                             </span>
                         </div>

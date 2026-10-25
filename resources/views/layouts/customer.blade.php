@@ -9,8 +9,8 @@
     <title>{{ isset($title) ? trim(strip_tags((string) $title)) : 'Pesan' }} — {{ config('app.name') }}</title>
     <link rel="icon" href="{{ asset('assets/images/logo.png') }}" type="image/png">
 
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200">
+    <!-- Self-Hosted Fonts Preload -->
+    <link rel="preload" href="{{ asset('fonts/material-symbols-rounded.woff2') }}" as="font" type="font/woff2" crossorigin>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -44,8 +44,8 @@
                 <x-waiter-call-button />
                 @if (session('current_table_name'))
                     <span
-                        class="shrink-0 inline-flex items-center gap-1.5 text-[11px] font-semibold text-apeiron-muted bg-white border border-apeiron-border rounded-full px-3 py-1.5 shadow-sm">
-                        <span class="material-symbols-rounded text-[16px]">table_restaurant</span>
+                        class="shrink-0 inline-flex items-center gap-1.5 text-xs font-medium text-apeiron-ink bg-white border border-apeiron-border rounded-lg px-2.5 py-1 shadow-2xs">
+                        <span class="material-symbols-rounded text-[16px] text-apeiron-muted">table_restaurant</span>
                         {{ session('current_table_name') }}
                     </span>
                 @endif

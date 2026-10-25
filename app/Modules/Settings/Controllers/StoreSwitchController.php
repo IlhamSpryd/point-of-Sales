@@ -77,6 +77,16 @@ class StoreSwitchController extends Controller
             $request->session()->put('active_store_id', $storeId);
         }
 
+        // Reset pilihan meja dan draft keranjang saat berpindah cabang
+        $request->session()->forget([
+            'current_table_id',
+            'current_table_name',
+            'current_qr_token_version',
+            'cashier_table_id',
+            'pos_cart',
+            'customer_cart',
+        ]);
+
         // Invalidate cache dashboard agar data ter-refresh seketika.
         // D1-DB-008: kunci mengikuti format DashboardService (tenant + scope),
         // tidak ada kunci global lintas-tenant.

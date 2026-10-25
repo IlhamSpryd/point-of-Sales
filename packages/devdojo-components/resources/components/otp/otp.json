@@ -1,0 +1,18 @@
+{
+    "name": "otp",
+    "label": "OTP Input",
+    "description": "A segmented one-time-code input with auto-advance, backspace and arrow-key navigation, and paste-to-fill. Works with wire:model or a plain form field, and can fire an event when complete.",
+    "category": "Forms",
+    "dependencies": [],
+    "props": [
+        { "name": "length", "type": "text", "default": "6", "description": "Number of code digits." },
+        { "name": "name", "type": "text", "default": null, "description": "Name for a hidden input, for plain form submission." },
+        { "name": "value", "type": "text", "default": null, "description": "Initial code to pre-fill the boxes." },
+        { "name": "autofocus", "type": "boolean", "default": false, "description": "Focus the first box on load." },
+        { "name": "eventCallback", "type": "text", "default": null, "description": "Window event name dispatched (with { detail: { code } }) once every box is filled." }
+    ],
+    "examples": [
+        { "title": "Basic", "description": "A 6-digit segmented code input with auto-advance.", "file": "basic.blade.php" },
+        { "title": "Pre-filled", "description": "Start with a value already filled in.", "file": "pre-filled.blade.php" }
+    ]
+}

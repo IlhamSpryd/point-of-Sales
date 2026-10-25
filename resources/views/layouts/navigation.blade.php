@@ -13,9 +13,23 @@
 --}}
 @php
     $roleName = auth()->user()?->role?->name;
+    $tenantId = app(\App\Services\Context\TenantContext::class)->getTenantId();
+    $storeId = app(\App\Services\Context\TenantContext::class)->getStoreId();
+    $tablesEnabled = ($tenantId && $storeId)
+        ? app(\App\Services\EntitlementService::class)->isTablesEnabled((int) $tenantId, (int) $storeId)
+        : true;
+
     $menu = config('navigation.sections');
     $visibleMenu = collect($menu)
-        ->map(fn($items) => array_values(array_filter($items, fn($i) => in_array($roleName, $i['roles'], true))))
+        ->map(fn($items) => array_values(array_filter($items, function ($i) use ($roleName, $tablesEnabled) {
+            if (! in_array($roleName, $i['roles'], true)) {
+                return false;
+            }
+            if (($i['route'] ?? '') === 'tables.index' && ! $tablesEnabled) {
+                return false;
+            }
+            return true;
+        })))
         ->filter(fn($items) => count($items) > 0);
 
     // HomeController (route('home')) adalah sumber kebenaran tunggal

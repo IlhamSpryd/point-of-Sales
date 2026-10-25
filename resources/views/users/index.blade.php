@@ -36,7 +36,7 @@
 
     <div class="card-surface flex flex-col flex-1 min-h-0">
         {{-- Desktop/tablet-landscape: existing table --}}
-        <x-data-table>
+        <x-data-table :hideOnMobile="true">
             <x-slot:head>
                 <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">ID Karyawan</th>
                 <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Karyawan</th>

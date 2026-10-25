@@ -46,6 +46,8 @@ class Table extends Model
     protected $table = 'tables'; // eksplisit, agar tidak ambigu dengan nama class 'Table'
 
     protected $fillable = [
+        'tenant_id',
+        'store_id',
         'table_code',
         'table_name',
         'capacity',
@@ -53,12 +55,17 @@ class Table extends Model
         'is_active',
         'operational_status',
         'secure_token',
+        'qr_token',
+        'qr_token_version',
+        'qr_rotated_at',
     ];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
+            'qr_token_version' => 'integer',
+            'qr_rotated_at' => 'datetime',
         ];
     }
 
@@ -78,9 +85,16 @@ class Table extends Model
             }
 
             // KUNCI KEAMANAN & MULTI-TENANCY: Auto-generate Secure Token sebagai UUID acak berentropi tinggi.
-            // Mencegah kolisi antar meja/tenant dengan nama sama dan mencegah penebakan token URL (OR-008).
             if (empty($table->secure_token)) {
                 $table->secure_token = (string) Str::uuid();
+            }
+
+            // Kredensial QR 64-heksadesimal berentropi tinggi (ADR-005)
+            if (empty($table->qr_token)) {
+                $table->qr_token = bin2hex(random_bytes(32));
+            }
+            if (empty($table->qr_token_version)) {
+                $table->qr_token_version = 1;
             }
         });
     }
@@ -105,11 +119,44 @@ class Table extends Model
     }
 
     /**
+     * Relasi (HasMany): Pesanan aktif yang saat ini menempati meja ini di cabang tersebut.
+     */
+    public function activeOrders(): HasMany
+    {
+        $query = $this->orders()->whereIn('order_status', ['pending', 'paid']);
+        if ($this->store_id) {
+            $query->where('orders.store_id', $this->store_id);
+        }
+
+        return $query;
+    }
+
+    public function isAvailable(): bool
+    {
+        return $this->operational_status === 'available';
+    }
+
+    public function isOccupied(): bool
+    {
+        return $this->operational_status === 'occupied';
+    }
+
+    public function getStatusAttribute(): string
+    {
+        return $this->operational_status;
+    }
+
+    public function setStatusAttribute(string $value): void
+    {
+        $this->operational_status = $value;
+    }
+
+    /**
      * KUNCI INTEGRASI QR: route /order/{table} akan resolve pakai
-     * secure_token, TIDAK PERNAH pakai id mentah di URL publik.
+     * secure_token atau qr_token, TIDAK PERNAH pakai id mentah di URL publik.
      */
     public function getRouteKeyName(): string
     {
-        return 'secure_token';
+        return 'qr_token';
     }
 }

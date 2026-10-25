@@ -65,18 +65,29 @@
     });
 @endphp
 
-<nav aria-label="Sub-navigasi Katalog Produk" class="flex items-center gap-1.5 md:gap-2 overflow-x-auto pb-2 mb-6 border-b border-[#E9E9E7] no-scrollbar">
-    @foreach ($visibleCatalogTabs as $tab)
-        @php
-            $isActive = request()->routeIs($tab['active']);
-        @endphp
-        <a href="{{ route($tab['route']) }}" wire:navigate
-            @click="if (window.apeironPosCartDirty && !confirm('Anda memiliki pesanan aktif di kasir. Pindah halaman akan membatalkan keranjang aktif. Lanjutkan?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }"
-            @if ($isActive) aria-current="page" @endif
-            style="{{ $isActive ? 'background-color: #202020; color: #ffffff;' : '' }}"
-            class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink {{ $isActive ? 'catalog-nav-tab-active bg-apeiron-ink text-white shadow-sm' : 'catalog-nav-tab-inactive text-[#787774] hover:text-apeiron-ink hover:bg-[#F7F7F5]' }}">
-            <span class="material-symbols-rounded text-[18px] shrink-0 {{ $isActive ? 'text-white' : '' }}">{{ $tab['icon'] }}</span>
-            <span class="{{ $isActive ? 'text-white' : '' }}">{{ $tab['label'] }}</span>
-        </a>
-    @endforeach
-</nav>
+<div class="sticky top-0 z-30 bg-white/95 backdrop-blur-md -mt-4 sm:-mt-6 lg:-mt-8 pt-4 sm:pt-6 lg:pt-8 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 pb-3.5 mb-7 border-b border-[#E9E9E7] shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+    <nav aria-label="Sub-navigasi Katalog Produk"
+        x-data
+        x-init="$nextTick(() => {
+            const activeTab = $el.querySelector('[aria-current=page]');
+            if (activeTab) {
+                const offset = activeTab.offsetLeft - ($el.clientWidth / 2) + (activeTab.clientWidth / 2);
+                $el.scrollTo({ left: Math.max(0, offset), behavior: 'instant' });
+            }
+        })"
+        class="flex items-center gap-1.5 md:gap-2 overflow-x-auto scrollbar-hide py-1">
+        @foreach ($visibleCatalogTabs as $tab)
+            @php
+                $isActive = request()->routeIs($tab['active']);
+            @endphp
+            <a href="{{ route($tab['route']) }}" wire:navigate
+                @click="if (window.apeironPosCartDirty && !confirm('Anda memiliki pesanan aktif di kasir. Pindah halaman akan membatalkan keranjang aktif. Lanjutkan?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }"
+                @if ($isActive) aria-current="page" @endif
+                style="{{ $isActive ? 'background-color: #202020; color: #ffffff;' : '' }}"
+                class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink {{ $isActive ? 'catalog-nav-tab-active bg-apeiron-ink text-white shadow-sm' : 'catalog-nav-tab-inactive text-[#787774] hover:text-apeiron-ink hover:bg-[#F7F7F5]' }}">
+                <span class="material-symbols-rounded text-[18px] shrink-0 {{ $isActive ? 'text-white' : '' }}">{{ $tab['icon'] }}</span>
+                <span class="{{ $isActive ? 'text-white' : '' }}">{{ $tab['label'] }}</span>
+            </a>
+        @endforeach
+    </nav>
+</div>

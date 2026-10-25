@@ -46,7 +46,8 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E9E9E7] pb-4 mb-4">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-800 tracking-wider">
+                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                 CLOSED (LOCKED)
                             </span>
                             <h3 class="text-base font-bold text-apeiron-ink">End-of-Day (Z-Report) — {{ $eodSettlement->business_date->format('d M Y') }}</h3>
@@ -83,7 +84,8 @@
             <div class="card-surface p-6 mb-6 border-l-4 border-l-amber-500 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                     <div class="flex items-center gap-2">
-                        <span class="px-2.5 py-1 rounded-full text-xs font-extrabold bg-amber-100 text-amber-800 tracking-wider">
+                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                             BUKU KAS AKTIF (OPEN)
                         </span>
                         <h3 class="text-base font-bold text-apeiron-ink">Penutupan Buku Akhir Hari (EOD / Z-Report)</h3>

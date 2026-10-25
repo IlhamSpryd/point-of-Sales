@@ -25,9 +25,9 @@
     x-transition:leave-start="opacity-100"
     x-transition:leave-end="opacity-0"
     class="fixed bottom-4 right-4 z-[9999] flex items-center p-4 rounded-xl shadow-lg border"
-    :class="type === 'success' ? 'bg-success-50 border-success-200 text-success-800' : (type === 'danger' ? 'bg-danger-50 border-danger-200 text-danger-800' : (type === 'warning' ? 'bg-warning-50 border-warning-200 text-warning-800' : 'bg-info-50 border-info-200 text-info-800'))">
+    :class="type === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-800' : ((type === 'danger' || type === 'error') ? 'bg-rose-50 border-rose-200 text-rose-800' : (type === 'warning' ? 'bg-amber-50 border-amber-200 text-amber-800' : 'bg-sky-50 border-sky-200 text-sky-800'))">
     
-    <span class="material-symbols-rounded mr-2" aria-hidden="true" x-text="type === 'success' ? 'check_circle' : (type === 'danger' ? 'error' : (type === 'warning' ? 'warning' : 'info'))"></span>
+    <span class="material-symbols-rounded mr-2" aria-hidden="true" x-text="type === 'success' ? 'check_circle' : ((type === 'danger' || type === 'error') ? 'error' : (type === 'warning' ? 'warning' : 'info'))"></span>
     <span class="text-sm font-medium" x-text="message"></span>
     <button type="button" @click="show = false" aria-label="Tutup notifikasi" class="ml-4 opacity-50 hover:opacity-100 transition-opacity flex items-center justify-center">
         <span class="material-symbols-rounded text-[18px]" aria-hidden="true">close</span>

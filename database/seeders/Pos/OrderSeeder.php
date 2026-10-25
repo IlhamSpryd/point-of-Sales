@@ -461,7 +461,7 @@ class OrderSeeder extends Seeder
                             'product_id' => $productId,
                             'order_id' => $orderId,
                             'order_item_id' => $oi['id'],
-                            'type' => 'out',
+                            'type' => 'sale_deduction',
                             'quantity' => -$itemQty,
                             'reason' => 'Penjualan order #'.$orderId,
                             'idempotency_key' => Str::uuid()->toString(),

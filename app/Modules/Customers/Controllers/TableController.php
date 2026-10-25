@@ -81,10 +81,28 @@ class TableController extends Controller
         }
     }
 
+    public function rotateQr(Table $table): RedirectResponse
+    {
+        $this->tableService->rotateQrToken($table);
+
+        return redirect()->route('tables.index')->with('success', 'QR Code meja "'.$table->table_name.'" berhasil dirotasi ke versi baru.');
+    }
+
+    public function release(Table $table): RedirectResponse
+    {
+        try {
+            $this->tableService->releaseTable($table);
+
+            return redirect()->route('tables.index')->with('success', 'Meja "'.$table->table_name.'" berhasil dibebaskan (tersedia kembali).');
+        } catch (ValidationException $e) {
+            return redirect()->route('tables.index')->withErrors($e->validator);
+        } catch (\Throwable $e) {
+            return redirect()->route('tables.index')->with('error', $e->getMessage());
+        }
+    }
+
     public function regenerateToken(Table $table): RedirectResponse
     {
-        $this->tableService->regenerateToken($table);
-
-        return redirect()->route('tables.index')->with('success', 'Token QR meja "'.$table->table_name.'" berhasil diperbarui.');
+        return $this->rotateQr($table);
     }
 }

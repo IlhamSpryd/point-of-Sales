@@ -1,0 +1,26 @@
+{
+    "name": "avatar",
+    "label": "Avatar",
+    "description": "A user avatar showing a photo, auto-generated initials from a name, or a fallback icon. Five sizes, square or circle, an optional status dot, and deterministic colors.",
+    "category": "Display",
+    "dependencies": [],
+    "props": [
+        { "name": "src", "type": "text", "default": null, "description": "Image URL. Falls back to initials, then an icon." },
+        { "name": "name", "type": "text", "default": null, "description": "Full name used to derive initials and the auto color." },
+        { "name": "initials", "type": "text", "default": null, "description": "Explicit initials, overriding those derived from name." },
+        { "name": "size", "type": "select", "default": "md", "options": ["xs", "sm", "md", "lg", "xl"], "description": "The avatar size." },
+        { "name": "circle", "type": "boolean", "default": false, "description": "Render a full circle instead of a rounded square." },
+        { "name": "color", "type": "text", "default": null, "description": "A soft color (blue, green, amber, rose, violet, cyan, orange, teal, pink, indigo) or 'auto' to derive one from the name." },
+        { "name": "status", "type": "select", "default": null, "options": ["online", "away", "busy", "offline"], "description": "Optional presence dot in the corner." }
+    ],
+    "slots": [
+        { "name": "slot", "description": "Custom fallback content, shown when there's no src, initials or name." }
+    ],
+    "studio": {
+        "card": "<div class=\"flex items-center gap-3\"><x-components.avatar name=\"Sarah Chen\" circle status=\"online\" /><x-components.avatar name=\"Marcus Reid\" circle /><x-components.avatar initials=\"TL\" circle /></div>"
+    },
+    "examples": [
+        { "title": "Sizes, photos & status", "description": "Photo, initials, or icon fallback — five sizes, circle or square, with an optional status dot.", "file": "sizes.blade.php" },
+        { "title": "Colors", "description": "Deterministic soft colors, or auto to derive one from the name.", "file": "colors.blade.php" }
+    ]
+}

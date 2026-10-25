@@ -58,7 +58,15 @@ SELECT 'FAIL' AS result, COUNT(*) AS issues FROM (
     FROM tables tb
     LEFT JOIN tenants t ON tb.tenant_id = t.id
     LEFT JOIN stores s ON tb.store_id = s.id
-    WHERE t.id IS NULL OR (tb.store_id IS NOT NULL AND s.id IS NULL)
+    WHERE t.id IS NULL OR tb.store_id IS NULL OR s.id IS NULL
+
+    UNION ALL
+
+    -- 7b. Orders with table mismatching tenant or store
+    SELECT o.id, 'order_table_mismatch_tenant_or_store' AS reason
+    FROM orders o
+    JOIN tables tb ON o.table_id = tb.id
+    WHERE o.tenant_id != tb.tenant_id OR o.store_id != tb.store_id
 
     UNION ALL
 
@@ -259,7 +267,9 @@ WHERE NOT EXISTS (
         UNION ALL
         SELECT cdm.id FROM cash_drawer_movements cdm LEFT JOIN shifts sh ON cdm.shift_id = sh.id WHERE sh.id IS NULL
         UNION ALL
-        SELECT tb.id FROM tables tb LEFT JOIN tenants t ON tb.tenant_id = t.id LEFT JOIN stores s ON tb.store_id = s.id WHERE t.id IS NULL OR (tb.store_id IS NOT NULL AND s.id IS NULL)
+        SELECT tb.id FROM tables tb LEFT JOIN tenants t ON tb.tenant_id = t.id LEFT JOIN stores s ON tb.store_id = s.id WHERE t.id IS NULL OR tb.store_id IS NULL OR s.id IS NULL
+        UNION ALL
+        SELECT o.id FROM orders o JOIN tables tb ON o.table_id = tb.id WHERE o.tenant_id != tb.tenant_id OR o.store_id != tb.store_id
         UNION ALL
         SELECT gr.id FROM goods_receipts gr LEFT JOIN tenants t ON gr.tenant_id = t.id LEFT JOIN stores s ON gr.store_id = s.id WHERE t.id IS NULL OR s.id IS NULL
         UNION ALL

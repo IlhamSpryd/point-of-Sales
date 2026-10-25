@@ -1,0 +1,23 @@
+{
+    "name": "empty-state",
+    "label": "Empty State",
+    "description": "A friendly placeholder for when there's no data yet — an icon, title, description and an optional action. Pass an <x-slot:icon> to customize the glyph.",
+    "category": "Display",
+    "dependencies": [],
+    "props": [
+        { "name": "title", "type": "text", "default": "", "description": "The headline message." },
+        { "name": "description", "type": "text", "default": "", "description": "Supporting text below the title." }
+    ],
+    "slots": [
+        { "name": "icon", "description": "Custom icon overriding the default illustration." },
+        { "name": "slot", "description": "Call-to-action buttons or content shown below the description." }
+    ],
+    "studio": {
+        "defaults": { "title": "No results found", "description": "Try adjusting your filters or search terms." },
+        "card": "<x-components.empty-state title=\"No results found\" description=\"Try adjusting your filters or search terms.\" class=\"py-10\" />"
+    },
+    "usage": "Put call-to-action buttons in the default slot; override the icon with <x-slot:icon>…</x-slot:icon>.",
+    "examples": [
+        { "title": "Basic", "description": "An icon, title, description and a call-to-action button.", "file": "basic.blade.php" }
+    ]
+}
