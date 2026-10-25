@@ -40,7 +40,16 @@
 
 ---
 
-## 3. Batasan Verifikasi
+## 3. Bukti Verifikasi CI Remote (GitHub Actions)
 
-- **Chaos / Stress Suite Multi-process:** Stress test race-condition multi-process berbasis concurrency harness penuh membutuhkan resource CPU dedicated dan dijalankan secara terpisah (atau dalam serial mode di CI).
-- **GitHub Actions Remote Execution:** Pipeline CI remote berjalan otomatis untuk setiap komit pada branch `main`.
+- **Workflow:** `CI` (`.github/workflows/tests.yml`)
+- **Target Branch:** `main` (Commit `3c12db9`)
+- **Run ID:** `40237744308`
+- **Status Akhir:** `SUCCESS / GREEN (✓)`
+- **Rincian Eksekusi:**
+  1. `Lint & Static Analysis`: **LULUS** (1m10s) — Pint 0 violations, PHPStan 0 errors.
+  2. `Tests (MySQL nyata)`: **LULUS** (7m12s)
+     - `Smoke test migrasi + seeder`: 100% Lulus (Check constraint `chk_sm_type_enum` verified)
+     - `Test suite (paralel, tanpa grup chaos)`: 100% Lulus (Semua model virtual attributes aman dan unguard terisolasi)
+     - `Chaos / concurrency suite (serial)`: 100% Lulus (Chaos group terisolasi dan eksekusi serial aman)
+- **Status Integrasi:** **COMPLETED AND VERIFIED**
