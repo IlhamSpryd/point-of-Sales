@@ -128,4 +128,38 @@ class Ingredient extends Model
     {
         return self::where('id', $id)->lockForUpdate()->first();
     }
+
+    public function setSkuAttribute($value): void
+    {
+        if (empty($this->attributes['ingredient_code']) && ! empty($value)) {
+            $this->attributes['ingredient_code'] = $value;
+        }
+    }
+
+    public function getSkuAttribute(): ?string
+    {
+        return isset($this->attributes['ingredient_code']) ? (string) $this->attributes['ingredient_code'] : null;
+    }
+
+    public function setCodeAttribute($value): void
+    {
+        if (empty($this->attributes['ingredient_code']) && ! empty($value)) {
+            $this->attributes['ingredient_code'] = $value;
+        }
+    }
+
+    public function getCodeAttribute(): ?string
+    {
+        return isset($this->attributes['ingredient_code']) ? (string) $this->attributes['ingredient_code'] : null;
+    }
+
+    public function setCurrentCostAttribute($value): void
+    {
+        $this->attributes['cost_per_unit'] = $value;
+    }
+
+    public function getCurrentCostAttribute(): mixed
+    {
+        return $this->attributes['cost_per_unit'] ?? null;
+    }
 }

@@ -106,4 +106,16 @@ class Role extends Model
     {
         return strtolower($this->name) === 'admin' || strtolower($this->name) === 'superadmin';
     }
+
+    public function setDisplayNameAttribute($value): void
+    {
+        if (empty($this->attributes['description']) && is_string($value)) {
+            $this->attributes['description'] = $value;
+        }
+    }
+
+    public function getDisplayNameAttribute(): string
+    {
+        return (string) ($this->attributes['description'] ?? $this->attributes['name'] ?? '');
+    }
 }

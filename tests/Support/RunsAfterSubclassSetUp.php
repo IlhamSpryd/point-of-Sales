@@ -2,6 +2,7 @@
 
 namespace Tests\Support;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\TestCase;
 
 /**
@@ -28,6 +29,8 @@ trait RunsAfterSubclassSetUp
      */
     final protected function setUp(): void
     {
+        Model::reguard();
+
         // Kumpulkan rantai deklarasi setUp() dari subclass terdekat hingga base
         // framework (Illuminate\Foundation\Testing\TestCase).
         // PENTING: mulai dari parent class, BUKAN dari kelas ini — kelas ini

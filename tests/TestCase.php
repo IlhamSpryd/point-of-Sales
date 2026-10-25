@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Tests\Support\RunsAfterSubclassSetUp;
 use Tests\Support\WithDefaultTenant;
@@ -30,5 +31,11 @@ abstract class TestCase extends BaseTestCase
         if (method_exists($this, 'setUpWithDefaultTenant')) {
             $this->setUpWithDefaultTenant();
         }
+    }
+
+    protected function tearDown(): void
+    {
+        Model::reguard();
+        parent::tearDown();
     }
 }

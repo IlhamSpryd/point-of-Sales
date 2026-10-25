@@ -191,6 +191,27 @@
 
 ---
 
+### Masalah 13: Virtual Attribute sku (Product, Ingredient) & display_name (Role) serta Isolasi Reguard Test (Run 40236719456)
+- **Job:** `Tests (MySQL nyata)`
+- **Langkah Gagal:** Suite Purchasing (`GrnInventoryIntegrationTest`, `PurchaseRequestAndApprovalTest`, `SupplierManagementTest`, dsb.)
+- **Error:**
+  ```text
+  PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'sku' in 'field list' (insert into products)
+  PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'display_name' in 'field list' (insert into roles)
+  ```
+- **Akar Masalah:**
+  1. Pada tabel `products`, kolom SKU tidak ada (kolom yang tersedia adalah `product_code`, sedangkan `sku` hanya ada di tabel `product_variants`).
+  2. Pada tabel `roles`, kolom `display_name` tidak ada (kolom yang tersedia adalah `description`).
+  3. Pada tabel `ingredients`, kolom `sku` dan `current_cost` tidak ada (tersedia `ingredient_code` dan `cost_per_unit`).
+  4. Ketika test suite berjalan secara paralel, pemanggilan `Model::unguard()` dari salah satu tes bertahan pada worker process PHPUnit, meloloskan atribut virtual ke SQL INSERT.
+- **Remediasi:**
+  1. Menambahkan mutator/accessor `setSkuAttribute` & `getSkuAttribute` pada `Product` yang memetakan `sku` ke `product_code` tanpa memasukkan kunci `sku` ke SQL attributes.
+  2. Menambahkan mutator/accessor `setDisplayNameAttribute` & `getDisplayNameAttribute` pada `Role` yang memetakan nilai ke `description`.
+  3. Menambahkan mutator/accessor `setSkuAttribute`, `setCodeAttribute`, dan `setCurrentCostAttribute` pada `Ingredient` yang memetakan ke `ingredient_code` dan `cost_per_unit`.
+  4. Menambahkan isolasi `Model::reguard()` pada hook `setUp()` (`RunsAfterSubclassSetUp`) dan `tearDown()` (`TestCase`) agar kebocoran unguard antar test terisolasi secara tuntas.
+
+---
+
 ## 3. Ringkasan File yang Diubah
 
 | File | Alasan Perubahan |
@@ -205,9 +226,13 @@
 | `database/migrations/2027_01_02_000006_create_supplier_returns_tables.php` | Mempersingkat `MESSAGE_TEXT` trigger XOR agar <= 128 karakter. |
 | `app/Modules/Purchasing/Services/LandedCostService.php` | Memperbaiki rounding alokasi biaya residual AT-13 2 desimal. |
 | `app/Modules/Settings/Models/Store.php` | Menambahkan mutator/accessor `status` untuk memetakan ke kolom `is_active`. |
-| `app/Modules/Users/Models/Role.php` | Menambahkan mutator `setIsAdminAttribute` untuk virtual attribute `is_admin`. |
+| `app/Modules/Users/Models/Role.php` | Menambahkan mutator `setIsAdminAttribute` & `setDisplayNameAttribute`. |
 | `app/Modules/Users/Models/User.php` | Menambahkan mutator/accessor `store_id` untuk virtual attribute `store_id`. |
 | `app/Modules/Products/Models/Category.php` | Menambahkan mutator/accessor `slug` untuk virtual attribute `slug`. |
+| `app/Modules/Products/Models/Product.php` | Menambahkan mutator/accessor `display_name` dan `sku`. |
+| `app/Modules/Inventory/Models/Ingredient.php` | Menambahkan mutator/accessor `sku`, `code`, dan `current_cost`. |
+| `tests/Support/RunsAfterSubclassSetUp.php` | Memastikan `Model::reguard()` dijalankan pada awal `setUp()`. |
+| `tests/TestCase.php` | Menambahkan `tearDown()` dengan `Model::reguard()` untuk isolasi test paralel. |
 | `app/Modules/Products/Models/Product.php` | Menambahkan mutator/accessor `display_name` untuk virtual attribute `display_name`. |
 | `app/Policies/DiscountPolicy.php` | Menyelaraskan perbandingan `isset($user->store_id)` untuk static analysis. |
 | `app/Policies/TablePolicy.php` | Menyelaraskan perbandingan `isset($user->store_id)` untuk static analysis. |

@@ -139,6 +139,18 @@ class Product extends Model
         return $this->attributes['product_price'] ?? null;
     }
 
+    public function setSkuAttribute($value): void
+    {
+        if (empty($this->attributes['product_code']) && ! empty($value)) {
+            $this->attributes['product_code'] = $value;
+        }
+    }
+
+    public function getSkuAttribute(): ?string
+    {
+        return isset($this->attributes['product_code']) ? (string) $this->attributes['product_code'] : null;
+    }
+
     protected static function booted()
     {
         static::created(function ($model) {
