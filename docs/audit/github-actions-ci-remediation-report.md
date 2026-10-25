@@ -133,6 +133,34 @@
 
 ---
 
+### Masalah 9: Virtual Attribute is_admin pada Model Role
+- **Job:** `Tests (MySQL nyata)`
+- **Langkah Gagal:** Suite Purchasing (`LandedCostAllocationTest`, `PurchaseOrderServiceTest`, dsb.)
+- **Error:**
+  ```text
+  PDOException: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'is_admin' in 'field list'
+  ```
+- **Akar Masalah:**
+  Tabel basis data `roles` tidak memiliki kolom `is_admin`, namun model `Role` memiliki virtual accessor `getIsAdminAttribute()`. Ketika test mengeksekusi `Role::create([... 'is_admin' => true])` di bawah status `Model::unguard()`, atribut `is_admin` diikutsertakan secara mentah dalam query INSERT SQL.
+- **Remediasi:**
+  Menambahkan mutator `setIsAdminAttribute($value)` pada `app/Modules/Users/Models/Role.php` yang mengabaikan nilai `is_admin` saat persistensi basis data.
+
+---
+
+### Masalah 10: Pengelompokan Chaos Test Multi-Process Provisioning (Run 40234375410)
+- **Job:** `Tests (MySQL nyata)`
+- **Langkah Gagal:** `ProvisioningRealConcurrencyTest`
+- **Error:**
+  ```text
+  Table 'apeiron_pos_test.tenants' doesn't exist
+  ```
+- **Akar Masalah:**
+  `ProvisioningRealConcurrencyTest` menggunakan `pcntl_fork()` untuk menguji 50 proses OS paralel dengan koneksi MySQL mandiri. Saat berjalan di dalam Paratest paralel, sub-proses child me-reboot aplikasi dan membidik database default `.env` (`apeiron_pos_test`) bukan database worker terisolasi (`apeiron_pos_test_test_X`).
+- **Remediasi:**
+  Menambahkan native attribute `#[Group('chaos')]` pada `ProvisioningRealConcurrencyTest` sehingga dieksekusi secara serial dan terisolasi pada langkah chaos suite.
+
+---
+
 ## 3. Ringkasan File yang Diubah
 
 | File | Alasan Perubahan |
@@ -147,6 +175,8 @@
 | `database/migrations/2027_01_02_000006_create_supplier_returns_tables.php` | Mempersingkat `MESSAGE_TEXT` trigger XOR agar <= 128 karakter. |
 | `app/Modules/Purchasing/Services/LandedCostService.php` | Memperbaiki rounding alokasi biaya residual AT-13 2 desimal. |
 | `app/Modules/Settings/Models/Store.php` | Menambahkan mutator/accessor `status` untuk memetakan ke kolom `is_active`. |
+| `app/Modules/Users/Models/Role.php` | Menambahkan mutator `setIsAdminAttribute` untuk virtual attribute `is_admin`. |
+| `tests/Feature/Domain1/ProvisioningRealConcurrencyTest.php` | Menambahkan atribut native PHP 8 `#[Group('chaos')]`. |
 | `tests/Feature/Domain2/TransactionConcurrencyTest.php` | Menambahkan atribut native PHP 8 `#[Group('chaos')]`. |
 | `tests/Feature/Domain2/ConcurrentDiscountQuotaRedemptionTest.php` | Menambahkan atribut native PHP 8 `#[Group('chaos')]`. |
 | `tests/Feature/ExampleTest.php` | Menambahkan `$optOutFromDefaultTenant = true`. |

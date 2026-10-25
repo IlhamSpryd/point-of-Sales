@@ -97,6 +97,11 @@ class Role extends Model
         return false;
     }
 
+    public function setIsAdminAttribute($value): void
+    {
+        // Virtual attribute; ignored during database insertion
+    }
+
     public function getIsAdminAttribute(): bool
     {
         return strtolower($this->name) === 'admin' || strtolower($this->name) === 'superadmin';

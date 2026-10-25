@@ -9,6 +9,7 @@ use App\Services\EmployeeIdGenerator;
 use App\Services\ProvisioningService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
 /**
@@ -17,6 +18,7 @@ use Tests\TestCase;
  * Menggunakan pcntl_fork() dan proses OS terpisah dengan koneksi database mandiri
  * serta barrier synchronization (tanpa RefreshDatabase wrapper yang menutupi locking riil).
  */
+#[Group('chaos')]
 class ProvisioningRealConcurrencyTest extends TestCase
 {
     protected bool $optOutFromDefaultTenant = true;
