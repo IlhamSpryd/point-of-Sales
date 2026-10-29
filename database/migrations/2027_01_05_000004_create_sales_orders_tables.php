@@ -112,9 +112,9 @@ return new class extends Migration
             });
 
             if (in_array($driver, ['mysql', 'mariadb'], true)) {
-                DB::statement("ALTER TABLE sales_orders ADD CONSTRAINT chk_so_status CHECK (status IN ('DRAFT', 'PENDING_CREDIT_APPROVAL', 'CONFIRMED', 'PARTIALLY_FULFILLED', 'FULFILLED', 'CLOSED', 'CANCELLED'))");
-                DB::statement("ALTER TABLE sales_orders ADD CONSTRAINT chk_so_fulfillment_status CHECK (fulfillment_status IN ('UNFULFILLED', 'PARTIALLY_FULFILLED', 'FULFILLED', 'BACKORDERED'))");
-                DB::statement("ALTER TABLE sales_orders ADD CONSTRAINT chk_so_invoicing_status CHECK (invoicing_status IN ('UNINVOICED', 'PARTIALLY_INVOICED', 'FULLY_INVOICED'))");
+                DB::statement("ALTER TABLE sales_orders ADD CONSTRAINT chk_sales_order_status CHECK (status IN ('DRAFT', 'PENDING_CREDIT_APPROVAL', 'CONFIRMED', 'PARTIALLY_FULFILLED', 'FULFILLED', 'CLOSED', 'CANCELLED'))");
+                DB::statement("ALTER TABLE sales_orders ADD CONSTRAINT chk_sales_order_fulfillment CHECK (fulfillment_status IN ('UNFULFILLED', 'PARTIALLY_FULFILLED', 'FULFILLED', 'BACKORDERED'))");
+                DB::statement("ALTER TABLE sales_orders ADD CONSTRAINT chk_sales_order_invoicing CHECK (invoicing_status IN ('UNINVOICED', 'PARTIALLY_INVOICED', 'FULLY_INVOICED'))");
             }
         }
 
