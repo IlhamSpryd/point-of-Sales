@@ -211,7 +211,8 @@ class TaxConfigurationService
             // DPP = Gross / (1 + r)
             // Tax = Gross - DPP
             $divisor = bcadd('1.000000', $r, 6);
-            $dpp = bcdiv($normAmount, $divisor, 2);
+            $rawDpp = bcdiv($normAmount, $divisor, 6);
+            $dpp = $this->roundAmount($rawDpp, 2);
             $tax = bcsub($normAmount, $dpp, 2);
             $gross = $normAmount;
         } else {
@@ -219,7 +220,8 @@ class TaxConfigurationService
             // Tax = DPP * r
             // Gross = DPP + Tax
             $dpp = $normAmount;
-            $tax = bcmul($dpp, $r, 2);
+            $rawTax = bcmul($dpp, $r, 6);
+            $tax = $this->roundAmount($rawTax, 2);
             $gross = bcadd($dpp, $tax, 2);
         }
 
@@ -281,5 +283,19 @@ class TaxConfigurationService
         }
 
         return $count;
+    }
+
+    /**
+     * Pembulatan Half-Up presisi desimal berbasis string/bcmath.
+     */
+    private function roundAmount(string $val, int $scale = 2): string
+    {
+        $isNegative = str_starts_with($val, '-');
+        $half = '0.'.str_repeat('0', $scale).'5';
+        $adjusted = $isNegative
+            ? bcsub($val, $half, $scale + 2)
+            : bcadd($val, $half, $scale + 2);
+
+        return bcadd($adjusted, '0', $scale);
     }
 }
