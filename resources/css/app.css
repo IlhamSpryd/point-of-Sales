@@ -2,6 +2,7 @@
 @import 'tailwindcss';
 
 @import './components.css';
+@custom-variant dark (&:where(.dark, .dark *));
 @source '../views';
 @source '../**/*.blade.php';
 @source '../../storage/framework/views';
@@ -15,6 +16,7 @@
 @theme {
     --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
     --font-brand: 'Playfair Display', 'Georgia', serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
     /* ── Gray Scale ── */
     --color-gray-50: #fafafa;
@@ -40,14 +42,6 @@
     --color-primary-800: #2B2926;
     --color-primary-900: #1F1E1C;
     --color-primary-950: #141413;
-
-    /* ── Apeiron Brand Tokens ── */
-    --color-apeiron-bg:  #ffffff;
-    --color-apeiron-ink: #202020;
-    --color-apeiron-muted: #787774;           /* decorative: borders, placeholders */
-    --color-apeiron-muted-700: #6B6A66;       /* WCAG AA text-small ≈5.1:1 on white */
-    --color-apeiron-border: #E9E9E7;
-    --color-apeiron-surface: #F1F1EF;
 
     /* ── Radius Scale — consistent premium rounding ── */
     --radius-card: 1rem;      /* rounded-2xl equivalent, used by .card-surface */
@@ -87,7 +81,7 @@
     --color-apeiron-border:    #E9E9E7;
     --color-apeiron-surface:   #F1F1EF;
     --color-apeiron-sidebar:   #ffffff;
-    --color-table-header-bg: #F7F7F5;
+    --color-table-header-bg:   #F7F7F5;
 }
 
 /* --- TAMBAHAN P1: varian KDS gelap --- */
@@ -173,8 +167,9 @@ input[type="number"]::-webkit-outer-spin-button {
    REUSABLE SURFACE CLASSES
    ═══════════════════════════════════════════════════════ */
 .card-surface {
-    background-color: #ffffff;
-    border: 1px solid var(--color-apeiron-border);
+    background-color: var(--color-card, var(--color-apeiron-bg));
+    color: var(--color-card-foreground, var(--color-apeiron-ink));
+    border: 1px solid var(--color-border, var(--color-apeiron-border));
     border-radius: var(--radius-card);
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
     transition:
@@ -564,22 +559,6 @@ option {
         -moz-user-select: none;
         -ms-user-select: none;
         user-select: none;
-    }
-
-    /* Scrollbar elegan dan tipis agar tidak makan tempat di layar kecil */
-    .custom-scrollbar::-webkit-scrollbar {
-        width: 6px;
-        height: 6px;
-    }
-    .custom-scrollbar::-webkit-scrollbar-track {
-        background: transparent;
-    }
-    .custom-scrollbar::-webkit-scrollbar-thumb {
-        background-color: #cbd5e1; /* Tailwind slate-300 */
-        border-radius: 9999px;
-    }
-    .custom-scrollbar:hover::-webkit-scrollbar-thumb {
-        background-color: #94a3b8; /* Tailwind slate-400 */
     }
 }
 

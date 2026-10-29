@@ -43,9 +43,9 @@
         </div>
 
         <div class="flex items-center gap-4">
-            <x-button type="submit" variant="primary">
+            <x-ui.button type="submit" variant="primary">
                 <span class="material-symbols-rounded text-[18px]">save</span> {{ __('Simpan Nama') }}
-            </x-button>
+            </x-ui.button>
 
             @if (session('status') === 'profile-updated')
                 <p
@@ -129,9 +129,9 @@
                 </div>
 
                 <div>
-                    <x-button type="submit" variant="secondary">
+                    <x-ui.button type="submit" variant="secondary">
                         <span class="material-symbols-rounded text-[18px]">forward_to_inbox</span> {{ __('Kirim Kode Verifikasi ke Email Baru') }}
-                    </x-button>
+                    </x-ui.button>
                 </div>
             </form>
         @endif

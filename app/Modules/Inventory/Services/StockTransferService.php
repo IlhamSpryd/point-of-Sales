@@ -11,6 +11,7 @@ use App\Enums\StockTransferStatusEnum;
 use App\Models\Ingredient;
 use App\Models\Product;
 use App\Models\Store;
+use App\Modules\Finance\Services\InventoryAccountingService;
 use App\Modules\Inventory\Models\StockTransfer;
 use App\Modules\Inventory\Models\StockTransferItem;
 use App\Modules\Settings\Services\AuditTrailService;
@@ -309,6 +310,9 @@ class StockTransferService
                 ]
             );
 
+            // Emisi outbox akuntansi ke Modul 7 (PR-INV-02)
+            app(InventoryAccountingService::class)->recordStockTransferShipped($lockedTransfer);
+
             return $lockedTransfer->fresh(['items']);
         });
     }
@@ -503,6 +507,9 @@ class StockTransferService
                     'received_at' => $now->toIso8601String(),
                 ]
             );
+
+            // Emisi outbox akuntansi ke Modul 7 (PR-INV-02)
+            app(InventoryAccountingService::class)->recordStockTransferReceived($lockedTransfer);
 
             return $lockedTransfer->fresh(['items.product', 'items.ingredient']);
         });

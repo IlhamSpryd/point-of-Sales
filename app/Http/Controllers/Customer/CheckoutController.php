@@ -21,6 +21,7 @@ use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -167,18 +168,38 @@ class CheckoutController extends Controller
                 return back()->with('error', 'Masih ada pesanan yang belum dibayar. Selesaikan atau tunggu kedaluwarsa sebelum memesan lagi.');
             }
 
-            $transactionItems = array_map(function (array $item) use ($tenantId) {
-                // SECURITY: Hitung ulang extra_price dari database, jangan percaya
+            $storeId = app(TenantContext::class)->getStoreId();
+            $resolver = app(CatalogPriceResolverService::class);
+
+            $requestedProductIds = collect($items)->pluck('product_id')->filter()->unique()->values()->all();
+            $productsById = Product::whereIn('id', $requestedProductIds)
+                ->where('tenant_id', $tenantId)
+                ->get()
+                ->keyBy('id');
+
+            $allModifierIds = collect($items)
+                ->flatMap(static fn (array $item) => collect($item['options'] ?? [])->pluck('modifier_id'))
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+            $modifiersById = empty($allModifierIds)
+                ? collect()
+                : Modifier::whereIn('id', $allModifierIds)
+                    ->where('is_active', true)
+                    ->where('tenant_id', $tenantId)
+                    ->get()
+                    ->keyBy('id');
+
+            $transactionItems = array_map(function (array $item) use ($storeId, $resolver, $productsById, $modifiersById) {
+                // SECURITY: Hitung ulang extra_price dari database (batch-loaded), jangan percaya
                 // nilai yang sudah dihitung di session (bisa dimanipulasi via devtools).
-                $modifierIds = collect($item['options'] ?? [])->pluck('modifier_id')->filter()->all();
-                $storeId = app(TenantContext::class)->getStoreId();
+                $modifierIds = collect($item['options'] ?? [])->pluck('modifier_id')->filter()->values()->all();
 
                 $serverExtraPrice = 0;
                 if (! empty($modifierIds)) {
-                    $modifierQuery = Modifier::whereIn('id', $modifierIds)
-                        ->where('is_active', true)
-                        ->where('tenant_id', $tenantId);
-                    $modifiers = $modifierQuery->get();
+                    $modifiers = collect($modifierIds)->map(static fn ($id) => $modifiersById->get($id))->filter();
                     if ($modifiers->count() !== count($modifierIds)) {
                         throw ValidationException::withMessages([
                             'items' => 'Pilihan varian tidak valid atau milik cabang/tenant lain.',
@@ -187,9 +208,7 @@ class CheckoutController extends Controller
                     $serverExtraPrice = $modifiers->sum('extra_price');
                 }
 
-                $productQuery = Product::where('id', $item['product_id'])
-                    ->where('tenant_id', $tenantId);
-                $product = $productQuery->first();
+                $product = $productsById->get($item['product_id']);
 
                 if (! $product) {
                     throw ValidationException::withMessages([
@@ -203,7 +222,6 @@ class CheckoutController extends Controller
                     ]);
                 }
 
-                $resolver = app(CatalogPriceResolverService::class);
                 if (! $resolver->isAvailableInStore($product, $storeId)) {
                     throw ValidationException::withMessages([
                         'items' => "Produk '{$product->product_name}' tidak tersedia di cabang ini.",
@@ -258,21 +276,25 @@ class CheckoutController extends Controller
                 }
             }
 
-            $order = $this->transactionService->createTransaction([
-                'items' => $transactionItems,
-                'payment_method' => $request->validated('payment_method'),
-                'cash_received' => null,
-                'is_self_order_cash' => $request->validated('payment_method') === 'cash',
-                'table_id' => $tableId,
-                'order_type' => 'dine_in',
-                'customer_id' => $customerId,
-                'idempotency_key' => $idempotencyKey,
-            ], $systemUserId);
+            $order = DB::transaction(function () use ($transactionItems, $request, $tableId, $customerId, $idempotencyKey, $systemUserId, $table) {
+                $createdOrder = $this->transactionService->createTransaction([
+                    'items' => $transactionItems,
+                    'payment_method' => $request->validated('payment_method'),
+                    'cash_received' => null,
+                    'is_self_order_cash' => $request->validated('payment_method') === 'cash',
+                    'table_id' => $tableId,
+                    'order_type' => 'dine_in',
+                    'customer_id' => $customerId,
+                    'idempotency_key' => $idempotencyKey,
+                ], $systemUserId);
 
-            // Transisi status meja dari 'available' ke 'occupied' setelah pesanan pertama berhasil dibuat
-            if ($table->operational_status === 'available') {
-                $table->update(['operational_status' => 'occupied']);
-            }
+                // Transisi status meja dari 'available' ke 'occupied' setelah pesanan pertama berhasil dibuat
+                if ($table->operational_status === 'available') {
+                    $table->update(['operational_status' => 'occupied']);
+                }
+
+                return $createdOrder;
+            });
         } catch (ValidationException $e) {
             // Pesan bisnis (stok/varian/harga): aman ditampilkan.
             return back()->with('error', collect($e->errors())->flatten()->first());

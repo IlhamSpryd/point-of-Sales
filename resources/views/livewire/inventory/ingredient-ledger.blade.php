@@ -1,4 +1,4 @@
-<div>
+<div data-gsap="page-enter">
     @include('inventory.partials.sub-nav')
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
@@ -6,9 +6,9 @@
             <p class="text-sm font-medium text-apeiron-muted mt-1">Laporan mutasi pergerakan stok secara historis (Ledger Immutable)</p>
         </div>
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-            <x-button type="button" variant="secondary" wire:navigate href="{{ route('inventory.ingredients') }}">
+            <x-ui.button type="button" variant="secondary" wire:navigate href="{{ route('inventory.ingredients') }}">
                 <span class="material-symbols-rounded text-[18px]">arrow_back</span> Kembali
-            </x-button>
+            </x-ui.button>
 
             <div class="relative w-full sm:w-48">
                 <select wire:model.live="ingredient_id" class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-apeiron-border bg-white text-apeiron-ink focus:outline-none focus:ring-2 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all duration-200 shadow-sm appearance-none">
@@ -68,16 +68,16 @@
                                         'restore_compensation' => 'Pembatalan Transaksi',
                                         default => ucwords(str_replace('_', ' ', $typeVal))
                                     };
-                                    $typeColor = match($typeVal) {
-                                        'purchase_receipt', 'restore_compensation' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                                        'sale_deduction', 'waste' => 'bg-rose-50 text-rose-700 border-rose-200',
-                                        'adjustment' => 'bg-amber-50 text-amber-700 border-amber-200',
-                                        default => 'bg-apeiron-surface text-apeiron-muted border-apeiron-border'
+                                    $typeVariant = match($typeVal) {
+                                        'purchase_receipt', 'restore_compensation' => 'success',
+                                        'sale_deduction', 'waste' => 'danger',
+                                        'adjustment' => 'warning',
+                                        default => 'secondary'
                                     };
                                 @endphp
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-medium border {{ $typeColor }}">
+                                <x-ui.badge :variant="$typeVariant">
                                     {{ $typeStr }}
-                                </span>
+                                </x-ui.badge>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right tabular-nums">
                                 @if($movement->quantity > 0)

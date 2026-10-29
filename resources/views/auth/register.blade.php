@@ -1,5 +1,5 @@
 <x-guest-layout>
-    @section('title', 'Register Business — Apeiron POS')
+    @section('title', 'Register Business — Apeiron')
 
     <!-- Heading Block -->
     <div class="mb-6">

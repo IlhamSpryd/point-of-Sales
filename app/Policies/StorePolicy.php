@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Policies;
 
 use App\Models\Role;
-use App\Models\Store;
 use App\Models\User;
+use App\Modules\Settings\Models\Store;
 use Illuminate\Support\Facades\DB;
 
 class StorePolicy

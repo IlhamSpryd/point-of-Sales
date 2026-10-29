@@ -1,4 +1,4 @@
-<div>
+<div data-gsap="page-enter">
     @include('inventory.partials.sub-nav')
     {{-- Header & Aksi Utama --}}
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
@@ -9,25 +9,23 @@
             </p>
         </div>
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
-            <x-button type="button" variant="primary" wire:click="openCreateModal">
+            <x-ui.button type="button" variant="primary" wire:click="openCreateModal" x-on:click="window.erpMotion?.pulseHighlight($el)">
                 <span class="material-symbols-rounded text-[18px]">add</span> Mulai Sesi Opname Baru
-            </x-button>
+            </x-ui.button>
         </div>
     </div>
 
     {{-- Alert Notifikasi --}}
     @if (session()->has('message'))
-        <div class="mb-4 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm flex items-center gap-2">
-            <span class="material-symbols-rounded text-emerald-600">check_circle</span>
+        <x-ui.alert variant="success" class="mb-4">
             {{ session('message') }}
-        </div>
+        </x-ui.alert>
     @endif
 
     @if (session()->has('error'))
-        <div class="mb-4 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-center gap-2">
-            <span class="material-symbols-rounded text-rose-600">error</span>
+        <x-ui.alert variant="destructive" class="mb-4">
             {{ session('error') }}
-        </div>
+        </x-ui.alert>
     @endif
 
     {{-- Filter & Search Bar --}}
@@ -83,9 +81,9 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
-                            <x-badge :variant="$opname->status->badgeType()">
+                            <x-ui.badge :variant="$opname->status->badgeType()">
                                 {{ $opname->status->label() }}
-                            </x-badge>
+                            </x-ui.badge>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-apeiron-ink text-right">
                             {{ $opname->items_count }} item
@@ -147,63 +145,55 @@
     </div>
 
     {{-- MODAL 1: Form Buat Sesi Opname --}}
-    @if ($showFormModal)
-        <div class="fixed inset-0 z-50 overflow-y-auto bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-white rounded-3xl max-w-2xl w-full p-6 shadow-2xl border border-apeiron-border" @click.outside="$wire.closeFormModal()">
-                <div class="flex items-center justify-between pb-4 border-b border-apeiron-border mb-4">
-                    <h5 class="text-lg font-bold text-apeiron-ink">Mulai Sesi Stock Opname Baru</h5>
-                    <button type="button" wire:click="closeFormModal" class="text-apeiron-muted hover:text-apeiron-ink">
-                        <span class="material-symbols-rounded">close</span>
-                    </button>
+    <x-ui.modal wire:model="showFormModal" maxWidth="2xl">
+        <x-slot:header>
+            <h5 class="text-lg font-bold text-apeiron-ink">Mulai Sesi Stock Opname Baru</h5>
+        </x-slot:header>
+        <x-slot:content>
+            @if ($errors->has('general'))
+                <x-ui.alert variant="destructive" class="mb-4">
+                    {{ $errors->first('general') }}
+                </x-ui.alert>
+            @endif
+
+            <div class="space-y-4">
+                <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs">
+                    <p class="font-bold mb-1">Mekanisme Cut-Off & Sequence Pinning (OD-04):</p>
+                    <p>Setelah sesi dibuat dan hitungan dimulai, saldo buku dan movement id akan di-pin. Transaksi penjualan kasir tetap dapat berlangsung, namun sistem akan memeriksa mutasi sela saat persetujuan akhir.</p>
                 </div>
 
-                @if ($errors->has('general'))
-                    <div class="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm">
-                        {{ $errors->first('general') }}
-                    </div>
-                @endif
-
-                <div class="space-y-4">
-                    <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs">
-                        <p class="font-bold mb-1">Mekanisme Cut-Off & Sequence Pinning (OD-04):</p>
-                        <p>Setelah sesi dibuat dan hitungan dimulai, saldo buku dan movement id akan di-pin. Transaksi penjualan kasir tetap dapat berlangsung, namun sistem akan memeriksa mutasi sela saat persetujuan akhir.</p>
-                    </div>
-
-                    <div class="flex items-center gap-3">
-                        <input type="checkbox" id="all_items" wire:model.live="all_items" class="rounded border-apeiron-border text-apeiron-ink focus:ring-apeiron-ink">
-                        <label for="all_items" class="text-sm font-semibold text-apeiron-ink cursor-pointer">
-                            Hitung Seluruh Item Katalog Cabang (Produk & Bahan Baku)
-                        </label>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-apeiron-ink uppercase tracking-wider mb-1">Catatan Dokumen</label>
-                        <textarea wire:model="notes" rows="2" placeholder="Tujuan opname, area gudang, shift, dll." class="form-input w-full p-3 rounded-xl border border-apeiron-border text-sm"></textarea>
-                    </div>
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" id="all_items" wire:model.live="all_items" class="rounded border-apeiron-border text-apeiron-ink focus:ring-apeiron-ink">
+                    <label for="all_items" class="text-sm font-semibold text-apeiron-ink cursor-pointer">
+                        Hitung Seluruh Item Katalog Cabang (Produk & Bahan Baku)
+                    </label>
                 </div>
 
-                <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-apeiron-border">
-                    <x-button type="button" variant="secondary" wire:click="closeFormModal">Batal</x-button>
-                    <x-button type="button" variant="primary" wire:click="saveOpname">Buat Draft Opname</x-button>
+                <div>
+                    <label class="block text-xs font-bold text-apeiron-ink uppercase tracking-wider mb-1">Catatan Dokumen</label>
+                    <textarea wire:model="notes" rows="2" placeholder="Tujuan opname, area gudang, shift, dll." class="form-input w-full p-3 rounded-xl border border-apeiron-border text-sm"></textarea>
                 </div>
             </div>
-        </div>
-    @endif
+
+            <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-apeiron-border">
+                <x-ui.button type="button" variant="secondary" wire:click="closeFormModal">Batal</x-ui.button>
+                <x-ui.button type="button" variant="primary" wire:click="saveOpname" x-on:click="window.erpMotion?.pulseHighlight($el)">Buat Draft Opname</x-ui.button>
+            </div>
+        </x-slot:content>
+    </x-ui.modal>
 
     {{-- MODAL 2: Input Hasil Hitung Fisik (Counting) --}}
-    @if ($showCountModal && $activeOpname)
-        <div class="fixed inset-0 z-50 overflow-y-auto bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-white rounded-3xl max-w-4xl w-full p-6 shadow-2xl border border-apeiron-border" @click.outside="$wire.closeCountModal()">
-                <div class="flex items-center justify-between pb-4 border-b border-apeiron-border mb-4">
-                    <div>
-                        <h5 class="text-lg font-bold text-apeiron-ink">Input Hasil Hitung Fisik #{{ $activeOpname->opname_number }}</h5>
-                        <p class="text-xs text-apeiron-muted">Waktu Snapshot: {{ $activeOpname->snapshot_taken_at?->format('d M Y H:i:s') }}</p>
-                    </div>
-                    <button type="button" wire:click="closeCountModal" class="text-apeiron-muted hover:text-apeiron-ink">
-                        <span class="material-symbols-rounded">close</span>
-                    </button>
+    <x-ui.modal wire:model="showCountModal" maxWidth="4xl">
+        <x-slot:header>
+            @if ($activeOpname)
+                <div>
+                    <h5 class="text-lg font-bold text-apeiron-ink">Input Hasil Hitung Fisik #{{ $activeOpname->opname_number }}</h5>
+                    <p class="text-xs text-apeiron-muted">Waktu Snapshot: {{ $activeOpname->snapshot_taken_at?->format('d M Y H:i:s') }}</p>
                 </div>
-
+            @endif
+        </x-slot:header>
+        <x-slot:content>
+            @if ($activeOpname)
                 <div class="max-h-96 overflow-y-auto mb-4">
                     <table class="w-full text-left text-sm">
                         <thead class="bg-apeiron-surface text-xs font-semibold text-apeiron-muted uppercase">
@@ -239,27 +229,25 @@
                 </div>
 
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-apeiron-border">
-                    <x-button type="button" variant="secondary" wire:click="closeCountModal">Tutup</x-button>
-                    <x-button type="button" variant="primary" wire:click="saveCounts">Simpan Hitungan</x-button>
+                    <x-ui.button type="button" variant="secondary" wire:click="closeCountModal">Tutup</x-ui.button>
+                    <x-ui.button type="button" variant="primary" wire:click="saveCounts" x-on:click="window.erpMotion?.pulseHighlight($el)">Simpan Hitungan</x-ui.button>
                 </div>
-            </div>
-        </div>
-    @endif
+            @endif
+        </x-slot:content>
+    </x-ui.modal>
 
     {{-- MODAL 3: Drift Detection Alert & Item-Level Resolution (OD-04) --}}
-    @if ($showDriftModal && !empty($driftedItems))
-        <div class="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-2xl border-2 border-rose-500">
-                <div class="flex items-start gap-4 mb-4 pb-4 border-b border-rose-200">
-                    <div class="p-3 rounded-2xl bg-rose-100 text-rose-700">
-                        <span class="material-symbols-rounded text-3xl">warning</span>
-                    </div>
-                    <div>
-                        <h5 class="text-lg font-bold text-rose-900">Drift Terdeteksi! (Penjualan / Mutasi Sela Terjadi)</h5>
-                        <p class="text-xs text-rose-700 mt-1">
-                            Sesuai keputusan arsitektur <strong>OD-04</strong>, persetujuan otomatis diblokir karena saldo buku telah bergeser sejak snapshot diambil. Manajer wajib memilih resolusi per-item:
-                        </p>
-                    </div>
+    <x-ui.modal wire:model="showDriftModal" maxWidth="3xl">
+        <x-slot:header>
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-rounded text-rose-600 text-2xl">warning</span>
+                <h5 class="text-lg font-bold text-rose-900">Drift Terdeteksi! (Penjualan / Mutasi Sela Terjadi)</h5>
+            </div>
+        </x-slot:header>
+        <x-slot:content>
+            @if (!empty($driftedItems))
+                <div class="mb-4 text-xs text-rose-700">
+                    Sesuai keputusan arsitektur <strong>OD-04</strong>, persetujuan otomatis diblokir karena saldo buku telah bergeser sejak snapshot diambil. Manajer wajib memilih resolusi per-item:
                 </div>
 
                 <div class="space-y-4 max-h-96 overflow-y-auto mb-6">
@@ -287,26 +275,24 @@
                 </div>
 
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-apeiron-border">
-                    <x-button type="button" variant="secondary" wire:click="$set('showDriftModal', false)">Tutup & Tinjau Nanti</x-button>
+                    <x-ui.button type="button" variant="secondary" wire:click="$set('showDriftModal', false)">Tutup & Tinjau Nanti</x-ui.button>
                 </div>
-            </div>
-        </div>
-    @endif
+            @endif
+        </x-slot:content>
+    </x-ui.modal>
 
     {{-- MODAL 4: Detail View Sesi Opname --}}
-    @if ($showDetailModal && $selectedOpname)
-        <div class="fixed inset-0 z-50 overflow-y-auto bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-            <div class="bg-white rounded-3xl max-w-4xl w-full p-6 shadow-2xl border border-apeiron-border" @click.outside="$wire.closeDetailModal()">
-                <div class="flex items-center justify-between pb-4 border-b border-apeiron-border mb-4">
-                    <div>
-                        <h5 class="text-lg font-bold text-apeiron-ink">Detail Sesi Stock Opname: {{ $selectedOpname->opname_number }}</h5>
-                        <p class="text-xs text-apeiron-muted">Status: {{ $selectedOpname->status->label() }}</p>
-                    </div>
-                    <button type="button" wire:click="closeDetailModal" class="text-apeiron-muted hover:text-apeiron-ink">
-                        <span class="material-symbols-rounded">close</span>
-                    </button>
+    <x-ui.modal wire:model="showDetailModal" maxWidth="4xl">
+        <x-slot:header>
+            @if ($selectedOpname)
+                <div>
+                    <h5 class="text-lg font-bold text-apeiron-ink">Detail Sesi Stock Opname: {{ $selectedOpname->opname_number }}</h5>
+                    <p class="text-xs text-apeiron-muted">Status: {{ $selectedOpname->status->label() }}</p>
                 </div>
-
+            @endif
+        </x-slot:header>
+        <x-slot:content>
+            @if ($selectedOpname)
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 p-4 rounded-2xl bg-apeiron-surface text-xs">
                     <div>
                         <span class="text-apeiron-muted block">Snapshot Diambil</span>
@@ -367,9 +353,9 @@
                 </div>
 
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-apeiron-border">
-                    <x-button type="button" variant="secondary" wire:click="closeDetailModal">Tutup</x-button>
+                    <x-ui.button type="button" variant="secondary" wire:click="closeDetailModal">Tutup</x-ui.button>
                 </div>
-            </div>
-        </div>
-    @endif
+            @endif
+        </x-slot:content>
+    </x-ui.modal>
 </div>

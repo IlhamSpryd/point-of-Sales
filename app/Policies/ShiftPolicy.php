@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\Shift;
 use App\Models\User;
+use App\Modules\Sales\Models\Shift;
 
 /**
  * [D2-BE-004] Policy Shift: buka/tutup shift hanya untuk peran kas dan

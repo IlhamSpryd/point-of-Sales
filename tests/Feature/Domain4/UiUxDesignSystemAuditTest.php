@@ -158,33 +158,37 @@ class UiUxDesignSystemAuditTest extends TestCase
         $this->assertStringContainsString('bg-rose-600', $danBtn);
         $this->assertStringContainsString('focus-visible:ring-rose-500', $danBtn);
 
-        $zincBtn = Blade::render('<x-zinc-button>Aksi Zinc</x-zinc-button>');
-        $this->assertStringContainsString('bg-apeiron-ink', $zincBtn);
-
         // 3. Form Input Primitives Parity
         $formInput = Blade::render('<x-form-input name="test_field" placeholder="Ketik disini" />');
         $this->assertStringContainsString('form-input', $formInput);
         $this->assertStringContainsString('focus:ring-apeiron-ink', $formInput);
         $this->assertStringContainsString('disabled:opacity-50', $formInput);
 
-        $textInput = Blade::render('<x-text-input name="test_field" placeholder="Ketik disini" />');
-        $this->assertStringContainsString('form-input', $textInput);
-        $this->assertStringContainsString('focus:ring-apeiron-ink', $textInput);
-
         // 4. Form Label Primitives Parity
         $formLabel = Blade::render('<x-form-label for="field">Nama Field</x-form-label>');
         $this->assertStringContainsString('text-apeiron-ink', $formLabel);
         $this->assertStringContainsString('for="field"', $formLabel);
 
-        $inputLabel = Blade::render('<x-input-label for="field" value="Nama Field" />');
-        $this->assertStringContainsString('text-apeiron-ink', $inputLabel);
-        $this->assertStringContainsString('for="field"', $inputLabel);
+        // 5. Redundant component removal verification (D4-001 & T-4.3 Pruning)
+        $prunedComponents = [
+            'discount-manager.blade.php',
+            'application-logo.blade.php',
+            'auth-session-status.blade.php',
+            'dropdown.blade.php',
+            'dropdown-link.blade.php',
+            'nav-link.blade.php',
+            'responsive-nav-link.blade.php',
+            'zinc-button.blade.php',
+            'text-input.blade.php',
+            'input-label.blade.php',
+        ];
 
-        // 5. Redundant component removal verification (D4-001)
-        $this->assertFalse(
-            File::exists(resource_path('views/components/discount-manager.blade.php')),
-            'resources/views/components/discount-manager.blade.php harus sudah dihapus.'
-        );
+        foreach ($prunedComponents as $componentFile) {
+            $this->assertFalse(
+                File::exists(resource_path("views/components/{$componentFile}")),
+                "resources/views/components/{$componentFile} harus sudah dihapus."
+            );
+        }
     }
 
     public function test_public_webroot_and_vendor_pagination_hygiene(): void

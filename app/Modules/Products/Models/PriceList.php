@@ -7,10 +7,12 @@ namespace App\Modules\Products\Models;
 use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
 use App\Models\Customer;
+use App\Models\CustomerGroup;
 use App\Models\LoyaltyTier;
 use App\Models\PriceListItem;
 use App\Models\Store;
 use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -47,36 +49,63 @@ class PriceList extends Model
 
     protected $table = 'price_lists';
 
+    public const TARGET_GENERAL = 'GENERAL';
+
+    public const TARGET_STORE = 'STORE';
+
+    public const TARGET_CUSTOMER_GROUP = 'CUSTOMER_GROUP';
+
+    public const TARGET_CUSTOMER_CONTRACT = 'CUSTOMER_CONTRACT';
+
     protected $fillable = [
         'tenant_id',
         'name',
         'code',
         'type',
+        'target_type',
         'store_id',
         'customer_id',
+        'customer_group_id',
         'loyalty_tier_id',
         'channel',
         'currency',
         'priority',
+        'approved_by_user_id',
+        'approved_at',
         'valid_from',
         'valid_until',
         'is_active',
+        'allow_promo_stacking',
         'description',
     ];
 
     protected $casts = [
         'store_id' => 'integer',
         'customer_id' => 'integer',
+        'customer_group_id' => 'integer',
         'loyalty_tier_id' => 'integer',
         'priority' => 'integer',
+        'approved_by_user_id' => 'integer',
+        'approved_at' => 'datetime',
         'valid_from' => 'datetime',
         'valid_until' => 'datetime',
         'is_active' => 'boolean',
+        'allow_promo_stacking' => 'boolean',
     ];
 
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    public function customerGroup(): BelongsTo
+    {
+        return $this->belongsTo(CustomerGroup::class, 'customer_group_id');
+    }
+
+    public function approvedByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by_user_id');
     }
 
     public function store(): BelongsTo

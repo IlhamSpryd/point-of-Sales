@@ -1,228 +1,228 @@
-<div>
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Manajemen Diskon &amp; Promo</h4>
-            <p class="text-sm font-medium text-apeiron-muted mt-1">Kelola diskon dan kode promo sistem</p>
-        </div>
+<div class="space-y-6" data-gsap="page-enter">
+    <!-- Header -->
+    <x-erp.page-header
+        title="Manajemen Diskon & Promo"
+        description="Kelola diskon produk, kuota promosi, voucher kasir, dan penumpukan diskon (stackable).">
+        <x-slot:breadcrumbs>
+            <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Katalog</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item active>Diskon & Promo</x-ui.breadcrumbs.item>
+        </x-slot:breadcrumbs>
 
-        <div class="flex items-center gap-3 w-full sm:w-auto">
-            <div class="w-full sm:w-64">
-                <x-search-input wire:model.live.debounce.300ms="search" placeholder="Cari Diskon..." />
-            </div>
-            <x-button variant="primary" type="button" wire:click="create" class="w-full sm:w-auto">
-                <span class="material-symbols-rounded text-[18px]">add</span> Tambah Diskon
-            </x-button>
+        <x-slot:actions>
+            <x-ui.button variant="primary" type="button" wire:click="create" class="gap-2">
+                <span class="material-symbols-rounded text-base">add</span>
+                Tambah Diskon
+            </x-ui.button>
+        </x-slot:actions>
+    </x-erp.page-header>
+
+    @if (session()->has('message'))
+        <x-ui.alert type="success" title="Berhasil" class="rounded-2xl">
+            {{ session('message') }}
+        </x-ui.alert>
+    @endif
+
+    <!-- Toolbar & Search -->
+    <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-zinc-200/80 dark:border-zinc-800">
+        <div class="relative w-full sm:w-80">
+            <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari Diskon..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
         </div>
     </div>
 
-    @if (session()->has('message'))
-        <x-alert type="success">{{ session('message') }}</x-alert>
-    @endif
-
-    <div class="card-surface flex flex-col flex-1 min-h-0">
-
-        <div class="overflow-x-auto flex-1 table-scroll-shadow">
-            <x-data-table>
-                <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">Nama &amp; Kode</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Tipe &amp; Nilai</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Syarat</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-center">Kuota &amp; Stackable</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-left">Status &amp; Masa Aktif</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
-                </x-slot:head>
+    <!-- Data Table -->
+    <div class="card-surface overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-sm">
+                <thead>
+                    <tr class="border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                        <th class="px-6 py-4">Nama & Kode</th>
+                        <th class="px-6 py-4 text-right">Tipe & Nilai</th>
+                        <th class="px-6 py-4 text-right">Syarat Min. Belanja</th>
+                        <th class="px-6 py-4 text-center">Kuota & Stackable</th>
+                        <th class="px-6 py-4 text-center">Status & Masa Aktif</th>
+                        <th class="px-6 py-4 text-right">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
                     @forelse($discounts as $discount)
-                        <tr>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-semibold text-apeiron-ink">{{ $discount->name }}</div>
-                                <div class="text-xs text-apeiron-muted font-mono mt-0.5">{{ $discount->code ?? 'Tanpa Kode' }}</div>
+                        <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
+                            <td class="px-6 py-4">
+                                <div class="font-semibold text-apeiron-ink dark:text-white">{{ $discount->name }}</div>
+                                <div class="text-xs text-zinc-400 font-mono mt-0.5">{{ $discount->code ?? 'Tanpa Kode' }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <div class="text-sm font-semibold text-apeiron-ink tabular-nums">
-                                    {{ $discount->type === 'percentage' ? $discount->value . '%' : 'Rp ' . number_format($discount->value, 0, ',', '.') }}
+                            <td class="px-6 py-4 text-right">
+                                <div class="font-semibold text-zinc-900 dark:text-white font-mono">
+                                    {{ $discount->type === 'percentage' ? $discount->value . '%' : 'Rp ' . number_format((float) $discount->value, 0, ',', '.') }}
                                 </div>
-                                <div class="text-xs text-[#787774] mt-0.5 tabular-nums">
-                                    {{ $discount->type === 'percentage' && $discount->max_discount_amount ? 'Maks: Rp ' . number_format($discount->max_discount_amount, 0, ',', '.') : '' }}
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <div class="text-sm text-apeiron-ink tabular-nums">Min. Beli: Rp {{ number_format($discount->min_purchase_amount, 0, ',', '.') }}</div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <div class="text-xs font-bold text-slate-800 tabular-nums">
-                                    Terpakai: {{ $discount->redemptions_count }} / {{ $discount->usage_limit ?? '∞' }}
-                                </div>
-                                <div class="mt-1">
-                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold {{ $discount->is_stackable ? 'bg-blue-100 text-blue-800' : 'bg-slate-100 text-slate-600' }}">
-                                        {{ $discount->is_stackable ? 'Stackable' : 'Tunggal' }}
-                                    </span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <x-badge :type="$discount->is_active ? 'success' : 'secondary'">
-                                    {{ $discount->is_active ? 'Aktif' : 'Nonaktif' }}
-                                </x-badge>
-                                @if($discount->valid_from || $discount->valid_until)
-                                    <div class="text-xs text-apeiron-muted mt-1.5">
-                                        {{ $discount->valid_from ? $discount->valid_from->format('d M y') : 'Seterusnya' }} – {{ $discount->valid_until ? $discount->valid_until->format('d M y') : 'Seterusnya' }}
+                                @if($discount->type === 'percentage' && $discount->max_discount_amount)
+                                    <div class="text-[11px] text-zinc-400 font-mono mt-0.5">
+                                        Maks: Rp {{ number_format((float) $discount->max_discount_amount, 0, ',', '.') }}
                                     </div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <div class="flex items-center justify-end gap-2">
+                            <td class="px-6 py-4 text-right text-xs text-zinc-600 dark:text-zinc-400 font-mono">
+                                Rp {{ number_format((float) $discount->min_purchase_amount, 0, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <div class="text-xs font-mono font-bold text-zinc-800 dark:text-zinc-200">
+                                    {{ $discount->redemptions_count }} / {{ $discount->usage_limit ?? '∞' }}
+                                </div>
+                                <div class="mt-1">
+                                    <x-ui.badge variant="{{ $discount->is_stackable ? 'info' : 'neutral' }}" size="xs">
+                                        {{ $discount->is_stackable ? 'Stackable' : 'Tunggal' }}
+                                    </x-ui.badge>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <x-ui.badge variant="{{ $discount->is_active ? 'success' : 'neutral' }}" size="sm">
+                                    {{ $discount->is_active ? 'Aktif' : 'Nonaktif' }}
+                                </x-ui.badge>
+                                @if($discount->valid_from || $discount->valid_until)
+                                    <div class="text-[11px] text-zinc-400 mt-1">
+                                        {{ $discount->valid_from ? $discount->valid_from->format('d/m/y') : '∞' }} – {{ $discount->valid_until ? $discount->valid_until->format('d/m/y') : '∞' }}
+                                    </div>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex items-center justify-end gap-1.5">
                                     <button type="button"
                                         wire:click="edit({{ $discount->id }})"
                                         title="Edit Diskon"
-                                        class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-colors duration-200 active:scale-90">
-                                        <span class="material-symbols-rounded text-[20px]">edit</span>
+                                        class="p-1.5 rounded-lg text-zinc-500 hover:text-blue-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
+                                        <span class="material-symbols-rounded text-lg">edit</span>
                                     </button>
                                     <button type="button"
-                                        data-swal-delete
-                                        data-swal-title="Hapus Diskon?"
-                                        data-swal-text="Diskon &quot;{{ $discount->name }}&quot; akan dihapus secara permanen."
-                                        data-wire-action="delete({{ $discount->id }})"
+                                        wire:click="delete({{ $discount->id }})"
+                                        wire:confirm="Diskon &quot;{{ $discount->name }}&quot; akan dihapus secara permanen. Lanjutkan?"
                                         title="Hapus Diskon"
-                                        class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90">
-                                        <span class="material-symbols-rounded text-[20px]">delete</span>
+                                        class="p-1.5 rounded-lg text-zinc-500 hover:text-rose-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
+                                        <span class="material-symbols-rounded text-lg">delete</span>
                                     </button>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6">
-                                <x-empty-state icon="local_offer" title="Belum ada diskon." description="Tambahkan diskon atau kode promo untuk mulai mengelola program diskon." />
+                            <td colspan="6" class="px-6 py-12 text-center text-zinc-400">
+                                <span class="material-symbols-rounded text-4xl block mb-2">local_offer</span>
+                                Belum ada diskon atau kode promo terdaftar.
                             </td>
                         </tr>
                     @endforelse
-            </x-data-table>
+                </tbody>
+            </table>
         </div>
-        <div class="p-4 border-t border-apeiron-border shrink-0">
-            {{ $discounts->links() }}
-        </div>
+        @if($discounts->hasPages())
+            <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800">
+                {{ $discounts->links() }}
+            </div>
+        @endif
     </div>
 
-    {{-- Modal Form menggunakan x-modal (focus-trap + bottom-sheet mobile gratis) --}}
-    <x-modal name="discount-form" :show="$isModalOpen" max-width="2xl" sheet focusable>
-        <form wire:submit.prevent="store">
-            {{-- Header --}}
-            <div class="px-6 py-5 border-b border-apeiron-border flex items-center justify-between bg-white">
-                <h3 class="text-lg font-bold text-apeiron-ink tracking-tight" id="discount-modal-title">
-                    {{ $discountId ? 'Edit Diskon' : 'Tambah Diskon Baru' }}
-                </h3>
-                <button type="button" wire:click="closeModal" x-on:click="$dispatch('close')" aria-label="Tutup"
-                    class="min-w-[44px] min-h-[44px] flex items-center justify-center rounded-xl text-apeiron-muted hover:bg-apeiron-surface hover:text-apeiron-ink transition-all duration-200 active:scale-90">
-                    <span class="material-symbols-rounded text-[22px]">close</span>
-                </button>
-            </div>
+    <!-- Modal Form Diskon -->
+    <x-ui.modal wire:model="isModalOpen" name="discount-form" maxWidth="2xl">
+        <x-slot:title>
+            {{ $discountId ? 'Edit Diskon' : 'Tambah Diskon Baru' }}
+        </x-slot:title>
 
-            {{-- Body --}}
-            <div class="px-6 py-5 bg-apeiron-bg overflow-y-auto max-h-[70vh]">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {{-- Nama Diskon --}}
+        <x-slot:content>
+            <form id="discountForm" wire:submit.prevent="store" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="col-span-1 md:col-span-2">
-                        <x-form-label for="discount-name">Nama Diskon <span class="text-danger-600">*</span></x-form-label>
-                        <x-form-input id="discount-name" type="text" wire:model="name" class="mt-1" />
-                        @error('name') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                        <x-ui.label for="discount-name">Nama Diskon *</x-ui.label>
+                        <x-ui.input id="discount-name" type="text" wire:model="name" placeholder="Contoh: Diskon Pelanggan Setia" />
+                        @error('name') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
-                    {{-- Kode Diskon --}}
                     <div>
-                        <x-form-label for="discount-code">Kode Voucher</x-form-label>
-                        <x-form-input id="discount-code" type="text" wire:model="code" placeholder="Kosongkan jika bukan voucher" class="mt-1" />
-                        @error('code') <x-input-error :messages="$message" class="mt-1" /> @enderror
-                        <p class="text-xs text-apeiron-muted mt-1.5">Biarkan kosong untuk diskon manual.</p>
+                        <x-ui.label for="discount-code">Kode Voucher</x-ui.label>
+                        <x-ui.input id="discount-code" type="text" wire:model="code" placeholder="Kosongkan jika bukan voucher" class="uppercase font-mono" />
+                        @error('code') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        <p class="text-[11px] text-zinc-400 mt-1">Biarkan kosong untuk diskon otomatis/manual.</p>
                     </div>
 
-                    {{-- Tipe Diskon --}}
                     <div>
-                        <x-form-label for="discount-type">Tipe Diskon <span class="text-danger-600">*</span></x-form-label>
-                        <select id="discount-type" wire:model.live="type"
-                            class="mt-1 block w-full border border-apeiron-border bg-white rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-700 text-sm text-apeiron-ink px-3 py-2.5 transition-all">
+                        <x-ui.label for="discount-type">Tipe Diskon *</x-ui.label>
+                        <x-ui.select id="discount-type" wire:model.live="type">
                             <option value="percentage">Persentase (%)</option>
                             <option value="fixed">Nominal Tetap (Rp)</option>
-                        </select>
-                        @error('type') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                        </x-ui.select>
+                        @error('type') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
-                    {{-- Nilai Diskon --}}
                     <div>
-                        <x-form-label for="discount-value">Nilai Diskon <span class="text-danger-600">*</span></x-form-label>
-                        <x-form-input id="discount-value" type="number" wire:model="value" class="mt-1" />
-                        @error('value') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                        <x-ui.label for="discount-value">Nilai Diskon *</x-ui.label>
+                        <x-ui.input id="discount-value" type="number" wire:model="value" />
+                        @error('value') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
-                    {{-- Maksimal Potongan --}}
                     @if($type === 'percentage')
                     <div>
-                        <x-form-label for="discount-max">Maksimal Potongan (Rp)</x-form-label>
-                        <x-form-input id="discount-max" type="number" wire:model="max_discount_amount" class="mt-1" />
-                        @error('max_discount_amount') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                        <x-ui.label for="discount-max">Maksimal Potongan (Rp)</x-ui.label>
+                        <x-ui.input id="discount-max" type="number" wire:model="max_discount_amount" placeholder="Kosongkan jika tak terbatas" />
+                        @error('max_discount_amount') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
                     @endif
 
-                    {{-- Minimal Pembelian --}}
                     <div>
-                        <x-form-label for="discount-min">Minimal Pembelian (Rp)</x-form-label>
-                        <x-form-input id="discount-min" type="number" wire:model="min_purchase_amount" class="mt-1" />
-                        @error('min_purchase_amount') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                        <x-ui.label for="discount-min">Minimal Pembelian (Rp)</x-ui.label>
+                        <x-ui.input id="discount-min" type="number" wire:model="min_purchase_amount" />
+                        @error('min_purchase_amount') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
-                    {{-- Kuota Penggunaan --}}
                     <div>
-                        <x-form-label for="discount-usage-limit">Kuota Penggunaan (Usage Limit)</x-form-label>
-                        <x-form-input id="discount-usage-limit" type="number" min="1" wire:model="usage_limit" placeholder="Kosongkan jika tak terbatas" class="mt-1" />
-                        @error('usage_limit') <x-input-error :messages="$message" class="mt-1" /> @enderror
-                        <p class="text-xs text-apeiron-muted mt-1.5">Batas maksimal kuota voucher dapat ditebus.</p>
+                        <x-ui.label for="discount-usage-limit">Kuota Penggunaan (Usage Limit)</x-ui.label>
+                        <x-ui.input id="discount-usage-limit" type="number" min="1" wire:model="usage_limit" placeholder="Kosongkan jika tak terbatas" />
+                        @error('usage_limit') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
-                    {{-- Tanggal Mulai --}}
                     <div>
-                        <x-form-label for="discount-from">Berlaku Mulai</x-form-label>
-                        <x-form-input id="discount-from" type="datetime-local" wire:model="valid_from" class="mt-1" />
-                        @error('valid_from') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                        <x-ui.label for="discount-from">Berlaku Mulai</x-ui.label>
+                        <x-ui.input id="discount-from" type="datetime-local" wire:model="valid_from" />
+                        @error('valid_from') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
-                    {{-- Tanggal Selesai --}}
                     <div>
-                        <x-form-label for="discount-until">Berlaku Sampai</x-form-label>
-                        <x-form-input id="discount-until" type="datetime-local" wire:model="valid_until" class="mt-1" />
-                        @error('valid_until') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                        <x-ui.label for="discount-until">Berlaku Sampai</x-ui.label>
+                        <x-ui.input id="discount-until" type="datetime-local" wire:model="valid_until" />
+                        @error('valid_until') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
-                    {{-- Stackable & Status Aktif --}}
-                    <div class="col-span-1 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <label class="flex items-center gap-3 p-4 bg-white rounded-xl border border-apeiron-border cursor-pointer hover:bg-apeiron-surface transition-colors">
+                    <div class="col-span-1 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                        <label class="flex items-center gap-3 p-3.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer">
                             <input wire:model="is_stackable" id="is_stackable" type="checkbox"
-                                class="w-4 h-4 rounded border-apeiron-border text-primary-700 focus:ring-primary-700">
+                                class="rounded border-zinc-300 text-apeiron-primary shadow-xs focus:ring-apeiron-primary">
                             <div>
-                                <span class="block text-sm font-semibold text-apeiron-ink">Dapat Digabung (Stackable)</span>
-                                <span class="block text-xs text-apeiron-muted mt-0.5">Izinkan voucher ini digabung dengan voucher lain.</span>
+                                <span class="block text-xs font-semibold text-zinc-900 dark:text-zinc-100">Dapat Digabung (Stackable)</span>
+                                <span class="block text-[11px] text-zinc-500">Izinkan voucher digabung dengan promo lain.</span>
                             </div>
                         </label>
 
-                        <label class="flex items-center gap-3 p-4 bg-white rounded-xl border border-apeiron-border cursor-pointer hover:bg-apeiron-surface transition-colors">
+                        <label class="flex items-center gap-3 p-3.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer">
                             <input wire:model="is_active" id="is_active" type="checkbox"
-                                class="w-4 h-4 rounded border-apeiron-border text-primary-700 focus:ring-primary-700">
+                                class="rounded border-zinc-300 text-apeiron-primary shadow-xs focus:ring-apeiron-primary">
                             <div>
-                                <span class="block text-sm font-semibold text-apeiron-ink">Diskon Aktif</span>
-                                <span class="block text-xs text-apeiron-muted mt-0.5">Diskon ini dapat digunakan di kasir.</span>
+                                <span class="block text-xs font-semibold text-zinc-900 dark:text-zinc-100">Diskon Aktif</span>
+                                <span class="block text-[11px] text-zinc-500">Diskon dapat digunakan saat transaksi.</span>
                             </div>
                         </label>
                     </div>
                 </div>
-            </div>
+            </form>
+        </x-slot:content>
 
-            {{-- Footer --}}
-            <div class="px-6 py-4 border-t border-apeiron-border bg-white flex flex-row-reverse gap-3">
-                <x-button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="store">
-                    <span wire:loading wire:target="store" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
-                    Simpan
-                </x-button>
-                <x-button type="button" variant="secondary" wire:click="closeModal" x-on:click="$dispatch('close')">
+        <x-slot:footer>
+            <div class="flex justify-end gap-3">
+                <x-ui.button variant="secondary" wire:click="closeModal">
                     Batal
-                </x-button>
+                </x-ui.button>
+                <x-ui.button variant="primary" wire:click="store" wire:loading.attr="disabled" wire:target="store">
+                    <span wire:loading wire:target="store" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white mr-1.5"></span>
+                    Simpan Diskon
+                </x-ui.button>
             </div>
-        </form>
-    </x-modal>
+        </x-slot:footer>
+    </x-ui.modal>
 </div>

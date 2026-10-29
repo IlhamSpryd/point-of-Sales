@@ -40,6 +40,7 @@ use App\Models\Shift;
 use App\Models\StockMovement;
 use App\Models\Store;
 use App\Models\Table;
+use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
 use App\Services\CatalogPriceResolverService;
 use App\Services\Context\TenantContext;
 use App\Services\EntitlementService;
@@ -963,6 +964,14 @@ class TransactionService
                     });
                 }
 
+                if ($order->order_status === OrderStatus::Paid) {
+                    try {
+                        app(FinancialOutboxDispatcherService::class)->dispatchPosOrderPaid($order);
+                    } catch (\Throwable $e) {
+                        Log::warning("[FINANCE OUTBOX] Gagal dispatch outbox POS paid untuk order #{$order->id}: ".$e->getMessage());
+                    }
+                }
+
                 return $order;
             }, attempts: 3);
         } catch (UniqueConstraintViolationException $e) {
@@ -1323,6 +1332,12 @@ class TransactionService
 
             if ($order->customer_id) {
                 $this->grantLoyaltyPoints((int) $order->customer_id, $order, (int) $order->subtotal_amount);
+            }
+
+            try {
+                app(FinancialOutboxDispatcherService::class)->dispatchPosOrderPaid($order);
+            } catch (\Throwable $e) {
+                Log::warning("[FINANCE OUTBOX] Gagal dispatch outbox POS paid untuk pending order #{$order->id}: ".$e->getMessage());
             }
 
             return $order;

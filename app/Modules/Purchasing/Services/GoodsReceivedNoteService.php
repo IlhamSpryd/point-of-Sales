@@ -10,6 +10,7 @@ use App\Enums\PoReceivingStatusEnum;
 use App\Enums\PurchaseOrderStatusEnum;
 use App\Enums\StockMovementType;
 use App\Models\User;
+use App\Modules\Finance\Services\InventoryAccountingService;
 use App\Modules\Inventory\Services\InventoryLedgerService;
 use App\Modules\Purchasing\Exceptions\OverReceiptToleranceExceededException;
 use App\Modules\Purchasing\Models\GoodsReceivedNote;
@@ -532,6 +533,9 @@ class GoodsReceivedNoteService
                 ]
             );
 
+            // Emisi outbox akuntansi ke Modul 7 (PR-PUR-01)
+            app(InventoryAccountingService::class)->recordGrnPosted($lockedGrn);
+
             return $lockedGrn->fresh(['lines', 'purchaseOrder']);
         }, attempts: 3);
     }
@@ -676,6 +680,9 @@ class GoodsReceivedNoteService
                     'reversal_reason' => $reversalReason,
                 ]
             );
+
+            // Emisi outbox akuntansi ke Modul 7 (PR-PUR-02)
+            app(InventoryAccountingService::class)->recordGrnReversed($lockedGrn, $reversalReason);
 
             return $lockedGrn->fresh(['lines', 'purchaseOrder']);
         }, attempts: 3);

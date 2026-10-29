@@ -1,0 +1,144 @@
+<!-- AREA KALKULASI: TETAP DI BAWAH -->
+<div class="p-4 border-t border-gray-200 bg-white shrink-0 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-3">
+    @if (count($this->activeDiscounts) > 0)
+        <div class="relative">
+            <select wire:model.live="selectedDiscountId"
+                @disabled((bool) $pendingOrderId)
+                class="w-full h-10 pl-3.5 pr-8 bg-gray-100/80 border border-gray-200/50 rounded-xl outline-none text-xs font-bold text-gray-700 hover:bg-gray-200/50 hover:text-apeiron-ink focus:bg-white focus:border-gray-300 focus:ring-0 appearance-none transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                <option value="">+ Tambah Diskon Voucher</option>
+                @foreach ($this->activeDiscounts as $d)
+                    <option value="{{ $d->id }}">{{ $d->name }}
+                        ({{ $d->type === 'percentage' ? $d->value . '%' : 'Rp ' . number_format($d->value, 0, ',', '.') }})
+                        {{ !$d->is_stackable ? ' [Non-stackable]' : '' }}
+                    </option>
+                @endforeach
+            </select>
+            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-gray-400">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+                </svg>
+            </div>
+        </div>
+    @endif
+
+    {{-- Manual Discount Override Badge / Trigger --}}
+    <div>
+        @if($appliedManualDiscount > 0)
+            <div class="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs">
+                <div class="min-w-0">
+                    <span class="font-bold text-emerald-800">Diskon Manual: Rp {{ number_format($appliedManualDiscount, 0, ',', '.') }}</span>
+                    <span class="text-[10px] text-emerald-600 block truncate">{{ $appliedManualDiscountReason }}</span>
+                </div>
+                <button type="button" wire:click="removeManualDiscount" class="text-emerald-700 hover:text-rose-600 font-bold p-1 text-sm leading-none" title="Hapus Diskon Manual">&times;</button>
+            </div>
+        @elseif(!$pendingOrderId)
+            <button type="button" wire:click="$set('isManualDiscountModalOpen', true)"
+                class="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 transition-colors">
+                <span class="material-symbols-rounded text-[15px]">edit_note</span> + Override Diskon Manual (Supervisor)
+            </button>
+        @endif
+    </div>
+
+    <div class="flex flex-col gap-1.5 p-3 rounded-xl border border-gray-100 bg-gray-50/60 shadow-inner">
+        <div class="flex justify-between items-center">
+            <span class="text-xs text-gray-500 font-medium">Subtotal</span>
+            <span class="text-xs font-semibold text-gray-700 tabular-nums">Rp {{ number_format($this->subtotal, 0, ',', '.') }}</span>
+        </div>
+        @if ($this->discountAmount > 0)
+            <div class="flex justify-between items-center">
+                <span class="text-xs text-gray-500 font-medium">Diskon</span>
+                <span class="text-xs font-semibold text-rose-600 tabular-nums">- Rp {{ number_format($this->discountAmount, 0, ',', '.') }}</span>
+            </div>
+        @endif
+        <div class="flex justify-between items-center">
+            <span class="text-xs text-gray-500 font-medium">Pajak ({{ $this->taxRatePercent }}%)</span>
+            <span class="text-xs font-semibold text-gray-700 tabular-nums">Rp {{ number_format($this->taxAmount, 0, ',', '.') }}</span>
+        </div>
+    </div>
+
+    <div class="flex justify-between items-baseline px-1 pt-0.5">
+        <span class="text-xs font-bold uppercase tracking-wider text-gray-600">Total Pembayaran</span>
+        <span class="text-2xl font-black text-apeiron-ink tabular-nums tracking-tight">
+            Rp {{ number_format($this->totalAmount, 0, ',', '.') }}
+        </span>
+    </div>
+
+    @if ($pendingOrderId)
+        <div class="relative mt-1">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-apeiron-ink text-sm font-bold">Rp</span>
+            <input type="number" wire:model.live="cashReceived"
+                class="bg-white border border-gray-200 text-apeiron-ink rounded-xl focus:outline-none focus:ring-1 focus:ring-gray-900 w-full pl-10 pr-4 py-2.5 font-black text-base transition-all shadow-sm"
+                placeholder="Uang diterima (Tunai)">
+        </div>
+
+        {{-- Shortcut Tunai Pas --}}
+        <div class="flex gap-2">
+            <button type="button"
+                x-on:click="$wire.set('cashReceived', {{ (int) $this->totalAmount }})"
+                class="flex-1 h-8 text-[11px] font-bold rounded-lg bg-apeiron-ink text-white hover:bg-[#111111] transition-all active:scale-95 shadow-sm">
+                Tunai Pas
+            </button>
+            <button type="button"
+                x-on:click="$wire.set('cashReceived', 50000 * Math.ceil({{ (int) $this->totalAmount }} / 50000))"
+                class="flex-1 h-8 text-[11px] font-bold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all active:scale-95 border border-gray-200">
+                Bulatkan 50K
+            </button>
+            <button type="button"
+                x-on:click="$wire.set('cashReceived', 100000 * Math.ceil({{ (int) $this->totalAmount }} / 100000))"
+                class="flex-1 h-8 text-[11px] font-bold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all active:scale-95 border border-gray-200">
+                Bulatkan 100K
+            </button>
+        </div>
+
+        <div class="flex justify-between items-center px-1">
+            <span class="text-xs font-semibold text-gray-500">Kembalian</span>
+            <span class="font-bold text-sm {{ $this->changeAmount >= 0 ? 'text-emerald-600' : 'text-apeiron-ink' }}">
+                Rp {{ number_format($this->changeAmount, 0, ',', '.') }}
+            </span>
+        </div>
+
+        @error('cart')
+            <div class="p-2 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold flex items-center gap-1.5">
+                <span class="material-symbols-rounded text-[14px]">error</span> {{ $message }}
+            </div>
+        @enderror
+
+        @if(!$this->canCheckout && count($this->cartLines) > 0)
+            <div class="p-2 bg-rose-50 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1.5">
+                <span class="material-symbols-rounded text-[16px]">lock</span>
+                <span>{{ !$this->activeShift ? 'Shift belum dibuka. Buka shift di Shift Kasir.' : 'Shift sedang dalam proses serah terima.' }}</span>
+            </div>
+        @endif
+
+        <button wire:click="submitOrder" id="btn-bayar"
+            wire:loading.attr="disabled" wire:target="submitOrder"
+            class="w-full h-12 bg-apeiron-ink hover:bg-[#111111] text-white rounded-xl font-bold text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2"
+            @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
+            <span wire:loading wire:target="submitOrder" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+            <span wire:loading.remove wire:target="submitOrder">Bayar Sekarang</span>
+            <span wire:loading wire:target="submitOrder">Memproses...</span>
+            <x-ui.kbd class="bg-white/20 text-white border-white/20 ml-1">F4</x-ui.kbd>
+        </button>
+    @else
+        @error('cart')
+            <div class="p-2 bg-rose-50 text-rose-600 rounded-lg text-xs font-bold flex items-center gap-1.5">
+                <span class="material-symbols-rounded text-[14px]">error</span> {{ $message }}
+            </div>
+        @enderror
+
+        @if(!$this->canCheckout && count($this->cartLines) > 0)
+            <div class="p-2 bg-rose-50 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1.5">
+                <span class="material-symbols-rounded text-[16px]">lock</span>
+                <span>{{ !$this->activeShift ? 'Shift belum dibuka. Buka shift di Shift Kasir.' : 'Shift sedang dalam proses serah terima.' }}</span>
+            </div>
+        @endif
+
+        <button type="button" id="btn-proses-bayar"
+            class="w-full h-12 bg-apeiron-ink hover:bg-[#111111] text-white rounded-xl font-bold text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2"
+            @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }} }); $dispatch('open-modal', 'checkout-payment')"
+            @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
+            <span>Proses Pembayaran</span>
+            <x-ui.kbd class="bg-white/20 text-white border-white/20 ml-1">F4</x-ui.kbd>
+        </button>
+    @endif
+</div>

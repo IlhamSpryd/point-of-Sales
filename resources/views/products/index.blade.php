@@ -1,11 +1,11 @@
 @php
-    $canManage = in_array(auth()->user()?->role?->name, ['Owner', 'Manager', 'Inventory'], true);
+    $canManage = auth()->user()?->can('create', \App\Models\Product::class) ?? false;
 @endphp
 
 <x-app-layout>
     @include('catalog.partials.sub-nav')
 
-    <div x-data="{
+    <div data-gsap="page-enter" x-data="{
         selectedIds: [],
         selectAll: false,
         showImportModal: false,
@@ -28,15 +28,15 @@
             <x-list-toolbar search-action="{{ route('products.index') }}" search-placeholder="Cari nama, SKU, atau barcode...">
                 <x-slot:actions>
                     <a href="{{ route('products.export') }}" class="flex-1 sm:flex-none">
-                        <x-button variant="secondary" type="button" class="w-full h-10">
+                        <x-ui.button variant="secondary" type="button" class="w-full h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
                             <span class="material-symbols-rounded text-[18px]">download</span> Ekspor Excel
-                        </x-button>
+                        </x-ui.button>
                     </a>
 
                     @if($canManage)
-                        <x-button variant="secondary" type="button" @click="showImportModal = true" class="flex-1 sm:flex-none h-10">
+                        <x-ui.button variant="secondary" type="button" @click="showImportModal = true" class="flex-1 sm:flex-none h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
                             <span class="material-symbols-rounded text-[18px]">upload</span> Impor CSV
-                        </x-button>
+                        </x-ui.button>
 
                         <button type="button" x-show="selectedIds.length > 0" x-cloak @click="showBulkModal = true"
                             class="inline-flex items-center gap-1.5 px-3.5 h-10 rounded-xl bg-apeiron-ink text-white hover:bg-black text-xs font-semibold shadow-sm transition-all animate-pulse">
@@ -45,9 +45,9 @@
                         </button>
 
                         <a href="{{ route('products.create') }}" class="flex-1 sm:flex-none" wire:navigate>
-                            <x-button variant="primary" type="button" class="w-full h-10">
+                            <x-ui.button variant="primary" type="button" class="w-full h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
                                 <span class="material-symbols-rounded text-[18px]">add</span> Tambah Produk
-                            </x-button>
+                            </x-ui.button>
                         </a>
                     @endif
                 </x-slot:actions>
@@ -55,10 +55,10 @@
         </div>
 
         @if(session('success'))
-            <x-alert type="success" class="mb-4">{{ session('success') }}</x-alert>
+            <x-ui.alert variant="success" class="mb-4">{{ session('success') }}</x-ui.alert>
         @endif
         @if(session('warning'))
-            <x-alert type="warning" class="mb-4">
+            <x-ui.alert variant="warning" class="mb-4">
                 <p class="font-bold">{{ session('warning') }}</p>
                 @if(session('import_errors'))
                     <ul class="list-disc pl-5 mt-2 space-y-1 text-xs">
@@ -67,10 +67,10 @@
                         @endforeach
                     </ul>
                 @endif
-            </x-alert>
+            </x-ui.alert>
         @endif
         @if(session('error'))
-            <x-alert type="error" class="mb-4">{{ session('error') }}</x-alert>
+            <x-ui.alert variant="destructive" class="mb-4">{{ session('error') }}</x-ui.alert>
         @endif
 
         <div class="card-surface flex flex-col flex-1 min-h-0">
@@ -138,9 +138,9 @@
                             </div>
                         </td>
                         <td class="px-6 py-4">
-                            <x-badge :type="$typeBadges[$prodType]['type'] ?? 'secondary'">
+                            <x-ui.badge :variant="$typeBadges[$prodType]['type'] ?? 'secondary'">
                                 {{ $typeBadges[$prodType]['label'] ?? $prodType }}
-                            </x-badge>
+                            </x-ui.badge>
                         </td>
                         <td class="px-6 py-4 text-sm text-[#787774]">
                             <div class="font-medium text-apeiron-ink">{{ $product->category?->category_name ?? '—' }}</div>
@@ -160,9 +160,9 @@
                             @endif
                         </td>
                         <td class="px-6 py-4">
-                            <x-badge :type="$statusBadges[$prodStatus]['type'] ?? 'secondary'">
+                            <x-ui.badge :variant="$statusBadges[$prodStatus]['type'] ?? 'secondary'" :dot="true">
                                 {{ $statusBadges[$prodStatus]['label'] ?? $prodStatus }}
-                            </x-badge>
+                            </x-ui.badge>
                         </td>
                         @if($canManage)
                             <td class="px-6 py-4 text-right space-x-1">
@@ -199,15 +199,9 @@
         </div>
 
         {{-- Modal Impor CSV --}}
-        <div x-show="showImportModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" x-cloak>
-            <div @click.away="showImportModal = false" class="bg-white rounded-2xl border border-[#E9E9E7] shadow-xl max-w-md w-full p-6">
-                <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#E9E9E7]">
-                    <h3 class="text-base font-bold text-apeiron-ink">Impor Produk Massal (CSV)</h3>
-                    <button type="button" @click="showImportModal = false" class="text-[#9B9A97] hover:text-apeiron-ink">
-                        <span class="material-symbols-rounded">close</span>
-                    </button>
-                </div>
-
+        <x-ui.modal x-model="showImportModal" maxWidth="md">
+            <x-slot:header>Impor Produk Massal (CSV)</x-slot:header>
+            <x-slot:content>
                 <form action="{{ route('products.import') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
                     @csrf
                     <div>
@@ -224,23 +218,17 @@
                     </div>
 
                     <div class="flex justify-end gap-2 pt-4 border-t border-[#E9E9E7]">
-                        <x-button variant="secondary" type="button" @click="showImportModal = false">Batal</x-button>
-                        <x-button variant="primary" type="submit">Unggah & Proses</x-button>
+                        <x-ui.button variant="secondary" type="button" @click="showImportModal = false">Batal</x-ui.button>
+                        <x-ui.button variant="primary" type="submit" x-on:click="window.erpMotion?.pulseHighlight($el)">Unggah & Proses</x-ui.button>
                     </div>
                 </form>
-            </div>
-        </div>
+            </x-slot:content>
+        </x-ui.modal>
 
         {{-- Modal Bulk Edit --}}
-        <div x-show="showBulkModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" x-cloak>
-            <div @click.away="showBulkModal = false" class="bg-white rounded-2xl border border-[#E9E9E7] shadow-xl max-w-lg w-full p-6">
-                <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#E9E9E7]">
-                    <h3 class="text-base font-bold text-apeiron-ink">Perbarui Massal (<span x-text="selectedIds.length"></span> Produk)</h3>
-                    <button type="button" @click="showBulkModal = false" class="text-[#9B9A97] hover:text-apeiron-ink">
-                        <span class="material-symbols-rounded">close</span>
-                    </button>
-                </div>
-
+        <x-ui.modal x-model="showBulkModal" maxWidth="lg">
+            <x-slot:header>Perbarui Massal (<span x-text="selectedIds.length"></span> Produk)</x-slot:header>
+            <x-slot:content>
                 <form action="{{ route('products.bulk-update') }}" method="POST" class="space-y-4">
                     @csrf
                     <template x-for="id in selectedIds" :key="id">
@@ -319,11 +307,11 @@
                     </div>
 
                     <div class="flex justify-end gap-2 pt-4 border-t border-[#E9E9E7]">
-                        <x-button variant="secondary" type="button" @click="showBulkModal = false">Batal</x-button>
-                        <x-button variant="primary" type="submit">Terapkan Perubahan Massal</x-button>
+                        <x-ui.button variant="secondary" type="button" @click="showBulkModal = false">Batal</x-ui.button>
+                        <x-ui.button variant="primary" type="submit" x-on:click="window.erpMotion?.pulseHighlight($el)">Terapkan Perubahan Massal</x-ui.button>
                     </div>
                 </form>
-            </div>
-        </div>
+            </x-slot:content>
+        </x-ui.modal>
     </div>
 </x-app-layout>

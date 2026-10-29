@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\PriceList;
 use App\Models\User;
+use App\Modules\Products\Models\PriceList;
 
 class PriceListPolicy
 {

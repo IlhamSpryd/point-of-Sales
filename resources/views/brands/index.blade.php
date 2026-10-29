@@ -34,140 +34,165 @@
             this.isActive = Boolean(brand.is_active);
             this.showModal = true;
         }
-    }">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div>
-                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Merek Produk (Brand)</h4>
-                <p class="text-sm font-medium text-[#787774] mt-1">Kelola merek atau produsen komoditas produk Anda</p>
-            </div>
+    }" class="space-y-6" data-gsap="page-enter">
 
-            <x-list-toolbar search-action="{{ route('brands.index') }}" search-placeholder="Cari merek...">
-                <x-slot:actions>
-                    @if($canManage)
-                        <x-button variant="primary" type="button" @click="openCreate()" class="w-full sm:w-auto h-10">
-                            <span class="material-symbols-rounded text-[18px]">add</span> Tambah Merek
-                        </x-button>
-                    @endif
-                </x-slot:actions>
-            </x-list-toolbar>
-        </div>
+        <!-- Header -->
+        <x-erp.page-header
+            title="Merek Produk (Brands)"
+            description="Kelola merek atau produsen komoditas produk Anda untuk kategorisasi dan pelaporan.">
+            <x-slot:breadcrumbs>
+                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Katalog</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item active>Merek</x-ui.breadcrumbs.item>
+            </x-slot:breadcrumbs>
+
+            <x-slot:actions>
+                @if($canManage)
+                    <x-ui.button variant="primary" type="button" @click="openCreate()" class="gap-2">
+                        <span class="material-symbols-rounded text-base">add</span>
+                        Tambah Merek
+                    </x-ui.button>
+                @endif
+            </x-slot:actions>
+        </x-erp.page-header>
 
         @if(session('success'))
-            <x-alert type="success" class="mb-4">{{ session('success') }}</x-alert>
+            <x-ui.alert type="success" title="Berhasil" class="rounded-2xl">
+                {{ session('success') }}
+            </x-ui.alert>
         @endif
         @if(session('error'))
-            <x-alert type="error" class="mb-4">{{ session('error') }}</x-alert>
+            <x-ui.alert type="danger" title="Terjadi Kesalahan" class="rounded-2xl">
+                {{ session('error') }}
+            </x-ui.alert>
         @endif
 
-        <div class="card-surface flex flex-col flex-1 min-h-0">
-            <x-data-table>
-                <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kode</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Nama Merek</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Deskripsi</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Jumlah Produk</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Status</th>
-                    @if($canManage)
-                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
-                    @endif
-                </x-slot:head>
-
-                @forelse($brands as $brand)
-                    <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
-                        <td class="px-6 py-4 font-mono text-xs font-semibold text-apeiron-ink">{{ $brand->code }}</td>
-                        <td class="px-6 py-4 text-sm font-semibold text-apeiron-ink">{{ $brand->name }}</td>
-                        <td class="px-6 py-4 text-sm text-[#787774]">{{ $brand->description ?? '—' }}</td>
-                        <td class="px-6 py-4 text-sm font-medium text-right text-apeiron-ink tabular-nums">{{ $brand->products_count }}</td>
-                        <td class="px-6 py-4">
-                            @if($brand->is_active)
-                                <x-badge type="success">Aktif</x-badge>
-                            @else
-                                <x-badge type="secondary">Nonaktif</x-badge>
-                            @endif
-                        </td>
-                        @if($canManage)
-                            <td class="px-6 py-4 text-right space-x-1">
-                                <button type="button" @click="openEdit({{ json_encode($brand) }})"
-                                    class="inline-flex items-center justify-center min-w-9 min-h-9 rounded-lg text-primary-500 hover:text-primary-700 hover:bg-primary-100 transition-colors"
-                                    aria-label="Ubah merek">
-                                    <span class="material-symbols-rounded text-[20px]">edit</span>
-                                </button>
-                                <form id="delete-brand-{{ $brand->id }}" action="{{ route('brands.destroy', $brand->id) }}" method="POST" class="inline-block">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button" onclick="confirmDelete('delete-brand-{{ $brand->id }}', '{{ addslashes($brand->name) }}')"
-                                        class="inline-flex items-center justify-center min-w-9 min-h-9 rounded-lg text-danger-500 hover:text-danger-700 hover:bg-danger-50 transition-colors"
-                                        aria-label="Hapus merek">
-                                        <span class="material-symbols-rounded text-[20px]">delete</span>
-                                    </button>
-                                </form>
-                            </td>
-                        @endif
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="{{ $canManage ? 6 : 5 }}" class="px-6 py-12 text-center text-[#9B9A97] text-sm">
-                            <div class="flex flex-col items-center justify-center">
-                                <span class="material-symbols-rounded text-4xl text-[#C4C3C0] mb-2">verified</span>
-                                <p class="font-medium">Belum ada merek terdaftar.</p>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </x-data-table>
-
-            <div class="p-4 border-t border-[#E9E9E7]">
-                {{ $brands->links() }}
-            </div>
+        <!-- Filter & Search Toolbar -->
+        <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-zinc-200/80 dark:border-zinc-800">
+            <form method="GET" action="{{ route('brands.index') }}" class="relative w-full sm:w-80">
+                <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari merek..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
+            </form>
         </div>
 
-        {{-- Modal Tambah / Sunting Merek --}}
-        <div x-show="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" x-cloak>
-            <div @click.away="showModal = false" class="bg-white rounded-2xl border border-[#E9E9E7] shadow-xl max-w-md w-full p-6">
-                <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#E9E9E7]">
-                    <h3 class="text-base font-bold text-apeiron-ink" x-text="isEdit ? 'Sunting Merek' : 'Tambah Merek Baru'"></h3>
-                    <button type="button" @click="showModal = false" class="text-[#9B9A97] hover:text-apeiron-ink">
-                        <span class="material-symbols-rounded">close</span>
-                    </button>
-                </div>
+        <!-- Table -->
+        <div class="card-surface overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                            <th class="px-6 py-4">Kode</th>
+                            <th class="px-6 py-4">Nama Merek</th>
+                            <th class="px-6 py-4">Deskripsi</th>
+                            <th class="px-6 py-4 text-right">Jumlah Produk</th>
+                            <th class="px-6 py-4 text-center">Status</th>
+                            @if($canManage)
+                                <th class="px-6 py-4 text-right">Aksi</th>
+                            @endif
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                        @forelse($brands as $brand)
+                            <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
+                                <td class="px-6 py-4 font-mono text-xs font-semibold text-apeiron-ink dark:text-white">{{ $brand->code }}</td>
+                                <td class="px-6 py-4 text-sm font-semibold text-zinc-900 dark:text-white">{{ $brand->name }}</td>
+                                <td class="px-6 py-4 text-sm text-zinc-500">{{ $brand->description ?? '—' }}</td>
+                                <td class="px-6 py-4 text-sm font-medium text-right text-zinc-900 dark:text-white font-mono">{{ $brand->products_count }}</td>
+                                <td class="px-6 py-4 text-center">
+                                    <x-ui.badge variant="{{ $brand->is_active ? 'success' : 'neutral' }}" size="sm">
+                                        {{ $brand->is_active ? 'Aktif' : 'Nonaktif' }}
+                                    </x-ui.badge>
+                                </td>
+                                @if($canManage)
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex items-center justify-end gap-1.5">
+                                            <button type="button" @click="openEdit({{ json_encode($brand) }})"
+                                                class="p-1.5 rounded-lg text-zinc-500 hover:text-blue-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                                                title="Ubah merek">
+                                                <span class="material-symbols-rounded text-lg">edit</span>
+                                            </button>
+                                            <form id="delete-brand-{{ $brand->id }}" action="{{ route('brands.destroy', $brand->id) }}" method="POST" class="inline-block">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" onclick="confirmDelete('delete-brand-{{ $brand->id }}', '{{ addslashes($brand->name) }}')"
+                                                    class="p-1.5 rounded-lg text-zinc-500 hover:text-rose-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                                                    title="Hapus merek">
+                                                    <span class="material-symbols-rounded text-lg">delete</span>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                @endif
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="{{ $canManage ? 6 : 5 }}" class="px-6 py-12 text-center text-zinc-400">
+                                    <span class="material-symbols-rounded text-4xl block mb-2">verified</span>
+                                    Belum ada merek produk terdaftar.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-                <form :action="formAction" method="POST" class="space-y-4">
+            @if($brands->hasPages())
+                <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800">
+                    {{ $brands->links() }}
+                </div>
+            @endif
+        </div>
+
+        <!-- Modal Tambah / Sunting Merek -->
+        <x-ui.modal x-model="showModal" maxWidth="md">
+            <x-slot:title>
+                <span x-text="isEdit ? 'Sunting Merek' : 'Tambah Merek Baru'"></span>
+            </x-slot:title>
+
+            <x-slot:content>
+                <form id="brandForm" :action="formAction" method="POST" class="space-y-4">
                     @csrf
                     <template x-if="isEdit">
                         <input type="hidden" name="_method" value="PUT">
                     </template>
 
                     <div>
-                        <x-form-label for="brand_code">Kode Merek <span class="text-danger-600">*</span></x-form-label>
+                        <x-ui.label for="brand_code">Kode Merek *</x-ui.label>
                         <input type="text" id="brand_code" name="code" x-model="code" required
-                            class="w-full h-10 px-3 rounded-xl border border-[#E9E9E7] text-sm focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                            class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 font-mono uppercase focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
                     </div>
 
                     <div>
-                        <x-form-label for="brand_name">Nama Merek <span class="text-danger-600">*</span></x-form-label>
+                        <x-ui.label for="brand_name">Nama Merek *</x-ui.label>
                         <input type="text" id="brand_name" name="name" x-model="name" required
-                            class="w-full h-10 px-3 rounded-xl border border-[#E9E9E7] text-sm focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                            class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
                     </div>
 
                     <div>
-                        <x-form-label for="brand_desc">Deskripsi</x-form-label>
+                        <x-ui.label for="brand_desc">Deskripsi</x-ui.label>
                         <textarea id="brand_desc" name="description" x-model="description" rows="3"
-                            class="w-full p-3 rounded-xl border border-[#E9E9E7] text-sm focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink"></textarea>
+                            class="w-full p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20"></textarea>
                     </div>
 
                     <div class="flex items-center gap-2 pt-2">
                         <input type="hidden" name="is_active" value="0">
                         <input type="checkbox" id="brand_is_active" name="is_active" value="1" x-model="isActive"
-                            class="rounded border-gray-300 text-apeiron-ink focus:ring-apeiron-ink">
-                        <label for="brand_is_active" class="text-sm font-medium text-apeiron-ink">Status Aktif</label>
-                    </div>
-
-                    <div class="flex justify-end gap-2 pt-4 border-t border-[#E9E9E7]">
-                        <x-button variant="secondary" type="button" @click="showModal = false">Batal</x-button>
-                        <x-button variant="primary" type="submit">Simpan</x-button>
+                            class="rounded border-zinc-300 text-apeiron-primary shadow-xs focus:ring-apeiron-primary">
+                        <label for="brand_is_active" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Status Aktif</label>
                     </div>
                 </form>
-            </div>
-        </div>
+            </x-slot:content>
+
+            <x-slot:footer>
+                <div class="flex justify-end gap-3">
+                    <x-ui.button variant="secondary" type="button" @click="showModal = false">
+                        Batal
+                    </x-ui.button>
+                    <x-ui.button variant="primary" type="button" @click="document.getElementById('brandForm').submit()">
+                        Simpan
+                    </x-ui.button>
+                </div>
+            </x-slot:footer>
+        </x-ui.modal>
     </div>
 </x-app-layout>

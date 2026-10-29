@@ -1,5 +1,5 @@
 <x-guest-layout>
-    @section('title', 'Reset Password — Apeiron POS')
+    @section('title', 'Reset Password — Apeiron')
 
     <div class="mb-8">
         <h1 class="text-2xl font-medium tracking-tight text-zinc-950">

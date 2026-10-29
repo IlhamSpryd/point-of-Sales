@@ -12,18 +12,20 @@ class StockOpnamePolicy
 {
     private function canManage(User $user): bool
     {
-        return in_array($user->role?->name, ['Owner', 'Manager', 'Inventory'], true);
+        return in_array($user->role?->name, ['Owner', 'Manager', 'Inventory'], true)
+            || (bool) ($user->role?->is_admin ?? false);
     }
 
     private function canApproveRole(User $user): bool
     {
         // Segregation of Duties: Approver wajib role Manager atau Owner (OD-04 / RBAC)
-        return in_array($user->role?->name, ['Owner', 'Manager'], true);
+        return in_array($user->role?->name, ['Owner', 'Manager'], true)
+            || (bool) ($user->role?->is_admin ?? false);
     }
 
     private function hasBranchAccess(User $user, int $storeId): bool
     {
-        if ($user->role?->name === 'Owner') {
+        if ($user->role?->name === 'Owner' || (bool) ($user->role?->is_admin ?? false)) {
             return true;
         }
 

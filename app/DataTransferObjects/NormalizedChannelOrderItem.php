@@ -14,5 +14,8 @@ final class NormalizedChannelOrderItem
         public readonly string $externalProductId,
         public readonly string $name,
         public readonly int $quantity,
+        public readonly ?string $unitPrice = null,
+        public readonly string $discountAmount = '0.00',
+        public readonly ?string $notes = null,
     ) {}
 }

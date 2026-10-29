@@ -56,16 +56,7 @@
             {{ $slot }}
         </main>
 
-        {{-- Toast global. Pemakaian dari Alpine mana pun: $dispatch('toast', { message: 'Teks' }) --}}
-        <div x-data="{ show: false, message: '', timer: null }"
-            x-on:toast.window="message = $event.detail.message; show = true; clearTimeout(timer); timer = setTimeout(() => show = false, 3200)"
-            x-show="show" x-cloak role="status" x-transition:enter="transition ease-out duration-300"
-            x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0"
-            x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0"
-            x-transition:leave-end="opacity-0 translate-y-4"
-            class="fixed inset-x-4 bottom-32 z-50 max-w-sm mx-auto rounded-2xl bg-apeiron-ink text-white text-sm font-medium px-4 py-3 shadow-xl text-center">
-            <span x-text="message"></span>
-        </div>
+        <x-ui.toast />
     </div>
 </body>
 

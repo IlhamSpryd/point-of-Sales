@@ -43,6 +43,7 @@ class PriceListItem extends Model
         'product_variant_id',
         'uom_id',
         'min_quantity',
+        'max_quantity',
         'price',
         'discount_percentage',
     ];
@@ -53,6 +54,7 @@ class PriceListItem extends Model
         'product_variant_id' => 'integer',
         'uom_id' => 'integer',
         'min_quantity' => 'float',
+        'max_quantity' => 'float',
         'price' => 'float',
         'discount_percentage' => 'float',
     ];

@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', 'Tantangan Verifikasi 2FA — Apeiron POS')
+@section('title', 'Tantangan Verifikasi 2FA — Apeiron')
 
 @section('content')
     @if (session('warning'))

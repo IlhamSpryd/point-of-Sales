@@ -116,7 +116,15 @@ class SupplierManager extends Component
         $this->bootRequiresTenantContext();
 
         $user = auth()->user();
-        if (! $user || ! $user->role || ! in_array($user->role->name, ['Owner', 'Manager', 'Inventory'], true)) {
+        $isAllowed = $user
+            && $user->role
+            && (
+                (bool) ($user->role->is_admin ?? false)
+                || in_array($user->role->name, ['Owner', 'Manager', 'Inventory', 'Admin'], true)
+                || $user->hasPermission('purchasing.supplier.view')
+            );
+
+        if (! $isAllowed) {
             abort(403, 'Anda tidak memiliki hak akses untuk halaman ini.');
         }
     }

@@ -159,7 +159,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property App\\Models\\ChannelOrderLog\:\:\$tenant_id\.$#'
 			identifier: property.notFound
-			count: 2
+			count: 4
 			path: app/Jobs/ProcessWebhookOrderJob.php
 
 		-
@@ -173,6 +173,12 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Livewire/Concerns/RequiresTenantContext.php
+
+		-
+			message: '#^Cannot call method format\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Livewire/Customers/CustomerManager.php
 
 		-
 			message: '#^Cannot call method format\(\) on string\.$#'
@@ -271,6 +277,156 @@ parameters:
 			path: app/Livewire/Kasir/CreateOrder.php
 
 		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Purchasing/GoodsReceivedNoteManager.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Purchasing/GoodsReceivedNoteManager.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Livewire/Purchasing/GoodsReceivedNoteManager.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>product_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Livewire/Purchasing/GoodsReceivedNoteManager.php
+
+		-
+			message: '#^Access to an undefined property App\\Modules\\Purchasing\\Models\\GoodsReceivedNoteLine\:\:\$accepted_quantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Purchasing/PurchaseReturnManager.php
+
+		-
+			message: '#^Access to an undefined property App\\Modules\\Purchasing\\Models\\GoodsReceivedNoteLine\:\:\$purchase_uom\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Purchasing/PurchaseReturnManager.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Purchasing/PurchaseReturnManager.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Purchasing/PurchaseReturnManager.php
+
+		-
+			message: '#^Call to an undefined method App\\Modules\\Purchasing\\Models\\PurchaseDebitNote\:\:getRemainingUnappliedAmount\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Livewire/Purchasing/PurchaseReturnManager.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Livewire/Purchasing/PurchaseReturnManager.php
+
+		-
+			message: '#^Offset ''debit_note'' on array\{purchase_return\: App\\Modules\\Purchasing\\Models\\PurchaseReturn, debit_note\: App\\Modules\\Purchasing\\Models\\PurchaseDebitNote\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Livewire/Purchasing/PurchaseReturnManager.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Livewire/Purchasing/PurchaseReturnManager.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>product_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Livewire/Purchasing/PurchaseReturnManager.php
+
+		-
+			message: '#^Access to an undefined property App\\Modules\\Purchasing\\Models\\SupplierInvoiceLine\:\:\$invoiced_quantity\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Livewire/Purchasing/SupplierInvoiceManager.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Livewire/Purchasing/SupplierInvoiceManager.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_name\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Livewire/Purchasing/SupplierInvoiceManager.php
+
+		-
+			message: '#^Using nullsafe method call on non\-nullable type App\\Enums\\InvoiceMatchingStatusEnum\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Livewire/Purchasing/SupplierInvoiceManager.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Livewire/Purchasing/SupplierInvoiceManager.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Livewire/Purchasing/SupplierInvoiceManager.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>product_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Livewire/Purchasing/SupplierInvoiceManager.php
+
+		-
+			message: '#^Access to an undefined property App\\Livewire\\Sales\\AccountsReceivableManager\:\:\$selectedInvoice\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Sales/AccountsReceivableManager.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Livewire/Sales/QuotationManager.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Livewire/Sales/SalesOrderManager.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:getRemainingQty\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Livewire/Sales/SalesOrderManager.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
+			path: app/Livewire/Sales/SalesOrderManager.php
+
+		-
 			message: '#^Right side of && is always true\.$#'
 			identifier: booleanAnd.rightAlwaysTrue
 			count: 1
@@ -307,6 +463,702 @@ parameters:
 			path: app/Modules/Auth/Services/TwoFactorAuthService.php
 
 		-
+			message: '#^Strict comparison using \!\=\= between string and App\\Modules\\Customers\\Enums\\GiftCardStatusEnum\:\:ACTIVE will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Modules/Customers/Models/GiftCard.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Modules/Customers/Models/GiftCard.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Modules\\Customers\\Enums\\StoreCreditStatusEnum\:\:ACTIVE will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Modules/Customers/Models/StoreCreditAccount.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and App\\Modules\\Customers\\Enums\\VoucherStatusEnum\:\:ACTIVE will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Modules/Customers/Models/Voucher.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Modules/Customers/Models/Voucher.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Customer\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Customers/Services/CustomerCreditService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrder\:\:\$reserved_credit_amount \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Customers/Services/CustomerCreditService.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between App\\Modules\\Customers\\Models\\CustomerCreditAccount and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Modules/Customers/Services/CustomerCreditService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Customer\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 7
+			path: app/Modules/Customers/Services/CustomerService.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 2
+			path: app/Modules/Customers/Services/CustomerService.php
+
+		-
+			message: '#^Result of \|\| is always false\.$#'
+			identifier: booleanOr.alwaysFalse
+			count: 1
+			path: app/Modules/Customers/Services/CustomerService.php
+
+		-
+			message: '#^Property App\\Modules\\Customers\\Models\\GiftCard\:\:\$current_balance \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Customers/Services/GiftCardService.php
+
+		-
+			message: '#^Property App\\Modules\\Customers\\Models\\GiftCard\:\:\$status \(string\) does not accept App\\Modules\\Customers\\Enums\\GiftCardStatusEnum\:\:ACTIVE\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Customers/Services/GiftCardService.php
+
+		-
+			message: '#^Property App\\Modules\\Customers\\Models\\GiftCard\:\:\$status \(string\) does not accept App\\Modules\\Customers\\Enums\\GiftCardStatusEnum\:\:DEPLETED\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Customers/Services/GiftCardService.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Modules\\Customers\\Enums\\GiftCardStatusEnum\:\:DEPLETED will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Modules/Customers/Services/GiftCardService.php
+
+		-
+			message: '#^Property App\\Modules\\Customers\\Models\\StoreCreditAccount\:\:\$current_balance \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Customers/Services/StoreCreditService.php
+
+		-
+			message: '#^Property App\\Modules\\Customers\\Models\\Voucher\:\:\$status \(string\) does not accept App\\Modules\\Customers\\Enums\\VoucherStatusEnum\:\:EXPIRED\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Customers/Services/VoucherService.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Modules\\Customers\\Enums\\VoucherDiscountTypeEnum\:\:PERCENTAGE will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Modules/Customers/Services/VoucherService.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between App\\Modules\\Finance\\Enums\\OutboxStatusEnum and ''PROCESSED'' will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Modules/Finance/Jobs/ProcessFinancialOutboxJob.php
+
+		-
+			message: '#^Parameter \#2 \$targetPeriod of method App\\Modules\\Finance\\Services\\AccountingPeriodService\:\:rollForwardPermanentAccounts\(\) expects App\\Modules\\Finance\\Models\\AccountingPeriod, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Modules/Finance/Services/AccountingPeriodService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between float\|int\|numeric\-string and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Modules/Finance/Services/AccountingPeriodService.php
+
+		-
+			message: '#^Variable \$invSum on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.variable
+			count: 2
+			path: app/Modules/Finance/Services/AccountingPeriodService.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 9
+			path: app/Modules/Finance/Services/ApGlReconciliationService.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: app/Modules/Finance/Services/ApGlReconciliationService.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<string, mixed\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Modules/Finance/Services/ApOutboxConsumerService.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: app/Modules/Finance/Services/ApOutboxConsumerService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$is_admin\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/ApPaymentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$allocated_amount\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Modules/Finance/Services/ApPaymentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/ApPaymentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier_invoice_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/ApPaymentService.php
+
+		-
+			message: '#^Property App\\Modules\\Purchasing\\Models\\SupplierInvoice\:\:\$paid_amount \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Finance/Services/ApPaymentService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$company_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/ArGlReconciliationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/ArGlReconciliationService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Modules/Finance/Services/ArGlReconciliationService.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 9
+			path: app/Modules/Finance/Services/ArGlReconciliationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>company_name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Finance/Services/ArGlReconciliationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Finance/Services/ArGlReconciliationService.php
+
+		-
+			message: '#^Call to function is_array\(\) with string will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 4
+			path: app/Modules/Finance/Services/ArOutboxConsumerService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Modules/Finance/Services/ArOutboxConsumerService.php
+
+		-
+			message: '#^Negated boolean expression is always true\.$#'
+			identifier: booleanNot.alwaysTrue
+			count: 1
+			path: app/Modules/Finance/Services/ArOutboxConsumerService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\AccountingReceivableOutbox\:\:\$processed_at \(string\|null\) does not accept Illuminate\\Support\\Carbon\.$#'
+			identifier: assign.propertyType
+			count: 8
+			path: app/Modules/Finance/Services/ArOutboxConsumerService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>bank_fee_amount" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Finance/Services/ArOutboxConsumerService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>customer_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Modules/Finance/Services/ArOutboxConsumerService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>discount_amount" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Finance/Services/ArOutboxConsumerService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>shipping_amount" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Finance/Services/ArOutboxConsumerService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>subtotal" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Finance/Services/ArOutboxConsumerService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>tax_amount" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Finance/Services/ArOutboxConsumerService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>total_allocated_amount" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Finance/Services/ArOutboxConsumerService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>total_amount" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Finance/Services/ArOutboxConsumerService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>total_received_amount" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Finance/Services/ArOutboxConsumerService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>unapplied_credit_amount" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Finance/Services/ArOutboxConsumerService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$current_balance\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/BankReconciliationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$is_reconciled\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/BankReconciliationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$match_status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/BankReconciliationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$opening_balance\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/BankReconciliationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$reconciled_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/BankReconciliationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/BankReconciliationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$transaction_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/BankReconciliationService.php
+
+		-
+			message: '#^Offset ''running_balance'' on array\{line_number\: int, value_date\: string, external_reference\: mixed, debit_amount\: numeric\-string, credit_amount\: numeric\-string, running_balance\: numeric\-string, description\: mixed, line_fingerprint_hash\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: app/Modules/Finance/Services/BankReconciliationService.php
+
+		-
+			message: '#^Parameter \#1 \$session of method App\\Modules\\Finance\\Services\\BankReconciliationService\:\:calculateUnreconciledDifference\(\) expects App\\Modules\\Finance\\Models\\BankReconciliationSession, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Modules/Finance/Services/BankReconciliationService.php
+
+		-
+			message: '#^Parameter \$account of method App\\Modules\\Finance\\Services\\CashBankTransactionService\:\:recordBankAdjustment\(\) expects App\\Modules\\Finance\\Models\\CashBankAccount, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Modules/Finance/Services/BankReconciliationService.php
+
+		-
+			message: '#^Parameter \#1 \$originalJournal of method App\\Modules\\Finance\\Services\\JournalEntryService\:\:reverseJournal\(\) expects App\\Modules\\Finance\\Models\\JournalEntry, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Modules/Finance/Services/CashBankTransactionService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$accumulated_depreciation\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/DepreciationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$asset_code\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Modules/Finance/Services/DepreciationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$category_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/DepreciationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$net_book_value\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/DepreciationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$salvage_value\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/DepreciationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/DepreciationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$store_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/DepreciationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$reversed_by_journal_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Modules/Finance/Services/ExpenseService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tax_code_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/ExpenseService.php
+
+		-
+			message: '#^Parameter \#1 \$originalJournal of method App\\Modules\\Finance\\Services\\JournalEntryService\:\:reverseJournal\(\) expects App\\Modules\\Finance\\Models\\JournalEntry, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 2
+			path: app/Modules/Finance/Services/ExpenseService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Product\:\:\$cost_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/FinancialOutboxDispatcherService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$disposition\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Modules/Finance/Services/FinancialOutboxDispatcherService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/FinancialOutboxDispatcherService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantity_returned\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/FinancialOutboxDispatcherService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>cost_price" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Modules/Finance/Services/FinancialOutboxDispatcherService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>standard_cost" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Modules/Finance/Services/FinancialOutboxDispatcherService.php
+
+		-
+			message: '#^Using nullsafe property access on non\-nullable type App\\Modules\\Finance\\Enums\\AccountSubtypeEnum\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Finance/Services/FinancialStatementService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$journal_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/GeneralLedgerInquiryService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$posting_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/GeneralLedgerInquiryService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$source_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/GeneralLedgerInquiryService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$source_type\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/GeneralLedgerInquiryService.php
+
+		-
+			message: '#^Access to an undefined property App\\Modules\\Purchasing\\Models\\GoodsReceivedNote\:\:\$received_date\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/InventoryAccountingService.php
+
+		-
+			message: '#^Access to an undefined property App\\Modules\\Purchasing\\Models\\GoodsReceivedNoteLine\:\:\$item_type\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Modules/Finance/Services/InventoryAccountingService.php
+
+		-
+			message: '#^Call to function is_object\(\) with App\\Enums\\StockAdjustmentReasonEnum will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Modules/Finance/Services/InventoryAccountingService.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: app/Modules/Finance/Services/InventoryAccountingService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$account_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/JournalEntryService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$credit_amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/JournalEntryService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$customer_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/JournalEntryService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$debit_amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/JournalEntryService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/JournalEntryService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$store_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/JournalEntryService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/JournalEntryService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tax_code_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/JournalEntryService.php
+
+		-
+			message: '#^Offset ''credit'' on array\{account_id\: int, debit\: string, credit\: string, description\?\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Modules/Finance/Services/OpeningBalanceService.php
+
+		-
+			message: '#^Offset ''debit'' on array\{account_id\: int, debit\: string, credit\: string, description\?\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Modules/Finance/Services/OpeningBalanceService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$account_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/PostingEngineService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$amount_source_key\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/PostingEngineService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$credit_amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/PostingEngineService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$customer_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/PostingEngineService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$debit_amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/PostingEngineService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$store_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/PostingEngineService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$supplier_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/PostingEngineService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tax_code_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/PostingEngineService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$zero_amount_behavior\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/PostingEngineService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isCredit\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Modules/Finance/Services/PostingEngineService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:isDebit\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Modules/Finance/Services/PostingEngineService.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Modules/Finance/Services/PostingEngineService.php
+
+		-
+			message: '#^Parameter \#1 \$line of method App\\Modules\\Finance\\Services\\AccountMappingResolverService\:\:resolveAccountId\(\) expects App\\Modules\\Finance\\Models\\PostingRuleLine, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Modules/Finance/Services/PostingEngineService.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: app/Modules/Finance/Services/PostingEngineService.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between App\\Modules\\Finance\\Enums\\OutboxStatusEnum and ''PROCESSED'' will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Modules/Finance/Services/PostingEngineService.php
+
+		-
+			message: '#^Property App\\Modules\\Finance\\Models\\TaxRate\:\:\$effective_to \(Carbon\\CarbonInterface\|null\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Finance/Services/TaxConfigurationService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$purchase_tax_account_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/TaxLedgerService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sales_tax_account_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Finance/Services/TaxLedgerService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>rate_percent" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Finance/Services/TaxLedgerService.php
+
+		-
 			message: '#^Using nullsafe property access "\?\-\>current_stock" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -323,6 +1175,18 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Modules/Inventory/Controllers/RestockForecastController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>price" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Products/Services/CatalogPriceResolverService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>product_price" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Products/Services/CatalogPriceResolverService.php
 
 		-
 			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\HasMany\:\:availableForOrder\(\)\.$#'
@@ -421,6 +1285,288 @@ parameters:
 			path: app/Modules/Reports/Services/ReportService.php
 
 		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Modules\\Sales\\Enums\\CustomerInvoiceStatusEnum\:\:PAID, App\\Modules\\Sales\\Enums\\CustomerInvoiceStatusEnum\:\:VOIDED, App\\Modules\\Sales\\Enums\\CustomerInvoiceStatusEnum\:\:DRAFT\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Modules/Sales/Models/CustomerInvoice.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 2
+			path: app/Modules/Sales/Models/CustomerInvoice.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Modules\\Sales\\Enums\\CustomerInvoiceStatusEnum\:\:POSTED will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Modules/Sales/Models/CustomerInvoice.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$company_name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$customer_code\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$discount_amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$line_total\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$ordered_qty\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$payment_terms_days\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$phone\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tax_amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tax_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tax_rate\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$unit_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uom_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$variant_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Anonymous function has an unused use \$actor\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Modules\\Sales\\Enums\\CustomerInvoiceStatusEnum\:\:POSTED, App\\Modules\\Sales\\Enums\\CustomerInvoiceStatusEnum\:\:PARTIALLY_PAID\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 4
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Cannot call method label\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Cannot call method toIso8601String\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 3
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Method App\\Modules\\Sales\\Services\\AccountsReceivableService\:\:getAgingReport\(\) should return array\{current\: string, 130\: string, 3160\: string, 6190\: string, over_90\: string, total\: string\} but returns array\{current\: numeric\-string, ''1_30''\: numeric\-string, ''31_60''\: numeric\-string, ''61_90''\: numeric\-string, over_90\: numeric\-string, total\: numeric\-string\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Method App\\Modules\\Sales\\Services\\AccountsReceivableService\:\:postInvoice\(\) should return App\\Modules\\Sales\\Models\\CustomerInvoice but returns null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Offset ''amount'' on array\{amount\: float\|string, payment_method\?\: string, payment_reference\?\: string, store_id\?\: int, notes\?\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Offset ''bank_fee_amount'' on array\{amount\: float\|string, payment_method\?\: string, payment_reference\?\: string, store_id\?\: int, notes\?\: string\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Offset ''cash_bank_account_id'' does not exist on array\{amount\: float\|string, payment_method\?\: string, payment_reference\?\: string, store_id\?\: int, notes\?\: string\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Offset ''cash_bank_account_id'' on array\{amount\: float\|string, payment_method\?\: string, payment_reference\?\: string, store_id\?\: int, notes\?\: string\} in empty\(\) does not exist\.$#'
+			identifier: empty.offset
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Offset ''payment_date'' on array\{amount\: float\|string, payment_method\?\: string, payment_reference\?\: string, store_id\?\: int, notes\?\: string\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Offset ''receipt_date'' on array\{amount\: float\|string, payment_method\?\: string, payment_reference\?\: string, store_id\?\: int, notes\?\: string\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Offset ''receipt_number'' does not exist on array\{amount\: float\|string, payment_method\?\: string, payment_reference\?\: string, store_id\?\: int, notes\?\: string\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Offset ''receipt_number'' on array\{amount\: float\|string, payment_method\?\: string, payment_reference\?\: string, store_id\?\: int, notes\?\: string\} in empty\(\) does not exist\.$#'
+			identifier: empty.offset
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\ArPaymentAllocation\:\:\$reversed_at \(string\|null\) does not accept Carbon\\Carbon\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\CustomerInvoice\:\:\$balance_due \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\CustomerInvoice\:\:\$paid_amount \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\CustomerInvoice\:\:\$status \(string\) does not accept App\\Modules\\Sales\\Enums\\CustomerInvoiceStatusEnum\:\:PARTIALLY_PAID\|App\\Modules\\Sales\\Enums\\CustomerInvoiceStatusEnum\:\:POSTED\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\CustomerInvoice\:\:\$status \(string\) does not accept App\\Modules\\Sales\\Enums\\CustomerInvoiceStatusEnum\:\:VOIDED\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\CustomerInvoice\:\:\$voided_at \(string\|null\) does not accept Carbon\\Carbon\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrder\:\:\$invoicing_status \(string\) does not accept App\\Modules\\Sales\\Enums\\SalesOrderInvoicingStatusEnum\:\:UNINVOICED\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Result of static method Illuminate\\Database\\Connection\:\:transaction\(\) \(void\) is used\.$#'
+			identifier: staticMethod.void
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and App\\Modules\\Sales\\Enums\\CustomerInvoiceStatusEnum\:\:DRAFT will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 2
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>payment_terms_days" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Modules/Sales/Services/AccountsReceivableService.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
 			identifier: property.notFound
 			count: 2
@@ -439,10 +1585,22 @@ parameters:
 			path: app/Modules/Sales/Services/CartService.php
 
 		-
+			message: '#^Variable \$cartState on left side of \?\? is never defined\.$#'
+			identifier: nullCoalesce.variable
+			count: 1
+			path: app/Modules/Sales/Services/CartService.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$order_status\.$#'
 			identifier: property.notFound
 			count: 4
 			path: app/Modules/Sales/Services/KdsService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ChannelOrderLog\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/Omnichannel/OmnichannelReconciliationService.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_name\.$#'
@@ -493,8 +1651,242 @@ parameters:
 			path: app/Modules/Sales/Services/Printing/ReceiptPrinterService.php
 
 		-
+			message: '#^Anonymous function has an unused use \$actor\.$#'
+			identifier: closure.unusedUse
+			count: 2
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Anonymous function has an unused use \$approver\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Anonymous function has an unused use \$idempotencyKey\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Anonymous function has an unused use \$notes\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Modules\\Sales\\Enums\\QuotationStatusEnum\:\:APPROVED, App\\Modules\\Sales\\Enums\\QuotationStatusEnum\:\:SENT, App\\Modules\\Sales\\Enums\\QuotationStatusEnum\:\:DRAFT\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Modules\\Sales\\Enums\\QuotationStatusEnum\:\:PENDING_APPROVAL, App\\Modules\\Sales\\Enums\\QuotationStatusEnum\:\:DRAFT\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 8
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Cannot call method canBeEdited\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Cannot call method isTerminal\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Cannot call method lt\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Cannot call method toDateString\(\) on string\.$#'
+			identifier: method.nonObject
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Method App\\Modules\\Sales\\Services\\QuotationService\:\:accept\(\) should return App\\Modules\\Sales\\Models\\Quotation but returns null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Method App\\Modules\\Sales\\Services\\QuotationService\:\:approve\(\) should return App\\Modules\\Sales\\Models\\Quotation but returns null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Method App\\Modules\\Sales\\Services\\QuotationService\:\:convertToSalesOrder\(\) should return App\\Modules\\Sales\\Models\\SalesOrder but returns null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:map\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: array\{product_id\: int\<0, max\>, variant_id\: int\<0, max\>\|null, uom_id\: int\<0, max\>\|null, description\: string\|null, quantity\: float, unit_price\: float, base_unit_price\: float, price_list_id\: int\<0, max\>\|null, pricing_source\: string\|null, discount_amount\: float, tax_rate\: float, tax_amount\: float\}, Closure\(App\\Modules\\Sales\\Models\\QuotationLine\)\: array\{product_id\: int\<0, max\>, variant_id\: int\<0, max\>\|null, uom_id\: int\<0, max\>\|null, description\: string\|null, quantity\: float, unit_price\: float, base_unit_price\: float, price_list_id\: int\<0, max\>\|null, pricing_source\: string\|null, discount_amount\: float, tax_rate\: float, tax_amount\: float\} given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\Quotation\:\:\$customer_snapshot_json \(string\|null\) does not accept array\<string, array\<string, mixed\>\|int\<0, max\>\|string\|null\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\Quotation\:\:\$discount_amount \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\Quotation\:\:\$status \(string\) does not accept App\\Modules\\Sales\\Enums\\QuotationStatusEnum\:\:DRAFT\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\Quotation\:\:\$status \(string\) does not accept App\\Modules\\Sales\\Enums\\QuotationStatusEnum\:\:EXPIRED\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\Quotation\:\:\$status \(string\) does not accept App\\Modules\\Sales\\Enums\\QuotationStatusEnum\:\:PENDING_APPROVAL\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\Quotation\:\:\$status \(string\) does not accept App\\Modules\\Sales\\Enums\\QuotationStatusEnum\:\:REJECTED\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\Quotation\:\:\$status \(string\) does not accept App\\Modules\\Sales\\Enums\\QuotationStatusEnum\:\:SENT\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\Quotation\:\:\$status \(string\) does not accept App\\Modules\\Sales\\Enums\\QuotationStatusEnum\:\:SUPERSEDED\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\Quotation\:\:\$subtotal \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\Quotation\:\:\$tax_amount \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\Quotation\:\:\$total_amount \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\QuotationLine\:\:\$base_unit_price \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\QuotationLine\:\:\$discount_amount \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\QuotationLine\:\:\$line_total \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\QuotationLine\:\:\$quantity \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\QuotationLine\:\:\$tax_amount \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\QuotationLine\:\:\$tax_rate \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\QuotationLine\:\:\$unit_price \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Result of static method Illuminate\\Database\\Connection\:\:transaction\(\) \(void\) is used\.$#'
+			identifier: staticMethod.void
+			count: 3
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and App\\Modules\\Sales\\Enums\\QuotationStatusEnum\:\:ACCEPTED will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Modules\\Sales\\Enums\\QuotationStatusEnum\:\:CONVERTED will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 2
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 3
+			path: app/Modules/Sales/Services/QuotationService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Order\:\:\$device_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_name\.$#'
 			identifier: property.notFound
+			count: 2
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Modules\\Sales\\Enums\\CustomerInvoiceStatusEnum\:\:POSTED, App\\Modules\\Sales\\Enums\\CustomerInvoiceStatusEnum\:\:PARTIALLY_PAID\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
 			count: 1
 			path: app/Modules/Sales/Services/ReturnRefundService.php
 
@@ -502,6 +1894,12 @@ parameters:
 			message: '#^Call to function is_string\(\) with App\\Enums\\PaymentMethod will always evaluate to false\.$#'
 			identifier: function.impossibleType
 			count: 2
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 1
 			path: app/Modules/Sales/Services/ReturnRefundService.php
 
 		-
@@ -513,13 +1911,13 @@ parameters:
 		-
 			message: '#^Offset ''disposition'' on array\{order_item_id\: int, quantity\: int, disposition\: App\\Enums\\ReturnDispositionEnum\|string, disposition_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.offset
-			count: 1
+			count: 2
 			path: app/Modules/Sales/Services/ReturnRefundService.php
 
 		-
 			message: '#^Offset ''order_item_id'' on array\{order_item_id\: int, quantity\: int, disposition\: App\\Enums\\ReturnDispositionEnum\|string, disposition_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.offset
-			count: 1
+			count: 2
 			path: app/Modules/Sales/Services/ReturnRefundService.php
 
 		-
@@ -531,7 +1929,7 @@ parameters:
 		-
 			message: '#^Offset ''quantity'' on array\{order_item_id\: int, quantity\: int, disposition\: App\\Enums\\ReturnDispositionEnum\|string, disposition_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.offset
-			count: 1
+			count: 2
 			path: app/Modules/Sales/Services/ReturnRefundService.php
 
 		-
@@ -539,6 +1937,372 @@ parameters:
 			identifier: assign.propertyType
 			count: 1
 			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesCreditNote\:\:\$remaining_amount \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesCreditNote\:\:\$status \(string\) does not accept App\\Modules\\Sales\\Enums\\CreditNoteStatusEnum\:\:CONVERTED_TO_STORE_CREDIT\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Modules\\Sales\\Enums\\CreditNoteStatusEnum\:\:VOIDED will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$base_unit_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cancelled_qty\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$description\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$discount_amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$fulfilled_qty\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$line_number\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$line_total\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$ordered_qty\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$price_list_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pricing_source\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$quantity\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$reserved_qty\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tax_amount\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$tax_rate\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$unit_price\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uom_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$variant_id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Anonymous function has an unused use \$actor\.$#'
+			identifier: closure.unusedUse
+			count: 2
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Anonymous function has an unused use \$allowOverride\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Anonymous function has an unused use \$fulfillmentLines\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Anonymous function has an unused use \$idempotencyKey\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Anonymous function has an unused use \$overrideReason\.$#'
+			identifier: closure.unusedUse
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:getRemainingQty\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Modules\\Sales\\Enums\\SalesOrderStatusEnum\:\:CLOSED, App\\Modules\\Sales\\Enums\\SalesOrderStatusEnum\:\:CANCELLED, App\\Modules\\Sales\\Enums\\SalesOrderStatusEnum\:\:FULFILLED\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Modules\\Sales\\Enums\\SalesOrderStatusEnum\:\:CONFIRMED, App\\Modules\\Sales\\Enums\\SalesOrderStatusEnum\:\:PARTIALLY_FULFILLED\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Call to function in_array\(\) with arguments string, array\{App\\Modules\\Sales\\Enums\\SalesOrderStatusEnum\:\:DRAFT, App\\Modules\\Sales\\Enums\\SalesOrderStatusEnum\:\:PENDING_CREDIT_APPROVAL\} and true will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Cannot access property \$value on string\.$#'
+			identifier: property.nonObject
+			count: 3
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Method App\\Modules\\Sales\\Services\\SalesOrderService\:\:confirmOrder\(\) should return App\\Modules\\Sales\\Models\\SalesOrder but returns null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Method App\\Modules\\Sales\\Services\\SalesOrderService\:\:fulfillOrder\(\) should return App\\Models\\Order but returns null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrder\:\:\$cancelled_at \(string\|null\) does not accept Carbon\\Carbon\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrder\:\:\$customer_snapshot_json \(string\|null\) does not accept array\<string, array\<string, mixed\>\|int\<0, max\>\|string\|null\>\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrder\:\:\$discount_amount \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 3
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrder\:\:\$fulfillment_status \(string\) does not accept App\\Modules\\Sales\\Enums\\SalesOrderFulfillmentStatusEnum\:\:UNFULFILLED\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrder\:\:\$invoicing_status \(string\) does not accept App\\Modules\\Sales\\Enums\\SalesOrderInvoicingStatusEnum\:\:UNINVOICED\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrder\:\:\$reserved_credit_amount \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrder\:\:\$shipping_amount \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrder\:\:\$status \(string\) does not accept App\\Modules\\Sales\\Enums\\SalesOrderStatusEnum\:\:CANCELLED\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrder\:\:\$status \(string\) does not accept App\\Modules\\Sales\\Enums\\SalesOrderStatusEnum\:\:CLOSED\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrder\:\:\$status \(string\) does not accept App\\Modules\\Sales\\Enums\\SalesOrderStatusEnum\:\:DRAFT\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrder\:\:\$subtotal \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 3
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrder\:\:\$tax_amount \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 3
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrder\:\:\$total_amount \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 3
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrderLine\:\:\$base_unit_price \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrderLine\:\:\$cancelled_qty \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrderLine\:\:\$discount_amount \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrderLine\:\:\$fulfilled_qty \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrderLine\:\:\$invoiced_qty \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrderLine\:\:\$line_total \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrderLine\:\:\$ordered_qty \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrderLine\:\:\$reserved_qty \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrderLine\:\:\$returned_qty \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrderLine\:\:\$tax_amount \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrderLine\:\:\$tax_rate \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Property App\\Modules\\Sales\\Models\\SalesOrderLine\:\:\$unit_price \(float\) does not accept string\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Result of static method Illuminate\\Database\\Connection\:\:transaction\(\) \(void\) is used\.$#'
+			identifier: staticMethod.void
+			count: 2
+			path: app/Modules/Sales/Services/SalesOrderService.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 2
+			path: app/Modules/Sales/Services/SalesOrderService.php
 
 		-
 			message: '#^Using nullsafe property access on non\-nullable type App\\Models\\Role\. Use \-\> instead\.$#'
@@ -597,12 +2361,6 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$selection_type\.$#'
 			identifier: property.notFound
-			count: 1
-			path: app/Modules/Sales/Services/TransactionService.php
-
-		-
-			message: '#^Call to an undefined method App\\Core\\Context\\TenantContext\:\:requireStoreId\(\)\.$#'
-			identifier: method.notFound
 			count: 1
 			path: app/Modules/Sales/Services/TransactionService.php
 
@@ -799,6 +2557,66 @@ parameters:
 			path: app/Modules/Users/Services/UserService.php
 
 		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:hasPermissionTo\(\)\.$#'
+			identifier: method.notFound
+			count: 5
+			path: app/Policies/AccountingPeriodPolicy.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:hasRole\(\)\.$#'
+			identifier: method.notFound
+			count: 5
+			path: app/Policies/AccountingPeriodPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\User\:\:\$is_admin\.$#'
+			identifier: property.notFound
+			count: 7
+			path: app/Policies/ApPaymentPolicy.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:hasPermissionTo\(\)\.$#'
+			identifier: method.notFound
+			count: 7
+			path: app/Policies/ApPaymentPolicy.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:hasPermissionTo\(\)\.$#'
+			identifier: method.notFound
+			count: 11
+			path: app/Policies/CashBankAccountPolicy.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:hasRole\(\)\.$#'
+			identifier: method.notFound
+			count: 7
+			path: app/Policies/CashBankAccountPolicy.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Policies/CategoryPolicy.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:hasPermissionTo\(\)\.$#'
+			identifier: method.notFound
+			count: 5
+			path: app/Policies/ChartOfAccountPolicy.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:hasRole\(\)\.$#'
+			identifier: method.notFound
+			count: 5
+			path: app/Policies/ChartOfAccountPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Modules\\Customers\\Models\\Customer\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/CustomerPolicy.php
+
+		-
 			message: '#^Access to an undefined property App\\Models\\Discount\:\:\$store_id\.$#'
 			identifier: property.notFound
 			count: 1
@@ -811,28 +2629,100 @@ parameters:
 			path: app/Policies/DiscountPolicy.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
-			count: 1
-			path: app/Policies/DiscountPolicy.php
-
-		-
 			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Policies/DiscountPolicy.php
 
 		-
-			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
+			message: '#^Call to an undefined method App\\Models\\User\:\:hasPermissionTo\(\)\.$#'
+			identifier: method.notFound
+			count: 14
+			path: app/Policies/ExpensePolicy.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:hasRole\(\)\.$#'
+			identifier: method.notFound
+			count: 9
+			path: app/Policies/ExpensePolicy.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:hasPermissionTo\(\)\.$#'
+			identifier: method.notFound
+			count: 9
+			path: app/Policies/FixedAssetPolicy.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:hasRole\(\)\.$#'
+			identifier: method.notFound
+			count: 7
+			path: app/Policies/FixedAssetPolicy.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:hasPermissionTo\(\)\.$#'
+			identifier: method.notFound
 			count: 1
-			path: app/Policies/TablePolicy.php
+			path: app/Policies/GiftCardPolicy.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Policies/GoodsReceiptPolicy.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:hasPermissionTo\(\)\.$#'
+			identifier: method.notFound
+			count: 6
+			path: app/Policies/JournalEntryPolicy.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:hasRole\(\)\.$#'
+			identifier: method.notFound
+			count: 7
+			path: app/Policies/JournalEntryPolicy.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Policies/ProductPolicy.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Policies/StockAdjustmentPolicy.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Policies/StockOpnamePolicy.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:hasPermissionTo\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Policies/StoreCreditPolicy.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 3
+			path: app/Policies/SupplierReturnPolicy.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Policies/TablePolicy.php
+
+		-
+			message: '#^Call to an undefined method App\\Models\\User\:\:hasPermissionTo\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Policies/VoucherPolicy.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_name\.$#'

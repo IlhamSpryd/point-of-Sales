@@ -19,6 +19,7 @@ use App\Enums\OrderType;
 use App\Enums\PaymentMethod;
 use App\Models\ChannelOrderLog;
 use App\Models\ChannelProductMapping;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Tenant;
@@ -34,6 +35,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Throwable;
@@ -182,6 +184,34 @@ class ProcessWebhookOrderJob implements ShouldQueue
 
         ['total_amount' => $totalAmount] = $transactionService->calculateOrderTotals($subtotal);
 
+        // Auto customer matching for omnichannel order (Modul 6)
+        $customerId = null;
+        if (! empty($normalized->customerPhone) || ! empty($normalized->customerEmail) || ! empty($normalized->customerName)) {
+            $customerQuery = Customer::withoutGlobalScopes()->where('tenant_id', $this->log->tenant_id);
+            if (! empty($normalized->customerPhone)) {
+                $matchedCustomer = (clone $customerQuery)->where('phone', $normalized->customerPhone)->first();
+            } elseif (! empty($normalized->customerEmail)) {
+                $matchedCustomer = (clone $customerQuery)->where('email', $normalized->customerEmail)->first();
+            } else {
+                $matchedCustomer = null;
+            }
+
+            if (! $matchedCustomer && (! empty($normalized->customerPhone) || ! empty($normalized->customerName))) {
+                $custCode = 'CUST-OMNI-'.substr(md5(($normalized->customerPhone ?? '').($normalized->customerName ?? '').Str::random(4)), 0, 8);
+                $matchedCustomer = Customer::create([
+                    'tenant_id' => $this->log->tenant_id,
+                    'customer_code' => strtoupper($custCode),
+                    'name' => $normalized->customerName ?: ('Pelanggan '.ucfirst($this->log->provider)),
+                    'phone' => $normalized->customerPhone,
+                    'email' => $normalized->customerEmail,
+                    'customer_type' => 'INDIVIDUAL',
+                    'is_active' => true,
+                ]);
+            }
+
+            $customerId = $matchedCustomer?->id;
+        }
+
         return $transactionService->createTransaction([
             'items' => $items,
             'payments' => [[
@@ -189,6 +219,7 @@ class ProcessWebhookOrderJob implements ShouldQueue
                 'amount' => $totalAmount,
                 'reference_number' => strtoupper($this->log->provider).'-'.$normalized->externalOrderId,
             ]],
+            'customer_id' => $customerId,
             'table_id' => null,
             'order_type' => OrderType::Takeaway->value,
             'idempotency_key' => $idempotencyKey,

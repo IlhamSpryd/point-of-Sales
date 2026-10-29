@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\Ingredient;
 use App\Models\User;
+use App\Modules\Inventory\Models\Ingredient;
 
 /**
  * [D2-BE-004] Policy Ingredient: CRUD bahan baku + BOM + penyesuaian stok

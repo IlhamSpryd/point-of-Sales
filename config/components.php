@@ -42,7 +42,7 @@ return [
     */
 
     'showcase' => [
-        'enabled' => env('COMPONENTS_SHOWCASE', true),
+        'enabled' => env('COMPONENTS_SHOWCASE', false),
         'route' => '/components',
 
         /*
@@ -50,7 +50,7 @@ return [
          | session + CSRF stack (the "web" group) so the Livewire "add" buttons
          | can post back without triggering a 419 "page expired" response.
          */
-        'middleware' => ['web'],
+        'middleware' => ['web', 'auth'],
 
         /*
          | The Vite entry points loaded by the studio pages and the preview

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Step 2 of 2: Initial Branch — Apeiron POS</title>
+    <title>Step 2 of 2: Initial Branch — Apeiron</title>
     <link rel="icon" href="{{ asset('assets/images/logo.png') }}" type="image/png">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -13,7 +13,7 @@
         <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
             <div class="flex items-center gap-3">
                 <img src="{{ asset('assets/images/logo.png') }}" alt="Apeiron System" class="h-8 w-auto object-contain">
-                <span class="text-lg font-bold tracking-tight text-slate-900">Apeiron POS</span>
+                <span class="text-lg font-bold tracking-tight text-slate-900">Apeiron</span>
             </div>
 
             {{-- Minimalist Progress Indicator (Apple / Google Style) --}}
@@ -168,7 +168,7 @@
 
         {{-- Footer Bar --}}
         <footer class="flex items-center justify-between text-xs text-slate-400 pt-3 border-t border-slate-200/80">
-            <span>&copy; {{ date('Y') }} Apeiron POS</span>
+            <span>&copy; {{ date('Y') }} Apeiron</span>
             <span class="text-[11px] text-slate-400">Step 2 of 2</span>
         </footer>
     </div>

@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', 'Sign In — Apeiron POS')
+@section('title', 'Sign In — Apeiron')
 
 @section('content')
     @if (session('success'))
@@ -83,7 +83,7 @@
                 required
                 value="{{ old('email') }}"
                 autocomplete="username"
-                placeholder="name@company.com"
+                placeholder="Enter email or username"
                 class="field-input w-full h-10 px-3 rounded-md border border-zinc-300 bg-white text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all {{ $errors->has('email') ? 'field-input-error' : '' }}"
             />
             @error('email')
@@ -110,7 +110,7 @@
                     id="password"
                     required
                     autocomplete="current-password"
-                    placeholder="Enter your password"
+                    placeholder="••••••••••••"
                     class="field-input w-full h-10 pl-3 pr-10 rounded-md border border-zinc-300 bg-white text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all {{ $errors->has('password') ? 'field-input-error' : '' }}"
                 />
                 <button
@@ -194,6 +194,13 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            if (window.erpMotion && typeof window.erpMotion.animateAuthScreen === 'function') {
+                window.erpMotion.animateAuthScreen();
+                @if ($errors->any())
+                    window.erpMotion.shakeElement('#login-form');
+                @endif
+                return;
+            }
             if (typeof gsap === 'undefined') return;
             const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
             const allAnimElems = document.querySelectorAll('.js-anim');
@@ -202,47 +209,11 @@
                 gsap.set(allAnimElems, { opacity: 1, y: 0 });
                 return;
             }
-
-            const MT = {
-                dur: { micro: 0.12, fast: 0.20, medium: 0.35, stagger: 0.04 },
-                ease: { out: 'power3.out', panel: 'power2.out' }
-            };
-
-            gsap.set(allAnimElems, { opacity: 0, y: 10 });
-
-            const panelRight = document.getElementById('anim-panel-right');
-            if (panelRight) {
-                gsap.set(panelRight, { opacity: 0 });
-            }
-
-            const tl = gsap.timeline({ defaults: { ease: MT.ease.out } });
-
-            if (panelRight) {
-                tl.to(panelRight, { opacity: 1, duration: MT.dur.medium + 0.1, ease: MT.ease.panel }, 0);
-            }
-
-            const heading = document.getElementById('anim-heading');
-            if (heading) {
-                tl.to(heading, { opacity: 1, y: 0, duration: MT.dur.medium }, 0.08);
-            }
-
-            const formGroupItems = [
-                document.getElementById('anim-social'),
-                document.getElementById('anim-divider'),
-                document.getElementById('anim-field-email'),
-                document.getElementById('anim-field-password'),
-                document.getElementById('anim-submit'),
-                document.getElementById('anim-footer-link')
-            ].filter(Boolean);
-
-            if (formGroupItems.length > 0) {
-                tl.to(formGroupItems, {
-                    opacity: 1,
-                    y: 0,
-                    duration: MT.dur.fast + 0.05,
-                    stagger: MT.dur.stagger
-                }, 0.14);
-            }
+            @if ($errors->any())
+                if (window.erpMotion && typeof window.erpMotion.shakeElement === 'function') {
+                    window.erpMotion.shakeElement('#login-form');
+                }
+            @endif
         });
     </script>
 @endsection

@@ -4,24 +4,26 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\SupplierReturn;
 use App\Models\User;
+use App\Modules\Inventory\Models\SupplierReturn;
 
 class SupplierReturnPolicy
 {
     private function canManage(User $user): bool
     {
-        return in_array($user->role?->name, ['Owner', 'Manager', 'Inventory'], true);
+        return in_array($user->role?->name, ['Owner', 'Manager', 'Inventory'], true)
+            || (bool) ($user->role?->is_admin ?? false);
     }
 
     private function canReverse(User $user): bool
     {
-        return in_array($user->role?->name, ['Owner', 'Manager'], true);
+        return in_array($user->role?->name, ['Owner', 'Manager'], true)
+            || (bool) ($user->role?->is_admin ?? false);
     }
 
     private function hasBranchAccess(User $user, int $storeId): bool
     {
-        if ($user->role?->name === 'Owner') {
+        if ($user->role?->name === 'Owner' || (bool) ($user->role?->is_admin ?? false)) {
             return true;
         }
 

@@ -5,7 +5,7 @@
 <x-app-layout>
     @include('catalog.partials.sub-nav')
 
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6" data-gsap="page-enter">
         <div>
             <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Daftar Harga & Grosir (Price Lists)</h4>
             <p class="text-sm font-medium text-[#787774] mt-1">Kelola aturan harga grosir bertingkat, harga tier loyalitas, dan kontrak pelanggan</p>
@@ -15,9 +15,9 @@
             <x-slot:actions>
                 @if($canManage)
                     <a href="{{ route('price-lists.create') }}" class="w-full sm:w-auto" wire:navigate>
-                        <x-button variant="primary" type="button" class="w-full sm:w-auto h-10">
+                        <x-ui.button variant="primary" type="button" class="w-full sm:w-auto h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
                             <span class="material-symbols-rounded text-[18px]">add</span> Buat Daftar Harga
-                        </x-button>
+                        </x-ui.button>
                     </a>
                 @endif
             </x-slot:actions>
@@ -25,10 +25,10 @@
     </div>
 
     @if(session('success'))
-        <x-alert type="success" class="mb-4">{{ session('success') }}</x-alert>
+        <x-ui.alert variant="success" class="mb-4">{{ session('success') }}</x-ui.alert>
     @endif
     @if(session('error'))
-        <x-alert type="error" class="mb-4">{{ session('error') }}</x-alert>
+        <x-ui.alert variant="destructive" class="mb-4">{{ session('error') }}</x-ui.alert>
     @endif
 
     <div class="card-surface flex flex-col flex-1 min-h-0">
@@ -72,9 +72,9 @@
                         <div class="font-mono text-xs text-[#787774]">{{ $pl->code }}</div>
                     </td>
                     <td class="px-6 py-4">
-                        <x-badge :type="$typeBadgeTypes[$pl->type] ?? 'secondary'">
+                        <x-ui.badge :variant="$typeBadgeTypes[$pl->type] ?? 'secondary'">
                             {{ $typeLabels[$pl->type] ?? $pl->type }}
-                        </x-badge>
+                        </x-ui.badge>
                     </td>
                     <td class="px-6 py-4 text-sm text-[#787774]">
                         @if($pl->customer)
@@ -103,9 +103,9 @@
                     </td>
                     <td class="px-6 py-4">
                         @if($pl->is_active)
-                            <x-badge type="success">Aktif</x-badge>
+                            <x-ui.badge variant="success" :dot="true">Aktif</x-ui.badge>
                         @else
-                            <x-badge type="secondary">Nonaktif</x-badge>
+                            <x-ui.badge variant="secondary" :dot="true">Nonaktif</x-ui.badge>
                         @endif
                     </td>
                     @if($canManage)

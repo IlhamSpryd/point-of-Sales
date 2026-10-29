@@ -1,4 +1,4 @@
-<div>
+<div data-gsap="page-enter">
     @include('inventory.partials.sub-nav')
     @if($showModal)
     <div class="flex items-center justify-between mb-6">
@@ -10,9 +10,9 @@
                 {{ $isEditing ? 'Perbarui informasi data bahan baku' : 'Tambahkan bahan baku baru ke dalam inventaris' }}
             </p>
         </div>
-        <x-button type="button" variant="secondary" wire:click="$set('showModal', false)">
+        <x-ui.button type="button" variant="secondary" wire:click="$set('showModal', false)">
             <span class="material-symbols-rounded text-[18px]">arrow_back</span> Kembali
-        </x-button>
+        </x-ui.button>
     </div>
 
     <div class="card-surface overflow-hidden w-full shrink-0">
@@ -67,12 +67,12 @@
             </div>
 
             <div class="pt-4 border-t border-apeiron-border flex justify-end gap-3">
-                <x-button type="button" variant="secondary" wire:click="$set('showModal', false)">
+                <x-ui.button type="button" variant="secondary" wire:click="$set('showModal', false)">
                     Batal
-                </x-button>
-                <x-button type="submit" variant="primary">
+                </x-ui.button>
+                <x-ui.button type="submit" variant="primary" x-on:click="window.erpMotion?.pulseHighlight($el)">
                     <span class="material-symbols-rounded text-[18px]">save</span> Simpan
-                </x-button>
+                </x-ui.button>
             </div>
         </form>
     </div>
@@ -86,20 +86,16 @@
             <div class="w-full sm:w-64">
                 <x-search-input wire:model.live.debounce.300ms="search" placeholder="Cari bahan baku..." />
             </div>
-            <x-button type="button" variant="primary" wire:click="create">
+            <x-ui.button type="button" variant="primary" wire:click="create" x-on:click="window.erpMotion?.pulseHighlight($el)">
                 <span class="material-symbols-rounded text-[18px]">add</span> Tambah
-            </x-button>
+            </x-ui.button>
         </div>
     </div>
 
     @if (session()->has('success'))
-        <div class="mb-6 p-4 rounded-lg bg-emerald-50 border border-emerald-200 flex items-start gap-3">
-            <span class="material-symbols-rounded text-emerald-600 mt-0.5">check_circle</span>
-            <div>
-                <h5 class="text-sm font-semibold text-emerald-800">Berhasil</h5>
-                <p class="text-sm text-emerald-600 mt-0.5">{{ session('success') }}</p>
-            </div>
-        </div>
+        <x-ui.alert variant="success" class="mb-6">
+            {{ session('success') }}
+        </x-ui.alert>
     @endif
 
     <div class="card-surface flex flex-col flex-1 min-h-0 w-full shrink-0">
@@ -139,15 +135,9 @@
                                 <span class="text-sm text-apeiron-ink tabular-nums">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($item->is_active)
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/50">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Aktif
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-xs font-medium bg-apeiron-surface text-apeiron-muted border border-apeiron-border">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-apeiron-muted"></span> Nonaktif
-                                    </span>
-                                @endif
+                                <x-ui.badge :variant="$item->is_active ? 'success' : 'secondary'">
+                                    {{ $item->is_active ? 'Aktif' : 'Nonaktif' }}
+                                </x-ui.badge>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right space-x-2">
                                 <button wire:click="adjustStock({{ $item->id }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-colors duration-200 active:scale-90" title="Sesuaikan Stok">
@@ -186,15 +176,9 @@
                             <span class="text-xs text-apeiron-muted">{{ $item->ingredient_code ?? '-' }}</span>
                         </div>
                         <div class="flex flex-col items-end gap-1">
-                            @if($item->is_active)
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/50">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Aktif
-                                </span>
-                            @else
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-medium bg-apeiron-surface text-apeiron-muted border border-apeiron-border">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-apeiron-muted"></span> Nonaktif
-                                </span>
-                            @endif
+                            <x-ui.badge :variant="$item->is_active ? 'success' : 'secondary'">
+                                {{ $item->is_active ? 'Aktif' : 'Nonaktif' }}
+                            </x-ui.badge>
                         </div>
                     </div>
                     <div class="flex items-center justify-between mt-3 pt-3 border-t border-apeiron-border">
@@ -238,63 +222,50 @@
     @endif
 
     <!-- Modal Adjust Stock -->
-    @if($showAdjustModal)
-    <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-apeiron-ink/40 backdrop-blur-sm transition-opacity" aria-hidden="true" wire:click="$set('showAdjustModal', false)"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="relative z-10 inline-block align-bottom bg-white rounded-xl text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full border border-apeiron-border max-h-[90vh] overflow-y-auto">
-                <form wire:submit.prevent="saveAdjustment">
-                    <div class="bg-white px-6 pt-6 pb-6">
-                        <div class="mb-5 flex justify-between items-center">
-                            <h3 class="text-lg leading-6 font-bold text-apeiron-ink" id="modal-title">
-                                Sesuaikan Stok
-                            </h3>
-                            <button type="button" wire:click="$set('showAdjustModal', false)" class="text-apeiron-muted hover:text-apeiron-ink">
-                                <span class="material-symbols-rounded text-[20px]">close</span>
-                            </button>
-                        </div>
-                        
-                        <div class="space-y-6">
-                            <div>
-                                <x-form-label for="adjustType">Tipe Mutasi <span class="text-rose-500">*</span></x-form-label>
-                                <div class="relative">
-                                    <select id="adjustType" wire:model="adjustType" class="form-input w-full px-4 py-2.5 rounded-xl border border-apeiron-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('adjustType') ? 'input-error' : '' }}">
-                                        <option value="purchase_receipt">Barang Masuk (Pembelian)</option>
-                                        <option value="adjustment">Koreksi Manual (+ / -)</option>
-                                        <option value="waste">Barang Rusak / Waste (-)</option>
-                                    </select>
-                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-apeiron-muted">
-                                        <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
-                                    </div>
-                                </div>
-                                @error('adjustType') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
-                            </div>
-
-                            <div>
-                                <x-form-label for="adjustQuantity">Jumlah <span class="text-rose-500">*</span></x-form-label>
-                                <x-form-input type="number" id="adjustQuantity" step="0.0001" wire:model="adjustQuantity" placeholder="Gunakan minus (-) untuk pengurangan jika tipe Koreksi Manual" required class="{{ $errors->has('adjustQuantity') ? 'input-error' : '' }}" />
-                                @error('adjustQuantity') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
-                            </div>
-
-                            <div>
-                                <x-form-label for="adjustReason">Keterangan / Alasan (Opsional)</x-form-label>
-                                <textarea id="adjustReason" wire:model="adjustReason" rows="3" class="form-input w-full px-4 py-2.5 rounded-xl border border-apeiron-border bg-white text-apeiron-ink placeholder-apeiron-muted focus:outline-none focus:ring-2 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('adjustReason') ? 'input-error' : '' }}" placeholder="Catatan tambahan..."></textarea>
-                                @error('adjustReason') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
-                            </div>
+    <x-ui.modal wire:model="showAdjustModal" maxWidth="lg">
+        <x-slot:header>
+            <h3 class="text-lg font-bold text-apeiron-ink">
+                Sesuaikan Stok
+            </h3>
+        </x-slot:header>
+        <x-slot:content>
+            <form wire:submit.prevent="saveAdjustment" class="space-y-5">
+                <div>
+                    <x-form-label for="adjustType">Tipe Mutasi <span class="text-rose-500">*</span></x-form-label>
+                    <div class="relative">
+                        <select id="adjustType" wire:model="adjustType" class="form-input w-full px-4 py-2.5 rounded-xl border border-apeiron-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('adjustType') ? 'input-error' : '' }}">
+                            <option value="purchase_receipt">Barang Masuk (Pembelian)</option>
+                            <option value="adjustment">Koreksi Manual (+ / -)</option>
+                            <option value="waste">Barang Rusak / Waste (-)</option>
+                        </select>
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-apeiron-muted">
+                            <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
                         </div>
                     </div>
-                    <div class="bg-apeiron-surface px-6 py-4 border-t border-apeiron-border flex justify-end gap-3 rounded-b-xl">
-                        <x-button type="button" variant="secondary" wire:click="$set('showAdjustModal', false)">
-                            Batal
-                        </x-button>
-                        <x-button type="submit" variant="primary">
-                            Simpan Perubahan
-                        </x-button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-    @endif
+                    @error('adjustType') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <x-form-label for="adjustQuantity">Jumlah <span class="text-rose-500">*</span></x-form-label>
+                    <x-form-input type="number" id="adjustQuantity" step="0.0001" wire:model="adjustQuantity" placeholder="Gunakan minus (-) untuk pengurangan jika tipe Koreksi Manual" required class="{{ $errors->has('adjustQuantity') ? 'input-error' : '' }}" />
+                    @error('adjustQuantity') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <x-form-label for="adjustReason">Keterangan / Alasan (Opsional)</x-form-label>
+                    <textarea id="adjustReason" wire:model="adjustReason" rows="3" class="form-input w-full px-4 py-2.5 rounded-xl border border-apeiron-border bg-white text-apeiron-ink placeholder-apeiron-muted focus:outline-none focus:ring-2 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('adjustReason') ? 'input-error' : '' }}" placeholder="Catatan tambahan..."></textarea>
+                    @error('adjustReason') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-apeiron-border">
+                    <x-ui.button type="button" variant="secondary" wire:click="$set('showAdjustModal', false)">
+                        Batal
+                    </x-ui.button>
+                    <x-ui.button type="submit" variant="primary" x-on:click="window.erpMotion?.pulseHighlight($el)">
+                        Simpan Perubahan
+                    </x-ui.button>
+                </div>
+            </form>
+        </x-slot:content>
+    </x-ui.modal>
 </div>

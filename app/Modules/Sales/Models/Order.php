@@ -67,6 +67,7 @@ class Order extends Model
     protected $fillable = [
         'user_id',
         'shift_id',
+        'customer_id',
         'order_code',
         'order_date',
         'idempotency_key',
@@ -84,6 +85,7 @@ class Order extends Model
         'origin_channel',
         'source_reference',
         'created_by_device_id',
+        'sales_order_id',
     ];
 
     /**
@@ -208,5 +210,10 @@ class Order extends Model
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
+    }
+
+    public function salesOrder(): BelongsTo
+    {
+        return $this->belongsTo(SalesOrder::class, 'sales_order_id');
     }
 }

@@ -4,37 +4,263 @@ declare(strict_types=1);
 
 namespace App\Modules\Products\Services;
 
+use App\Models\Customer;
 use App\Models\PriceList;
 use App\Models\PriceListItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\StoreProductAssortment;
-use Illuminate\Support\Facades\DB;
+use App\Modules\Products\DataTransferObjects\PriceResolutionContextDto;
+use App\Modules\Products\DataTransferObjects\ResolvedPriceDto;
+use Carbon\Carbon;
+use Illuminate\Support\Collection;
 
 /**
  * CatalogPriceResolverService:
- * Bertanggung jawab menyelesaikan harga katalog dinamis deterministik (ADR-02)
- * berdasarkan hierarki prioritas Tier-1 ERP:
+ * Bertanggung jawab menyelesaikan harga katalog dinamis deterministik (ADR-02 / Modul 6 Subdomain 5.4)
+ * berdasarkan hierarki 4-level prioritas Tier-1 ERP:
  *
- * 1. price_lists aktif customer_specific untuk customer_id terkait (min_quantity <= qty tertinggi).
- * 2. price_lists aktif (valid_from <= NOW() <= valid_until) yang cocok dengan konteks
- *    (store_id, loyalty_tier_id, channel, min_quantity <= qty), diurutkan priority ASC, min_quantity DESC, id ASC.
- * 3. store_product_assortments.store_price_override pada cabang (store_id) aktif (level varian -> level produk).
- * 4. product_variants.price_override (jika item adalah varian).
- * 5. products.product_price (harga dasar master produk).
+ * Prioritas 1 — Customer Contract Price:
+ *   Harga aktif pada PriceList bertipe CUSTOMER_CONTRACT (atau customer_specific) yang terikat langsung
+ *   ke customer_id pada rentang tanggal efektif dan memenuhi min_qty <= quantity.
+ * Prioritas 2 — Customer Group Price List:
+ *   Harga aktif pada PriceList yang terikat ke customer.customer_group_id (termasuk quantity break min_qty).
+ * Prioritas 3 — Store / Channel Price List & Branch Override:
+ *   Harga aktif pada PriceList spesifik cabang (store_id) atau kanal, atau override store_product_assortments.
+ * Prioritas 4 — Base Product / Variant Price:
+ *   Harga jual standar pada ProductVariant atau Product.
+ *
+ * Aturan Tie-Breaker:
+ *   Priority (integer) terkecil -> min_quantity tertinggi -> harga terendah (menguntungkan pelanggan).
  */
 class CatalogPriceResolverService
 {
     /**
-     * Menyelesaikan harga jual produk dengan hierarki prioritas penuh.
-     *
-     * @param  int|string|null  $storeId  Cabang transaksi
-     * @param  int|null  $variantId  Varian spesifik (jika ada)
-     * @param  float|int  $quantity  Kuantitas yang dibeli (untuk harga grosir/tier kuantitas)
-     * @param  int|null  $customerId  ID Pelanggan (untuk kontrak harga spesifik)
-     * @param  int|null  $loyaltyTierId  ID Tier Loyalti/Member
-     * @param  string|null  $channel  Kanal penjualan (pos_cashier, self_order, delivery, dll)
-     * @param  int|null  $uomId  Satuan ukur (jika ada harga berbasis UoM)
+     * Menyelesaikan harga jual produk dengan hierarki prioritas penuh dan mengembalikan ResolvedPriceDto lengkap.
+     */
+    public function resolveCustomerPrice(PriceResolutionContextDto $context): ResolvedPriceDto
+    {
+        $tenantId = $context->tenantId;
+        $productId = $context->productId;
+        $variantId = $context->variantId;
+        $uomId = $context->uomId;
+        $quantity = max(1.0, (float) $context->quantity);
+        $storeIdInt = $context->storeId !== null ? (int) $context->storeId : null;
+        $customerId = $context->customerId;
+        $customerGroupId = $context->customerGroupId;
+        $channel = $context->channel;
+        $loyaltyTierId = $context->loyaltyTierId;
+        $now = $context->transactionDate ? Carbon::parse($context->transactionDate) : now();
+
+        // 1. Ambil Produk Master untuk base price
+        /** @var Product|null $product */
+        $product = Product::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->find($productId);
+
+        $baseUnitPrice = (float) ($product?->product_price ?? $product?->price ?? 0.0);
+
+        // Ambil Varian jika spesifik
+        $variant = null;
+        if ($variantId !== null) {
+            $variant = ProductVariant::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('product_id', $productId)
+                ->find($variantId);
+        }
+
+        // Resolusi Customer Group jika customerId ada namun customerGroupId belum dioper
+        if ($customerId !== null && $customerGroupId === null) {
+            $customer = Customer::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->find($customerId);
+
+            if ($customer && $customer->customer_group_id) {
+                $customerGroupId = (int) $customer->customer_group_id;
+            }
+        }
+
+        // -------------------------------------------------------------
+        // PRIORITAS 1: Kontrak Harga Khusus Pelanggan (CUSTOMER_CONTRACT)
+        // -------------------------------------------------------------
+        if ($customerId !== null) {
+            $contractPls = PriceList::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('customer_id', $customerId)
+                ->where('is_active', true)
+                ->where(function ($q) {
+                    $q->where('target_type', PriceList::TARGET_CUSTOMER_CONTRACT)
+                        ->orWhere('type', 'customer_specific');
+                })
+                ->where(fn ($q) => $q->whereNull('valid_from')->orWhere('valid_from', '<=', $now))
+                ->where(fn ($q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', $now))
+                ->orderBy('priority', 'asc')
+                ->orderBy('id', 'asc')
+                ->get();
+
+            if ($contractPls->isNotEmpty()) {
+                $match = $this->findBestMatchingItemAcrossPriceLists($tenantId, $contractPls, $productId, $variantId, $quantity, $uomId, $baseUnitPrice);
+                if ($match !== null) {
+                    [$item, $priceList, $resolvedUnit] = $match;
+
+                    return new ResolvedPriceDto(
+                        unitPrice: $resolvedUnit,
+                        baseUnitPrice: $baseUnitPrice,
+                        priceListId: (int) $priceList->id,
+                        priceListItemId: (int) $item->id,
+                        pricingSource: ResolvedPriceDto::SOURCE_CUSTOMER_CONTRACT,
+                        allowPromoStacking: (bool) $priceList->allow_promo_stacking,
+                        discountPercentage: $item->discount_percentage !== null ? (float) $item->discount_percentage : null,
+                        meta: ['tier' => 1, 'price_list_name' => $priceList->name]
+                    );
+                }
+            }
+        }
+
+        // -------------------------------------------------------------
+        // PRIORITAS 2: Harga Grup Pelanggan (CUSTOMER_GROUP)
+        // -------------------------------------------------------------
+        if ($customerGroupId !== null) {
+            $groupPls = PriceList::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('customer_group_id', $customerGroupId)
+                ->where('is_active', true)
+                ->where(function ($q) {
+                    $q->where('target_type', PriceList::TARGET_CUSTOMER_GROUP)
+                        ->orWhere('type', 'customer_tier');
+                })
+                ->where(fn ($q) => $q->whereNull('valid_from')->orWhere('valid_from', '<=', $now))
+                ->where(fn ($q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', $now))
+                ->orderBy('priority', 'asc')
+                ->orderBy('id', 'asc')
+                ->get();
+
+            if ($groupPls->isNotEmpty()) {
+                $match = $this->findBestMatchingItemAcrossPriceLists($tenantId, $groupPls, $productId, $variantId, $quantity, $uomId, $baseUnitPrice);
+                if ($match !== null) {
+                    [$item, $priceList, $resolvedUnit] = $match;
+
+                    return new ResolvedPriceDto(
+                        unitPrice: $resolvedUnit,
+                        baseUnitPrice: $baseUnitPrice,
+                        priceListId: (int) $priceList->id,
+                        priceListItemId: (int) $item->id,
+                        pricingSource: ResolvedPriceDto::SOURCE_CUSTOMER_GROUP,
+                        allowPromoStacking: (bool) $priceList->allow_promo_stacking,
+                        discountPercentage: $item->discount_percentage !== null ? (float) $item->discount_percentage : null,
+                        meta: ['tier' => 2, 'customer_group_id' => $customerGroupId, 'price_list_name' => $priceList->name]
+                    );
+                }
+            }
+        }
+
+        // -------------------------------------------------------------
+        // PRIORITAS 3: Store / Channel / Standard Price List & Branch Override
+        // -------------------------------------------------------------
+        // 3a. Price list spesifik cabang, kanal, loyalty tier, atau standar
+        $storePls = PriceList::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('is_active', true)
+            ->where(function ($q) {
+                $q->whereIn('target_type', [PriceList::TARGET_GENERAL, PriceList::TARGET_STORE])
+                    ->orWhereNull('target_type');
+            })
+            ->whereNotIn('type', ['customer_specific'])
+            ->where(fn ($q) => $q->whereNull('valid_from')->orWhere('valid_from', '<=', $now))
+            ->where(fn ($q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', $now))
+            ->where(function ($q) use ($storeIdInt, $loyaltyTierId, $channel) {
+                if ($storeIdInt !== null) {
+                    $q->orWhere(fn ($sub) => $sub->where('store_id', $storeIdInt));
+                    $q->orWhere(fn ($sub) => $sub->where('type', 'branch')->where('store_id', $storeIdInt));
+                }
+                if ($loyaltyTierId !== null) {
+                    $q->orWhere(fn ($sub) => $sub->where('type', 'customer_tier')->where('loyalty_tier_id', $loyaltyTierId));
+                }
+                if ($channel !== null) {
+                    $q->orWhere(fn ($sub) => $sub->where('type', 'channel')->where('channel', $channel));
+                }
+                $q->orWhereIn('type', ['wholesale', 'standard']);
+            })
+            ->orderBy('priority', 'asc')
+            ->orderBy('id', 'asc')
+            ->get();
+
+        if ($storePls->isNotEmpty()) {
+            $match = $this->findBestMatchingItemAcrossPriceLists($tenantId, $storePls, $productId, $variantId, $quantity, $uomId, $baseUnitPrice);
+            if ($match !== null) {
+                [$item, $priceList, $resolvedUnit] = $match;
+
+                return new ResolvedPriceDto(
+                    unitPrice: $resolvedUnit,
+                    baseUnitPrice: $baseUnitPrice,
+                    priceListId: (int) $priceList->id,
+                    priceListItemId: (int) $item->id,
+                    pricingSource: ResolvedPriceDto::SOURCE_STORE_PRICE_LIST,
+                    allowPromoStacking: (bool) $priceList->allow_promo_stacking,
+                    discountPercentage: $item->discount_percentage !== null ? (float) $item->discount_percentage : null,
+                    meta: ['tier' => 3, 'price_list_name' => $priceList->name]
+                );
+            }
+        }
+
+        // 3b. Override Harga Cabang (store_product_assortments)
+        if ($storeIdInt !== null) {
+            if ($variantId !== null) {
+                $variantAssortment = StoreProductAssortment::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->where('store_id', $storeIdInt)
+                    ->where('product_variant_id', $variantId)
+                    ->first();
+
+                if ($variantAssortment && $variantAssortment->store_price_override !== null) {
+                    return new ResolvedPriceDto(
+                        unitPrice: (float) $variantAssortment->store_price_override,
+                        baseUnitPrice: $baseUnitPrice,
+                        pricingSource: ResolvedPriceDto::SOURCE_STORE_OVERRIDE,
+                        meta: ['tier' => 3, 'scope' => 'variant_assortment']
+                    );
+                }
+            }
+
+            $productAssortment = StoreProductAssortment::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('store_id', $storeIdInt)
+                ->where('product_id', $productId)
+                ->whereNull('product_variant_id')
+                ->first();
+
+            if ($productAssortment && $productAssortment->store_price_override !== null) {
+                return new ResolvedPriceDto(
+                    unitPrice: (float) $productAssortment->store_price_override,
+                    baseUnitPrice: $baseUnitPrice,
+                    pricingSource: ResolvedPriceDto::SOURCE_STORE_OVERRIDE,
+                    meta: ['tier' => 3, 'scope' => 'product_assortment']
+                );
+            }
+        }
+
+        // -------------------------------------------------------------
+        // PRIORITAS 4: Base Product / Variant Price
+        // -------------------------------------------------------------
+        if ($variant !== null && $variant->price_override !== null) {
+            return new ResolvedPriceDto(
+                unitPrice: (float) $variant->price_override,
+                baseUnitPrice: $baseUnitPrice,
+                pricingSource: ResolvedPriceDto::SOURCE_VARIANT_OVERRIDE,
+                meta: ['tier' => 4, 'variant_id' => $variant->id]
+            );
+        }
+
+        return new ResolvedPriceDto(
+            unitPrice: $baseUnitPrice,
+            baseUnitPrice: $baseUnitPrice,
+            pricingSource: ResolvedPriceDto::SOURCE_BASE_PRODUCT,
+            meta: ['tier' => 4]
+        );
+    }
+
+    /**
+     * Backward-compatible helper method yang mengembalikan float unit price.
      */
     public function resolvePrice(
         Product $product,
@@ -46,141 +272,51 @@ class CatalogPriceResolverService
         ?string $channel = null,
         ?int $uomId = null
     ): float {
-        $tenantId = $product->tenant_id;
-        $storeIdInt = $storeId !== null ? (int) $storeId : null;
-        $qty = max(1.0, (float) $quantity);
-        $now = now();
+        $context = new PriceResolutionContextDto(
+            tenantId: (int) $product->tenant_id,
+            productId: (int) $product->id,
+            storeId: $storeId,
+            variantId: $variantId,
+            uomId: $uomId,
+            quantity: $quantity,
+            customerId: $customerId,
+            loyaltyTierId: $loyaltyTierId,
+            channel: $channel,
+        );
 
-        // -------------------------------------------------------------
-        // TIER 1: Kontrak Harga Khusus Pelanggan (customer_specific)
-        // -------------------------------------------------------------
-        if ($customerId !== null) {
-            $customerPlIds = PriceList::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
-                ->where('type', 'customer_specific')
-                ->where('customer_id', $customerId)
-                ->where('is_active', true)
-                ->where(fn ($q) => $q->whereNull('valid_from')->orWhere('valid_from', '<=', $now))
-                ->where(fn ($q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', $now))
-                ->orderBy('priority', 'asc')
-                ->pluck('id');
-
-            if ($customerPlIds->isNotEmpty()) {
-                $item = $this->findBestMatchingItem($tenantId, $customerPlIds->all(), $product->id, $variantId, $qty, $uomId);
-                if ($item !== null) {
-                    return (float) $item->price;
-                }
-            }
-        }
-
-        // -------------------------------------------------------------
-        // TIER 2: Price Lists Aktif Konteks (branch, wholesale, customer_tier, channel, standard)
-        // -------------------------------------------------------------
-        $contextPlQuery = PriceList::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
-            ->where('is_active', true)
-            ->where('type', '!=', 'customer_specific')
-            ->where(fn ($q) => $q->whereNull('valid_from')->orWhere('valid_from', '<=', $now))
-            ->where(fn ($q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', $now))
-            ->where(function ($q) use ($storeIdInt, $loyaltyTierId, $channel) {
-                // Kecocokan tipe branch
-                if ($storeIdInt !== null) {
-                    $q->orWhere(fn ($sub) => $sub->where('type', 'branch')->where('store_id', $storeIdInt));
-                }
-                // Kecocokan tipe customer_tier
-                if ($loyaltyTierId !== null) {
-                    $q->orWhere(fn ($sub) => $sub->where('type', 'customer_tier')->where('loyalty_tier_id', $loyaltyTierId));
-                }
-                // Kecocokan tipe channel
-                if ($channel !== null) {
-                    $q->orWhere(fn ($sub) => $sub->where('type', 'channel')->where('channel', $channel));
-                }
-                // Tipe wholesale atau standard berlaku luas
-                $q->orWhereIn('type', ['wholesale', 'standard']);
-            })
-            ->orderBy('priority', 'asc')
-            ->orderBy('id', 'asc')
-            ->pluck('id');
-
-        if ($contextPlQuery->isNotEmpty()) {
-            $item = $this->findBestMatchingItem($tenantId, $contextPlQuery->all(), $product->id, $variantId, $qty, $uomId);
-            if ($item !== null) {
-                return (float) $item->price;
-            }
-        }
-
-        // -------------------------------------------------------------
-        // TIER 3: Override Harga Cabang (store_product_assortments)
-        // -------------------------------------------------------------
-        if ($storeIdInt !== null) {
-            // 3a. Cek override harga cabang untuk varian spesifik
-            if ($variantId !== null) {
-                $variantAssortment = StoreProductAssortment::withoutGlobalScopes()
-                    ->where('tenant_id', $tenantId)
-                    ->where('store_id', $storeIdInt)
-                    ->where('product_variant_id', $variantId)
-                    ->first();
-
-                if ($variantAssortment && $variantAssortment->store_price_override !== null) {
-                    return (float) $variantAssortment->store_price_override;
-                }
-            }
-
-            // 3b. Cek override harga cabang untuk master produk
-            $productAssortment = StoreProductAssortment::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
-                ->where('store_id', $storeIdInt)
-                ->where('product_id', $product->id)
-                ->whereNull('product_variant_id')
-                ->first();
-
-            if ($productAssortment && $productAssortment->store_price_override !== null) {
-                return (float) $productAssortment->store_price_override;
-            }
-        }
-
-        // -------------------------------------------------------------
-        // TIER 4: Override Harga Varian (product_variants.price_override)
-        // -------------------------------------------------------------
-        if ($variantId !== null) {
-            $variant = ProductVariant::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
-                ->where('product_id', $product->id)
-                ->where('id', $variantId)
-                ->first();
-
-            if ($variant && $variant->price_override !== null) {
-                return (float) $variant->price_override;
-            }
-        }
-
-        // -------------------------------------------------------------
-        // TIER 5: Harga Dasar Master Produk (products.product_price)
-        // -------------------------------------------------------------
-        return (float) ($product->product_price ?? $product->price ?? 0.0);
+        return $this->resolveCustomerPrice($context)->unitPrice;
     }
 
     /**
-     * Mencari item harga terbaik dari kumpulan price list yang cocok dengan kuantitas dan varian.
+     * Mencari item harga terbaik dari kumpulan price lists dengan mempertimbangkan prioritas,
+     * kuantitas minimum (quantity break), dan tie-breaker harga terendah.
      *
-     * @param  array<int>  $priceListIds
+     * @param  Collection<int, PriceList>  $priceLists
+     * @return array{0: PriceListItem, 1: PriceList, 2: float}|null
      */
-    protected function findBestMatchingItem(
+    protected function findBestMatchingItemAcrossPriceLists(
         int $tenantId,
-        array $priceListIds,
+        Collection $priceLists,
         int $productId,
         ?int $variantId,
         float $quantity,
-        ?int $uomId = null
-    ): ?PriceListItem {
+        ?int $uomId,
+        float $baseUnitPrice
+    ): ?array {
+        $priceListIds = $priceLists->pluck('id')->all();
+        $priceListsById = $priceLists->keyBy('id');
+
         $query = PriceListItem::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereIn('price_list_id', $priceListIds)
             ->where('product_id', $productId)
-            ->where('min_quantity', '<=', $quantity);
+            ->where('min_quantity', '<=', $quantity)
+            ->where(function ($q) use ($quantity) {
+                $q->whereNull('max_quantity')
+                    ->orWhere('max_quantity', '>=', $quantity);
+            });
 
         if ($variantId !== null) {
-            // Utamakan item varian, jika tidak ada fallback ke item produk tanpa varian
             $query->where(function ($q) use ($variantId) {
                 $q->where('product_variant_id', $variantId)
                     ->orWhereNull('product_variant_id');
@@ -196,26 +332,23 @@ class CatalogPriceResolverService
             });
         }
 
-        // Urutkan:
-        // 1. Yang varian cocok diletakkan sebelum null varian
-        // 2. min_quantity tertinggi (tier kuantitas grosir paling pas)
-        // 3. price_list_id sesuai urutan prioritas
         $items = $query->get();
-
         if ($items->isEmpty()) {
             return null;
         }
 
-        // Sorting in-memory untuk memastikan prioritas multi-kriteria presisi
-        $sorted = $items->sort(function (PriceListItem $a, PriceListItem $b) use ($priceListIds, $variantId) {
-            // Prioritas 1: Kecocokan Price List sesuai index di $priceListIds (priority terendah/teratas lebih dulu)
-            $plIndexA = array_search($a->price_list_id, $priceListIds, true);
-            $plIndexB = array_search($b->price_list_id, $priceListIds, true);
-            if ($plIndexA !== $plIndexB) {
-                return $plIndexA <=> $plIndexB;
+        // Sorting in-memory multi-kriteria:
+        // 1. Prioritas PriceList (urutan indeks pada $priceListIds yang sudah terurut priority ASC, id ASC)
+        // 2. Spesifisitas Varian (Varian cocok > Varian null)
+        // 3. Kuantitas Minimum Tertinggi (Tier grosir / quantity break paling relevan)
+        // 4. Harga Terendah (Tie-breaker yang menguntungkan pelanggan)
+        $sorted = $items->sort(function (PriceListItem $a, PriceListItem $b) use ($priceListIds, $variantId, $baseUnitPrice) {
+            $plIdxA = array_search($a->price_list_id, $priceListIds, true);
+            $plIdxB = array_search($b->price_list_id, $priceListIds, true);
+            if ($plIdxA !== $plIdxB) {
+                return $plIdxA <=> $plIdxB;
             }
 
-            // Prioritas 2: Spesifisitas Varian (Varian spesifik > Varian null)
             if ($variantId !== null) {
                 $aHasVar = ($a->product_variant_id === $variantId) ? 1 : 0;
                 $bHasVar = ($b->product_variant_id === $variantId) ? 1 : 0;
@@ -224,17 +357,47 @@ class CatalogPriceResolverService
                 }
             }
 
-            // Prioritas 3: Kuantitas Minimum Tertinggi (Wholesale bracket tertinggi yang terpenuhi)
-            return $b->min_quantity <=> $a->min_quantity;
+            if ($a->min_quantity !== $b->min_quantity) {
+                return $b->min_quantity <=> $a->min_quantity;
+            }
+
+            // Hitung harga efektif masing-masing
+            $priceA = $this->calculateItemEffectivePrice($a, $baseUnitPrice);
+            $priceB = $this->calculateItemEffectivePrice($b, $baseUnitPrice);
+
+            return $priceA <=> $priceB;
         });
 
-        return $sorted->first();
+        /** @var PriceListItem|null $bestItem */
+        $bestItem = $sorted->first();
+        if ($bestItem === null) {
+            return null;
+        }
+
+        /** @var PriceList $bestPl */
+        $bestPl = $priceListsById->get($bestItem->price_list_id);
+        $effectivePrice = $this->calculateItemEffectivePrice($bestItem, $baseUnitPrice);
+
+        return [$bestItem, $bestPl, $effectivePrice];
     }
 
     /**
-     * Memeriksa apakah produk layak jual dan tersedia di cabang dan kanal tertentu.
-     * Aturan backward-compatibility: Jika baris assortment belum dibuat untuk cabang tersebut,
-     * produk dianggap tersedia secara default (is_available = true) selama produk master berstatus 'active'.
+     * Menghitung harga efektif baris price_list_item (apakah nominal tetap atau persentase diskon).
+     */
+    protected function calculateItemEffectivePrice(PriceListItem $item, float $baseUnitPrice): float
+    {
+        if ($item->price > 0 || $item->discount_percentage === null) {
+            return (float) $item->price;
+        }
+
+        $discount = (float) $item->discount_percentage;
+        $discountAmount = ($discount / 100.0) * $baseUnitPrice;
+
+        return max(0.0, round($baseUnitPrice - $discountAmount, 2));
+    }
+
+    /**
+     * Memeriksa ketersediaan produk di cabang tertentu.
      */
     public function isAvailableInStore(Product $product, int|string|null $storeId = null, ?string $channel = null): bool
     {
@@ -277,40 +440,37 @@ class CatalogPriceResolverService
     }
 
     /**
-     * Mengambil mapping harga cabang untuk sekelompok produk sekaligus.
-     * Berguna untuk optimasi batch di Kasir atau Menu pelanggan.
+     * Menyelesaikan harga cabang massal tanpa N+1 query.
      *
      * @param  array<int>  $productIds
      * @return array<int, float>
      */
-    public function resolveBatchPrices(int $tenantId, int $storeId, array $productIds): array
+    public function resolveBatchPrices(int $tenantId, int $storeId, array $productIds, ?int $customerId = null): array
     {
         if (empty($productIds)) {
             return [];
         }
 
-        $overrides = DB::table('store_product_assortments')
-            ->where('tenant_id', $tenantId)
-            ->where('store_id', $storeId)
-            ->whereIn('product_id', $productIds)
-            ->whereNull('product_variant_id')
-            ->whereNotNull('store_price_override')
-            ->pluck('store_price_override', 'product_id')
-            ->all();
-
-        $basePrices = DB::table('products')
+        $resolved = [];
+        $products = Product::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->whereIn('id', $productIds)
-            ->pluck('product_price', 'id')
-            ->all();
+            ->get()
+            ->keyBy('id');
 
-        $resolved = [];
         foreach ($productIds as $pid) {
-            if (isset($overrides[$pid])) {
-                $resolved[$pid] = (float) $overrides[$pid];
-            } else {
-                $resolved[$pid] = (float) ($basePrices[$pid] ?? 0.0);
+            $prod = $products->get($pid);
+            if (! $prod) {
+                $resolved[$pid] = 0.0;
+
+                continue;
             }
+
+            $resolved[$pid] = $this->resolvePrice(
+                product: $prod,
+                storeId: $storeId,
+                customerId: $customerId
+            );
         }
 
         return $resolved;

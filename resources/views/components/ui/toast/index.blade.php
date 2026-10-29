@@ -1,23 +1,57 @@
 @props([
-    'duration' => 5000,
+    'duration' => 4500,
 ])
 
+@php
+    $initialFlashes = [];
+    if (session('toast') && is_array(session('toast'))) {
+        $initialFlashes[] = session('toast');
+    }
+    foreach (['success' => 'success', 'error' => 'error', 'warning' => 'warning', 'info' => 'info', 'message' => 'success'] as $sessionKey => $toastType) {
+        if (session()->has($sessionKey) && is_string(session($sessionKey)) && trim(session($sessionKey)) !== '') {
+            $initialFlashes[] = [
+                'message' => session($sessionKey),
+                'type' => $toastType,
+            ];
+        }
+    }
+@endphp
+
 <template x-teleport="body">
-    {{-- The stack is a single polite live region: screen readers announce toasts as they are
-         inserted, without interrupting speech, and without the double-announcement a per-toast
-         role="alert" would add on top. --}}
-    <div aria-live="polite" {{ $attributes->twMerge('pointer-events-none fixed left-1/2 top-0 z-[99999999] h-auto w-full -translate-x-1/2 px-1 pb-4 sm:w-screen sm:max-w-sm sm:px-2') }}
+    <div
+        role="region"
+        aria-label="Notifikasi sistem"
+        aria-live="polite"
+        {{ $attributes->twMerge('pointer-events-none fixed right-0 top-0 z-[99999] flex flex-col items-end gap-2 p-4 w-full sm:max-w-sm') }}
         x-data="{
             toasts: [],
-            toastsProgress: [],
-            sessionToast: @js(session('toast')),
+            toastsProgress: {},
+            initialFlashes: @js($initialFlashes),
             closeInterval: {{ (int) $duration }},
+            normalizeType(rawType) {
+                if (rawType === 'danger' || rawType === 'destructive') return 'error';
+                if (['success', 'error', 'warning', 'info'].includes(rawType)) return rawType;
+                return 'success';
+            },
+            handleWindowToast(detail) {
+                if (!detail) return;
+                const payload = Array.isArray(detail) ? detail[0] : detail;
+                if (typeof payload === 'string') {
+                    this.addToast(payload, 'success');
+                    return;
+                }
+                this.addToast(
+                    payload.message || payload.title || '',
+                    this.normalizeType(payload.type || payload.variant || 'success'),
+                    payload.description || '',
+                    payload.action || null
+                );
+            },
             addToast(message, type = 'success', description = '', action = null) {
-                if (! message) { return; }
+                if (!message) return;
+                const normalizedType = this.normalizeType(type);
                 const id = Date.now() + Math.random();
-                // action: { label, href } — renders a small CTA button so an
-                // error can carry its own next step (e.g. quota → upgrade).
-                const toast = { id, type, message, description, action, startTime: null, rafId: null, pausedAt: null, totalPausedTime: 0 };
+                const toast = { id, type: normalizedType, message, description, action, startTime: null, rafId: null, pausedAt: null, totalPausedTime: 0 };
                 this.toasts.unshift(toast);
                 this.toastsProgress[id] = 0;
                 const duration = this.closeInterval;
@@ -34,7 +68,6 @@
                     } else {
                         this.removeToast(id);
                     }
-                    this.toasts = [...this.toasts];
                 };
                 toast.rafId = requestAnimationFrame(animate);
             },
@@ -56,79 +89,67 @@
                 if (idx !== -1) {
                     const toast = this.toasts[idx];
                     if (toast.rafId) cancelAnimationFrame(toast.rafId);
-                    const toastToRemoveEl = document.getElementById('dd-toast-' + id);
-                    if (toastToRemoveEl) {
-                        toastToRemoveEl.classList.remove('translate-y-0', 'scale-100', 'opacity-100');
-                        toastToRemoveEl.classList.add('-translate-y-4', 'scale-95', 'opacity-0');
-                    }
-                    setTimeout(() => {
-                        this.toasts = this.toasts.filter(toast => toast.id !== id);
-                        delete this.toastsProgress[id];
-                    }, 350);
+                    this.toasts = this.toasts.filter(t => t.id !== id);
+                    delete this.toastsProgress[id];
                 }
             },
             types: {
-                success: { icon: 'check-circle', colorClass: 'text-green-400' },
-                error: { icon: 'exclamation-circle', colorClass: 'text-red-400' },
-                warning: { icon: 'exclamation-triangle', colorClass: 'text-yellow-400' },
-                info: { icon: 'information-circle', colorClass: 'text-blue-400' }
-            },
-            icons: {
-                'check-circle': `<svg xmlns='http://www.w3.org/2000/svg' class='w-full h-full' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21.801 10A10 10 0 1 1 17 3.335'/><path d='m9 11 3 3L22 4'/></svg>`,
-                'exclamation-circle': `<svg xmlns='http://www.w3.org/2000/svg' class='w-full h-full' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='12' cy='12' r='10'/><line x1='12' x2='12' y1='8' y2='12'/><line x1='12' x2='12.01' y1='16' y2='16'/></svg>`,
-                'exclamation-triangle': `<svg xmlns='http://www.w3.org/2000/svg' class='w-full h-full' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M7.9 20A9 9 0 1 0 4 16.1L2 22Z'/><path d='M12 8v4'/><path d='M12 16h.01'/></svg>`,
-                'information-circle': `<svg xmlns='http://www.w3.org/2000/svg' class='w-full h-full' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z'/><path d='M13 8H7'/><path d='M17 12H7'/></svg>`
-            },
-            get isTouchDevice() {
-                return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+                success: { icon: 'check_circle', colorClass: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
+                error:   { icon: 'error',        colorClass: 'text-rose-600 bg-rose-50 border-rose-200' },
+                warning: { icon: 'warning',      colorClass: 'text-amber-700 bg-amber-50 border-amber-200' },
+                info:    { icon: 'info',         colorClass: 'text-blue-600 bg-blue-50 border-blue-200' }
             }
         }"
         x-init="(() => {
             window.toast = (message, type, description, action) => addToast(message, type, description, action);
-            if (sessionToast) { addToast(sessionToast.message, sessionToast.type, sessionToast.description, sessionToast.action ?? null); }
+            if (Array.isArray(initialFlashes)) {
+                initialFlashes.forEach(f => addToast(f.message, f.type, f.description || '', f.action || null));
+            }
         })()"
-        @pop-toast.window="if (typeof (event.detail[0]) != 'undefined') { addToast(event.detail[0].message, event.detail[0].type, event.detail[0].description, event.detail[0].action) } else { addToast(event.detail.message, event.detail.type, event.detail.description, event.detail.action); }"
-        x-show="toasts.length"
-        x-transition:enter="transition ease-in-out duration-300"
-        x-transition:enter-start="opacity-0"
-        x-transition:enter-end="opacity-100"
-        x-transition:leave="transition ease-in-out duration-300"
-        x-transition:leave-start="opacity-100"
-        x-transition:leave-end="opacity-0" x-cloak>
-        <div class="mt-1 space-y-1 sm:mt-2 sm:space-y-2">
-            <template x-for="toast in toasts" :key="toast.id">
-                <div :id="'dd-toast-' + toast.id" x-data
-                    x-init="requestAnimationFrame(() => requestAnimationFrame(() => {
-                        $el.classList.remove('-translate-y-4', 'scale-95', 'opacity-0');
-                        $el.classList.add('translate-y-0', 'scale-100', 'opacity-100');
-                    }))"
-                    @mouseenter="if (!isTouchDevice) pauseToast(toast.id)"
-                    @mouseleave="if (!isTouchDevice) resumeToast(toast.id)"
-                    class="group pointer-events-auto relative left-1/2 top-0 flex w-full -translate-x-1/2 -translate-y-4 scale-95 flex-col items-start overflow-hidden rounded-medium bg-black/70 p-3.5 px-5 text-sm text-white opacity-0 backdrop-blur-md transition duration-300 ease-out sm:max-w-sm sm:rounded-large dark:border dark:border-white/10">
-                    <div class="absolute inset-0 z-10 h-full bg-white/10 duration-300 ease-linear"
-                        :style="`width: ${toastsProgress[toast.id]}%;`"></div>
-                    <span class="relative z-20 flex w-full items-start space-x-2">
-                        <span x-show="toast.type && types[toast.type]" :class="'h-5 w-5 -ml-1.5 shrink-0 ' + (types[toast.type] ? types[toast.type].colorClass : '')"
-                            x-html="types[toast.type] ? icons[types[toast.type].icon] : ''"></span>
-                        <span x-text="toast.message"></span>
-                        <button type="button" x-on:click="removeToast(toast.id)" aria-label="Dismiss notification"
-                            class="absolute right-0 top-1/2 flex h-6 w-6 -translate-y-1/2 translate-x-1.5 cursor-pointer items-center justify-center rounded-small bg-black/50 outline-none duration-100 ease-out hover:bg-white/10 hover:opacity-100 focus-visible:ring-2 focus-visible:ring-white/40 group-hover:opacity-50 group-hover:hover:opacity-100 sm:scale-50 sm:opacity-0 group-hover:scale-100 sm:focus-visible:scale-100 sm:focus-visible:opacity-100"
-                            :class="{ '-mt-1 -mr-1': toast.description != '' }">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                                <path d="M18 6 6 18" />
-                                <path d="m6 6 12 12" />
-                            </svg>
-                        </button>
-                    </span>
-                    <p x-show="toast.description" class="relative z-20 pl-[22px] text-xs text-white/70"
-                        x-text="toast.description"></p>
-                    {{-- Optional CTA — the toast carries its own next step --}}
-                    <a x-show="toast.action && toast.action.href" x-cloak :href="toast.action?.href"
-                        class="relative z-20 mt-2 ml-[22px] inline-flex items-center rounded-md bg-white/15 px-2.5 py-1 text-xs font-semibold text-white transition-colors hover:bg-white/25"
-                        x-text="toast.action?.label"></a>
+        @pop-toast.window="handleWindowToast($event.detail)"
+        @toast.window="handleWindowToast($event.detail)"
+        x-show="toasts.length > 0"
+        x-cloak
+    >
+        <template x-for="toast in toasts" :key="toast.id">
+            <div
+                :id="'dd-toast-' + toast.id"
+                @mouseenter="pauseToast(toast.id)"
+                @mouseleave="resumeToast(toast.id)"
+                class="pointer-events-auto relative flex w-full items-start gap-3 overflow-hidden rounded-xl border border-border bg-card p-3.5 text-xs text-card-foreground shadow-lg transition-all duration-200"
+            >
+                <span
+                    class="inline-flex size-7 shrink-0 items-center justify-center rounded-lg border"
+                    :class="types[toast.type] ? types[toast.type].colorClass : types.info.colorClass"
+                >
+                    <span class="material-symbols-rounded text-base leading-none" aria-hidden="true" x-text="types[toast.type] ? types[toast.type].icon : 'info'"></span>
+                </span>
+
+                <div class="flex-1 min-w-0 pr-5">
+                    <p class="font-semibold text-foreground leading-snug" x-text="toast.message"></p>
+                    <p x-show="toast.description" class="mt-0.5 text-muted-foreground leading-relaxed" x-text="toast.description"></p>
+                    <template x-if="toast.action && toast.action.href">
+                        <a :href="toast.action.href" class="mt-2 inline-flex items-center text-xs font-semibold text-foreground underline" x-text="toast.action.label || 'Lihat detail'"></a>
+                    </template>
                 </div>
-            </template>
-        </div>
+
+                <button
+                    type="button"
+                    @click="removeToast(toast.id)"
+                    aria-label="Tutup notifikasi"
+                    class="inline-flex size-6 items-center justify-center rounded-md text-foreground/45 hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                >
+                    <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M18 6 6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </button>
+
+                <div
+                    class="absolute bottom-0 left-0 h-0.5 bg-foreground/20 transition-all duration-150"
+                    :style="`width: ${100 - (toastsProgress[toast.id] || 0)}%;`"
+                    aria-hidden="true"
+                ></div>
+            </div>
+        </template>
     </div>
 </template>

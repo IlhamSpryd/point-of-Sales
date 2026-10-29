@@ -17,6 +17,7 @@ use App\Services\Printing\KitchenPrinterService;
 use App\Services\Printing\ReceiptPrinterService;
 use App\Services\ReturnRefundService;
 use App\Services\TransactionService;
+use App\Support\Traits\RequiresActiveStoreContext;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
@@ -32,6 +33,8 @@ use Midtrans\Transaction;
 
 class TransactionController extends Controller
 {
+    use RequiresActiveStoreContext;
+
     public function __construct(protected TransactionService $transactionService) {}
 
     /**
@@ -248,16 +251,22 @@ class TransactionController extends Controller
 
         $userId = (int) Auth::id();
         $shiftId = $validated['shift_id'] ?? $order->shift_id;
-        $deviceId = $validated['device_id'] ?? $order->created_by_device_id ?? 1;
         $idempotencyKey = $request->header('X-Idempotency-Key') ?? 'ret-'.Str::uuid()->toString();
 
         try {
+            $deviceId = $this->resolveActiveDeviceId(
+                isset($validated['device_id']) ? (int) $validated['device_id'] : null,
+                $order->created_by_device_id ? (int) $order->created_by_device_id : null,
+                (int) $order->store_id,
+                (int) $order->tenant_id
+            );
+
             $orderReturn = $returnRefundService->createReturnAndRefund(
                 $order,
                 $validated['items'],
                 $validated['refunds'],
                 (int) $shiftId,
-                (int) $deviceId,
+                $deviceId,
                 $userId,
                 $validated['supervisor_pin'],
                 $validated['reason'],
@@ -321,8 +330,6 @@ class TransactionController extends Controller
         }
 
         try {
-            sleep(2);
-
             $status = (object) Transaction::status($orderNumber);
 
             $grossAmount = isset($status->gross_amount)

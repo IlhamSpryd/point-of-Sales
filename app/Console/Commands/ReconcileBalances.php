@@ -126,6 +126,119 @@ class ReconcileBalances extends Command
                         }
                     }
                 }
+
+                // --- Accounts Receivable (AR) Invariants Reconciliation ---
+                if (DB::getSchemaBuilder()->hasTable('customer_invoices') && DB::getSchemaBuilder()->hasTable('customer_credit_accounts')) {
+                    $creditAccounts = DB::table('customer_credit_accounts')
+                        ->where('tenant_id', $tenant->id)
+                        ->get();
+
+                    foreach ($creditAccounts as $acc) {
+                        $invoiceBalanceSum = DB::table('customer_invoices')
+                            ->where('tenant_id', $tenant->id)
+                            ->where('customer_id', $acc->customer_id)
+                            ->whereIn('status', ['POSTED', 'PARTIALLY_PAID'])
+                            ->sum('balance_due');
+
+                        if (bccomp(bcadd((string) $acc->invoiced_exposure, '0', 2), bcadd((string) $invoiceBalanceSum, '0', 2), 2) !== 0) {
+                            $this->error("AR Exposure Drift on Customer {$acc->customer_id}: InvoicedExposure = {$acc->invoiced_exposure}, OpenInvoiceBalanceSum = {$invoiceBalanceSum}");
+                            $hasDrift = true;
+                        }
+                    }
+
+                    $badInvoices = DB::table('customer_invoices')
+                        ->where('tenant_id', $tenant->id)
+                        ->whereRaw('ROUND(balance_due, 2) != ROUND(total_amount - paid_amount - credit_applied_amount, 2)')
+                        ->count();
+
+                    if ($badInvoices > 0) {
+                        $this->error("Detected {$badInvoices} customer invoices with balance_due drift on Tenant {$tenant->id}");
+                        $hasDrift = true;
+                    }
+                }
+
+                // --- Sales Credit Note Invariants Reconciliation ---
+                if (DB::getSchemaBuilder()->hasTable('sales_credit_notes')) {
+                    $badCreditNotes = DB::table('sales_credit_notes')
+                        ->where('tenant_id', $tenant->id)
+                        ->whereRaw('ROUND(remaining_amount, 2) != ROUND(total_amount - applied_amount, 2)')
+                        ->count();
+
+                    if ($badCreditNotes > 0) {
+                        $this->error("Detected {$badCreditNotes} sales credit notes with remaining_amount drift on Tenant {$tenant->id}");
+                        $hasDrift = true;
+                    }
+
+                    if (DB::getSchemaBuilder()->hasTable('sales_credit_note_applications')) {
+                        $creditNotesWithApps = DB::table('sales_credit_notes')
+                            ->where('tenant_id', $tenant->id)
+                            ->get();
+
+                        foreach ($creditNotesWithApps as $cn) {
+                            $sumApplied = DB::table('sales_credit_note_applications')
+                                ->where('tenant_id', $tenant->id)
+                                ->where('sales_credit_note_id', $cn->id)
+                                ->sum('applied_amount');
+
+                            if (bccomp(bcadd((string) $cn->applied_amount, '0', 2), bcadd((string) $sumApplied, '0', 2), 2) !== 0) {
+                                $this->error("Credit Note #{$cn->credit_note_number} Applied Drift: recorded={$cn->applied_amount}, sum_applications={$sumApplied}");
+                                $hasDrift = true;
+                            }
+                        }
+                    }
+                }
+
+                // --- Gift Card Invariants Reconciliation ---
+                if (DB::getSchemaBuilder()->hasTable('gift_cards') && DB::getSchemaBuilder()->hasTable('gift_card_ledgers')) {
+                    $badGiftCards = DB::table('gift_cards')
+                        ->where('tenant_id', $tenant->id)
+                        ->whereRaw('current_balance < 0 OR current_balance > initial_balance')
+                        ->count();
+
+                    if ($badGiftCards > 0) {
+                        $this->error("Detected {$badGiftCards} gift cards with invalid balance on Tenant {$tenant->id}");
+                        $hasDrift = true;
+                    }
+
+                    $giftCards = DB::table('gift_cards')->where('tenant_id', $tenant->id)->get();
+                    foreach ($giftCards as $gc) {
+                        $ledgerSum = DB::table('gift_card_ledgers')
+                            ->where('tenant_id', $tenant->id)
+                            ->where('gift_card_id', $gc->id)
+                            ->sum('amount');
+
+                        if (bccomp(bcadd((string) $gc->current_balance, '0', 2), bcadd((string) $ledgerSum, '0', 2), 2) !== 0) {
+                            $this->error("Gift Card #{$gc->card_number} Drift: recorded={$gc->current_balance}, sum_ledger={$ledgerSum}");
+                            $hasDrift = true;
+                        }
+                    }
+                }
+
+                // --- Store Credit Invariants Reconciliation ---
+                if (DB::getSchemaBuilder()->hasTable('store_credit_accounts') && DB::getSchemaBuilder()->hasTable('store_credit_ledgers')) {
+                    $badStoreCredit = DB::table('store_credit_accounts')
+                        ->where('tenant_id', $tenant->id)
+                        ->where('current_balance', '<', 0)
+                        ->count();
+
+                    if ($badStoreCredit > 0) {
+                        $this->error("Detected {$badStoreCredit} negative store credit accounts on Tenant {$tenant->id}");
+                        $hasDrift = true;
+                    }
+
+                    $scAccounts = DB::table('store_credit_accounts')->where('tenant_id', $tenant->id)->get();
+                    foreach ($scAccounts as $sca) {
+                        $ledgerSum = DB::table('store_credit_ledgers')
+                            ->where('tenant_id', $tenant->id)
+                            ->where('store_credit_account_id', $sca->id)
+                            ->sum('amount');
+
+                        if (bccomp(bcadd((string) $sca->current_balance, '0', 2), bcadd((string) $ledgerSum, '0', 2), 2) !== 0) {
+                            $this->error("Store Credit Account #{$sca->id} Drift: recorded={$sca->current_balance}, sum_ledger={$ledgerSum}");
+                            $hasDrift = true;
+                        }
+                    }
+                }
             });
         }
 

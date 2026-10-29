@@ -38,9 +38,9 @@
         </div>
 
         <div class="flex items-center gap-4">
-            <x-button type="submit" variant="primary">
+            <x-ui.button type="submit" variant="primary">
                 <span class="material-symbols-rounded text-[18px]">key</span> {{ __('Perbarui Kata Sandi') }}
-            </x-button>
+            </x-ui.button>
 
             @if (session('status') === 'password-updated')
                 <p

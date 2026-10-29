@@ -10,12 +10,14 @@ use App\Models\Payment;
 use App\Models\Shift;
 use App\Models\ShiftHandover;
 use App\Models\User;
+use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
 use App\Services\AuditTrailService;
 use App\Services\CashierPinService;
 use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 
@@ -76,7 +78,14 @@ class ShiftService
         // Resolusi dan validasi store_id
         if ($storeId === null) {
             $userStore = DB::table('user_stores')->where('user_id', $user->id)->value('store_id');
-            $storeId = $userStore ? (int) $userStore : (int) ($user->store_id ?? 1);
+            $tenantStore = $userStore ?: DB::table('stores')->where('tenant_id', $tenantId)->value('id');
+            $storeId = $userStore
+                ? (int) $userStore
+                : (int) ($user->store_id ?? $tenantStore ?? 0);
+
+            if ($storeId <= 0) {
+                throw new DomainException('Konteks cabang (Store) aktif tidak ditemukan untuk kasir ini.');
+            }
         }
 
         // Validasi Device jika diberikan (INV-01, INV-03, AC-1.2)
@@ -584,6 +593,12 @@ class ShiftService
                     'close_type' => 'normal',
                 ]);
 
+                try {
+                    app(FinancialOutboxDispatcherService::class)->dispatchShiftClosed($shift);
+                } catch (\Throwable $e) {
+                    Log::warning("[FINANCE OUTBOX] Gagal dispatch outbox shift #{$shift->id}: ".$e->getMessage());
+                }
+
                 return $shift;
             });
         }
@@ -673,6 +688,12 @@ class ShiftService
                     'close_type' => $closeType,
                 ]
             );
+
+            try {
+                app(FinancialOutboxDispatcherService::class)->dispatchShiftClosed($shift);
+            } catch (\Throwable $e) {
+                Log::warning("[FINANCE OUTBOX] Gagal dispatch outbox shift #{$shift->id}: ".$e->getMessage());
+            }
 
             return $shift;
         });

@@ -5,7 +5,7 @@
         </div>
         <h2 class="text-2xl font-bold tracking-tight text-apeiron-ink">Undangan Bergabung</h2>
         <p class="text-sm text-[#787774] mt-1">
-            Anda diundang untuk bergabung dengan <strong class="text-apeiron-ink">{{ $invitation->tenant->name ?? 'Apeiron POS' }}</strong>
+            Anda diundang untuk bergabung dengan <strong class="text-apeiron-ink">{{ $invitation->tenant->name ?? 'Apeiron' }}</strong>
         </p>
     </div>
 

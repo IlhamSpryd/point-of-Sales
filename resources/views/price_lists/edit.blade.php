@@ -1,7 +1,7 @@
 <x-app-layout>
     @include('catalog.partials.sub-nav')
 
-    <div class="mb-6">
+    <div class="mb-6" data-gsap="page-enter">
         <div class="flex items-center gap-2 text-sm text-[#787774] mb-2">
             <a href="{{ route('price-lists.index') }}" class="hover:text-apeiron-ink" wire:navigate>Daftar Harga</a>
             <span>/</span>
@@ -11,13 +11,13 @@
     </div>
 
     @if($errors->any())
-        <x-alert type="error" class="mb-6">
+        <x-ui.alert variant="destructive" class="mb-6">
             <ul class="list-disc pl-5 space-y-1 text-sm">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
-        </x-alert>
+        </x-ui.alert>
     @endif
 
     <div class="card-surface p-6" x-data="{
@@ -198,9 +198,9 @@
 
             <div class="flex justify-end gap-3 pt-6 border-t border-[#E9E9E7]">
                 <a href="{{ route('price-lists.index') }}" wire:navigate>
-                    <x-button variant="secondary" type="button">Batal</x-button>
+                    <x-ui.button variant="secondary" type="button">Batal</x-ui.button>
                 </a>
-                <x-button variant="primary" type="submit">Perbarui Daftar Harga</x-button>
+                <x-ui.button variant="primary" type="submit" x-on:click="window.erpMotion?.pulseHighlight($el)">Perbarui Daftar Harga</x-ui.button>
             </div>
         </form>
     </div>

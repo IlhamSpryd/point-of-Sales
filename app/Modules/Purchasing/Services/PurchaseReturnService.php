@@ -523,7 +523,7 @@ class PurchaseReturnService
                     'applied_at' => now()->toIso8601String(),
                 ],
                 'status' => 'pending',
-                'attempt_count' => 0,
+                'retry_count' => 0,
             ]);
 
             return $application;

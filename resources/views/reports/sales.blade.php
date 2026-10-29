@@ -1,172 +1,170 @@
 <x-app-layout>
-    <div x-data="{ openEodModal: false }">
+    <div x-data="{ openEodModal: false }" class="space-y-6" data-gsap="page-enter">
         <!-- Page header -->
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div>
-                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">{{ $title }}</h4>
-                <p class="text-sm font-medium text-[#787774] mt-1">Ringkasan transaksi, paritas pendapatan, dan penutupan buku kas harian</p>
-            </div>
-            <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+        <x-erp.page-header
+            :title="$title"
+            description="Ringkasan transaksi, paritas pendapatan, dan penutupan buku kas harian (End-of-Day).">
+            <x-slot:breadcrumbs>
+                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item active>Laporan Penjualan</x-ui.breadcrumbs.item>
+            </x-slot:breadcrumbs>
+
+            <x-slot:actions>
                 <form method="GET" action="{{ route('reports.sales') }}" class="flex items-center gap-2">
                     <input type="date" name="start" value="{{ $customStart->toDateString() }}"
-                        class="rounded-xl border border-slate-200 px-3 py-1.5 text-xs text-apeiron-ink">
-                    <span class="text-xs text-slate-400">s/d</span>
+                        class="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-xs text-zinc-800 dark:text-zinc-200 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
+                    <span class="text-xs text-zinc-400">s/d</span>
                     <input type="date" name="end" value="{{ $customEnd->toDateString() }}"
-                        class="rounded-xl border border-slate-200 px-3 py-1.5 text-xs text-apeiron-ink">
-                    <button type="submit"
-                        class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700">
+                        class="rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-xs text-zinc-800 dark:text-zinc-200 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
+                    <x-ui.button variant="secondary" size="sm" type="submit">
                         Filter
-                    </button>
+                    </x-ui.button>
                 </form>
                 @php
                     $startDate = request('start', $customStart->toDateString());
                     $endDate = request('end', $customEnd->toDateString());
                 @endphp
                 <livewire:async-export-button :start-date="$startDate" :end-date="$endDate" />
-            </div>
-        </div>
+            </x-slot:actions>
+        </x-erp.page-header>
 
         @if (session('success'))
-            <div class="mb-6 p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium flex items-center gap-2">
-                <span class="material-symbols-rounded text-[20px] text-emerald-600">check_circle</span>
+            <x-ui.alert type="success" title="Berhasil" class="rounded-2xl">
                 {{ session('success') }}
-            </div>
+            </x-ui.alert>
         @endif
 
         @if (session('error'))
-            <div class="mb-6 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-medium flex items-center gap-2">
-                <span class="material-symbols-rounded text-[20px] text-rose-600">error</span>
+            <x-ui.alert type="danger" title="Terjadi Kesalahan" class="rounded-2xl">
                 {{ session('error') }}
-            </div>
+            </x-ui.alert>
         @endif
 
         {{-- EOD / Z-Report Closing Section --}}
         @if ($eodSettlement && $eodSettlement->status === 'closed')
-            <div class="card-surface p-6 mb-6 border-l-4 border-l-emerald-500">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E9E9E7] pb-4 mb-4">
+            <div class="card-surface p-6 rounded-2xl border-l-4 border-l-emerald-500 border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-4 mb-4">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                            <x-ui.badge variant="success" size="sm">
                                 CLOSED (LOCKED)
-                            </span>
-                            <h3 class="text-base font-bold text-apeiron-ink">End-of-Day (Z-Report) — {{ $eodSettlement->business_date->format('d M Y') }}</h3>
+                            </x-ui.badge>
+                            <h3 class="text-base font-bold text-zinc-900 dark:text-white">End-of-Day (Z-Report) — {{ $eodSettlement->business_date->format('d M Y') }}</h3>
                         </div>
-                        <p class="text-xs text-[#787774] mt-1">
+                        <p class="text-xs text-zinc-500 mt-1">
                             Buku kas telah dikunci pada {{ $eodSettlement->closed_at?->format('d M Y, H:i') }} WIB oleh <strong>{{ $eodSettlement->closedByUser?->name ?? 'Manager' }}</strong>
                         </p>
                     </div>
                     @if ($eodSettlement->notes)
-                        <div class="text-xs text-[#787774] italic bg-slate-50 p-2.5 rounded-lg border border-slate-200 max-w-xs">
+                        <div class="text-xs text-zinc-500 italic bg-zinc-50 dark:bg-zinc-800/50 p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 max-w-xs">
                             "{{ $eodSettlement->notes }}"
                         </div>
                     @endif
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <span class="text-xs text-[#787774] font-semibold uppercase block mb-1">Kas Laci Diharapkan</span>
-                        <span class="text-lg font-bold text-apeiron-ink tabular-nums">Rp {{ number_format($eodSettlement->expected_cash_total, 0, ',', '.') }}</span>
+                    <div class="bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700">
+                        <span class="text-xs text-zinc-500 font-semibold uppercase block mb-1">Kas Laci Diharapkan</span>
+                        <span class="text-lg font-bold font-mono text-zinc-900 dark:text-white">Rp {{ number_format((float) $eodSettlement->expected_cash_total, 0, ',', '.') }}</span>
                     </div>
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <span class="text-xs text-[#787774] font-semibold uppercase block mb-1">Fisik Kas Dihitung</span>
-                        <span class="text-lg font-bold text-apeiron-ink tabular-nums">Rp {{ number_format($eodSettlement->counted_cash_total, 0, ',', '.') }}</span>
+                    <div class="bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700">
+                        <span class="text-xs text-zinc-500 font-semibold uppercase block mb-1">Fisik Kas Dihitung</span>
+                        <span class="text-lg font-bold font-mono text-zinc-900 dark:text-white">Rp {{ number_format((float) $eodSettlement->counted_cash_total, 0, ',', '.') }}</span>
                     </div>
-                    <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                        <span class="text-xs text-[#787774] font-semibold uppercase block mb-1">Selisih Kas Total</span>
-                        <span class="text-lg font-bold tabular-nums {{ (float)$eodSettlement->cash_discrepancy_total == 0 ? 'text-emerald-600' : 'text-rose-600' }}">
-                            Rp {{ number_format($eodSettlement->cash_discrepancy_total, 0, ',', '.') }}
+                    <div class="bg-zinc-50 dark:bg-zinc-800/40 p-4 rounded-xl border border-zinc-200 dark:border-zinc-700">
+                        <span class="text-xs text-zinc-500 font-semibold uppercase block mb-1">Selisih Kas Total</span>
+                        <span class="text-lg font-bold font-mono {{ (float)$eodSettlement->cash_discrepancy_total == 0 ? 'text-emerald-600' : 'text-rose-600' }}">
+                            Rp {{ number_format((float) $eodSettlement->cash_discrepancy_total, 0, ',', '.') }}
                         </span>
                     </div>
                 </div>
             </div>
         @else
-            <div class="card-surface p-6 mb-6 border-l-4 border-l-amber-500 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div class="card-surface p-6 rounded-2xl border-l-4 border-l-amber-500 border border-zinc-200/80 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
                 <div>
                     <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
-                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        <x-ui.badge variant="warning" size="sm">
                             BUKU KAS AKTIF (OPEN)
-                        </span>
-                        <h3 class="text-base font-bold text-apeiron-ink">Penutupan Buku Akhir Hari (EOD / Z-Report)</h3>
+                        </x-ui.badge>
+                        <h3 class="text-base font-bold text-zinc-900 dark:text-white">Penutupan Buku Akhir Hari (EOD / Z-Report)</h3>
                     </div>
-                    <p class="text-xs text-[#787774] mt-1">
+                    <p class="text-xs text-zinc-500 mt-1">
                         Lakukan penutupan buku harian untuk tanggal bisnis <strong>{{ $businessDate }}</strong> setelah seluruh shift kasir selesai.
                     </p>
                 </div>
-                <button type="button" @click="openEodModal = true"
-                    class="min-h-[44px] px-5 rounded-xl bg-apeiron-ink text-white text-sm font-bold hover:bg-black transition-all flex items-center justify-center gap-2 shadow-sm shrink-0">
-                    <span class="material-symbols-rounded text-[18px]">lock</span> Tutup EOD / Z-Report
-                </button>
+                <x-ui.button variant="primary" type="button" @click="openEodModal = true" class="gap-2 shrink-0">
+                    <span class="material-symbols-rounded text-base">lock</span>
+                    Tutup EOD / Z-Report
+                </x-ui.button>
             </div>
         @endif
 
         {{-- Detailed Financial Summary Cards --}}
-        <div class="mb-4">
-            <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider">Ringkasan Keuangan Terinci (Audit Paritas Penjualan)</h3>
-        </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div class="card-surface p-5">
-                <span class="text-xs font-semibold text-[#787774] uppercase block mb-1">Gross Sales</span>
-                <h4 class="text-xl font-extrabold text-apeiron-ink tabular-nums">Rp {{ number_format($detailedSummary['gross_sales'], 0, ',', '.') }}</h4>
-                <span class="text-[11px] text-slate-400 mt-1 block">{{ $detailedSummary['paid_orders_count'] }} Order Lunas</span>
-            </div>
+        <div>
+            <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">Ringkasan Keuangan Terinci (Audit Paritas Penjualan)</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="card-surface p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800">
+                    <span class="text-xs font-semibold text-zinc-500 uppercase block mb-1">Gross Sales</span>
+                    <h4 class="text-xl font-extrabold font-mono text-zinc-900 dark:text-white">Rp {{ number_format((float) $detailedSummary['gross_sales'], 0, ',', '.') }}</h4>
+                    <span class="text-[11px] text-zinc-400 mt-1 block">{{ $detailedSummary['paid_orders_count'] }} Order Lunas</span>
+                </div>
 
-            <div class="card-surface p-5">
-                <span class="text-xs font-semibold text-rose-600 uppercase block mb-1">Total Diskon</span>
-                <h4 class="text-xl font-extrabold text-rose-600 tabular-nums">- Rp {{ number_format($detailedSummary['total_discounts'], 0, ',', '.') }}</h4>
-                <span class="text-[11px] text-slate-400 mt-1 block">Item + Voucher</span>
-            </div>
+                <div class="card-surface p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800">
+                    <span class="text-xs font-semibold text-rose-600 uppercase block mb-1">Total Diskon</span>
+                    <h4 class="text-xl font-extrabold font-mono text-rose-600">- Rp {{ number_format((float) $detailedSummary['total_discounts'], 0, ',', '.') }}</h4>
+                    <span class="text-[11px] text-zinc-400 mt-1 block">Item + Voucher</span>
+                </div>
 
-            <div class="card-surface p-5">
-                <span class="text-xs font-semibold text-amber-700 uppercase block mb-1">Total Retur &amp; Refund</span>
-                <h4 class="text-xl font-extrabold text-amber-700 tabular-nums">- Rp {{ number_format($detailedSummary['total_returns_refunds'], 0, ',', '.') }}</h4>
-                <span class="text-[11px] text-slate-400 mt-1 block">Kompensasi Pengembalian</span>
-            </div>
+                <div class="card-surface p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800">
+                    <span class="text-xs font-semibold text-amber-600 uppercase block mb-1">Total Retur &amp; Refund</span>
+                    <h4 class="text-xl font-extrabold font-mono text-amber-600">- Rp {{ number_format((float) $detailedSummary['total_returns_refunds'], 0, ',', '.') }}</h4>
+                    <span class="text-[11px] text-zinc-400 mt-1 block">Kompensasi Pengembalian</span>
+                </div>
 
-            <div class="card-surface p-5 bg-emerald-50/40 border-emerald-200">
-                <span class="text-xs font-bold text-emerald-800 uppercase block mb-1">Net Sales (Pendapatan Bersih)</span>
-                <h4 class="text-2xl font-black text-emerald-700 tabular-nums">Rp {{ number_format($detailedSummary['net_sales'], 0, ',', '.') }}</h4>
-                <span class="text-[11px] text-emerald-600 mt-1 block">Gross - Diskon - Retur</span>
-            </div>
+                <div class="card-surface p-5 rounded-2xl bg-emerald-50/40 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800">
+                    <span class="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase block mb-1">Net Sales (Pendapatan Bersih)</span>
+                    <h4 class="text-2xl font-black font-mono text-emerald-700 dark:text-emerald-400">Rp {{ number_format((float) $detailedSummary['net_sales'], 0, ',', '.') }}</h4>
+                    <span class="text-[11px] text-emerald-600 dark:text-emerald-500 mt-1 block">Gross - Diskon - Retur</span>
+                </div>
 
-            <div class="card-surface p-5">
-                <span class="text-xs font-semibold text-[#787774] uppercase block mb-1">Total Pajak (PB1)</span>
-                <h4 class="text-xl font-extrabold text-apeiron-ink tabular-nums">Rp {{ number_format($detailedSummary['total_tax'], 0, ',', '.') }}</h4>
-                <span class="text-[11px] text-slate-400 mt-1 block">Kewajiban Perpajakan</span>
-            </div>
+                <div class="card-surface p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800">
+                    <span class="text-xs font-semibold text-zinc-500 uppercase block mb-1">Total Pajak (PB1)</span>
+                    <h4 class="text-xl font-extrabold font-mono text-zinc-900 dark:text-white">Rp {{ number_format((float) $detailedSummary['total_tax'], 0, ',', '.') }}</h4>
+                    <span class="text-[11px] text-zinc-400 mt-1 block">Kewajiban Perpajakan</span>
+                </div>
 
-            <div class="card-surface p-5">
-                <span class="text-xs font-semibold text-[#787774] uppercase block mb-1">Total Service Charge</span>
-                <h4 class="text-xl font-extrabold text-apeiron-ink tabular-nums">Rp {{ number_format($detailedSummary['total_service_charge'], 0, ',', '.') }}</h4>
-                <span class="text-[11px] text-slate-400 mt-1 block">Biaya Layanan Resto</span>
-            </div>
+                <div class="card-surface p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800">
+                    <span class="text-xs font-semibold text-zinc-500 uppercase block mb-1">Total Service Charge</span>
+                    <h4 class="text-xl font-extrabold font-mono text-zinc-900 dark:text-white">Rp {{ number_format((float) $detailedSummary['total_service_charge'], 0, ',', '.') }}</h4>
+                    <span class="text-[11px] text-zinc-400 mt-1 block">Biaya Layanan Resto</span>
+                </div>
 
-            <div class="card-surface p-5">
-                <span class="text-xs font-semibold text-rose-500 uppercase block mb-1">Total Void</span>
-                <h4 class="text-xl font-extrabold text-rose-500 tabular-nums">Rp {{ number_format($detailedSummary['total_voids'], 0, ',', '.') }}</h4>
-                <span class="text-[11px] text-slate-400 mt-1 block">{{ $detailedSummary['voided_orders_count'] }} Order Dibatalkan</span>
-            </div>
+                <div class="card-surface p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800">
+                    <span class="text-xs font-semibold text-rose-500 uppercase block mb-1">Total Void</span>
+                    <h4 class="text-xl font-extrabold font-mono text-rose-500">Rp {{ number_format((float) $detailedSummary['total_voids'], 0, ',', '.') }}</h4>
+                    <span class="text-[11px] text-zinc-400 mt-1 block">{{ $detailedSummary['voided_orders_count'] }} Order Dibatalkan</span>
+                </div>
 
-            <div class="card-surface p-5">
-                <span class="text-xs font-semibold text-[#787774] uppercase block mb-1">Volume Transaksi</span>
-                <h4 class="text-xl font-extrabold text-apeiron-ink tabular-nums">{{ $detailedSummary['paid_orders_count'] }} Transaksi</h4>
-                <span class="text-[11px] text-slate-400 mt-1 block">Dalam periode terpilih</span>
+                <div class="card-surface p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800">
+                    <span class="text-xs font-semibold text-zinc-500 uppercase block mb-1">Volume Transaksi</span>
+                    <h4 class="text-xl font-extrabold font-mono text-zinc-900 dark:text-white">{{ $detailedSummary['paid_orders_count'] }} Transaksi</h4>
+                    <span class="text-[11px] text-zinc-400 mt-1 block">Dalam periode terpilih</span>
+                </div>
             </div>
         </div>
 
         {{-- Payment Method Breakdown --}}
         @if ($paymentBreakdown && $paymentBreakdown->isNotEmpty())
-            <div class="mb-8">
-                <h3 class="text-sm font-bold text-slate-700 uppercase tracking-wider mb-4">Rincian Pembayaran Per Metode</h3>
+            <div>
+                <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">Rincian Pembayaran Per Metode</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     @foreach ($paymentBreakdown as $pay)
-                        <div class="card-surface p-4 flex justify-between items-center">
+                        <div class="card-surface p-4 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 flex justify-between items-center shadow-xs">
                             <div>
-                                <span class="text-xs text-slate-500 uppercase font-bold block">{{ is_string($pay->payment_method) ? $pay->payment_method : ($pay->payment_method->label() ?? $pay->payment_method->value) }}</span>
-                                <span class="text-xs text-slate-400">{{ $pay->count }} Transaksi</span>
+                                <span class="text-xs text-zinc-600 dark:text-zinc-400 uppercase font-bold block">{{ is_string($pay->payment_method) ? $pay->payment_method : ($pay->payment_method->label() ?? $pay->payment_method->value) }}</span>
+                                <span class="text-xs text-zinc-400">{{ $pay->count }} Transaksi</span>
                             </div>
-                            <span class="text-base font-bold text-apeiron-ink tabular-nums">Rp {{ number_format($pay->total, 0, ',', '.') }}</span>
+                            <span class="text-base font-bold font-mono text-zinc-900 dark:text-white">Rp {{ number_format((float) $pay->total, 0, ',', '.') }}</span>
                         </div>
                     @endforeach
                 </div>
@@ -174,95 +172,94 @@
         @endif
 
         <!-- Transaction Table -->
-        <div class="card-surface overflow-hidden shrink-0">
-            <header class="px-6 py-4 border-b border-[#E9E9E7]">
-                <h2 class="text-lg font-bold text-apeiron-ink">Daftar Transaksi Terbaru</h2>
-            </header>
-            <div class="overflow-x-auto">
-                <x-data-table>
-                    <x-slot:head>
-                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kode Pesanan</th>
-                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Tanggal</th>
-                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kasir</th>
-                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Nilai Transaksi</th>
-                    </x-slot:head>
-                    
-                    @forelse ($recentOrders as $order)
-                    <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
-                        <td class="px-6 py-4">
-                            <span class="text-sm font-medium text-apeiron-ink font-mono">{{ $order->order_code }}</span>
-                        </td>
-                        <td class="px-6 py-4 text-sm text-[#787774]">{{ \Carbon\Carbon::parse($order->created_at)->format('d-m-Y H:i') }}</td>
-                        <td class="px-6 py-4 text-sm text-[#787774]">{{ $order->user->name ?? 'Kasir' }}</td>
-                        <td class="px-6 py-4 text-right">
-                            <span class="text-sm font-bold text-apeiron-ink tabular-nums">Rp {{ number_format($order->order_amount, 0, ',', '.') }}</span>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="4" class="px-6 py-12 text-center text-[#9B9A97] text-sm">
-                            <div class="flex flex-col items-center justify-center">
-                                <div class="w-14 h-14 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
-                                    <span class="material-symbols-rounded text-[28px] text-[#C4C3C0]">receipt_long</span>
-                                </div>
-                                <p class="font-medium">Belum ada transaksi di periode ini.</p>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </x-data-table>
+        <div class="card-surface overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+            <div class="px-6 py-4 border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
+                <h2 class="text-base font-bold text-zinc-900 dark:text-white">Daftar Transaksi Terbaru</h2>
+                <span class="text-xs text-zinc-400">Menampilkan mutasi terkini</span>
             </div>
-            <div class="p-4 border-t border-apeiron-border shrink-0">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-900/30 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                            <th class="px-6 py-3.5">Kode Pesanan</th>
+                            <th class="px-6 py-3.5">Tanggal</th>
+                            <th class="px-6 py-3.5">Kasir</th>
+                            <th class="px-6 py-3.5 text-right">Nilai Transaksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                        @forelse ($recentOrders as $order)
+                        <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
+                            <td class="px-6 py-4">
+                                <span class="text-xs font-semibold text-zinc-900 dark:text-white font-mono">{{ $order->order_code }}</span>
+                            </td>
+                            <td class="px-6 py-4 text-xs text-zinc-500">{{ \Carbon\Carbon::parse($order->created_at)->format('d-m-Y H:i') }}</td>
+                            <td class="px-6 py-4 text-sm text-zinc-700 dark:text-zinc-300">{{ $order->user->name ?? 'Kasir' }}</td>
+                            <td class="px-6 py-4 text-right">
+                                <span class="text-sm font-bold font-mono text-zinc-900 dark:text-white">Rp {{ number_format((float) $order->order_amount, 0, ',', '.') }}</span>
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="4" class="px-6 py-12 text-center text-zinc-400">
+                                <span class="material-symbols-rounded text-4xl block mb-2">receipt_long</span>
+                                Belum ada transaksi di periode ini.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800">
                 {{ $recentOrders->links() }}
             </div>
         </div>
 
-        {{-- Modal Close EOD --}}
-        <div x-show="openEodModal" x-cloak class="fixed inset-0 z-50 flex items-center justify-center bg-apeiron-ink/40 backdrop-blur-sm p-4"
-            role="dialog" aria-modal="true" aria-labelledby="eod-modal-title">
-            <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-[#E9E9E7]">
-                <h3 id="eod-modal-title" class="text-lg font-bold text-apeiron-ink mb-1">Tutup Buku End-of-Day (Z-Report)</h3>
-                <p class="text-xs text-[#787774] mb-4">Aksi ini akan mengunci seluruh transaksi untuk tanggal bisnis dan menghasilkan ringkasan settlement.</p>
+        <!-- Modal Close EOD -->
+        <x-ui.modal x-model="openEodModal" maxWidth="md">
+            <x-slot:title>
+                Tutup Buku End-of-Day (Z-Report)
+            </x-slot:title>
 
-                <form action="{{ route('reports.eod-close') }}" method="POST">
-                    @csrf
-                    <div class="space-y-4 mb-5">
-                        <div>
-                            <label for="business_date_input" class="block text-xs font-semibold text-slate-700 uppercase mb-1">Tanggal Bisnis</label>
-                            <input type="date" id="business_date_input" name="business_date" value="{{ $businessDate }}" required
-                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm bg-slate-50">
-                        </div>
+            <x-slot:content>
+                <div class="space-y-4">
+                    <p class="text-xs text-zinc-500 -mt-2">Aksi ini akan mengunci seluruh transaksi untuk tanggal bisnis terpilih dan menghasilkan ringkasan settlement kasir.</p>
 
+                    <form id="eodForm" action="{{ route('reports.eod-close') }}" method="POST" class="space-y-4">
+                        @csrf
                         <div>
-                            <label for="eod_pin_input" class="block text-xs font-semibold text-slate-700 uppercase mb-1">PIN Manager / Supervisor *</label>
-                            <input type="password" id="eod_pin_input" name="pin" required maxlength="6" placeholder="4-6 digit PIN"
-                                class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-apeiron-ink">
+                            <x-ui.label for="business_date_input">Tanggal Bisnis *</x-ui.label>
+                            <x-ui.input type="date" id="business_date_input" name="business_date" value="{{ $businessDate }}" required />
                         </div>
 
                         <div>
-                            <label for="eod_notes_input" class="block text-xs font-semibold text-slate-700 uppercase mb-1">Catatan Penutupan (Opsional)</label>
-                            <textarea id="eod_notes_input" name="notes" rows="2" placeholder="Catatan operasional atau selisih..."
-                                class="w-full rounded-xl border border-slate-200 p-2.5 text-sm shadow-sm"></textarea>
+                            <x-ui.label for="eod_pin_input">PIN Manager / Supervisor *</x-ui.label>
+                            <x-ui.input type="password" id="eod_pin_input" name="pin" required maxlength="6" placeholder="4-6 digit PIN" class="font-mono" />
                         </div>
 
-                        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-900 leading-relaxed">
-                            <strong>Perhatian:</strong> Pastikan seluruh shift pada tanggal bisnis telah berstatus Closed dan tidak ada transaksi pembayaran dalam status pending/timeout.
+                        <div>
+                            <x-ui.label for="eod_notes_input">Catatan Penutupan (Opsional)</x-ui.label>
+                            <textarea id="eod_notes_input" name="notes" rows="2" placeholder="Catatan operasional atau selisih kas..."
+                                class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2.5 text-xs focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-200"></textarea>
                         </div>
-                    </div>
 
-                    <div class="flex justify-end gap-3">
-                        <button type="button" @click="openEodModal = false"
-                            class="min-h-[44px] px-4 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">
-                            Batal
-                        </button>
-                        <button type="submit"
-                            class="min-h-[44px] px-5 rounded-xl bg-apeiron-ink text-white text-sm font-bold hover:bg-black shadow-sm">
-                            Kunci &amp; Selesaikan EOD
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                        <div class="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-xl text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                            <strong>Perhatian:</strong> Pastikan seluruh shift kasir pada tanggal bisnis ini telah berstatus Closed dan tidak ada transaksi pembayaran dalam status pending/timeout.
+                        </div>
+                    </form>
+                </div>
+            </x-slot:content>
+
+            <x-slot:footer>
+                <div class="flex justify-end gap-3">
+                    <x-ui.button variant="secondary" type="button" @click="openEodModal = false">
+                        Batal
+                    </x-ui.button>
+                    <x-ui.button variant="primary" type="button" @click="document.getElementById('eodForm').submit()">
+                        Kunci &amp; Selesaikan EOD
+                    </x-ui.button>
+                </div>
+            </x-slot:footer>
+        </x-ui.modal>
     </div>
 </x-app-layout>
-

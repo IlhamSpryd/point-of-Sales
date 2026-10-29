@@ -34,141 +34,166 @@
             this.isActive = Boolean(uom.is_active);
             this.showModal = true;
         }
-    }">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-            <div>
-                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Satuan Ukur (Unit of Measure)</h4>
-                <p class="text-sm font-medium text-[#787774] mt-1">Kelola unit kuantitas produk (Pcs, Kg, Liter, Box, dll.)</p>
-            </div>
+    }" class="space-y-6" data-gsap="page-enter">
 
-            <x-list-toolbar search-action="{{ route('units-of-measure.index') }}" search-placeholder="Cari satuan ukur...">
-                <x-slot:actions>
-                    @if($canManage)
-                        <x-button variant="primary" type="button" @click="openCreate()" class="w-full sm:w-auto h-10">
-                            <span class="material-symbols-rounded text-[18px]">add</span> Tambah Satuan Ukur
-                        </x-button>
-                    @endif
-                </x-slot:actions>
-            </x-list-toolbar>
-        </div>
+        <!-- Header -->
+        <x-erp.page-header
+            title="Satuan Ukur (Unit of Measure)"
+            description="Kelola unit kuantitas produk (Pcs, Kg, Liter, Box, dll.) beserta presisi desimal untuk inventori.">
+            <x-slot:breadcrumbs>
+                <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Katalog</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item active>Satuan Ukur</x-ui.breadcrumbs.item>
+            </x-slot:breadcrumbs>
+
+            <x-slot:actions>
+                @if($canManage)
+                    <x-ui.button variant="primary" type="button" @click="openCreate()" class="gap-2">
+                        <span class="material-symbols-rounded text-base">add</span>
+                        Tambah Satuan Ukur
+                    </x-ui.button>
+                @endif
+            </x-slot:actions>
+        </x-erp.page-header>
 
         @if(session('success'))
-            <x-alert type="success" class="mb-4">{{ session('success') }}</x-alert>
+            <x-ui.alert type="success" title="Berhasil" class="rounded-2xl">
+                {{ session('success') }}
+            </x-ui.alert>
         @endif
         @if(session('error'))
-            <x-alert type="error" class="mb-4">{{ session('error') }}</x-alert>
+            <x-ui.alert type="danger" title="Terjadi Kesalahan" class="rounded-2xl">
+                {{ session('error') }}
+            </x-ui.alert>
         @endif
 
-        <div class="card-surface flex flex-col flex-1 min-h-0">
-            <x-data-table>
-                <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kode</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Nama Satuan</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Presisi Desimal</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Jumlah Produk</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Status</th>
-                    @if($canManage)
-                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
-                    @endif
-                </x-slot:head>
-
-                @forelse($unitsOfMeasure as $uom)
-                    <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
-                        <td class="px-6 py-4 font-mono text-xs font-semibold text-apeiron-ink">{{ $uom->code }}</td>
-                        <td class="px-6 py-4 text-sm font-semibold text-apeiron-ink">{{ $uom->name }}</td>
-                        <td class="px-6 py-4 text-sm text-[#787774] text-right tabular-nums">{{ $uom->precision_scale }} desimal</td>
-                        <td class="px-6 py-4 text-sm font-medium text-right text-apeiron-ink tabular-nums">{{ $uom->products_count }}</td>
-                        <td class="px-6 py-4">
-                            @if($uom->is_active)
-                                <x-badge type="success">Aktif</x-badge>
-                            @else
-                                <x-badge type="secondary">Nonaktif</x-badge>
-                            @endif
-                        </td>
-                        @if($canManage)
-                            <td class="px-6 py-4 text-right space-x-1">
-                                <button type="button" @click="openEdit({{ json_encode($uom) }})"
-                                    class="inline-flex items-center justify-center min-w-9 min-h-9 rounded-lg text-primary-500 hover:text-primary-700 hover:bg-primary-100 transition-colors"
-                                    aria-label="Ubah satuan">
-                                    <span class="material-symbols-rounded text-[20px]">edit</span>
-                                </button>
-                                <form id="delete-uom-{{ $uom->id }}" action="{{ route('units-of-measure.destroy', $uom->id) }}" method="POST" class="inline-block">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="button" onclick="confirmDelete('delete-uom-{{ $uom->id }}', '{{ addslashes($uom->name) }}')"
-                                        class="inline-flex items-center justify-center min-w-9 min-h-9 rounded-lg text-danger-500 hover:text-danger-700 hover:bg-danger-50 transition-colors"
-                                        aria-label="Hapus satuan">
-                                        <span class="material-symbols-rounded text-[20px]">delete</span>
-                                    </button>
-                                </form>
-                            </td>
-                        @endif
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="{{ $canManage ? 6 : 5 }}" class="px-6 py-12 text-center text-[#9B9A97] text-sm">
-                            <div class="flex flex-col items-center justify-center">
-                                <span class="material-symbols-rounded text-4xl text-[#C4C3C0] mb-2">straighten</span>
-                                <p class="font-medium">Belum ada satuan ukur terdaftar.</p>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </x-data-table>
-
-            <div class="p-4 border-t border-[#E9E9E7]">
-                {{ $unitsOfMeasure->links() }}
-            </div>
+        <!-- Filter & Search Toolbar -->
+        <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-zinc-200/80 dark:border-zinc-800">
+            <form method="GET" action="{{ route('units-of-measure.index') }}" class="relative w-full sm:w-80">
+                <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari satuan ukur..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
+            </form>
         </div>
 
-        {{-- Modal Tambah / Sunting UoM --}}
-        <div x-show="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" x-cloak>
-            <div @click.away="showModal = false" class="bg-white rounded-2xl border border-[#E9E9E7] shadow-xl max-w-md w-full p-6">
-                <div class="flex items-center justify-between mb-4 pb-3 border-b border-[#E9E9E7]">
-                    <h3 class="text-base font-bold text-apeiron-ink" x-text="isEdit ? 'Sunting Satuan Ukur' : 'Tambah Satuan Ukur'"></h3>
-                    <button type="button" @click="showModal = false" class="text-[#9B9A97] hover:text-apeiron-ink">
-                        <span class="material-symbols-rounded">close</span>
-                    </button>
-                </div>
+        <!-- Table -->
+        <div class="card-surface overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                            <th class="px-6 py-4">Kode</th>
+                            <th class="px-6 py-4">Nama Satuan</th>
+                            <th class="px-6 py-4 text-right">Presisi Desimal</th>
+                            <th class="px-6 py-4 text-right">Jumlah Produk</th>
+                            <th class="px-6 py-4 text-center">Status</th>
+                            @if($canManage)
+                                <th class="px-6 py-4 text-right">Aksi</th>
+                            @endif
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                        @forelse($unitsOfMeasure as $uom)
+                            <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
+                                <td class="px-6 py-4 font-mono text-xs font-semibold text-apeiron-ink dark:text-white">{{ $uom->code }}</td>
+                                <td class="px-6 py-4 text-sm font-semibold text-zinc-900 dark:text-white">{{ $uom->name }}</td>
+                                <td class="px-6 py-4 text-sm text-zinc-500 text-right font-mono">{{ $uom->precision_scale }} desimal</td>
+                                <td class="px-6 py-4 text-sm font-medium text-right text-zinc-900 dark:text-white font-mono">{{ $uom->products_count }}</td>
+                                <td class="px-6 py-4 text-center">
+                                    <x-ui.badge variant="{{ $uom->is_active ? 'success' : 'neutral' }}" size="sm">
+                                        {{ $uom->is_active ? 'Aktif' : 'Nonaktif' }}
+                                    </x-ui.badge>
+                                </td>
+                                @if($canManage)
+                                    <td class="px-6 py-4 text-right">
+                                        <div class="flex items-center justify-end gap-1.5">
+                                            <button type="button" @click="openEdit({{ json_encode($uom) }})"
+                                                class="p-1.5 rounded-lg text-zinc-500 hover:text-blue-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                                                title="Ubah satuan">
+                                                <span class="material-symbols-rounded text-lg">edit</span>
+                                            </button>
+                                            <form id="delete-uom-{{ $uom->id }}" action="{{ route('units-of-measure.destroy', $uom->id) }}" method="POST" class="inline-block">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button" onclick="confirmDelete('delete-uom-{{ $uom->id }}', '{{ addslashes($uom->name) }}')"
+                                                    class="p-1.5 rounded-lg text-zinc-500 hover:text-rose-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
+                                                    title="Hapus satuan">
+                                                    <span class="material-symbols-rounded text-lg">delete</span>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                @endif
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="{{ $canManage ? 6 : 5 }}" class="px-6 py-12 text-center text-zinc-400">
+                                    <span class="material-symbols-rounded text-4xl block mb-2">straighten</span>
+                                    Belum ada satuan ukur terdaftar.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
-                <form :action="formAction" method="POST" class="space-y-4">
+            @if($unitsOfMeasure->hasPages())
+                <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800">
+                    {{ $unitsOfMeasure->links() }}
+                </div>
+            @endif
+        </div>
+
+        <!-- Modal Tambah / Sunting Satuan Ukur -->
+        <x-ui.modal x-model="showModal" maxWidth="md">
+            <x-slot:title>
+                <span x-text="isEdit ? 'Sunting Satuan Ukur' : 'Tambah Satuan Ukur Baru'"></span>
+            </x-slot:title>
+
+            <x-slot:content>
+                <form id="uomForm" :action="formAction" method="POST" class="space-y-4">
                     @csrf
                     <template x-if="isEdit">
                         <input type="hidden" name="_method" value="PUT">
                     </template>
 
                     <div>
-                        <x-form-label for="uom_code">Kode Satuan (misal: PCS, KG, LTR) <span class="text-danger-600">*</span></x-form-label>
-                        <input type="text" id="uom_code" name="code" x-model="code" required maxlength="32"
-                            class="w-full h-10 px-3 rounded-xl border border-[#E9E9E7] text-sm uppercase focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                        <x-ui.label for="uom_code">Kode Satuan *</x-ui.label>
+                        <input type="text" id="uom_code" name="code" x-model="code" required
+                            class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 font-mono uppercase focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
                     </div>
 
                     <div>
-                        <x-form-label for="uom_name">Nama Satuan <span class="text-danger-600">*</span></x-form-label>
-                        <input type="text" id="uom_name" name="name" x-model="name" required maxlength="100"
-                            class="w-full h-10 px-3 rounded-xl border border-[#E9E9E7] text-sm focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                        <x-ui.label for="uom_name">Nama Satuan *</x-ui.label>
+                        <input type="text" id="uom_name" name="name" x-model="name" required
+                            class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
                     </div>
 
                     <div>
-                        <x-form-label for="precision_scale">Presisi Skala Desimal (0 s/d 4)</x-form-label>
-                        <input type="number" id="precision_scale" name="precision_scale" x-model="precisionScale" min="0" max="4"
-                            class="w-full h-10 px-3 rounded-xl border border-[#E9E9E7] text-sm focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
-                        <p class="text-xs text-[#787774] mt-1">Gunakan 0 untuk bilangan bulat (misal Pcs), 2 atau 3 untuk timbangan (Kg, Gram).</p>
+                        <x-ui.label for="precision_scale">Presisi Desimal (Angka di Belakang Koma)</x-ui.label>
+                        <input type="number" id="precision_scale" name="precision_scale" x-model="precisionScale" min="0" max="4" required
+                            class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 font-mono focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
+                        <p class="text-[11px] text-zinc-400 mt-1">Misal: 0 untuk PCS, 2 atau 3 untuk KG / Gram.</p>
                     </div>
 
                     <div class="flex items-center gap-2 pt-2">
                         <input type="hidden" name="is_active" value="0">
                         <input type="checkbox" id="uom_is_active" name="is_active" value="1" x-model="isActive"
-                            class="rounded border-gray-300 text-apeiron-ink focus:ring-apeiron-ink">
-                        <label for="uom_is_active" class="text-sm font-medium text-apeiron-ink">Status Aktif</label>
-                    </div>
-
-                    <div class="flex justify-end gap-2 pt-4 border-t border-[#E9E9E7]">
-                        <x-button variant="secondary" type="button" @click="showModal = false">Batal</x-button>
-                        <x-button variant="primary" type="submit">Simpan</x-button>
+                            class="rounded border-zinc-300 text-apeiron-primary shadow-xs focus:ring-apeiron-primary">
+                        <label for="uom_is_active" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Status Aktif</label>
                     </div>
                 </form>
-            </div>
-        </div>
+            </x-slot:content>
+
+            <x-slot:footer>
+                <div class="flex justify-end gap-3">
+                    <x-ui.button variant="secondary" type="button" @click="showModal = false">
+                        Batal
+                    </x-ui.button>
+                    <x-ui.button variant="primary" type="button" @click="document.getElementById('uomForm').submit()">
+                        Simpan
+                    </x-ui.button>
+                </div>
+            </x-slot:footer>
+        </x-ui.modal>
     </div>
 </x-app-layout>

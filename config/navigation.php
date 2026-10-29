@@ -107,6 +107,14 @@ return [
                 'roles' => ['Owner', 'Manager', 'Inventory'],
                 'scope' => 'store',
             ],
+            [
+                'label' => 'Pengadaan (Purchasing)',
+                'icon' => 'local_shipping',
+                'route' => 'purchasing.suppliers.index',
+                'active' => 'purchasing.*',
+                'roles' => ['Owner', 'Manager', 'Inventory'],
+                'scope' => 'tenant',
+            ],
         ],
         'Analitik & Penjualan' => [
             [
@@ -115,6 +123,30 @@ return [
                 'route' => 'reports.sales',
                 'active' => 'reports.*',
                 'roles' => ['Owner', 'Manager'],
+                'scope' => 'tenant',
+            ],
+            [
+                'label' => 'Pelanggan & CRM',
+                'icon' => 'groups',
+                'route' => 'customers.index',
+                'active' => 'customers.*',
+                'roles' => ['Owner', 'Manager'],
+                'scope' => 'tenant',
+            ],
+            [
+                'label' => 'Penjualan B2B & AR',
+                'icon' => 'request_quote',
+                'route' => 'sales.orders.index',
+                'active' => 'sales.*',
+                'roles' => ['Owner', 'Manager', 'Sales', 'Admin', 'Finance'],
+                'scope' => 'tenant',
+            ],
+            [
+                'label' => 'Keuangan & Akuntansi',
+                'icon' => 'account_balance',
+                'route' => 'finance.index',
+                'active' => 'finance.*',
+                'roles' => ['Owner', 'Manager', 'Finance', 'Admin'],
                 'scope' => 'tenant',
             ],
             [

@@ -1,108 +1,121 @@
-<div>
-    <div class="mb-6 flex flex-col items-start gap-1">
-        <h1 class="text-xl font-bold text-apeiron-ink tracking-tight">Integrasi Channel</h1>
-        <p class="text-sm font-medium text-apeiron-muted">Kelola pemetaan SKU dari platform eksternal ke produk internal.</p>
-    </div>
+<div class="space-y-6" data-gsap="page-enter">
+    <!-- Header -->
+    <x-erp.page-header
+        title="Integrasi Saluran (Channel Mapping)"
+        description="Kelola pemetaan SKU dari platform pesan-antar eksternal (GrabFood, GoFood) ke data produk internal.">
+        <x-slot:breadcrumbs>
+            <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Katalog</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item active>Integrasi Saluran</x-ui.breadcrumbs.item>
+        </x-slot:breadcrumbs>
+    </x-erp.page-header>
 
     @if (session()->has('message'))
-        <x-alert type="success" class="mb-6">{{ session('message') }}</x-alert>
+        <x-ui.alert type="success" title="Berhasil" class="rounded-2xl">
+            {{ session('message') }}
+        </x-ui.alert>
     @endif
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {{-- Form mapping --}}
-        <div class="card-surface p-6 lg:col-span-1 h-fit">
-            <h2 class="text-sm font-semibold text-apeiron-ink mb-5 tracking-tight border-b border-apeiron-border pb-3">Tambah Pemetaan Baru</h2>
+        <!-- Form Pemetaan Baru -->
+        <div class="card-surface p-6 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 lg:col-span-1 h-fit shadow-xs">
+            <h2 class="text-sm font-bold text-zinc-900 dark:text-white mb-5 tracking-tight border-b border-zinc-200/80 dark:border-zinc-800 pb-3 flex items-center gap-2">
+                <span class="material-symbols-rounded text-apeiron-primary text-lg">add_link</span>
+                Tambah Pemetaan Baru
+            </h2>
 
             <form wire:submit="saveMapping" class="flex flex-col gap-4">
                 <div>
-                    <x-form-label for="mapping-provider">Provider</x-form-label>
-                    <select id="mapping-provider" wire:model="provider"
-                        class="mt-1 block w-full border border-apeiron-border bg-white rounded-xl text-sm text-apeiron-ink px-3 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-700 transition-all">
+                    <x-ui.label for="mapping-provider">Provider Saluran *</x-ui.label>
+                    <x-ui.select id="mapping-provider" wire:model="provider">
                         <option value="grabfood">GrabFood</option>
                         <option value="gofood">GoFood</option>
-                    </select>
+                    </x-ui.select>
                 </div>
 
                 <div>
-                    <x-form-label for="mapping-external-id">SKU Provider (External ID)</x-form-label>
-                    <x-form-input id="mapping-external-id" type="text" wire:model="externalProductId" placeholder="Misal: GF-1234" class="mt-1" name="externalProductId" />
-                    @error('externalProductId') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                    <x-ui.label for="mapping-external-id">SKU Provider (External Product ID) *</x-ui.label>
+                    <x-ui.input id="mapping-external-id" type="text" wire:model="externalProductId" placeholder="Misal: GF-1234 atau SKU-GF-AYAM" class="font-mono text-sm" />
+                    @error('externalProductId') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <div>
-                    <x-form-label for="mapping-product">Produk Internal</x-form-label>
-                    <select id="mapping-product" wire:model="productId"
-                        class="mt-1 block w-full border border-apeiron-border bg-white rounded-xl text-sm text-apeiron-ink px-3 py-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-700 focus:border-primary-700 transition-all">
-                        <option value="">-- Pilih Produk --</option>
+                    <x-ui.label for="mapping-product">Produk Internal *</x-ui.label>
+                    <x-ui.select id="mapping-product" wire:model="productId">
+                        <option value="">-- Pilih Produk Internal --</option>
                         @foreach($products as $product)
                             <option value="{{ $product->id }}">{{ $product->product_name }}</option>
                         @endforeach
-                    </select>
-                    @error('productId') <x-input-error :messages="$message" class="mt-1" /> @enderror
+                    </x-ui.select>
+                    @error('productId') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
-                <x-button type="submit" variant="primary" class="mt-2 w-full"
-                    wire:loading.attr="disabled" wire:target="saveMapping">
-                    <span wire:loading wire:target="saveMapping" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                <x-ui.button type="submit" variant="primary" class="mt-2 w-full justify-center" wire:loading.attr="disabled" wire:target="saveMapping">
+                    <span wire:loading wire:target="saveMapping" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white mr-1.5"></span>
                     Simpan Pemetaan
-                </x-button>
+                </x-ui.button>
             </form>
         </div>
 
-        {{-- Tabel mapping --}}
-        <div class="card-surface overflow-hidden lg:col-span-2 flex flex-col">
-            <div class="px-6 py-4 border-b border-apeiron-border bg-apeiron-surface">
-                <h2 class="text-sm font-semibold text-apeiron-ink tracking-tight">Daftar Pemetaan Aktif</h2>
+        <!-- Tabel Daftar Pemetaan -->
+        <div class="card-surface overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800 lg:col-span-2 flex flex-col shadow-xs">
+            <div class="px-6 py-4 border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
+                <h2 class="text-sm font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
+                    <span class="material-symbols-rounded text-apeiron-primary text-lg">sync_alt</span>
+                    Daftar Pemetaan Aktif
+                </h2>
+                <span class="text-xs text-zinc-400">Total: {{ $mappings->total() }} SKU</span>
             </div>
             <div class="overflow-x-auto flex-1">
-                <x-data-table>
-                    <x-slot:head>
-                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Provider</th>
-                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">SKU Eksternal</th>
-                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Produk Internal</th>
-                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
-                    </x-slot:head>
-                    
-                    @forelse($mappings as $mapping)
-                        <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
-                            <td class="px-6 py-4">
-                                <x-badge type="secondary">{{ $mapping->provider }}</x-badge>
-                            </td>
-                            <td class="px-6 py-4 text-sm font-semibold text-apeiron-ink">
-                                {{ $mapping->external_product_id }}
-                            </td>
-                            <td class="px-6 py-4 text-sm text-[#787774]">
-                                {{ $mapping->product->product_name ?? 'Produk Dihapus' }}
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <button type="button"
-                                    data-swal-delete
-                                    data-swal-title="Hapus Pemetaan?"
-                                    data-swal-text="SKU {{ $mapping->external_product_id }} akan dihapus. Order baru dengan SKU ini akan gagal sampai dipetakan ulang."
-                                    data-wire-action="deleteMapping({{ $mapping->id }})"
-                                    title="Hapus Pemetaan"
-                                    class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90">
-                                    <span class="material-symbols-rounded text-[20px]">delete</span>
-                                </button>
-                            </td>
+                <table class="w-full text-left border-collapse text-sm">
+                    <thead>
+                        <tr class="border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-900/30 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                            <th class="px-6 py-3.5">Provider</th>
+                            <th class="px-6 py-3.5">SKU Eksternal</th>
+                            <th class="px-6 py-3.5">Produk Internal</th>
+                            <th class="px-6 py-3.5 text-right">Aksi</th>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="4" class="px-6 py-12 text-center text-[#9B9A97] text-sm">
-                                <div class="flex flex-col items-center justify-center">
-                                    <div class="w-14 h-14 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
-                                        <span class="material-symbols-rounded text-[28px] text-[#C4C3C0]">link_off</span>
-                                    </div>
-                                    <p class="font-medium">Belum ada pemetaan sku channel.</p>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </x-data-table>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                        @forelse($mappings as $mapping)
+                            <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
+                                <td class="px-6 py-4">
+                                    <x-ui.badge variant="{{ $mapping->provider === 'grabfood' ? 'success' : 'danger' }}" size="sm">
+                                        {{ strtoupper($mapping->provider) }}
+                                    </x-ui.badge>
+                                </td>
+                                <td class="px-6 py-4 font-mono font-semibold text-zinc-900 dark:text-white text-xs">
+                                    {{ $mapping->external_product_id }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-zinc-700 dark:text-zinc-300">
+                                    {{ $mapping->product->product_name ?? 'Produk Dihapus' }}
+                                </td>
+                                <td class="px-6 py-4 text-right">
+                                    <button type="button"
+                                        wire:click="deleteMapping({{ $mapping->id }})"
+                                        wire:confirm="SKU {{ $mapping->external_product_id }} akan dihapus. Pesanan baru dengan SKU ini akan gagal diproses sampai dipetakan ulang. Lanjutkan?"
+                                        title="Hapus Pemetaan"
+                                        class="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition">
+                                        <span class="material-symbols-rounded text-lg">delete</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-12 text-center text-zinc-400">
+                                    <span class="material-symbols-rounded text-4xl block mb-2">link_off</span>
+                                    Belum ada pemetaan SKU kanal eksternal.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-            <div class="p-4 border-t border-apeiron-border shrink-0">
-                {{ $mappings->links() }}
-            </div>
+            @if($mappings->hasPages())
+                <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800">
+                    {{ $mappings->links() }}
+                </div>
+            @endif
         </div>
     </div>
 </div>

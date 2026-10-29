@@ -1,4 +1,4 @@
-<div>
+<div data-gsap="page-enter">
     @include('catalog.partials.sub-nav')
 
     <div class="space-y-6">
@@ -14,9 +14,9 @@
                             {{ $editingGroupId ? 'Perbarui informasi grup varian' : 'Buat grup varian baru untuk produk' }}
                         </p>
                     </div>
-                    <x-button type="button" variant="secondary" wire:click="resetGroupForm">
+                    <x-ui.button type="button" variant="secondary" wire:click="resetGroupForm">
                         <span class="material-symbols-rounded text-[18px]">arrow_back</span> Kembali
-                    </x-button>
+                    </x-ui.button>
                 </div>
 
                 <div class="card-surface overflow-hidden w-full shrink-0">
@@ -57,12 +57,12 @@
                         </div>
 
                         <div class="pt-4 border-t border-apeiron-border flex justify-end gap-3">
-                            <x-button type="button" variant="secondary" wire:click="resetGroupForm">
+                            <x-ui.button type="button" variant="secondary" wire:click="resetGroupForm">
                                 Batal
-                            </x-button>
-                            <x-button type="submit" variant="primary">
+                            </x-ui.button>
+                            <x-ui.button type="submit" variant="primary" x-on:click="window.erpMotion?.pulseHighlight($el)">
                                 <span class="material-symbols-rounded text-[18px]">save</span> Simpan Grup
-                            </x-button>
+                            </x-ui.button>
                         </div>
                     </form>
                 </div>
@@ -78,9 +78,9 @@
                             {{ $editingModifierId ? 'Perbarui informasi varian' : 'Tambahkan opsi varian baru ke dalam grup' }}
                         </p>
                     </div>
-                    <x-button type="button" variant="secondary" wire:click="resetModifierForm">
+                    <x-ui.button type="button" variant="secondary" wire:click="resetModifierForm">
                         <span class="material-symbols-rounded text-[18px]">arrow_back</span> Kembali
-                    </x-button>
+                    </x-ui.button>
                 </div>
 
                 <div class="card-surface overflow-hidden w-full shrink-0">
@@ -162,12 +162,12 @@
                         </div>
 
                         <div class="pt-4 border-t border-apeiron-border flex justify-end gap-3">
-                            <x-button type="button" variant="secondary" wire:click="resetModifierForm">
+                            <x-ui.button type="button" variant="secondary" wire:click="resetModifierForm">
                                 Batal
-                            </x-button>
-                            <x-button type="submit" variant="primary">
+                            </x-ui.button>
+                            <x-ui.button type="submit" variant="primary" x-on:click="window.erpMotion?.pulseHighlight($el)">
                                 <span class="material-symbols-rounded text-[18px]">save</span> Simpan Varian
-                            </x-button>
+                            </x-ui.button>
                         </div>
                     </form>
                 </div>
@@ -182,9 +182,9 @@
 
                 <x-list-toolbar>
                     <x-slot name="actions">
-                        <x-button wire:click="createGroup" variant="primary" type="button" class="w-full sm:w-auto h-10">
+                        <x-ui.button wire:click="createGroup" variant="primary" type="button" class="w-full sm:w-auto h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
                             <span class="material-symbols-rounded text-[18px]">add</span> Tambah Grup Modifier
-                        </x-button>
+                        </x-ui.button>
                     </x-slot>
                 </x-list-toolbar>
             </div>

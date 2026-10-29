@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 /*
 |--------------------------------------------------------------------------
-| Apeiron POS — Demo Dataset Configuration
+| Apeiron — Demo Dataset Configuration
 |--------------------------------------------------------------------------
 |
 | Sumber konfigurasi tunggal untuk generator dataset demo (`pos:dataset:generate`).

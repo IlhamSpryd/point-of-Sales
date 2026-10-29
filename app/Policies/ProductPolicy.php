@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\Product;
 use App\Models\User;
+use App\Modules\Products\Models\Product;
 
 class ProductPolicy
 {
@@ -13,7 +13,8 @@ class ProductPolicy
     {
         $role = $user->role?->name;
 
-        return in_array($role, ['Owner', 'Manager', 'Inventory'], true);
+        return in_array($role, ['Owner', 'Manager', 'Inventory', 'Admin'], true)
+            || (bool) ($user->role?->is_admin ?? false);
     }
 
     public function viewAny(User $user): bool

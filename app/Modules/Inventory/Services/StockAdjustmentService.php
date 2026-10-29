@@ -12,6 +12,7 @@ use App\Models\Ingredient;
 use App\Models\Product;
 use App\Models\StockAdjustment;
 use App\Models\StockAdjustmentItem;
+use App\Modules\Finance\Services\InventoryAccountingService;
 use App\Modules\Settings\Services\AuditTrailService;
 use DomainException;
 use Illuminate\Support\Facades\DB;
@@ -296,6 +297,9 @@ class StockAdjustmentService
                     'total_value' => $locked->calculateTotalValue(),
                 ]
             );
+
+            // Emisi outbox akuntansi ke Modul 7 (PR-INV-01)
+            app(InventoryAccountingService::class)->recordStockAdjustmentPosted($locked);
 
             return $locked->fresh(['items']);
         });

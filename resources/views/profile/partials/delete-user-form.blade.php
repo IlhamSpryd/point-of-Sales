@@ -9,11 +9,11 @@
         </p>
     </header>
 
-    <x-button
-        variant="danger"
+    <x-ui.button
+        variant="destructive"
         x-data=""
         x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
-    ><span class="material-symbols-rounded text-[18px]">delete</span> {{ __('Hapus Akun') }}</x-button>
+    ><span class="material-symbols-rounded text-[18px]">delete</span> {{ __('Hapus Akun') }}</x-ui.button>
 
     <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
         <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
@@ -43,13 +43,13 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <x-button type="button" variant="secondary" x-on:click="$dispatch('close')">
+                <x-ui.button type="button" variant="secondary" x-on:click="$dispatch('close')">
                     {{ __('Batal') }}
-                </x-button>
+                </x-ui.button>
 
-                <x-button type="submit" variant="danger">
+                <x-ui.button type="submit" variant="destructive">
                     {{ __('Hapus Akun') }}
-                </x-button>
+                </x-ui.button>
             </div>
         </form>
     </x-modal>

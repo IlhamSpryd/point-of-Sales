@@ -9,6 +9,10 @@ use App\Http\Controllers\TransactionController;
 use App\Livewire\ChannelMappingManager;
 use App\Livewire\Kasir\CreateOrder;
 use App\Livewire\Kds\Board;
+use App\Livewire\Sales\AccountsReceivableManager;
+use App\Livewire\Sales\QuotationManager;
+use App\Livewire\Sales\ReturnCreditNoteManager;
+use App\Livewire\Sales\SalesOrderManager;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -65,5 +69,13 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
     // Channel Mapping Manager (Omnichannel)
     Route::middleware(['role:Owner,Manager', 'enforce.entitlement:omnichannel'])->group(function () {
         Route::get('/integrations/channel-mapping', ChannelMappingManager::class)->name('integrations.channel-mapping');
+    });
+
+    // B2B Sales, Quotations, Sales Orders & Accounts Receivable (AR)
+    Route::middleware('role:Owner,Manager,Sales,Admin,Finance')->group(function () {
+        Route::get('/sales/quotations', QuotationManager::class)->name('sales.quotations.index');
+        Route::get('/sales/orders', SalesOrderManager::class)->name('sales.orders.index');
+        Route::get('/sales/invoices', AccountsReceivableManager::class)->name('sales.invoices.index');
+        Route::get('/sales/returns', ReturnCreditNoteManager::class)->name('sales.returns.index');
     });
 });

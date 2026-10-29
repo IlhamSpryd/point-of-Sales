@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Policies;
 
-use App\Models\Order;
 use App\Models\User;
+use App\Modules\Sales\Models\Order;
 
 /**
  * [D2-BE-004] Policy Order: kecocokan tenant_id & store_id WAJIB, ditambah

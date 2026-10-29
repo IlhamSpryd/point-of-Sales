@@ -110,13 +110,13 @@ class SidebarIntegrityTest extends TestCase
                 ->all();
         };
 
-        // 1. Owner sees 16 streamlined items with domain hub entry points
+        // 1. Owner sees 20 streamlined items with domain hub entry points
         $ownerRoutes = $getVisibleRoutes('Owner');
-        $this->assertCount(16, $ownerRoutes);
+        $this->assertCount(20, $ownerRoutes);
 
-        // 2. Manager sees 13 items (all except stores, users, roles)
+        // 2. Manager sees 17 items (all except stores, users, roles)
         $managerRoutes = $getVisibleRoutes('Manager');
-        $this->assertCount(13, $managerRoutes);
+        $this->assertCount(17, $managerRoutes);
         $this->assertNotContains('stores.index', $managerRoutes);
         $this->assertNotContains('users.index', $managerRoutes);
         $this->assertNotContains('roles.index', $managerRoutes);
@@ -141,6 +141,7 @@ class SidebarIntegrityTest extends TestCase
             [
                 'products.index',
                 'inventory.ingredients',
+                'purchasing.suppliers.index',
             ],
             $inventoryRoutes
         );

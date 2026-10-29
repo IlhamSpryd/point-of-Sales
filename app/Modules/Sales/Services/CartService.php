@@ -40,7 +40,7 @@ class CartService
      *
      * @param  array<int>  $modifierIds  ID modifier yang dipilih pelanggan (bisa lebih dari satu grup)
      */
-    public function addItem(Product $product, array $modifierIds, int $qty, ?string $notes = null): array
+    public function addItem(Product $product, array $modifierIds, int $qty, ?string $notes = null, ?int $customerId = null): array
     {
         $tenantId = session('current_tenant_id') ?? app(TenantContext::class)->getTenantId();
         $storeId = session('current_store_id') ?? app(TenantContext::class)->getStoreId();
@@ -84,7 +84,7 @@ class CartService
         $lineId = md5($product->id.'-'.implode('-', $sortedIds));
 
         // Total tambahan harga dari semua modifier yang dipilih (misal: Oat Milk +5000).
-        $basePrice = $priceResolver->resolvePrice($product, $storeId);
+        $basePrice = $priceResolver->resolvePrice($product, $storeId, null, $qty, $customerId);
         $extraPrice = $modifiers->sum('extra_price');
         $unitPrice = $basePrice + $extraPrice;
 
@@ -480,7 +480,10 @@ class CartService
                 }
 
                 $extraPrice = (int) $modifiers->sum('extra_price');
-                $resolvedBasePrice = (int) $resolver->resolvePrice($product, $storeId);
+                $requestedQty = (int) ($item['qty'] ?? $item['quantity'] ?? 1);
+                $customerId = $cartState['customer_id'] ?? null;
+                $variantId = $item['product_variant_id'] ?? null;
+                $resolvedBasePrice = (int) $resolver->resolvePrice($product, $storeId, $variantId, $requestedQty, $customerId);
                 $newUnitPrice = $resolvedBasePrice + $extraPrice;
                 $oldUnitPrice = (int) ($item['unit_price'] ?? $item['base_price'] ?? 0);
 

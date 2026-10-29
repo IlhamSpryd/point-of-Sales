@@ -1,0 +1,81 @@
+@php
+    $roleName = auth()->user()?->role?->name;
+
+    $allPurchasingTabs = [
+        [
+            'label' => 'Pemasok',
+            'route' => 'purchasing.suppliers.index',
+            'active' => 'purchasing.suppliers.*',
+            'icon' => 'local_shipping',
+            'roles' => ['Owner', 'Manager', 'Inventory'],
+        ],
+        [
+            'label' => 'Pesanan Pembelian (PO)',
+            'route' => 'purchasing.orders.index',
+            'active' => 'purchasing.orders.*',
+            'icon' => 'shopping_bag',
+            'roles' => ['Owner', 'Manager', 'Inventory'],
+        ],
+        [
+            'label' => 'Penerimaan GRN',
+            'route' => 'purchasing.grns.index',
+            'active' => 'purchasing.grns.*',
+            'icon' => 'input',
+            'roles' => ['Owner', 'Manager', 'Inventory'],
+        ],
+        [
+            'label' => 'Faktur Pemasok (3-Way)',
+            'route' => 'purchasing.invoices.index',
+            'active' => 'purchasing.invoices.*',
+            'icon' => 'receipt',
+            'roles' => ['Owner', 'Manager', 'Inventory'],
+        ],
+        [
+            'label' => 'Retur Pembelian',
+            'route' => 'purchasing.returns.index',
+            'active' => 'purchasing.returns.*',
+            'icon' => 'keyboard_return',
+            'roles' => ['Owner', 'Manager', 'Inventory'],
+        ],
+    ];
+
+    $visiblePurchasingTabs = array_filter($allPurchasingTabs, function ($tab) use ($roleName) {
+        return in_array($roleName, $tab['roles'], true);
+    });
+@endphp
+
+<div class="sticky top-0 z-30 bg-white/95 backdrop-blur-md -mt-4 sm:-mt-6 lg:-mt-8 pt-4 sm:pt-6 lg:pt-8 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 pb-3.5 mb-7 border-b border-[#E9E9E7] shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+    <nav aria-label="Sub-navigasi Pengadaan (Purchasing)"
+        x-data
+        x-init="$nextTick(() => {
+            const activeTab = $el.querySelector('[aria-current=page]');
+            if (activeTab) {
+                const offset = activeTab.offsetLeft - ($el.clientWidth / 2) + (activeTab.clientWidth / 2);
+                $el.scrollTo({ left: Math.max(0, offset), behavior: 'instant' });
+            }
+        })"
+        class="flex items-center gap-1.5 md:gap-2 overflow-x-auto scrollbar-hide py-1">
+        @foreach ($visiblePurchasingTabs as $tab)
+            @php
+                $routeExists = \Illuminate\Support\Facades\Route::has($tab['route']);
+                $isActive = $routeExists && request()->routeIs($tab['active']);
+            @endphp
+            @if ($routeExists)
+                <a href="{{ route($tab['route']) }}" wire:navigate
+                    @if ($isActive) aria-current="page" @endif
+                    style="{{ $isActive ? 'background-color: #202020; color: #ffffff;' : '' }}"
+                    class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink {{ $isActive ? 'bg-apeiron-ink text-white shadow-sm' : 'text-[#787774] hover:text-apeiron-ink hover:bg-[#F7F7F5]' }}">
+                    <span class="material-symbols-rounded text-[18px] shrink-0 {{ $isActive ? 'text-white' : '' }}">{{ $tab['icon'] }}</span>
+                    <span class="{{ $isActive ? 'text-white' : '' }}">{{ $tab['label'] }}</span>
+                </a>
+            @else
+                <div aria-disabled="true" title="{{ $tab['label'] }} — segera hadir di Phase 6"
+                    class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-medium whitespace-nowrap text-[#C4C3C0] cursor-not-allowed">
+                    <span class="material-symbols-rounded text-[18px] shrink-0 text-[#C4C3C0]">{{ $tab['icon'] }}</span>
+                    <span>{{ $tab['label'] }}</span>
+                    <span class="text-[9px] font-bold uppercase tracking-wider text-[#9B9A97] bg-[#F1F1EF] border border-[#E9E9E7] rounded px-1.5 py-0.5">Segera</span>
+                </div>
+            @endif
+        @endforeach
+    </nav>
+</div>

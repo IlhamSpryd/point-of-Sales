@@ -15,9 +15,11 @@ use App\Models\PaymentRefund;
 use App\Models\Shift;
 use App\Models\Store;
 use App\Models\User;
+use App\Modules\Customers\Models\Customer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class OrderReturn extends Model
 {
@@ -43,6 +45,8 @@ class OrderReturn extends Model
         'tenant_id',
         'store_id',
         'order_id',
+        'customer_id',
+        'customer_invoice_id',
         'shift_id',
         'device_id',
         'return_number',
@@ -59,6 +63,21 @@ class OrderReturn extends Model
         'approved_by_user_id',
         'completed_at',
     ];
+
+    public function customer(): BelongsTo
+    {
+        return $this->belongsTo(Customer::class, 'customer_id');
+    }
+
+    public function customerInvoice(): BelongsTo
+    {
+        return $this->belongsTo(CustomerInvoice::class, 'customer_invoice_id');
+    }
+
+    public function creditNote(): HasOne
+    {
+        return $this->hasOne(SalesCreditNote::class, 'order_return_id');
+    }
 
     protected function casts(): array
     {

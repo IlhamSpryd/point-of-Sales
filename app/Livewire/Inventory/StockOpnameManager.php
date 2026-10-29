@@ -96,7 +96,14 @@ class StockOpnameManager extends Component
         $this->bootRequiresTenantContext();
 
         $user = auth()->user();
-        if (! $user || ! $user->role || ! in_array($user->role->name, ['Owner', 'Manager', 'Inventory'], true)) {
+        $isAllowed = $user
+            && $user->role
+            && (
+                (bool) ($user->role->is_admin ?? false)
+                || in_array($user->role->name, ['Owner', 'Manager', 'Inventory', 'Admin'], true)
+            );
+
+        if (! $isAllowed) {
             abort(403, 'Anda tidak memiliki hak akses untuk halaman Stock Opname.');
         }
     }

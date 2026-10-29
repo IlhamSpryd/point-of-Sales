@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', 'Set Your Password — Apeiron POS')
+@section('title', 'Set Your Password — Apeiron')
 
 @section('content')
     @if (session('success'))

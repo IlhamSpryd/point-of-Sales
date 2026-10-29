@@ -59,9 +59,9 @@
                     'border-b' => $variant == 'sidebar',
                     'pb-0' => $variant == 'floating' || $variant == 'inset',
                 ])>
-                        <x-sidebar.trigger>
-                            <x-lucide-panel-left class="size-4" />
-                        </x-sidebar.trigger>
+                        <x-ui.sidebar.trigger>
+                            <span class="material-symbols-rounded text-base leading-none" aria-hidden="true">dock_to_right</span>
+                        </x-ui.sidebar.trigger>
                             <div data-orientation="vertical" role="none" class="shrink-0 bg-sidebar-border w-[1px] mr-2 h-4">
                             </div>
                             <nav aria-label="breadcrumb">

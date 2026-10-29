@@ -89,12 +89,15 @@ class Publisher
     {
         $namespace = Components::NAMESPACE;
         $path = (string) config('components.path', 'views/components');
-        $tagPrefix = str_ends_with(trim($path, '/'), '/ui') ? '<x-ui.' : '<x-';
-        $tagClosePrefix = str_ends_with(trim($path, '/'), '/ui') ? '</x-ui.' : '</x-';
+        $isUiPrefixed = str_ends_with(trim($path, '/'), '/ui');
+        $tagPrefix = $isUiPrefixed ? '<x-ui.' : '<x-';
+        $tagClosePrefix = $isUiPrefixed ? '</x-ui.' : '</x-';
+        $dynamicComponentDouble = $isUiPrefixed ? 'component="ui.' : 'component="';
+        $dynamicComponentSingle = $isUiPrefixed ? "component='ui." : "component='";
 
         return str_replace(
             ["<x-{$namespace}.", "</x-{$namespace}.", "component=\"{$namespace}.", "component='{$namespace}."],
-            [$tagPrefix, $tagClosePrefix, 'component="', "component='"],
+            [$tagPrefix, $tagClosePrefix, $dynamicComponentDouble, $dynamicComponentSingle],
             $contents
         );
     }

@@ -1,6 +1,6 @@
 @php
-    // Izin kelola katalog (tambah/ubah/hapus). Nama role harus sama persis dengan tabel roles.
-    $canManage = in_array(auth()->user()?->role?->name, ['Owner', 'Manager', 'Inventory'], true);
+    // Izin kelola katalog (tambah/ubah/hapus) melalui CategoryPolicy (mendukung is_admin & RBAC).
+    $canManage = auth()->user()?->can('create', \App\Models\Category::class) ?? false;
 @endphp
 <x-app-layout>
     @include('catalog.partials.sub-nav')

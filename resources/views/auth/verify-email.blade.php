@@ -1,6 +1,6 @@
 @extends('layouts.guest')
 
-@section('title', 'Verify Email — Apeiron POS')
+@section('title', 'Verify Email — Apeiron')
 
 @section('content')
     <!-- Status / Error Alerts -->

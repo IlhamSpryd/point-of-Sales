@@ -12,6 +12,7 @@ use App\Models\User;
 use App\Services\CashierPinService;
 use App\Services\Context\TenantContext;
 use App\Services\ShiftService;
+use App\Support\Traits\RequiresActiveStoreContext;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Locked;
@@ -19,6 +20,7 @@ use Livewire\Component;
 
 class ShiftManager extends Component
 {
+    use RequiresActiveStoreContext;
     use RequiresTenantContext;
 
     #[Locked]
@@ -143,14 +145,14 @@ class ShiftManager extends Component
 
         try {
             $tenantId = app(TenantContext::class)->requireTenantId();
-            $storeId = app(TenantContext::class)->getStoreId();
+            $storeId = $this->resolveActiveStoreId(app(TenantContext::class)->getStoreId(), $tenantId);
             $shiftService = app(ShiftService::class);
             $devId = $this->selectedDeviceId ?? $this->deviceId;
 
             if ($devId !== null && ! empty($pinToVerify)) {
                 $opened = $shiftService->openShift(
                     $tenantId,
-                    $storeId ?? 1,
+                    $storeId,
                     $devId,
                     (int) $user->id,
                     (int) $this->opening_balance,
@@ -344,9 +346,16 @@ class ShiftManager extends Component
         }
 
         try {
+            $resolvedDeviceId = $this->resolveActiveDeviceId(
+                $this->deviceId,
+                $this->activeShift->device_id,
+                (int) $this->activeShift->store_id,
+                (int) $this->activeShift->tenant_id
+            );
+
             app(ShiftService::class)->recordCashMovement(
                 $this->activeShift->id,
-                $this->activeShift->device_id ?? 1,
+                $resolvedDeviceId,
                 (int) $user->id,
                 $this->movementType,
                 $this->movementCategory,

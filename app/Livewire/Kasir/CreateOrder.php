@@ -25,6 +25,7 @@ use App\Services\Context\TenantContext;
 use App\Services\EntitlementService;
 use App\Services\MenuCacheService;
 use App\Services\TransactionService;
+use App\Support\Traits\RequiresActiveStoreContext;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -41,6 +42,7 @@ use Livewire\Component;
 #[Layout('layouts.app', ['noPadding' => true])]
 class CreateOrder extends Component
 {
+    use RequiresActiveStoreContext;
     use RequiresTenantContext;
 
     public function boot(): void
@@ -599,6 +601,21 @@ class CreateOrder extends Component
     }
 
     #[Computed]
+    public function cartQtyByProduct(): array
+    {
+        $map = [];
+        foreach ($this->cart as $item) {
+            $productId = (int) ($item['product_id'] ?? 0);
+            $qty = (int) ($item['qty'] ?? 1);
+            if ($productId > 0) {
+                $map[$productId] = ($map[$productId] ?? 0) + $qty;
+            }
+        }
+
+        return $map;
+    }
+
+    #[Computed]
     public function subtotal(): int
     {
         return $this->cartLines->sum('order_subtotal');
@@ -726,7 +743,6 @@ class CreateOrder extends Component
         }
 
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $storeId = app(TenantContext::class)->getStoreId() ?? 1;
 
         $cartState = [
             'items' => $this->cart,
@@ -738,11 +754,13 @@ class CreateOrder extends Component
         ];
 
         try {
+            $storeId = $this->resolveActiveStoreId($activeShift->store_id ?? $this->activeStoreId, $tenantId);
+            $deviceId = $this->resolveActiveDeviceId($this->deviceId, $activeShift->device_id, $storeId, $tenantId);
             $label = ! empty($this->holdLabel) ? $this->holdLabel : (! empty($this->holdReference) ? $this->holdReference : null);
             $parked = app(CartService::class)->parkCart(
                 $tenantId,
                 $storeId,
-                $this->deviceId ?? 1,
+                $deviceId,
                 $activeShift->id,
                 (int) $user->id,
                 $cartState,
@@ -778,7 +796,6 @@ class CreateOrder extends Component
         }
 
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $storeId = app(TenantContext::class)->getStoreId() ?? 1;
 
         if ($parkedCartId <= 0) {
             $latestParked = ParkedCart::where('status', ParkedCart::STATUS_PARKED)->latest()->first();
@@ -788,11 +805,13 @@ class CreateOrder extends Component
         }
 
         try {
+            $storeId = $this->resolveActiveStoreId($activeShift->store_id ?? $this->activeStoreId, $tenantId);
+            $deviceId = $this->resolveActiveDeviceId($this->deviceId, $activeShift->device_id, $storeId, $tenantId);
             $result = app(CartService::class)->resumeParkedCart(
                 $parkedCartId,
                 $tenantId,
                 $storeId,
-                $this->deviceId ?? 1,
+                $deviceId,
                 $activeShift->id,
                 (int) $user->id
             );
@@ -826,9 +845,9 @@ class CreateOrder extends Component
     public function discardHeldCart(int $parkedCartId): void
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $storeId = app(TenantContext::class)->getStoreId() ?? 1;
 
         try {
+            $storeId = $this->resolveActiveStoreId($this->activeStoreId, $tenantId);
             app(CartService::class)->discardParkedCart($parkedCartId, $tenantId, $storeId, (int) Auth::id());
             $this->dispatch('toast', message: 'Keranjang tertunda berhasil dibatalkan.', type: 'info');
         } catch (\Throwable $e) {

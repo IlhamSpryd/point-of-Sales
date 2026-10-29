@@ -1,62 +1,91 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-bold text-xl text-apeiron-ink leading-tight">
-                {{ __('Detail Pesanan: ') . $order->order_code }}
-            </h2>
-            <div class="flex items-center gap-3">
-                @if (in_array($order->order_status->value ?? $order->order_status, ['paid', 'completed'], true))
-                    <a href="{{ route('transaction.receipt', $order->order_code) }}" target="_blank"
-                       class="px-3 py-1.5 rounded-lg bg-apeiron-ink text-white text-xs font-semibold hover:bg-black transition-colors flex items-center gap-1.5">
-                        <span class="material-symbols-rounded text-[16px]">print</span>
-                        {{ ($order->print_count ?? 0) > 0 ? __('Cetak Ulang Struk (#') . (($order->print_count ?? 0) + 1) . ')' : __('Cetak Struk') }}
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4" data-gsap="page-enter">
+            <div>
+                <div class="flex items-center gap-2.5">
+                    <h2 class="font-bold text-xl text-apeiron-ink tracking-tight">
+                        {{ __('Detail Pesanan: ') . $order->order_code }}
+                    </h2>
+                    @php
+                        $statusVal = $order->order_status->value ?? (string) $order->order_status;
+                        $statusVariant = match($statusVal) {
+                            'paid', 'completed' => 'success',
+                            'pending' => 'warning',
+                            'void', 'cancelled' => 'destructive',
+                            default => 'secondary'
+                        };
+                    @endphp
+                    <x-ui.badge :variant="$statusVariant">
+                        {{ ucfirst($statusVal) }}
+                    </x-ui.badge>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">
+                    {{ $order->created_at->format('d M Y, H:i') }} WIB &bull; Kasir: {{ $order->user->name ?? 'Kasir POS' }}
+                </p>
+            </div>
+
+            <div class="flex items-center gap-2">
+                @if (in_array($statusVal, ['paid', 'completed'], true))
+                    <a href="{{ route('transaction.receipt', $order->order_code) }}" target="_blank">
+                        <x-ui.button variant="primary" class="h-9 text-xs" x-on:click="window.erpMotion?.pulseHighlight($el)">
+                            <span class="material-symbols-rounded text-[16px]">print</span>
+                            <span>{{ ($order->print_count ?? 0) > 0 ? __('Cetak Ulang (#') . (($order->print_count ?? 0) + 1) . ')' : __('Cetak Struk') }}</span>
+                        </x-ui.button>
                     </a>
                 @endif
-                <a href="{{ route('orders.index') }}" class="text-sm text-apeiron-teal hover:underline">
-                    &larr; {{ __('Kembali ke Riwayat') }}
+                <a href="{{ route('orders.index') }}" wire:navigate>
+                    <x-ui.button variant="outline" class="h-9 text-xs">
+                        <span class="material-symbols-rounded text-[16px]">arrow_back</span>
+                        <span>{{ __('Kembali') }}</span>
+                    </x-ui.button>
                 </a>
             </div>
         </div>
     </x-slot>
 
-    <div class="py-8">
+    <div class="py-6" data-gsap="page-enter">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 space-y-6">
-                <div class="flex justify-between items-center border-b pb-4">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-6">
+                <div class="flex justify-between items-center border-b border-gray-100 pb-4">
                     <div>
-                        <span class="text-xs text-slate-400 uppercase tracking-wider font-semibold">{{ __('Kode Order') }}</span>
-                        <p class="text-lg font-bold text-slate-800 font-mono">{{ $order->order_code }}</p>
-                        <p class="text-xs text-slate-500">{{ $order->created_at->format('d M Y H:i') }} WIB</p>
+                        <span class="text-[11px] text-gray-400 uppercase tracking-wider font-bold">{{ __('Kode Pesanan') }}</span>
+                        <p class="text-lg font-black text-apeiron-ink font-mono">{{ $order->order_code }}</p>
+                        <p class="text-xs text-gray-500">{{ $order->created_at->format('d M Y H:i') }} WIB</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <x-badge :status="$order->order_status" />
+                        <x-ui.badge :variant="$statusVariant">
+                            {{ ucfirst($statusVal) }}
+                        </x-ui.badge>
                         @if ($order->orderReturns && $order->orderReturns->isNotEmpty())
-                            <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
-                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                            <x-ui.badge variant="warning">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
                                 {{ __('Retur Dicatat') }} ({{ $order->orderReturns->count() }}x)
-                            </span>
+                            </x-ui.badge>
                         @endif
                     </div>
                 </div>
 
-                <div class="space-y-2">
-                    <h3 class="font-semibold text-slate-700 text-sm uppercase tracking-wider">{{ __('Item Pesanan') }}</h3>
-                    <div class="divide-y divide-slate-100 border rounded-xl overflow-hidden">
+                <div class="space-y-2.5">
+                    <h3 class="font-bold text-gray-700 text-xs uppercase tracking-wider">{{ __('Item Pesanan') }}</h3>
+                    <div class="divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden">
                         @foreach($order->orderItems as $item)
                             @php
                                 $returnedQty = $order->orderReturns->flatMap->items->where('order_item_id', $item->id)->sum('quantity_returned');
                             @endphp
-                            <div class="p-3 flex justify-between items-center text-sm bg-white">
+                            <div class="p-3.5 flex justify-between items-center text-xs bg-white hover:bg-gray-50/50 transition-colors">
                                 <div>
-                                    <span class="font-medium text-slate-800">{{ $item->product->product_name ?? 'Produk' }}</span>
-                                    <span class="text-slate-400"> x {{ $item->qty }}</span>
+                                    <span class="font-bold text-apeiron-ink text-sm">{{ $item->product->product_name ?? 'Produk' }}</span>
+                                    <span class="text-gray-400 font-semibold"> &times; {{ $item->qty }} pcs</span>
                                     @if ($returnedQty > 0)
-                                        <span class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">
+                                        <x-ui.badge variant="warning" class="ml-2 text-[10px]">
                                             Diretur {{ $returnedQty }} pcs
-                                        </span>
+                                        </x-ui.badge>
+                                    @endif
+                                    @if($item->notes)
+                                        <p class="text-gray-400 italic text-[11px] mt-0.5">{{ $item->notes }}</p>
                                     @endif
                                 </div>
-                                <span class="font-medium text-slate-700 tabular-nums">Rp {{ number_format((float) $item->order_subtotal, 0, ',', '.') }}</span>
+                                <span class="font-black text-apeiron-ink tabular-nums text-sm">Rp {{ number_format((float) $item->order_subtotal, 0, ',', '.') }}</span>
                             </div>
                         @endforeach
                     </div>
@@ -65,28 +94,31 @@
                 {{-- Riwayat Retur & Disposisi --}}
                 @if ($order->orderReturns && $order->orderReturns->isNotEmpty())
                     <div class="space-y-3 pt-2">
-                        <h3 class="font-semibold text-amber-800 text-sm uppercase tracking-wider">{{ __('Riwayat Retur & Disposisi Inventori') }}</h3>
-                        <div class="space-y-3">
+                        <h3 class="font-bold text-amber-800 text-xs uppercase tracking-wider">{{ __('Riwayat Retur & Disposisi Inventori') }}</h3>
+                        <div class="space-y-2.5">
                             @foreach ($order->orderReturns as $ret)
                                 <div class="bg-amber-50/60 border border-amber-200 rounded-xl p-4 text-xs space-y-2">
-                                    <div class="flex justify-between items-center font-semibold text-amber-900 border-b border-amber-200 pb-2">
+                                    <div class="flex justify-between items-center font-bold text-amber-900 border-b border-amber-200 pb-2">
                                         <div class="flex items-center gap-2">
                                             <span class="font-mono text-sm">{{ $ret->return_number }}</span>
-                                            <span class="uppercase text-[10px] px-2 py-0.5 rounded bg-amber-200 text-amber-900 font-bold">{{ $ret->return_type }}</span>
+                                            <x-ui.badge variant="warning">{{ $ret->return_type }}</x-ui.badge>
                                         </div>
-                                        <span class="text-slate-500 font-normal">{{ $ret->created_at->format('d/m/Y H:i') }}</span>
+                                        <span class="text-gray-500 font-normal">{{ $ret->created_at->format('d/m/Y H:i') }}</span>
                                     </div>
-                                    <p class="text-slate-600"><strong class="text-slate-800">{{ __('Alasan:') }}</strong> {{ $ret->reason }}</p>
+                                    <p class="text-gray-600"><strong class="text-gray-800">{{ __('Alasan:') }}</strong> {{ $ret->reason }}</p>
                                     <div class="space-y-1.5 pt-1">
                                         @foreach ($ret->items as $retItem)
                                             <div class="flex justify-between items-center bg-white p-2 rounded-lg border border-amber-100">
-                                                <span>{{ $retItem->quantity_returned }}× {{ $retItem->orderItem->product->product_name ?? 'Item' }}</span>
+                                                <span class="font-medium">{{ $retItem->quantity_returned }}× {{ $retItem->orderItem->product->product_name ?? 'Item' }}</span>
                                                 <div class="flex items-center gap-2">
-                                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase
-                                                        {{ $retItem->disposition === 'restock' ? 'bg-emerald-100 text-emerald-800' : ($retItem->disposition === 'quarantine' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800') }}">
+                                                    <x-ui.badge :variant="match($retItem->disposition) {
+                                                        'restock' => 'success',
+                                                        'quarantine' => 'warning',
+                                                        default => 'destructive'
+                                                    }">
                                                         {{ $retItem->disposition }}
-                                                    </span>
-                                                    <span class="font-semibold tabular-nums">Rp {{ number_format($retItem->refund_amount, 0, ',', '.') }}</span>
+                                                    </x-ui.badge>
+                                                    <span class="font-bold tabular-nums">Rp {{ number_format($retItem->refund_amount, 0, ',', '.') }}</span>
                                                 </div>
                                             </div>
                                         @endforeach
@@ -100,16 +132,16 @@
                 {{-- Riwayat Payment Refunds --}}
                 @if ($order->paymentRefunds && $order->paymentRefunds->isNotEmpty())
                     <div class="space-y-3 pt-2">
-                        <h3 class="font-semibold text-rose-800 text-sm uppercase tracking-wider">{{ __('Riwayat Pengembalian Dana (Payment Refunds)') }}</h3>
+                        <h3 class="font-bold text-rose-800 text-xs uppercase tracking-wider">{{ __('Riwayat Pengembalian Dana (Payment Refunds)') }}</h3>
                         <div class="space-y-2">
                             @foreach ($order->paymentRefunds as $refund)
-                                <div class="bg-rose-50/50 border border-rose-200 rounded-xl p-3 text-xs space-y-1.5">
+                                <div class="bg-rose-50/50 border border-rose-200 rounded-xl p-3.5 text-xs space-y-1.5">
                                     <div class="flex justify-between items-center">
                                         <span class="font-mono font-bold text-rose-900">{{ $refund->refund_number }}</span>
-                                        <span class="font-bold text-rose-700 tabular-nums text-sm">Rp {{ number_format($refund->amount, 0, ',', '.') }}</span>
+                                        <span class="font-black text-rose-700 tabular-nums text-sm">Rp {{ number_format($refund->amount, 0, ',', '.') }}</span>
                                     </div>
-                                    <div class="grid grid-cols-2 gap-2 text-slate-500 text-[11px]">
-                                        <div>Metode: <strong class="text-slate-700 uppercase">{{ $refund->refund_method }}</strong></div>
+                                    <div class="grid grid-cols-2 gap-2 text-gray-500 text-[11px]">
+                                        <div>Metode: <strong class="text-gray-700 uppercase">{{ $refund->refund_method }}</strong></div>
                                         <div>Status: <strong class="text-emerald-700 uppercase">{{ $refund->financial_status }}</strong></div>
                                         @if ($refund->is_method_override)
                                             <div class="col-span-2 text-rose-600 font-medium">Pengecualian Tunai: {{ $refund->method_override_reason ?? 'Disetujui Supervisor' }}</div>
@@ -121,34 +153,33 @@
                     </div>
                 @endif
 
-                <div class="border-t pt-4 space-y-1.5 text-sm">
-                    <div class="flex justify-between text-slate-500">
+                <div class="border-t border-gray-100 pt-4 space-y-1.5 text-xs">
+                    <div class="flex justify-between text-gray-500">
                         <span>{{ __('Subtotal') }}</span>
-                        <span>Rp {{ number_format((float) $order->subtotal_amount, 0, ',', '.') }}</span>
+                        <span class="tabular-nums font-semibold">Rp {{ number_format((float) $order->subtotal_amount, 0, ',', '.') }}</span>
                     </div>
                     @if ($order->discount_amount > 0)
-                        <div class="flex justify-between text-rose-600">
+                        <div class="flex justify-between text-rose-600 font-semibold">
                             <span>{{ __('Diskon') }}</span>
-                            <span>- Rp {{ number_format((float) $order->discount_amount, 0, ',', '.') }}</span>
+                            <span class="tabular-nums">- Rp {{ number_format((float) $order->discount_amount, 0, ',', '.') }}</span>
                         </div>
                     @endif
-                    <div class="flex justify-between text-slate-500">
+                    <div class="flex justify-between text-gray-500">
                         <span>{{ __('Pajak') }}</span>
-                        <span>Rp {{ number_format((float) $order->tax_amount, 0, ',', '.') }}</span>
+                        <span class="tabular-nums font-semibold">Rp {{ number_format((float) $order->tax_amount, 0, ',', '.') }}</span>
                     </div>
                     @if ($order->service_charge_amount > 0)
-                        <div class="flex justify-between text-slate-500">
+                        <div class="flex justify-between text-gray-500">
                             <span>{{ __('Service Charge') }}</span>
-                            <span>Rp {{ number_format((float) $order->service_charge_amount, 0, ',', '.') }}</span>
+                            <span class="tabular-nums font-semibold">Rp {{ number_format((float) $order->service_charge_amount, 0, ',', '.') }}</span>
                         </div>
                     @endif
-                    <div class="flex justify-between text-base font-bold text-slate-800 pt-2 border-t">
+                    <div class="flex justify-between text-base font-black text-apeiron-ink pt-2.5 border-t border-gray-100">
                         <span>{{ __('Total Tagihan') }}</span>
-                        <span>Rp {{ number_format((float) $order->order_amount, 0, ',', '.') }}</span>
+                        <span class="tabular-nums">Rp {{ number_format((float) $order->order_amount, 0, ',', '.') }}</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </x-app-layout>
-

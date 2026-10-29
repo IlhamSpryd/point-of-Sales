@@ -1,13 +1,15 @@
 <x-app-layout>
     @include('catalog.partials.sub-nav')
 
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center justify-between mb-6" data-gsap="page-enter">
         <div>
             <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Ubah Produk</h4>
             <p class="text-sm font-medium text-[#787774] mt-1">Perbarui detail produk #{{ $product->id }}</p>
         </div>
-        <a href="{{ route('products.index') }}" class="flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#F7F7F5] border border-[#E9E9E7] text-apeiron-ink text-sm font-medium rounded-xl transition-all duration-200 shadow-sm active:scale-95" wire:navigate>
-            <span class="material-symbols-rounded text-[18px]">arrow_back</span> Kembali
+        <a href="{{ route('products.index') }}" wire:navigate>
+            <x-ui.button variant="outline" type="button" class="h-10">
+                <span class="material-symbols-rounded text-[18px]">arrow_back</span> Kembali
+            </x-ui.button>
         </a>
     </div>
 
@@ -433,12 +435,12 @@
             </div>
 
             <div class="pt-4 border-t border-[#E9E9E7] flex justify-end">
-                <x-button type="submit" variant="primary" :disabled="false" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''">
-                    <span x-show="!submitting">
+                <x-ui.button type="submit" variant="primary" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''" x-on:click="window.erpMotion?.pulseHighlight($el)">
+                    <span x-show="!submitting" class="flex items-center gap-1.5">
                         <span class="material-symbols-rounded text-[18px]">save</span> Perbarui Produk
                     </span>
                     <span x-show="submitting" x-cloak>Menyimpan...</span>
-                </x-button>
+                </x-ui.button>
             </div>
         </form>
     </div>

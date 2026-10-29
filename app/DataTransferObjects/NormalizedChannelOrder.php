@@ -18,5 +18,11 @@ final class NormalizedChannelOrder
         public readonly ?string $customerName = null,
         public readonly ?string $customerPhone = null,
         public readonly ?string $notes = null,
+        public readonly ?string $customerEmail = null,
+        public readonly ?string $channelCode = null,
+        public readonly array $discounts = [],
+        public readonly string $deliveryFee = '0.00',
+        public readonly string $orderType = 'Takeaway',
+        public readonly ?string $channelStatus = null,
     ) {}
 }

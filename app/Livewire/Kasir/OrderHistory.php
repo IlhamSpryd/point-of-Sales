@@ -17,6 +17,7 @@ use App\Services\CashierPinService;
 use App\Services\Printing\ReceiptPrinterService;
 use App\Services\ReturnRefundService;
 use App\Services\TransactionService;
+use App\Support\Traits\RequiresActiveStoreContext;
 use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
@@ -32,6 +33,7 @@ use Livewire\WithPagination;
 
 class OrderHistory extends Component
 {
+    use RequiresActiveStoreContext;
     use RequiresTenantContext;
     use WithPagination;
 
@@ -338,7 +340,6 @@ class OrderHistory extends Component
             ->first();
 
         $shiftId = $activeShift ? $activeShift->id : (int) $order->shift_id;
-        $deviceId = (int) ($order->created_by_device_id ?? 1);
 
         $returnItemsInput = array_map(function ($item) {
             return [
@@ -370,6 +371,12 @@ class OrderHistory extends Component
         }
 
         try {
+            $deviceId = $this->resolveActiveDeviceId(
+                null,
+                $order->created_by_device_id ? (int) $order->created_by_device_id : ($activeShift?->device_id ? (int) $activeShift->device_id : null),
+                (int) $order->store_id,
+                (int) $order->tenant_id
+            );
             $idempotencyKey = 'ret-'.Str::uuid()->toString();
             $orderReturn = $returnRefundService->createReturnAndRefund(
                 $order,

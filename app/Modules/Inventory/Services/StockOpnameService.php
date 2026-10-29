@@ -11,6 +11,7 @@ use App\Enums\StockOpnameStatusEnum;
 use App\Models\Ingredient;
 use App\Models\Product;
 use App\Models\Store;
+use App\Modules\Finance\Services\InventoryAccountingService;
 use App\Modules\Inventory\Exceptions\StockOpnameDriftException;
 use App\Modules\Inventory\Models\StockOpname;
 use App\Modules\Inventory\Models\StockOpnameItem;
@@ -616,6 +617,9 @@ class StockOpnameService
                     'total_items_count' => count($sortedItems),
                 ]
             );
+
+            // Emisi outbox akuntansi ke Modul 7
+            app(InventoryAccountingService::class)->recordStockOpnameApproved($lockedOpname);
 
             return $lockedOpname->fresh(['items.product', 'items.ingredient']);
         });

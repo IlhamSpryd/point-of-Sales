@@ -20,39 +20,40 @@
         $variant = $status;
     }
 
-    $variant = match ($variant) {
-        'danger', 'cancelled', 'void' => 'destructive',
-        'paid', 'completed' => 'success',
-        'pending' => 'warning',
-        'neutral' => 'secondary',
-        default => $variant ?? 'secondary',
+    $variant = match (strtolower((string) $variant)) {
+        'danger', 'error', 'cancelled', 'void', 'rejected', 'overdue', 'destructive' => 'destructive',
+        'paid', 'completed', 'active', 'approved', 'posted', 'matched', 'success' => 'success',
+        'pending', 'draft_approval', 'partially_paid', 'partially_received', 'warning' => 'warning',
+        'issued', 'sent', 'confirmed', 'info' => 'info',
+        'neutral', 'draft', 'inactive', 'archived', 'secondary' => 'secondary',
+        'primary' => 'primary',
+        'outline' => 'outline',
+        default => 'secondary',
     };
 
     $dotColors = [
         'success'     => 'bg-emerald-500',
         'destructive' => 'bg-rose-500',
         'warning'     => 'bg-amber-500',
-        'info'        => 'bg-sky-500',
+        'info'        => 'bg-blue-500',
         'secondary'   => 'bg-zinc-400',
         'primary'     => 'bg-zinc-400',
         'outline'     => 'bg-zinc-400',
     ];
 
     $classes = \Illuminate\Support\Arr::toCssClasses([
-        'inline-flex items-center justify-center whitespace-nowrap font-medium tracking-tight transition-colors',
-        $pill ? 'rounded-full' : 'rounded-medium',
-        /* Sizes */
-        'gap-1 px-2 py-0.5 text-xs [&>svg]:size-3' => $size === 'sm',
-        'gap-1.5 px-2.5 py-1 text-xs [&>svg]:size-3.5' => $size === 'md',
-        'gap-1.5 px-3 py-1 text-sm [&>svg]:size-4' => $size === 'lg',
-        /* Variants — solid brand, soft status (matching the alert palette) and outline */
-        'bg-primary text-primary-foreground' => $variant === 'primary',
-        'bg-secondary text-secondary-foreground' => $variant === 'secondary',
-        'border border-foreground/15 text-foreground' => $variant === 'outline',
-        'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300' => $variant === 'destructive',
-        'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300' => $variant === 'info',
-        'bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-300' => $variant === 'success',
-        'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300' => $variant === 'warning',
+        'inline-flex items-center justify-center whitespace-nowrap font-medium tracking-tight transition-colors border',
+        $pill ? 'rounded-full' : 'rounded-md',
+        'gap-1 px-2 py-0.5 text-[11px] leading-4' => $size === 'sm',
+        'gap-1.5 px-2.5 py-0.5 text-xs' => $size === 'md',
+        'gap-1.5 px-3 py-1 text-xs' => $size === 'lg',
+        'bg-primary text-primary-foreground border-transparent' => $variant === 'primary',
+        'bg-[#F1F1EF] text-[#55544E] border-[#E9E9E7]' => $variant === 'secondary',
+        'bg-transparent border-border text-foreground' => $variant === 'outline',
+        'bg-[#FFF1F2] bg-rose-50 text-[#BE123C] border-rose-200/70' => $variant === 'destructive',
+        'bg-[#EFF6FF] text-[#1D4ED8] border-blue-200/70' => $variant === 'info',
+        'bg-[#ECFDF5] bg-green-50 text-[#047857] text-green-600 border-emerald-200/70' => $variant === 'success',
+        'bg-[#FBF3E7] text-[#8A5A16] border-amber-200/70' => $variant === 'warning',
     ]);
 @endphp
 
@@ -62,12 +63,20 @@
     @endif
 
     @if ($icon && $iconPosition === 'before')
-        <x-dynamic-component :component="$icon" />
+        @if (\Illuminate\Support\Facades\View::exists('components.'.str_replace('.', '/', $icon)))
+            <x-dynamic-component :component="$icon" class="size-3.5 shrink-0" />
+        @else
+            <span class="material-symbols-rounded text-[14px] leading-none shrink-0" aria-hidden="true">{{ $icon }}</span>
+        @endif
     @endif
 
     {{ $slot->isNotEmpty() ? $slot : ($status instanceof \BackedEnum && method_exists($status, 'label') ? $status->label() : '') }}
 
     @if ($icon && $iconPosition === 'after')
-        <x-dynamic-component :component="$icon" />
+        @if (\Illuminate\Support\Facades\View::exists('components.'.str_replace('.', '/', $icon)))
+            <x-dynamic-component :component="$icon" class="size-3.5 shrink-0" />
+        @else
+            <span class="material-symbols-rounded text-[14px] leading-none shrink-0" aria-hidden="true">{{ $icon }}</span>
+        @endif
     @endif
 </span>

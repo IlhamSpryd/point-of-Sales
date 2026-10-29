@@ -14,19 +14,12 @@
     <link rel="preload" href="{{ asset('fonts/plus-jakarta-sans.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="{{ asset('fonts/material-symbols-rounded.woff2') }}" as="font" type="font/woff2" crossorigin>
 
-
-
-    <!-- ApexCharts -->
-    <link href="https://cdn.jsdelivr.net/npm/apexcharts@3.42.0/dist/apexcharts.css" rel="stylesheet">
-
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     {{-- WAJIB dimuat di SEMUA halaman (bukan kondisional) agar wire:navigate mencegat semua link --}}
     {{-- CATATAN: Alpine.js sekarang dipasok bundel oleh Livewire core (@livewireScripts), --}}
     {{-- jangan load Alpine CDN terpisah agar tidak terjadi instance ganda / konflik x-data. --}}
     @livewireStyles
-    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.42.0/dist/apexcharts.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <style>
         [x-cloak] {
@@ -72,7 +65,8 @@
             <!-- Main Scrollable Area -->
             <main
                 class="flex-1 overflow-y-auto overflow-x-hidden w-full {{ ($noPadding ?? false) ? '' : 'px-4 pb-4 pt-16 sm:px-6 sm:pb-6 sm:pt-16 lg:p-8' }} animate-fade-in flex flex-col bg-white"
-                id="main-content">
+                id="main-content"
+                data-gsap="page-enter">
                 <!-- Page Heading -->
                 @isset($header)
                     <div class="mb-6 shrink-0">
@@ -92,7 +86,8 @@
     
     <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.2.4/qz-tray.js"></script>
     <x-qz-print />
-    <x-toast />
+    <x-ui.toast />
+    <x-erp.confirm-dialog />
 </body>
 
 </html>

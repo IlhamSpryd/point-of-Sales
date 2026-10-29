@@ -3,30 +3,13 @@
 namespace App\Providers;
 
 use App\Http\Middleware\SetTenantContext;
-use App\Models\GoodsReceipt;
-use App\Models\GoodsReceivedNote;
 use App\Models\Ingredient;
 use App\Models\Product;
-use App\Models\PurchaseOrder;
-use App\Models\PurchaseRequest;
-use App\Models\PurchaseReturn;
-use App\Models\StockAdjustment;
-use App\Models\StockOpname;
-use App\Models\StockTransfer;
-use App\Models\Supplier;
-use App\Models\SupplierInvoice;
-use App\Models\SupplierReturn;
-use App\Policies\GoodsReceiptPolicy;
+use App\Modules\Finance\Contracts\PostingEngineContract;
+use App\Modules\Finance\Services\PostingEngineService;
+use App\Policies\CustomerPolicy;
 use App\Policies\GrnPolicy;
-use App\Policies\PurchaseOrderPolicy;
-use App\Policies\PurchaseRequestPolicy;
-use App\Policies\PurchaseReturnPolicy;
-use App\Policies\StockAdjustmentPolicy;
-use App\Policies\StockOpnamePolicy;
-use App\Policies\StockTransferPolicy;
-use App\Policies\SupplierInvoicePolicy;
-use App\Policies\SupplierPolicy;
-use App\Policies\SupplierReturnPolicy;
+use App\Policies\StoreCreditPolicy;
 use App\Services\Context\TenantContext;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -52,6 +35,11 @@ class AppServiceProvider extends ServiceProvider
         });
 
         $this->app->alias(TenantContext::class, \App\Core\Context\TenantContext::class);
+
+        $this->app->singleton(
+            PostingEngineContract::class,
+            PostingEngineService::class
+        );
     }
 
     /**
@@ -65,28 +53,23 @@ class AppServiceProvider extends ServiceProvider
             'role',
         ]);
 
-        Gate::policy(GoodsReceipt::class, GoodsReceiptPolicy::class);
-        Gate::policy(\App\Modules\Inventory\Models\GoodsReceipt::class, GoodsReceiptPolicy::class);
-        Gate::policy(StockAdjustment::class, StockAdjustmentPolicy::class);
-        Gate::policy(\App\Modules\Inventory\Models\StockAdjustment::class, StockAdjustmentPolicy::class);
-        Gate::policy(StockOpname::class, StockOpnamePolicy::class);
-        Gate::policy(\App\Modules\Inventory\Models\StockOpname::class, StockOpnamePolicy::class);
-        Gate::policy(StockTransfer::class, StockTransferPolicy::class);
-        Gate::policy(\App\Modules\Inventory\Models\StockTransfer::class, StockTransferPolicy::class);
-        Gate::policy(SupplierReturn::class, SupplierReturnPolicy::class);
-        Gate::policy(\App\Modules\Inventory\Models\SupplierReturn::class, SupplierReturnPolicy::class);
-        Gate::policy(Supplier::class, SupplierPolicy::class);
-        Gate::policy(\App\Modules\Purchasing\Models\Supplier::class, SupplierPolicy::class);
-        Gate::policy(PurchaseRequest::class, PurchaseRequestPolicy::class);
-        Gate::policy(\App\Modules\Purchasing\Models\PurchaseRequest::class, PurchaseRequestPolicy::class);
-        Gate::policy(PurchaseOrder::class, PurchaseOrderPolicy::class);
-        Gate::policy(\App\Modules\Purchasing\Models\PurchaseOrder::class, PurchaseOrderPolicy::class);
-        Gate::policy(GoodsReceivedNote::class, GrnPolicy::class);
-        Gate::policy(\App\Modules\Purchasing\Models\GoodsReceivedNote::class, GrnPolicy::class);
-        Gate::policy(SupplierInvoice::class, SupplierInvoicePolicy::class);
-        Gate::policy(\App\Modules\Purchasing\Models\SupplierInvoice::class, SupplierInvoicePolicy::class);
-        Gate::policy(PurchaseReturn::class, PurchaseReturnPolicy::class);
-        Gate::policy(\App\Modules\Purchasing\Models\PurchaseReturn::class, PurchaseReturnPolicy::class);
+        Gate::guessPolicyNamesUsing(static function (string $modelClass): array|string {
+            $base = class_basename($modelClass);
+
+            $explicitPolicyMap = [
+                'GoodsReceivedNote' => GrnPolicy::class,
+                'CustomerGroup' => CustomerPolicy::class,
+                'StoreCreditAccount' => StoreCreditPolicy::class,
+            ];
+
+            if (isset($explicitPolicyMap[$base])) {
+                return $explicitPolicyMap[$base];
+            }
+
+            $policyClass = "App\\Policies\\{$base}Policy";
+
+            return class_exists($policyClass) ? $policyClass : [];
+        });
 
         Relation::morphMap([
             'product' => Product::class,

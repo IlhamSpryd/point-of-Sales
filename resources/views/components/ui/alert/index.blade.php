@@ -1,45 +1,72 @@
 @props([
-    'variant' => 'primary',
+    'variant' => null,
+    'type' => null,
     'icon' => null,
     'title' => '',
     'description' => '',
+    'dismissible' => false,
 ])
 
 @php
+    $resolvedVariant = match (strtolower((string) ($variant ?? $type ?? 'primary'))) {
+        'danger', 'error', 'destructive' => 'destructive',
+        'success' => 'success',
+        'warning' => 'warning',
+        'info' => 'info',
+        'secondary' => 'secondary',
+        default => 'primary',
+    };
+
     $classes = \Illuminate\Support\Arr::toCssClasses([
-        'relative w-full max-w-xl rounded-medium border p-4 text-sm [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:size-4 [&>svg+*]:translate-y-[-3px] [&:has(svg)]:pl-11',
-        'bg-card text-card-foreground border-foreground/10 dark:border-foreground/15' => $variant === 'primary',
-        'bg-secondary text-secondary-foreground border-foreground/10 dark:border-foreground/15' => $variant === 'secondary',
-        'bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30' => $variant === 'destructive',
-        'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-500/10 dark:text-blue-300 dark:border-blue-500/30' => $variant === 'info',
-        'bg-green-50 text-green-600 border-green-200 dark:bg-green-500/10 dark:text-green-300 dark:border-green-500/30' => $variant === 'success',
-        'bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-500/10 dark:text-amber-300 dark:border-amber-500/30' => $variant === 'warning',
+        'relative w-full rounded-xl border p-4 text-xs sm:text-sm flex items-start gap-3',
+        'bg-card text-card-foreground border-border' => $resolvedVariant === 'primary',
+        'bg-secondary text-secondary-foreground border-border' => $resolvedVariant === 'secondary',
+        'bg-[#FFF1F2] bg-rose-50 text-[#BE123C] border-rose-200' => $resolvedVariant === 'destructive',
+        'bg-[#EFF6FF] text-[#1D4ED8] border-blue-200' => $resolvedVariant === 'info',
+        'bg-[#ECFDF5] bg-green-50 text-[#047857] border-emerald-200' => $resolvedVariant === 'success',
+        'bg-[#FBF3E7] text-[#8A5A16] border-amber-200' => $resolvedVariant === 'warning',
     ]);
 
-    $defaultIcons = [
-        'destructive' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>',
-        'info' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>',
-        'success' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.801 10A10 10 0 1 1 17 3.335"/><path d="m9 11 3 3L22 4"/></svg>',
-        'warning' => '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>',
+    $defaultIconNames = [
+        'destructive' => 'error',
+        'info' => 'info',
+        'success' => 'check_circle',
+        'warning' => 'warning',
+        'primary' => 'info',
+        'secondary' => 'info',
     ];
+    $iconName = $icon ?? ($defaultIconNames[$resolvedVariant] ?? 'info');
 @endphp
 
-<div role="alert" {{ $attributes->twMerge($classes) }}>
-    @if ($icon)
-        <x-dynamic-component class="size-4" :component="$icon" />
-    @elseif (isset($defaultIcons[$variant]))
-        {!! $defaultIcons[$variant] !!}
+<div x-data="{ shown: true }" x-show="shown" role="alert" {{ $attributes->twMerge($classes) }}>
+    @if (\Illuminate\Support\Facades\View::exists('components.'.str_replace('.', '/', $iconName)))
+        <x-dynamic-component class="size-4 shrink-0 mt-0.5" :component="$iconName" />
+    @else
+        <span class="material-symbols-rounded text-[18px] leading-none shrink-0 mt-0.5" aria-hidden="true">{{ $iconName }}</span>
     @endif
 
-    @if ($title)
-        <h5 class="font-medium leading-none tracking-tight">{{ $title }}</h5>
-    @endif
+    <div class="flex-1 min-w-0">
+        @if ($title)
+            <h5 class="font-bold leading-snug tracking-tight">{{ $title }}</h5>
+        @endif
 
-    @if ($description)
-        <div @class(['opacity-70', 'mt-1' => $title])>{!! $description !!}</div>
-    @endif
+        @if ($description)
+            <div @class(['opacity-90 leading-relaxed', 'mt-1' => $title])>{!! $description !!}</div>
+        @endif
 
-    @if (trim($slot ?? ''))
-        <div @class(['opacity-90', 'mt-1' => $title])>{{ $slot }}</div>
+        @if (trim($slot ?? '') !== '')
+            <div @class(['leading-relaxed', 'mt-1' => $title])>{{ $slot }}</div>
+        @endif
+    </div>
+
+    @if ($dismissible)
+        <button
+            type="button"
+            @click="shown = false"
+            aria-label="Tutup peringatan"
+            class="inline-flex size-6 shrink-0 items-center justify-center rounded-md opacity-60 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+        >
+            <span class="material-symbols-rounded text-base leading-none" aria-hidden="true">close</span>
+        </button>
     @endif
 </div>

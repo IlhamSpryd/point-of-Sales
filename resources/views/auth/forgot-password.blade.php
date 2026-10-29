@@ -1,5 +1,5 @@
 <x-guest-layout>
-    @section('title', 'Forgot Password — Apeiron POS')
+    @section('title', 'Forgot Password — Apeiron')
 
     <div class="mb-8">
         <h1 class="text-2xl font-medium tracking-tight text-zinc-950">
@@ -36,7 +36,7 @@
                 type="email"
                 name="email"
                 value="{{ old('email') }}"
-                placeholder="name@company.com"
+                placeholder="Enter your Email"
                 required
                 autofocus
                 class="field-input w-full h-10 px-3 rounded-md border border-zinc-300 bg-white text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all {{ $errors->has('email') ? 'field-input-error' : '' }}"

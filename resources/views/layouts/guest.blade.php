@@ -14,20 +14,21 @@
     <link rel="preload" href="{{ asset('fonts/plus-jakarta-sans.woff2') }}" as="font" type="font/woff2" crossorigin>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <!-- GSAP -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-
-
 </head>
 
 <body class="font-sans antialiased text-apeiron-ink bg-white min-h-screen overflow-x-hidden selection:bg-zinc-900 selection:text-white">
+
+    {{-- Aksesibilitas: Lewati ke konten utama (WCAG 2.4.1) --}}
+    <a href="#main-content"
+        class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-[#202020] focus:text-white focus:text-xs focus:font-semibold focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-[#37352F]">
+        Lewati ke konten utama
+    </a>
 
     <div id="swup" class="transition-fade min-h-screen grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 w-full bg-white overflow-x-hidden">
         <!-- KIRI: KONTEN UTAMA (7 cols di lg, 1 col di md, single col di mobile) -->
         <div class="md:col-span-1 lg:col-span-7 flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-16 w-full relative bg-white min-h-screen">
             <!-- Form Content Mount (Strictly clamped to max-w-sm to prevent horizontal stretching) -->
-            <div class="my-auto py-4 sm:py-6 w-full max-w-sm mx-auto" style="max-width: 384px;">
+            <div id="main-content" class="my-auto py-4 sm:py-6 w-full max-w-sm mx-auto" style="max-width: 384px;">
                 @hasSection('content')
                     @yield('content')
                 @else
@@ -74,6 +75,9 @@
             </div>
         @endif
     </div>
+
+    <x-ui.toast />
+    <x-erp.confirm-dialog />
 
     @yield('scripts')
 

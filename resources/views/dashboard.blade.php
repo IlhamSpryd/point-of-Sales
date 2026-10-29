@@ -31,13 +31,13 @@
 
             {{-- FLASH SESSION NOTIFICATIONS --}}
             @if (session('success'))
-                <x-alert type="success">{{ session('success') }}</x-alert>
+                <x-ui.alert type="success" dismissible>{{ session('success') }}</x-ui.alert>
             @endif
             @if (session('error'))
-                <x-alert type="error">{{ session('error') }}</x-alert>
+                <x-ui.alert type="error" dismissible>{{ session('error') }}</x-ui.alert>
             @endif
             @if (session('warning'))
-                <x-alert type="warning">{{ session('warning') }}</x-alert>
+                <x-ui.alert type="warning" dismissible>{{ session('warning') }}</x-ui.alert>
             @endif
         
             {{-- GREETING & SUMMARY --}}
