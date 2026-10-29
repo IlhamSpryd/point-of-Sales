@@ -143,7 +143,7 @@
                 @endif
 
                 {{-- Panduan Teknis Kasir --}}
-                <div class="card-surface p-6 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 space-y-4 shadow-xs">
+                <div class="card-surface p-6 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 space-y-4 shadow-xs">
                     <h5 class="text-sm font-bold text-apeiron-ink dark:text-zinc-100 uppercase tracking-wider">Panduan Pemasangan Kasir Fisik</h5>
                     <ol class="list-decimal list-inside text-sm text-zinc-500 space-y-2">
                         <li>Buka aplikasi Apeiron di terminal fisik kasir Anda.</li>
@@ -156,7 +156,7 @@
 
             {{-- Kartu Rincian Spesifikasi --}}
             <div class="space-y-6">
-                <div class="card-surface p-6 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 space-y-4 shadow-xs">
+                <div class="card-surface p-6 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 space-y-4 shadow-xs">
                     <h5 class="text-sm font-bold text-apeiron-ink dark:text-zinc-100 uppercase tracking-wider">Rincian Perangkat</h5>
                     
                     <div class="space-y-3 text-sm">

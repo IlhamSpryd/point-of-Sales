@@ -18,8 +18,8 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Form Pemetaan Baru -->
-        <div class="card-surface p-6 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 lg:col-span-1 h-fit shadow-xs">
-            <h2 class="text-sm font-bold text-zinc-900 dark:text-white mb-5 tracking-tight border-b border-zinc-200/80 dark:border-zinc-800 pb-3 flex items-center gap-2">
+        <div class="card-surface p-6 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 lg:col-span-1 h-fit shadow-xs">
+            <h2 class="text-sm font-bold text-zinc-900 dark:text-white mb-5 tracking-tight border-b border-[#E5E7EB] dark:border-zinc-800 pb-3 flex items-center gap-2">
                 <span class="material-symbols-rounded text-apeiron-primary text-lg">add_link</span>
                 Tambah Pemetaan Baru
             </h2>
@@ -58,8 +58,8 @@
         </div>
 
         <!-- Tabel Daftar Pemetaan -->
-        <div class="card-surface overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800 lg:col-span-2 flex flex-col shadow-xs">
-            <div class="px-6 py-4 border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
+        <div class="card-surface overflow-hidden rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 lg:col-span-2 flex flex-col shadow-xs">
+            <div class="px-6 py-4 border-b border-[#E5E7EB] dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
                 <h2 class="text-sm font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
                     <span class="material-symbols-rounded text-apeiron-primary text-lg">sync_alt</span>
                     Daftar Pemetaan Aktif
@@ -69,14 +69,14 @@
             <div class="overflow-x-auto flex-1">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-900/30 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                        <tr class="border-b border-[#E5E7EB] dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-900/30 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                             <th class="px-6 py-3.5">Provider</th>
                             <th class="px-6 py-3.5">SKU Eksternal</th>
                             <th class="px-6 py-3.5">Produk Internal</th>
                             <th class="px-6 py-3.5 text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800/70">
                         @forelse($mappings as $mapping)
                             <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
                                 <td class="px-6 py-4">
@@ -112,7 +112,7 @@
                 </table>
             </div>
             @if($mappings->hasPages())
-                <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800">
+                <div class="p-4 border-t border-[#E5E7EB] dark:border-zinc-800">
                     {{ $mappings->links() }}
                 </div>
             @endif

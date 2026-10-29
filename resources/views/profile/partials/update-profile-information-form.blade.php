@@ -66,7 +66,7 @@
         </div>
     </form>
 
-    <div class="mt-8 pt-8 border-t border-[#E9E9E7]">
+    <div class="mt-8 pt-8 border-t border-[#E5E7EB]">
         <h3 class="text-md font-bold text-apeiron-ink">
             {{ __('Perubahan Alamat Email (Verify-Before-Swap)') }}
         </h3>

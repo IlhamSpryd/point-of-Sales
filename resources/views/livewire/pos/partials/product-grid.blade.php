@@ -27,7 +27,7 @@
                             role="button" tabindex="{{ $isOutOfStock ? '-1' : '0' }}"
                             @if($isOutOfStock) aria-disabled="true" @endif
                             aria-label="{{ $isOutOfStock ? ($product->product_name . ' - Stok Habis') : ('Tambah ' . $product->product_name . ' ke keranjang, harga Rp ' . number_format($product->product_price, 0, ',', '.')) }}"
-                            class="{{ $isOutOfStock ? 'opacity-60 cursor-not-allowed bg-gray-50 border border-gray-200' : 'group bg-white border border-gray-200 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:border-apeiron-ink hover:shadow-md hover:-translate-y-0.5 cursor-pointer active:scale-[0.98]' }} rounded-2xl transition-all duration-200 flex flex-col h-full relative outline-none focus-visible:ring-2 focus-visible:ring-gray-900 select-none">
+                            class="{{ $isOutOfStock ? 'opacity-60 cursor-not-allowed bg-gray-50 border border-[#E5E7EB]' : 'group bg-white border border-[#E5E7EB] shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:border-apeiron-ink hover:shadow-md hover:-translate-y-0.5 cursor-pointer active:scale-[0.98]' }} rounded-2xl transition-all duration-200 flex flex-col h-full relative outline-none focus-visible:ring-2 focus-visible:ring-gray-900 select-none">
 
                             @if ($inCartQty > 0)
                                 <div class="absolute -top-2 -right-2 z-20 flex">
@@ -37,7 +37,7 @@
                                 </div>
                             @endif
 
-                            <div class="w-full aspect-square sm:aspect-[4/3] bg-gray-50 relative overflow-hidden group-hover:opacity-95 transition-opacity rounded-t-2xl shrink-0 border-b border-gray-100 flex items-center justify-center">
+                            <div class="w-full aspect-square sm:aspect-[4/3] bg-gray-50 relative overflow-hidden group-hover:opacity-95 transition-opacity rounded-t-2xl shrink-0 border-b border-[#E5E7EB] flex items-center justify-center">
                                 @if ($isOutOfStock)
                                     <div class="absolute inset-0 bg-white/75 backdrop-blur-[1px] flex items-center justify-center z-10">
                                         <span class="px-2.5 py-1 rounded-lg bg-gray-800 text-white text-[11px] font-bold uppercase tracking-wider">Stok Habis</span>

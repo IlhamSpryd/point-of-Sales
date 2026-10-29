@@ -54,7 +54,12 @@ class PriceListController extends Controller
 
         $priceLists = $query->paginate(15)->withQueryString();
 
-        return view('price_lists.index', compact('priceLists'));
+        $customers = Customer::orderBy('name')->get(['id', 'name', 'phone']);
+        $loyaltyTiers = LoyaltyTier::all();
+        $stores = Store::where('is_active', true)->orderBy('name')->get();
+        $products = Product::where('is_active', true)->with('variants')->orderBy('product_name')->get();
+
+        return view('price_lists.index', compact('priceLists', 'customers', 'loyaltyTiers', 'stores', 'products'));
     }
 
     public function create(): View

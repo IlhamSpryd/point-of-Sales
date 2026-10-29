@@ -16,7 +16,7 @@
             </x-slot:actions>
         </x-erp.page-header>
 
-        <div class="card-surface overflow-hidden w-full rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+        <div class="card-surface overflow-hidden w-full rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 shadow-xs">
             <form action="{{ route('devices.update', $device) }}" method="POST" x-data="{ submitting: false }" @submit="submitting = true" class="p-6 md:p-8 space-y-6">
                 @csrf
                 @method('PUT')
@@ -70,7 +70,7 @@
                     </label>
                 </div>
 
-                <div class="pt-4 border-t border-zinc-200/80 dark:border-zinc-800 flex justify-end">
+                <div class="pt-4 border-t border-[#E5E7EB] dark:border-zinc-800 flex justify-end">
                     <x-ui.button type="submit" variant="primary" class="gap-2" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''">
                         <span x-show="!submitting" class="inline-flex items-center gap-1.5">
                             <span class="material-symbols-rounded text-base">save</span> Perbarui Perangkat

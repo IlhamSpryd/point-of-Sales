@@ -1,11 +1,11 @@
-<div class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm shrink-0 flex flex-col border-b border-gray-100">
+<div class="sticky top-0 z-30 bg-white/95 backdrop-blur-sm shrink-0 flex flex-col border-b border-[#E5E7EB]">
     <!-- Bagian Header: Menampilkan informasi singkat -->
     <header class="flex justify-between items-center px-4 lg:px-6 h-[72px] shrink-0">
         <div class="flex items-center gap-3">
             {{-- Indikator Perangkat / Shift Aktif (Klik langsung ke Shift Index) --}}
             <a href="{{ route('shifts.index') }}"
                 title="Kelola Shift Kasir"
-                class="hidden xl:flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-gray-200/80 rounded-xl text-xs font-bold text-gray-700 transition-colors">
+                class="hidden xl:flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-[#E5E7EB]/80 rounded-xl text-xs font-bold text-gray-700 transition-colors">
                 <span class="w-2 h-2 rounded-full {{ $this->activeShift && $this->activeShift->status === 'open' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500' }}"></span>
                 <span>{{ $this->activeShift?->device?->device_name ?? 'POS Terminal' }}</span>
                 <span class="text-gray-300">|</span>
@@ -14,7 +14,7 @@
 
             <!-- Tipe Pesanan & Meja (Desktop style) -->
             <div class="hidden sm:flex items-center gap-3">
-                <div class="flex gap-1 p-1 bg-gray-100/80 rounded-xl border border-gray-200/50">
+                <div class="flex gap-1 p-1 bg-gray-100/80 rounded-xl border border-[#E5E7EB]/50">
                     <label class="flex items-center cursor-pointer">
                         <input type="radio" wire:model.live="orderType" value="dine_in" class="peer sr-only">
                         <span class="px-4 py-1.5 rounded-lg text-[13px] font-bold transition-all duration-200 peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-apeiron-ink text-gray-500 hover:text-apeiron-ink">
@@ -32,7 +32,7 @@
                 @if ($orderType === 'dine_in' && $this->isTablesEnabled)
                     <div class="relative">
                         <select wire:model="tableId"
-                            class="bg-gray-100/80 border border-gray-200/50 text-gray-700 font-bold text-[13px] rounded-xl hover:bg-gray-200/50 hover:text-apeiron-ink focus:bg-white focus:border-gray-300 focus:ring-0 block pl-4 pr-9 py-1.5 transition-all duration-200 min-h-[36px] appearance-none cursor-pointer">
+                            class="bg-gray-100/80 border border-[#E5E7EB]/50 text-gray-700 font-bold text-[13px] rounded-xl hover:bg-gray-200/50 hover:text-apeiron-ink focus:bg-white focus:border-gray-300 focus:ring-0 block pl-4 pr-9 py-1.5 transition-all duration-200 min-h-[36px] appearance-none cursor-pointer">
                             <option value="">-- Pilih Meja --</option>
                             @foreach ($this->activeTables as $table)
                                 @php
@@ -72,7 +72,7 @@
 
             {{-- Tombol Tahan Keranjang (F8) --}}
             <button type="button" wire:click="$set('isParkModalOpen', true)" :disabled="{{ count($cart) === 0 ? 'true' : 'false' }}"
-                class="disabled:opacity-40 disabled:cursor-not-allowed px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm"
+                class="disabled:opacity-40 disabled:cursor-not-allowed px-3 py-2 rounded-xl border border-[#E5E7EB] bg-white text-xs font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm"
                 title="Tahan Keranjang Saat Ini (Pintasan: F8)">
                 <span class="material-symbols-rounded text-[18px]">pause_circle</span>
                 <span class="hidden md:inline">Tahan</span>
@@ -81,7 +81,7 @@
 
             {{-- Tombol Daftar Keranjang Tertunda (F9) --}}
             <button type="button" wire:click="$set('isParkedListOpen', true)"
-                class="relative px-3 py-2 rounded-xl border border-gray-200 bg-white text-xs font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm"
+                class="relative px-3 py-2 rounded-xl border border-[#E5E7EB] bg-white text-xs font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm"
                 title="Daftar Keranjang Tertunda (Pintasan: F9)">
                 <span class="material-symbols-rounded text-[18px]">inbox</span>
                 <span class="hidden md:inline">Tertunda</span>
@@ -96,7 +96,7 @@
 
     <!-- Mobile Fallback for Order Type & Table (visible only on small screens) -->
     <div class="sm:hidden px-4 pb-3 flex flex-col gap-2">
-        <div class="flex gap-1 p-1 bg-gray-100/80 rounded-xl border border-gray-200/50">
+        <div class="flex gap-1 p-1 bg-gray-100/80 rounded-xl border border-[#E5E7EB]/50">
             <label class="flex-1 flex items-center cursor-pointer">
                 <input type="radio" wire:model.live="orderType" value="dine_in" class="peer sr-only">
                 <span class="w-full text-center px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-200 peer-checked:bg-white peer-checked:shadow-sm peer-checked:text-apeiron-ink text-gray-500 hover:text-apeiron-ink">
@@ -113,7 +113,7 @@
         @if ($orderType === 'dine_in' && $this->isTablesEnabled)
             <div class="relative">
                 <select wire:model="tableId"
-                    class="w-full bg-gray-100/80 border border-gray-200/50 text-gray-700 font-bold text-xs rounded-xl hover:bg-gray-200/50 hover:text-apeiron-ink focus:bg-white focus:border-gray-300 focus:ring-0 block pl-3 pr-8 py-1.5 transition-all duration-200 min-h-[36px] appearance-none cursor-pointer">
+                    class="w-full bg-gray-100/80 border border-[#E5E7EB]/50 text-gray-700 font-bold text-xs rounded-xl hover:bg-gray-200/50 hover:text-apeiron-ink focus:bg-white focus:border-gray-300 focus:ring-0 block pl-3 pr-8 py-1.5 transition-all duration-200 min-h-[36px] appearance-none cursor-pointer">
                     <option value="">-- Pilih Meja --</option>
                     @foreach ($this->activeTables as $table)
                         @php
@@ -148,7 +148,7 @@
                 <!-- Tombol Semua -->
                 <a href="#top-products" @click="activeCategory = 'all'"
                     :class="activeCategory === 'all' ? 'bg-apeiron-ink text-white shadow-sm' :
-                        'bg-white text-gray-500 hover:bg-gray-50 hover:text-apeiron-ink border border-gray-200'"
+                        'bg-white text-gray-500 hover:bg-gray-50 hover:text-apeiron-ink border border-[#E5E7EB]'"
                     class="snap-start shrink-0 inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink active:scale-95">
                     <span class="tracking-tight">Semua</span>
                     <span :class="activeCategory === 'all' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600'"
@@ -162,7 +162,7 @@
                         <a href="#cat-{{ $category->id }}" @click="activeCategory = {{ $category->id }}"
                             :class="activeCategory === {{ $category->id }} ?
                                 'bg-apeiron-ink text-white shadow-sm' :
-                                'bg-white text-gray-500 hover:bg-gray-50 hover:text-apeiron-ink border border-gray-200'"
+                                'bg-white text-gray-500 hover:bg-gray-50 hover:text-apeiron-ink border border-[#E5E7EB]'"
                             class="snap-start shrink-0 inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink active:scale-95">
                             <span class="tracking-tight">{{ $category->category_name }}</span>
                             <span :class="activeCategory === {{ $category->id }} ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600'"

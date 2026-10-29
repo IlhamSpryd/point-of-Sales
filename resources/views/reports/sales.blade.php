@@ -42,7 +42,7 @@
 
         {{-- EOD / Z-Report Closing Section --}}
         @if ($eodSettlement && $eodSettlement->status === 'closed')
-            <div class="card-surface p-6 rounded-2xl border-l-4 border-l-emerald-500 border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+            <div class="card-surface p-6 rounded-2xl border-l-4 border-l-emerald-500 border border-[#E5E7EB] dark:border-zinc-800 shadow-xs">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-4 mb-4">
                     <div>
                         <div class="flex items-center gap-2">
@@ -80,7 +80,7 @@
                 </div>
             </div>
         @else
-            <div class="card-surface p-6 rounded-2xl border-l-4 border-l-amber-500 border border-zinc-200/80 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+            <div class="card-surface p-6 rounded-2xl border-l-4 border-l-amber-500 border border-[#E5E7EB] dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
                 <div>
                     <div class="flex items-center gap-2">
                         <x-ui.badge variant="warning" size="sm">
@@ -103,19 +103,19 @@
         <div>
             <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">Ringkasan Keuangan Terinci (Audit Paritas Penjualan)</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="card-surface p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800">
+                <div class="card-surface p-5 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800">
                     <span class="text-xs font-semibold text-zinc-500 uppercase block mb-1">Gross Sales</span>
                     <h4 class="text-xl font-extrabold font-mono text-zinc-900 dark:text-white">Rp {{ number_format((float) $detailedSummary['gross_sales'], 0, ',', '.') }}</h4>
                     <span class="text-[11px] text-zinc-400 mt-1 block">{{ $detailedSummary['paid_orders_count'] }} Order Lunas</span>
                 </div>
 
-                <div class="card-surface p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800">
+                <div class="card-surface p-5 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800">
                     <span class="text-xs font-semibold text-rose-600 uppercase block mb-1">Total Diskon</span>
                     <h4 class="text-xl font-extrabold font-mono text-rose-600">- Rp {{ number_format((float) $detailedSummary['total_discounts'], 0, ',', '.') }}</h4>
                     <span class="text-[11px] text-zinc-400 mt-1 block">Item + Voucher</span>
                 </div>
 
-                <div class="card-surface p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800">
+                <div class="card-surface p-5 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800">
                     <span class="text-xs font-semibold text-amber-600 uppercase block mb-1">Total Retur &amp; Refund</span>
                     <h4 class="text-xl font-extrabold font-mono text-amber-600">- Rp {{ number_format((float) $detailedSummary['total_returns_refunds'], 0, ',', '.') }}</h4>
                     <span class="text-[11px] text-zinc-400 mt-1 block">Kompensasi Pengembalian</span>
@@ -127,25 +127,25 @@
                     <span class="text-[11px] text-emerald-600 dark:text-emerald-500 mt-1 block">Gross - Diskon - Retur</span>
                 </div>
 
-                <div class="card-surface p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800">
+                <div class="card-surface p-5 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800">
                     <span class="text-xs font-semibold text-zinc-500 uppercase block mb-1">Total Pajak (PB1)</span>
                     <h4 class="text-xl font-extrabold font-mono text-zinc-900 dark:text-white">Rp {{ number_format((float) $detailedSummary['total_tax'], 0, ',', '.') }}</h4>
                     <span class="text-[11px] text-zinc-400 mt-1 block">Kewajiban Perpajakan</span>
                 </div>
 
-                <div class="card-surface p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800">
+                <div class="card-surface p-5 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800">
                     <span class="text-xs font-semibold text-zinc-500 uppercase block mb-1">Total Service Charge</span>
                     <h4 class="text-xl font-extrabold font-mono text-zinc-900 dark:text-white">Rp {{ number_format((float) $detailedSummary['total_service_charge'], 0, ',', '.') }}</h4>
                     <span class="text-[11px] text-zinc-400 mt-1 block">Biaya Layanan Resto</span>
                 </div>
 
-                <div class="card-surface p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800">
+                <div class="card-surface p-5 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800">
                     <span class="text-xs font-semibold text-rose-500 uppercase block mb-1">Total Void</span>
                     <h4 class="text-xl font-extrabold font-mono text-rose-500">Rp {{ number_format((float) $detailedSummary['total_voids'], 0, ',', '.') }}</h4>
                     <span class="text-[11px] text-zinc-400 mt-1 block">{{ $detailedSummary['voided_orders_count'] }} Order Dibatalkan</span>
                 </div>
 
-                <div class="card-surface p-5 rounded-2xl border border-zinc-200/80 dark:border-zinc-800">
+                <div class="card-surface p-5 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800">
                     <span class="text-xs font-semibold text-zinc-500 uppercase block mb-1">Volume Transaksi</span>
                     <h4 class="text-xl font-extrabold font-mono text-zinc-900 dark:text-white">{{ $detailedSummary['paid_orders_count'] }} Transaksi</h4>
                     <span class="text-[11px] text-zinc-400 mt-1 block">Dalam periode terpilih</span>
@@ -159,7 +159,7 @@
                 <h3 class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">Rincian Pembayaran Per Metode</h3>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     @foreach ($paymentBreakdown as $pay)
-                        <div class="card-surface p-4 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 flex justify-between items-center shadow-xs">
+                        <div class="card-surface p-4 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 flex justify-between items-center shadow-xs">
                             <div>
                                 <span class="text-xs text-zinc-600 dark:text-zinc-400 uppercase font-bold block">{{ is_string($pay->payment_method) ? $pay->payment_method : ($pay->payment_method->label() ?? $pay->payment_method->value) }}</span>
                                 <span class="text-xs text-zinc-400">{{ $pay->count }} Transaksi</span>
@@ -172,22 +172,22 @@
         @endif
 
         <!-- Transaction Table -->
-        <div class="card-surface overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
-            <div class="px-6 py-4 border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
+        <div class="card-surface overflow-hidden rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 shadow-xs">
+            <div class="px-6 py-4 border-b border-[#E5E7EB] dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
                 <h2 class="text-base font-bold text-zinc-900 dark:text-white">Daftar Transaksi Terbaru</h2>
                 <span class="text-xs text-zinc-400">Menampilkan mutasi terkini</span>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-900/30 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                        <tr class="border-b border-[#E5E7EB] dark:border-zinc-800 bg-zinc-50/30 dark:bg-zinc-900/30 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                             <th class="px-6 py-3.5">Kode Pesanan</th>
                             <th class="px-6 py-3.5">Tanggal</th>
                             <th class="px-6 py-3.5">Kasir</th>
                             <th class="px-6 py-3.5 text-right">Nilai Transaksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800/70">
                         @forelse ($recentOrders as $order)
                         <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
                             <td class="px-6 py-4">
@@ -210,7 +210,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800">
+            <div class="p-4 border-t border-[#E5E7EB] dark:border-zinc-800">
                 {{ $recentOrders->links() }}
             </div>
         </div>

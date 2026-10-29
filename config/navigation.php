@@ -21,7 +21,7 @@ declare(strict_types=1);
 
 return [
     'sections' => [
-        'Pusat Kerja' => [
+        'Ikhtisar' => [
             [
                 'label' => 'Dashboard',
                 'icon' => 'space_dashboard',
@@ -30,6 +30,8 @@ return [
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'tenant',
             ],
+        ],
+        'Kasir & Operasional' => [
             [
                 'label' => 'Kasir (POS)',
                 'icon' => 'point_of_sale',
@@ -38,16 +40,6 @@ return [
                 'roles' => ['Owner', 'Manager', 'Kasir'],
                 'scope' => 'store',
             ],
-            [
-                'label' => 'Dapur (KDS)',
-                'icon' => 'restaurant_menu',
-                'route' => 'kds.index',
-                'active' => 'kds.*',
-                'roles' => ['Owner', 'Manager', 'Kasir', 'Barista', 'Waiter', 'Cook'],
-                'scope' => 'store',
-            ],
-        ],
-        'Operasional Toko' => [
             [
                 'label' => 'Riwayat Pesanan',
                 'icon' => 'receipt_long',
@@ -64,16 +56,8 @@ return [
                 'roles' => ['Owner', 'Manager', 'Kasir', 'Supervisor'],
                 'scope' => 'store',
             ],
-            [
-                'label' => 'Meja & QR',
-                'icon' => 'table_restaurant',
-                'route' => 'tables.index',
-                'active' => 'tables.*',
-                'roles' => ['Owner', 'Manager'],
-                'scope' => 'store',
-            ],
         ],
-        'Suplai & Inventori' => [
+        'Katalog & Resep' => [
             [
                 'label' => 'Katalog Produk',
                 'icon' => 'inventory_2',
@@ -84,26 +68,55 @@ return [
                     'brands.*',
                     'units-of-measure.*',
                     'inventory.modifiers',
-                    'tax-classes.*',
-                    'assortments.*',
-                    'price-lists.*',
                 ],
                 'roles' => ['Owner', 'Manager', 'Inventory'],
                 'scope' => 'tenant',
             ],
             [
-                'label' => 'Inventori & Stok',
+                'label' => 'Daftar Harga',
+                'icon' => 'price_change',
+                'route' => 'price-lists.index',
+                'active' => 'price-lists.*',
+                'roles' => ['Owner', 'Manager', 'Inventory'],
+                'scope' => 'tenant',
+            ],
+            [
+                'label' => 'Asortimen Cabang',
+                'icon' => 'storefront',
+                'route' => 'assortments.index',
+                'active' => 'assortments.*',
+                'roles' => ['Owner', 'Manager', 'Inventory'],
+                'scope' => 'store',
+            ],
+        ],
+        'Inventori & Suplai' => [
+            [
+                'label' => 'Bahan Baku & Stok',
                 'icon' => 'warehouse',
                 'route' => 'inventory.ingredients',
+                'active' => 'inventory.ingredients*',
+                'roles' => ['Owner', 'Manager', 'Inventory'],
+                'scope' => 'store',
+            ],
+            [
+                'label' => 'Operasional Stok',
+                'icon' => 'sync_alt',
+                'route' => 'inventory.goods-receipts',
                 'active' => [
-                    'inventory.ingredients*',
-                    'inventory.ledger*',
                     'inventory.goods-receipts*',
                     'inventory.adjustments*',
                     'inventory.opnames*',
-                    'inventory.transfers*',
                     'inventory.supplier-returns*',
+                    'inventory.transfers*',
                 ],
+                'roles' => ['Owner', 'Manager', 'Inventory'],
+                'scope' => 'store',
+            ],
+            [
+                'label' => 'Buku Besar Stok',
+                'icon' => 'menu_book',
+                'route' => 'inventory.ledger',
+                'active' => 'inventory.ledger*',
                 'roles' => ['Owner', 'Manager', 'Inventory'],
                 'scope' => 'store',
             ],
@@ -116,7 +129,7 @@ return [
                 'scope' => 'tenant',
             ],
         ],
-        'Analitik & Penjualan' => [
+        'Analitik & Pelanggan' => [
             [
                 'label' => 'Laporan Penjualan',
                 'icon' => 'analytics',
@@ -134,22 +147,6 @@ return [
                 'scope' => 'tenant',
             ],
             [
-                'label' => 'Penjualan B2B & AR',
-                'icon' => 'request_quote',
-                'route' => 'sales.orders.index',
-                'active' => 'sales.*',
-                'roles' => ['Owner', 'Manager', 'Sales', 'Admin', 'Finance'],
-                'scope' => 'tenant',
-            ],
-            [
-                'label' => 'Keuangan & Akuntansi',
-                'icon' => 'account_balance',
-                'route' => 'finance.index',
-                'active' => 'finance.*',
-                'roles' => ['Owner', 'Manager', 'Finance', 'Admin'],
-                'scope' => 'tenant',
-            ],
-            [
                 'label' => 'Diskon & Promo',
                 'icon' => 'sell',
                 'route' => 'discounts.index',
@@ -158,7 +155,7 @@ return [
                 'scope' => 'store',
             ],
         ],
-        'Pengaturan & Kelola' => [
+        'Pengaturan & Tata Kelola' => [
             [
                 'label' => 'Cabang',
                 'icon' => 'storefront',
@@ -192,15 +189,15 @@ return [
                 'scope' => 'store',
             ],
             [
-                'label' => 'Integrasi Channel',
-                'icon' => 'hub',
-                'route' => 'integrations.channel-mapping',
-                'active' => 'integrations.*',
-                'roles' => ['Owner', 'Manager'],
+                'label' => 'Pengaturan Sistem',
+                'icon' => 'settings',
+                'route' => 'settings.index',
+                'active' => ['settings.*', 'tax-classes.*'],
+                'roles' => ['Owner'],
                 'scope' => 'tenant',
             ],
             [
-                'label' => 'Audit Log',
+                'label' => 'Log Audit',
                 'icon' => 'manage_search',
                 'route' => 'activity-logs.index',
                 'active' => 'activity-logs.*',

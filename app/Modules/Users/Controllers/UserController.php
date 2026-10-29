@@ -41,9 +41,11 @@ class UserController extends Controller
 
         // Mengambil data pengguna dengan filter dari UserService berserta paginasinya
         $users = $this->userService->getFilteredQuery($request)->paginate(10)->withQueryString();
+        $roles = Role::orderBy('name')->get();
+        $invitations = \App\Models\UserInvitation::with(['role', 'invitedBy'])->latest('id')->limit(20)->get();
 
-        // Mengembalikan View dan mengirim data users
-        return view('users.index', compact('users'));
+        // Mengembalikan View dan mengirim data users, roles, invitations
+        return view('users.index', compact('users', 'roles', 'invitations'));
     }
 
     /**

@@ -34,7 +34,7 @@
             </x-ui.alert>
         @endif
 
-        <div class="card-surface flex flex-col flex-1 min-h-0 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden shadow-xs">
+        <div class="card-surface flex flex-col flex-1 min-h-0 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 overflow-hidden shadow-xs">
             <x-data-table>
                 <x-slot:head>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Nama Calon Staf</th>
@@ -102,7 +102,7 @@
                 @endforelse
             </x-data-table>
 
-            <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800 shrink-0">
+            <div class="p-4 border-t border-[#E5E7EB] dark:border-zinc-800 shrink-0">
                 {{ $invitations->links() }}
             </div>
         </div>

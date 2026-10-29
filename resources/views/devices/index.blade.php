@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="space-y-6" data-gsap="page-enter">
+    <div x-data="{ createDeviceDrawer: {{ $errors->any() ? 'true' : 'false' }} }" class="space-y-6" data-gsap="page-enter">
         <!-- Header -->
         <x-erp.page-header
             title="Perangkat Kasir & Terminal POS"
@@ -10,7 +10,7 @@
             </x-slot:breadcrumbs>
 
             <x-slot:actions>
-                <x-ui.button variant="primary" href="{{ route('devices.create') }}" class="gap-2" wire:navigate>
+                <x-ui.button variant="primary" type="button" @click="createDeviceDrawer = true" class="gap-2">
                     <span class="material-symbols-rounded text-base">add_to_queue</span>
                     Daftarkan Perangkat
                 </x-ui.button>
@@ -29,7 +29,7 @@
         @endif
 
         {{-- Filter Bar --}}
-        <div class="card-surface p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 border border-zinc-200/80 dark:border-zinc-800">
+        <div class="card-surface p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 border border-[#E5E7EB] dark:border-zinc-800">
             <form method="GET" action="{{ route('devices.index') }}" class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                 <div class="w-48">
                     <select name="store_id" onchange="this.form.submit()" class="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-xs focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
@@ -66,11 +66,11 @@
             </form>
         </div>
 
-        <div class="card-surface overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+        <div class="card-surface overflow-hidden rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 shadow-xs">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                        <tr class="border-b border-[#E5E7EB] dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                             <th class="px-6 py-4">Kode</th>
                             <th class="px-6 py-4">Perangkat &amp; Cabang</th>
                             <th class="px-6 py-4">Tipe</th>
@@ -79,7 +79,7 @@
                             <th class="px-6 py-4 text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800/70">
                         @forelse($devices as $device)
                             <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
                                 <td class="px-6 py-4 font-mono font-medium text-apeiron-ink dark:text-white text-sm whitespace-nowrap">
@@ -155,10 +155,59 @@
                 </table>
             </div>
             @if($devices->hasPages())
-                <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800">
+                <div class="p-4 border-t border-[#E5E7EB] dark:border-zinc-800">
                     {{ $devices->links() }}
                 </div>
             @endif
         </div>
+
+        {{-- Contextual Drawer for PAGE-065 (Register Device) --}}
+        <x-ui.drawer x-model="createDeviceDrawer" maxWidth="lg">
+            <x-slot:header>
+                <span>Daftarkan Perangkat Baru</span>
+            </x-slot:header>
+
+            <form action="{{ route('devices.store') }}" method="POST" id="createDeviceDrawerForm" class="space-y-4">
+                @csrf
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Nama Perangkat <span class="text-rose-500">*</span></label>
+                    <input type="text" name="device_name" value="{{ old('device_name') }}" required placeholder="Contoh: Kasir Utama Lantai 1 / iPad Bar" class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Penempatan Cabang (Store) <span class="text-rose-500">*</span></label>
+                    <select name="store_id" required class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                        <option value="">Pilih Cabang</option>
+                        @foreach($stores as $st)
+                            <option value="{{ $st->id }}">{{ $st->name }} ({{ $st->code }})</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Tipe Perangkat Fisik <span class="text-rose-500">*</span></label>
+                    <select name="device_type" required class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                        <option value="pos_terminal">Terminal POS Kasir</option>
+                        <option value="kds_display">Kitchen Display System (KDS)</option>
+                        <option value="waiter_tablet">Tablet Pelayan / Order Taker</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Catatan Lokasi / Identifikasi (Opsional)</label>
+                    <textarea name="notes" rows="3" placeholder="Informasi tambahan letak fisik perangkat..." class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">{{ old('notes') }}</textarea>
+                </div>
+            </form>
+
+            <x-slot:footer>
+                <x-ui.button variant="secondary" type="button" @click="createDeviceDrawer = false">
+                    Batal
+                </x-ui.button>
+                <x-ui.button variant="primary" type="submit" form="createDeviceDrawerForm">
+                    Daftarkan & Generate Token
+                </x-ui.button>
+            </x-slot:footer>
+        </x-ui.drawer>
     </div>
 </x-app-layout>

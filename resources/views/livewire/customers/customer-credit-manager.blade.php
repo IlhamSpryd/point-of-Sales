@@ -56,7 +56,7 @@
     </div>
 
     <!-- Filter & Toolbar -->
-    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-zinc-200/80 dark:border-zinc-800">
+    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-[#E5E7EB] dark:border-zinc-800">
         <div class="flex-1 max-w-md">
             <x-ui.input
                 type="text"
@@ -75,11 +75,11 @@
     </div>
 
     <!-- Table -->
-    <div class="card-surface overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-sm">
+    <div class="card-surface overflow-hidden rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 shadow-sm">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-sm text-zinc-600 dark:text-zinc-300">
                 <thead>
-                    <tr class="border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                    <tr class="border-b border-[#E5E7EB] dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                         <th class="py-3.5 px-4">Pelanggan</th>
                         <th class="py-3.5 px-4 text-right">Plafon Kredit</th>
                         <th class="py-3.5 px-4 text-center">Termin & Toleransi</th>
@@ -89,7 +89,7 @@
                         <th class="py-3.5 px-4 text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800/70">
                     @forelse($customers as $cust)
                         @php
                             $acc = $cust->creditAccount;

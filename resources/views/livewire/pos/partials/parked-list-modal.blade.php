@@ -22,7 +22,7 @@
                     $pItems = $pPayload['items'] ?? $pPayload;
                     $pCount = is_array($pItems) ? array_sum(array_column($pItems, 'qty')) : 0;
                 @endphp
-                <div class="p-3.5 rounded-xl border border-gray-200 bg-gray-50/60 hover:bg-white hover:border-gray-300 transition-all flex items-center justify-between gap-3 shadow-xs">
+                <div class="p-3.5 rounded-xl border border-[#E5E7EB] bg-gray-50/60 hover:bg-white hover:border-zinc-400 transition-all flex items-center justify-between gap-3 shadow-xs">
                     <div class="min-w-0">
                         <div class="flex items-center gap-2">
                             <span class="font-bold text-xs text-apeiron-ink">{{ $pc->hold_reference }}</span>
@@ -64,7 +64,7 @@
     <x-slot:footer>
         <div class="flex justify-end w-full">
             <button type="button" wire:click="$set('isParkedListOpen', false)"
-                class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors">
+                class="px-4 py-2 rounded-xl border border-[#E5E7EB] text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors">
                 Tutup
             </button>
         </div>

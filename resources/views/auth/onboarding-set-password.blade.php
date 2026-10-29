@@ -82,7 +82,7 @@
             @enderror
 
             {{-- Password Requirements Hint --}}
-            <div class="mt-2 p-2.5 rounded-md bg-zinc-50 border border-zinc-200/80 text-xs text-zinc-600 space-y-1">
+            <div class="mt-2 p-2.5 rounded-md bg-zinc-50 border border-[#E5E7EB] text-xs text-zinc-600 space-y-1">
                 <p class="font-medium text-zinc-800">{{ __('Password requirements:') }}</p>
                 <ul class="list-disc list-inside space-y-0.5 text-[11px] text-zinc-500">
                     <li>{{ __('Minimum 10 characters') }}</li>

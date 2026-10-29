@@ -81,7 +81,7 @@
     <!-- TAB 1: DAFTAR INVOICE -->
     @if($activeTab === 'invoices')
         <!-- Filter Bar -->
-        <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-zinc-200/80 dark:border-zinc-800">
+        <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-[#E5E7EB] dark:border-zinc-800">
             <div class="flex-1 max-w-md">
                 <div class="relative">
                     <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
@@ -101,11 +101,11 @@
         </div>
 
         <!-- Table Invoices -->
-        <div class="card-surface overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+        <div class="card-surface overflow-hidden rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 shadow-xs">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                        <tr class="border-b border-[#E5E7EB] dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                             <th class="py-3.5 px-6">Nomor Faktur</th>
                             <th class="py-3.5 px-6">Pelanggan</th>
                             <th class="py-3.5 px-6">Tgl Terbit / Tempo</th>
@@ -116,7 +116,7 @@
                             <th class="py-3.5 px-6 text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800/70">
                         @forelse($invoices as $inv)
                             <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-900/40 transition">
                                 <td class="py-4 px-6 font-mono font-bold text-xs text-apeiron-ink dark:text-white">
@@ -194,7 +194,7 @@
                 </table>
             </div>
             @if($invoices->hasPages())
-                <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800">
+                <div class="p-4 border-t border-[#E5E7EB] dark:border-zinc-800">
                     {{ $invoices->links() }}
                 </div>
             @endif
@@ -203,7 +203,7 @@
 
     <!-- TAB 2: REKENING KORAN (STATEMENT) -->
     @if($activeTab === 'statement')
-        <div class="card-surface p-6 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 space-y-6">
+        <div class="card-surface p-6 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 space-y-6">
             <h2 class="text-base font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                 <span class="material-symbols-rounded text-apeiron-primary">tune</span>
                 Pilih Parameter Rekening Koran
@@ -240,7 +240,7 @@
             </div>
 
             @if($statementData)
-                <div class="pt-6 border-t border-zinc-200/80 dark:border-zinc-800 space-y-4">
+                <div class="pt-6 border-t border-[#E5E7EB] dark:border-zinc-800 space-y-4">
                     <div class="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 gap-4">
                         <div>
                             <span class="text-xs font-medium text-zinc-500">Saldo Awal (Opening Balance):</span>
@@ -405,7 +405,7 @@
 
                 <!-- Riwayat Alokasi Pembayaran -->
                 @if($selectedInvoice->allocations->count() > 0)
-                    <div class="border-t border-zinc-200/80 dark:border-zinc-800 pt-4">
+                    <div class="border-t border-[#E5E7EB] dark:border-zinc-800 pt-4">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Riwayat Alokasi Pelunasan</h4>
                         <div class="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
                             <table class="w-full text-left text-xs border-collapse">

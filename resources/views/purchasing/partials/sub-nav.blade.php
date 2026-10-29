@@ -44,7 +44,7 @@
     });
 @endphp
 
-<div class="sticky top-0 z-30 bg-white/95 backdrop-blur-md -mt-4 sm:-mt-6 lg:-mt-8 pt-4 sm:pt-6 lg:pt-8 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 pb-3.5 mb-7 border-b border-[#E9E9E7] shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+<div class="w-full pb-3 mb-6 border-b border-[#E5E7EB]">
     <nav aria-label="Sub-navigasi Pengadaan (Purchasing)"
         x-data
         x-init="$nextTick(() => {
@@ -73,7 +73,7 @@
                     class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-medium whitespace-nowrap text-[#C4C3C0] cursor-not-allowed">
                     <span class="material-symbols-rounded text-[18px] shrink-0 text-[#C4C3C0]">{{ $tab['icon'] }}</span>
                     <span>{{ $tab['label'] }}</span>
-                    <span class="text-[9px] font-bold uppercase tracking-wider text-[#9B9A97] bg-[#F1F1EF] border border-[#E9E9E7] rounded px-1.5 py-0.5">Segera</span>
+                    <span class="text-[9px] font-bold uppercase tracking-wider text-[#9B9A97] bg-[#F1F1EF] border border-[#E5E7EB] rounded px-1.5 py-0.5">Segera</span>
                 </div>
             @endif
         @endforeach

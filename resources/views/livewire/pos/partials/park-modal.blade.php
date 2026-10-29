@@ -18,7 +18,7 @@
                     Label / Nama Pelanggan
                 </label>
                 <input type="text" wire:model="holdReference"
-                    class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-apeiron-ink focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-apeiron-ink outline-none transition-all"
+                    class="w-full px-3.5 py-2.5 bg-gray-50 border border-[#E5E7EB] rounded-xl text-xs font-bold text-apeiron-ink focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-apeiron-ink outline-none transition-all"
                     placeholder="Contoh: Meja 4 / Pak Budi (opsional)">
             </div>
 
@@ -27,7 +27,7 @@
                     Catatan Tambahan
                 </label>
                 <textarea wire:model="holdNotes" rows="2"
-                    class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-apeiron-ink focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-apeiron-ink outline-none transition-all resize-none"
+                    class="w-full px-3.5 py-2.5 bg-gray-50 border border-[#E5E7EB] rounded-xl text-xs text-apeiron-ink focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-apeiron-ink outline-none transition-all resize-none"
                     placeholder="Contoh: Menunggu teman datang..."></textarea>
             </div>
         </form>
@@ -36,7 +36,7 @@
     <x-slot:footer>
         <div class="flex items-center justify-end gap-2 w-full">
             <button type="button" wire:click="$set('isParkModalOpen', false)"
-                class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors">
+                class="px-4 py-2 rounded-xl border border-[#E5E7EB] text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors">
                 Batal
             </button>
             <button type="submit" form="park-cart-form"

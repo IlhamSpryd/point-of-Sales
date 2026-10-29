@@ -6,9 +6,7 @@
         </x-erp.page-header>
     </x-slot>
 
-    <div class="py-6" data-gsap="page-enter">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <livewire:kasir.order-history />
-        </div>
+    <div class="w-full flex-1" data-gsap="page-enter">
+        <livewire:kasir.order-history />
     </div>
 </x-app-layout>

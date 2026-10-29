@@ -8,7 +8,7 @@
 }" data-gsap="page-enter">
     @if(!$activeShift)
         {{-- Form Buka Shift --}}
-        <div class="bg-white rounded-3xl p-8 border border-[#E9E9E7] shadow-sm max-w-lg mx-auto text-center" data-gsap="kpi-card">
+        <div class="bg-white rounded-3xl p-8 border border-[#E5E7EB] shadow-sm max-w-lg mx-auto text-center" data-gsap="kpi-card">
             <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-gray-100">
                 <span class="material-symbols-rounded text-[32px] text-apeiron-ink">lock_open</span>
             </div>

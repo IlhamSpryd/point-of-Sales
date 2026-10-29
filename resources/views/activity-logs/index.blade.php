@@ -9,11 +9,11 @@
             </x-slot:breadcrumbs>
         </x-erp.page-header>
 
-        <div class="card-surface rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs overflow-hidden">
+        <div class="card-surface rounded-xl border border-[#E5E7EB] dark:border-zinc-800 shadow-xs overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                        <tr class="border-b border-[#E5E7EB] dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                             <th class="px-6 py-4">Waktu</th>
                             <th class="px-6 py-4">Pengguna</th>
                             <th class="px-6 py-4">Aktivitas</th>
@@ -21,7 +21,7 @@
                             <th class="px-6 py-4">IP / Perangkat</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800/70">
                         @forelse ($logs as $log)
                             <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -66,7 +66,7 @@
             </div>
             
             @if($logs->hasPages())
-                <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800">
+                <div class="p-4 border-t border-[#E5E7EB] dark:border-zinc-800">
                     {{ $logs->links() }}
                 </div>
             @endif

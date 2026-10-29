@@ -9,8 +9,8 @@
 ]) }}>
     <table class="data-table relative w-full text-left border-collapse">
         @if(isset($head))
-            <thead class="sticky top-0 z-10 shadow-2xs border-b border-[#E9E9E7]">
-                <tr class="bg-[#F7F7F5]">
+            <thead class="sticky top-0 z-10 shadow-2xs border-b border-[#E5E7EB]">
+                <tr class="bg-[#F9FAFB]">
                     {{ $head }}
                 </tr>
             </thead>

@@ -15,7 +15,7 @@
             </x-ui.alert>
         @endif
 
-        <div class="card-surface rounded-2xl border border-zinc-200/80 dark:border-zinc-800 p-6 shadow-xs">
+        <div class="card-surface rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 p-6 shadow-xs">
             <form action="{{ route('settings.update') }}" method="POST" class="space-y-6">
                 @csrf
 

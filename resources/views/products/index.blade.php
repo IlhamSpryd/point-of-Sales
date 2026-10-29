@@ -120,7 +120,7 @@
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
                                 @if($product->product_photo)
-                                    <img src="{{ asset('storage/' . $product->product_photo) }}" alt="{{ $product->product_name }}" loading="lazy" class="w-10 h-10 rounded-xl object-cover border border-[#E9E9E7]">
+                                    <img src="{{ asset('storage/' . $product->product_photo) }}" alt="{{ $product->product_name }}" loading="lazy" class="w-10 h-10 rounded-xl object-cover border border-[#E5E7EB]">
                                 @else
                                     <div class="w-10 h-10 rounded-xl bg-[#F1F1EF] flex items-center justify-center text-[#C4C3C0]">
                                         <span class="material-symbols-rounded">image</span>
@@ -193,7 +193,7 @@
                 @endforelse
             </x-data-table>
 
-            <div class="p-4 border-t border-[#E9E9E7]">
+            <div class="p-4 border-t border-[#E5E7EB]">
                 {{ $products->links() }}
             </div>
         </div>
@@ -217,7 +217,7 @@
                         <label for="strict_mode" class="text-xs text-apeiron-ink font-medium">Strict Mode (Batalkan seluruh file jika ada 1 baris gagal)</label>
                     </div>
 
-                    <div class="flex justify-end gap-2 pt-4 border-t border-[#E9E9E7]">
+                    <div class="flex justify-end gap-2 pt-4 border-t border-[#E5E7EB]">
                         <x-ui.button variant="secondary" type="button" @click="showImportModal = false">Batal</x-ui.button>
                         <x-ui.button variant="primary" type="submit" x-on:click="window.erpMotion?.pulseHighlight($el)">Unggah & Proses</x-ui.button>
                     </div>
@@ -238,7 +238,7 @@
                     <div>
                         <x-form-label for="bulk_action">Pilih Aksi Pembaruan Massal <span class="text-danger-600">*</span></x-form-label>
                         <select id="bulk_action" name="action" x-model="bulkAction" required
-                            class="w-full h-10 px-3 rounded-xl border border-[#E9E9E7] text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                            class="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
                             <option value="update_status">Ubah Status Lifecycle Produk</option>
                             <option value="update_category">Pindahkan ke Kategori Lain</option>
                             <option value="update_price">Sesuaikan Harga Jual Produk</option>
@@ -250,7 +250,7 @@
                     <div x-show="bulkAction === 'update_status'" x-cloak>
                         <x-form-label for="bulk_status">Pilih Status Baru</x-form-label>
                         <select id="bulk_status" name="status"
-                            class="w-full h-10 px-3 rounded-xl border border-[#E9E9E7] text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                            class="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
                             <option value="active">Aktif (Dijual di POS & Menu)</option>
                             <option value="inactive">Nonaktif</option>
                             <option value="draft">Draft</option>
@@ -262,7 +262,7 @@
                     <div x-show="bulkAction === 'update_category'" x-cloak>
                         <x-form-label for="bulk_category">Pilih Kategori Baru</x-form-label>
                         <select id="bulk_category" name="category_id"
-                            class="w-full h-10 px-3 rounded-xl border border-[#E9E9E7] text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                            class="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
                             <option value="">-- Tanpa Kategori --</option>
                             @foreach ($categories as $cat)
                                 <option value="{{ $cat->id }}">{{ $cat->category_name }}</option>
@@ -275,7 +275,7 @@
                         <div>
                             <x-form-label for="bulk_price_mode">Mode Penyesuaian</x-form-label>
                             <select id="bulk_price_mode" name="price_mode"
-                                class="w-full h-10 px-3 rounded-xl border border-[#E9E9E7] text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                                class="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
                                 <option value="fixed">Ganti Harga Tetap (Rp)</option>
                                 <option value="percentage_increase">Naikkan Sebesar (%)</option>
                                 <option value="percentage_decrease">Turunkan Sebesar (%)</option>
@@ -284,7 +284,7 @@
                         <div>
                             <x-form-label for="bulk_price_value">Nilai Penyesuaian</x-form-label>
                             <input type="number" id="bulk_price_value" name="price_value" step="0.01" min="0" value="0"
-                                class="w-full h-10 px-3 rounded-xl border border-[#E9E9E7] text-sm focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                                class="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
                         </div>
                     </div>
 
@@ -293,7 +293,7 @@
                         <div>
                             <x-form-label for="bulk_store_id">Pilih Cabang</x-form-label>
                             <select id="bulk_store_id" name="store_id"
-                                class="w-full h-10 px-3 rounded-xl border border-[#E9E9E7] text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                                class="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
                                 @foreach ($stores as $st)
                                     <option value="{{ $st->id }}">{{ $st->name }}</option>
                                 @endforeach
@@ -306,7 +306,7 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-end gap-2 pt-4 border-t border-[#E9E9E7]">
+                    <div class="flex justify-end gap-2 pt-4 border-t border-[#E5E7EB]">
                         <x-ui.button variant="secondary" type="button" @click="showBulkModal = false">Batal</x-ui.button>
                         <x-ui.button variant="primary" type="submit" x-on:click="window.erpMotion?.pulseHighlight($el)">Terapkan Perubahan Massal</x-ui.button>
                     </div>

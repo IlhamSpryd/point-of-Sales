@@ -11,7 +11,7 @@
         <form method="POST" action="{{ route('logout') }}" class="mt-6">
             @csrf
             <button type="submit"
-                class="inline-flex items-center gap-2 rounded-xl border border-[#E9E9E7] bg-white px-5 py-2.5 text-sm font-semibold text-apeiron-ink hover:bg-[#F7F7F5] transition-all active:scale-95 shadow-sm">
+                class="inline-flex items-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-5 py-2.5 text-sm font-semibold text-apeiron-ink hover:bg-[#F7F7F5] transition-all active:scale-95 shadow-sm">
                 <span class="material-symbols-rounded text-[18px]">logout</span> Keluar
             </button>
         </form>

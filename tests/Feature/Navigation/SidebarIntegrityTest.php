@@ -63,22 +63,23 @@ class SidebarIntegrityTest extends TestCase
         }
     }
 
-    public function test_navigation_sections_contain_expected_five_pillars_and_valid_scope_metadata(): void
+    public function test_navigation_sections_contain_expected_six_pillars_and_valid_scope_metadata(): void
     {
         $sections = config('navigation.sections');
 
         $expectedGroups = [
-            'Pusat Kerja',
-            'Operasional Toko',
-            'Suplai & Inventori',
-            'Analitik & Penjualan',
-            'Pengaturan & Kelola',
+            'Ikhtisar',
+            'Kasir & Operasional',
+            'Katalog & Resep',
+            'Inventori & Suplai',
+            'Analitik & Pelanggan',
+            'Pengaturan & Tata Kelola',
         ];
 
         $this->assertEquals(
             $expectedGroups,
             array_keys($sections),
-            'Navigation groups must match the 5-pillar Task-Oriented Information Architecture.'
+            'Navigation groups must match the 6-pillar Task-Oriented ERP Information Architecture.'
         );
 
         foreach (collect($sections)->flatten(1) as $item) {
@@ -110,45 +111,46 @@ class SidebarIntegrityTest extends TestCase
                 ->all();
         };
 
-        // 1. Owner sees 20 streamlined items with domain hub entry points
+        // 1. Owner sees 20 operational items across 6 ERP pillars
         $ownerRoutes = $getVisibleRoutes('Owner');
         $this->assertCount(20, $ownerRoutes);
 
-        // 2. Manager sees 17 items (all except stores, users, roles)
+        // 2. Manager sees 16 items (all except stores, users, roles, settings)
         $managerRoutes = $getVisibleRoutes('Manager');
-        $this->assertCount(17, $managerRoutes);
+        $this->assertCount(16, $managerRoutes);
         $this->assertNotContains('stores.index', $managerRoutes);
         $this->assertNotContains('users.index', $managerRoutes);
         $this->assertNotContains('roles.index', $managerRoutes);
+        $this->assertNotContains('settings.index', $managerRoutes);
 
-        // 3. Kasir sees frontline operational items (POS, KDS, Pesanan, Shift)
+        // 3. Kasir sees frontline operational items (POS, Pesanan, Shift)
         $kasirRoutes = $getVisibleRoutes('Kasir');
         $this->assertEqualsCanonicalizing(
-            ['transaction.create', 'shifts.index', 'kds.index', 'orders.index'],
+            ['transaction.create', 'shifts.index', 'orders.index'],
             $kasirRoutes
         );
 
-        // 4. Waiter sees orders and KDS
+        // 4. Waiter sees orders
         $waiterRoutes = $getVisibleRoutes('Waiter');
         $this->assertEqualsCanonicalizing(
-            ['kds.index', 'orders.index'],
+            ['orders.index'],
             $waiterRoutes
         );
 
-        // 5. Inventory staff sees catalog and inventory hub items (consolidated)
+        // 5. Inventory staff sees 7 catalog and inventory operations items
         $inventoryRoutes = $getVisibleRoutes('Inventory');
         $this->assertEqualsCanonicalizing(
             [
                 'products.index',
+                'price-lists.index',
+                'assortments.index',
                 'inventory.ingredients',
+                'inventory.goods-receipts',
+                'inventory.ledger',
                 'purchasing.suppliers.index',
             ],
             $inventoryRoutes
         );
-
-        // 6. Barista & Cook see kitchen workstation (KDS)
-        $this->assertEqualsCanonicalizing(['kds.index'], $getVisibleRoutes('Barista'));
-        $this->assertEqualsCanonicalizing(['kds.index'], $getVisibleRoutes('Cook'));
     }
 
     public function test_inventory_sub_nav_renders_all_module_4_workflow_tabs(): void

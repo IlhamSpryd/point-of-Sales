@@ -19,7 +19,7 @@ $panelPositionClasses = $sheet
     : 'items-center';
 
 $panelShapeClasses = $sheet
-    ? 'rounded-t-[1.75rem] sm:rounded-2xl'
+    ? 'rounded-t-2xl sm:rounded-2xl'
     : 'rounded-2xl';
 
 $panelEnterClasses = $sheet
@@ -79,7 +79,7 @@ $panelEnterEndClasses = $sheet
     {{-- Overlay --}}
     <div
         x-show="show"
-        class="fixed inset-0 transform transition-all bg-primary-700/40 backdrop-blur-sm"
+        class="fixed inset-0 transform transition-all bg-black/40 backdrop-blur-xs"
         x-on:click="show = false"
         x-transition:enter="ease-out duration-300"
         x-transition:enter-start="opacity-0"

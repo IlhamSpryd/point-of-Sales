@@ -32,7 +32,7 @@
 
     @if (count($this->cartLines) === 0)
         <div class="h-full min-h-[220px] flex flex-col justify-center items-center text-center opacity-70 py-8">
-            <div class="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-300 mb-3 border border-gray-100">
+            <div class="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-300 mb-3 border border-[#E5E7EB]">
                 <span class="material-symbols-rounded text-[36px]">local_mall</span>
             </div>
             <p class="text-[14px] font-bold text-apeiron-ink">Keranjang Masih Kosong</p>
@@ -41,11 +41,11 @@
     @else
         @foreach ($this->cartLines as $line)
             <div wire:key="cart-line-{{ $line['product_id'] }}-{{ implode('-', $line['modifier_ids'] ?? []) }}-{{ md5((string) ($line['notes'] ?? '')) }}-{{ $line['index'] }}"
-                class="flex gap-3 p-3 bg-white rounded-xl border border-gray-200 shadow-sm relative group transition-all duration-200 hover:border-gray-300">
+                class="flex gap-3 p-3 bg-white rounded-xl border border-[#E5E7EB] shadow-xs relative group transition-all duration-200 hover:border-zinc-400">
                 @unless ($pendingOrderId)
                     <button type="button" wire:click="removeFromCart({{ $line['index'] }})"
                         aria-label="Hapus {{ $line['product_name'] }} dari keranjang"
-                        class="absolute -top-2 -right-2 bg-white rounded-full p-1.5 border border-gray-200 text-gray-400 hover:text-rose-500 hover:border-rose-200 shadow-sm transition-opacity opacity-100 sm:opacity-0 sm:group-hover:opacity-100 focus:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
+                        class="absolute -top-2 -right-2 size-6 rounded-md bg-white border border-[#E5E7EB] text-zinc-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-300 shadow-xs transition-colors flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
@@ -68,7 +68,7 @@
                         </p>
                     @endif
 
-                    <div class="flex items-end justify-between mt-2.5 pt-2 border-t border-gray-100">
+                    <div class="flex items-end justify-between mt-2.5 pt-2 border-t border-[#E5E7EB]">
                         <div>
                             <span class="text-[13.5px] font-black text-apeiron-ink tabular-nums whitespace-nowrap">
                                 Rp {{ number_format($line['order_price'], 0, ',', '.') }}
@@ -79,12 +79,12 @@
                                     <input type="number" min="0" placeholder="Rp 0"
                                         value="{{ $this->cart[$line['index']]['item_discount_amount'] ?? '' }}"
                                         wire:change="setItemDiscount({{ $line['index'] }}, $event.target.value)"
-                                        class="text-[11px] font-mono px-2 py-0.5 border border-gray-200 rounded-lg w-20 focus:ring-1 focus:ring-gray-900 bg-gray-50/50">
+                                        class="text-[11px] font-mono px-2 py-0.5 border border-[#E5E7EB] rounded-lg w-20 focus:ring-1 focus:ring-gray-900 bg-gray-50/50">
                                 </div>
                             @endif
                         </div>
 
-                        <div class="flex items-center gap-1 bg-gray-50 border border-gray-200 rounded-lg p-0.5 shadow-sm">
+                        <div class="flex items-center gap-1 bg-gray-50 border border-[#E5E7EB] rounded-lg p-0.5 shadow-xs">
                             @if ($pendingOrderId)
                                 <span class="text-[12px] font-bold text-gray-700 px-2 py-0.5 leading-none select-none">{{ $line['qty'] }} pcs</span>
                             @else

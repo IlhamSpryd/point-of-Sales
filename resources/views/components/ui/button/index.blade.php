@@ -13,59 +13,57 @@
 @php
     switch ($size ?? 'md') {
         case 'xs':
-            $sizeClasses = 'h-7 px-2.5 text-xs rounded-small gap-1';
+            $sizeClasses = 'h-7 px-2.5 text-xs rounded-md gap-1';
             $loaderClasses = 'size-3';
             break;
         case 'sm':
-            $sizeClasses = 'h-8 px-3 text-xs rounded-medium gap-1.5';
+            $sizeClasses = 'h-8 px-3 text-xs rounded-lg gap-1.5';
             $loaderClasses = 'size-3.5';
             break;
         case 'md':
-            $sizeClasses = 'h-9 px-3.5 text-xs sm:text-sm rounded-medium gap-1.5';
+            $sizeClasses = 'h-9 px-3.5 text-xs sm:text-sm rounded-lg gap-1.5';
             $loaderClasses = 'size-3.5';
             break;
         case 'lg':
-            $sizeClasses = 'h-11 px-5 text-sm rounded-large gap-2';
+            $sizeClasses = 'h-10 px-5 text-sm rounded-lg gap-2';
             $loaderClasses = 'size-4';
             break;
         case 'icon':
-            $sizeClasses = 'size-9 p-0 rounded-medium';
+            $sizeClasses = 'size-9 p-0 rounded-lg';
             $loaderClasses = 'size-4';
             break;
         case 'icon-sm':
-            $sizeClasses = 'size-8 p-0 rounded-small';
+            $sizeClasses = 'size-8 p-0 rounded-md';
             $loaderClasses = 'size-3.5';
             break;
         default:
-            $sizeClasses = 'h-9 px-3.5 text-xs sm:text-sm rounded-medium gap-1.5';
+            $sizeClasses = 'h-9 px-3.5 text-xs sm:text-sm rounded-lg gap-1.5';
             $loaderClasses = 'size-3.5';
             break;
     }
 
-    $topHighlightClasses = $topHighlight ? ' shadow-[inset_0_1px_1px_0_rgba(255,255,255,0.2)]' : '';
-
     switch ($variant ?? 'primary') {
         case 'primary':
-            $typeClasses = 'border-transparent no-underline bg-primary bg-linear-to-b text-primary-foreground hover:bg-[#141413] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1'.$topHighlightClasses;
+            $typeClasses = 'border-transparent no-underline bg-[#171717] text-white hover:bg-[#262626] focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1';
             break;
         case 'secondary':
-            $typeClasses = 'border-border no-underline text-secondary-foreground bg-white hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
+            $typeClasses = 'border-border no-underline text-secondary-foreground bg-white hover:bg-secondary focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1';
             break;
         case 'destructive':
         case 'danger':
-            $typeClasses = 'border-transparent no-underline bg-destructive text-destructive-foreground hover:bg-[#BE123C] focus-visible:ring-2 focus-visible:ring-destructive/40 focus-visible:ring-offset-1'.$topHighlightClasses;
+            $typeClasses = 'border-transparent no-underline bg-rose-600 text-white hover:bg-rose-700 focus-visible:ring-2 focus-visible:ring-rose-500/40 focus-visible:ring-offset-1';
             break;
         case 'outline':
-            $typeClasses = 'no-underline text-foreground bg-background hover:bg-secondary border-border focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
+            $typeClasses = 'no-underline text-foreground bg-background hover:bg-secondary border-border focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1';
             break;
         case 'ghost':
-            $typeClasses = 'border-transparent no-underline text-foreground hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
+            $typeClasses = 'border-transparent no-underline text-foreground hover:bg-secondary focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1';
             break;
         case 'link':
             $typeClasses = 'border-transparent no-underline text-foreground hover:underline px-0 h-auto';
             break;
         default:
-            $typeClasses = 'border-transparent no-underline bg-primary bg-linear-to-b text-primary-foreground hover:bg-[#141413] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
+            $typeClasses = 'border-transparent no-underline bg-[#171717] text-white hover:bg-[#262626] focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1';
             break;
     }
 

@@ -46,7 +46,7 @@
     </div>
 
     <!-- Filters & Search -->
-    <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row gap-4 justify-between items-center border border-zinc-200/80 dark:border-zinc-800">
+    <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row gap-4 justify-between items-center border border-[#E5E7EB] dark:border-zinc-800">
         <div class="relative w-full sm:w-80">
             <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nomor dokumen / pelanggan..."
@@ -66,7 +66,7 @@
 
     <!-- Content: Credit Notes -->
     @if ($activeTab === 'credit_notes')
-        <div class="card-surface rounded-2xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden shadow-xs">
+        <div class="card-surface rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 overflow-hidden shadow-xs">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead class="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
@@ -81,7 +81,7 @@
                             <th class="px-6 py-3.5 text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800/70">
                         @forelse ($creditNotes as $cn)
                             <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition">
                                 <td class="px-6 py-4 font-mono font-medium text-apeiron-ink dark:text-white">
@@ -150,7 +150,7 @@
 
     <!-- Content: Physical Returns -->
     @if ($activeTab === 'returns')
-        <div class="card-surface rounded-2xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden shadow-xs">
+        <div class="card-surface rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 overflow-hidden shadow-xs">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead class="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
@@ -165,7 +165,7 @@
                             <th class="px-6 py-3.5">Waktu Selesai</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800/70">
                         @forelse ($returns as $ret)
                             <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition">
                                 <td class="px-6 py-4 font-mono font-medium text-apeiron-ink dark:text-white">

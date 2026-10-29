@@ -42,11 +42,11 @@
             </x-ui.alert>
         @endif
 
-        <div class="card-surface overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+        <div class="card-surface overflow-hidden rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 shadow-xs">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                        <tr class="border-b border-[#E5E7EB] dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                             <th class="px-6 py-4">Produk</th>
                             <th class="px-6 py-4">Kategori</th>
                             <th class="px-6 py-4 text-right">Harga Dasar</th>
@@ -57,7 +57,7 @@
                             @endif
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800/70">
                         @forelse($products as $prod)
                             @php
                                 $assortment = $prod->storeAssortments->first();
@@ -144,7 +144,7 @@
                 </table>
             </div>
 
-            <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800">
+            <div class="p-4 border-t border-[#E5E7EB] dark:border-zinc-800">
                 {{ $products->links() }}
             </div>
         </div>

@@ -14,9 +14,36 @@
    NO tailwind.config.js needed.
    ═══════════════════════════════════════════════════════ */
 @theme {
-    --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-    --font-brand: 'Playfair Display', 'Georgia', serif;
+    --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-brand: "Plus Jakarta Sans", sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    /* ── Neutral Foundation (ChatGPT / Material 3 Enterprise Architecture) ── */
+    --color-shell: #171717;
+    --color-background: #F7F7F8;
+    --color-surface: #FFFFFF;
+    --color-surface-secondary: #F3F4F6;
+
+    --color-text-primary: #202123;
+    --color-text-secondary: #6B7280;
+    --color-text-muted: #9CA3AF;
+
+    --color-border: #E5E7EB;
+    --color-border-strong: #D1D5DB;
+
+    /* ── Shape Scale (Measured Enterprise Radii) ── */
+    --radius-control: 8px;    /* text inputs, selects, standard buttons */
+    --radius-card: 12px;      /* cards, table containers, popovers */
+    --radius-dialog: 16px;    /* modals, drawers */
+    --radius-sheet: 16px;
+    --radius-pill: 9999px;
+
+    /* ── Semantic Status Colors (WCAG AA Compliant Subtle Text) ── */
+    --color-status-success: #047857; /* emerald-700 */
+    --color-status-warning: #B45309; /* amber-700 */
+    --color-status-error:   #B91C1C; /* red-700 */
+    --color-status-info:    #1D4ED8; /* blue-700 */
+    --color-status-draft:   #6B7280; /* gray-500 */
 
     /* ── Gray Scale ── */
     --color-gray-50: #fafafa;
@@ -26,62 +53,50 @@
     --color-gray-400: #a3a3a3;
     --color-gray-500: #737373;
     --color-gray-600: #525252;
-    --color-gray-700: #55544E;
-    --color-gray-800: #37352F;
-    --color-gray-900: #37352F;
+    --color-gray-700: #374151;
+    --color-gray-800: #1f2937;
+    --color-gray-900: #111827;
 
-    /* ── Primary Palette — Monochrome Ink (single source of truth) ── */
-    --color-primary-50:  #F7F7F5;
-    --color-primary-100: #F1F1EF;
-    --color-primary-200: #E3E2E0;
-    --color-primary-300: #C4C3C0;
-    --color-primary-400: #9B9A97;
-    --color-primary-500: #787774;
-    --color-primary-600: #55544E;
-    --color-primary-700: #37352F;
-    --color-primary-800: #2B2926;
-    --color-primary-900: #1F1E1C;
-    --color-primary-950: #141413;
+    /* ── Primary Palette — Neutral Charcoal Ink ── */
+    --color-primary-50:  #F7F7F8;
+    --color-primary-100: #F3F4F6;
+    --color-primary-200: #E5E7EB;
+    --color-primary-300: #D1D5DB;
+    --color-primary-400: #9CA3AF;
+    --color-primary-500: #6B7280;
+    --color-primary-600: #4B5563;
+    --color-primary-700: #374151;
+    --color-primary-800: #1F2937;
+    --color-primary-900: #171717;
+    --color-primary-950: #0F0F0F;
 
-    /* ── Radius Scale — consistent premium rounding ── */
-    --radius-card: 1rem;      /* rounded-2xl equivalent, used by .card-surface */
-    --radius-sheet: 1.75rem;  /* bottom-sheet top corners */
-    --radius-pill: 9999px;
-
-    /* ── Warm Accent — 2026-09-23. Dipakai SANGAT jarang:
-       sorotan progres, ikon "perlu perhatian", badge warning. Bukan warna
-       brand kedua — hanya satu titik penekanan, menggantikan tebakan
-       amber-50/500/600/700 mentah yang berbeda di setiap file. ── */
-    --color-apeiron-amber-50:  #FBF3E7;
-    --color-apeiron-amber-200: #EFD8AE;
-    --color-apeiron-amber-500: #C88A2E;
-    --color-apeiron-amber-700: #8A5A16;
-
-    /* --- TAMBAHAN P0: token semantik yang belum ada --- */
+    /* ── Semantic Palette Tokens ── */
     --color-success-50:  #ECFDF5;
     --color-success-600: #059669;
     --color-success-700: #047857;
     --color-danger-50:   #FFF1F2;
-    --color-danger-600:  #E11D48;
-    --color-danger-700:  #BE123C;
-    --color-warning-50:  #FBF3E7;
-    --color-warning-600: #C88A2E;
+    --color-danger-600:  #DC2626;
+    --color-danger-700:  #B91C1C;
+    --color-warning-50:  #FFFBEB;
+    --color-warning-600: #D97706;
+    --color-warning-700: #B45309;
     --color-info-50:     #EFF6FF;
     --color-info-600:    #2563EB;
+    --color-info-700:    #1D4ED8;
 
-    /* NEW — large-display tiers for KDS TV (currently absent from the codebase) */
+    /* NEW — large-display tiers for KDS TV */
     --breakpoint-3xl: 1920px;
     --breakpoint-4xl: 2560px;
 
-    /* ── Apeiron Brand Tokens (in @theme for Tailwind v4 utility generation) ── */
-    --color-apeiron-bg:        #ffffff;
-    --color-apeiron-ink:       #202020;
-    --color-apeiron-muted:     #787774;    /* decorative use only */
-    --color-apeiron-muted-700: #6B6A66;   /* WCAG AA ≈5.1:1 — use for small/body text */
-    --color-apeiron-border:    #E9E9E7;
-    --color-apeiron-surface:   #F1F1EF;
-    --color-apeiron-sidebar:   #ffffff;
-    --color-table-header-bg:   #F7F7F5;
+    /* ── Apeiron Brand Tokens ── */
+    --color-apeiron-bg:        #FFFFFF;
+    --color-apeiron-ink:       #202123;
+    --color-apeiron-muted:     #6B7280;
+    --color-apeiron-muted-700: #4B5563;
+    --color-apeiron-border:    #E5E7EB;
+    --color-apeiron-surface:   #F3F4F6;
+    --color-apeiron-sidebar:   #171717;
+    --color-table-header-bg:   #F9FAFB;
 }
 
 /* --- TAMBAHAN P1: varian KDS gelap --- */
@@ -167,37 +182,11 @@ input[type="number"]::-webkit-outer-spin-button {
    REUSABLE SURFACE CLASSES
    ═══════════════════════════════════════════════════════ */
 .card-surface {
-    background-color: var(--color-card, var(--color-apeiron-bg));
-    color: var(--color-card-foreground, var(--color-apeiron-ink));
-    border: 1px solid var(--color-border, var(--color-apeiron-border));
-    border-radius: var(--radius-card);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-    transition:
-        box-shadow var(--dur-fast) var(--ease-ui),
-        border-color var(--dur-fast) var(--ease-ui);
-}
-
-.card-surface:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-}
-
-.catalog-nav-tab-active {
-    background-color: #202020 !important;
-    color: #ffffff !important;
-}
-
-.catalog-nav-tab-active .material-symbols-rounded {
-    color: #ffffff !important;
-}
-
-.catalog-nav-tab-inactive {
-    color: #6B6A66;
-    background-color: transparent;
-}
-
-.catalog-nav-tab-inactive:hover {
-    color: #202020;
-    background-color: #F7F7F5;
+    background-color: var(--color-surface, #FFFFFF);
+    color: var(--color-text-primary, #202123);
+    border: 1px solid var(--color-border, #E5E7EB);
+    border-radius: var(--radius-card, 12px);
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.04);
 }
 
 .data-table {
@@ -208,22 +197,22 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .data-table thead th {
-    background-color: var(--color-apeiron-bg);
-    color: var(--color-apeiron-muted);
+    background-color: var(--color-table-header-bg, #F9FAFB);
+    color: var(--color-text-secondary, #6B7280);
     font-weight: 600;
     font-size: 0.75rem;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.04em;
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--color-apeiron-border);
+    border-bottom: 1px solid var(--color-border, #E5E7EB);
     text-align: left;
     white-space: nowrap;
 }
 
 .data-table tbody td {
-    padding: 0.875rem 1rem;
-    border-bottom: 1px solid var(--color-apeiron-border);
-    color: var(--color-apeiron-ink);
+    padding: 0.8125rem 1rem;
+    border-bottom: 1px solid var(--color-border, #E5E7EB);
+    color: var(--color-text-primary, #202123);
     vertical-align: middle;
 }
 
@@ -232,7 +221,7 @@ input[type="number"]::-webkit-outer-spin-button {
 }
 
 .data-table tbody tr:hover {
-    background-color: var(--color-apeiron-bg);
+    background-color: var(--color-surface-secondary, #F9FAFB);
 }
 
 .data-table tbody tr:last-child td {
@@ -654,7 +643,7 @@ option {
     .chip.stable {
         background-color: #F1F1EF;
         color: #6B6A66;
-        border-color: #E9E9E7;
+        border-color: #E5E7EB;
     }
 
     .delta-badge {

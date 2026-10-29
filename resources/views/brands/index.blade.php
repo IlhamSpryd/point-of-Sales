@@ -68,7 +68,7 @@
         @endif
 
         <!-- Filter & Search Toolbar -->
-        <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-zinc-200/80 dark:border-zinc-800">
+        <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-[#E5E7EB] dark:border-zinc-800">
             <form method="GET" action="{{ route('brands.index') }}" class="relative w-full sm:w-80">
                 <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari merek..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
@@ -76,11 +76,11 @@
         </div>
 
         <!-- Table -->
-        <div class="card-surface overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+        <div class="card-surface overflow-hidden rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 shadow-xs">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                        <tr class="border-b border-[#E5E7EB] dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                             <th class="px-6 py-4">Kode</th>
                             <th class="px-6 py-4">Nama Merek</th>
                             <th class="px-6 py-4">Deskripsi</th>
@@ -91,7 +91,7 @@
                             @endif
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800/70">
                         @forelse($brands as $brand)
                             <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
                                 <td class="px-6 py-4 font-mono text-xs font-semibold text-apeiron-ink dark:text-white">{{ $brand->code }}</td>
@@ -137,7 +137,7 @@
             </div>
 
             @if($brands->hasPages())
-                <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800">
+                <div class="p-4 border-t border-[#E5E7EB] dark:border-zinc-800">
                     {{ $brands->links() }}
                 </div>
             @endif

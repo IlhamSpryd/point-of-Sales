@@ -33,7 +33,7 @@
     @endif
 
     <!-- Filter & Toolbar -->
-    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-zinc-200/80 dark:border-zinc-800">
+    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-[#E5E7EB] dark:border-zinc-800">
         <div class="flex-1 max-w-md">
             <div class="relative">
                 <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
@@ -61,11 +61,11 @@
     </div>
 
     <!-- Table -->
-    <div class="card-surface overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+    <div class="card-surface overflow-hidden rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 shadow-xs">
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-sm">
                 <thead>
-                    <tr class="border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                    <tr class="border-b border-[#E5E7EB] dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                         <th class="py-3.5 px-6">No. Sales Order</th>
                         <th class="py-3.5 px-6">Pelanggan & PO</th>
                         <th class="py-3.5 px-6">Tanggal Order</th>
@@ -75,7 +75,7 @@
                         <th class="py-3.5 px-6 text-right">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800/70">
                     @forelse($salesOrders as $so)
                         <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
                             <td class="py-4 px-6">
@@ -158,7 +158,7 @@
             </table>
         </div>
         @if($salesOrders->hasPages())
-            <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800">
+            <div class="p-4 border-t border-[#E5E7EB] dark:border-zinc-800">
                 {{ $salesOrders->links() }}
             </div>
         @endif
@@ -187,7 +187,7 @@
                 </div>
 
                 <!-- Status & Action Toolbar -->
-                <div class="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200/80 dark:border-zinc-700/80 flex flex-wrap items-center justify-between gap-3">
+                <div class="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-[#E5E7EB] dark:border-zinc-700/80 flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center gap-4">
                         <div>
                             <span class="text-xs font-semibold text-zinc-500 uppercase block">Status Pesanan</span>

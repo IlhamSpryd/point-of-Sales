@@ -37,7 +37,7 @@
     });
 @endphp
 
-<div class="sticky top-0 z-30 bg-white/95 backdrop-blur-md -mt-4 sm:-mt-6 lg:-mt-8 pt-4 sm:pt-6 lg:pt-8 -mx-4 px-4 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 pb-3.5 mb-7 border-b border-[#E9E9E7] shadow-[0_1px_2px_rgba(0,0,0,0.02)]">
+<div class="w-full pb-3 mb-6 border-b border-[#E5E7EB]">
     <nav aria-label="Sub-navigasi Penjualan B2B & Piutang (AR)"
         x-data
         x-init="$nextTick(() => {

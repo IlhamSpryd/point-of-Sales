@@ -87,10 +87,10 @@ class ErpSidebarReachabilityTest extends TestCase
         // Check key ERP module entry points in sidebar
         $response->assertSee('Pengadaan (Purchasing)');
         $response->assertSee('Pelanggan & CRM');
-        $response->assertSee('Penjualan B2B & AR');
-        $response->assertSee('Keuangan & Akuntansi');
         $response->assertSee('Katalog Produk');
-        $response->assertSee('Inventori & Stok');
+        $response->assertSee('Bahan Baku & Stok');
+        $response->assertSee('Kasir & Operasional');
+        $response->assertSee('Pengaturan & Tata Kelola');
     }
 
     public function test_purchasing_hub_is_reachable_and_renders_sub_nav(): void

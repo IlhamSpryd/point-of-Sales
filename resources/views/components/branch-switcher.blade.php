@@ -1,6 +1,7 @@
-@props(['fullWidth' => false])
+@props(['fullWidth' => false, 'dark' => false])
 
 @php
+    $isDark = $dark || $fullWidth;
     $user = auth()->user();
     $roleName = $user?->role?->name;
     $isOwner = $roleName === 'Owner' || (bool) ($user?->role?->is_admin ?? false);
@@ -26,13 +27,13 @@
 <div x-data="{ open: false }" class="relative {{ $fullWidth ? 'w-full block' : 'inline-block' }} text-left" @click.outside="open = false" @keydown.escape.window="open = false">
     {{-- Trigger Button --}}
     <button type="button" @click="open = !open" :aria-expanded="open.toString()" aria-haspopup="true" aria-label="Pilih cabang aktif"
-        class="{{ $fullWidth ? 'w-full justify-between' : 'inline-flex' }} items-center gap-2.5 px-3.5 py-2.5 bg-white hover:bg-[#F7F7F5] border border-[#E9E9E7] text-apeiron-ink text-sm font-semibold rounded-xl shadow-sm transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F] cursor-pointer">
-        <div class="flex items-center gap-2.5 min-w-0">
-            <span class="shrink-0 w-2.5 h-2.5 rounded-full {{ $isAll ? 'bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)] animate-pulse' : 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' }}"></span>
-            <span class="material-symbols-rounded text-[20px] text-[#787774] shrink-0">storefront</span>
-            <span class="truncate text-left text-xs sm:text-sm {{ $fullWidth ? 'max-w-[150px]' : 'max-w-[180px] sm:max-w-[240px]' }}">{{ $activeLabel }}</span>
+        class="{{ $isDark ? 'justify-between bg-[#202020] hover:bg-[#262626] border-[#2E2E2E] text-white' : 'inline-flex bg-white hover:bg-[#F9FAFB] border-[#E5E7EB] text-[#202123]' }} items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg border shadow-xs transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white cursor-pointer {{ $fullWidth ? 'w-full' : '' }}">
+        <div class="flex items-center gap-2 min-w-0">
+            <span class="shrink-0 w-2 h-2 rounded-full {{ $isAll ? 'bg-amber-400' : 'bg-emerald-400' }}"></span>
+            <span class="material-symbols-rounded text-[17px] {{ $isDark ? 'text-[#A3A3A3]' : 'text-[#6B7280]' }} shrink-0">storefront</span>
+            <span class="truncate text-left text-xs {{ $fullWidth ? 'max-w-[145px]' : 'max-w-[180px] sm:max-w-[240px]' }}">{{ $activeLabel }}</span>
         </div>
-        <span class="material-symbols-rounded text-[18px] text-[#9B9A97] transition-transform duration-200 shrink-0" :class="open ? 'rotate-180' : ''">expand_more</span>
+        <span class="material-symbols-rounded text-[16px] text-[#737373] transition-transform duration-150 shrink-0" :class="open ? 'rotate-180' : ''">expand_more</span>
     </button>
 
     {{-- Dropdown Menu --}}
@@ -43,14 +44,14 @@
         x-transition:leave="transition ease-in duration-100"
         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
         x-transition:leave-end="opacity-0 scale-95 translate-y-1"
-        class="absolute {{ $fullWidth ? 'left-0' : 'right-0' }} mt-2 w-80 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_12px_36px_rgba(0,0,0,0.12)] border border-[#E9E9E7] p-2 z-50 overflow-hidden">
+        class="absolute {{ $fullWidth ? 'left-0' : 'right-0' }} mt-2 w-76 {{ $isDark ? 'bg-[#1E1E1E] text-white border-[#333333]' : 'bg-white text-[#202123] border-[#E5E7EB]' }} rounded-xl shadow-xl border p-1.5 z-50 overflow-hidden">
         
-        <div class="px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[#9B9A97] flex items-center justify-between border-b border-[#F1F1EF] mb-1">
+        <div class="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#737373] flex items-center justify-between border-b {{ $isDark ? 'border-[#2E2E2E]' : 'border-[#E5E7EB]' }} mb-1">
             <span>Pilih Cakupan Cabang</span>
-            <span class="text-[10px] bg-[#F1F1EF] text-[#787774] font-medium px-1.5 py-0.5 rounded border border-[#E9E9E7]/60">{{ count($stores) }} Cabang</span>
+            <span class="text-[9px] {{ $isDark ? 'bg-[#2A2A2A] text-[#A3A3A3] border-[#383838]' : 'bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]' }} font-medium px-1.5 py-0.5 rounded border">{{ count($stores) }} Cabang</span>
         </div>
 
-        <div class="max-h-72 overflow-y-auto space-y-1 pr-1 custom-scrollbar">
+        <div class="max-h-72 overflow-y-auto space-y-0.5 pr-1 custom-scrollbar">
             @if($isOwner)
             {{-- All Stores (Konsolidasi) Option for Owner --}}
             <form action="{{ route('store.switch') }}" method="POST"
@@ -58,20 +59,20 @@
                 @csrf
                 <input type="hidden" name="store_id" value="all">
                 <button type="submit"
-                    class="w-full text-left px-3 py-2.5 rounded-xl text-xs flex items-center justify-between transition-all duration-150 cursor-pointer {{ $isAll ? 'bg-amber-50/80 border border-amber-200 text-amber-950 shadow-xs' : 'text-[#787774] hover:bg-[#F7F7F5] hover:text-apeiron-ink' }}">
+                    class="w-full text-left px-2.5 py-2 rounded-lg text-xs flex items-center justify-between transition-all duration-150 cursor-pointer {{ $isAll ? ($isDark ? 'bg-[#2A2A2A] text-white border border-[#383838]' : 'bg-amber-50 border border-amber-200 text-amber-950') : ($isDark ? 'text-[#D4D4D4] hover:bg-[#262626] hover:text-white' : 'text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#202123]') }}">
                     <div class="flex items-center gap-2.5 truncate">
                         <span class="material-symbols-rounded text-[20px] {{ $isAll ? 'text-amber-600' : 'text-amber-500' }}">domain</span>
                         <div class="truncate">
-                            <p class="font-bold {{ $isAll ? 'text-amber-950' : 'text-apeiron-ink' }}">Semua Cabang (Konsolidasi)</p>
-                            <p class="text-[10px] {{ $isAll ? 'text-amber-700/80' : 'text-[#9B9A97]' }}">Total akumulasi seluruh {{ count($stores) }} cabang</p>
+                            <p class="font-bold {{ $isAll ? ($isDark ? 'text-amber-300' : 'text-amber-950') : ($isDark ? 'text-white' : 'text-apeiron-ink') }}">Semua Cabang (Konsolidasi)</p>
+                            <p class="text-[10px] {{ $isAll ? ($isDark ? 'text-amber-400/80' : 'text-amber-700/80') : 'text-[#9B9A97]' }}">Total akumulasi seluruh {{ count($stores) }} cabang</p>
                         </div>
                     </div>
                     @if($isAll)
-                        <span class="material-symbols-rounded text-[18px] text-amber-600">check_circle</span>
+                        <span class="material-symbols-rounded text-[18px] text-amber-500">check_circle</span>
                     @endif
                 </button>
             </form>
-            <div class="border-t border-[#F1F1EF] my-1"></div>
+            <div class="border-t {{ $isDark ? 'border-[#2E2E2E]' : 'border-[#E5E7EB]' }} my-1"></div>
             @endif
 
             {{-- Specific Stores List --}}
@@ -82,16 +83,16 @@
                     @csrf
                     <input type="hidden" name="store_id" value="{{ $st->id }}">
                     <button type="submit"
-                        class="w-full text-left px-3 py-2 rounded-xl text-xs flex items-center justify-between transition-all duration-150 cursor-pointer {{ $isSelected ? 'bg-emerald-50/80 border border-emerald-200 text-emerald-950 shadow-xs font-semibold' : 'text-[#787774] hover:bg-[#F7F7F5] hover:text-apeiron-ink' }}">
+                        class="w-full text-left px-2.5 py-2 rounded-lg text-xs flex items-center justify-between transition-all duration-150 cursor-pointer {{ $isSelected ? ($isDark ? 'bg-[#2A2A2A] text-white border border-[#383838] font-semibold' : 'bg-emerald-50 border border-emerald-200 text-emerald-950 font-semibold') : ($isDark ? 'text-[#D4D4D4] hover:bg-[#262626] hover:text-white' : 'text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#202123]') }}">
                         <div class="flex items-center gap-2.5 truncate">
-                            <span class="material-symbols-rounded text-[19px] {{ $isSelected ? 'text-emerald-600' : 'text-[#9B9A97]' }}">store</span>
+                            <span class="material-symbols-rounded text-[18px] {{ $isSelected ? 'text-emerald-400' : 'text-[#737373]' }}">store</span>
                             <div class="truncate">
-                                <p class="truncate {{ $isSelected ? 'text-emerald-950 font-bold' : 'text-apeiron-ink font-medium' }}">{{ $st->name }}</p>
-                                <p class="text-[10px] text-[#9B9A97] truncate">{{ Str::limit($st->address, 34) }}</p>
+                                <p class="truncate {{ $isSelected ? 'text-white font-semibold' : ($fullWidth ? 'text-[#D4D4D4]' : 'text-[#202123]') }}">{{ $st->name }}</p>
+                                <p class="text-[10px] text-[#737373] truncate">{{ Str::limit($st->address, 34) }}</p>
                             </div>
                         </div>
                         @if($isSelected)
-                            <span class="material-symbols-rounded text-[18px] text-emerald-600">check_circle</span>
+                            <span class="material-symbols-rounded text-[17px] text-emerald-400">check_circle</span>
                         @endif
                     </button>
                 </form>

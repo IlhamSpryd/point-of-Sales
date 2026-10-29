@@ -21,7 +21,7 @@
     </div>
 
     {{-- ==================== TOOLBAR FILTER ==================== --}}
-    <div class="bg-white rounded-2xl border border-gray-200 p-4 lg:p-5 mb-6 flex flex-col gap-4 shadow-xs">
+    <div class="bg-white rounded-2xl border border-[#E5E7EB] p-4 lg:p-5 mb-6 flex flex-col gap-4 shadow-xs">
         <div class="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
             <div class="w-full lg:max-w-xs">
                 <x-search-input wire:model.live.debounce.400ms="search" placeholder="Cari kode pesanan..." />
@@ -29,7 +29,7 @@
 
             <div class="relative w-full lg:w-64">
                 <select wire:model.live="statusFilter"
-                    class="w-full min-h-[42px] px-3.5 pr-9 rounded-xl border border-gray-200 bg-white text-xs font-bold text-gray-700 appearance-none focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-apeiron-ink transition-all shadow-xs cursor-pointer">
+                    class="w-full min-h-[42px] px-3.5 pr-9 rounded-xl border border-[#E5E7EB] bg-white text-xs font-bold text-gray-700 appearance-none focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-apeiron-ink transition-all shadow-xs cursor-pointer">
                     <option value="all">Semua Status</option>
                     @foreach ($this->statusOptions as $value => $label)
                         <option value="{{ $value }}">{{ $label }}</option>
@@ -48,13 +48,13 @@
 
             @if ($search !== '' || $statusFilter !== 'all' || $datePreset !== 'today')
                 <button type="button" wire:click="resetFilters"
-                    class="shrink-0 inline-flex items-center justify-center gap-1.5 min-h-[40px] px-3.5 rounded-xl border border-gray-200 bg-white text-xs font-bold text-gray-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-all active:scale-95 shadow-xs">
+                    class="shrink-0 inline-flex items-center justify-center gap-1.5 min-h-[40px] px-3.5 rounded-xl border border-[#E5E7EB] bg-white text-xs font-bold text-gray-600 hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 transition-all active:scale-95 shadow-xs">
                     <span class="material-symbols-rounded text-[16px]">filter_alt_off</span> Reset Filter
                 </button>
             @endif
         </div>
 
-        <div class="flex flex-wrap items-center gap-2 pt-3 border-t border-gray-100">
+        <div class="flex flex-wrap items-center gap-2 pt-3 border-t border-[#E5E7EB]">
             <span class="text-xs font-bold uppercase tracking-wider text-gray-500 mr-1">Periode:</span>
             @foreach ([
                 'today' => 'Hari Ini',
@@ -72,10 +72,10 @@
             @if ($datePreset === 'custom')
                 <div class="flex items-center gap-2 ml-1">
                     <input type="date" wire:model.live="startDate"
-                        class="min-h-[36px] px-3 rounded-xl border border-gray-200 bg-white text-xs text-apeiron-ink focus:outline-none focus:ring-1 focus:ring-gray-900 shadow-xs">
+                        class="min-h-[36px] px-3 rounded-xl border border-[#E5E7EB] bg-white text-xs text-apeiron-ink focus:outline-none focus:ring-1 focus:ring-gray-900 shadow-xs">
                     <span class="text-gray-400 text-xs font-semibold">s/d</span>
                     <input type="date" wire:model.live="endDate"
-                        class="min-h-[36px] px-3 rounded-xl border border-gray-200 bg-white text-xs text-apeiron-ink focus:outline-none focus:ring-1 focus:ring-gray-900 shadow-xs">
+                        class="min-h-[36px] px-3 rounded-xl border border-[#E5E7EB] bg-white text-xs text-apeiron-ink focus:outline-none focus:ring-1 focus:ring-gray-900 shadow-xs">
                 </div>
             @else
                 <span class="text-xs font-medium text-gray-400 ml-1">({{ $this->dateRangeLabel }})</span>
@@ -84,7 +84,7 @@
     </div>
 
     {{-- ==================== TABEL RIWAYAT ==================== --}}
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
+    <div class="bg-white rounded-2xl border border-[#E5E7EB] shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
         {{-- Desktop Table --}}
         <div class="hidden lg:block overflow-auto flex-1">
             <x-data-table>
@@ -153,7 +153,7 @@
                             {{ $order->customer->name ?? '—' }}
                         </td>
                         <td class="px-6 py-4">
-                            <span class="inline-flex items-center gap-1 text-[11px] font-bold text-gray-700 bg-gray-100 border border-gray-200 rounded-lg px-2 py-0.5 whitespace-nowrap">
+                            <span class="inline-flex items-center gap-1 text-[11px] font-bold text-gray-700 bg-gray-100 border border-[#E5E7EB] rounded-lg px-2 py-0.5 whitespace-nowrap">
                                 <span class="material-symbols-rounded text-[13px]">{{ $order->payment_method?->value === 'cash' ? 'payments' : 'qr_code_2' }}</span>
                                 {{ $order->payment_method?->label() ?? '-' }}
                             </span>
@@ -196,7 +196,7 @@
                     <tr>
                         <td colspan="8" class="px-6 py-14 text-center text-gray-400 text-xs">
                             <div class="flex flex-col items-center justify-center">
-                                <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-2 border border-gray-100">
+                                <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-2 border border-[#E5E7EB]">
                                     <span class="material-symbols-rounded text-[24px] text-gray-400">receipt_long</span>
                                 </div>
                                 <p class="font-bold text-gray-600">Tidak ada transaksi ditemukan.</p>
@@ -221,13 +221,13 @@
                     };
                 @endphp
                 <div wire:key="order-card-{{ $order->id }}"
-                    class="p-4 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 transition-colors cursor-pointer shadow-xs"
+                    class="p-4 rounded-xl border border-[#E5E7EB] bg-white hover:bg-gray-50 transition-colors cursor-pointer shadow-xs"
                     wire:click="viewDetail({{ $order->id }})">
                     <div class="flex justify-between items-start">
                         <span class="font-mono font-bold text-xs text-apeiron-ink">{{ $order->order_code }}</span>
                         <x-ui.badge :variant="$stVariant">{{ $order->order_status->label() }}</x-ui.badge>
                     </div>
-                    <div class="flex justify-between items-end mt-2.5 pt-2 border-t border-gray-100">
+                    <div class="flex justify-between items-end mt-2.5 pt-2 border-t border-[#E5E7EB]">
                         <div class="flex flex-col">
                             <span class="text-[11px] text-gray-400">{{ $order->created_at->format('d M, H:i') }}</span>
                             <span class="text-xs font-bold text-gray-700">{{ $order->user->name ?? 'Self-Order' }}</span>
@@ -239,7 +239,7 @@
                 </div>
             @empty
                 <div class="py-8 text-center text-gray-400 text-xs flex flex-col items-center justify-center">
-                    <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-2 border border-gray-100">
+                    <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-2 border border-[#E5E7EB]">
                         <span class="material-symbols-rounded text-[24px] text-gray-400">receipt_long</span>
                     </div>
                     <p class="font-bold text-gray-600">Tidak ada transaksi ditemukan.</p>
@@ -247,7 +247,7 @@
             @endforelse
         </div>
 
-        <div class="p-4 border-t border-gray-100 shrink-0">
+        <div class="p-4 border-t border-[#E5E7EB] shrink-0">
             {{ $this->orders->links() }}
         </div>
     </div>
@@ -258,9 +258,9 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 animate-fade-in"
             role="dialog" aria-modal="true" aria-labelledby="order-detail-title"
             wire:click.self="closeDetail">
-            <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl border border-gray-200 overflow-hidden animate-slide-up-fade">
+            <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl border border-[#E5E7EB] overflow-hidden animate-slide-up-fade">
 
-                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-start shrink-0 bg-white">
+                <div class="px-6 py-4 border-b border-[#E5E7EB] flex justify-between items-start shrink-0 bg-white">
                     <div>
                         <h3 id="order-detail-title" class="font-black text-lg text-apeiron-ink font-mono">{{ $detail->order_code }}</h3>
                         <p class="text-xs text-gray-500 mt-0.5">{{ $detail->created_at->format('d F Y, H:i') }} WIB</p>
@@ -318,7 +318,7 @@
                     </div>
 
                     @if ($detail->customer)
-                        <div class="bg-gray-50 rounded-xl p-3.5 border border-gray-200">
+                        <div class="bg-gray-50 rounded-xl p-3.5 border border-[#E5E7EB]">
                             <p class="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">Pelanggan</p>
                             <div class="flex items-center justify-between gap-3">
                                 <div class="min-w-0">
@@ -331,7 +331,7 @@
 
                     <div>
                         <p class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">Item Pesanan</p>
-                        <ul class="divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden text-xs">
+                        <ul class="divide-y divide-[#E5E7EB] border border-[#E5E7EB] rounded-xl overflow-hidden text-xs">
                             @foreach ($detail->orderItems as $item)
                                 @php
                                     $returnedQty = $detail->orderReturns->flatMap->items->where('order_item_id', $item->id)->sum('quantity_returned');
@@ -364,7 +364,7 @@
                     </div>
 
                     {{-- Summary Total --}}
-                    <div class="bg-gray-50 rounded-xl p-4 border border-gray-200 text-xs space-y-1.5">
+                    <div class="bg-gray-50 rounded-xl p-4 border border-[#E5E7EB] text-xs space-y-1.5">
                         <div class="flex justify-between text-gray-600"><span>Subtotal</span><span class="tabular-nums font-semibold">Rp {{ number_format($detail->subtotal_amount, 0, ',', '.') }}</span></div>
                         @if ($detail->discount_amount > 0)
                             <div class="flex justify-between text-rose-600 font-semibold"><span>Diskon</span><span class="tabular-nums">- Rp {{ number_format($detail->discount_amount, 0, ',', '.') }}</span></div>
@@ -373,15 +373,15 @@
                         @if ($detail->service_charge_amount > 0)
                             <div class="flex justify-between text-gray-600"><span>Service Charge</span><span class="tabular-nums font-semibold">Rp {{ number_format($detail->service_charge_amount, 0, ',', '.') }}</span></div>
                         @endif
-                        <div class="flex justify-between font-black text-apeiron-ink text-sm pt-2 mt-1 border-t border-gray-200">
+                        <div class="flex justify-between font-black text-apeiron-ink text-sm pt-2 mt-1 border-t border-[#E5E7EB]">
                             <span>Total Tagihan</span><span class="tabular-nums">Rp {{ number_format($detail->order_amount, 0, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="p-4 border-t border-gray-100 bg-white shrink-0 flex flex-wrap gap-2 justify-end">
+                <div class="p-4 border-t border-[#E5E7EB] bg-white shrink-0 flex flex-wrap gap-2 justify-end">
                     <button type="button" wire:click="closeDetail"
-                        class="min-h-[40px] px-4 rounded-xl border border-gray-200 bg-white text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-all active:scale-95">
+                        class="min-h-[40px] px-4 rounded-xl border border-[#E5E7EB] bg-white text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-all active:scale-95">
                         Tutup
                     </button>
                     @if (in_array($detail->order_status->value, ['paid', 'completed'], true))
@@ -416,7 +416,7 @@
         <div class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 animate-fade-in"
             role="alertdialog" aria-modal="true" aria-labelledby="void-modal-title"
             @keydown.escape.stop.prevent="$wire.set('voidingOrderId', null)">
-            <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border border-gray-200 animate-slide-up-fade">
+            <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-[#E5E7EB] animate-slide-up-fade">
                 <div class="flex items-center gap-2 text-rose-600 mb-2">
                     <span class="material-symbols-rounded text-[24px]">cancel</span>
                     <h3 id="void-modal-title" class="font-bold text-base">Batalkan (Void) Pesanan</h3>
@@ -430,7 +430,7 @@
                         <label for="void-reason-input" class="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1.5">Alasan Pembatalan</label>
                         <textarea id="void-reason-input" wire:model="voidReason" rows="3" required minlength="5"
                             placeholder="Alasan pembatalan (minimal 5 karakter)..."
-                            class="w-full rounded-xl border border-gray-200 p-3 text-xs focus:ring-1 focus:ring-rose-500 focus:border-rose-500 outline-none resize-none shadow-xs"></textarea>
+                            class="w-full rounded-xl border border-[#E5E7EB] p-3 text-xs focus:ring-1 focus:ring-rose-500 focus:border-rose-500 outline-none resize-none shadow-xs"></textarea>
                         @error('voidReason') <span class="text-xs text-rose-600 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
@@ -442,9 +442,9 @@
                         @error('supervisorPin') <span class="text-xs text-rose-600 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
-                    <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                    <div class="flex justify-end gap-2 pt-2 border-t border-[#E5E7EB]">
                         <button type="button" wire:click="$set('voidingOrderId', null)"
-                            class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+                            class="px-4 py-2 rounded-xl border border-[#E5E7EB] text-xs font-semibold text-gray-600 hover:bg-gray-50">
                             Batal
                         </button>
                         <button type="submit"
@@ -465,8 +465,8 @@
     @if ($showReturnModal)
         <div class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 overflow-y-auto animate-fade-in"
             role="dialog" aria-modal="true" aria-labelledby="return-modal-title">
-            <div class="bg-white rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl border border-gray-200 my-auto overflow-hidden animate-slide-up-fade">
-                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center shrink-0 bg-white">
+            <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl border border-[#E5E7EB] my-auto overflow-hidden animate-slide-up-fade">
+                <div class="px-6 py-4 border-b border-[#E5E7EB] flex justify-between items-center shrink-0 bg-white">
                     <div>
                         <h3 id="return-modal-title" class="font-bold text-base text-apeiron-ink flex items-center gap-2">
                             <span class="material-symbols-rounded text-amber-600">keyboard_return</span> Pengajuan Retur &amp; Refund
@@ -490,7 +490,7 @@
                         <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">1. Pilih Item &amp; Disposisi</h4>
                         <div class="space-y-2.5">
                             @foreach ($returnItems as $id => $item)
-                                <div class="p-3 rounded-xl border border-gray-200 bg-gray-50/50 space-y-2">
+                                <div class="p-3 rounded-xl border border-[#E5E7EB] bg-gray-50/50 space-y-2">
                                     <div class="flex items-start justify-between gap-3">
                                         <label class="flex items-center gap-2 cursor-pointer">
                                             <input type="checkbox" wire:model.live="returnItems.{{ $id }}.selected"
@@ -501,17 +501,17 @@
                                     </div>
 
                                     @if (!empty($item['selected']))
-                                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-gray-200 text-xs">
+                                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-2 border-t border-[#E5E7EB] text-xs">
                                             <div>
                                                 <label class="block text-[11px] font-bold text-gray-500 mb-1">Jumlah Retur</label>
                                                 <input type="number" wire:model.live="returnItems.{{ $id }}.qty"
                                                     min="1" max="{{ $item['remaining_qty'] }}"
-                                                    class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs font-bold">
+                                                    class="w-full rounded-lg border border-[#E5E7EB] px-2 py-1.5 text-xs font-bold">
                                             </div>
                                             <div>
                                                 <label class="block text-[11px] font-bold text-gray-500 mb-1">Disposisi Inventori</label>
                                                 <select wire:model.live="returnItems.{{ $id }}.disposition"
-                                                    class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs font-bold">
+                                                    class="w-full rounded-lg border border-[#E5E7EB] px-2 py-1.5 text-xs font-bold">
                                                     @if (empty($item['is_recipe_product']))
                                                         <option value="restock">Restock (Kembali Layak Jual)</option>
                                                     @endif
@@ -526,7 +526,7 @@
                                                 <label class="block text-[11px] font-bold text-gray-500 mb-1">Alasan Disposisi</label>
                                                 <input type="text" wire:model="returnItems.{{ $id }}.disposition_reason"
                                                     placeholder="Opsional (cth: basi, salah saji)"
-                                                    class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs">
+                                                    class="w-full rounded-lg border border-[#E5E7EB] px-2 py-1.5 text-xs">
                                             </div>
                                         </div>
                                     @endif
@@ -540,7 +540,7 @@
                         <h4 class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">2. Alokasi Pengembalian Dana (Refund)</h4>
                         <div class="space-y-2.5">
                             @foreach ($refundAllocations as $pId => $alloc)
-                                <div class="p-3 rounded-xl border border-gray-200 bg-gray-50/50 space-y-2 text-xs">
+                                <div class="p-3 rounded-xl border border-[#E5E7EB] bg-gray-50/50 space-y-2 text-xs">
                                     <div class="flex justify-between items-center">
                                         <span class="font-bold text-gray-700">Pembayaran #{{ $pId }} (Metode Asal: <strong class="uppercase">{{ $alloc['orig_method'] }}</strong>)</span>
                                         <span class="text-gray-500">Maksimal: <strong class="text-gray-800">Rp {{ number_format($alloc['max_amount'], 0, ',', '.') }}</strong></span>
@@ -550,12 +550,12 @@
                                             <label class="block text-[11px] font-bold text-gray-500 mb-1">Nominal Refund (Rp)</label>
                                             <input type="number" wire:model.live="refundAllocations.{{ $pId }}.amount"
                                                 min="1" max="{{ $alloc['max_amount'] }}"
-                                                class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs font-bold">
+                                                class="w-full rounded-lg border border-[#E5E7EB] px-2 py-1.5 text-xs font-bold">
                                         </div>
                                         <div>
                                             <label class="block text-[11px] font-bold text-gray-500 mb-1">Metode Pengembalian</label>
                                             <select wire:model.live="refundAllocations.{{ $pId }}.refund_method"
-                                                class="w-full rounded-lg border border-gray-200 px-2 py-1.5 text-xs font-bold">
+                                                class="w-full rounded-lg border border-[#E5E7EB] px-2 py-1.5 text-xs font-bold">
                                                 <option value="{{ $alloc['orig_method'] }}">Asal ({{ ucfirst($alloc['orig_method']) }})</option>
                                                 @if ($alloc['orig_method'] !== 'cash')
                                                     <option value="cash">Tunai (Cash Refund Exception)</option>
@@ -577,11 +577,11 @@
                     </div>
 
                     {{-- Form Footer Inputs --}}
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-gray-200">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-[#E5E7EB]">
                         <div>
                             <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Alasan Retur / Refund *</label>
                             <input type="text" wire:model="returnReason" placeholder="Minimal 5 karakter..."
-                                class="w-full rounded-xl border border-gray-200 px-3 py-2 text-xs shadow-xs">
+                                class="w-full rounded-xl border border-[#E5E7EB] px-3 py-2 text-xs shadow-xs">
                         </div>
                         <div>
                             <label class="block text-xs font-bold uppercase tracking-wider text-rose-600 mb-1">PIN Supervisor / Manager *</label>
@@ -591,9 +591,9 @@
                     </div>
                 </div>
 
-                <div class="p-4 border-t border-gray-100 bg-white shrink-0 flex justify-end gap-2">
+                <div class="p-4 border-t border-[#E5E7EB] bg-white shrink-0 flex justify-end gap-2">
                     <button type="button" wire:click="closeReturnModal"
-                        class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+                        class="px-4 py-2 rounded-xl border border-[#E5E7EB] text-xs font-semibold text-gray-600 hover:bg-gray-50">
                         Batal
                     </button>
                     <button type="button" wire:click="processReturn"
@@ -613,7 +613,7 @@
     @if ($showReprintModal)
         <div class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 animate-fade-in"
             role="dialog" aria-modal="true" aria-labelledby="reprint-modal-title">
-            <div class="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl border border-gray-200 animate-slide-up-fade">
+            <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-[#E5E7EB] animate-slide-up-fade">
                 <div class="flex items-center gap-2 text-apeiron-ink mb-1">
                     <span class="material-symbols-rounded text-[22px]">print</span>
                     <h3 id="reprint-modal-title" class="font-bold text-base">
@@ -628,7 +628,7 @@
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-gray-600 mb-1">Alasan Cetak Ulang *</label>
                         <input type="text" wire:model="reprintReason" placeholder="Cth: Kertas macet, permintaan kasir/pelanggan..."
-                            class="w-full rounded-xl border border-gray-200 px-3 py-2 text-xs shadow-xs">
+                            class="w-full rounded-xl border border-[#E5E7EB] px-3 py-2 text-xs shadow-xs">
                         @error('reprintReason') <span class="text-xs text-rose-600 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
@@ -642,9 +642,9 @@
                     @endif
                 </div>
 
-                <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                <div class="flex justify-end gap-2 pt-2 border-t border-[#E5E7EB]">
                     <button type="button" wire:click="closeReprintModal"
-                        class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50">
+                        class="px-4 py-2 rounded-xl border border-[#E5E7EB] text-xs font-semibold text-gray-600 hover:bg-gray-50">
                         Batal
                     </button>
                     <button type="button" wire:click="confirmReprint"

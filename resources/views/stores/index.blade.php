@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="space-y-6" data-gsap="page-enter">
+    <div x-data="{ createStoreDrawer: {{ $errors->any() ? 'true' : 'false' }} }" class="space-y-6" data-gsap="page-enter">
         <!-- Header -->
         <x-erp.page-header
             title="Manajemen Cabang (Outlets)"
@@ -10,7 +10,7 @@
             </x-slot:breadcrumbs>
 
             <x-slot:actions>
-                <x-ui.button variant="primary" href="{{ route('stores.create') }}" class="gap-2" wire:navigate>
+                <x-ui.button variant="primary" type="button" @click="createStoreDrawer = true" class="gap-2">
                     <span class="material-symbols-rounded text-base">add_business</span>
                     Tambah Cabang
                 </x-ui.button>
@@ -29,7 +29,7 @@
         @endif
 
         <!-- Filter & Search Toolbar -->
-        <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-zinc-200/80 dark:border-zinc-800">
+        <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-[#E5E7EB] dark:border-zinc-800">
             <form method="GET" action="{{ route('stores.index') }}" class="relative w-full sm:w-80">
                 <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari cabang..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
@@ -37,11 +37,11 @@
         </div>
 
         <!-- Table -->
-        <div class="card-surface overflow-hidden rounded-2xl border border-zinc-200/80 dark:border-zinc-800 shadow-xs">
+        <div class="card-surface overflow-hidden rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 shadow-xs">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="border-b border-zinc-200/80 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                        <tr class="border-b border-[#E5E7EB] dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                             <th class="px-6 py-4">Kode</th>
                             <th class="px-6 py-4">Info Cabang</th>
                             <th class="px-6 py-4">Zona Waktu</th>
@@ -50,7 +50,7 @@
                             <th class="px-6 py-4 text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800/70">
                         @forelse($stores as $store)
                             <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
                                 <td class="px-6 py-4 font-mono font-medium text-apeiron-ink dark:text-white text-sm whitespace-nowrap">
@@ -126,10 +126,59 @@
                 </table>
             </div>
             @if($stores->hasPages())
-                <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800">
+                <div class="p-4 border-t border-[#E5E7EB] dark:border-zinc-800">
                     {{ $stores->links() }}
                 </div>
             @endif
         </div>
+
+        {{-- Contextual Drawer for PAGE-071 (Create Store) --}}
+        <x-ui.drawer x-model="createStoreDrawer" maxWidth="lg">
+            <x-slot:header>
+                <span>Tambah Cabang Baru</span>
+            </x-slot:header>
+
+            <form action="{{ route('stores.store') }}" method="POST" id="createStoreDrawerForm" class="space-y-4">
+                @csrf
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Nama Cabang / Toko <span class="text-rose-500">*</span></label>
+                    <input type="text" name="name" value="{{ old('name') }}" required placeholder="Contoh: Apeiron Coffee Senopati" class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Kode Cabang (Opsional)</label>
+                    <input type="text" name="code" value="{{ old('code') }}" placeholder="Otomatis jika dikosongkan (STR-001)" class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Zona Waktu Operasional <span class="text-rose-500">*</span></label>
+                    <select name="timezone" required class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                        <option value="Asia/Jakarta" selected>WIB — Waktu Indonesia Barat (Asia/Jakarta)</option>
+                        <option value="Asia/Makassar">WITA — Waktu Indonesia Tengah (Asia/Makassar)</option>
+                        <option value="Asia/Jayapura">WIT — Waktu Indonesia Timur (Asia/Jayapura)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Nomor Telepon Kontak</label>
+                    <input type="tel" name="phone" value="{{ old('phone') }}" placeholder="08123456789" class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Alamat Fisik Cabang</label>
+                    <textarea name="address" rows="3" placeholder="Jl. Senopati No. 45, Jakarta Selatan..." class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">{{ old('address') }}</textarea>
+                </div>
+            </form>
+
+            <x-slot:footer>
+                <x-ui.button variant="secondary" type="button" @click="createStoreDrawer = false">
+                    Batal
+                </x-ui.button>
+                <x-ui.button variant="primary" type="submit" form="createStoreDrawerForm">
+                    Simpan Cabang
+                </x-ui.button>
+            </x-slot:footer>
+        </x-ui.drawer>
     </div>
 </x-app-layout>

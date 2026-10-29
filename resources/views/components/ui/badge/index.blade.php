@@ -6,6 +6,7 @@
     'icon' => null,
     'iconPosition' => 'before',
     'pill' => false,
+    'asBadge' => false,
     'dot' => false,
 ])
 
@@ -31,37 +32,34 @@
         default => 'secondary',
     };
 
-    $dotColors = [
-        'success'     => 'bg-emerald-500',
-        'destructive' => 'bg-rose-500',
-        'warning'     => 'bg-amber-500',
-        'info'        => 'bg-blue-500',
-        'secondary'   => 'bg-zinc-400',
-        'primary'     => 'bg-zinc-400',
-        'outline'     => 'bg-zinc-400',
-    ];
+    $isBadge = $pill || $asBadge;
 
     $classes = \Illuminate\Support\Arr::toCssClasses([
-        'inline-flex items-center justify-center whitespace-nowrap font-medium tracking-tight transition-colors border',
-        $pill ? 'rounded-full' : 'rounded-md',
-        'gap-1 px-2 py-0.5 text-[11px] leading-4' => $size === 'sm',
-        'gap-1.5 px-2.5 py-0.5 text-xs' => $size === 'md',
-        'gap-1.5 px-3 py-1 text-xs' => $size === 'lg',
-        'bg-primary text-primary-foreground border-transparent' => $variant === 'primary',
-        'bg-[#F1F1EF] text-[#55544E] border-[#E9E9E7]' => $variant === 'secondary',
-        'bg-transparent border-border text-foreground' => $variant === 'outline',
-        'bg-[#FFF1F2] bg-rose-50 text-[#BE123C] border-rose-200/70' => $variant === 'destructive',
-        'bg-[#EFF6FF] text-[#1D4ED8] border-blue-200/70' => $variant === 'info',
-        'bg-[#ECFDF5] bg-green-50 text-[#047857] text-green-600 border-emerald-200/70' => $variant === 'success',
-        'bg-[#FBF3E7] text-[#8A5A16] border-amber-200/70' => $variant === 'warning',
+        'inline-flex items-center whitespace-nowrap font-medium tracking-normal transition-colors',
+        
+        // Explicit pill/chip tag style (when requested asBadge or pill)
+        'border rounded-md px-2 py-0.5 text-xs' => $isBadge,
+        'bg-emerald-50 text-emerald-800 border-emerald-200/80' => $isBadge && $variant === 'success',
+        'bg-rose-50 text-rose-800 border-rose-200/80' => $isBadge && $variant === 'destructive',
+        'bg-amber-50 text-amber-800 border-amber-200/80' => $isBadge && $variant === 'warning',
+        'bg-blue-50 text-blue-800 border-blue-200/80' => $isBadge && $variant === 'info',
+        'bg-zinc-100 text-zinc-700 border-zinc-200' => $isBadge && $variant === 'secondary',
+        'bg-zinc-900 text-white border-zinc-900' => $isBadge && $variant === 'primary',
+        'bg-transparent text-zinc-700 border-zinc-300' => $isBadge && $variant === 'outline',
+
+        // Standard Table & Status Display: ABSOLUTELY NO COLORED PILL BADGES
+        'bg-transparent border-0 p-0 text-xs sm:text-sm' => ! $isBadge,
+        'text-emerald-700 dark:text-emerald-400' => ! $isBadge && $variant === 'success',
+        'text-red-700 dark:text-red-400' => ! $isBadge && $variant === 'destructive',
+        'text-amber-700 dark:text-amber-400' => ! $isBadge && $variant === 'warning',
+        'text-blue-700 dark:text-blue-400' => ! $isBadge && $variant === 'info',
+        'text-gray-500 dark:text-gray-400' => ! $isBadge && $variant === 'secondary',
+        'text-gray-900 dark:text-gray-100' => ! $isBadge && $variant === 'primary',
+        'text-gray-600 dark:text-gray-400' => ! $isBadge && $variant === 'outline',
     ]);
 @endphp
 
 <span {{ $attributes->twMerge($classes) }}>
-    @if ($dot)
-        <span class="size-1.5 rounded-full shrink-0 {{ $dotColors[$variant] ?? 'bg-zinc-400' }}" aria-hidden="true"></span>
-    @endif
-
     @if ($icon && $iconPosition === 'before')
         @if (\Illuminate\Support\Facades\View::exists('components.'.str_replace('.', '/', $icon)))
             <x-dynamic-component :component="$icon" class="size-3.5 shrink-0" />

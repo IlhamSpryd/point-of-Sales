@@ -18,7 +18,7 @@
                     Nominal Diskon (Rp)
                 </label>
                 <input type="number" wire:model="manualDiscountAmount" required min="1" max="{{ $this->subtotal }}"
-                    class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl font-mono font-bold text-sm text-apeiron-ink focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-apeiron-ink outline-none transition-all"
+                    class="w-full px-3.5 py-2.5 bg-gray-50 border border-[#E5E7EB] rounded-xl font-mono font-bold text-sm text-apeiron-ink focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-apeiron-ink outline-none transition-all"
                     placeholder="0">
                 @error('manualDiscountAmount') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
             </div>
@@ -28,7 +28,7 @@
                     Alasan Pemberian Diskon
                 </label>
                 <textarea wire:model="manualDiscountReason" required rows="2"
-                    class="w-full px-3.5 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs text-apeiron-ink focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-apeiron-ink outline-none transition-all resize-none"
+                    class="w-full px-3.5 py-2.5 bg-gray-50 border border-[#E5E7EB] rounded-xl text-xs text-apeiron-ink focus:bg-white focus:ring-1 focus:ring-gray-900 focus:border-apeiron-ink outline-none transition-all resize-none"
                     placeholder="Contoh: Kompensasi keterlambatan sajian / diskon VIP..."></textarea>
                 @error('manualDiscountReason') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
             </div>
@@ -48,7 +48,7 @@
     <x-slot:footer>
         <div class="flex items-center justify-end gap-2 w-full">
             <button type="button" wire:click="$set('isManualDiscountModalOpen', false)"
-                class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors">
+                class="px-4 py-2 rounded-xl border border-[#E5E7EB] text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors">
                 Batal
             </button>
             <button type="submit" form="manual-discount-form"

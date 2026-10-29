@@ -45,11 +45,11 @@
 
     <div class="py-6" data-gsap="page-enter">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-200 space-y-6">
+            <div class="card-surface p-6 rounded-xl border border-apeiron-border space-y-6">
                 <div class="flex justify-between items-center border-b border-gray-100 pb-4">
                     <div>
-                        <span class="text-[11px] text-gray-400 uppercase tracking-wider font-bold">{{ __('Kode Pesanan') }}</span>
-                        <p class="text-lg font-black text-apeiron-ink font-mono">{{ $order->order_code }}</p>
+                        <span class="text-[11px] text-gray-400 uppercase tracking-wider font-semibold">{{ __('Kode Pesanan') }}</span>
+                        <p class="text-lg font-bold text-apeiron-ink font-mono">{{ $order->order_code }}</p>
                         <p class="text-xs text-gray-500">{{ $order->created_at->format('d M Y H:i') }} WIB</p>
                     </div>
                     <div class="flex items-center gap-2">
@@ -85,7 +85,7 @@
                                         <p class="text-gray-400 italic text-[11px] mt-0.5">{{ $item->notes }}</p>
                                     @endif
                                 </div>
-                                <span class="font-black text-apeiron-ink tabular-nums text-sm">Rp {{ number_format((float) $item->order_subtotal, 0, ',', '.') }}</span>
+                                <span class="font-bold text-apeiron-ink tabular-nums text-sm">Rp {{ number_format((float) $item->order_subtotal, 0, ',', '.') }}</span>
                             </div>
                         @endforeach
                     </div>
@@ -138,7 +138,7 @@
                                 <div class="bg-rose-50/50 border border-rose-200 rounded-xl p-3.5 text-xs space-y-1.5">
                                     <div class="flex justify-between items-center">
                                         <span class="font-mono font-bold text-rose-900">{{ $refund->refund_number }}</span>
-                                        <span class="font-black text-rose-700 tabular-nums text-sm">Rp {{ number_format($refund->amount, 0, ',', '.') }}</span>
+                                        <span class="font-bold text-rose-700 tabular-nums text-sm">Rp {{ number_format($refund->amount, 0, ',', '.') }}</span>
                                     </div>
                                     <div class="grid grid-cols-2 gap-2 text-gray-500 text-[11px]">
                                         <div>Metode: <strong class="text-gray-700 uppercase">{{ $refund->refund_method }}</strong></div>
@@ -174,7 +174,7 @@
                             <span class="tabular-nums font-semibold">Rp {{ number_format((float) $order->service_charge_amount, 0, ',', '.') }}</span>
                         </div>
                     @endif
-                    <div class="flex justify-between text-base font-black text-apeiron-ink pt-2.5 border-t border-gray-100">
+                    <div class="flex justify-between text-base font-bold text-apeiron-ink pt-2.5 border-t border-gray-100">
                         <span>{{ __('Total Tagihan') }}</span>
                         <span class="tabular-nums">Rp {{ number_format((float) $order->order_amount, 0, ',', '.') }}</span>
                     </div>

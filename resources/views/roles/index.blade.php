@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="space-y-6" data-gsap="page-enter">
+    <div x-data="{ createRoleDrawer: {{ $errors->any() ? 'true' : 'false' }} }" class="space-y-6" data-gsap="page-enter">
         <!-- Header -->
         <x-erp.page-header
             title="Peran & Hak Akses"
@@ -14,7 +14,7 @@
                     <x-ui.button variant="secondary" href="{{ request()->fullUrlWithQuery(['export' => 'csv']) }}" class="gap-2">
                         <span class="material-symbols-rounded text-base">download</span> Ekspor
                     </x-ui.button>
-                    <x-ui.button variant="primary" href="{{ route('roles.create') }}" class="gap-2" wire:navigate>
+                    <x-ui.button variant="primary" type="button" @click="createRoleDrawer = true" class="gap-2">
                         <span class="material-symbols-rounded text-base">add_moderator</span> Tambah Peran
                     </x-ui.button>
                 </div>
@@ -34,14 +34,14 @@
         @endif
 
         <!-- Filter & Search Toolbar -->
-        <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-zinc-200/80 dark:border-zinc-800">
+        <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-[#E5E7EB] dark:border-zinc-800">
             <form method="GET" action="{{ route('roles.index') }}" class="relative w-full sm:w-80">
                 <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama atau kode peran..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
             </form>
         </div>
 
-        <div class="card-surface flex flex-col flex-1 min-h-0 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden shadow-xs">
+        <div class="card-surface flex flex-col flex-1 min-h-0 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 overflow-hidden shadow-xs">
             {{-- Desktop/tablet-landscape: existing table --}}
             <x-data-table :hideOnMobile="true">
                 <x-slot:head>
@@ -150,9 +150,93 @@
                     </div>
                 @endforelse
             </div>
-            <div class="p-4 border-t border-zinc-200/80 dark:border-zinc-800 shrink-0">
+            <div class="p-4 border-t border-[#E5E7EB] dark:border-zinc-800 shrink-0">
                 {{ $roles->links() }}
             </div>
         </div>
+
+        {{-- Contextual Drawer for PAGE-078 (Create Role) --}}
+        <x-ui.drawer x-model="createRoleDrawer" maxWidth="xl">
+            <x-slot:header>
+                <span>Tambah Peran & Hak Akses Baru</span>
+            </x-slot:header>
+
+            <form action="{{ route('roles.store') }}" method="POST" id="createRoleDrawerForm" class="space-y-5">
+                @csrf
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Nama Peran <span class="text-rose-500">*</span></label>
+                    <input type="text" name="name" value="{{ old('name') }}" required placeholder="Contoh: Supervisor, Barista, Auditor" class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Deskripsi Tugas (Opsional)</label>
+                    <input type="text" name="description" value="{{ old('description') }}" placeholder="Penjelasan singkat wewenang peran ini..." class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                </div>
+
+                <div class="pt-3 border-t border-zinc-200 dark:border-zinc-800">
+                    <h5 class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">Hak Akses Modul (RBAC)</h5>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
+                            <input type="checkbox" name="permissions[can_access_pos]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
+                            <div>
+                                <span class="block text-xs font-semibold text-apeiron-ink dark:text-zinc-200">Layar Kasir (POS)</span>
+                                <span class="block text-[11px] text-zinc-500">Transaksi checkout & kasir</span>
+                            </div>
+                        </label>
+                        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
+                            <input type="checkbox" name="permissions[can_void_order]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
+                            <div>
+                                <span class="block text-xs font-semibold text-apeiron-ink dark:text-zinc-200">Otoritas Void</span>
+                                <span class="block text-[11px] text-zinc-500">Batalkan pesanan kasir</span>
+                            </div>
+                        </label>
+                        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
+                            <input type="checkbox" name="permissions[can_give_discount]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
+                            <div>
+                                <span class="block text-xs font-semibold text-apeiron-ink dark:text-zinc-200">Pemberian Diskon</span>
+                                <span class="block text-[11px] text-zinc-500">Diskon manual transaksi</span>
+                            </div>
+                        </label>
+                        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
+                            <input type="checkbox" name="permissions[can_access_kds]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
+                            <div>
+                                <span class="block text-xs font-semibold text-apeiron-ink dark:text-zinc-200">Layar Dapur (KDS)</span>
+                                <span class="block text-[11px] text-zinc-500">Kitchen Display System</span>
+                            </div>
+                        </label>
+                        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
+                            <input type="checkbox" name="permissions[can_manage_menu]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
+                            <div>
+                                <span class="block text-xs font-semibold text-apeiron-ink dark:text-zinc-200">Manajemen Katalog</span>
+                                <span class="block text-[11px] text-zinc-500">Ubah menu, harga, stok</span>
+                            </div>
+                        </label>
+                        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
+                            <input type="checkbox" name="permissions[can_view_reports]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
+                            <div>
+                                <span class="block text-xs font-semibold text-apeiron-ink dark:text-zinc-200">Laporan & Shift</span>
+                                <span class="block text-[11px] text-zinc-500">Lihat rekap finansial</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2 pt-1">
+                    <input type="hidden" name="is_active" value="0">
+                    <input type="checkbox" id="role_is_active" name="is_active" value="1" checked class="rounded border-zinc-300 text-primary-600 focus:ring-primary-500">
+                    <label for="role_is_active" class="text-sm font-medium text-apeiron-ink">Peran Aktif</label>
+                </div>
+            </form>
+
+            <x-slot:footer>
+                <x-ui.button variant="secondary" type="button" @click="createRoleDrawer = false">
+                    Batal
+                </x-ui.button>
+                <x-ui.button variant="primary" type="submit" form="createRoleDrawerForm">
+                    Simpan Peran
+                </x-ui.button>
+            </x-slot:footer>
+        </x-ui.drawer>
     </div>
 </x-app-layout>

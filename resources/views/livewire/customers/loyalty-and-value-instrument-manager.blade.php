@@ -65,7 +65,7 @@
     </div>
 
     <!-- Search Toolbar -->
-    <div class="card-surface p-4 rounded-2xl border border-zinc-200/80 dark:border-zinc-800 flex items-center justify-between gap-4">
+    <div class="card-surface p-4 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 flex items-center justify-between gap-4">
         <div class="relative flex-1 max-w-md">
             <span class="material-symbols-rounded absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari berdasarkan kode, nama, nomor, atau pelanggan..." class="w-full pl-10 pr-4 py-2 rounded-xl text-sm bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white focus:ring-2 focus:ring-apeiron-primary/20 focus:outline-hidden">
@@ -74,7 +74,7 @@
 
     <!-- Tab 1: Vouchers -->
     @if ($activeTab === 'vouchers')
-        <div class="card-surface rounded-2xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden shadow-xs">
+        <div class="card-surface rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 overflow-hidden shadow-xs">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
@@ -89,7 +89,7 @@
                             <th class="px-6 py-3.5 text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800/70">
                         @forelse ($vouchers as $voucher)
                             <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 transition">
                                 <td class="px-6 py-4">
@@ -160,7 +160,7 @@
 
     <!-- Tab 2: Gift Cards -->
     @elseif ($activeTab === 'gift_cards')
-        <div class="card-surface rounded-2xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden shadow-xs">
+        <div class="card-surface rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 overflow-hidden shadow-xs">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
@@ -174,7 +174,7 @@
                             <th class="px-6 py-3.5 text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800/70">
                         @forelse ($giftCards as $card)
                             <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 transition">
                                 <td class="px-6 py-4 font-mono font-bold text-zinc-900 dark:text-white">
@@ -233,7 +233,7 @@
 
     <!-- Tab 3: Store Credits -->
     @elseif ($activeTab === 'store_credits')
-        <div class="card-surface rounded-2xl border border-zinc-200/80 dark:border-zinc-800 overflow-hidden shadow-xs">
+        <div class="card-surface rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 overflow-hidden shadow-xs">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
@@ -245,7 +245,7 @@
                             <th class="px-6 py-3.5 text-right">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-zinc-200/70 dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800/70">
                         @forelse ($storeCredits as $sc)
                             <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 transition">
                                 <td class="px-6 py-4">

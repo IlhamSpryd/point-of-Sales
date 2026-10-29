@@ -116,7 +116,7 @@
                 <button type="button" @click="activeCategory = 'all'"
                     :aria-pressed="(activeCategory === 'all').toString()"
                     :class="activeCategory === 'all' ? 'bg-apeiron-ink text-white border-apeiron-ink shadow-sm' :
-                        'bg-white text-gray-500 border-[#E9E9E7] hover:bg-gray-50'"
+                        'bg-white text-gray-500 border-[#E5E7EB] hover:bg-gray-50'"
                     class="shrink-0 flex items-center justify-center h-10 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
                     Semua Menu
                 </button>
@@ -125,7 +125,7 @@
                         :aria-pressed="(activeCategory === '{{ $cat->id }}').toString()"
                         :class="activeCategory === '{{ $cat->id }}' ?
                             'bg-apeiron-ink text-white border-apeiron-ink shadow-sm' :
-                            'bg-white text-gray-500 border-[#E9E9E7] hover:bg-gray-50'"
+                            'bg-white text-gray-500 border-[#E5E7EB] hover:bg-gray-50'"
                         class="shrink-0 flex items-center justify-center h-10 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
                         {{ $cat->category_name }}
                     </button>

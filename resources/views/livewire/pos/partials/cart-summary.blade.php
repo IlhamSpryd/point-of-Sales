@@ -1,10 +1,10 @@
 <!-- AREA KALKULASI: TETAP DI BAWAH -->
-<div class="p-4 border-t border-gray-200 bg-white shrink-0 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-3">
+<div class="p-4 border-t border-[#E5E7EB] bg-white shrink-0 z-10 shadow-[0_-4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-3">
     @if (count($this->activeDiscounts) > 0)
         <div class="relative">
             <select wire:model.live="selectedDiscountId"
                 @disabled((bool) $pendingOrderId)
-                class="w-full h-10 pl-3.5 pr-8 bg-gray-100/80 border border-gray-200/50 rounded-xl outline-none text-xs font-bold text-gray-700 hover:bg-gray-200/50 hover:text-apeiron-ink focus:bg-white focus:border-gray-300 focus:ring-0 appearance-none transition-all duration-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                class="w-full h-9 pl-3.5 pr-8 bg-gray-100/80 border border-[#E5E7EB]/50 rounded-lg outline-none text-xs font-semibold text-gray-700 hover:bg-gray-200/50 hover:text-apeiron-ink focus:bg-white focus:border-gray-300 focus:ring-0 appearance-none transition-colors duration-150 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                 <option value="">+ Tambah Diskon Voucher</option>
                 @foreach ($this->activeDiscounts as $d)
                     <option value="{{ $d->id }}">{{ $d->name }}
@@ -24,7 +24,7 @@
     {{-- Manual Discount Override Badge / Trigger --}}
     <div>
         @if($appliedManualDiscount > 0)
-            <div class="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs">
+            <div class="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs">
                 <div class="min-w-0">
                     <span class="font-bold text-emerald-800">Diskon Manual: Rp {{ number_format($appliedManualDiscount, 0, ',', '.') }}</span>
                     <span class="text-[10px] text-emerald-600 block truncate">{{ $appliedManualDiscountReason }}</span>
@@ -39,7 +39,7 @@
         @endif
     </div>
 
-    <div class="flex flex-col gap-1.5 p-3 rounded-xl border border-gray-100 bg-gray-50/60 shadow-inner">
+    <div class="flex flex-col gap-1.5 p-3 rounded-lg border border-[#E5E7EB]/80 bg-gray-50/80">
         <div class="flex justify-between items-center">
             <span class="text-xs text-gray-500 font-medium">Subtotal</span>
             <span class="text-xs font-semibold text-gray-700 tabular-nums">Rp {{ number_format($this->subtotal, 0, ',', '.') }}</span>
@@ -57,8 +57,8 @@
     </div>
 
     <div class="flex justify-between items-baseline px-1 pt-0.5">
-        <span class="text-xs font-bold uppercase tracking-wider text-gray-600">Total Pembayaran</span>
-        <span class="text-2xl font-black text-apeiron-ink tabular-nums tracking-tight">
+        <span class="text-xs font-semibold uppercase tracking-wider text-gray-600">Total Pembayaran</span>
+        <span class="text-2xl font-bold text-apeiron-ink tabular-nums tracking-tight">
             Rp {{ number_format($this->totalAmount, 0, ',', '.') }}
         </span>
     </div>
@@ -67,7 +67,7 @@
         <div class="relative mt-1">
             <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-apeiron-ink text-sm font-bold">Rp</span>
             <input type="number" wire:model.live="cashReceived"
-                class="bg-white border border-gray-200 text-apeiron-ink rounded-xl focus:outline-none focus:ring-1 focus:ring-gray-900 w-full pl-10 pr-4 py-2.5 font-black text-base transition-all shadow-sm"
+                class="bg-white border border-[#E5E7EB] text-apeiron-ink rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900 w-full pl-10 pr-4 py-2 font-bold text-base transition-colors"
                 placeholder="Uang diterima (Tunai)">
         </div>
 
@@ -80,12 +80,12 @@
             </button>
             <button type="button"
                 x-on:click="$wire.set('cashReceived', 50000 * Math.ceil({{ (int) $this->totalAmount }} / 50000))"
-                class="flex-1 h-8 text-[11px] font-bold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all active:scale-95 border border-gray-200">
+                class="flex-1 h-8 text-[11px] font-bold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all active:scale-95 border border-[#E5E7EB]">
                 Bulatkan 50K
             </button>
             <button type="button"
                 x-on:click="$wire.set('cashReceived', 100000 * Math.ceil({{ (int) $this->totalAmount }} / 100000))"
-                class="flex-1 h-8 text-[11px] font-bold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all active:scale-95 border border-gray-200">
+                class="flex-1 h-8 text-[11px] font-bold rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all active:scale-95 border border-[#E5E7EB]">
                 Bulatkan 100K
             </button>
         </div>
@@ -112,7 +112,7 @@
 
         <button wire:click="submitOrder" id="btn-bayar"
             wire:loading.attr="disabled" wire:target="submitOrder"
-            class="w-full h-12 bg-apeiron-ink hover:bg-[#111111] text-white rounded-xl font-bold text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2"
+            class="w-full h-11 bg-apeiron-ink hover:bg-[#262626] text-white rounded-lg font-medium text-sm transition-colors duration-150 active:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-1"
             @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
             <span wire:loading wire:target="submitOrder" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
             <span wire:loading.remove wire:target="submitOrder">Bayar Sekarang</span>
@@ -134,7 +134,7 @@
         @endif
 
         <button type="button" id="btn-proses-bayar"
-            class="w-full h-12 bg-apeiron-ink hover:bg-[#111111] text-white rounded-xl font-bold text-[14px] transition-all duration-200 shadow-md active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2"
+            class="w-full h-11 bg-apeiron-ink hover:bg-[#262626] text-white rounded-lg font-medium text-sm transition-colors duration-150 active:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-1"
             @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }} }); $dispatch('open-modal', 'checkout-payment')"
             @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
             <span>Proses Pembayaran</span>

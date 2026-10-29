@@ -36,7 +36,7 @@
             aria-labelledby="modifier-picker-title"
             class="bg-white sm:rounded-2xl rounded-t-3xl p-0 w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-slide-up-fade">
             <!-- Header Modal -->
-            <div class="px-6 py-5 flex justify-between items-start bg-white z-10 shrink-0 border-b border-gray-100">
+            <div class="px-6 py-5 flex justify-between items-start bg-white z-10 shrink-0 border-b border-[#E5E7EB]">
                 <div>
                     <h3 id="modifier-picker-title" class="font-black text-lg leading-tight text-apeiron-ink tracking-tight">
                         {{ $selectingProduct->product_name }}
@@ -72,7 +72,7 @@
                                     role="{{ $group->selection_type === 'single' ? 'radio' : 'checkbox' }}"
                                     :aria-checked="localMods.includes({{ $mod->id }})"
                                     x-on:click="toggleMod({{ $mod->id }}, '{{ $group->selection_type }}', {{ $allModIds }})"
-                                    :class="localMods.includes({{ $mod->id }}) ? 'bg-apeiron-ink border-apeiron-ink text-white shadow-sm' : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'"
+                                    :class="localMods.includes({{ $mod->id }}) ? 'bg-apeiron-ink border-apeiron-ink text-white shadow-sm' : 'bg-white border-[#E5E7EB] text-gray-700 hover:bg-gray-50'"
                                     class="flex flex-col min-h-[48px] rounded-xl p-2.5 justify-center items-center cursor-pointer transition-colors border text-center">
                                     <span class="font-bold text-xs leading-tight text-center">
                                         {{ $mod->name }}
@@ -90,14 +90,14 @@
                 <div class="pt-2">
                     <label class="block font-bold text-xs uppercase tracking-wider text-gray-500 mb-1.5">Catatan Tambahan</label>
                     <textarea wire:model="pendingNotes"
-                        class="w-full bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium focus:border-apeiron-ink focus:bg-white focus:ring-1 focus:ring-apeiron-ink transition-colors px-3 py-2 resize-none placeholder:text-gray-400"
+                        class="w-full bg-gray-50 border border-[#E5E7EB] rounded-xl text-xs font-medium focus:border-apeiron-ink focus:bg-white focus:ring-1 focus:ring-apeiron-ink transition-colors px-3 py-2 resize-none placeholder:text-gray-400"
                         rows="2" placeholder="Contoh: Kurangi gula, sedikit es..."></textarea>
                 </div>
             </div>
 
             <!-- Footer Modal -->
-            <div class="px-6 py-4 bg-white flex items-center justify-between gap-3 shrink-0 border-t border-gray-100 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]">
-                <div class="flex items-center gap-2 bg-gray-50 rounded-xl p-1 border border-gray-200">
+            <div class="px-6 py-4 bg-white flex items-center justify-between gap-3 shrink-0 border-t border-[#E5E7EB] shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]">
+                <div class="flex items-center gap-2 bg-gray-50 rounded-xl p-1 border border-[#E5E7EB]">
                     <button type="button" x-on:click="localQty = Math.max(1, localQty - 1)"
                         aria-label="Kurangi jumlah"
                         class="w-8 h-8 flex items-center justify-center bg-white rounded-lg shadow-sm text-apeiron-ink font-bold hover:bg-gray-50 active:scale-95 transition-all">

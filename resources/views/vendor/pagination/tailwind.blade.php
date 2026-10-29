@@ -3,21 +3,21 @@
         {{-- Mobile: Simple Previous/Next --}}
         <div class="flex justify-between flex-1 sm:hidden">
             @if ($paginator->onFirstPage())
-                <span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-[#9B9A97] bg-white border border-[#E9E9E7] cursor-not-allowed rounded-lg">
+                <span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-[#9B9A97] bg-white border border-[#E5E7EB] cursor-not-allowed rounded-lg">
                     &laquo; Sebelumnya
                 </span>
             @else
-                <a href="{{ $paginator->previousPageUrl() }}" wire:navigate class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-[#202020] bg-white border border-[#E9E9E7] rounded-lg hover:bg-[#F7F7F5] transition-colors duration-200 active:scale-[0.98]">
+                <a href="{{ $paginator->previousPageUrl() }}" wire:navigate class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-[#202020] bg-white border border-[#E5E7EB] rounded-lg hover:bg-[#F7F7F5] transition-colors duration-200 active:scale-[0.98]">
                     &laquo; Sebelumnya
                 </a>
             @endif
 
             @if ($paginator->hasMorePages())
-                <a href="{{ $paginator->nextPageUrl() }}" wire:navigate class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-[#202020] bg-white border border-[#E9E9E7] rounded-lg hover:bg-[#F7F7F5] transition-colors duration-200 active:scale-[0.98]">
+                <a href="{{ $paginator->nextPageUrl() }}" wire:navigate class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-[#202020] bg-white border border-[#E5E7EB] rounded-lg hover:bg-[#F7F7F5] transition-colors duration-200 active:scale-[0.98]">
                     Berikutnya &raquo;
                 </a>
             @else
-                <span class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-[#9B9A97] bg-white border border-[#E9E9E7] cursor-not-allowed rounded-lg">
+                <span class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-[#9B9A97] bg-white border border-[#E5E7EB] cursor-not-allowed rounded-lg">
                     Berikutnya &raquo;
                 </span>
             @endif

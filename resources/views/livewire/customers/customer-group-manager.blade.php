@@ -28,7 +28,7 @@
     @endif
 
     <!-- Toolbar -->
-    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-zinc-200/80 dark:border-zinc-800">
+    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-[#E5E7EB] dark:border-zinc-800">
         <div class="flex-1 max-w-md">
             <x-ui.input
                 type="text"
@@ -39,7 +39,7 @@
     </div>
 
     <!-- Data Table -->
-    <div class="card-surface rounded-2xl overflow-hidden border border-zinc-200/80 dark:border-zinc-800 shadow-sm">
+    <div class="card-surface rounded-2xl overflow-hidden border border-[#E5E7EB] dark:border-zinc-800 shadow-sm">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
                 <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-xs font-semibold uppercase text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
@@ -51,7 +51,7 @@
                         <th class="px-6 py-4 text-right">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-zinc-200/80 dark:divide-zinc-800">
+                <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800">
                     @forelse($groups as $grp)
                     <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition">
                         <td class="px-6 py-4">

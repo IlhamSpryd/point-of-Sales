@@ -121,13 +121,13 @@
                             removeIngredient(index) {
                                 this.ingredients.splice(index, 1);
                             }
-                        }" class="pt-4 border-t border-[#E9E9E7]">
+                        }" class="pt-4 border-t border-[#E5E7EB]">
                             <div class="flex items-center justify-between mb-4">
                                 <div>
                                     <h5 class="text-sm font-bold text-apeiron-ink">Bahan Baku Tambahan (BOM Opsional)</h5>
                                     <p class="text-xs text-[#787774] mt-0.5">Tentukan bahan baku yang memotong stok otomatis saat varian ini dipilih.</p>
                                 </div>
-                                <button type="button" @click="addIngredient" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-[#E9E9E7] rounded-xl hover:bg-[#F7F7F5] transition-colors shadow-sm">
+                                <button type="button" @click="addIngredient" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-[#E5E7EB] rounded-xl hover:bg-[#F7F7F5] transition-colors shadow-sm">
                                     <span class="material-symbols-rounded text-[16px]">add</span> Tambah Bahan
                                 </button>
                             </div>

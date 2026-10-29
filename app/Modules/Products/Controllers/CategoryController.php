@@ -44,8 +44,9 @@ class CategoryController extends Controller
 
         // Dapatkan query berisi filter dari Service Layer, paginasikan hasilnya.
         $categories = $this->categoryService->getFilteredQuery($request)->paginate(15)->withQueryString();
+        $parentCategories = Category::orderBy('category_name')->get();
 
-        return view('categories.index', compact('categories'));
+        return view('categories.index', compact('categories', 'parentCategories'));
     }
 
     /**
