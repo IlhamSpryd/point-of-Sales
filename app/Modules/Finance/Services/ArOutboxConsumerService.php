@@ -131,11 +131,11 @@ class ArOutboxConsumerService
             }
 
             $storeId = $invoice ? (int) $invoice->store_id : ($outbox->store_id ? (int) $outbox->store_id : null);
-            $subtotal = (string) ($payload['subtotal'] ?? $invoice?->subtotal ?? '0.00');
-            $taxAmount = (string) ($payload['tax_amount'] ?? $invoice?->tax_amount ?? '0.00');
-            $discountAmount = (string) ($payload['discount_amount'] ?? $invoice?->discount_amount ?? '0.00');
-            $shippingAmount = (string) ($payload['shipping_amount'] ?? $invoice?->shipping_amount ?? '0.00');
-            $totalAmount = (string) ($payload['total_amount'] ?? $invoice?->total_amount ?? '0.00');
+            $subtotal = $this->formatDecimal($payload['subtotal'] ?? $invoice?->subtotal ?? '0.00');
+            $taxAmount = $this->formatDecimal($payload['tax_amount'] ?? $invoice?->tax_amount ?? '0.00');
+            $discountAmount = $this->formatDecimal($payload['discount_amount'] ?? $invoice?->discount_amount ?? '0.00');
+            $shippingAmount = $this->formatDecimal($payload['shipping_amount'] ?? $invoice?->shipping_amount ?? '0.00');
+            $totalAmount = $this->formatDecimal($payload['total_amount'] ?? $invoice?->total_amount ?? '0.00');
             $customerId = (int) ($payload['customer_id'] ?? $invoice?->customer_id ?? 0);
             $invoiceDate = $payload['invoice_date'] ?? $invoice?->invoice_date?->toDateString() ?? now()->toDateString();
 
@@ -204,10 +204,10 @@ class ArOutboxConsumerService
             }
 
             $storeId = $receipt ? $receipt->store_id : ($outbox->store_id ? (int) $outbox->store_id : null);
-            $totalReceived = (string) ($payload['total_received_amount'] ?? $receipt?->total_received_amount ?? $payload['allocated_amount'] ?? '0.00');
-            $allocatedAmount = (string) ($payload['allocated_amount'] ?? $receipt?->total_allocated_amount ?? '0.00');
-            $unappliedCredit = (string) ($payload['unapplied_credit_amount'] ?? $receipt?->unapplied_credit_amount ?? '0.00');
-            $bankCharge = (string) ($payload['bank_charge_amount'] ?? $receipt?->bank_fee_amount ?? '0.00');
+            $totalReceived = $this->formatDecimal($payload['total_received_amount'] ?? $receipt?->total_received_amount ?? $payload['allocated_amount'] ?? '0.00');
+            $allocatedAmount = $this->formatDecimal($payload['allocated_amount'] ?? $receipt?->total_allocated_amount ?? '0.00');
+            $unappliedCredit = $this->formatDecimal($payload['unapplied_credit_amount'] ?? $receipt?->unapplied_credit_amount ?? '0.00');
+            $bankCharge = $this->formatDecimal($payload['bank_charge_amount'] ?? $receipt?->bank_fee_amount ?? '0.00');
             $cashBankAccountId = ! empty($payload['cash_bank_account_id']) ? (int) $payload['cash_bank_account_id'] : ($receipt?->cash_bank_account_id);
             $customerId = (int) ($payload['customer_id'] ?? $receipt?->customer_id ?? 0);
             $receiptDate = $payload['receipt_date'] ?? $receipt?->receipt_date?->toDateString() ?? now()->toDateString();
@@ -301,8 +301,8 @@ class ArOutboxConsumerService
         $payload = is_array($outbox->payload) ? $outbox->payload : json_decode((string) $outbox->payload, true);
 
         DB::transaction(function () use ($outbox, $tenantId, $payload) {
-            $appliedAmount = (string) ($payload['applied_amount'] ?? '0.00');
-            $taxAmount = (string) ($payload['tax_amount'] ?? '0.00');
+            $appliedAmount = $this->formatDecimal($payload['applied_amount'] ?? '0.00');
+            $taxAmount = $this->formatDecimal($payload['tax_amount'] ?? '0.00');
             $subtotalAmount = bcsub($appliedAmount, $taxAmount, 2);
             if (bccomp($subtotalAmount, '0.00', 2) < 0) {
                 $subtotalAmount = $appliedAmount;
@@ -382,5 +382,17 @@ class ArOutboxConsumerService
         $outbox->status = 'processed_by_m7';
         $outbox->processed_at = now();
         $outbox->save();
+    }
+
+    /**
+     * Format nilai moneter menjadi string decimal(18,2) dengan aturan pembulatan half-up (F-06).
+     */
+    protected function formatDecimal(mixed $value): string
+    {
+        if ($value === null || $value === '') {
+            return '0.00';
+        }
+
+        return number_format(round((float) $value, 2, PHP_ROUND_HALF_UP), 2, '.', '');
     }
 }

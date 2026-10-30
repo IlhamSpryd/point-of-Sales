@@ -10,6 +10,8 @@
     </x-slot:header>
 
     <div class="space-y-6" data-gsap="page-enter">
+        @include('finance.partials.sub-nav')
+
         <!-- KPI Summary Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-gsap="kpi-card">
             <x-erp.stat-card

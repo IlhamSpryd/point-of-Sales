@@ -2,8 +2,6 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\DiscountController;
-use App\Http\Controllers\TableController;
 use App\Livewire\Customers\CustomerCreditManager;
 use App\Livewire\Customers\CustomerGroupManager;
 use App\Livewire\Customers\CustomerManager;
@@ -12,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Customer & Venue Routes
+| Customer & CRM Routes (Modul 6 — Customer & Loyalty)
 |--------------------------------------------------------------------------
 */
 
@@ -23,16 +21,5 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
         Route::get('/customers/groups', CustomerGroupManager::class)->name('customers.groups.index');
         Route::get('/customers/credit', CustomerCreditManager::class)->name('customers.credit.index');
         Route::get('/customers/instruments', LoyaltyAndValueInstrumentManager::class)->name('customers.instruments.index');
-
-        // Diskon & Promo (Modul 8)
-        Route::get('/discounts', [DiscountController::class, 'index'])->name('discounts.index');
-        Route::get('/pricing/promotions', \App\Livewire\Pricing\PromotionCampaignManager::class)->name('pricing.promotions.index');
-        Route::get('/pricing/vouchers', \App\Livewire\Pricing\VoucherManager::class)->name('pricing.vouchers.index');
-
-        // Meja Resto & QR Token
-        Route::post('tables/{table}/rotate-qr', [TableController::class, 'rotateQr'])->name('tables.rotate-qr');
-        Route::post('tables/{table}/release', [TableController::class, 'release'])->name('tables.release');
-        Route::post('tables/{table}/regenerate-token', [TableController::class, 'regenerateToken'])->name('tables.regenerate-token');
-        Route::resource('tables', TableController::class);
     });
 });

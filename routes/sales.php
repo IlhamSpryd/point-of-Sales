@@ -5,6 +5,7 @@ declare(strict_types=1);
 use App\Http\Controllers\MidtransNotificationController;
 use App\Http\Controllers\QzTraySigningController;
 use App\Http\Controllers\ShiftController;
+use App\Http\Controllers\TableController;
 use App\Http\Controllers\TransactionController;
 use App\Livewire\ChannelMappingManager;
 use App\Livewire\Kasir\CreateOrder;
@@ -64,6 +65,14 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
         Route::get('/orders/{orderNumber}', [TransactionController::class, 'show'])->name('orders.show');
         Route::post('/orders/{orderNumber}/void', [TransactionController::class, 'void'])->name('orders.void');
         Route::post('/orders/{orderNumber}/return', [TransactionController::class, 'returnAndRefund'])->name('orders.return');
+    });
+
+    // Meja Resto & QR Token (POS / Dine-In Tables)
+    Route::middleware('role:Owner,Manager')->group(function () {
+        Route::post('tables/{table}/rotate-qr', [TableController::class, 'rotateQr'])->name('tables.rotate-qr');
+        Route::post('tables/{table}/release', [TableController::class, 'release'])->name('tables.release');
+        Route::post('tables/{table}/regenerate-token', [TableController::class, 'regenerateToken'])->name('tables.regenerate-token');
+        Route::resource('tables', TableController::class);
     });
 
     // Channel Mapping Manager (Omnichannel)

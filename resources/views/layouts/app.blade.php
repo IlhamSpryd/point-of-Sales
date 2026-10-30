@@ -94,8 +94,51 @@
             <!-- Unified Dark Top Navbar (Flows flush from left sidebar) -->
             <header class="h-14 lg:h-16 shrink-0 bg-[#171717] text-[#D4D4D4] flex items-center justify-between px-4 lg:px-6 z-20 border-b border-[#262626] select-none">
                 
-                <!-- Left: Spacer for mobile toggle & clean balance -->
-                <div class="flex items-center gap-3 lg:gap-4 pl-12 lg:pl-0 min-w-0"></div>
+                <!-- Left: Quick Navigation & Workstations (F-09) -->
+                <div class="flex items-center gap-2 lg:gap-3 pl-12 lg:pl-0 min-w-0" x-data="{ openWorkstations: false }">
+                    <div class="relative">
+                        <button type="button"
+                                @click="openWorkstations = !openWorkstations"
+                                @click.outside="openWorkstations = false"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-[#D4D4D4] bg-[#202020] hover:bg-[#262626] border border-[#2E2E2E] rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-zinc-600">
+                            <span class="material-symbols-rounded text-sm text-zinc-400">apps</span>
+                            <span class="hidden sm:inline">Workstations</span>
+                            <span class="material-symbols-rounded text-xs text-zinc-500 transition-transform duration-200" :class="{ 'rotate-180': openWorkstations }">expand_more</span>
+                        </button>
+
+                        <div x-show="openWorkstations"
+                             x-cloak
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             class="absolute left-0 mt-2 w-56 rounded-xl bg-[#1E1E1E] border border-[#2E2E2E] shadow-2xl py-1.5 z-50 text-xs divide-y divide-[#2A2A2A]">
+                            <div class="px-3 py-1.5 text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">
+                                Quick Launch
+                            </div>
+                            <div class="py-1">
+                                <a href="{{ route('transaction.create') }}" class="flex items-center gap-2.5 px-3 py-2 text-[#D4D4D4] hover:bg-[#282828] hover:text-white transition-colors">
+                                    <span class="material-symbols-rounded text-base text-emerald-400">point_of_sale</span>
+                                    <span>POS Kasir Terminal</span>
+                                </a>
+                                <a href="{{ route('orders.index') }}" class="flex items-center gap-2.5 px-3 py-2 text-[#D4D4D4] hover:bg-[#282828] hover:text-white transition-colors">
+                                    <span class="material-symbols-rounded text-base text-blue-400">receipt_long</span>
+                                    <span>Riwayat Order</span>
+                                </a>
+                                <a href="{{ route('kds.index') }}" class="flex items-center gap-2.5 px-3 py-2 text-[#D4D4D4] hover:bg-[#282828] hover:text-white transition-colors">
+                                    <span class="material-symbols-rounded text-base text-amber-400">countertops</span>
+                                    <span>Kitchen Display (KDS)</span>
+                                </a>
+                                <a href="{{ route('inventory.ingredients') }}" class="flex items-center gap-2.5 px-3 py-2 text-[#D4D4D4] hover:bg-[#282828] hover:text-white transition-colors">
+                                    <span class="material-symbols-rounded text-base text-purple-400">inventory_2</span>
+                                    <span>Bahan Baku & Stok</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
                 <!-- Right: Status, Clock, User Profile -->
                 <div class="flex items-center gap-3 sm:gap-4 shrink-0">

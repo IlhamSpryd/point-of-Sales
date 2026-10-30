@@ -157,6 +157,7 @@ require __DIR__.'/sales.php';
 require __DIR__.'/products.php';
 require __DIR__.'/inventory.php';
 require __DIR__.'/customers.php';
+require __DIR__.'/pricing.php';
 require __DIR__.'/purchases.php';
 require __DIR__.'/reports.php';
 require __DIR__.'/settings.php';
