@@ -138,6 +138,10 @@
                                         <x-ui.button variant="danger" size="xs" wire:click="deactivateVoucher({{ $voucher->id }})" wire:confirm="Deactivate this voucher?">
                                             Deactivate
                                         </x-ui.button>
+                                    @else
+                                        <x-ui.button variant="secondary" size="xs" wire:click="activateVoucher({{ $voucher->id }})" wire:confirm="Activate this voucher?">
+                                            Activate
+                                        </x-ui.button>
                                     @endif
                                 </td>
                             </tr>
@@ -202,7 +206,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <x-ui.badge variant="{{ $card->status->value === 'ACTIVE' ? 'success' : ($card->status->value === 'FROZEN' ? 'warning' : 'neutral') }}" size="sm">
+                                    <x-ui.badge variant="{{ $card->status->value === 'ACTIVE' ? 'success' : ($card->status->value === 'BLOCKED' ? 'danger' : 'neutral') }}" size="sm">
                                         {{ $card->status->value }}
                                     </x-ui.badge>
                                 </td>
@@ -210,6 +214,10 @@
                                     @if ($card->status->value === 'ACTIVE')
                                         <x-ui.button variant="warning" size="xs" wire:click="freezeGiftCard({{ $card->id }})" wire:confirm="Freeze this gift card?">
                                             Freeze
+                                        </x-ui.button>
+                                    @elseif ($card->status->value === 'BLOCKED')
+                                        <x-ui.button variant="secondary" size="xs" wire:click="unfreezeGiftCard({{ $card->id }})" wire:confirm="Unfreeze this gift card?">
+                                            Unfreeze
                                         </x-ui.button>
                                     @endif
                                 </td>

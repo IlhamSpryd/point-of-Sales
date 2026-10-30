@@ -21,22 +21,34 @@ class VoucherManager extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $statusFilter = 'ALL';
 
     // Modal state
     public bool $isFormModalOpen = false;
+
     public ?int $editingVoucherId = null;
 
     public string $code = '';
+
     public string $name = '';
+
     public string $discountType = 'PERCENTAGE';
+
     public float $discountValue = 10.0;
+
     public float $minOrderAmount = 0.0;
+
     public ?float $maxDiscountAmount = null;
+
     public int $maxUses = 100;
+
     public int $maxUsesPerCustomer = 1;
+
     public string $startsAt = '';
+
     public string $expiresAt = '';
+
     public string $status = 'ACTIVE';
 
     protected function rules(): array
@@ -64,7 +76,7 @@ class VoucherManager extends Component
 
     public function generateCode(): void
     {
-        $this->code = 'VCR-' . strtoupper(Str::random(6));
+        $this->code = 'VCR-'.strtoupper(Str::random(6));
     }
 
     public function openCreateModal(): void
@@ -106,8 +118,8 @@ class VoucherManager extends Component
         $this->maxDiscountAmount = $voucher->max_discount_amount ? (float) $voucher->max_discount_amount : null;
         $this->maxUses = (int) $voucher->max_uses;
         $this->maxUsesPerCustomer = (int) $voucher->max_uses_per_customer;
-        $this->startsAt = $voucher->starts_at ? Carbon::parse($voucher->starts_at)->format('Y-m-d\TH:i') : now()->format('Y-m-d\TH:i');
-        $this->expiresAt = $voucher->expires_at ? Carbon::parse($voucher->expires_at)->format('Y-m-d\TH:i') : now()->addDays(30)->format('Y-m-d\TH:i');
+        $this->startsAt = $voucher->valid_from ? Carbon::parse($voucher->valid_from)->format('Y-m-d\TH:i') : now()->format('Y-m-d\TH:i');
+        $this->expiresAt = $voucher->valid_until ? Carbon::parse($voucher->valid_until)->format('Y-m-d\TH:i') : now()->addDays(30)->format('Y-m-d\TH:i');
         $this->status = $voucher->status instanceof VoucherStatusEnum ? $voucher->status->value : (string) $voucher->status;
 
         $this->isFormModalOpen = true;
@@ -128,8 +140,8 @@ class VoucherManager extends Component
             'max_discount_amount' => $this->maxDiscountAmount !== null ? (string) $this->maxDiscountAmount : null,
             'max_uses' => $this->maxUses,
             'max_uses_per_customer' => $this->maxUsesPerCustomer,
-            'starts_at' => Carbon::parse($this->startsAt),
-            'expires_at' => Carbon::parse($this->expiresAt),
+            'valid_from' => Carbon::parse($this->startsAt),
+            'valid_until' => Carbon::parse($this->expiresAt),
             'status' => VoucherStatusEnum::from($this->status),
         ];
 
@@ -156,7 +168,7 @@ class VoucherManager extends Component
             ->firstOrFail();
 
         $newStatus = $voucher->status === VoucherStatusEnum::ACTIVE
-            ? VoucherStatusEnum::INACTIVE
+            ? VoucherStatusEnum::DISABLED
             : VoucherStatusEnum::ACTIVE;
 
         $voucher->status = $newStatus;
@@ -173,7 +185,7 @@ class VoucherManager extends Component
             ->where('tenant_id', $tenantId)
             ->orderBy('id', 'desc');
 
-        if (!empty($this->search)) {
+        if (! empty($this->search)) {
             $query->where(function ($q) {
                 $q->where('code', 'like', "%{$this->search}%")
                     ->orWhere('name', 'like', "%{$this->search}%");

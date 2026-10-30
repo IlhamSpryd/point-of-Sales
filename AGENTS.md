@@ -1,3 +1,5 @@
+@[Apeiron Gemini Engineering Rules](APEIRON_GEMINI_ENGINEERING_RULES.md)
+
 <laravel-boost-guidelines>
 === foundation rules ===
 

@@ -28,38 +28,52 @@
         @keydown.escape.window="$wire.closeModifierPicker()"
         x-on:keydown.tab.prevent="$event.shiftKey || nextFocusable().focus()"
         x-on:keydown.shift.tab.prevent="prevFocusable().focus()"
-        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-gray-900/40 backdrop-blur-[2px]"
+        class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4"
         wire:transition>
         <div
             role="dialog"
             aria-modal="true"
             aria-labelledby="modifier-picker-title"
-            class="bg-white sm:rounded-2xl rounded-t-3xl p-0 w-full max-w-md max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-slide-up-fade">
+            class="bg-white rounded-2xl w-full max-w-lg shadow-2xl border border-[#E5E5E5] flex flex-col overflow-hidden max-h-[90vh]">
+            
             <!-- Header Modal -->
-            <div class="px-6 py-5 flex justify-between items-start bg-white z-10 shrink-0 border-b border-[#E5E7EB]">
-                <div>
-                    <h3 id="modifier-picker-title" class="font-black text-lg leading-tight text-apeiron-ink tracking-tight">
-                        {{ $selectingProduct->product_name }}
-                    </h3>
-                    <p class="text-xs font-semibold text-gray-500 mt-1">
-                        Rp {{ number_format($selectingProduct->product_price, 0, ',', '.') }}
-                    </p>
+            <div class="p-4 border-b border-[#E5E5E5] flex items-center justify-between shrink-0 bg-white">
+                <div class="flex items-center gap-3">
+                    @if ($selectingProduct->product_photo)
+                        <img src="{{ Storage::url($selectingProduct->product_photo) }}"
+                            alt="{{ $selectingProduct->product_name }}"
+                            class="w-12 h-12 rounded-lg object-cover bg-[#F4F4F5] border border-[#E5E5E5]">
+                    @else
+                        <div class="w-12 h-12 rounded-lg bg-[#F4F4F5] border border-[#E5E5E5] flex items-center justify-center text-gray-400">
+                            <span class="material-symbols-rounded text-[24px]">inventory_2</span>
+                        </div>
+                    @endif
+                    <div>
+                        <h3 id="modifier-picker-title" class="font-headline-sm text-[16px] font-semibold text-[#111827]">
+                            {{ $selectingProduct->product_name }}
+                        </h3>
+                        <span class="text-[13px] text-[#6B7280] font-mono">
+                            Rp {{ number_format($selectingProduct->product_price, 0, ',', '.') }}
+                        </span>
+                    </div>
                 </div>
                 <button wire:click="closeModifierPicker"
                     aria-label="Close option picker (Esc)"
-                    class="size-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-apeiron-ink hover:bg-gray-100 transition-colors -mr-1 -mt-1">
-                    <span class="material-symbols-rounded text-[20px]">close</span>
+                    class="w-8 h-8 rounded-lg flex items-center justify-center text-[#9CA3AF] hover:text-[#111827] hover:bg-[#F4F4F5] transition-colors">
+                    <span class="material-symbols-rounded text-[18px]">close</span>
                 </button>
             </div>
 
             <!-- Body Modal (Modifiers) -->
-            <div class="px-6 overflow-y-auto flex-1 bg-white space-y-5 py-5 custom-scrollbar">
+            <div class="p-5 overflow-y-auto max-h-[60vh] space-y-4 text-[13px] custom-scrollbar">
                 @foreach ($selectingProduct->modifierGroups as $group)
-                    <div class="py-1">
-                        <div class="flex justify-between items-baseline mb-2.5">
-                            <h4 class="font-bold text-xs uppercase tracking-wider text-gray-600">{{ $group->name }}</h4>
-                            <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-                                {{ $group->is_required ? ($group->selection_type === 'single' ? 'Select 1 (Required)' : 'Required') : 'Optional' }}
+                    <div>
+                        <div class="flex justify-between items-baseline mb-2">
+                            <label class="font-headline-sm text-[12px] font-semibold text-[#111827] uppercase tracking-wider block">
+                                {{ $group->name }}
+                            </label>
+                            <span class="text-[11px] font-medium text-[#6B7280]">
+                                {{ $group->is_required ? ($group->selection_type === 'single' ? 'Wajib (Pilih 1)' : 'Wajib') : 'Opsional' }}
                             </span>
                         </div>
 
@@ -72,14 +86,16 @@
                                     role="{{ $group->selection_type === 'single' ? 'radio' : 'checkbox' }}"
                                     :aria-checked="localMods.includes({{ $mod->id }})"
                                     x-on:click="toggleMod({{ $mod->id }}, '{{ $group->selection_type }}', {{ $allModIds }})"
-                                    :class="localMods.includes({{ $mod->id }}) ? 'bg-apeiron-ink border-apeiron-ink text-white shadow-sm' : 'bg-white border-[#E5E7EB] text-gray-700 hover:bg-gray-50'"
-                                    class="flex flex-col min-h-[48px] rounded-xl p-2.5 justify-center items-center cursor-pointer transition-colors border text-center">
-                                    <span class="font-bold text-xs leading-tight text-center">
-                                        {{ $mod->name }}
-                                    </span>
+                                    :class="localMods.includes({{ $mod->id }}) ?
+                                        'opt-btn flex justify-between items-center px-3 py-2.5 rounded-lg border border-[#171717] bg-[#171717] text-white font-medium shadow-xs' :
+                                        'opt-btn flex justify-between items-center px-3 py-2.5 rounded-lg border border-[#E5E5E5] hover:bg-[#F9FAFB] text-[#111827] font-medium'"
+                                    class="transition-all text-left">
+                                    <span class="text-xs">{{ $mod->name }}</span>
                                     @if ($mod->extra_price > 0)
-                                        <span :class="localMods.includes({{ $mod->id }}) ? 'text-gray-300' : 'text-gray-400'"
-                                              class="text-[10px] font-bold mt-0.5">+Rp {{ number_format($mod->extra_price, 0, ',', '.') }}</span>
+                                        <span :class="localMods.includes({{ $mod->id }}) ? 'text-white/80' : 'text-[#6B7280]'"
+                                            class="text-[11px] font-mono">
+                                            +Rp{{ number_format($mod->extra_price, 0, ',', '.') }}
+                                        </span>
                                     @endif
                                 </button>
                             @endforeach
@@ -87,33 +103,39 @@
                     </div>
                 @endforeach
 
-                <div class="pt-2">
-                    <label class="block font-bold text-xs uppercase tracking-wider text-gray-500 mb-1.5">Special Instructions</label>
-                    <textarea wire:model="pendingNotes"
-                        class="w-full bg-gray-50 border border-[#E5E7EB] rounded-xl text-xs font-medium focus:border-apeiron-ink focus:bg-white focus:ring-1 focus:ring-apeiron-ink transition-colors px-3 py-2 resize-none placeholder:text-gray-400"
-                        rows="2" placeholder="e.g. Less sugar, light ice..."></textarea>
+                <div>
+                    <label class="font-headline-sm text-[12px] font-semibold text-[#111827] uppercase tracking-wider block mb-1.5">
+                        Catatan Khusus
+                    </label>
+                    <input type="text" wire:model="pendingNotes"
+                        placeholder="Contoh: pisahkan es, jangan terlalu manis..."
+                        class="w-full h-9 px-3 rounded-lg border border-[#E5E5E5] text-[12px] text-[#111827] focus:outline-none focus:border-[#171717] transition-colors">
                 </div>
             </div>
 
             <!-- Footer Modal -->
-            <div class="px-6 py-4 bg-white flex items-center justify-between gap-3 shrink-0 border-t border-[#E5E7EB] shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]">
-                <div class="flex items-center gap-2 bg-gray-50 rounded-xl p-1 border border-[#E5E7EB]">
+            <div class="p-4 bg-[#F9FAFB] border-t border-[#E5E5E5] flex items-center justify-between shrink-0">
+                <div class="flex items-center gap-2">
                     <button type="button" x-on:click="localQty = Math.max(1, localQty - 1)"
                         aria-label="Decrease quantity"
-                        class="w-8 h-8 flex items-center justify-center bg-white rounded-lg shadow-sm text-apeiron-ink font-bold hover:bg-gray-50 active:scale-95 transition-all">
-                        <span class="material-symbols-rounded text-[18px]">remove</span>
+                        class="w-8 h-8 rounded-lg bg-white border border-[#E5E5E5] flex items-center justify-center text-[#111827] font-bold hover:bg-[#F4F4F5] active:scale-95 transition-all">
+                        <span class="material-symbols-rounded text-[16px]">remove</span>
                     </button>
-                    <span class="w-6 text-center font-black text-xs text-apeiron-ink" x-text="localQty"></span>
+                    <span class="font-mono font-semibold text-[15px] px-2 text-[#111827]" x-text="localQty"></span>
                     <button type="button" x-on:click="localQty++"
                         aria-label="Increase quantity"
-                        class="w-8 h-8 flex items-center justify-center bg-white rounded-lg shadow-sm text-apeiron-ink font-bold hover:bg-gray-50 active:scale-95 transition-all">
-                        <span class="material-symbols-rounded text-[18px]">add</span>
+                        class="w-8 h-8 rounded-lg bg-white border border-[#E5E5E5] flex items-center justify-center text-[#111827] font-bold hover:bg-[#F4F4F5] active:scale-95 transition-all">
+                        <span class="material-symbols-rounded text-[16px]">add</span>
                     </button>
                 </div>
-                <button wire:click="confirmAddToCart"
-                    class="flex-1 min-h-[44px] bg-apeiron-ink hover:bg-[#111111] text-white rounded-xl font-bold text-xs shadow-md transition-all active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink">
-                    Add to Cart
-                </button>
+
+                <div class="flex items-center gap-3">
+                    <button type="button" wire:click="confirmAddToCart"
+                        class="px-4 py-2.5 rounded-lg bg-[#171717] hover:bg-[#262626] text-white font-medium text-[13px] flex items-center gap-1.5 shadow-sm transition-all active:scale-98">
+                        <span class="material-symbols-rounded text-[16px]">shopping_bag</span>
+                        <span>Tambah ke Pesanan</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>

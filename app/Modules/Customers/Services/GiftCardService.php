@@ -253,4 +253,47 @@ class GiftCardService
             ];
         });
     }
+
+    /**
+     * Bekukan / blokir Gift Card.
+     */
+    public function freezeGiftCard(int $cardId, User $actor): GiftCard
+    {
+        $tenantId = (int) $this->tenantContext->requireTenantId();
+
+        /** @var GiftCard $card */
+        $card = GiftCard::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->findOrFail($cardId);
+
+        $card->status = GiftCardStatusEnum::BLOCKED;
+        $card->save();
+
+        return $card;
+    }
+
+    /**
+     * Buka kembali pembekuan / unblock Gift Card.
+     */
+    public function unfreezeGiftCard(int $cardId, User $actor): GiftCard
+    {
+        $tenantId = (int) $this->tenantContext->requireTenantId();
+
+        /** @var GiftCard $card */
+        $card = GiftCard::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->findOrFail($cardId);
+
+        if ($card->expires_at && Carbon::now()->gt($card->expires_at)) {
+            $card->status = GiftCardStatusEnum::EXPIRED;
+        } elseif (bccomp((string) $card->current_balance, '0.00', 2) <= 0) {
+            $card->status = GiftCardStatusEnum::DEPLETED;
+        } else {
+            $card->status = GiftCardStatusEnum::ACTIVE;
+        }
+
+        $card->save();
+
+        return $card;
+    }
 }

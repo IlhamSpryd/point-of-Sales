@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Modules\Customers\Enums\VoucherDiscountTypeEnum;
 use App\Modules\Customers\Enums\VoucherStatusEnum;
 use App\Modules\Customers\Models\Voucher;
+use App\Modules\Pricing\Models\PromotionReservation;
 use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use DomainException;
@@ -102,8 +103,8 @@ class VoucherService
         }
 
         // Cek kuota pemakaian global (used_count + active reserved)
-        $activeReserved = \App\Modules\Pricing\Models\PromotionReservation::where('voucher_id', $voucher->id)
-            ->where('status', \App\Modules\Pricing\Models\PromotionReservation::STATUS_RESERVED)
+        $activeReserved = PromotionReservation::where('voucher_id', $voucher->id)
+            ->where('status', PromotionReservation::STATUS_RESERVED)
             ->where('expires_at', '>', now())
             ->count();
 
@@ -113,14 +114,14 @@ class VoucherService
 
         // Cek batas pemakaian per pelanggan jika customerId diberikan
         if ($customer && $voucher->max_uses_per_customer > 0) {
-            $customerReserved = \App\Modules\Pricing\Models\PromotionReservation::where('voucher_id', $voucher->id)
+            $customerReserved = PromotionReservation::where('voucher_id', $voucher->id)
                 ->where('customer_id', $customer->id)
                 ->whereIn('status', [
-                    \App\Modules\Pricing\Models\PromotionReservation::STATUS_RESERVED,
-                    \App\Modules\Pricing\Models\PromotionReservation::STATUS_COMMITTED,
+                    PromotionReservation::STATUS_RESERVED,
+                    PromotionReservation::STATUS_COMMITTED,
                 ])
                 ->where(function ($q) {
-                    $q->where('status', \App\Modules\Pricing\Models\PromotionReservation::STATUS_COMMITTED)
+                    $q->where('status', PromotionReservation::STATUS_COMMITTED)
                         ->orWhere('expires_at', '>', now());
                 })
                 ->count();
@@ -182,7 +183,7 @@ class VoucherService
         int $storeId,
         ?int $customerId = null,
         float $reservedAmount = 0.0
-    ): \App\Modules\Pricing\Models\PromotionReservation {
+    ): PromotionReservation {
         $tenantId = (int) $this->tenantContext->requireTenantId();
         $code = strtoupper(trim($code));
 
@@ -199,10 +200,10 @@ class VoucherService
             }
 
             // Cek apakah cartUuid sudah memiliki reservasi aktif untuk voucher ini
-            $existing = \App\Modules\Pricing\Models\PromotionReservation::where('tenant_id', $tenantId)
+            $existing = PromotionReservation::where('tenant_id', $tenantId)
                 ->where('cart_uuid', $cartUuid)
                 ->where('voucher_id', $lockedVoucher->id)
-                ->where('status', \App\Modules\Pricing\Models\PromotionReservation::STATUS_RESERVED)
+                ->where('status', PromotionReservation::STATUS_RESERVED)
                 ->where('expires_at', '>', now())
                 ->lockForUpdate()
                 ->first();
@@ -217,9 +218,9 @@ class VoucherService
             }
 
             // Hitung kuota aktif (used_count + active RESERVED yang belum expired)
-            $activeReserved = \App\Modules\Pricing\Models\PromotionReservation::where('tenant_id', $tenantId)
+            $activeReserved = PromotionReservation::where('tenant_id', $tenantId)
                 ->where('voucher_id', $lockedVoucher->id)
-                ->where('status', \App\Modules\Pricing\Models\PromotionReservation::STATUS_RESERVED)
+                ->where('status', PromotionReservation::STATUS_RESERVED)
                 ->where('expires_at', '>', now())
                 ->count();
 
@@ -228,13 +229,13 @@ class VoucherService
             }
 
             if ($customerId !== null && $lockedVoucher->max_uses_per_customer > 0) {
-                $custCount = \App\Modules\Pricing\Models\PromotionReservation::where('tenant_id', $tenantId)
+                $custCount = PromotionReservation::where('tenant_id', $tenantId)
                     ->where('voucher_id', $lockedVoucher->id)
                     ->where('customer_id', $customerId)
                     ->where(function ($q) {
-                        $q->where('status', \App\Modules\Pricing\Models\PromotionReservation::STATUS_COMMITTED)
+                        $q->where('status', PromotionReservation::STATUS_COMMITTED)
                             ->orWhere(function ($sub) {
-                                $sub->where('status', \App\Modules\Pricing\Models\PromotionReservation::STATUS_RESERVED)
+                                $sub->where('status', PromotionReservation::STATUS_RESERVED)
                                     ->where('expires_at', '>', now());
                             });
                     })
@@ -245,14 +246,14 @@ class VoucherService
                 }
             }
 
-            return \App\Modules\Pricing\Models\PromotionReservation::create([
+            return PromotionReservation::create([
                 'tenant_id' => $tenantId,
                 'store_id' => $storeId,
                 'voucher_id' => $lockedVoucher->id,
                 'customer_id' => $customerId,
                 'cart_uuid' => $cartUuid,
                 'reserved_amount' => $reservedAmount,
-                'status' => \App\Modules\Pricing\Models\PromotionReservation::STATUS_RESERVED,
+                'status' => PromotionReservation::STATUS_RESERVED,
                 'expires_at' => now()->addSeconds(120),
             ]);
         });
@@ -264,14 +265,14 @@ class VoucherService
     public function commitVoucher(string $cartUuid, int $orderId): void
     {
         DB::transaction(function () use ($cartUuid, $orderId) {
-            $reservations = \App\Modules\Pricing\Models\PromotionReservation::where('cart_uuid', $cartUuid)
-                ->where('status', \App\Modules\Pricing\Models\PromotionReservation::STATUS_RESERVED)
+            $reservations = PromotionReservation::where('cart_uuid', $cartUuid)
+                ->where('status', PromotionReservation::STATUS_RESERVED)
                 ->lockForUpdate()
                 ->get();
 
             foreach ($reservations as $reservation) {
                 $reservation->update([
-                    'status' => \App\Modules\Pricing\Models\PromotionReservation::STATUS_COMMITTED,
+                    'status' => PromotionReservation::STATUS_COMMITTED,
                     'order_id' => $orderId,
                 ]);
 
@@ -299,11 +300,11 @@ class VoucherService
     public function releaseVoucher(string $cartUuid): void
     {
         DB::transaction(function () use ($cartUuid) {
-            \App\Modules\Pricing\Models\PromotionReservation::where('cart_uuid', $cartUuid)
-                ->where('status', \App\Modules\Pricing\Models\PromotionReservation::STATUS_RESERVED)
+            PromotionReservation::where('cart_uuid', $cartUuid)
+                ->where('status', PromotionReservation::STATUS_RESERVED)
                 ->lockForUpdate()
                 ->update([
-                    'status' => \App\Modules\Pricing\Models\PromotionReservation::STATUS_RELEASED,
+                    'status' => PromotionReservation::STATUS_RELEASED,
                 ]);
         });
     }
@@ -355,14 +356,14 @@ class VoucherService
     public function restoreVoucherForOrder(int $orderId): void
     {
         DB::transaction(function () use ($orderId) {
-            $reservations = \App\Modules\Pricing\Models\PromotionReservation::where('order_id', $orderId)
-                ->where('status', \App\Modules\Pricing\Models\PromotionReservation::STATUS_COMMITTED)
+            $reservations = PromotionReservation::where('order_id', $orderId)
+                ->where('status', PromotionReservation::STATUS_COMMITTED)
                 ->lockForUpdate()
                 ->get();
 
             foreach ($reservations as $reservation) {
                 $reservation->update([
-                    'status' => \App\Modules\Pricing\Models\PromotionReservation::STATUS_RELEASED,
+                    'status' => PromotionReservation::STATUS_RELEASED,
                 ]);
 
                 if ($reservation->voucher_id) {
@@ -388,5 +389,40 @@ class VoucherService
             }
         });
     }
-}
 
+    /**
+     * Nonaktifkan voucher.
+     */
+    public function deactivateVoucher(int $voucherId, User $actor): Voucher
+    {
+        $tenantId = (int) $this->tenantContext->requireTenantId();
+
+        /** @var Voucher $voucher */
+        $voucher = Voucher::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->findOrFail($voucherId);
+
+        $voucher->status = VoucherStatusEnum::DISABLED;
+        $voucher->save();
+
+        return $voucher;
+    }
+
+    /**
+     * Aktifkan kembali voucher yang sebelumnya nonaktif.
+     */
+    public function activateVoucher(int $voucherId, User $actor): Voucher
+    {
+        $tenantId = (int) $this->tenantContext->requireTenantId();
+
+        /** @var Voucher $voucher */
+        $voucher = Voucher::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->findOrFail($voucherId);
+
+        $voucher->status = VoucherStatusEnum::ACTIVE;
+        $voucher->save();
+
+        return $voucher;
+    }
+}

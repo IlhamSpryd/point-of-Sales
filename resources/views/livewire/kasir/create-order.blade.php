@@ -36,23 +36,26 @@
     @keydown.window.f4.prevent="triggerPay()"
     @keydown.window.f8.prevent="$wire.set('isParkModalOpen', true)"
     @keydown.window.f9.prevent="$wire.set('isParkedListOpen', true)"
-    class="flex flex-col h-[calc(100vh-64px)] lg:h-screen overflow-hidden min-h-0 bg-white">
+    class="flex flex-col h-full w-full overflow-hidden min-h-0 bg-white">
 
     {{-- Operational Context Banner (Shift Warning) --}}
     @include('livewire.pos.partials.operational-banner')
 
-    <!-- Struktur Utama: Layout Kiri (Katalog Produk) & Kanan (Keranjang) -->
-    <div class="flex flex-col lg:flex-row flex-1 w-full overflow-hidden relative min-h-0 bg-white">
+    <!-- Struktur Utama: Layout Kiri (Katalog Produk & Discovery) & Kanan (Keranjang Pesanan) -->
+    <div class="flex flex-col w-full h-full p-4 lg:p-6 overflow-hidden bg-white min-h-0">
+        {{-- Header: POS / Kasir context, Dine-In/Takeaway, Order ID, Hold & Table --}}
+        @include('livewire.pos.partials.header')
 
-        <!-- PANEL KIRI: Header Pencarian, Filter Kategori, Grid Produk & Shortcut Bar -->
-        <section class="flex-1 min-w-0 min-h-0 flex flex-col bg-white border-b lg:border-b-0 lg:border-r border-gray-200 overflow-y-auto custom-scrollbar relative">
-            @include('livewire.pos.partials.header')
-            @include('livewire.pos.partials.product-grid')
-            @include('livewire.pos.partials.keyboard-shortcuts')
-        </section>
+        {{-- 2-Column Ergonomic Cashier Layout: Kiri Galeri & Kanan Keranjang --}}
+        <div class="flex-1 flex flex-row gap-4 lg:gap-5 overflow-hidden min-h-0">
+            <!-- Kolom Tengah: Galeri & Grid Produk -->
+            <main class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
+                @include('livewire.pos.partials.product-grid')
+            </main>
 
-        <!-- PANEL KANAN DESKTOP: Keranjang Belanja -->
-        @include('livewire.pos.partials.cart-sidebar')
+            <!-- Kolom Kanan: Keranjang Pesanan & Ringkasan Bayar -->
+            @include('livewire.pos.partials.cart-sidebar')
+        </div>
     </div>
 
     {{-- DRAWER & FLOATING BAR MOBILE/TABLET --}}
@@ -78,7 +81,7 @@
 
     .custom-scrollbar {
         scrollbar-width: thin;
-        scrollbar-color: #d1d5db transparent;
+        scrollbar-color: #e5e5e5 transparent;
     }
 
     .custom-scrollbar::-webkit-scrollbar {
@@ -90,12 +93,12 @@
     }
 
     .custom-scrollbar::-webkit-scrollbar-thumb {
-        background-color: #d1d5db;
+        background-color: #e5e5e5;
         border-radius: 9999px;
     }
 
     .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-        background-color: #9ca3af;
+        background-color: #d4d4d4;
     }
 
     @media (prefers-reduced-motion: reduce) {

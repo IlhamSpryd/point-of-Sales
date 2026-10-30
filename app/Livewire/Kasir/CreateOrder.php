@@ -9,6 +9,7 @@ namespace App\Livewire\Kasir;
 
 use App\Enums\PaymentMethod;
 use App\Livewire\Concerns\RequiresTenantContext;
+use App\Models\Approval;
 use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\Modifier;
@@ -18,8 +19,12 @@ use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Shift;
 use App\Models\Table;
+use App\Modules\Customers\Services\VoucherService;
+use App\Modules\Pricing\DataTransferObjects\CheckoutCalculationBreakdownDto;
+use App\Modules\Pricing\DataTransferObjects\CheckoutCalculationInputDto;
+use App\Modules\Pricing\Services\DiscountApprovalService;
+use App\Modules\Pricing\Services\UnifiedPricingCalculationPipelineService;
 use App\Services\CartService;
-use App\Services\CashierPinService;
 use App\Services\CatalogPriceResolverService;
 use App\Services\Context\TenantContext;
 use App\Services\EntitlementService;
@@ -115,7 +120,9 @@ class CreateOrder extends Component
 
     public array $resumeWarnings = [];
 
-    // Split Tender Payment Legs & Item Discounts
+    /**
+     * @var array<int, array{method: string, amount: int, card_number?: string|null, reference_number?: string|null, pin?: string|null}>
+     */
     public array $paymentLegs = [];
 
     public $paymentTendered = 0;
@@ -143,12 +150,16 @@ class CreateOrder extends Component
 
     // Stored-Value Instruments (Gift Card & Store Credit)
     public string $giftCardNumberInput = '';
+
     public string $giftCardPinInput = '';
+
     public float $storeCreditBalance = 0.0;
 
     // Voucher Lifecycle State
     public ?string $voucherCode = null;
+
     public string $voucherInput = '';
+
     public ?string $voucherError = null;
 
     public function applyVoucher(): void
@@ -157,20 +168,21 @@ class CreateOrder extends Component
         $code = strtoupper(trim($this->voucherInput));
         if (empty($code)) {
             $this->voucherError = 'Kode voucher tidak boleh kosong.';
+
             return;
         }
 
         try {
-            $customer = $this->customerId ? \App\Models\Customer::find($this->customerId) : null;
-            $subtotal = (string) $this->totalSubtotal();
-            $validation = app(\App\Modules\Customers\Services\VoucherService::class)
+            $customer = $this->customerId ? Customer::find($this->customerId) : null;
+            $subtotal = (string) collect($this->cart)->sum(fn ($i) => (float) ($i['total_price'] ?? ($i['price'] ?? 0) * ($i['qty'] ?? 1)));
+            $validation = app(VoucherService::class)
                 ->validateVoucher($code, $customer, $subtotal);
 
-            app(\App\Modules\Customers\Services\VoucherService::class)->reserveVoucher(
+            app(VoucherService::class)->reserveVoucher(
                 code: $code,
                 cartUuid: $this->idempotencyKey,
                 storeId: (int) ($this->activeStoreId ?? 1),
-                customer: $customer,
+                customerId: $this->customerId ? (int) $this->customerId : null,
                 reservedAmount: (float) $validation['discount_amount']
             );
 
@@ -185,7 +197,7 @@ class CreateOrder extends Component
     public function removeVoucher(): void
     {
         if ($this->voucherCode) {
-            app(\App\Modules\Customers\Services\VoucherService::class)->releaseVoucher($this->idempotencyKey);
+            app(VoucherService::class)->releaseVoucher($this->idempotencyKey);
             $this->voucherCode = null;
             $this->voucherError = null;
         }
@@ -229,6 +241,12 @@ class CreateOrder extends Component
         if ($this->orderType === 'takeaway' || ! $this->isTablesEnabled()) {
             $this->tableId = null; // dropdown meja disembunyikan otomatis via Blade
         }
+    }
+
+    public function setOrderType(string $type): void
+    {
+        $this->orderType = in_array($type, ['dine_in', 'takeaway']) ? $type : 'dine_in';
+        $this->updatedOrderType();
     }
 
     public function updatedSearch(): void
@@ -407,7 +425,7 @@ class CreateOrder extends Component
     /**
      * Menghitung rincian kalkulasi harga kasir secara real-time via UnifiedPricingCalculationPipelineService.
      */
-    public function getCalculationBreakdown(): \App\Modules\Pricing\DataTransferObjects\CheckoutCalculationBreakdownDto
+    public function getCalculationBreakdown(): CheckoutCalculationBreakdownDto
     {
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
         $storeId = (int) (app(TenantContext::class)->getStoreId() ?? $this->activeStoreId ?? 1);
@@ -425,7 +443,7 @@ class CreateOrder extends Component
             ];
         }
 
-        $input = new \App\Modules\Pricing\DataTransferObjects\CheckoutCalculationInputDto(
+        $input = new CheckoutCalculationInputDto(
             tenantId: $tenantId,
             storeId: $storeId,
             channel: 'pos_cashier',
@@ -437,7 +455,7 @@ class CreateOrder extends Component
             hasCashPayment: $this->paymentMethod === 'cash' || collect($this->paymentLegs)->contains('method', 'cash')
         );
 
-        return app(\App\Modules\Pricing\Services\UnifiedPricingCalculationPipelineService::class)->calculate($input);
+        return app(UnifiedPricingCalculationPipelineService::class)->calculate($input);
     }
 
     // Modal state reset
@@ -800,11 +818,11 @@ class CreateOrder extends Component
             'manualDiscountReason' => 'required|string|min:3|max:255',
         ]);
 
-        $subtotal = (float) $this->cartSubtotal;
+        $subtotal = (float) $this->subtotal();
         $amount = (float) $this->manualDiscountAmount;
         $percent = $subtotal > 0 ? (($amount / $subtotal) * 100) : 100.0;
 
-        $approvalService = app(\App\Modules\Pricing\Services\DiscountApprovalService::class);
+        $approvalService = app(DiscountApprovalService::class);
         $needsApproval = $approvalService->evaluateThreshold($percent, $amount, $subtotal);
 
         if ($needsApproval) {
@@ -812,19 +830,19 @@ class CreateOrder extends Component
                 'manualDiscountSupervisorPin' => 'required|string|min:4',
             ]);
 
-            $storeId = (int) (app(TenantContext::class)->getStoreId() ?? Auth::user()?->store_id ?? 0);
+            $storeId = (int) (app(TenantContext::class)->getStoreId() ?? Auth::user()->store_id ?? 0);
 
             try {
                 $approval = $approvalService->createApproval(
                     requesterId: (int) Auth::id(),
                     pin: $this->manualDiscountSupervisorPin,
-                    action: \App\Models\Approval::ACTION_MANUAL_DISCOUNT,
+                    action: Approval::ACTION_MANUAL_DISCOUNT,
                     amount: $amount,
                     reason: $this->manualDiscountReason,
                     storeId: $storeId
                 );
                 $this->manualDiscountApprovalId = (int) $approval->id;
-            } catch (\Illuminate\Validation\ValidationException $e) {
+            } catch (ValidationException $e) {
                 $msg = $e->validator->errors()->first('pin') ?: $e->getMessage();
                 $this->addError('manualDiscountSupervisorPin', $msg);
                 $this->dispatch('toast', message: $msg, type: 'error');
@@ -1122,7 +1140,7 @@ class CreateOrder extends Component
      * $this->paymentMethod/$this->cashReceived seperti sebelumnya --
      * $legs diabaikan sepenuhnya di cabang itu (lihat SYNC ALERT Node 1).
      *
-     * @param  array<int, array{method: string, amount: int}>  $legs
+     * @param  array<int, array{method: string, amount: int, card_number?: string|null, reference_number?: string|null, pin?: string|null}>  $legs
      */
     public function submitOrder(array $legs = [], ?string $idempotencyKey = null)
     {
@@ -1212,8 +1230,8 @@ class CreateOrder extends Component
                 ];
             } else {
                 foreach ($legs as $leg) {
-                    $method = PaymentMethod::tryFrom((string) ($leg['method'] ?? ''));
-                    $amount = (int) ($leg['amount'] ?? 0);
+                    $method = PaymentMethod::tryFrom((string) $leg['method']);
+                    $amount = (int) $leg['amount'];
 
                     if (! $method || $amount <= 0) {
                         throw ValidationException::withMessages([

@@ -166,6 +166,38 @@ class LoyaltyAndValueInstrumentManager extends Component
         session()->flash('message', 'Store credit balance successfully deposited.');
     }
 
+    public function deactivateVoucher(int $voucherId): void
+    {
+        $service = app(VoucherService::class);
+        $voucher = $service->deactivateVoucher($voucherId, auth()->user());
+
+        session()->flash('message', "Voucher '{$voucher->code}' successfully deactivated.");
+    }
+
+    public function activateVoucher(int $voucherId): void
+    {
+        $service = app(VoucherService::class);
+        $voucher = $service->activateVoucher($voucherId, auth()->user());
+
+        session()->flash('message', "Voucher '{$voucher->code}' successfully activated.");
+    }
+
+    public function freezeGiftCard(int $cardId): void
+    {
+        $service = app(GiftCardService::class);
+        $card = $service->freezeGiftCard($cardId, auth()->user());
+
+        session()->flash('message', "Gift card {$card->card_number} successfully frozen/blocked.");
+    }
+
+    public function unfreezeGiftCard(int $cardId): void
+    {
+        $service = app(GiftCardService::class);
+        $card = $service->unfreezeGiftCard($cardId, auth()->user());
+
+        session()->flash('message', "Gift card {$card->card_number} successfully unblocked.");
+    }
+
     private function resetVoucherForm(): void
     {
         $this->voucher_code = '';

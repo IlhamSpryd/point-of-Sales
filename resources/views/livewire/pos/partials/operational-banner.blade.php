@@ -1,18 +1,22 @@
 {{-- Operational Context Banner --}}
 @if(!$this->activeShift)
-    <div class="bg-rose-600 text-white px-4 py-2 text-xs font-bold flex items-center justify-between shrink-0 shadow-sm z-40">
+    <div class="bg-rose-600 text-white px-4 py-2 text-xs font-medium flex items-center justify-between shrink-0 shadow-sm z-40 select-none">
         <div class="flex items-center gap-2">
             <span class="material-symbols-rounded text-[18px]">lock</span>
-            <span>POS Terminal Has No Open Shift: Cashier must open a shift before processing sales transactions.</span>
+            <span>Terminal POS Belum Membuka Shift: Kasir harus membuka shift kasir sebelum memproses transaksi penjualan.</span>
         </div>
-        <a href="{{ route('shifts.index') }}" class="underline hover:text-white/80 bg-white/20 px-3 py-1 rounded-lg transition-colors">Open Cashier Shift</a>
+        <a href="{{ route('shifts.index') }}" class="font-bold underline hover:text-white/80 bg-white/20 px-3 py-1 rounded-lg transition-colors">
+            Buka Shift Kasir
+        </a>
     </div>
 @elseif($this->activeShift->status === 'handover_pending')
-    <div class="bg-amber-600 text-white px-4 py-2 text-xs font-bold flex items-center justify-between shrink-0 shadow-sm z-40">
+    <div class="bg-amber-600 text-white px-4 py-2 text-xs font-medium flex items-center justify-between shrink-0 shadow-sm z-40 select-none">
         <div class="flex items-center gap-2">
             <span class="material-symbols-rounded text-[18px]">pending_actions</span>
-            <span>Shift Handover in Progress: Confirm shift acceptance or cancel the handover to proceed.</span>
+            <span>Handover Shift Sedang Berlangsung: Konfirmasi penerimaan shift kasir untuk melanjutkan transaksi.</span>
         </div>
-        <a href="{{ route('shifts.index') }}" class="underline hover:text-white/80 bg-white/20 px-3 py-1 rounded-lg transition-colors">Manage Shifts</a>
+        <a href="{{ route('shifts.index') }}" class="font-bold underline hover:text-white/80 bg-white/20 px-3 py-1 rounded-lg transition-colors">
+            Kelola Shift
+        </a>
     </div>
 @endif

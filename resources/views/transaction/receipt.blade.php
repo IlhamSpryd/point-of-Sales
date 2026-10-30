@@ -21,7 +21,7 @@
 
         @if (($isReprint ?? false) || ($order->print_count ?? 0) > 1)
             <div class="border-y border-dashed border-apeiron-ink py-1 my-1 text-center font-bold text-[11px] tracking-wider">
-                *** COPY / REPRINT #{{ $order->print_count }} ***
+                *** COPY / CETAK ULANG #{{ $order->print_count }} ***
             </div>
         @endif
 

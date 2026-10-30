@@ -23,7 +23,8 @@
     src: url('/fonts/material-symbols-rounded.woff2') format('woff2');
 }
 
-.material-symbols-rounded {
+.material-symbols-rounded,
+.material-symbols-outlined {
     font-family: 'Material Symbols Rounded', sans-serif !important;
     font-weight: normal;
     font-style: normal;

@@ -3,7 +3,7 @@
     'variant' => null,
     'status' => null,
     'dot' => false,
-    'asBadge' => false,
+    'asBadge' => true,
     'pill' => false,
 ])
 
@@ -35,16 +35,16 @@
     ];
 
     $badgeVariants = [
-        'success'   => 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
-        'paid'      => 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
-        'completed' => 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
-        'danger'    => 'bg-rose-50 text-rose-800 border-rose-200/80',
-        'cancelled' => 'bg-rose-50 text-rose-800 border-rose-200/80',
-        'void'      => 'bg-rose-50 text-rose-800 border-rose-200/80',
-        'warning'   => 'bg-amber-50 text-amber-800 border-amber-200/80',
-        'pending'   => 'bg-amber-50 text-amber-800 border-amber-200/80',
-        'info'      => 'bg-blue-50 text-blue-800 border-blue-200/80',
-        'secondary' => 'bg-zinc-100 text-zinc-700 border-zinc-200',
+        'success'   => 'bg-success-50 text-success-700 border-success-600/20',
+        'paid'      => 'bg-success-50 text-success-700 border-success-600/20',
+        'completed' => 'bg-success-50 text-success-700 border-success-600/20',
+        'danger'    => 'bg-danger-50 text-danger-700 border-danger-600/20',
+        'cancelled' => 'bg-danger-50 text-danger-700 border-danger-600/20',
+        'void'      => 'bg-danger-50 text-danger-700 border-danger-600/20',
+        'warning'   => 'bg-warning-50 text-warning-600 border-warning-600/20',
+        'pending'   => 'bg-warning-50 text-warning-600 border-warning-600/20',
+        'info'      => 'bg-info-50 text-info-600 border-info-600/20',
+        'secondary' => 'bg-primary-100 text-primary-500 border-primary-200',
         'neutral'   => 'bg-zinc-100 text-zinc-700 border-zinc-200',
     ];
 

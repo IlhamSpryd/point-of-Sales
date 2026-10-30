@@ -16,7 +16,7 @@
 
     $variants = [
         'primary'   => 'bg-apeiron-ink text-white hover:bg-[#262626] focus-visible:ring-apeiron-ink',
-        'secondary' => 'bg-white text-gray-700 border border-apeiron-border hover:bg-gray-50 focus-visible:ring-zinc-400',
+        'secondary' => 'bg-white text-gray-700 border border-apeiron-border hover:bg-gray-50 focus-visible:ring-apeiron-ink',
         'danger'    => 'bg-rose-600 text-white hover:bg-rose-700 focus-visible:ring-rose-500',
         'ghost'     => 'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-apeiron-ink focus-visible:ring-zinc-400',
     ];

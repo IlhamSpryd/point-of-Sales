@@ -72,6 +72,41 @@ class Voucher extends Model
         return $this->belongsTo(CustomerGroup::class);
     }
 
+    public function getIsActiveAttribute(): bool
+    {
+        return $this->status === VoucherStatusEnum::ACTIVE;
+    }
+
+    public function getTimesUsedAttribute(): int
+    {
+        return (int) $this->used_count;
+    }
+
+    public function getMaxUsesGlobalAttribute(): ?int
+    {
+        return $this->max_uses;
+    }
+
+    public function getStartsAtAttribute(): ?Carbon
+    {
+        return $this->valid_from;
+    }
+
+    public function setStartsAtAttribute(mixed $value): void
+    {
+        $this->attributes['valid_from'] = $value ? Carbon::parse($value) : null;
+    }
+
+    public function getExpiresAtAttribute(): ?Carbon
+    {
+        return $this->valid_until;
+    }
+
+    public function setExpiresAtAttribute(mixed $value): void
+    {
+        $this->attributes['valid_until'] = $value ? Carbon::parse($value) : null;
+    }
+
     public function isValidNow(): bool
     {
         if ($this->status !== VoucherStatusEnum::ACTIVE) {

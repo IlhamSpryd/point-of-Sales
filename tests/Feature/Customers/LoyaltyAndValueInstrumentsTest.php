@@ -436,4 +436,103 @@ class LoyaltyAndValueInstrumentsTest extends TestCase
             'code' => 'TESTDISC',
         ]);
     }
+
+    public function test_livewire_manager_can_deactivate_voucher_and_freeze_gift_card(): void
+    {
+        $this->actingAs($this->ownerA);
+        $context = app(TenantContext::class);
+        $context->setTenantId($this->tenantA->id);
+        $context->setStoreId($this->storeA->id);
+
+        $voucher = $this->voucherService->createVoucher([
+            'code' => 'ACTDEACT10',
+            'name' => 'Voucher Toggle Test',
+            'discount_type' => VoucherDiscountTypeEnum::PERCENTAGE->value,
+            'discount_value' => '10.00',
+            'min_order_amount' => '0.00',
+        ], $this->ownerA);
+
+        $giftCard = $this->giftCardService->issueGiftCard([
+            'card_number' => 'GC-FREEZE-TEST-1',
+            'amount' => '50000.00',
+            'store_id' => $this->storeA->id,
+        ], $this->ownerA);
+
+        $this->assertTrue($voucher->is_active);
+        $this->assertEquals('ACTIVE', $giftCard->status->value);
+
+        // Test Livewire calls
+        Livewire::test(LoyaltyAndValueInstrumentManager::class)
+            ->assertOk()
+            ->call('deactivateVoucher', $voucher->id)
+            ->assertHasNoErrors();
+
+        $voucher->refresh();
+        $this->assertFalse($voucher->is_active);
+        $this->assertEquals('DISABLED', $voucher->status->value);
+
+        Livewire::test(LoyaltyAndValueInstrumentManager::class)
+            ->assertOk()
+            ->call('activateVoucher', $voucher->id)
+            ->assertHasNoErrors();
+
+        $voucher->refresh();
+        $this->assertTrue($voucher->is_active);
+        $this->assertEquals('ACTIVE', $voucher->status->value);
+
+        Livewire::test(LoyaltyAndValueInstrumentManager::class)
+            ->assertOk()
+            ->call('freezeGiftCard', $giftCard->id)
+            ->assertHasNoErrors();
+
+        $giftCard->refresh();
+        $this->assertEquals('BLOCKED', $giftCard->status->value);
+
+        Livewire::test(LoyaltyAndValueInstrumentManager::class)
+            ->assertOk()
+            ->call('unfreezeGiftCard', $giftCard->id)
+            ->assertHasNoErrors();
+
+        $giftCard->refresh();
+        $this->assertEquals('ACTIVE', $giftCard->status->value);
+    }
+
+    public function test_voucher_manager_livewire_persists_validity_dates(): void
+    {
+        $this->actingAs($this->ownerA);
+        $context = app(TenantContext::class);
+        $context->setTenantId($this->tenantA->id);
+        $context->setStoreId($this->storeA->id);
+
+        $from = '2026-11-01T08:00';
+        $until = '2026-11-30T23:59';
+
+        Livewire::test(\App\Livewire\Pricing\VoucherManager::class)
+            ->assertOk()
+            ->call('openCreateModal')
+            ->set('code', 'DATEPERSIST10')
+            ->set('name', 'Voucher Persist Dates')
+            ->set('discountType', 'PERCENTAGE')
+            ->set('discountValue', 10.0)
+            ->set('minOrderAmount', 50000.0)
+            ->set('startsAt', $from)
+            ->set('expiresAt', $until)
+            ->set('status', 'ACTIVE')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        /** @var Voucher $savedVoucher */
+        $savedVoucher = Voucher::where('code', 'DATEPERSIST10')->firstOrFail();
+        $this->assertNotNull($savedVoucher->valid_from);
+        $this->assertNotNull($savedVoucher->valid_until);
+        $this->assertEquals('2026-11-01 08:00:00', $savedVoucher->valid_from->format('Y-m-d H:i:s'));
+        $this->assertEquals('2026-11-30 23:59:00', $savedVoucher->valid_until->format('Y-m-d H:i:s'));
+
+        // Test editing loads the dates into startsAt and expiresAt
+        Livewire::test(\App\Livewire\Pricing\VoucherManager::class)
+            ->assertOk()
+            ->call('openEditModal', $savedVoucher->id)
+            ->assertSet('startsAt', $from)
+            ->assertSet('expiresAt', $until);
+    }
 }

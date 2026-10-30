@@ -119,13 +119,14 @@ class DashboardService
             $weekStart = $now->copy()->startOfWeek();
             $weekOrders = (int) ((clone $orderQuery)->whereIn('order_status', $paidStatuses)->whereBetween('created_at', [$weekStart, $todayEnd])->count());
 
-            $displayTodayOrders = $todayOrders > 0 ? $todayOrders : ($totalOrders > 0 ? max(1, (int) round($totalOrders * 0.12)) : 73);
-            $displayWeekOrders = $weekOrders > 0 ? $weekOrders : ($totalOrders > 0 ? max(3, (int) round($totalOrders * 0.45)) : 328);
-            $displayMonthOrders = (int) $kpi->this_month_orders > 0 ? (int) $kpi->this_month_orders : ($totalOrders > 0 ? $totalOrders : 1107);
+            $displayTodayOrders = $todayOrders;
+            $displayWeekOrders = $weekOrders;
+            $displayMonthOrders = (int) $kpi->this_month_orders;
 
             // 3.1 31-Day Histogram Data for DEMURE Sales Performance
             $monthStart = $now->copy()->startOfMonth();
             $monthEnd = $now->copy()->endOfMonth();
+            $daysInMonth = $now->daysInMonth;
             $monthlySalesQuery = (clone $orderQuery)->whereBetween('created_at', [$monthStart, $monthEnd])
                 ->whereIn('order_status', $paidStatuses)
                 ->selectRaw('DAY(created_at) as hari, COALESCE(SUM(order_amount), 0) as total, COUNT(*) as jumlah')
@@ -133,51 +134,143 @@ class DashboardService
                 ->get()
                 ->keyBy('hari');
 
-            // Default aesthetic heights matching DEMURE bar chart variation
-            $aestheticHeights = [
-                1 => 58, 2 => 82, 3 => 44, 4 => 32, 5 => 48, 6 => 40, 7 => 30,
-                8 => 74, 9 => 68, 10 => 38, 11 => 46, 12 => 22, 13 => 26, 14 => 18,
-                15 => 36, 16 => 32, 17 => 86, 18 => 52, 19 => 42, 20 => 34, 21 => 38,
-                22 => 32, 23 => 24, 24 => 42, 25 => 50, 26 => 18, 27 => 24, 28 => 32,
-                29 => 20, 30 => 28, 31 => 22
-            ];
-
             $hasRealMonthData = $monthlySalesQuery->isNotEmpty();
-            $maxDaily = $hasRealMonthData ? max($monthlySalesQuery->pluck('total')->toArray()) : 0;
+            $maxDaily = $hasRealMonthData ? (float) max($monthlySalesQuery->pluck('total')->toArray()) : 0.0;
             if ($maxDaily <= 0) {
-                $maxDaily = 6000000;
+                $maxDaily = 1.0;
             }
 
             $monthlyHistogram = [];
-            $activeDay = ($hasRealMonthData && $monthlySalesQuery->has($now->day)) ? $now->day : 17;
+            $activeDay = ($hasRealMonthData && $monthlySalesQuery->has($now->day)) ? $now->day : $now->day;
 
             for ($d = 1; $d <= 31; $d++) {
                 $stat = $monthlySalesQuery->get($d);
-                if ($stat && $stat->total > 0) {
+                if ($stat && (float) $stat->total > 0) {
                     $val = (float) $stat->total;
                     $count = (int) $stat->jumlah;
-                    $height = max(14, min(95, round(($val / $maxDaily) * 90)));
+                    $height = max(4, min(95, (int) round(($val / $maxDaily) * 90)));
                 } else {
-                    $height = $aestheticHeights[$d] ?? 30;
-                    $val = round(($height / 90) * $maxDaily * 0.95);
-                    $count = max(1, (int) round($height / 15));
+                    $val = 0.0;
+                    $count = 0;
+                    $height = 4;
                 }
 
                 $isHighlighted = ($d === $activeDay);
+                $dClamped = min($daysInMonth, $d);
+                $dayDate = Carbon::create($now->year, $now->month, $dClamped)->locale('id')->isoFormat('dddd, D MMMM Y');
                 $monthlyHistogram[] = [
-                    'day' => $d,
+                    'day' => (string) $d,
+                    'label' => (string) $d,
+                    'date' => $dayDate,
                     'height' => $height,
                     'total' => $val,
                     'count' => $count,
-                    'formatted' => 'Rp ' . number_format($val, 0, ',', '.'),
+                    'formatted' => 'Rp '.number_format($val, 0, ',', '.'),
                     'is_active' => $isHighlighted,
                 ];
             }
 
-            $activeItem = collect($monthlyHistogram)->firstWhere('day', $activeDay);
-            $activeDayTotal = $activeItem ? $activeItem['total'] : 5869064;
-            $activeDayFormatted = 'Rp ' . number_format($activeDayTotal, 0, ',', '.');
-            $activeDayDate = Carbon::create($now->year, $now->month, min(28, $activeDay))->locale('id')->isoFormat('dddd, D MMMM Y');
+            // 3.1b Weekly Histogram (7 hari terakhir)
+            $startDate = $now->copy()->subDays(6)->startOfDay();
+            $endDate = $now->copy()->endOfDay();
+
+            $dailyStatsQuery = (clone $orderQuery)->whereBetween('created_at', [$startDate, $endDate])
+                ->whereIn('order_status', $paidStatuses)
+                ->selectRaw('DATE(created_at) as tanggal, COALESCE(SUM(order_amount), 0) as total, COUNT(*) as jumlah')
+                ->groupBy('tanggal')
+                ->get()
+                ->keyBy('tanggal');
+
+            $weekDaysMap = [
+                1 => 'Sen',
+                2 => 'Sel',
+                3 => 'Rab',
+                4 => 'Kam',
+                5 => 'Jum',
+                6 => 'Sab',
+                7 => 'Min',
+            ];
+
+            $weeklyHistogram = [];
+            $realWeeklyMax = (float) ($dailyStatsQuery->pluck('total')->map(fn ($v) => (float) $v)->max() ?: 0);
+            $maxWeekly = $realWeeklyMax > 0 ? $realWeeklyMax : 1.0;
+
+            foreach (range(6, 0) as $daysAgo) {
+                $d = $now->copy()->subDays($daysAgo);
+                $dateStr = $d->format('Y-m-d');
+                $stat = $dailyStatsQuery->get($dateStr);
+                if ($stat && (float) $stat->total > 0) {
+                    $val = (float) $stat->total;
+                    $count = (int) $stat->jumlah;
+                    $height = max(4, min(95, (int) round(($val / $maxWeekly) * 90)));
+                } else {
+                    $val = 0.0;
+                    $count = 0;
+                    $height = 4;
+                }
+
+                $dayName = $weekDaysMap[$d->dayOfWeekIso] ?? $d->format('D');
+                $isHighlighted = ($daysAgo === 0);
+
+                $weeklyHistogram[] = [
+                    'day' => $dayName,
+                    'label' => $dayName.' ('.$d->format('d/m').')',
+                    'date' => $d->locale('id')->isoFormat('dddd, D MMMM Y'),
+                    'height' => $height,
+                    'total' => $val,
+                    'count' => $count,
+                    'formatted' => 'Rp '.number_format($val, 0, ',', '.'),
+                    'is_active' => $isHighlighted,
+                ];
+            }
+
+            // 3.1c Yearly Histogram (12 bulan tahun berjalan)
+            $yearStart = $now->copy()->startOfYear();
+            $yearEnd = $now->copy()->endOfYear();
+            $yearlySalesQuery = (clone $orderQuery)->whereBetween('created_at', [$yearStart, $yearEnd])
+                ->whereIn('order_status', $paidStatuses)
+                ->selectRaw('MONTH(created_at) as bulan, COALESCE(SUM(order_amount), 0) as total, COUNT(*) as jumlah')
+                ->groupBy('bulan')
+                ->get()
+                ->keyBy('bulan');
+
+            $hasRealYearData = $yearlySalesQuery->isNotEmpty();
+            $realYearlyMax = (float) ($yearlySalesQuery->pluck('total')->map(fn ($v) => (float) $v)->max() ?: 0);
+            $maxYearly = $realYearlyMax > 0 ? $realYearlyMax : 1.0;
+
+            $yearlyHistogram = [];
+            for ($m = 1; $m <= 12; $m++) {
+                $stat = $yearlySalesQuery->get($m);
+                if ($stat && (float) $stat->total > 0) {
+                    $val = (float) $stat->total;
+                    $count = (int) $stat->jumlah;
+                    $height = max(4, min(95, (int) round(($val / $maxYearly) * 90)));
+                } else {
+                    $val = 0.0;
+                    $count = 0;
+                    $height = 4;
+                }
+
+                $monthName = self::ID_MONTHS[$m - 1];
+                $isHighlighted = ($m === $now->month);
+
+                $yearlyHistogram[] = [
+                    'day' => $monthName,
+                    'label' => $monthName,
+                    'date' => $monthName.' '.$now->year,
+                    'height' => $height,
+                    'total' => $val,
+                    'count' => $count,
+                    'formatted' => 'Rp '.number_format($val, 0, ',', '.'),
+                    'is_active' => $isHighlighted,
+                ];
+            }
+
+            $activeItem = collect($monthlyHistogram)->firstWhere('day', (string) $activeDay) ?? collect($monthlyHistogram)->first();
+            $activeDayTotal = $activeItem ? (float) $activeItem['total'] : 0.0;
+            $activeDayFormatted = 'Rp '.number_format($activeDayTotal, 0, ',', '.');
+            $activeDayClamped = min($daysInMonth, (int) $activeDay);
+            $activeDayDate = Carbon::create($now->year, $now->month, $activeDayClamped)->locale('id')->isoFormat('dddd, D MMMM Y');
 
             // 3.2 Quarterly Statistics (DEMURE Bottom Card 1)
             $currentQuarter = $now->quarter;
@@ -199,16 +292,6 @@ class DashboardService
             ];
 
             // 3.3 7 Hari Terakhir & Statistik Harian (Existing Curve)
-            $startDate = $now->copy()->subDays(6)->startOfDay();
-            $endDate = $now->copy()->endOfDay();
-
-            $dailyStatsQuery = (clone $orderQuery)->whereBetween('created_at', [$startDate, $endDate])
-                ->whereIn('order_status', $paidStatuses)
-                ->selectRaw('DATE(created_at) as tanggal, COALESCE(SUM(order_amount), 0) as total, COUNT(*) as jumlah')
-                ->groupBy('tanggal')
-                ->get()
-                ->keyBy('tanggal');
-
             $revenueData = [];
             $ordersData = [];
             $chartDates = [];
@@ -381,6 +464,8 @@ class DashboardService
                 'displayWeekOrders',
                 'displayMonthOrders',
                 'monthlyHistogram',
+                'weeklyHistogram',
+                'yearlyHistogram',
                 'activeDay',
                 'activeDayDate',
                 'activeDayFormatted',

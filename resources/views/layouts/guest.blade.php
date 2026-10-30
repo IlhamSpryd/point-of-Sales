@@ -36,12 +36,65 @@
                 @endif
             </div>
 
-            <!-- Footer Bar -->
-            <div class="w-full max-w-sm mx-auto md:max-w-none flex items-center justify-between text-xs text-zinc-400 pt-8 mt-auto border-t border-zinc-100" style="max-width: 384px;">
+            <!-- Footer Bar with Active Legal Modals -->
+            <div x-data="{ modal: null }" class="w-full max-w-sm mx-auto md:max-w-none flex items-center justify-between text-xs text-zinc-400 pt-8 mt-auto border-t border-zinc-100" style="max-width: 384px;">
                 <span>© {{ date('Y') }} Apeiron Systems</span>
                 <div class="flex items-center gap-4">
-                    <a href="#privacy" onclick="event.preventDefault()" class="hover:text-zinc-600 transition-colors">Privacy</a>
-                    <a href="#terms" onclick="event.preventDefault()" class="hover:text-zinc-600 transition-colors">Terms</a>
+                    <button type="button" @click="modal = 'privacy'" class="hover:text-zinc-600 transition-colors cursor-pointer font-medium">Privacy</button>
+                    <button type="button" @click="modal = 'terms'" class="hover:text-zinc-600 transition-colors cursor-pointer font-medium">Terms</button>
+                </div>
+
+                {{-- Legal Modal Dialog --}}
+                <div x-show="modal !== null" x-cloak
+                     @keydown.escape.window="modal = null"
+                     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs text-zinc-900"
+                     role="dialog" aria-modal="true">
+                    <div @click.outside="modal = null"
+                         class="bg-white rounded-2xl max-w-lg w-full max-h-[85vh] flex flex-col shadow-2xl border border-zinc-200 overflow-hidden text-left">
+                        {{-- Modal Header --}}
+                        <div class="p-5 border-b border-zinc-100 flex items-center justify-between">
+                            <h3 class="text-base font-bold text-zinc-900" x-text="modal === 'privacy' ? 'Privacy Policy' : 'Terms of Service'"></h3>
+                            <button type="button" @click="modal = null" class="w-8 h-8 rounded-lg flex items-center justify-center text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 transition-colors" aria-label="Close modal">
+                                <span class="material-symbols-rounded text-lg">close</span>
+                            </button>
+                        </div>
+
+                        {{-- Modal Content --}}
+                        <div class="p-5 overflow-y-auto text-xs text-zinc-600 space-y-4 leading-relaxed">
+                            <template x-if="modal === 'privacy'">
+                                <div class="space-y-3">
+                                    <p class="font-semibold text-zinc-800">Kebijakan Privasi Apeiron POS (Multi-Tenant SaaS)</p>
+                                    <p>Apeiron Systems berkomitmen untuk menjaga keamanan dan privasi data transaksi bisnis Anda sesuai dengan regulasi perlindungan data yang berlaku (UU PDP No. 27/2022).</p>
+                                    <h4 class="font-bold text-zinc-800 pt-1">1. Isolasi Data Multi-Tenant</h4>
+                                    <p>Setiap data transaksi penjualan, katalog produk, inventori stok bahan baku, dan riwayat pelanggan dienkripsi dan diisolasi secara ketat berdasarkan Tenant ID organisasi Anda.</p>
+                                    <h4 class="font-bold text-zinc-800 pt-1">2. Penyimpanan &amp; Audit Log</h4>
+                                    <p>Aktivitas sistem kasir dan perubahan konfigurasi dicatat dalam Audit Trail untuk keperluan rekonsiliasi dan investigasi operasional.</p>
+                                    <h4 class="font-bold text-zinc-800 pt-1">3. Kontak Perlindungan Data</h4>
+                                    <p>Untuk pertanyaan mengenai kebijakan privasi atau permintaan penghapusan akun, hubungi tim dukungan kami di <span class="font-mono text-zinc-800">support@apeironsystems.com</span>.</p>
+                                </div>
+                            </template>
+
+                            <template x-if="modal === 'terms'">
+                                <div class="space-y-3">
+                                    <p class="font-semibold text-zinc-800">Syarat dan Ketentuan Layanan (Terms of Service)</p>
+                                    <p>Selamat datang di Apeiron POS. Dengan mendaftar dan menggunakan layanan kasir, dapur (KDS), dan manajemen ERP kami, Anda menyetujui ketentuan berikut:</p>
+                                    <h4 class="font-bold text-zinc-800 pt-1">1. Tanggung Jawab Akun</h4>
+                                    <p>Pengguna bertanggung jawab atas kerahasiaan kredensial login (PIN shift, email, kata sandi, dan token autentikasi 2FA) yang digunakan pada perangkat workstation kasir.</p>
+                                    <h4 class="font-bold text-zinc-800 pt-1">2. Ketersediaan Layanan (SLA)</h4>
+                                    <p>Kami menyediakan fungsionalitas transaksi offline-capable untuk memastikan operasional kasir tetap berjalan tanpa gangguan saat koneksi internet terputus.</p>
+                                    <h4 class="font-bold text-zinc-800 pt-1">3. Hak Kekayaan Intelektual</h4>
+                                    <p>Seluruh antarmuka, komponen, modul sistem, dan arsitektur perangkat lunak adalah hak milik Apeiron Systems.</p>
+                                </div>
+                            </template>
+                        </div>
+
+                        {{-- Modal Footer --}}
+                        <div class="p-4 bg-zinc-50 border-t border-zinc-100 flex justify-end">
+                            <button type="button" @click="modal = null" class="px-4 py-2 bg-zinc-900 hover:bg-black text-white text-xs font-semibold rounded-xl transition-colors cursor-pointer">
+                                Saya Mengerti
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

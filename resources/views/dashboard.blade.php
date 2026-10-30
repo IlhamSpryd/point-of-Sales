@@ -18,28 +18,7 @@
             <div class="flex flex-wrap items-center gap-3 lg:gap-5">
                 <h1 class="text-2xl lg:text-[28px] font-bold text-[#171717] tracking-tight flex items-baseline gap-2">
                     <span>Dashboard</span>
-                    <span class="text-sm lg:text-base font-semibold text-[#737373] tracking-normal font-sans">(Operations)</span>
                 </h1>
-                
-                <nav class="hidden md:flex items-center gap-1 text-xs font-medium text-[#737373]" aria-label="Quick Navigation">
-                    <a href="{{ route('inventory.ingredients') }}" wire:navigate class="px-2.5 py-1.5 rounded-lg hover:text-[#171717] hover:bg-[#F5F5F5] transition-colors">
-                        Raw Materials
-                    </a>
-                    <span class="text-[#D4D4D4]">•</span>
-                    <a href="{{ route('orders.index') }}" wire:navigate class="px-2.5 py-1.5 rounded-lg hover:text-[#171717] hover:bg-[#F5F5F5] transition-colors">
-                        Order History
-                    </a>
-                    <span class="text-[#D4D4D4]">•</span>
-                    <a href="{{ route('products.index') }}" wire:navigate class="px-2.5 py-1.5 rounded-lg hover:text-[#171717] hover:bg-[#F5F5F5] transition-colors">
-                        Product Catalog
-                    </a>
-                    @if(in_array(auth()->user()?->role?->name, ['Owner', 'Manager'], true))
-                    <span class="text-[#D4D4D4]">•</span>
-                    <a href="{{ route('investor.demo') }}" wire:navigate class="px-2.5 py-1.5 rounded-lg hover:text-[#171717] hover:bg-[#F5F5F5] transition-colors">
-                        Investor Demo
-                    </a>
-                    @endif
-                </nav>
             </div>
 
             <!-- Right: Action Buttons (Solid Dark & Outline Pill) -->
@@ -99,21 +78,101 @@
             </div>
         </section>
 
-        {{-- 3. MIDDLE MAIN SECTION: SALES PERFORMANCE & 31-DAY BAR HISTOGRAM --}}
-        <section class="bg-white rounded-2xl lg:rounded-3xl border border-[#E5E7EB] p-6 lg:p-8 shadow-xs relative" aria-label="Monthly Sales Performance">
+        {{-- 3. MIDDLE MAIN SECTION: SALES PERFORMANCE & DYNAMIC HISTOGRAM / SPLINE CHART --}}
+        <section class="bg-white rounded-2xl lg:rounded-3xl border border-[#E5E7EB] p-6 lg:p-8 shadow-xs relative"
+                 aria-label="Sales Performance"
+                 x-data="{
+                     period: 'monthly',
+                     chartType: 'bar',
+                     hoveredBar: null,
+                     datasets: {
+                         weekly: @js($weeklyHistogram ?? []),
+                         monthly: @js($monthlyHistogram ?? []),
+                         yearly: @js($yearlyHistogram ?? [])
+                     },
+                     get currentData() {
+                         return this.datasets[this.period] || this.datasets.monthly || [];
+                     },
+                     get activeItem() {
+                         if (this.hoveredBar !== null && this.currentData[this.hoveredBar]) {
+                             return this.currentData[this.hoveredBar];
+                         }
+                         const found = this.currentData.find(d => d.is_active);
+                         return found || this.currentData[Math.floor(this.currentData.length / 2)] || this.currentData[0] || null;
+                     },
+                     get activeIndex() {
+                         if (this.hoveredBar !== null) return this.hoveredBar;
+                         const idx = this.currentData.findIndex(d => d.is_active);
+                         return idx !== -1 ? idx : Math.floor(this.currentData.length / 2);
+                     },
+                     get tooltipLeftPercent() {
+                         const n = this.currentData.length;
+                         if (n <= 1) return 50;
+                         return Math.min(95, Math.max(5, ((this.activeIndex + 0.5) / n) * 100));
+                     },
+                     get periodTotalFormatted() {
+                         const sum = this.currentData.reduce((acc, curr) => acc + (Number(curr.total) || 0), 0);
+                         return 'Rp ' + new Intl.NumberFormat('id-ID').format(sum);
+                     },
+                     get periodVolumeText() {
+                         const sum = this.currentData.reduce((acc, curr) => acc + (Number(curr.total) || 0), 0);
+                         const label = this.period === 'weekly' ? 'Weekly' : (this.period === 'yearly' ? 'Yearly' : 'Monthly');
+                         return new Intl.NumberFormat('id-ID').format(sum) + ' IDR · ' + label + ' Volume';
+                     },
+                     get splinePaths() {
+                         const data = this.currentData;
+                         if (!data || data.length === 0) return { line: '', area: '', points: [] };
+                         const width = 1000;
+                         const height = 240;
+                         const paddingX = 40;
+                         const paddingTop = 30;
+                         const paddingBottom = 40;
+                         const plotWidth = width - (paddingX * 2);
+                         const plotHeight = height - paddingTop - paddingBottom;
+                         const maxVal = Math.max(...data.map(d => d.total), 1);
+
+                         const pts = data.map((d, idx) => {
+                             const x = paddingX + (idx / Math.max(1, data.length - 1)) * plotWidth;
+                             const y = paddingTop + (1 - (d.total / maxVal)) * plotHeight;
+                             return { x, y, data: d, index: idx };
+                         });
+
+                         if (pts.length === 1) {
+                             return { line: `M ${pts[0].x} ${pts[0].y}`, area: '', points: pts };
+                         }
+
+                         let line = `M ${pts[0].x.toFixed(1)} ${pts[0].y.toFixed(1)}`;
+                         for (let i = 0; i < pts.length - 1; i++) {
+                             const p0 = i > 0 ? pts[i - 1] : pts[i];
+                             const p1 = pts[i];
+                             const p2 = pts[i + 1];
+                             const p3 = i + 2 < pts.length ? pts[i + 2] : p2;
+
+                             const cp1x = (p1.x + (p2.x - p0.x) / 6).toFixed(1);
+                             const cp1y = (p1.y + (p2.y - p0.y) / 6).toFixed(1);
+                             const cp2x = (p2.x - (p3.x - p1.x) / 6).toFixed(1);
+                             const cp2y = (p2.y - (p3.y - p1.y) / 6).toFixed(1);
+
+                             line += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+                         }
+
+                         const area = `${line} L ${pts[pts.length - 1].x.toFixed(1)} ${(height - paddingBottom).toFixed(1)} L ${pts[0].x.toFixed(1)} ${(height - paddingBottom).toFixed(1)} Z`;
+                         return { line, area, points: pts };
+                     }
+                 }">
             {{-- Header of Section --}}
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
                     <div class="text-xs lg:text-sm font-medium text-[#737373]">Sales Performance</div>
                     <div class="flex items-center gap-3 mt-1.5 flex-wrap">
-                        <div class="text-2xl lg:text-3xl font-extrabold text-[#171717] tracking-tight">
+                        <div class="text-2xl lg:text-3xl font-extrabold text-[#171717] tracking-tight" x-text="periodTotalFormatted">
                             Rp {{ number_format($totalEarnings, 0, ',', '.') }}
                         </div>
                         <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200">
                             <span class="material-symbols-rounded text-[15px]">trending_up</span> +1.9%
                         </span>
                     </div>
-                    <div class="text-xs text-[#737373] mt-1 font-mono">
+                    <div class="text-xs text-[#737373] mt-1 font-mono" x-text="periodVolumeText">
                         {{ number_format($totalEarnings, 0, ',', '.') }} IDR · Real-Time Volume
                     </div>
                 </div>
@@ -122,77 +181,137 @@
                 <div class="flex items-center gap-3 shrink-0">
                     {{-- Mini Chart Toggle Icons --}}
                     <div class="flex items-center gap-1 bg-[#F5F5F5] p-1 rounded-xl border border-[#E5E7EB]">
-                        <button type="button" class="w-8 h-8 rounded-lg bg-white text-[#171717] shadow-xs flex items-center justify-center cursor-pointer" title="Bar Chart">
+                        <button type="button"
+                            @click="chartType = 'bar'"
+                            :class="chartType === 'bar' ? 'bg-white text-[#171717] shadow-xs' : 'text-[#737373] hover:text-[#171717]'"
+                            class="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-all"
+                            title="Bar Chart" aria-label="Switch to Bar Chart">
                             <span class="material-symbols-rounded text-[18px]">bar_chart</span>
                         </button>
-                        <button type="button" class="w-8 h-8 rounded-lg text-[#737373] hover:text-[#171717] flex items-center justify-center cursor-pointer" title="Spline Chart">
+                        <button type="button"
+                            @click="chartType = 'spline'"
+                            :class="chartType === 'spline' ? 'bg-white text-[#171717] shadow-xs' : 'text-[#737373] hover:text-[#171717]'"
+                            class="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-all"
+                            title="Spline Chart" aria-label="Switch to Spline Chart">
                             <span class="material-symbols-rounded text-[18px]">show_chart</span>
                         </button>
                     </div>
 
                     {{-- Segmented Time Filter --}}
                     <div class="inline-flex items-center bg-[#F5F5F5] p-1 rounded-xl border border-[#E5E7EB] text-xs font-medium">
-                        <button type="button" class="px-3.5 py-1.5 rounded-lg bg-[#171717] text-white font-semibold shadow-xs">
+                        <button type="button"
+                            @click="period = 'monthly'; hoveredBar = null"
+                            :class="period === 'monthly' ? 'bg-[#171717] text-white font-semibold shadow-xs' : 'text-[#737373] hover:text-[#171717]'"
+                            class="px-3.5 py-1.5 rounded-lg transition-all cursor-pointer">
                             Monthly
                         </button>
-                        <button type="button" class="px-3 py-1.5 rounded-lg text-[#737373] hover:text-[#171717] transition-colors">
+                        <button type="button"
+                            @click="period = 'weekly'; hoveredBar = null"
+                            :class="period === 'weekly' ? 'bg-[#171717] text-white font-semibold shadow-xs' : 'text-[#737373] hover:text-[#171717]'"
+                            class="px-3 py-1.5 rounded-lg transition-all cursor-pointer">
                             Weekly
                         </button>
-                        <button type="button" class="px-3 py-1.5 rounded-lg text-[#737373] hover:text-[#171717] transition-colors">
+                        <button type="button"
+                            @click="period = 'yearly'; hoveredBar = null"
+                            :class="period === 'yearly' ? 'bg-[#171717] text-white font-semibold shadow-xs' : 'text-[#737373] hover:text-[#171717]'"
+                            class="px-3 py-1.5 rounded-lg transition-all cursor-pointer">
                             Yearly
                         </button>
                     </div>
                 </div>
             </div>
 
-            {{-- 31-Day Bar Histogram Chart --}}
+            {{-- Responsive Chart Area --}}
             <div class="relative w-full pt-16 pb-2 overflow-x-auto scrollbar-hide">
-                {{-- Floating Tooltip Speech Bubble (Directly above active day) --}}
-                @php
-                    $activeColIndex = array_search($activeDay, array_column($monthlyHistogram, 'day'));
-                    if ($activeColIndex === false) { $activeColIndex = 16; }
-                    $tooltipLeftPercent = (($activeColIndex + 0.5) / 31) * 100;
-                @endphp
+                {{-- Floating Tooltip Speech Bubble (Directly above active day/item) --}}
                 <div class="absolute top-1 -translate-x-1/2 pointer-events-none transition-all duration-200 z-10 hidden sm:block"
-                     style="left: {{ $tooltipLeftPercent }}%;">
+                     :style="`left: ${tooltipLeftPercent}%;`">
                     <div class="bg-white text-[#171717] border border-[#171717] rounded-xl px-3.5 py-2 shadow-xl text-center whitespace-nowrap">
-                        <div class="text-[11px] font-semibold text-[#525252]">{{ $activeDayDate }}</div>
-                        <div class="text-xs font-bold text-[#171717] mt-0.5">Revenue {{ $activeDayFormatted }}</div>
+                        <div class="text-[11px] font-semibold text-[#525252]" x-text="activeItem?.date || ''"></div>
+                        <div class="text-xs font-bold text-[#171717] mt-0.5">Revenue <span x-text="activeItem?.formatted || ''"></span></div>
                     </div>
                     {{-- Triangle Indicator --}}
                     <div class="w-0 h-0 border-x-[6px] border-x-transparent border-t-[7px] border-t-[#171717] mx-auto"></div>
                 </div>
 
-                {{-- 31 Bars Grid --}}
-                <div class="items-end h-56 lg:h-64 min-w-[680px]"
-                     style="display: grid; grid-template-columns: repeat(31, minmax(0, 1fr)); gap: 6px;">
-                    @foreach($monthlyHistogram as $bar)
-                        <div class="flex flex-col items-center h-full justify-end group cursor-pointer relative"
-                             title="Day {{ $bar['day'] }}: {{ $bar['formatted'] }} ({{ $bar['count'] }} transactions)">
-                            
-                            {{-- Hover Tooltip for inactive bars --}}
-                            @if(!$bar['is_active'])
-                                <div class="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center -translate-x-1/2 left-1/2 pointer-events-none z-20 whitespace-nowrap bg-[#171717] text-white text-[10px] rounded-lg px-2 py-1 shadow-lg">
-                                    <span>Day {{ $bar['day'] }}: {{ $bar['formatted'] }}</span>
+                {{-- MODE 1: BAR CHART HISTOGRAM --}}
+                <div x-show="chartType === 'bar'" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
+                    <div class="items-end h-56 lg:h-64 min-w-[680px]"
+                         :style="`display: grid; grid-template-columns: repeat(${currentData.length}, minmax(0, 1fr)); gap: ${period === 'monthly' ? '6px' : (period === 'weekly' ? '24px' : '14px')};`">
+                        <template x-for="(bar, idx) in currentData" :key="idx">
+                            <div class="flex flex-col items-center h-full justify-end group cursor-pointer relative"
+                                 @mouseenter="hoveredBar = idx"
+                                 @mouseleave="hoveredBar = null"
+                                 :title="`${bar.label}: ${bar.formatted} (${bar.count} tx)`">
+                                
+                                {{-- Bar Element --}}
+                                <div class="w-full rounded-t-[4px] transition-all duration-200 group-hover:opacity-80"
+                                     :style="`height: ${bar.height}%; ${ (activeIndex === idx) ? 'background: repeating-linear-gradient(45deg, #171717, #171717 3px, #ffffff 3px, #ffffff 6px); border: 1.5px solid #171717;' : 'background-color: #171717;' }`">
                                 </div>
-                            @endif
-
-                            {{-- The Bar --}}
-                            <div class="w-full rounded-t-[4px] transition-all duration-200 group-hover:opacity-80"
-                                 style="height: {{ $bar['height'] }}%; {{ $bar['is_active'] ? 'background: repeating-linear-gradient(45deg, #171717, #171717 3px, #ffffff 3px, #ffffff 6px); border: 1.5px solid #171717;' : 'background-color: #171717;' }}">
                             </div>
-                        </div>
-                    @endforeach
+                        </template>
+                    </div>
+
+                    {{-- X-Axis Labels --}}
+                    <div class="mt-2 min-w-[680px] border-t border-[#F0F0F0] pt-2"
+                         :style="`display: grid; grid-template-columns: repeat(${currentData.length}, minmax(0, 1fr)); gap: ${period === 'monthly' ? '6px' : (period === 'weekly' ? '24px' : '14px')};`">
+                        <template x-for="(bar, idx) in currentData" :key="idx">
+                            <div class="text-center text-[10px] truncate"
+                                 :class="activeIndex === idx ? 'font-bold text-[#171717]' : 'text-[#737373]'"
+                                 x-text="bar.label">
+                            </div>
+                        </template>
+                    </div>
                 </div>
 
-                {{-- X-Axis Labels 1 to 31 --}}
-                <div class="mt-2 min-w-[680px] border-t border-[#F0F0F0] pt-2"
-                     style="display: grid; grid-template-columns: repeat(31, minmax(0, 1fr)); gap: 6px;">
-                    @foreach($monthlyHistogram as $bar)
-                        <div class="text-center text-[10px] {{ $bar['is_active'] ? 'font-bold text-[#171717]' : 'text-[#737373]' }}">
-                            {{ $bar['day'] }}
-                        </div>
-                    @endforeach
+                {{-- MODE 2: SPLINE CHART (Curved Vector SVG) --}}
+                <div x-show="chartType === 'spline'" x-cloak x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="min-w-[680px]">
+                    <div class="h-56 lg:h-64 w-full relative">
+                        <svg class="w-full h-full overflow-visible" viewBox="0 0 1000 240" preserveAspectRatio="none">
+                            <defs>
+                                <linearGradient id="dashboardSplineGrad" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stop-color="#171717" stop-opacity="0.18"></stop>
+                                    <stop offset="100%" stop-color="#171717" stop-opacity="0.00"></stop>
+                                </linearGradient>
+                            </defs>
+
+                            {{-- Horizontal Grid Guidelines --}}
+                            <line x1="40" y1="30" x2="960" y2="30" stroke="#F0F0F0" stroke-dasharray="3 3" />
+                            <line x1="40" y1="100" x2="960" y2="100" stroke="#F0F0F0" stroke-dasharray="3 3" />
+                            <line x1="40" y1="170" x2="960" y2="170" stroke="#F0F0F0" stroke-dasharray="3 3" />
+                            <line x1="40" y1="200" x2="960" y2="200" stroke="#E5E7EB" stroke-width="1" />
+
+                            {{-- Spline Area Fill --}}
+                            <path :d="splinePaths.area" fill="url(#dashboardSplineGrad)"></path>
+
+                            {{-- Spline Line Stroke --}}
+                            <path :d="splinePaths.line" fill="none" stroke="#171717" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+
+                            {{-- Interactive Data Dots --}}
+                            <template x-for="(pt, idx) in splinePaths.points" :key="idx">
+                                <g @mouseenter="hoveredBar = idx" @mouseleave="hoveredBar = null" class="cursor-pointer">
+                                    <circle :cx="pt.x" :cy="pt.y" r="14" fill="transparent" />
+                                    <circle :cx="pt.x" :cy="pt.y"
+                                            :r="activeIndex === idx ? 5 : 3"
+                                            :fill="activeIndex === idx ? '#171717' : '#ffffff'"
+                                            stroke="#171717"
+                                            :stroke-width="activeIndex === idx ? 2.5 : 1.5"
+                                            class="transition-all duration-150" />
+                                </g>
+                            </template>
+                        </svg>
+                    </div>
+
+                    {{-- X-Axis Labels for Spline --}}
+                    <div class="mt-2 min-w-[680px] border-t border-[#F0F0F0] pt-2"
+                         :style="`display: flex; justify-content: space-between; padding-left: 20px; padding-right: 20px;`">
+                        <template x-for="(bar, idx) in currentData" :key="idx">
+                            <div class="text-center text-[10px]"
+                                 :class="activeIndex === idx ? 'font-bold text-[#171717]' : 'text-[#737373]'"
+                                 x-text="bar.label">
+                            </div>
+                        </template>
+                    </div>
                 </div>
             </div>
         </section>
