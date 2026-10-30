@@ -13,6 +13,7 @@ use App\Services\Context\TenantContext;
 use Exception;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -20,10 +21,13 @@ class ReturnCreditNoteManager extends Component
 {
     use WithPagination;
 
+    #[Url(history: true)]
     public string $activeTab = 'credit_notes'; // 'returns' | 'credit_notes'
 
+    #[Url(history: true)]
     public string $search = '';
 
+    #[Url(history: true)]
     public string $statusFilter = '';
 
     // Apply modal state

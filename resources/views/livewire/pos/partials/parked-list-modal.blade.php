@@ -3,7 +3,7 @@
     <x-slot:header>
         <div class="flex items-center gap-2">
             <span class="material-symbols-rounded text-apeiron-ink text-[22px]">inbox</span>
-            <span class="text-base font-bold">Keranjang Tertunda</span>
+            <span class="text-base font-bold">Parked Carts</span>
             <span class="bg-gray-100 text-gray-700 text-xs px-2 py-0.5 rounded-full font-bold">
                 {{ $this->parkedCarts->count() }}
             </span>
@@ -12,7 +12,7 @@
 
     <div class="space-y-3">
         <p class="text-xs text-gray-500 mb-2">
-            Daftar pesanan pelanggan yang sedang ditahan di cabang aktif ini.
+            List of customer orders currently on hold at this branch.
         </p>
 
         <div class="space-y-2.5 max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
@@ -34,7 +34,7 @@
                                 : ($pc->created_at ? ($pc->created_at->format('H:i') . ' (' . $pc->created_at->diffForHumans() . ')') : '-');
                         @endphp
                         <p class="text-[11px] text-gray-500 mt-1">
-                            {{ $pCount }} item &bull; Ditahan {{ $parkedTime }}
+                            {{ $pCount }} {{ \Illuminate\Support\Str::plural('item', $pCount) }} &bull; Held {{ $parkedTime }}
                         </p>
                         @if($pc->notes)
                             <p class="text-[11px] text-gray-400 italic mt-0.5">{{ $pc->notes }}</p>
@@ -44,10 +44,10 @@
                     <div class="flex items-center gap-1.5 shrink-0">
                         <button type="button" wire:click="resumeCart({{ $pc->id }})"
                             class="px-3 py-1.5 rounded-lg bg-apeiron-ink text-white text-xs font-bold hover:bg-[#111111] shadow-sm flex items-center gap-1 active:scale-95 transition-all">
-                            <span class="material-symbols-rounded text-[15px]">play_arrow</span> Lanjutkan
+                            <span class="material-symbols-rounded text-[15px]">play_arrow</span> Resume
                         </button>
                         <button type="button" wire:click="discardHeldCart({{ $pc->id }})"
-                            class="p-1.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 active:scale-95 transition-all" title="Hapus Keranjang">
+                            class="p-1.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100 active:scale-95 transition-all" title="Discard Cart">
                             <span class="material-symbols-rounded text-[16px]">delete</span>
                         </button>
                     </div>
@@ -55,7 +55,7 @@
             @empty
                 <div class="py-10 text-center text-gray-400">
                     <span class="material-symbols-rounded text-[36px] text-gray-300 mb-2 block">inbox</span>
-                    <p class="text-xs font-semibold">Tidak ada keranjang tertunda saat ini.</p>
+                    <p class="text-xs font-semibold">No parked carts at this time.</p>
                 </div>
             @endforelse
         </div>
@@ -65,7 +65,7 @@
         <div class="flex justify-end w-full">
             <button type="button" wire:click="$set('isParkedListOpen', false)"
                 class="px-4 py-2 rounded-xl border border-[#E5E7EB] text-xs font-semibold text-gray-600 hover:bg-gray-100 transition-colors">
-                Tutup
+                Close
             </button>
         </div>
     </x-slot:footer>

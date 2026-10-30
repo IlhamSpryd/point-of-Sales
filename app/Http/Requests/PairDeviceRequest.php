@@ -25,8 +25,8 @@ class PairDeviceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'pairing_token.required' => 'Kode pairing wajib diisi.',
-            'device_fingerprint.required' => 'Fingerprint perangkat fisik tidak terdeteksi.',
+            'pairing_token.required' => 'Pairing code is required.',
+            'device_fingerprint.required' => 'Physical device fingerprint could not be detected.',
         ];
     }
 }

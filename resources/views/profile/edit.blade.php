@@ -1,8 +1,8 @@
 <x-app-layout>
     <div class="flex items-center justify-between mb-6">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Profil</h4>
-            <p class="text-sm font-medium text-[#787774] mt-1">Kelola pengaturan dan preferensi akun Anda</p>
+            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Profile</h4>
+            <p class="text-sm font-medium text-[#787774] mt-1">Manage your account settings, security, and preferences.</p>
         </div>
     </div>
 

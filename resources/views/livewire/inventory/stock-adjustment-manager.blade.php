@@ -1,21 +1,21 @@
 <div data-gsap="page-enter">
     @include('inventory.partials.sub-nav')
-    {{-- Header & Aksi Utama --}}
+    {{-- Header & Primary Action --}}
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Penyesuaian Stok (Stock Adjustment)</h4>
+            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Stock Adjustments</h4>
             <p class="text-sm font-medium text-apeiron-muted mt-1">
-                Koreksi stok langsung terstruktur: Kerusakan (Damage), Kedaluwarsa (Expired), Susut (Shrinkage), & Limbah Produksi
+                Direct structured stock corrections: damage, expiration, shrinkage, and production waste.
             </p>
         </div>
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
             <x-ui.button type="button" variant="primary" wire:click="openCreateModal" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                <span class="material-symbols-rounded text-[18px]">add</span> Buat Penyesuaian Baru
+                <span class="material-symbols-rounded text-[18px]">add</span> New Stock Adjustment
             </x-ui.button>
         </div>
     </div>
 
-    {{-- Alert Notifikasi --}}
+    {{-- Notification Alert --}}
     @if (session()->has('message'))
         <x-ui.alert variant="success" class="mb-4">
             {{ session('message') }}
@@ -31,7 +31,7 @@
     {{-- Filter & Search Bar --}}
     <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
         <div class="relative w-full sm:w-80">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nomor penyesuaian, catatan..."
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search adjustment number, notes..."
                    class="form-input w-full pl-10 pr-4 py-2 rounded-2xl border border-apeiron-border bg-white text-apeiron-ink placeholder-apeiron-muted focus:outline-none focus:ring-2 focus:ring-apeiron-ink shadow-sm text-sm">
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-apeiron-muted">
                 <span class="material-symbols-rounded text-[18px]">search</span>
@@ -42,10 +42,10 @@
             <div class="relative w-full sm:w-44">
                 <select wire:model.live="statusFilter"
                         class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-apeiron-border bg-white text-apeiron-ink focus:outline-none focus:ring-2 focus:ring-apeiron-ink text-sm shadow-sm appearance-none">
-                    <option value="ALL">Semua Status</option>
+                    <option value="ALL">All Statuses</option>
                     <option value="DRAFT">Draft</option>
-                    <option value="POSTED">Sudah Diposting</option>
-                    <option value="CANCELLED">Dibatalkan</option>
+                    <option value="POSTED">Posted</option>
+                    <option value="CANCELLED">Cancelled</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-apeiron-muted">
                     <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
@@ -55,7 +55,7 @@
             <div class="relative w-full sm:w-52">
                 <select wire:model.live="reasonFilter"
                         class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-apeiron-border bg-white text-apeiron-ink focus:outline-none focus:ring-2 focus:ring-apeiron-ink text-sm shadow-sm appearance-none">
-                    <option value="ALL">Semua Alasan</option>
+                    <option value="ALL">All Reasons</option>
                     @foreach ($reasons as $r)
                         <option value="{{ $r->value }}">{{ $r->label() }}</option>
                     @endforeach
@@ -67,25 +67,25 @@
         </div>
     </div>
 
-    {{-- Tabel Stock Adjustments --}}
+    {{-- Stock Adjustments Table --}}
     <div class="card-surface overflow-hidden w-full shrink-0">
         <div class="overflow-x-auto">
             <x-data-table>
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">No. Dokumen</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Waktu Penyesuaian</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Alasan (Reason Code)</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Adjustment #</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Adjustment Date</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Reason Code</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-center">Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Total Item</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Total Nilai</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-center">Aksi</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Items</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Total Value</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-center">Actions</th>
                 </x-slot:head>
 
                 @forelse ($adjustments as $adjustment)
                     <tr class="hover:bg-apeiron-surface transition-colors duration-150">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="text-sm font-bold text-apeiron-ink">{{ $adjustment->adjustment_number }}</span>
-                            <div class="text-xs text-apeiron-muted">Dibuat: {{ $adjustment->creator->name ?? 'System' }}</div>
+                            <div class="text-xs text-apeiron-muted">Created by: {{ $adjustment->creator->name ?? 'System' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-apeiron-ink">
                             {{ $adjustment->adjusted_at->format('d M Y H:i') }}
@@ -99,21 +99,21 @@
                             </x-ui.badge>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-apeiron-ink">
-                            {{ $adjustment->items->count() }} item
+                            {{ $adjustment->items->count() }} items
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-apeiron-ink">
                             Rp {{ number_format((float) $adjustment->calculateTotalValue(), 2, ',', '.') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
-                            <button wire:click="viewDetails({{ $adjustment->id }})" class="text-apeiron-ink hover:text-apeiron-muted transition-colors" title="Lihat Detail">
+                            <button wire:click="viewDetails({{ $adjustment->id }})" class="text-apeiron-ink hover:text-apeiron-muted transition-colors" title="View Details">
                                 <span class="material-symbols-rounded text-[18px]">visibility</span>
                             </button>
 
                             @if($adjustment->isDraft())
-                                <button wire:click="post({{ $adjustment->id }})" wire:confirm="Posting penyesuaian stok ini ke saldo cabang?" class="text-emerald-600 hover:text-emerald-800 transition-colors" title="Posting ke Stok">
+                                <button wire:click="post({{ $adjustment->id }})" wire:confirm="Post this stock adjustment to branch balance?" class="text-emerald-600 hover:text-emerald-800 transition-colors" title="Post to Stock">
                                     <span class="material-symbols-rounded text-[18px]">task_alt</span>
                                 </button>
-                                <button wire:click="cancel({{ $adjustment->id }})" wire:confirm="Batalkan draft penyesuaian stok ini?" class="text-rose-500 hover:text-rose-700 transition-colors" title="Batalkan">
+                                <button wire:click="cancel({{ $adjustment->id }})" wire:confirm="Cancel this draft stock adjustment?" class="text-rose-500 hover:text-rose-700 transition-colors" title="Cancel">
                                     <span class="material-symbols-rounded text-[18px]">cancel</span>
                                 </button>
                             @endif
@@ -122,7 +122,7 @@
                 @empty
                     <tr>
                         <td colspan="7" class="px-6 py-8 text-center text-sm text-apeiron-muted">
-                            Belum ada dokumen penyesuaian stok yang tercatat.
+                            No stock adjustment documents recorded.
                         </td>
                     </tr>
                 @endforelse
@@ -135,18 +135,18 @@
         @endif
     </div>
 
-    {{-- Modal Buat / Edit Draft --}}
+    {{-- Create / Edit Draft Modal --}}
     <x-ui.modal wire:model="showFormModal" maxWidth="4xl">
         <x-slot:header>
             <h3 class="text-lg font-bold text-apeiron-ink">
-                {{ $isEditing ? 'Edit Draft Penyesuaian Stok' : 'Buat Penyesuaian Stok Baru' }}
+                {{ $isEditing ? 'Edit Stock Adjustment Draft' : 'New Stock Adjustment' }}
             </h3>
         </x-slot:header>
         <x-slot:content>
             <div class="py-2 space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-apeiron-muted mb-1">Kode Alasan (Reason Code) *</label>
+                        <label class="block text-xs font-semibold text-apeiron-muted mb-1">Reason Code *</label>
                         <select wire:model.live="reason_code"
                                 class="form-input w-full px-3 py-2 rounded-xl border border-apeiron-border text-sm">
                             @foreach ($reasons as $r)
@@ -155,24 +155,24 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-apeiron-muted mb-1">Waktu Penyesuaian *</label>
+                        <label class="block text-xs font-semibold text-apeiron-muted mb-1">Adjustment Date & Time *</label>
                         <input type="datetime-local" wire:model="adjusted_at"
-                               class="form-input w-full px-3 py-2 rounded-xl border border-apeiron-border text-sm">
+                                class="form-input w-full px-3 py-2 rounded-xl border border-apeiron-border text-sm">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-apeiron-muted mb-1">Catatan Dokumen</label>
-                    <textarea wire:model="notes" rows="2" placeholder="Catatan atau keterangan penyesuaian..."
+                    <label class="block text-xs font-semibold text-apeiron-muted mb-1">Notes</label>
+                    <textarea wire:model="notes" rows="2" placeholder="Adjustment notes or remarks..."
                               class="form-input w-full px-3 py-2 rounded-xl border border-apeiron-border text-sm"></textarea>
                 </div>
 
-                {{-- Daftar Baris Item --}}
+                {{-- Item Lines --}}
                 <div class="pt-2">
                     <div class="flex items-center justify-between mb-2">
-                        <h5 class="text-sm font-bold text-apeiron-ink">Daftar Item Disesuaikan</h5>
+                        <h5 class="text-sm font-bold text-apeiron-ink">Adjustment Line Items</h5>
                         <button type="button" wire:click="addItemLine" class="text-xs font-semibold text-emerald-600 hover:text-emerald-800 flex items-center gap-1">
-                            <span class="material-symbols-rounded text-[16px]">add_circle</span> Tambah Baris
+                            <span class="material-symbols-rounded text-[16px]">add_circle</span> Add Line
                         </button>
                     </div>
 
@@ -182,22 +182,22 @@
                                 <div class="grid grid-cols-12 gap-2 items-center">
                                     <div class="col-span-12 sm:col-span-2">
                                         <select wire:model.live="items.{{ $index }}.item_type" class="w-full text-xs py-1.5 px-2 rounded-lg border border-apeiron-border bg-white">
-                                            <option value="product">Produk</option>
-                                            <option value="ingredient">Bahan Baku</option>
+                                            <option value="product">Product</option>
+                                            <option value="ingredient">Raw Material</option>
                                         </select>
                                     </div>
 
                                     <div class="col-span-12 sm:col-span-4">
                                         @if ($item['item_type'] === 'product')
                                             <select wire:model="items.{{ $index }}.product_id" class="w-full text-xs py-1.5 px-2 rounded-lg border border-apeiron-border bg-white">
-                                                <option value="">Pilih Produk...</option>
+                                                <option value="">Select Product...</option>
                                                 @foreach ($products as $prod)
                                                     <option value="{{ $prod->id }}">{{ $prod->product_name }} ({{ $prod->product_code ?: 'No Code' }})</option>
                                                 @endforeach
                                             </select>
                                         @else
                                             <select wire:model="items.{{ $index }}.ingredient_id" class="w-full text-xs py-1.5 px-2 rounded-lg border border-apeiron-border bg-white">
-                                                <option value="">Pilih Bahan Baku...</option>
+                                                <option value="">Select Raw Material...</option>
                                                 @foreach ($ingredients as $ing)
                                                     <option value="{{ $ing->id }}">{{ $ing->name }} ({{ $ing->unit }})</option>
                                                 @endforeach
@@ -207,13 +207,13 @@
 
                                     <div class="col-span-6 sm:col-span-2">
                                         <select wire:model="items.{{ $index }}.direction" class="w-full text-xs py-1.5 px-2 rounded-lg border border-apeiron-border bg-white font-semibold">
-                                            <option value="OUT">Keluar (OUT)</option>
-                                            <option value="IN">Masuk (IN)</option>
+                                            <option value="OUT">Outflow (OUT)</option>
+                                            <option value="IN">Inflow (IN)</option>
                                         </select>
                                     </div>
 
                                     <div class="col-span-6 sm:col-span-3">
-                                        <input type="number" step="0.0001" min="0.0001" wire:model="items.{{ $index }}.quantity" placeholder="Qty" title="Kuantitas"
+                                        <input type="number" step="0.0001" min="0.0001" wire:model="items.{{ $index }}.quantity" placeholder="Qty" title="Quantity"
                                                class="w-full text-xs py-1.5 px-2 rounded-lg border border-apeiron-border bg-white text-right font-medium">
                                     </div>
 
@@ -226,11 +226,11 @@
 
                                 <div class="grid grid-cols-12 gap-2 text-xs">
                                     <div class="col-span-12 sm:col-span-6">
-                                        <input type="text" wire:model="items.{{ $index }}.reason_note" placeholder="Catatan spesifik baris (opsional)"
+                                        <input type="text" wire:model="items.{{ $index }}.reason_note" placeholder="Line note (optional)"
                                                class="w-full text-xs py-1 px-2 rounded-lg border border-apeiron-border bg-white placeholder-slate-400">
                                     </div>
                                     <div class="col-span-12 sm:col-span-6">
-                                        <input type="number" step="0.0001" min="0" wire:model="items.{{ $index }}.unit_cost_snapshot" placeholder="Biaya satuan snapshot (0 = otomatis WAC)"
+                                        <input type="number" step="0.0001" min="0" wire:model="items.{{ $index }}.unit_cost_snapshot" placeholder="Unit cost snapshot (0 = auto WAC)"
                                                class="w-full text-xs py-1 px-2 rounded-lg border border-apeiron-border bg-white text-right text-slate-700">
                                     </div>
                                 </div>
@@ -242,22 +242,22 @@
 
             <div class="pt-4 border-t border-apeiron-border flex items-center justify-end gap-3">
                 <x-ui.button type="button" variant="secondary" wire:click="$set('showFormModal', false)">
-                    Batal
+                    Cancel
                 </x-ui.button>
                 <x-ui.button type="button" variant="primary" wire:click="saveDraft" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                    Simpan Draft
+                    Save Draft
                 </x-ui.button>
             </div>
         </x-slot:content>
     </x-ui.modal>
 
-    {{-- Modal Detail Penyesuaian --}}
+    {{-- Adjustment Details Modal --}}
     <x-ui.modal wire:model="showDetailModal" maxWidth="4xl">
         <x-slot:header>
             @if ($selectedAdjustment)
                 <div>
-                    <h3 class="text-lg font-bold text-apeiron-ink">Detail Penyesuaian: {{ $selectedAdjustment->adjustment_number }}</h3>
-                    <p class="text-xs text-apeiron-muted">Cabang: {{ $selectedAdjustment->store->name ?? '-' }} | Dibuat: {{ $selectedAdjustment->created_at->format('d M Y H:i') }}</p>
+                    <h3 class="text-lg font-bold text-apeiron-ink">Adjustment Details: {{ $selectedAdjustment->adjustment_number }}</h3>
+                    <p class="text-xs text-apeiron-muted">Branch: {{ $selectedAdjustment->store->name ?? '-' }} | Created: {{ $selectedAdjustment->created_at->format('d M Y H:i') }}</p>
                 </div>
             @endif
         </x-slot:header>
@@ -272,37 +272,37 @@
                             </x-ui.badge>
                         </div>
                         <div>
-                            <span class="text-apeiron-muted block">Kode Alasan:</span>
+                            <span class="text-apeiron-muted block">Reason Code:</span>
                             <span class="font-semibold text-apeiron-ink">{{ $selectedAdjustment->reason_code->label() }}</span>
                         </div>
                         <div>
-                            <span class="text-apeiron-muted block">Waktu Penyesuaian:</span>
+                            <span class="text-apeiron-muted block">Adjustment Date:</span>
                             <span class="font-semibold text-apeiron-ink">{{ $selectedAdjustment->adjusted_at->format('d M Y H:i') }}</span>
                         </div>
                         <div>
-                            <span class="text-apeiron-muted block">Diposting Oleh:</span>
+                            <span class="text-apeiron-muted block">Posted By:</span>
                             <span class="font-semibold text-apeiron-ink">{{ $selectedAdjustment->poster->name ?? '-' }}</span>
                         </div>
                     </div>
 
                     @if($selectedAdjustment->notes)
                         <div class="text-xs text-apeiron-ink p-3 rounded-xl bg-slate-50 border border-apeiron-border">
-                            <span class="font-semibold block text-apeiron-muted">Catatan:</span>
+                            <span class="font-semibold block text-apeiron-muted">Notes:</span>
                             {{ $selectedAdjustment->notes }}
                         </div>
                     @endif
 
                     <div class="overflow-x-auto border border-apeiron-border rounded-2xl">
-                        <table class="min-w-full divide-y divide-apeiron-border text-xs">
+                        <table class="table-standard min-w-full divide-y divide-apeiron-border text-xs">
                             <thead class="bg-slate-50 text-apeiron-muted uppercase">
                                 <tr>
-                                    <th class="px-4 py-3 text-left">Tipe</th>
-                                    <th class="px-4 py-3 text-left">Nama Item</th>
-                                    <th class="px-4 py-3 text-center">Arah</th>
-                                    <th class="px-4 py-3 text-right">Kuantitas</th>
-                                    <th class="px-4 py-3 text-right">Biaya Satuan</th>
+                                    <th class="px-4 py-3 text-left">Type</th>
+                                    <th class="px-4 py-3 text-left">Item Name</th>
+                                    <th class="px-4 py-3 text-center">Direction</th>
+                                    <th class="px-4 py-3 text-right">Quantity</th>
+                                    <th class="px-4 py-3 text-right">Unit Cost</th>
                                     <th class="px-4 py-3 text-right">Subtotal</th>
-                                    <th class="px-4 py-3 text-left">Keterangan</th>
+                                    <th class="px-4 py-3 text-left">Notes</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-apeiron-border">
@@ -313,17 +313,17 @@
                                         <td class="px-4 py-2 text-center font-bold {{ $item->direction === 'IN' ? 'text-emerald-600' : 'text-rose-600' }}">
                                             {{ $item->direction }}
                                         </td>
-                                        <td class="px-4 py-2 text-right font-medium">{{ number_format((float) $item->quantity, 4) }}</td>
-                                        <td class="px-4 py-2 text-right font-medium">Rp {{ number_format((float) $item->unit_cost_snapshot, 2, ',', '.') }}</td>
-                                        <td class="px-4 py-2 text-right font-bold text-apeiron-ink">Rp {{ number_format((float) $item->subtotal, 2, ',', '.') }}</td>
+                                        <td class="px-4 py-2 text-right font-medium tabular-nums">{{ number_format((float) $item->quantity, 4) }}</td>
+                                        <td class="px-4 py-2 text-right font-medium tabular-nums">Rp {{ number_format((float) $item->unit_cost_snapshot, 2, ',', '.') }}</td>
+                                        <td class="px-4 py-2 text-right font-bold text-apeiron-ink tabular-nums">Rp {{ number_format((float) $item->subtotal, 2, ',', '.') }}</td>
                                         <td class="px-4 py-2 text-apeiron-muted">{{ $item->reason_note ?: '-' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                             <tfoot class="bg-slate-50 font-bold">
                                 <tr>
-                                    <td colspan="5" class="px-4 py-3 text-right text-apeiron-ink uppercase">Total Nilai Penyesuaian:</td>
-                                    <td class="px-4 py-3 text-right text-apeiron-ink">Rp {{ number_format((float) $selectedAdjustment->calculateTotalValue(), 2, ',', '.') }}</td>
+                                    <td colspan="5" class="px-4 py-3 text-right text-apeiron-ink uppercase">Total Adjustment Value:</td>
+                                    <td class="px-4 py-3 text-right text-apeiron-ink tabular-nums">Rp {{ number_format((float) $selectedAdjustment->calculateTotalValue(), 2, ',', '.') }}</td>
                                     <td></td>
                                 </tr>
                             </tfoot>
@@ -333,7 +333,7 @@
 
                 <div class="pt-4 border-t border-apeiron-border flex justify-end">
                     <x-ui.button type="button" variant="secondary" wire:click="$set('showDetailModal', false)">
-                        Tutup
+                        Close
                     </x-ui.button>
                 </div>
             @endif

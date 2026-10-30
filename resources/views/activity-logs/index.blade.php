@@ -1,31 +1,31 @@
 <x-app-layout>
     <div class="space-y-6" data-gsap="page-enter">
         <x-erp.page-header
-            title="Log Aktivitas & Audit Keamanan"
-            description="Lacak dan pantau semua aktivitas pengguna, otentikasi, dan perubahan data di sistem ERP multi-tenant Anda.">
+            title="Activity Logs &amp; Security Audit"
+            description="Track and monitor all user activity, authentication events, and data changes across your enterprise system.">
             <x-slot:breadcrumbs>
                 <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
-                <x-ui.breadcrumbs.item active>Audit Log</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item active>Audit Logs</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>
         </x-erp.page-header>
 
         <div class="card-surface rounded-xl border border-[#E5E7EB] dark:border-zinc-800 shadow-xs overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-sm">
+                <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="border-b border-[#E5E7EB] dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                            <th class="px-6 py-4">Waktu</th>
-                            <th class="px-6 py-4">Pengguna</th>
-                            <th class="px-6 py-4">Aktivitas</th>
-                            <th class="px-6 py-4">Deskripsi</th>
-                            <th class="px-6 py-4">IP / Perangkat</th>
+                            <th class="px-6 py-4">Timestamp</th>
+                            <th class="px-6 py-4">User</th>
+                            <th class="px-6 py-4">Action</th>
+                            <th class="px-6 py-4">Description</th>
+                            <th class="px-6 py-4">IP / Device</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800/70">
                         @forelse ($logs as $log)
                             <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="font-medium text-zinc-900 dark:text-white text-xs">{{ $log->created_at->format('d M Y') }}</div>
+                                    <div class="font-medium text-zinc-900 dark:text-white text-xs">{{ $log->created_at->format('M d, Y') }}</div>
                                     <div class="text-[11px] text-zinc-400 font-mono">{{ $log->created_at->format('H:i:s') }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -57,7 +57,7 @@
                             <tr>
                                 <td colspan="5" class="px-6 py-12 text-center text-zinc-400 text-sm">
                                     <span class="material-symbols-rounded text-4xl mb-2 block">manage_search</span>
-                                    Belum ada catatan aktivitas sistem.
+                                    No activity logs recorded yet.
                                 </td>
                             </tr>
                         @endforelse

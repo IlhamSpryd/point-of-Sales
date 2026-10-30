@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Services;
 
+use App\Enums\LoyaltyLedgerTypeEnum;
 use App\Enums\ReturnDispositionEnum;
 use App\Enums\StockMovementType;
 use App\Models\CashDrawerMovement;
@@ -20,8 +21,12 @@ use App\Models\Shift;
 use App\Models\StockBalance;
 use App\Models\StockMovement;
 use App\Models\User;
-use App\Modules\Customers\Models\Customer;
+use App\Models\Customer;
 use App\Modules\Customers\Models\CustomerCreditAccount;
+use App\Modules\Customers\Services\GiftCardService;
+use App\Modules\Customers\Services\LoyaltyService;
+use App\Modules\Customers\Services\StoreCreditService;
+use App\Modules\Customers\Services\VoucherService;
 use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
 use App\Modules\Purchasing\Services\DocumentSequenceService;
 use App\Modules\Sales\Enums\ArLedgerEntryTypeEnum;
@@ -122,6 +127,7 @@ class ReturnRefundService
                 $shiftId,
                 $deviceId,
                 $actorUserId,
+                $actorUser,
                 $approvedByUserId,
                 $reason,
                 $idempotencyKey
@@ -459,6 +465,43 @@ class ReturnRefundService
                         $cashDrawerMovementId = $cdm->id;
                     }
 
+                    // AC-3.3b: Refund ke Store Credit (Tender / Reversal)
+                    if ($targetMethod === 'store_credit' || $targetMethod === \App\Enums\PaymentMethod::StoreCredit->value) {
+                        $cust = Customer::withoutGlobalScopes()->find($lockedOrder->customer_id);
+                        if (! $cust) {
+                            throw new DomainException('Pelanggan harus terdaftar untuk dapat menerima refund ke Store Credit.');
+                        }
+                        app(StoreCreditService::class)->issueStoreCredit(
+                            customer: $cust,
+                            amount: (string) $amount,
+                            entryType: \App\Modules\Customers\Enums\StoreCreditLedgerTypeEnum::REVERSAL,
+                            storeId: (int) $lockedOrder->store_id,
+                            referenceType: 'ORDER_RETURN',
+                            referenceId: (int) $orderReturn->id,
+                            actor: $actorUser,
+                            idempotencyKey: "sc_refund:{$orderReturn->id}:{$i}"
+                        );
+                    }
+
+                    // AC-3.3c: Refund ke Gift Card (Tender / Reversal)
+                    if ($targetMethod === 'gift_card' || $targetMethod === \App\Enums\PaymentMethod::GiftCard->value) {
+                        $cardNumber = $payment->reference_number;
+                        if (! $cardNumber && ! empty($vAlloc['card_number'])) {
+                            $cardNumber = $vAlloc['card_number'];
+                        }
+                        if ($cardNumber) {
+                            app(GiftCardService::class)->refundToGiftCard(
+                                cardNumber: $cardNumber,
+                                amount: (string) $amount,
+                                storeId: (int) $lockedOrder->store_id,
+                                referenceType: 'ORDER_RETURN',
+                                referenceId: (int) $orderReturn->id,
+                                actor: $actorUser,
+                                idempotencyKey: "gc_refund:{$orderReturn->id}:{$i}"
+                            );
+                        }
+                    }
+
                     PaymentRefund::forceCreate([
                         'tenant_id' => $lockedOrder->tenant_id,
                         'store_id' => $lockedOrder->store_id,
@@ -485,6 +528,66 @@ class ReturnRefundService
                         'approved_by_user_id' => $approvedByUserId,
                         'settled_at' => now(),
                     ]);
+                }
+
+                // 9. Pembalikan Poin Loyalitas Proporsional (ADR-010, FASE 11)
+                if ($lockedOrder->customer_id) {
+                    $earnedPoints = (int) DB::table('loyalty_ledger')
+                        ->where('order_id', $lockedOrder->id)
+                        ->where('type', LoyaltyLedgerTypeEnum::Earn->value)
+                        ->sum('points');
+
+                    if ($earnedPoints > 0) {
+                        $alreadyReversed = (int) abs(DB::table('loyalty_ledger')
+                            ->where('order_id', $lockedOrder->id)
+                            ->where('type', LoyaltyLedgerTypeEnum::Reversal->value)
+                            ->sum('points'));
+
+                        $remainingEarned = max(0, $earnedPoints - $alreadyReversed);
+
+                        if ($remainingEarned > 0) {
+                            $customer = Customer::withoutGlobalScopes()->find($lockedOrder->customer_id);
+                            if ($customer) {
+                                $pointsToReverse = 0;
+                                if ($returnType === OrderReturn::TYPE_FULL) {
+                                    $pointsToReverse = $remainingEarned;
+                                } else {
+                                    $originalDpp = (float) ($lockedOrder->dpp_amount > 0 ? $lockedOrder->dpp_amount : ($lockedOrder->subtotal_amount - $lockedOrder->discount_amount));
+                                    if ($originalDpp <= 0) {
+                                        $originalDpp = (float) max(1.0, $lockedOrder->order_amount);
+                                    }
+                                    $refundDpp = (float) ($subtotalReturned - (float) ($orderReturn->discount_reversed ?? 0));
+                                    $ratio = min(1.0, max(0.0, $refundDpp / $originalDpp));
+                                    $pointsToReverse = (int) round($earnedPoints * $ratio);
+                                    $pointsToReverse = min($pointsToReverse, $remainingEarned);
+                                }
+
+                                if ($pointsToReverse > 0) {
+                                    try {
+                                        app(LoyaltyService::class)->reversePoints(
+                                            customer: $customer,
+                                            points: $pointsToReverse,
+                                            orderId: (int) $lockedOrder->id,
+                                            reason: "Pembalikan poin proporsional atas Retur #{$returnNumber}",
+                                            actor: $actorUser,
+                                            idempotencyKey: "ret_loyalty:{$orderReturn->id}"
+                                        );
+                                    } catch (\Throwable $e) {
+                                        Log::warning("[LOYALTY REVERSAL] Gagal membalikkan poin retur #{$orderReturn->id}: {$e->getMessage()}");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 10. Pemulihan Voucher (Hanya jika Full Refund 100% dan Belum Expired) (ADR-010, FASE 11)
+                if ($returnType === OrderReturn::TYPE_FULL) {
+                    try {
+                        app(VoucherService::class)->restoreVoucherForOrder((int) $lockedOrder->id);
+                    } catch (\Throwable $e) {
+                        Log::warning("[VOUCHER RESTORE] Gagal memulihkan voucher retur #{$orderReturn->id}: {$e->getMessage()}");
+                    }
                 }
 
                 // AC-3.4: Baris orders dan payments ASLI TIDAK diubah nilai nominalnya

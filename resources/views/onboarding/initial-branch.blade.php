@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Step 2 of 2: Initial Branch — Apeiron</title>
-    <link rel="icon" href="{{ asset('assets/images/logo.png') }}" type="image/png">
+    <x-favicon />
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="h-full font-sans antialiased text-slate-800 bg-slate-50 min-h-screen lg:h-screen lg:overflow-hidden flex flex-col justify-between">

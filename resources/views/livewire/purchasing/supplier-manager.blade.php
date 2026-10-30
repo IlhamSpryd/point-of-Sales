@@ -3,12 +3,12 @@
 
     <!-- Header -->
     <x-erp.page-header
-        title="Data Induk Pemasok"
-        description="Kelola data vendor pengadaan, kontak narahubung, dan katalog harga item bahan baku serta produk ritel.">
+        title="Suppliers"
+        description="Manage vendor profiles, contact persons, and item pricing catalogs for raw materials and retail products.">
         <x-slot:actions>
             @can('create', \App\Models\Supplier::class)
             <x-ui.button wire:click="create" wire:loading.attr="disabled" icon="add_business" variant="primary">
-                Tambah Pemasok
+                Add Supplier
             </x-ui.button>
             @endcan
         </x-slot:actions>
@@ -33,16 +33,16 @@
             <x-ui.input
                 type="text"
                 wire:model.live.debounce.300ms="search"
-                placeholder="Cari nama, kode, email, atau telepon..."
+                placeholder="Search name, code, email, or phone..."
                 icon="search" />
         </div>
         <div class="flex items-center gap-3">
             <x-ui.select wire:model.live="statusFilter">
-                <option value="">Semua Status</option>
-                <option value="active">Aktif</option>
-                <option value="on_hold">Ditahan (On Hold)</option>
-                <option value="inactive">Non-Aktif</option>
-                <option value="archived">Diarsipkan</option>
+                <option value="">All Statuses</option>
+                <option value="active">Active</option>
+                <option value="on_hold">On Hold</option>
+                <option value="inactive">Inactive</option>
+                <option value="archived">Archived</option>
             </x-ui.select>
         </div>
     </div>
@@ -50,15 +50,15 @@
     <!-- Data Table -->
     <div class="card-surface rounded-2xl overflow-hidden border border-[#E5E7EB] dark:border-zinc-800 shadow-sm">
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
+            <table class="table-standard min-w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
                 <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-xs font-semibold uppercase text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
                     <tr>
-                        <th class="px-6 py-4">Kode & Nama</th>
-                        <th class="px-6 py-4">Kontak Utama</th>
-                        <th class="px-6 py-4">Termin Bayar</th>
-                        <th class="px-6 py-4 text-center">Katalog Item</th>
+                        <th class="px-6 py-4">Code & Name</th>
+                        <th class="px-6 py-4">Primary Contact</th>
+                        <th class="px-6 py-4">Payment Terms</th>
+                        <th class="px-6 py-4 text-center">Item Catalog</th>
                         <th class="px-6 py-4 text-center">Status</th>
-                        <th class="px-6 py-4 text-right">Aksi</th>
+                        <th class="px-6 py-4 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -68,7 +68,7 @@
                             <div class="font-bold text-zinc-900 dark:text-white">{{ $supplier->name }}</div>
                             <div class="text-xs text-zinc-500 font-mono">{{ $supplier->code }}</div>
                             @if($supplier->tax_id)
-                                <div class="text-[11px] text-zinc-400 mt-0.5">NPWP: {{ $supplier->tax_id }}</div>
+                                <div class="text-[11px] text-zinc-400 mt-0.5">Tax ID: {{ $supplier->tax_id }}</div>
                             @endif
                         </td>
                         <td class="px-6 py-4">
@@ -78,17 +78,17 @@
                             @elseif($supplier->email || $supplier->phone)
                                 <div class="text-xs text-zinc-500">{{ $supplier->phone ?: $supplier->email }}</div>
                             @else
-                                <span class="text-xs text-zinc-400 italic">Belum ada kontak</span>
+                                <span class="text-xs text-zinc-400 italic">No contact recorded</span>
                             @endif
                         </td>
                         <td class="px-6 py-4">
-                            <span class="font-medium text-zinc-800 dark:text-zinc-200">{{ $supplier->payment_terms_days }} Hari</span>
+                            <span class="font-medium text-zinc-800 dark:text-zinc-200 tabular-nums">{{ $supplier->payment_terms_days }} Days</span>
                             <span class="text-xs text-zinc-400 ml-1">({{ $supplier->currency_code }})</span>
                         </td>
                         <td class="px-6 py-4 text-center">
                             <button wire:click="openCatalog({{ $supplier->id }})" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-colors">
                                 <span class="material-symbols-rounded text-sm">inventory_2</span>
-                                {{ $supplier->supplier_products_count }} Item
+                                <span class="tabular-nums">{{ $supplier->supplier_products_count }}</span> Items
                             </button>
                         </td>
                         <td class="px-6 py-4 text-center">
@@ -111,8 +111,8 @@
                                     size="icon"
                                     variant="ghost"
                                     wire:click="openContacts({{ $supplier->id }})"
-                                    title="Kelola Kontak Narahubung"
-                                    aria-label="Kontak">
+                                    title="Manage Contacts"
+                                    aria-label="Contacts">
                                     <span class="material-symbols-rounded text-base text-zinc-600 dark:text-zinc-400">contacts</span>
                                 </x-ui.button>
                                 @can('update', $supplier)
@@ -120,7 +120,7 @@
                                     size="icon"
                                     variant="ghost"
                                     wire:click="edit({{ $supplier->id }})"
-                                    title="Ubah Data Pemasok"
+                                    title="Edit Supplier"
                                     aria-label="Edit">
                                     <span class="material-symbols-rounded text-base text-zinc-600 dark:text-zinc-400">edit</span>
                                 </x-ui.button>
@@ -130,9 +130,9 @@
                                     size="icon"
                                     variant="ghost"
                                     wire:click="delete({{ $supplier->id }})"
-                                    wire:confirm="Yakin ingin menghapus pemasok ini? Seluruh data katalog terkait akan dinonaktifkan."
-                                    title="Hapus Pemasok"
-                                    aria-label="Hapus">
+                                    wire:confirm="Delete this supplier? All associated catalog entries will be disabled."
+                                    title="Delete Supplier"
+                                    aria-label="Delete">
                                     <span class="material-symbols-rounded text-base text-rose-500">delete</span>
                                 </x-ui.button>
                                 @endcan
@@ -144,8 +144,8 @@
                         <td colspan="6" class="px-6 py-12 text-center">
                             <div class="flex flex-col items-center justify-center">
                                 <span class="material-symbols-rounded text-5xl text-zinc-300 dark:text-zinc-700">store_mall_directory</span>
-                                <h3 class="mt-2 text-sm font-semibold text-zinc-900 dark:text-white">Tidak ada data pemasok</h3>
-                                <p class="mt-1 text-xs text-zinc-500">Mulai dengan menambahkan pemasok baru untuk pengadaan barang.</p>
+                                <h3 class="mt-2 text-sm font-semibold text-zinc-900 dark:text-white">No suppliers found</h3>
+                                <p class="mt-1 text-xs text-zinc-500">Get started by adding a new supplier for procurement.</p>
                             </div>
                         </td>
                     </tr>
@@ -164,32 +164,32 @@
     <!-- Modal Form Pemasok -->
     <x-ui.modal wire:model="showModal" maxWidth="2xl">
         <x-slot:title>
-            {{ $isEditing ? 'Ubah Data Pemasok' : 'Tambah Pemasok Baru' }}
+            {{ $isEditing ? 'Edit Supplier' : 'Add New Supplier' }}
         </x-slot:title>
 
         <x-slot:content>
             <form id="supplierForm" wire:submit="saveSupplier" class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <x-ui.label for="code">Kode Pemasok (Opsional)</x-ui.label>
-                        <x-ui.input type="text" id="code" wire:model="code" placeholder="Otomatis jika dikosongkan" />
+                        <x-ui.label for="code">Supplier Code (Optional)</x-ui.label>
+                        <x-ui.input type="text" id="code" wire:model="code" placeholder="Auto-generated if blank" />
                         <x-input-error :messages="$errors->get('code')" class="mt-1" />
                     </div>
                     <div>
-                        <x-ui.label for="name">Nama Pemasok *</x-ui.label>
-                        <x-ui.input type="text" id="name" wire:model="name" required placeholder="PT Sumber Pangan" />
+                        <x-ui.label for="name">Supplier Name *</x-ui.label>
+                        <x-ui.input type="text" id="name" wire:model="name" required placeholder="Acme Supplies" />
                         <x-input-error :messages="$errors->get('name')" class="mt-1" />
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <x-ui.label for="email">Email Perusahaan</x-ui.label>
+                        <x-ui.label for="email">Company Email</x-ui.label>
                         <x-ui.input type="email" id="email" wire:model="email" placeholder="sales@vendor.com" />
                         <x-input-error :messages="$errors->get('email')" class="mt-1" />
                     </div>
                     <div>
-                        <x-ui.label for="phone">Nomor Telepon</x-ui.label>
+                        <x-ui.label for="phone">Phone Number</x-ui.label>
                         <x-ui.input type="text" id="phone" wire:model="phone" placeholder="021-5551234" />
                         <x-input-error :messages="$errors->get('phone')" class="mt-1" />
                     </div>
@@ -197,36 +197,36 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <x-ui.label for="tax_id">NPWP / Tax ID</x-ui.label>
+                        <x-ui.label for="tax_id">Tax ID</x-ui.label>
                         <x-ui.input type="text" id="tax_id" wire:model="tax_id" placeholder="01.234.567.8-901.000" />
                         <x-input-error :messages="$errors->get('tax_id')" class="mt-1" />
                     </div>
                     <div>
-                        <x-ui.label for="payment_terms_days">Termin Bayar (Hari)</x-ui.label>
+                        <x-ui.label for="payment_terms_days">Payment Terms (Days)</x-ui.label>
                         <x-ui.input type="number" id="payment_terms_days" min="0" wire:model="payment_terms_days" />
                         <x-input-error :messages="$errors->get('payment_terms_days')" class="mt-1" />
                     </div>
                     <div>
-                        <x-ui.label for="status">Status Pemasok</x-ui.label>
+                        <x-ui.label for="status">Supplier Status</x-ui.label>
                         <x-ui.select id="status" wire:model="status">
-                            <option value="active">Aktif</option>
-                            <option value="on_hold">Ditahan (On Hold)</option>
-                            <option value="inactive">Non-Aktif</option>
-                            <option value="archived">Diarsipkan</option>
+                            <option value="active">Active</option>
+                            <option value="on_hold">On Hold</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="archived">Archived</option>
                         </x-ui.select>
                         <x-input-error :messages="$errors->get('status')" class="mt-1" />
                     </div>
                 </div>
 
                 <div>
-                    <x-ui.label for="address">Alamat Lengkap</x-ui.label>
-                    <textarea id="address" wire:model="address" rows="2" placeholder="Alamat kantor / gudang supplier..." class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-apeiron-ink/20 focus:border-apeiron-ink"></textarea>
+                    <x-ui.label for="address">Address</x-ui.label>
+                    <textarea id="address" wire:model="address" rows="2" placeholder="Office or warehouse address..." class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-apeiron-ink/20 focus:border-apeiron-ink"></textarea>
                     <x-input-error :messages="$errors->get('address')" class="mt-1" />
                 </div>
 
                 <div>
-                    <x-ui.label for="notes">Catatan Tambahan</x-ui.label>
-                    <textarea id="notes" wire:model="notes" rows="2" placeholder="Keterangan khusus, syarat garansi, dsb..." class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-apeiron-ink/20 focus:border-apeiron-ink"></textarea>
+                    <x-ui.label for="notes">Additional Notes</x-ui.label>
+                    <textarea id="notes" wire:model="notes" rows="2" placeholder="Special terms, warranty conditions, notes..." class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-apeiron-ink/20 focus:border-apeiron-ink"></textarea>
                     <x-input-error :messages="$errors->get('notes')" class="mt-1" />
                 </div>
             </form>
@@ -234,10 +234,10 @@
 
         <x-slot:footer>
             <div class="flex items-center justify-end gap-3">
-                <x-ui.button type="button" variant="secondary" wire:click="$set('showModal', false)">Batal</x-ui.button>
+                <x-ui.button type="button" variant="secondary" wire:click="$set('showModal', false)">Cancel</x-ui.button>
                 <x-ui.button type="submit" form="supplierForm" variant="primary" wire:loading.attr="disabled">
-                    <span wire:loading.remove>Simpan</span>
-                    <span wire:loading>Menyimpan...</span>
+                    <span wire:loading.remove>Save</span>
+                    <span wire:loading>Saving...</span>
                 </x-ui.button>
             </div>
         </x-slot:footer>
@@ -247,9 +247,9 @@
     <x-ui.modal wire:model="showContactModal" maxWidth="2xl">
         <x-slot:title>
             <div>
-                <span>Kontak Narahubung</span>
+                <span>Supplier Contacts</span>
                 @if($activeSupplierName)
-                    <p class="text-xs text-zinc-500 mt-0.5">Pemasok: {{ $activeSupplierName }}</p>
+                    <p class="text-xs text-zinc-500 mt-0.5">Supplier: {{ $activeSupplierName }}</p>
                 @endif
             </div>
         </x-slot:title>
@@ -266,12 +266,12 @@
                 <form wire:submit="saveContact" class="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 space-y-3 border border-zinc-200 dark:border-zinc-800">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                            <x-ui.label for="contactName">Nama Narahubung *</x-ui.label>
-                            <x-ui.input type="text" id="contactName" wire:model="contactName" required placeholder="Bpk. Budi Santoso" />
+                            <x-ui.label for="contactName">Contact Name *</x-ui.label>
+                            <x-ui.input type="text" id="contactName" wire:model="contactName" required placeholder="e.g. John Doe" />
                             <x-input-error :messages="$errors->get('contactName')" class="mt-1" />
                         </div>
                         <div>
-                            <x-ui.label for="contactTitle">Jabatan / Divisi</x-ui.label>
+                            <x-ui.label for="contactTitle">Job Title / Department</x-ui.label>
                             <x-ui.input type="text" id="contactTitle" wire:model="contactTitle" placeholder="Sales Executive" />
                         </div>
                     </div>
@@ -282,25 +282,25 @@
                             <x-ui.input type="email" id="contactEmail" wire:model="contactEmail" placeholder="budi@vendor.com" />
                         </div>
                         <div>
-                            <x-ui.label for="contactPhone">Nomor WhatsApp / HP</x-ui.label>
+                            <x-ui.label for="contactPhone">Phone / Mobile</x-ui.label>
                             <x-ui.input type="text" id="contactPhone" wire:model="contactPhone" placeholder="08123456789" />
                         </div>
                     </div>
 
                     <div class="flex items-center gap-2">
                         <input type="checkbox" id="contactIsPrimary" wire:model="contactIsPrimary" class="rounded border-zinc-300 dark:border-zinc-700 text-zinc-900 shadow-xs focus:ring-2 focus:ring-zinc-900/20">
-                        <label for="contactIsPrimary" class="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Jadikan Kontak Utama</label>
+                        <label for="contactIsPrimary" class="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Set as Primary Contact</label>
                     </div>
 
                     <div class="flex justify-end gap-2 pt-2">
                         <x-ui.button type="button" variant="secondary" wire:click="resetContactForm">Reset</x-ui.button>
-                        <x-ui.button type="submit" variant="primary">Simpan Kontak</x-ui.button>
+                        <x-ui.button type="submit" variant="primary">Save Contact</x-ui.button>
                     </div>
                 </form>
 
                 <!-- Daftar Kontak Saat Ini -->
                 <div class="space-y-2 mt-4">
-                    <h4 class="text-xs font-bold uppercase text-zinc-400">Daftar Kontak</h4>
+                    <h4 class="text-xs font-bold uppercase text-zinc-400">Contact List</h4>
                     <div class="divide-y divide-zinc-200 dark:divide-zinc-800 max-h-56 overflow-y-auto">
                         @forelse($activeContacts as $contact)
                         <div class="py-2.5 flex items-center justify-between">
@@ -308,7 +308,7 @@
                                 <div class="font-medium text-sm text-zinc-900 dark:text-white flex items-center gap-2">
                                     {{ $contact->name }}
                                     @if($contact->is_primary)
-                                        <x-ui.badge variant="success">Utama</x-ui.badge>
+                                        <x-ui.badge variant="success">Primary</x-ui.badge>
                                     @endif
                                     @if($contact->title)
                                         <span class="text-xs text-zinc-400">({{ $contact->title }})</span>
@@ -320,13 +320,13 @@
                                 <x-ui.button size="icon" variant="ghost" wire:click="editContact({{ $contact->id }})" aria-label="Edit">
                                     <span class="material-symbols-rounded text-sm">edit</span>
                                 </x-ui.button>
-                                <x-ui.button size="icon" variant="ghost" wire:click="deleteContact({{ $contact->id }})" aria-label="Hapus">
+                                <x-ui.button size="icon" variant="ghost" wire:click="deleteContact({{ $contact->id }})" aria-label="Delete">
                                     <span class="material-symbols-rounded text-sm text-rose-500">delete</span>
                                 </x-ui.button>
                             </div>
                         </div>
                         @empty
-                        <p class="text-xs text-zinc-400 py-3 text-center">Belum ada narahubung yang terdaftar.</p>
+                        <p class="text-xs text-zinc-400 py-3 text-center">No contacts registered yet.</p>
                         @endforelse
                     </div>
                 </div>
@@ -335,7 +335,7 @@
 
         <x-slot:footer>
             <div class="flex justify-end">
-                <x-ui.button type="button" variant="secondary" wire:click="$set('showContactModal', false)">Tutup</x-ui.button>
+                <x-ui.button type="button" variant="secondary" wire:click="$set('showContactModal', false)">Close</x-ui.button>
             </div>
         </x-slot:footer>
     </x-ui.modal>
@@ -344,9 +344,9 @@
     <x-ui.modal wire:model="showCatalogModal" maxWidth="3xl">
         <x-slot:title>
             <div>
-                <span>Katalog Produk & Harga Pemasok</span>
+                <span>Supplier Item & Price Catalog</span>
                 @if($activeSupplierName)
-                    <p class="text-xs text-zinc-500 mt-0.5">Pemasok: {{ $activeSupplierName }}</p>
+                    <p class="text-xs text-zinc-500 mt-0.5">Supplier: {{ $activeSupplierName }}</p>
                 @endif
             </div>
         </x-slot:title>
@@ -363,23 +363,23 @@
                 <form wire:submit="saveCatalogItem" class="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 space-y-3 border border-zinc-200 dark:border-zinc-800">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div>
-                            <x-ui.label for="catalogPurchasableType">Tipe Item *</x-ui.label>
+                            <x-ui.label for="catalogPurchasableType">Item Type *</x-ui.label>
                             <x-ui.select id="catalogPurchasableType" wire:model.live="catalogPurchasableType">
-                                <option value="product">Produk Ritel (M3)</option>
-                                <option value="ingredient">Bahan Baku (M4)</option>
+                                <option value="product">Retail Product (Catalog)</option>
+                                <option value="ingredient">Raw Material (Inventory)</option>
                             </x-ui.select>
                         </div>
                         <div class="md:col-span-2">
-                            <x-ui.label for="catalogPurchasableId">Pilih Item Master *</x-ui.label>
+                            <x-ui.label for="catalogPurchasableId">Select Master Item *</x-ui.label>
                             <x-ui.select id="catalogPurchasableId" wire:model="catalogPurchasableId" required>
-                                <option value="">-- Pilih Item --</option>
+                                <option value="">-- Select Item --</option>
                                 @if($catalogPurchasableType === 'product')
                                     @foreach($availableProducts as $prod)
                                         <option value="{{ $prod->id }}">{{ $prod->name }} (SKU: {{ $prod->sku }})</option>
                                     @endforeach
                                 @else
                                     @foreach($availableIngredients as $ing)
-                                        <option value="{{ $ing->id }}">{{ $ing->name }} (Satuan: {{ $ing->unit }})</option>
+                                        <option value="{{ $ing->id }}">{{ $ing->name }} (Unit: {{ $ing->unit }})</option>
                                     @endforeach
                                 @endif
                             </x-ui.select>
@@ -389,26 +389,26 @@
 
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                         <div>
-                            <x-ui.label for="catalogSupplierSku">SKU Pemasok</x-ui.label>
+                            <x-ui.label for="catalogSupplierSku">Supplier SKU</x-ui.label>
                             <x-ui.input type="text" id="catalogSupplierSku" wire:model="catalogSupplierSku" placeholder="VND-1002" />
                         </div>
                         <div>
-                            <x-ui.label for="catalogPurchaseUom">Satuan Beli *</x-ui.label>
-                            <x-ui.input type="text" id="catalogPurchaseUom" wire:model="catalogPurchaseUom" required placeholder="DUS, CARTON" />
+                            <x-ui.label for="catalogPurchaseUom">Purchase UOM *</x-ui.label>
+                            <x-ui.input type="text" id="catalogPurchaseUom" wire:model="catalogPurchaseUom" required placeholder="BOX, CARTON" />
                         </div>
                         <div>
-                            <x-ui.label for="catalogConversionFactor">Faktor Konversi *</x-ui.label>
+                            <x-ui.label for="catalogConversionFactor">Conversion Factor *</x-ui.label>
                             <x-ui.input type="number" step="0.000001" min="0.000001" id="catalogConversionFactor" wire:model="catalogConversionFactor" required />
                         </div>
                         <div>
-                            <x-ui.label for="catalogStandardPrice">Harga Standar (Rp) *</x-ui.label>
+                            <x-ui.label for="catalogStandardPrice">Standard Purchase Price (Rp) *</x-ui.label>
                             <x-ui.input type="number" step="0.01" min="0" id="catalogStandardPrice" wire:model="catalogStandardPrice" required />
                         </div>
                     </div>
 
                     <div class="grid grid-cols-3 gap-3">
                         <div>
-                            <x-ui.label for="catalogLeadTimeDays">Lead Time (Hari)</x-ui.label>
+                            <x-ui.label for="catalogLeadTimeDays">Lead Time (Days)</x-ui.label>
                             <x-ui.input type="number" min="0" id="catalogLeadTimeDays" wire:model="catalogLeadTimeDays" />
                         </div>
                         <div>
@@ -416,7 +416,7 @@
                             <x-ui.input type="number" step="0.0001" min="0.0001" id="catalogMinOrderQty" wire:model="catalogMinOrderQty" />
                         </div>
                         <div>
-                            <x-ui.label for="catalogOrderMultipleQty">Kelipatan Order</x-ui.label>
+                            <x-ui.label for="catalogOrderMultipleQty">Order Multiple</x-ui.label>
                             <x-ui.input type="number" step="0.0001" min="0.0001" id="catalogOrderMultipleQty" wire:model="catalogOrderMultipleQty" />
                         </div>
                     </div>
@@ -424,23 +424,23 @@
                     <div class="flex items-center gap-4">
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input type="checkbox" wire:model="catalogIsPreferred" class="rounded border-zinc-300 dark:border-zinc-700 text-zinc-900 shadow-xs focus:ring-2 focus:ring-zinc-900/20">
-                            <span class="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Pemasok Utama (Preferred)</span>
+                            <span class="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Preferred Supplier</span>
                         </label>
                         <label class="flex items-center gap-2 cursor-pointer">
                             <input type="checkbox" wire:model="catalogIsActive" class="rounded border-zinc-300 dark:border-zinc-700 text-zinc-900 shadow-xs focus:ring-2 focus:ring-zinc-900/20">
-                            <span class="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Aktif</span>
+                            <span class="text-xs text-zinc-700 dark:text-zinc-300 font-medium">Active</span>
                         </label>
                     </div>
 
                     <div class="flex justify-end gap-2 pt-2">
                         <x-ui.button type="button" variant="secondary" wire:click="resetCatalogForm">Reset</x-ui.button>
-                        <x-ui.button type="submit" variant="primary">Simpan Item Katalog</x-ui.button>
+                        <x-ui.button type="submit" variant="primary">Save Catalog Item</x-ui.button>
                     </div>
                 </form>
 
                 <!-- Tabel Katalog Saat Ini -->
                 <div class="space-y-2 mt-4">
-                    <h4 class="text-xs font-bold uppercase text-zinc-400">Daftar Item Terdaftar</h4>
+                    <h4 class="text-xs font-bold uppercase text-zinc-400">Registered Catalog Items</h4>
                     <div class="divide-y divide-zinc-200 dark:divide-zinc-800 max-h-56 overflow-y-auto">
                         @forelse($activeCatalogItems as $item)
                         <div class="py-2.5 flex items-center justify-between text-xs">
@@ -453,17 +453,17 @@
                                     @endif
                                 </div>
                                 <div class="text-zinc-500 mt-0.5">
-                                    Satuan: <span class="font-semibold text-zinc-700 dark:text-zinc-300">{{ $item->purchase_uom }}</span> (x{{ (float) $item->uom_conversion_factor }}) &bull;
-                                    Harga: <span class="font-semibold text-zinc-700 dark:text-zinc-300">Rp {{ number_format((float) $item->standard_price, 2) }}</span> &bull;
-                                    Lead Time: {{ $item->lead_time_days }} hari
+                                    UOM: <span class="font-semibold text-zinc-700 dark:text-zinc-300">{{ $item->purchase_uom }}</span> (x{{ (float) $item->uom_conversion_factor }}) &bull;
+                                    Price: <span class="font-semibold text-zinc-700 dark:text-zinc-300">Rp {{ number_format((float) $item->standard_price, 2) }}</span> &bull;
+                                    Lead Time: {{ $item->lead_time_days }} days
                                 </div>
                             </div>
-                            <x-ui.button size="icon" variant="ghost" wire:click="deleteCatalogItem({{ $item->id }})" aria-label="Hapus">
+                            <x-ui.button size="icon" variant="ghost" wire:click="deleteCatalogItem({{ $item->id }})" aria-label="Delete">
                                 <span class="material-symbols-rounded text-sm text-rose-500">delete</span>
                             </x-ui.button>
                         </div>
                         @empty
-                        <p class="text-xs text-zinc-400 py-3 text-center">Belum ada item dalam katalog pemasok ini.</p>
+                        <p class="text-xs text-zinc-400 py-3 text-center">No items in this supplier's catalog.</p>
                         @endforelse
                     </div>
                 </div>
@@ -472,7 +472,7 @@
 
         <x-slot:footer>
             <div class="flex justify-end">
-                <x-ui.button type="button" variant="secondary" wire:click="$set('showCatalogModal', false)">Tutup</x-ui.button>
+                <x-ui.button type="button" variant="secondary" wire:click="$set('showCatalogModal', false)">Close</x-ui.button>
             </div>
         </x-slot:footer>
     </x-ui.modal>

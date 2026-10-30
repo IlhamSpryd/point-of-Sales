@@ -1,11 +1,11 @@
 <section>
     <header>
         <h2 class="text-lg font-bold text-apeiron-ink">
-            {{ __('Autentikasi Dua Faktor (2FA / TOTP)') }}
+            {{ __('Two-Factor Authentication (2FA / TOTP)') }}
         </h2>
 
         <p class="mt-1 text-sm text-[#787774]">
-            {{ __('Tambahkan lapisan keamanan ekstra ke akun Anda menggunakan aplikasi authenticator standar (Google Authenticator, Microsoft Authenticator, atau 1Password).') }}
+            {{ __('Add an extra layer of security to your account using standard authenticator apps (Google Authenticator, Microsoft Authenticator, or 1Password).') }}
         </p>
     </header>
 
@@ -26,28 +26,28 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <h3 class="text-sm font-semibold text-emerald-950">{{ __('2FA Sedang Aktif') }}</h3>
+                            <h3 class="text-sm font-semibold text-emerald-950">{{ __('2FA is Active') }}</h3>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-100 text-emerald-800">
-                                {{ __('Dilindungi') }}
+                                {{ __('Protected') }}
                             </span>
                         </div>
                         <p class="text-xs text-emerald-700 mt-0.5">
-                            {{ __('Diaktifkan pada :time', ['time' => $user->two_factor_confirmed_at?->translatedFormat('d M Y H:i') ?? '-']) }}
+                            {{ __('Enabled on :time', ['time' => $user->two_factor_confirmed_at?->format('M d, Y H:i') ?? '-']) }}
                         </p>
                     </div>
                 </div>
 
                 <div>
                     <!-- Form Disable 2FA -->
-                    <form method="POST" action="{{ route('two-factor.disable') }}" onsubmit="return confirm('Apakah Anda yakin ingin menonaktifkan autentikasi dua faktor?');" class="flex items-center gap-2">
+                    <form method="POST" action="{{ route('two-factor.disable') }}" onsubmit="return confirm('Are you sure you want to disable two-factor authentication?');" class="flex items-center gap-2">
                         @csrf
                         @method('DELETE')
                         @if (! empty($user->password_hash) || ! empty($user->password))
-                            <input type="password" name="password" placeholder="Kata sandi konfirmasi" required class="text-xs px-3 py-1.5 rounded-lg border border-zinc-300 focus:ring-1 focus:ring-apeiron-primary">
+                            <input type="password" name="password" placeholder="Confirm password" required class="text-xs px-3 py-1.5 rounded-lg border border-zinc-300 focus:ring-1 focus:ring-apeiron-primary">
                         @endif
                         <button type="submit" id="btn-disable-2fa" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors cursor-pointer">
                             <span class="material-symbols-rounded text-sm">lock_open</span>
-                            <span>{{ __('Nonaktifkan 2FA') }}</span>
+                            <span>{{ __('Disable 2FA') }}</span>
                         </button>
                     </form>
                 </div>
@@ -57,9 +57,9 @@
                 <div class="flex items-start gap-3">
                     <span class="material-symbols-rounded text-amber-600 mt-0.5">qr_code_scanner</span>
                     <div>
-                        <h3 class="text-sm font-semibold text-amber-950">{{ __('Langkah 1: Hubungkan Aplikasi Authenticator') }}</h3>
+                        <h3 class="text-sm font-semibold text-amber-950">{{ __('Step 1: Connect Authenticator App') }}</h3>
                         <p class="text-xs text-amber-800 mt-1">
-                            {{ __('Pindai URI di bawah menggunakan aplikasi authenticator Anda, atau masukkan kunci manual.') }}
+                            {{ __('Scan the URI below with your authenticator app, or enter the manual secret key.') }}
                         </p>
                     </div>
                 </div>
@@ -71,25 +71,25 @@
 
                 @if (! empty($sessionRecoveryCodes))
                     <div class="mt-4">
-                        <h4 class="text-xs font-semibold text-amber-950 mb-2">{{ __('Simpan Kode Pemulihan Darurat Ini:') }}</h4>
+                        <h4 class="text-xs font-semibold text-amber-950 mb-2">{{ __('Store These Emergency Recovery Codes:') }}</h4>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white p-3 rounded-lg border border-amber-200">
                             @foreach ($sessionRecoveryCodes as $code)
                                 <code class="text-xs font-mono font-bold text-zinc-700 bg-zinc-50 px-2 py-1 rounded text-center">{{ $code }}</code>
                             @endforeach
                         </div>
                         <p class="text-[11px] text-amber-700 mt-1.5">
-                            {{ __('Simpan kode-kode ini di tempat yang aman. Setiap kode hanya dapat dipakai satu kali jika Anda kehilangan akses ke aplikasi authenticator.') }}
+                            {{ __('Store these recovery codes in a secure location. Each code can only be used once if you lose access to your authenticator device.') }}
                         </p>
                     </div>
                 @endif
 
                 <div class="pt-4 border-t border-amber-200">
-                    <h3 class="text-sm font-semibold text-amber-950 mb-2">{{ __('Langkah 2: Konfirmasi Kode 6-Digit') }}</h3>
+                    <h3 class="text-sm font-semibold text-amber-950 mb-2">{{ __('Step 2: Confirm 6-Digit Code') }}</h3>
                     <form method="POST" action="{{ route('two-factor.confirm') }}" class="flex flex-col sm:flex-row gap-3">
                         @csrf
                         <input type="text" name="code" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" placeholder="123456" required class="w-full sm:w-48 text-center tracking-widest text-base font-mono px-3 py-2 rounded-lg border border-zinc-300 focus:ring-2 focus:ring-apeiron-primary">
                         <button type="submit" id="btn-confirm-2fa" class="px-4 py-2 bg-apeiron-primary text-white text-xs font-semibold rounded-lg hover:bg-apeiron-primary-dark transition-all cursor-pointer">
-                            {{ __('Konfirmasi & Aktifkan 2FA') }}
+                            {{ __('Confirm & Enable 2FA') }}
                         </button>
                     </form>
                     @error('code')
@@ -105,13 +105,13 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <h3 class="text-sm font-semibold text-zinc-900">{{ __('Autentikasi Dua Faktor Belum Aktif') }}</h3>
+                            <h3 class="text-sm font-semibold text-zinc-900">{{ __('Two-Factor Authentication Not Enabled') }}</h3>
                             <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-600 border border-zinc-200">
-                                {{ __('Nonaktif') }}
+                                {{ __('Disabled') }}
                             </span>
                         </div>
                         <p class="text-xs text-zinc-500 mt-0.5">
-                            {{ __('Tingkatkan keamanan akun bisnis Anda dari pengambilalihan tidak sah.') }}
+                            {{ __('Protect your business account from unauthorized takeovers.') }}
                         </p>
                     </div>
                 </div>
@@ -120,7 +120,7 @@
                     @csrf
                     <button type="submit" id="btn-enable-2fa" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-apeiron-primary text-white hover:bg-apeiron-primary-dark transition-all active:scale-[0.98] cursor-pointer">
                         <span class="material-symbols-rounded text-sm">lock</span>
-                        <span>{{ __('Aktifkan 2FA') }}</span>
+                        <span>{{ __('Enable 2FA') }}</span>
                     </button>
                 </form>
             </div>

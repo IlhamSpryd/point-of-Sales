@@ -1,13 +1,13 @@
 <x-app-layout>
-    {{-- Toolbar ini HANYA muncul di layar, hilang total saat print --}}
+    {{-- This toolbar only appears on screen, hidden when printing --}}
     <div class="print:hidden max-w-md mx-auto mb-4 flex justify-between items-center">
-        <h1 class="text-xl font-bold">Konfirmasi Pesanan</h1>
+        <h1 class="text-xl font-bold">Order Confirmation</h1>
         <div class="flex gap-2">
             <a href="{{ route('transaction.create') }}"
-               class="px-4 py-2 rounded border" wire:navigate>Pesanan Baru</a>
+               class="px-4 py-2 rounded border" wire:navigate>New Order</a>
             <button onclick="window.print()"
                     class="px-4 py-2 rounded bg-blue-600 text-white font-bold">
-                🖨 Cetak Struk
+                🖨 Print Receipt
             </button>
         </div>
     </div>
@@ -21,23 +21,23 @@
 
         @if (($isReprint ?? false) || ($order->print_count ?? 0) > 1)
             <div class="border-y border-dashed border-apeiron-ink py-1 my-1 text-center font-bold text-[11px] tracking-wider">
-                *** COPY / CETAK ULANG #{{ $order->print_count }} ***
+                *** COPY / REPRINT #{{ $order->print_count }} ***
             </div>
         @endif
 
         <div class="border-t border-b border-dashed border-apeiron-ink py-1 text-[11px]">
-            <div class="flex justify-between"><span>No. Order</span><span>{{ $order->order_code }}</span></div>
-            <div class="flex justify-between"><span>Kasir</span><span>{{ $order->user->name ?? '-' }}</span></div>
+            <div class="flex justify-between"><span>Order No.</span><span>{{ $order->order_code }}</span></div>
+            <div class="flex justify-between"><span>Cashier</span><span>{{ $order->user->name ?? '-' }}</span></div>
             @if ($order->device)
-                <div class="flex justify-between"><span>Perangkat</span><span>{{ $order->device->device_name }}</span></div>
+                <div class="flex justify-between"><span>Device</span><span>{{ $order->device->device_name }}</span></div>
             @elseif ($order->created_by_device_id)
-                <div class="flex justify-between"><span>Perangkat</span><span>Terminal #{{ $order->created_by_device_id }}</span></div>
+                <div class="flex justify-between"><span>Device</span><span>Terminal #{{ $order->created_by_device_id }}</span></div>
             @endif
             @if ($order->shift_id)
                 <div class="flex justify-between"><span>Shift</span><span>Shift #{{ $order->shift_id }}</span></div>
             @endif
             <div class="flex justify-between">
-                <span>Tipe</span>
+                <span>Type</span>
                 <span>
                     @if($order->order_type?->value === 'dine_in') Dine-In
                     @elseif($order->order_type?->value === 'takeaway') Takeaway
@@ -48,7 +48,7 @@
             </div>
             @if ($order->table)
                 <div class="flex justify-between">
-                    <span>Meja</span><span>{{ $order->table->table_name }}</span>
+                    <span>Table</span><span>{{ $order->table->table_name }}</span>
                 </div>
             @endif
         </div>
@@ -63,12 +63,12 @@
 
                     @if (($item->item_discount_amount ?? 0) > 0)
                         <div class="pl-4 text-[9px] text-gray-700 flex justify-between">
-                            <span>* Diskon Item</span>
+                            <span>* Item Discount</span>
                             <span>-{{ number_format($item->item_discount_amount, 0, ',', '.') }}</span>
                         </div>
                     @endif
 
-                    {{-- Modifier di-indent di bawah nama produk utama --}}
+                    {{-- Modifiers indented below parent product --}}
                     @foreach ($item->options ?? [] as $mod)
                         <div class="pl-4 text-[9px] text-gray-700">
                             + {{ $mod['name'] ?? $mod['modifier_name'] ?? '-' }}
@@ -80,7 +80,7 @@
 
                     @if ($item->notes)
                         <div class="pl-4 text-[9px] italic text-gray-700">
-                            Catatan: {{ $item->notes }}
+                            Note: {{ $item->notes }}
                         </div>
                     @endif
                 </div>
@@ -93,12 +93,12 @@
             </div>
             @if (($order->discount_amount ?? 0) > 0)
                 <div class="flex justify-between text-gray-800">
-                    <span>Diskon Order</span><span>-{{ number_format($order->discount_amount, 0, ',', '.') }}</span>
+                    <span>Order Discount</span><span>-{{ number_format($order->discount_amount, 0, ',', '.') }}</span>
                 </div>
             @endif
             @if (($order->tax_amount ?? 0) > 0)
                 <div class="flex justify-between">
-                    <span>Pajak ({{ rtrim(rtrim(number_format($taxRatePercent ?? 11, 1), '0'), '.') }}%)</span><span>{{ number_format($order->tax_amount, 0, ',', '.') }}</span>
+                    <span>Tax ({{ rtrim(rtrim(number_format($taxRatePercent ?? 11, 1), '0'), '.') }}%)</span><span>{{ number_format($order->tax_amount, 0, ',', '.') }}</span>
                 </div>
             @endif
             @if (($order->service_charge_amount ?? 0) > 0)
@@ -114,7 +114,7 @@
                 <div class="mt-1 pt-1 border-t border-dotted border-gray-400">
                     @foreach ($order->payments as $payment)
                         <div class="flex justify-between">
-                            <span>{{ ucfirst($payment->payment_method?->value ?? 'Pembayaran') }}</span><span>{{ number_format($payment->amount, 0, ',', '.') }}</span>
+                            <span>{{ ucfirst($payment->payment_method?->value ?? 'Payment') }}</span><span>{{ number_format($payment->amount, 0, ',', '.') }}</span>
                         </div>
                     @endforeach
                 </div>
@@ -122,17 +122,17 @@
 
             @if ($order->cash_received > 0 || $order->payment_method?->value === 'cash')
                 <div class="flex justify-between mt-1">
-                    <span>Diterima (Cash)</span><span>{{ number_format($order->cash_received, 0, ',', '.') }}</span>
+                    <span>Cash Received</span><span>{{ number_format($order->cash_received, 0, ',', '.') }}</span>
                 </div>
                 <div class="flex justify-between">
-                    <span>Kembali</span><span>{{ number_format($order->order_change, 0, ',', '.') }}</span>
+                    <span>Change Due</span><span>{{ number_format($order->order_change, 0, ',', '.') }}</span>
                 </div>
             @endif
         </div>
 
         <div class="text-center text-[10px] mt-2 border-t border-dashed border-apeiron-ink pt-1">
-            <p>Terima kasih!</p>
-            <p>Selamat menikmati ☕</p>
+            <p>Thank you!</p>
+            <p>Enjoy your meal ☕</p>
         </div>
     </div>
 

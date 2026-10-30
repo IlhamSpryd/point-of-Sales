@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -25,10 +26,11 @@ class DiscountManager extends Component
         $role = Auth::user()?->role;
         $roleName = $role?->name;
         if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager', 'Admin'], true)) {
-            abort(403, 'Anda tidak memiliki hak akses untuk mengelola diskon.');
+            abort(403, 'You do not have permission to manage discounts.');
         }
     }
 
+    #[Url(history: true)]
     public $search = '';
 
     public $isModalOpen = false;
@@ -138,9 +140,9 @@ class DiscountManager extends Component
             'valid_until' => 'nullable|date|after_or_equal:valid_from',
         ]);
 
-        // Jika persentase, batas maksimal value adalah 100
+        // If percentage, maximum value is 100
         if ($this->type === 'percentage' && $this->value > 100) {
-            $this->addError('value', 'Persentase diskon tidak boleh lebih dari 100%.');
+            $this->addError('value', 'Discount percentage cannot exceed 100%.');
 
             return;
         }
@@ -159,7 +161,7 @@ class DiscountManager extends Component
             'valid_until' => $this->valid_until ?: null,
         ];
 
-        // [D2-BE-004] Otorisasi policy: hanya Owner/Manager yang boleh CRUD diskon.
+        // [D2-BE-004] Policy authorization: only Owner/Manager can CRUD discounts.
         if ($this->discountId) {
             $discount = Discount::findOrFail($this->discountId);
             Gate::authorize('update', $discount);
@@ -169,7 +171,7 @@ class DiscountManager extends Component
             Discount::create($data);
         }
 
-        session()->flash('message', $this->discountId ? 'Diskon berhasil diperbarui.' : 'Diskon berhasil dibuat.');
+        session()->flash('message', $this->discountId ? 'Discount successfully updated.' : 'Discount successfully created.');
         $this->closeModal();
         $this->dispatch('close-modal', 'discount-form');
     }
@@ -197,7 +199,7 @@ class DiscountManager extends Component
     {
         Gate::authorize('delete', Discount::findOrFail($id));
         Discount::findOrFail($id)->delete();
-        session()->flash('message', 'Diskon berhasil dihapus.');
+        session()->flash('message', 'Discount successfully deleted.');
     }
 
     public function render()

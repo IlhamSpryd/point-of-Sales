@@ -14,8 +14,8 @@ enum StockAdjustmentStatusEnum: string
     {
         return match ($this) {
             self::Draft => 'Draft',
-            self::Posted => 'Sudah Diposting (Posted)',
-            self::Cancelled => 'Dibatalkan (Cancelled)',
+            self::Posted => 'Posted',
+            self::Cancelled => 'Cancelled',
         };
     }
 

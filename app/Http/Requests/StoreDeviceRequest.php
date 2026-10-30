@@ -39,11 +39,11 @@ class StoreDeviceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'store_id.required' => 'Cabang penempatan perangkat wajib dipilih.',
-            'store_id.exists' => 'Cabang yang dipilih tidak valid atau tidak terdaftar pada bisnis Anda.',
-            'device_name.required' => 'Nama perangkat kasir wajib diisi.',
-            'device_type.required' => 'Tipe perangkat wajib dipilih.',
-            'device_type.in' => 'Tipe perangkat tidak valid.',
+            'store_id.required' => 'Assigned branch is required.',
+            'store_id.exists' => 'The selected branch is invalid or not associated with your business.',
+            'device_name.required' => 'Device name is required.',
+            'device_type.required' => 'Device type is required.',
+            'device_type.in' => 'Selected device type is invalid.',
         ];
     }
 }

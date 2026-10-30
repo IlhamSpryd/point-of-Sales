@@ -18,14 +18,14 @@ enum PurchaseOrderStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::Draft => 'Draf',
-            self::PendingApproval => 'Menunggu Persetujuan',
-            self::Approved => 'Disetujui',
-            self::Rejected => 'Ditolak',
-            self::Released => 'Diterbitkan',
-            self::Amended => 'Diamandemen',
-            self::Closed => 'Ditutup',
-            self::Cancelled => 'Dibatalkan',
+            self::Draft => 'Draft',
+            self::PendingApproval => 'Pending Approval',
+            self::Approved => 'Approved',
+            self::Rejected => 'Rejected',
+            self::Released => 'Released',
+            self::Amended => 'Amended',
+            self::Closed => 'Closed',
+            self::Cancelled => 'Cancelled',
         };
     }
 

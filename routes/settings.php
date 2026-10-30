@@ -47,6 +47,7 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
             Route::post('/users-invitations', [UserInvitationController::class, 'store'])->name('users.invitations.store');
             Route::post('/users-invitations/{id}/resend', [UserInvitationController::class, 'resend'])->name('users.invitations.resend');
             Route::delete('/users-invitations/{id}', [UserInvitationController::class, 'revoke'])->name('users.invitations.revoke');
+            Route::delete('/users-invitations/{id}/destroy', [UserInvitationController::class, 'revoke'])->name('users.invitations.destroy');
 
             Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
             Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');

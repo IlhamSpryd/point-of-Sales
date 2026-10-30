@@ -3,9 +3,9 @@
     <div x-data="checkoutPayment()" x-init="init()" class="flex flex-col max-h-[90vh]">
         <div class="px-6 py-4 border-b border-[#E5E7EB] flex items-center justify-between shrink-0 bg-white rounded-t-2xl relative z-10">
             <h3 class="font-bold text-lg text-apeiron-ink tracking-tight flex items-center gap-2">
-                <span class="material-symbols-rounded text-[22px]">payments</span> Selesaikan Pembayaran
+                <span class="material-symbols-rounded text-[22px]">payments</span> Complete Payment
             </h3>
-            <button type="button" x-on:click="$dispatch('close')" aria-label="Tutup modal pembayaran (Esc)"
+            <button type="button" x-on:click="$dispatch('close')" aria-label="Close payment modal (Esc)"
                 class="size-8 flex items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-apeiron-ink transition-colors">
                 <span class="material-symbols-rounded text-[20px]">close</span>
             </button>
@@ -15,15 +15,15 @@
             <!-- Ringkasan tagihan -->
             <div class="bg-white rounded-xl border border-[#E5E7EB] p-4 space-y-2.5 relative overflow-hidden">
                 <div class="flex justify-between text-xs font-semibold">
-                    <span class="text-gray-500">Total Tagihan</span>
+                    <span class="text-gray-500">Total Due</span>
                     <span class="font-bold text-apeiron-ink tabular-nums" x-text="'Rp ' + formatRupiah(total)"></span>
                 </div>
                 <div class="flex justify-between text-xs font-semibold">
-                    <span class="text-gray-500">Sudah Dibayar</span>
+                    <span class="text-gray-500">Paid Amount</span>
                     <span class="font-bold text-emerald-600 tabular-nums" x-text="'Rp ' + formatRupiah(paidTotal)"></span>
                 </div>
                 <div class="flex justify-between items-baseline pt-2.5 border-t border-[#E5E7EB] mt-1">
-                    <span class="text-xs font-semibold uppercase tracking-wider text-gray-600">Sisa Tagihan</span>
+                    <span class="text-xs font-semibold uppercase tracking-wider text-gray-600">Remaining Balance</span>
                     <span class="text-2xl font-bold tabular-nums tracking-tight"
                         :class="remaining > 0 ? 'text-rose-600' : 'text-emerald-600'"
                         x-text="'Rp ' + formatRupiah(remaining)"></span>
@@ -40,14 +40,16 @@
                                 <template x-if="leg.method === 'qris'"><span class="material-symbols-rounded text-[18px]">qr_code_2</span></template>
                                 <template x-if="leg.method === 'ewallet'"><span class="material-symbols-rounded text-[18px]">account_balance_wallet</span></template>
                                 <template x-if="leg.method === 'card'"><span class="material-symbols-rounded text-[18px]">credit_card</span></template>
+                                <template x-if="leg.method === 'gift_card'"><span class="material-symbols-rounded text-[18px]">card_giftcard</span></template>
+                                <template x-if="leg.method === 'store_credit'"><span class="material-symbols-rounded text-[18px]">account_balance</span></template>
                             </div>
                             <div>
                                 <span class="block text-xs font-bold text-apeiron-ink" x-text="leg.label"></span>
                                 <span class="block text-[11px] font-medium text-gray-500 tabular-nums"
-                                    x-text="'Rp ' + formatRupiah(leg.amount) + (leg.changeShown > 0 ? ' · Kembali Rp ' + formatRupiah(leg.changeShown) : '')"></span>
+                                    x-text="'Rp ' + formatRupiah(leg.amount) + (leg.changeShown > 0 ? ' · Change Rp ' + formatRupiah(leg.changeShown) : '')"></span>
                             </div>
                         </div>
-                        <button type="button" x-on:click="removeLeg(leg.uid)" aria-label="Hapus metode ini"
+                        <button type="button" x-on:click="removeLeg(leg.uid)" aria-label="Remove this method"
                             class="size-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-rose-500 hover:bg-rose-50 transition-colors shrink-0">
                             <span class="material-symbols-rounded text-[18px]">delete</span>
                         </button>
@@ -58,14 +60,14 @@
             <!-- Form tambah metode -->
             <div x-show="remaining > 0" x-cloak class="bg-white rounded-xl border border-[#E5E7EB] p-4 space-y-4">
                 <div>
-                    <span class="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-2">Pilih Cara Pembayaran</span>
-                    <div class="grid grid-cols-4 gap-2">
+                    <span class="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-2">Select Payment Method</span>
+                    <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
                         <button type="button" x-on:click="method = 'cash'"
                             :class="method === 'cash' ?
                                 'bg-apeiron-ink text-white border-apeiron-ink' :
                                 'bg-white text-gray-600 border-[#E5E7EB] hover:bg-gray-50'"
                             class="min-h-[50px] rounded-lg border flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors">
-                            <span class="material-symbols-rounded text-[20px]">payments</span> Tunai
+                            <span class="material-symbols-rounded text-[20px]">payments</span> Cash
                         </button>
                         <button type="button" x-on:click="method = 'qris'"
                             :class="method === 'qris' ?
@@ -86,14 +88,28 @@
                                 'bg-apeiron-ink text-white border-apeiron-ink' :
                                 'bg-white text-gray-600 border-[#E5E7EB] hover:bg-gray-50'"
                             class="min-h-[50px] rounded-lg border flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors">
-                            <span class="material-symbols-rounded text-[20px]">credit_card</span> Kartu
+                            <span class="material-symbols-rounded text-[20px]">credit_card</span> Card
+                        </button>
+                        <button type="button" x-on:click="method = 'gift_card'"
+                            :class="method === 'gift_card' ?
+                                'bg-apeiron-ink text-white border-apeiron-ink' :
+                                'bg-white text-gray-600 border-[#E5E7EB] hover:bg-gray-50'"
+                            class="min-h-[50px] rounded-lg border flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors">
+                            <span class="material-symbols-rounded text-[20px]">card_giftcard</span> Gift Card
+                        </button>
+                        <button type="button" x-on:click="method = 'store_credit'"
+                            :class="method === 'store_credit' ?
+                                'bg-apeiron-ink text-white border-apeiron-ink' :
+                                'bg-white text-gray-600 border-[#E5E7EB] hover:bg-gray-50'"
+                            class="min-h-[50px] rounded-lg border flex flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors">
+                            <span class="material-symbols-rounded text-[20px]">account_balance</span> Store Credit
                         </button>
                     </div>
                 </div>
 
                 <div>
                     <span class="block text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5"
-                        x-text="method === 'cash' ? 'Uang Diterima' : 'Nominal Dibayar'"></span>
+                        x-text="method === 'cash' ? 'Cash Received' : 'Payment Amount'"></span>
                     <div class="relative">
                         <span class="absolute inset-y-0 left-0 flex items-center pl-4 font-bold text-gray-400 text-base">Rp</span>
                         <input type="text" inputmode="numeric" :value="amountFormatted"
@@ -102,13 +118,13 @@
                             placeholder="0">
                     </div>
                     <p x-show="method === 'cash' && changePreview > 0" x-cloak class="mt-1.5 text-xs font-semibold text-emerald-600">
-                        Kembalian: <span x-text="'Rp ' + formatRupiah(changePreview)"></span>
+                        Change Due: <span x-text="'Rp ' + formatRupiah(changePreview)"></span>
                     </p>
                 </div>
 
                 <div class="flex gap-2">
                     <button type="button" x-on:click="fillRemaining()"
-                        class="flex-1 min-h-[38px] text-xs font-semibold rounded-lg bg-apeiron-ink text-white hover:bg-[#262626] transition-colors">PAS</button>
+                        class="flex-1 min-h-[38px] text-xs font-semibold rounded-lg bg-apeiron-ink text-white hover:bg-[#262626] transition-colors">EXACT</button>
                     <template x-if="method === 'cash'">
                         <button type="button" x-on:click="addQuick(50000)"
                             class="flex-1 min-h-[38px] text-xs font-semibold rounded-lg bg-white text-gray-700 hover:bg-gray-50 border border-[#E5E7EB] transition-colors">+50K</button>
@@ -123,7 +139,7 @@
 
                 <button type="button" x-on:click="addLeg()"
                     class="w-full min-h-[44px] rounded-lg bg-gray-50 text-apeiron-ink font-semibold text-xs border border-[#E5E7EB] hover:bg-gray-100 transition-colors flex items-center justify-center gap-1.5">
-                    <span class="material-symbols-rounded text-[18px]">add_circle</span> Tambah Pembayaran Ini
+                    <span class="material-symbols-rounded text-[18px]">add_circle</span> Add This Payment
                 </button>
             </div>
 
@@ -140,7 +156,7 @@
                 :disabled="remaining > 0 || legs.length === 0 || submitting"
                 class="w-full min-h-[50px] rounded-lg bg-apeiron-ink hover:bg-[#262626] text-white font-semibold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                 <span x-show="submitting" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
-                <span x-text="submitting ? 'Memproses Transaksi...' : 'Selesaikan Transaksi'"></span>
+                <span x-text="submitting ? 'Processing Transaction...' : 'Complete Transaction'"></span>
             </button>
         </div>
     </div>
@@ -218,21 +234,23 @@
 
             methodLabel(m) {
                 return {
-                    cash: 'Tunai',
+                    cash: 'Cash',
                     qris: 'QRIS',
                     ewallet: 'E-Wallet',
-                    card: 'Kartu'
+                    card: 'Card',
+                    gift_card: 'Gift Card',
+                    store_credit: 'Store Credit'
                 } [m] ?? m;
             },
 
             addLeg() {
                 this.errorMsg = '';
                 if (!this.amountRaw || this.amountRaw <= 0) {
-                    this.errorMsg = 'Masukkan nominal pembayaran.';
+                    this.errorMsg = 'Enter payment amount.';
                     return;
                 }
                 if (this.remaining <= 0) {
-                    this.errorMsg = 'Tagihan sudah lunas.';
+                    this.errorMsg = 'Bill is already fully paid.';
                     return;
                 }
                 const applied = Math.min(this.amountRaw, this.remaining);
@@ -260,7 +278,7 @@
                 if (livewireTotal !== undefined && livewireTotal !== null && livewireTotal !== this.total) {
                     this.total = livewireTotal;
                     if (this.remaining > 0 || this.paidTotal !== this.total) {
-                        this.errorMsg = 'Total tagihan berubah (Rp' + this.formatRupiah(livewireTotal) + '). Silakan sesuaikan rincian pembayaran.';
+                        this.errorMsg = 'Total amount changed (Rp ' + this.formatRupiah(livewireTotal) + '). Please adjust payment details.';
                         return;
                     }
                 }
@@ -274,7 +292,7 @@
                 try {
                     await $wire.call('submitOrder', payload, this.idempotencyKey);
                 } catch (err) {
-                    this.errorMsg = err?.message || 'Gagal memproses pembayaran.';
+                    this.errorMsg = err?.message || 'Failed to process payment.';
                 } finally {
                     this.submitting = false;
                 }

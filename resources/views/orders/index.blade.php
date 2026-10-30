@@ -1,8 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
         <x-erp.page-header
-            title="Riwayat Pesanan & Transaksi"
-            description="Pantau seluruh transaksi kasir, pelunasan self-order, rekonsiliasi status, dan audit log penjualan.">
+            title="Order & Transaction History"
+            description="Monitor all cashier transactions, self-order settlements, status reconciliations, and sales audit logs.">
         </x-erp.page-header>
     </x-slot>
 

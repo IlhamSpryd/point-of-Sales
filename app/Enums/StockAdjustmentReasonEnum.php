@@ -17,13 +17,13 @@ enum StockAdjustmentReasonEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::Damaged => 'Barang Rusak (Damaged)',
-            self::Expired => 'Kedaluwarsa (Expired)',
-            self::Shrinkage => 'Kehilangan / Selisih Susut (Shrinkage)',
-            self::ProductionWaste => 'Limbah Produksi (Production Waste)',
-            self::Found => 'Barang Ditemukan (Found)',
-            self::OpeningStock => 'Saldo Awal (Opening Stock)',
-            self::Other => 'Lainnya (Other)',
+            self::Damaged => 'Damaged Goods',
+            self::Expired => 'Expired',
+            self::Shrinkage => 'Shrinkage / Variance',
+            self::ProductionWaste => 'Production Waste',
+            self::Found => 'Found Goods',
+            self::OpeningStock => 'Opening Stock',
+            self::Other => 'Other',
         };
     }
 

@@ -5,18 +5,18 @@
         <div class="relative z-10 max-w-4xl space-y-4">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-xs font-semibold backdrop-blur-xs text-primary-200">
                 <span class="material-symbols-rounded text-sm">hub</span>
-                <span>Arsitektur ERP Modular Tunggal • Single Modular Core</span>
+                <span>Single Modular ERP Architecture • Single Modular Core</span>
             </div>
             <h1 class="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-                Apeiron System: Platform Operasional F&B & Ritel Terpadu
+                Apeiron System: Unified F&B & Retail Operations Platform
             </h1>
             <p class="text-sm md:text-base text-zinc-300 leading-relaxed">
-                Apeiron dibangun atas satu fondasi multi-tenant yang kokoh, memadukan fleksibilitas operasional POS kasir berkecepatan tinggi dengan ketelitian tata kelola ERP multi-cabang. Platform ini melayani bisnis F&B (Restoran, Kafe, Bar), Ritel Modern (Boutique, Minimarket, Roastery), maupun model bisnis campuran (Mixed Outlet) dalam satu basis data dan tata kelola akun terpusat.
+                Apeiron is built on a resilient multi-tenant foundation, combining high-speed POS cashier responsiveness with the governance rigor of multi-branch ERP. The platform seamlessly powers F&B businesses (Restaurants, Cafes, Bars), Modern Retail (Boutiques, Convenience Stores, Roasteries), and hybrid business models (Mixed Outlets) within a single unified database and centralized account governance.
             </p>
             <div class="pt-2 flex flex-wrap items-center gap-4 text-xs font-medium text-zinc-400">
                 <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-400"></span> Multi-Tenant DB (OD-01)</span>
                 <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-blue-400"></span> Store Scoping (OD-02)</span>
-                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-purple-400"></span> Moving Average HPP (OD-04)</span>
+                <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-purple-400"></span> Moving Average COGS (OD-04)</span>
                 <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-amber-400"></span> Offline IndexedDB Queue (OD-05)</span>
             </div>
         </div>
@@ -32,12 +32,12 @@
                 </div>
                 <h3 class="font-bold text-apeiron-ink dark:text-zinc-100 text-base">Platform Core</h3>
                 <p class="text-xs text-zinc-500 leading-relaxed">
-                    Pondasi multi-tenant tunggal, isolasi data berbasis tenant_id, otorisasi RBAC granular, logging jejak audit 7 tahun (OD-25), dan registrasi terminal fisik kasir (OD-31).
+                    Single multi-tenant foundation, tenant_id data isolation, granular RBAC authorization, 7-year audit trail logging (OD-25), and physical cashier terminal registration (OD-31).
                 </p>
             </div>
             <div class="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
-                <span class="font-semibold text-emerald-600">Status: Aktif & Terverifikasi</span>
-                <a href="{{ route('settings.index') }}" class="text-primary-600 hover:underline">Kelola &rarr;</a>
+                <span class="font-semibold text-emerald-600">Status: Active & Verified</span>
+                <a href="{{ route('settings.index') }}" class="text-primary-600 hover:underline">Manage &rarr;</a>
             </div>
         </div>
 
@@ -49,12 +49,12 @@
                 </div>
                 <h3 class="font-bold text-apeiron-ink dark:text-zinc-100 text-base">F&B Industry Pack</h3>
                 <p class="text-xs text-zinc-500 leading-relaxed">
-                    Resep & BOM bahan baku (OD-04), varian modifier ADD/REPLACE (OD-17), routing dapur KDS (OD-32), opsi Dine-In / Takeaway, dan penanganan waste/spoilage (OD-11).
+                    Recipes & Raw Material BOM (OD-04), ADD/REPLACE variant modifiers (OD-17), KDS kitchen routing (OD-32), Dine-In / Takeaway options, and waste/spoilage tracking (OD-11).
                 </p>
             </div>
             <div class="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
-                <span class="font-semibold text-emerald-600">Status: MVP Operasional</span>
-                <a href="{{ route('transaction.create') }}" class="text-orange-600 hover:underline">Layar POS &rarr;</a>
+                <span class="font-semibold text-emerald-600">Status: Operational MVP</span>
+                <a href="{{ route('transaction.create') }}" class="text-orange-600 hover:underline">POS Terminal &rarr;</a>
             </div>
         </div>
 
@@ -66,12 +66,12 @@
                 </div>
                 <h3 class="font-bold text-apeiron-ink dark:text-zinc-100 text-base">Retail Industry Pack</h3>
                 <p class="text-xs text-zinc-500 leading-relaxed">
-                    Manajemen SKU barang jadi, scanner barcode USB HID (OD-33), aturan harga grosir bertingkat (OD-19), matriks assortmen cabang (OD-18), dan stock opname fisik (OD-30).
+                    Finished goods SKU management, USB HID barcode scanner (OD-33), tiered wholesale pricing rules (OD-19), branch assortment matrix (OD-18), and physical stock count (OD-30).
                 </p>
             </div>
             <div class="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
-                <span class="font-semibold text-emerald-600">Status: MVP Operasional</span>
-                <a href="{{ route('price-lists.index') }}" class="text-blue-600 hover:underline">Aturan Harga &rarr;</a>
+                <span class="font-semibold text-emerald-600">Status: Operational MVP</span>
+                <a href="{{ route('price-lists.index') }}" class="text-blue-600 hover:underline">Pricing Rules &rarr;</a>
             </div>
         </div>
 
@@ -83,12 +83,12 @@
                 </div>
                 <h3 class="font-bold text-apeiron-ink dark:text-zinc-100 text-base">Shared ERP & Back Office</h3>
                 <p class="text-xs text-zinc-500 leading-relaxed">
-                    Buku besar mutasi stok permanen, penerimaan barang langsung (PAGE-041), rekap kasir & blind shift closing (OD-10), laporan omzet & EOD (OD-36), serta roadmap P2P & GL.
+                    Permanent stock movement ledger, direct goods receipt (PAGE-041), cashier shift reconciliation & blind shift closing (OD-10), sales & EOD reports (OD-36), and P2P & GL roadmap.
                 </p>
             </div>
             <div class="mt-4 pt-3 border-t border-zinc-100 dark:border-zinc-800 flex items-center justify-between text-xs">
                 <span class="font-semibold text-purple-600">Status: F2/F3 Prototyped</span>
-                <a href="{{ route('inventory.ledger') }}" class="text-purple-600 hover:underline">Buku Stok &rarr;</a>
+                <a href="{{ route('inventory.ledger') }}" class="text-purple-600 hover:underline">Stock Ledger &rarr;</a>
             </div>
         </div>
     </div>
@@ -98,10 +98,10 @@
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-zinc-100 dark:border-zinc-800">
             <div>
                 <h3 class="text-lg font-bold text-apeiron-ink dark:text-zinc-100">
-                    Kapabilitas Tenant Campuran: F&B + Ritel Tanpa Batasan Dikotomi
+                    Mixed Tenant Capabilities: F&B + Retail Without Dichotomy Constraints
                 </h3>
                 <p class="text-xs md:text-sm text-zinc-500 mt-1">
-                    Arsitektur Apeiron tidak membatasi akun secara kaku ke satu tipe bisnis permanen. Satu tenant dapat mengoperasikan unit bisnis yang berbeda-beda di tiap cabangnya.
+                    Apeiron's architecture does not restrict accounts rigidly to a single business type. A tenant can operate different business models across individual branches.
                 </p>
             </div>
             <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-100 dark:bg-zinc-800 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
@@ -114,13 +114,13 @@
             <div class="p-5 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-[#E5E7EB] dark:border-zinc-700/80 space-y-3">
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-rounded text-orange-600">coffee</span>
-                    <h4 class="font-bold text-apeiron-ink dark:text-zinc-200">Outlet Resto / Kafe</h4>
+                    <h4 class="font-bold text-apeiron-ink dark:text-zinc-200">Restaurant / Cafe Branch</h4>
                 </div>
                 <p class="text-xs text-zinc-500 leading-relaxed">
-                    Fokus pada kecepatan POS kasir, menu racikan resep otomatis, printer dapur / kitchen station, dan pencatatan sisa bahan baku espresso/susu.
+                    Focuses on high-speed POS cashier operations, automated recipe-based depletion, kitchen station ticket routing, and ingredient usage tracking.
                 </p>
                 <div class="text-[11px] font-medium text-orange-700 bg-orange-100/50 px-2.5 py-1 rounded-md inline-block">
-                    Contoh: Apeiron Cafe Senopati
+                    Example: Apeiron Cafe Senopati
                 </div>
             </div>
 
@@ -128,25 +128,25 @@
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-rounded text-blue-600">storefront</span>
                 </div>
-                <h4 class="font-bold text-apeiron-ink dark:text-zinc-200">Outlet Ritel / Merchandise</h4>
+                <h4 class="font-bold text-apeiron-ink dark:text-zinc-200">Retail / Merchandise Branch</h4>
                 <p class="text-xs text-zinc-500 leading-relaxed">
-                    Fokus pada pemindaian barcode cepat, harga grosir tiering, barang jadi siap jual tanpa dekomposisi resep, dan kontrol stok SKU.
+                    Focuses on rapid barcode scanning, tiered wholesale pricing, finished goods sold without recipe breakdown, and SKU stock control.
                 </p>
                 <div class="text-[11px] font-medium text-blue-700 bg-blue-100/50 px-2.5 py-1 rounded-md inline-block">
-                    Contoh: Apeiron Roastery & Merch
+                    Example: Apeiron Roastery & Merch
                 </div>
             </div>
 
             <div class="p-5 rounded-xl bg-zinc-50 dark:bg-zinc-800/40 border border-[#E5E7EB] dark:border-zinc-700/80 space-y-3">
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-rounded text-purple-600">domain_add</span>
-                    <h4 class="font-bold text-apeiron-ink dark:text-zinc-200">Outlet Campuran (Hybrid)</h4>
+                    <h4 class="font-bold text-apeiron-ink dark:text-zinc-200">Hybrid Branch</h4>
                 </div>
                 <p class="text-xs text-zinc-500 leading-relaxed">
-                    Kasir F&B yang juga menjual tumbler, biji kopi kemasan, kaos, dan snack kemasan. Transaksi memotong stok bahan baku resep sekaligus stok SKU ritel dalam satu transaksi.
+                    F&B cashier that also sells merchandise, packaged coffee beans, apparel, and packaged snacks. Transactions deplete recipe raw materials and retail SKU inventory concurrently within a single transaction.
                 </p>
                 <div class="text-[11px] font-medium text-purple-700 bg-purple-100/50 px-2.5 py-1 rounded-md inline-block">
-                    Contoh: Apeiron Flagship Store
+                    Example: Apeiron Flagship Store
                 </div>
             </div>
         </div>
@@ -155,49 +155,49 @@
     <!-- Scalability from 1 Outlet to Multi-Branch Enterprise -->
     <div class="card-surface p-6 md:p-8 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-6">
         <h3 class="text-lg font-bold text-apeiron-ink dark:text-zinc-100">
-            Jalur Skalabilitas: Dari 1 Gerai Menuju Puluhan Cabang Terintegrasi
+            Scalability Path: From 1 Store to Dozens of Integrated Branches
         </h3>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
             <div class="p-5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 space-y-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Tahap 1: Gerai Tunggal</span>
-                    <span class="text-xs text-zinc-400 font-mono">1 Outlet</span>
+                    <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Stage 1: Single Store</span>
+                    <span class="text-xs text-zinc-400 font-mono">1 Branch</span>
                 </div>
-                <h4 class="font-bold text-apeiron-ink dark:text-white text-sm">Operasional Harian Efisien</h4>
+                <h4 class="font-bold text-apeiron-ink dark:text-white text-sm">Efficient Daily Operations</h4>
                 <ul class="text-xs text-zinc-500 space-y-1.5 list-disc pl-4">
-                    <li>Kasir POS responsif tablet / desktop</li>
-                    <li>Resep & stok bahan baku otomatis</li>
-                    <li>Laporan kas harian & tutup shift kasir</li>
-                    <li>Mendukung cetak struk ESC-POS lokal</li>
+                    <li>Responsive tablet / desktop POS cashier</li>
+                    <li>Automated recipes & raw material stock depletion</li>
+                    <li>Daily cash reconciliation & cashier shift close</li>
+                    <li>Supports local ESC-POS receipt printing</li>
                 </ul>
             </div>
 
             <div class="p-5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 space-y-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">Tahap 2: Multi-Cabang (Saat Ini)</span>
-                    <span class="text-xs text-zinc-400 font-mono">2 - 10 Outlet</span>
+                    <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">Stage 2: Multi-Branch (Current)</span>
+                    <span class="text-xs text-zinc-400 font-mono">2 - 10 Branches</span>
                 </div>
-                <h4 class="font-bold text-apeiron-ink dark:text-white text-sm">Manajemen Terpusat Multi-Branch</h4>
+                <h4 class="font-bold text-apeiron-ink dark:text-white text-sm">Centralized Multi-Branch Governance</h4>
                 <ul class="text-xs text-zinc-500 space-y-1.5 list-disc pl-4">
-                    <li>Katalog pusat dengan Store Assortment (OD-18)</li>
-                    <li>Harga berbeda per cabang & kanal (OD-19)</li>
-                    <li>Isolasi data staf per cabang (OD-02)</li>
-                    <li>Laporan konsolidasi level owner bisnis</li>
+                    <li>Central catalog with Store Assortments (OD-18)</li>
+                    <li>Differential pricing per branch & channel (OD-19)</li>
+                    <li>Strict staff data isolation per branch (OD-02)</li>
+                    <li>Consolidated executive rollup reports</li>
                 </ul>
             </div>
 
             <div class="p-5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 space-y-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">Tahap 3: Enterprise & Waralaba</span>
-                    <span class="text-xs text-zinc-400 font-mono">> 10 Outlet</span>
+                    <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-100 text-purple-800">Stage 3: Enterprise & Franchise</span>
+                    <span class="text-xs text-zinc-400 font-mono">> 10 Branches</span>
                 </div>
                 <h4 class="font-bold text-apeiron-ink dark:text-white text-sm">Central Kitchen & P2P Supply Chain</h4>
                 <ul class="text-xs text-zinc-500 space-y-1.5 list-disc pl-4">
-                    <li>Dapur sentral (Central Kitchen) & transfer stok antar cabang</li>
-                    <li>Procure-to-Pay formal dengan PO & 3-way match (F2)</li>
-                    <li>Akuntansi buku besar ganda (General Ledger F3)</li>
-                    <li>Integrasi agregator online (GoFood/GrabFood F3)</li>
+                    <li>Central kitchen & inter-branch stock transfers</li>
+                    <li>Formal Procure-to-Pay with PO & 3-way match (F2)</li>
+                    <li>Double-entry general ledger accounting (GL F3)</li>
+                    <li>Online delivery aggregator integrations (F3)</li>
                 </ul>
             </div>
         </div>

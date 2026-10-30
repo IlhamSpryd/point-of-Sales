@@ -18,6 +18,7 @@ use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -27,8 +28,10 @@ class LoyaltyAndValueInstrumentManager extends Component
     use RequiresTenantContext;
     use WithPagination;
 
+    #[Url(history: true)]
     public string $activeTab = 'vouchers'; // vouchers, gift_cards, store_credits
 
+    #[Url(history: true)]
     public string $search = '';
 
     // Modal state
@@ -115,7 +118,7 @@ class LoyaltyAndValueInstrumentManager extends Component
 
         $this->showVoucherModal = false;
         $this->resetVoucherForm();
-        session()->flash('message', 'Kode voucher berhasil dibuat dan diaktifkan.');
+        session()->flash('message', 'Voucher code successfully created and activated.');
     }
 
     public function issueGiftCard(): void
@@ -136,7 +139,7 @@ class LoyaltyAndValueInstrumentManager extends Component
 
         $this->showGiftCardModal = false;
         $this->resetGiftCardForm();
-        session()->flash('message', 'Kartu hadiah (Gift Card) berhasil diterbitkan.');
+        session()->flash('message', 'Gift card successfully issued.');
     }
 
     public function issueStoreCredit(): void
@@ -160,7 +163,7 @@ class LoyaltyAndValueInstrumentManager extends Component
 
         $this->showStoreCreditModal = false;
         $this->resetStoreCreditForm();
-        session()->flash('message', 'Saldo Store Credit berhasil ditambahkan ke pelanggan.');
+        session()->flash('message', 'Store credit balance successfully deposited.');
     }
 
     private function resetVoucherForm(): void

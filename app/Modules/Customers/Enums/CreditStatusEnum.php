@@ -18,9 +18,9 @@ enum CreditStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::ACTIVE => 'Aktif',
-            self::ON_HOLD => 'Ditahan (On Hold)',
-            self::SUSPENDED => 'Dibekukan (Suspended)',
+            self::ACTIVE => 'Active',
+            self::ON_HOLD => 'On Hold',
+            self::SUSPENDED => 'Suspended',
         };
     }
 }

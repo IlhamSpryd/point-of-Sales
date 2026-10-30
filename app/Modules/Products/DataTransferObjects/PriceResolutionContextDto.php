@@ -20,6 +20,8 @@ final class PriceResolutionContextDto
         public readonly ?int $loyaltyTierId = null,
         public readonly ?string $channel = null,
         public readonly ?CarbonInterface $transactionDate = null,
+        public readonly ?float $customPrice = null,
+        public readonly ?\App\Models\Product $product = null,
     ) {}
 
     /**
@@ -39,6 +41,7 @@ final class PriceResolutionContextDto
             loyaltyTierId: isset($data['loyalty_tier_id']) ? (int) $data['loyalty_tier_id'] : null,
             channel: $data['channel'] ?? null,
             transactionDate: $data['transaction_date'] ?? null,
+            customPrice: isset($data['custom_price']) ? (float) $data['custom_price'] : null,
         );
     }
 }

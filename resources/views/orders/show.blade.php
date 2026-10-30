@@ -4,7 +4,7 @@
             <div>
                 <div class="flex items-center gap-2.5">
                     <h2 class="font-bold text-xl text-apeiron-ink tracking-tight">
-                        {{ __('Detail Pesanan: ') . $order->order_code }}
+                        {{ __('Order Details: ') . $order->order_code }}
                     </h2>
                     @php
                         $statusVal = $order->order_status->value ?? (string) $order->order_status;
@@ -20,7 +20,7 @@
                     </x-ui.badge>
                 </div>
                 <p class="text-xs text-gray-500 mt-1">
-                    {{ $order->created_at->format('d M Y, H:i') }} WIB &bull; Kasir: {{ $order->user->name ?? 'Kasir POS' }}
+                    {{ $order->created_at->format('d M Y, H:i') }} WIB &bull; Cashier: {{ $order->user->name ?? 'POS Cashier' }}
                 </p>
             </div>
 
@@ -29,14 +29,14 @@
                     <a href="{{ route('transaction.receipt', $order->order_code) }}" target="_blank">
                         <x-ui.button variant="primary" class="h-9 text-xs" x-on:click="window.erpMotion?.pulseHighlight($el)">
                             <span class="material-symbols-rounded text-[16px]">print</span>
-                            <span>{{ ($order->print_count ?? 0) > 0 ? __('Cetak Ulang (#') . (($order->print_count ?? 0) + 1) . ')' : __('Cetak Struk') }}</span>
+                            <span>{{ ($order->print_count ?? 0) > 0 ? __('Reprint (#') . (($order->print_count ?? 0) + 1) . ')' : __('Print Receipt') }}</span>
                         </x-ui.button>
                     </a>
                 @endif
                 <a href="{{ route('orders.index') }}" wire:navigate>
                     <x-ui.button variant="outline" class="h-9 text-xs">
                         <span class="material-symbols-rounded text-[16px]">arrow_back</span>
-                        <span>{{ __('Kembali') }}</span>
+                        <span>{{ __('Back') }}</span>
                     </x-ui.button>
                 </a>
             </div>
@@ -48,9 +48,9 @@
             <div class="card-surface p-6 rounded-xl border border-apeiron-border space-y-6">
                 <div class="flex justify-between items-center border-b border-gray-100 pb-4">
                     <div>
-                        <span class="text-[11px] text-gray-400 uppercase tracking-wider font-semibold">{{ __('Kode Pesanan') }}</span>
+                        <span class="text-[11px] text-gray-400 uppercase tracking-wider font-semibold">{{ __('Order Code') }}</span>
                         <p class="text-lg font-bold text-apeiron-ink font-mono">{{ $order->order_code }}</p>
-                        <p class="text-xs text-gray-500">{{ $order->created_at->format('d M Y H:i') }} WIB</p>
+                        <p class="text-xs text-gray-500">{{ $order->created_at->format('d M Y, H:i') }} WIB</p>
                     </div>
                     <div class="flex items-center gap-2">
                         <x-ui.badge :variant="$statusVariant">
@@ -59,14 +59,14 @@
                         @if ($order->orderReturns && $order->orderReturns->isNotEmpty())
                             <x-ui.badge variant="warning">
                                 <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
-                                {{ __('Retur Dicatat') }} ({{ $order->orderReturns->count() }}x)
+                                {{ __('Returns Recorded') }} ({{ $order->orderReturns->count() }}x)
                             </x-ui.badge>
                         @endif
                     </div>
                 </div>
 
                 <div class="space-y-2.5">
-                    <h3 class="font-bold text-gray-700 text-xs uppercase tracking-wider">{{ __('Item Pesanan') }}</h3>
+                    <h3 class="font-bold text-gray-700 text-xs uppercase tracking-wider">{{ __('Order Items') }}</h3>
                     <div class="divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden">
                         @foreach($order->orderItems as $item)
                             @php
@@ -74,11 +74,11 @@
                             @endphp
                             <div class="p-3.5 flex justify-between items-center text-xs bg-white hover:bg-gray-50/50 transition-colors">
                                 <div>
-                                    <span class="font-bold text-apeiron-ink text-sm">{{ $item->product->product_name ?? 'Produk' }}</span>
+                                    <span class="font-bold text-apeiron-ink text-sm">{{ $item->product->product_name ?? 'Product' }}</span>
                                     <span class="text-gray-400 font-semibold"> &times; {{ $item->qty }} pcs</span>
                                     @if ($returnedQty > 0)
                                         <x-ui.badge variant="warning" class="ml-2 text-[10px]">
-                                            Diretur {{ $returnedQty }} pcs
+                                            Returned ({{ $returnedQty }} pcs)
                                         </x-ui.badge>
                                     @endif
                                     @if($item->notes)
@@ -91,10 +91,10 @@
                     </div>
                 </div>
 
-                {{-- Riwayat Retur & Disposisi --}}
+                {{-- Return & Disposition History --}}
                 @if ($order->orderReturns && $order->orderReturns->isNotEmpty())
                     <div class="space-y-3 pt-2">
-                        <h3 class="font-bold text-amber-800 text-xs uppercase tracking-wider">{{ __('Riwayat Retur & Disposisi Inventori') }}</h3>
+                        <h3 class="font-bold text-amber-800 text-xs uppercase tracking-wider">{{ __('Return & Inventory Disposition History') }}</h3>
                         <div class="space-y-2.5">
                             @foreach ($order->orderReturns as $ret)
                                 <div class="bg-amber-50/60 border border-amber-200 rounded-xl p-4 text-xs space-y-2">
@@ -105,7 +105,7 @@
                                         </div>
                                         <span class="text-gray-500 font-normal">{{ $ret->created_at->format('d/m/Y H:i') }}</span>
                                     </div>
-                                    <p class="text-gray-600"><strong class="text-gray-800">{{ __('Alasan:') }}</strong> {{ $ret->reason }}</p>
+                                    <p class="text-gray-600"><strong class="text-gray-800">{{ __('Reason:') }}</strong> {{ $ret->reason }}</p>
                                     <div class="space-y-1.5 pt-1">
                                         @foreach ($ret->items as $retItem)
                                             <div class="flex justify-between items-center bg-white p-2 rounded-lg border border-amber-100">
@@ -129,10 +129,10 @@
                     </div>
                 @endif
 
-                {{-- Riwayat Payment Refunds --}}
+                {{-- Payment Refunds History --}}
                 @if ($order->paymentRefunds && $order->paymentRefunds->isNotEmpty())
                     <div class="space-y-3 pt-2">
-                        <h3 class="font-bold text-rose-800 text-xs uppercase tracking-wider">{{ __('Riwayat Pengembalian Dana (Payment Refunds)') }}</h3>
+                        <h3 class="font-bold text-rose-800 text-xs uppercase tracking-wider">{{ __('Payment Refund History') }}</h3>
                         <div class="space-y-2">
                             @foreach ($order->paymentRefunds as $refund)
                                 <div class="bg-rose-50/50 border border-rose-200 rounded-xl p-3.5 text-xs space-y-1.5">
@@ -141,10 +141,10 @@
                                         <span class="font-bold text-rose-700 tabular-nums text-sm">Rp {{ number_format($refund->amount, 0, ',', '.') }}</span>
                                     </div>
                                     <div class="grid grid-cols-2 gap-2 text-gray-500 text-[11px]">
-                                        <div>Metode: <strong class="text-gray-700 uppercase">{{ $refund->refund_method }}</strong></div>
+                                        <div>Method: <strong class="text-gray-700 uppercase">{{ $refund->refund_method }}</strong></div>
                                         <div>Status: <strong class="text-emerald-700 uppercase">{{ $refund->financial_status }}</strong></div>
                                         @if ($refund->is_method_override)
-                                            <div class="col-span-2 text-rose-600 font-medium">Pengecualian Tunai: {{ $refund->method_override_reason ?? 'Disetujui Supervisor' }}</div>
+                                            <div class="col-span-2 text-rose-600 font-medium">Cash Exception: {{ $refund->method_override_reason ?? 'Supervisor Approved' }}</div>
                                         @endif
                                     </div>
                                 </div>
@@ -160,12 +160,12 @@
                     </div>
                     @if ($order->discount_amount > 0)
                         <div class="flex justify-between text-rose-600 font-semibold">
-                            <span>{{ __('Diskon') }}</span>
+                            <span>{{ __('Discount') }}</span>
                             <span class="tabular-nums">- Rp {{ number_format((float) $order->discount_amount, 0, ',', '.') }}</span>
                         </div>
                     @endif
                     <div class="flex justify-between text-gray-500">
-                        <span>{{ __('Pajak') }}</span>
+                        <span>{{ __('Tax') }}</span>
                         <span class="tabular-nums font-semibold">Rp {{ number_format((float) $order->tax_amount, 0, ',', '.') }}</span>
                     </div>
                     @if ($order->service_charge_amount > 0)
@@ -175,7 +175,7 @@
                         </div>
                     @endif
                     <div class="flex justify-between text-base font-bold text-apeiron-ink pt-2.5 border-t border-gray-100">
-                        <span>{{ __('Total Tagihan') }}</span>
+                        <span>{{ __('Total Amount') }}</span>
                         <span class="tabular-nums">Rp {{ number_format((float) $order->order_amount, 0, ',', '.') }}</span>
                     </div>
                 </div>

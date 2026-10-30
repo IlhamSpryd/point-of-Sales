@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id" data-theme="kds-dark">
+<html lang="en" data-theme="kds-dark">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -24,14 +24,14 @@
             </a>
             <div>
                 <h1 class="text-2xl font-bold tracking-tight leading-none">Kitchen Display</h1>
-                <p class="text-sm font-medium text-apeiron-muted mt-1">Status Dapur Real-time</p>
+                <p class="text-sm font-medium text-apeiron-muted mt-1">Real-time Kitchen Status</p>
             </div>
         </div>
         
         <div class="flex items-center gap-3">
             <div class="hidden md:flex items-center gap-2 px-3 py-1.5 bg-apeiron-surface border border-apeiron-border rounded-lg shadow-sm text-sm font-bold">
                 <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                Koneksi Stabil
+                Connected
             </div>
             <div class="px-3 py-1.5 bg-apeiron-ink text-apeiron-bg rounded-lg text-sm font-bold tabular-nums shadow-sm">
                 {{ now()->format('H:i') }}

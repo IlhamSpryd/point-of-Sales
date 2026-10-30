@@ -81,7 +81,7 @@ class RoleService
         return DB::transaction(function () use ($role) {
             $usersCount = $role->users()->where('users.tenant_id', app(TenantContext::class)->requireTenantId())->count();
             if ($usersCount > 0) {
-                throw new Exception('Tidak dapat menghapus role "'.$role->name." karena {$usersCount} pengguna masih menggunakan role ini.");
+                throw new Exception('Cannot delete role "'.$role->name.'" because '.$usersCount.' user(s) are assigned to it.');
             }
 
             return $role->delete();

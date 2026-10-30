@@ -46,7 +46,7 @@
                     </p>
                 </div>
                 <button wire:click="closeModifierPicker"
-                    aria-label="Tutup pemilih varian (Esc)"
+                    aria-label="Close option picker (Esc)"
                     class="size-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-apeiron-ink hover:bg-gray-100 transition-colors -mr-1 -mt-1">
                     <span class="material-symbols-rounded text-[20px]">close</span>
                 </button>
@@ -59,7 +59,7 @@
                         <div class="flex justify-between items-baseline mb-2.5">
                             <h4 class="font-bold text-xs uppercase tracking-wider text-gray-600">{{ $group->name }}</h4>
                             <span class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
-                                {{ $group->is_required ? ($group->selection_type === 'single' ? 'Pilih 1 (Wajib)' : 'Wajib') : 'Opsional' }}
+                                {{ $group->is_required ? ($group->selection_type === 'single' ? 'Select 1 (Required)' : 'Required') : 'Optional' }}
                             </span>
                         </div>
 
@@ -88,10 +88,10 @@
                 @endforeach
 
                 <div class="pt-2">
-                    <label class="block font-bold text-xs uppercase tracking-wider text-gray-500 mb-1.5">Catatan Tambahan</label>
+                    <label class="block font-bold text-xs uppercase tracking-wider text-gray-500 mb-1.5">Special Instructions</label>
                     <textarea wire:model="pendingNotes"
                         class="w-full bg-gray-50 border border-[#E5E7EB] rounded-xl text-xs font-medium focus:border-apeiron-ink focus:bg-white focus:ring-1 focus:ring-apeiron-ink transition-colors px-3 py-2 resize-none placeholder:text-gray-400"
-                        rows="2" placeholder="Contoh: Kurangi gula, sedikit es..."></textarea>
+                        rows="2" placeholder="e.g. Less sugar, light ice..."></textarea>
                 </div>
             </div>
 
@@ -99,20 +99,20 @@
             <div class="px-6 py-4 bg-white flex items-center justify-between gap-3 shrink-0 border-t border-[#E5E7EB] shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.05)]">
                 <div class="flex items-center gap-2 bg-gray-50 rounded-xl p-1 border border-[#E5E7EB]">
                     <button type="button" x-on:click="localQty = Math.max(1, localQty - 1)"
-                        aria-label="Kurangi jumlah"
+                        aria-label="Decrease quantity"
                         class="w-8 h-8 flex items-center justify-center bg-white rounded-lg shadow-sm text-apeiron-ink font-bold hover:bg-gray-50 active:scale-95 transition-all">
                         <span class="material-symbols-rounded text-[18px]">remove</span>
                     </button>
                     <span class="w-6 text-center font-black text-xs text-apeiron-ink" x-text="localQty"></span>
                     <button type="button" x-on:click="localQty++"
-                        aria-label="Tambah jumlah"
+                        aria-label="Increase quantity"
                         class="w-8 h-8 flex items-center justify-center bg-white rounded-lg shadow-sm text-apeiron-ink font-bold hover:bg-gray-50 active:scale-95 transition-all">
                         <span class="material-symbols-rounded text-[18px]">add</span>
                     </button>
                 </div>
                 <button wire:click="confirmAddToCart"
                     class="flex-1 min-h-[44px] bg-apeiron-ink hover:bg-[#111111] text-white rounded-xl font-bold text-xs shadow-md transition-all active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink">
-                    Tambahkan ke Keranjang
+                    Add to Cart
                 </button>
             </div>
         </div>

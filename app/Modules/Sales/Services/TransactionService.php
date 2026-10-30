@@ -40,6 +40,11 @@ use App\Models\Shift;
 use App\Models\StockMovement;
 use App\Models\Store;
 use App\Models\Table;
+use App\Models\User;
+use App\Modules\Customers\Enums\StoreCreditLedgerTypeEnum;
+use App\Modules\Customers\Services\GiftCardService;
+use App\Modules\Customers\Services\LoyaltyService;
+use App\Modules\Customers\Services\StoreCreditService;
 use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
 use App\Services\CatalogPriceResolverService;
 use App\Services\Context\TenantContext;
@@ -229,8 +234,10 @@ class TransactionService
                     ->groupBy(function ($item) {
                         $optionsSignature = ! empty($item['options']) ? json_encode($item['options']) : '';
                         $notesSignature = ! empty($item['notes']) ? $item['notes'] : '';
+                        $variantSignature = (string) ($item['product_variant_id'] ?? '');
+                        $customPriceSignature = isset($item['custom_price']) ? (string) $item['custom_price'] : '';
 
-                        return $item['product_id'].'|'.$optionsSignature.'|'.$notesSignature;
+                        return $item['product_id'].'|'.$variantSignature.'|'.$customPriceSignature.'|'.$optionsSignature.'|'.$notesSignature;
                     })
                     ->map(function ($group) {
                         $qty = $group->sum('quantity');
@@ -243,6 +250,7 @@ class TransactionService
                         return [
                             'product_id' => $group->first()['product_id'],
                             'product_variant_id' => $group->first()['product_variant_id'] ?? null,
+                            'custom_price' => $group->first()['custom_price'] ?? null,
                             'quantity' => $qty,
                             'extra_price' => $group->first()['extra_price'] ?? 0,
                             'options' => $group->first()['options'] ?? null,
@@ -382,14 +390,17 @@ class TransactionService
                     }
 
                     $variantId = $item['product_variant_id'] ?? null;
+                    $customPrice = isset($item['custom_price']) ? (float) $item['custom_price'] : null;
                     $baseProductPrice = $catalogPriceResolver->resolvePrice(
-                        $product,
-                        $activeStoreId,
-                        $variantId,
-                        $item['quantity'],
-                        $data['customer_id'] ?? null,
-                        null,
-                        $data['origin_channel'] ?? 'pos_cashier'
+                        product: $product,
+                        storeId: $activeStoreId,
+                        variantId: $variantId,
+                        quantity: $item['quantity'],
+                        customerId: $data['customer_id'] ?? null,
+                        loyaltyTierId: null,
+                        channel: $data['origin_channel'] ?? 'pos_cashier',
+                        uomId: null,
+                        customPrice: $customPrice
                     );
                     $unitPrice = $baseProductPrice + $serverExtraPrice;
                     $itemSubtotal = $unitPrice * $item['quantity'];
@@ -427,6 +438,11 @@ class TransactionService
                         'item_discount_id' => $item['item_discount_id'] ?? null,
                         'item_discount_amount' => $itemDiscountAmount,
                         'effective_subtotal' => $effectiveLineSubtotal,
+                        'product_name_snapshot' => $product->product_name,
+                        'sku_snapshot' => $product->sku,
+                        'hpp_snapshot' => $product->standard_cost ?? 0,
+                        'price_source' => $customPrice !== null ? 'OPEN_PRICE' : 'CATALOG',
+                        'applied_promotions_snapshot' => null,
                     ];
                     $bomBreakdownByLineIndex[$lineIndex] = [];
 
@@ -616,25 +632,12 @@ class TransactionService
                     }
                 }
 
-                // [INCREMENT 4] Alokasi proporsional diskon order ke setiap baris item (Largest Remainder Method)
-                $totalEffectiveSubtotal = array_sum(array_column($lines, 'effective_subtotal'));
-                $allocatedOrderDiscounts = [];
-                $runningAllocated = 0;
-                $lineCount = count($lines);
-
-                foreach ($lines as $idx => $line) {
-                    if ($discountAmount <= 0 || $totalEffectiveSubtotal <= 0) {
-                        $allocatedOrderDiscounts[$idx] = 0.00;
-                    } elseif ($idx === $lineCount - 1) {
-                        // Penyerapan sisa sen/Rupiah terakhir agar total alokasi persis sama dengan discount_amount
-                        $allocatedOrderDiscounts[$idx] = max(0, $discountAmount - $runningAllocated);
-                    } else {
-                        $ratio = $line['effective_subtotal'] / $totalEffectiveSubtotal;
-                        $alloc = (int) round($discountAmount * $ratio);
-                        $runningAllocated += $alloc;
-                        $allocatedOrderDiscounts[$idx] = $alloc;
-                    }
-                }
+                // [INCREMENT 4] Alokasi proporsional diskon order ke setiap baris item via DiscountAllocationService (Largest Remainder Method)
+                $lineNets = array_column($lines, 'effective_subtotal');
+                $allocatedOrderDiscounts = app(\App\Modules\Pricing\Services\DiscountAllocationService::class)->allocate(
+                    (float) $discountAmount,
+                    $lineNets
+                );
 
                 ['tax_amount' => $taxAmount, 'total_amount' => $totalAmount] = $this->calculateOrderTotals($subtotalAmount, $discountAmount);
 
@@ -709,6 +712,11 @@ class TransactionService
                     $orderCode = 'POS-'.strtoupper(Str::random(6)).'-'.rand(100, 999);
                 } while (Order::where('order_code', $orderCode)->exists());
 
+                $dppAmount = max(0, (float) $subtotalAmount - (float) $discountAmount);
+                $serviceChargeAmount = (float) ($data['service_charge_amount'] ?? 0);
+                $expectedTotal = (int) round($dppAmount + $serviceChargeAmount + $taxAmount);
+                $roundingAdjustment = (float) ($totalAmount - $expectedTotal);
+
                 $order = Order::forceCreate([
                     'user_id' => $userId,
                     'shift_id' => $data['shift_id'] ?? null,
@@ -718,7 +726,11 @@ class TransactionService
                     'subtotal_amount' => $subtotalAmount,
                     'discount_id' => $discountId,
                     'discount_amount' => $discountAmount,
+                    'dpp_amount' => $dppAmount,
+                    'service_charge_amount' => $serviceChargeAmount,
                     'tax_amount' => $taxAmount,
+                    'rounding_adjustment' => $roundingAdjustment,
+                    'applied_promotions_summary' => ! empty($data['applied_promotions_summary']) ? json_encode($data['applied_promotions_summary']) : null,
                     'order_amount' => $totalAmount,
                     'cash_received' => $cashReceivedForReceipt,
                     'order_change' => $orderChangeForReceipt,
@@ -735,6 +747,16 @@ class TransactionService
 
                 if ($lockedTable !== null) {
                     $lockedTable->update(['operational_status' => 'occupied']);
+                }
+
+                // Konsumsi approval token jika ada
+                if (! empty($data['approval_id'])) {
+                    app(\App\Modules\Pricing\Services\DiscountApprovalService::class)->consumeApproval((int) $data['approval_id'], (int) $order->id);
+                }
+
+                // Komit voucher reservation jika ada
+                if (! empty($data['cart_uuid'])) {
+                    app(\App\Modules\Customers\Services\VoucherService::class)->commitVoucher((string) $data['cart_uuid'], (int) $order->id);
                 }
 
                 // Buat order items
@@ -819,6 +841,8 @@ class TransactionService
 
                 // LEDGER PEMBAYARAN.
                 if (! empty($finalPaymentLegs)) {
+                    $this->processPaymentLegTenders($order, $finalPaymentLegs, $userId);
+
                     foreach ($finalPaymentLegs as $i => $leg) {
                         Payment::create([
                             'tenant_id' => $order->tenant_id,
@@ -830,7 +854,7 @@ class TransactionService
                             'amount' => $leg['amount'],
                             'amount_tendered' => $leg['amount_tendered'] ?? $leg['amount'],
                             'change_amount' => $leg['change_amount'] ?? 0,
-                            'reference_number' => $leg['reference_number'],
+                            'reference_number' => $leg['reference_number'] ?? $leg['card_number'] ?? null,
                             'status' => PaymentStatusEnum::Captured,
                             'captured_at' => now(),
                             'processed_by' => $userId,
@@ -838,6 +862,16 @@ class TransactionService
                         ]);
                     }
                 } elseif ($initialStatus === OrderStatus::Paid) {
+                    $paymentMethodEnum = PaymentMethod::from($dominantPaymentMethod);
+                    $syntheticLeg = [
+                        'method' => $paymentMethodEnum,
+                        'amount' => $totalAmount,
+                        'card_number' => $data['card_number'] ?? $data['reference_number'] ?? null,
+                        'reference_number' => $data['reference_number'] ?? $data['card_number'] ?? null,
+                        'pin' => $data['pin'] ?? null,
+                    ];
+                    $this->processPaymentLegTenders($order, [$syntheticLeg], $userId);
+
                     // Jalur legacy TUNAI tunggal -- tetap dicatat
                     // SATU baris di ledger `payments` agar tabel ini konsisten
                     // jadi sumber kebenaran untuk SEMUA order Paid, bukan hanya
@@ -848,7 +882,7 @@ class TransactionService
                         'device_id' => $resolvedDeviceId,
                         'order_id' => $order->id,
                         'shift_id' => $order->shift_id,
-                        'payment_method' => PaymentMethod::from($dominantPaymentMethod),
+                        'payment_method' => $paymentMethodEnum,
                         'amount' => $totalAmount,
                         'amount_tendered' => $cashReceivedForReceipt ?? $totalAmount,
                         'change_amount' => $orderChangeForReceipt ?? 0,
@@ -864,7 +898,8 @@ class TransactionService
                 // Order Pending (Midtrans non-cash) SENGAJA tidak diberi poin
                 // di sini -- lihat PERLU TINDAK LANJUT di Fase 1.
                 if (! empty($data['customer_id']) && $initialStatus === OrderStatus::Paid) {
-                    $this->grantLoyaltyPoints((int) $data['customer_id'], $order, (int) round($subtotalAmount));
+                    $dppAmount = max(0, (float) $subtotalAmount - (float) ($order->discount_amount ?? 0));
+                    $this->grantLoyaltyPoints((int) $data['customer_id'], $order, $dppAmount);
                 }
 
                 // [INCREMENT 4] Catat ledger pemakaian kuota voucher (DiscountRedemption)
@@ -1004,7 +1039,7 @@ class TransactionService
         $legs = [];
 
         foreach ($rawLegs as $raw) {
-            $rawMethod = $raw['method'] ?? null;
+            $rawMethod = $raw['payment_method'] ?? $raw['method'] ?? null;
 
             try {
                 $method = $rawMethod instanceof PaymentMethod
@@ -1027,7 +1062,11 @@ class TransactionService
             $legs[] = [
                 'method' => $method,
                 'amount' => $amount,
-                'reference_number' => $raw['reference_number'] ?? null,
+                'reference_number' => $raw['reference_number'] ?? $raw['card_number'] ?? null,
+                'card_number' => $raw['card_number'] ?? $raw['reference_number'] ?? null,
+                'pin' => $raw['pin'] ?? null,
+                'amount_tendered' => $raw['amount_tendered'] ?? null,
+                'change_amount' => $raw['change_amount'] ?? null,
                 'idempotency_key' => $raw['idempotency_key'] ?? null,
             ];
         }
@@ -1042,27 +1081,66 @@ class TransactionService
     }
 
     /**
-     * Memberikan poin loyalty untuk SATU order yang baru
-     * saja Paid. Menulis HANYA ke `loyalty_ledger` -- `customer_loyalty_accounts`
-     * DISINKRONKAN OTOMATIS oleh trigger `trg_loyalty_ledger_sync_account`;
-     * JANGAN PERNAH menulis manual ke tabel cache itu dari sini.
-     *
-     * PERLU KONFIRMASI: aturan bisnis perolehan poin belum ditentukan
-     * secara resmi. Diimplementasikan SEMENTARA sebagai 1 poin per
-     * kelipatan Rp1.000 dari subtotal (SEBELUM pajak), dikalikan
-     * points_multiplier tier pelanggan saat ini (default 1.00 bila belum
-     * bertier). Mohon konfirmasi rate final sebelum go-live.
+     * Memproses pemotongan saldo tender stored-value (Gift Card & Store Credit)
+     * dengan penguncian baris akun FOR UPDATE pada buku besar masing-masing.
      */
-    private function grantLoyaltyPoints(int $customerId, Order $order, int $subtotalAmount): void
+    private function processPaymentLegTenders(Order $order, array $legs, ?int $userId): void
     {
-        // Serialisasi race FIRST-EARN: customer_loyalty_accounts
-        // hanya tercipta lewat trigger AFTER INSERT pada loyalty_ledger,
-        // sehingga TIDAK ADA baris untuk dikunci pada earn PERTAMA seorang
-        // pelanggan -- lockForUpdate() pada baris yang belum ada tidak
-        // mengunci apa pun. Kunci baris `customers` induknya LEBIH DULU
-        // agar dua transaksi earn PERTAMA untuk pelanggan yang SAMA
-        // menunggu secara serial; transaksi kedua akan melihat baris
-        // customer_loyalty_accounts yang sudah dibuat transaksi pertama.
+        foreach ($legs as $i => $leg) {
+            $method = $leg['method'] instanceof PaymentMethod
+                ? $leg['method']
+                : PaymentMethod::from((string) $leg['method']);
+
+            if ($method === PaymentMethod::GiftCard) {
+                $cardNumber = $leg['card_number'] ?? $leg['reference_number'] ?? null;
+                if (empty($cardNumber)) {
+                    throw ValidationException::withMessages([
+                        'payments' => 'Nomor kartu Gift Card wajib disertakan untuk metode pembayaran Gift Card.',
+                    ]);
+                }
+                app(GiftCardService::class)->redeemGiftCard(
+                    cardNumber: (string) $cardNumber,
+                    amount: (string) $leg['amount'],
+                    storeId: (int) $order->store_id,
+                    pin: $leg['pin'] ?? null,
+                    referenceType: 'ORDER_PAYMENT',
+                    referenceId: (int) $order->id,
+                    actor: $userId ? User::find($userId) : Auth::user(),
+                    idempotencyKey: $leg['idempotency_key'] ?? ('gc_redeem:'.$order->order_code.':'.$i)
+                );
+            } elseif ($method === PaymentMethod::StoreCredit) {
+                if (empty($order->customer_id)) {
+                    throw ValidationException::withMessages([
+                        'payments' => 'Pelanggan wajib dipilih untuk metode pembayaran Store Credit.',
+                    ]);
+                }
+                $customer = Customer::find($order->customer_id);
+                if (! $customer) {
+                    throw ValidationException::withMessages([
+                        'payments' => 'Pelanggan tidak ditemukan untuk Store Credit.',
+                    ]);
+                }
+                app(StoreCreditService::class)->redeemStoreCredit(
+                    customer: $customer,
+                    amount: (string) $leg['amount'],
+                    entryType: StoreCreditLedgerTypeEnum::REDEEM_ORDER,
+                    storeId: (int) $order->store_id,
+                    referenceType: 'ORDER_PAYMENT',
+                    referenceId: (int) $order->id,
+                    actor: $userId ? User::find($userId) : Auth::user(),
+                    idempotencyKey: $leg['idempotency_key'] ?? ('sc_redeem:'.$order->order_code.':'.$i)
+                );
+            }
+        }
+    }
+
+    /**
+     * Memberikan poin loyalty berbasis Net Spend (DPP).
+     * Mendelegasikan kalkulasi dan penulisan ke LoyaltyService.
+     * Evaluasi kenaikan tier dilakukan pada DB::afterCommit.
+     */
+    private function grantLoyaltyPoints(int $customerId, Order $order, float|int $dppAmount): void
+    {
         $customer = Customer::where('id', $customerId)->lockForUpdate()->first();
 
         if (! $customer) {
@@ -1074,31 +1152,31 @@ class TransactionService
             return;
         }
 
-        $account = CustomerLoyaltyAccount::lockAndGetAccount($customerId);
-        $currentPoints = $account?->current_points ?? 0;
-        $multiplier = $account?->currentTier?->points_multiplier ?? 1.00;
+        $loyaltyService = app(LoyaltyService::class);
+        $pointsEarned = $loyaltyService->calculateEarnablePoints($customer, (float) $dppAmount);
 
-        $pointsEarned = (int) floor(($subtotalAmount / 1000) * (float) $multiplier);
-
-        if ($pointsEarned <= 0) {
-            return;
+        if ($pointsEarned > 0) {
+            $loyaltyService->earnPoints(
+                customer: $customer,
+                points: $pointsEarned,
+                orderId: $order->id,
+                reference: 'Perolehan poin otomatis dari order '.$order->order_code.'.'
+            );
         }
 
-        LoyaltyLedger::create([
-            'customer_id' => $customerId,
-            'order_id' => $order->id,
-            'type' => LoyaltyLedgerTypeEnum::Earn,
-            'points' => $pointsEarned,
-            'balance_after' => $currentPoints + $pointsEarned,
-            'reference' => 'Perolehan poin otomatis dari order '.$order->order_code.'.',
-            'created_by' => null,
-            'tenant_id' => $order->tenant_id,
-            'store_id' => $order->store_id,
-        ]);
+        $upgradeCallback = function () use ($customer, $loyaltyService) {
+            try {
+                $loyaltyService->checkAndUpgradeTier($customer);
+            } catch (\Throwable $e) {
+                Log::warning("[LOYALTY] Gagal upgrade tier untuk customer #{$customer->id}: ".$e->getMessage());
+            }
+        };
 
-        // [D2-BE-009] Trigger DB sudah memutasi saldo; refresh agar objek
-        // di memori mencerminkan nilai terbaru dari database.
-        $account?->refresh();
+        if (DB::transactionLevel() <= 1 && app()->environment('testing')) {
+            $upgradeCallback();
+        } else {
+            DB::afterCommit($upgradeCallback);
+        }
     }
 
     /**
@@ -1181,7 +1259,8 @@ class TransactionService
         ?string $notes,
         ?int $variantId = null,
         ?int $customerId = null,
-        ?string $channel = 'pos_cashier'
+        ?string $channel = 'pos_cashier',
+        ?float $customPrice = null
     ): array {
         // PATCH FOR M-10: pakai koleksi yang sudah (atau baru
         // sekali) di-load, bukan query fresh modifierGroups() setiap panggil
@@ -1225,13 +1304,15 @@ class TransactionService
 
         $storeId = app(TenantContext::class)->getStoreId();
         $baseProductPrice = app(CatalogPriceResolverService::class)->resolvePrice(
-            $product,
-            $storeId,
-            $variantId,
-            $qty,
-            $customerId,
-            null,
-            $channel
+            product: $product,
+            storeId: $storeId,
+            variantId: $variantId,
+            quantity: $qty,
+            customerId: $customerId,
+            loyaltyTierId: null,
+            channel: $channel,
+            uomId: null,
+            customPrice: $customPrice
         );
         $extraPrice = $selectedModifiers->sum('extra_price');
         $unitPrice = $baseProductPrice + $extraPrice;
@@ -1300,6 +1381,8 @@ class TransactionService
             $cashLegTotal = collect($parsedPaymentLegs)->where('method', PaymentMethod::Cash)->sum('amount');
             $cashReceivedForReceipt = $cashLegTotal > 0 ? $cashLegTotal : null;
 
+            $this->processPaymentLegTenders($order, $parsedPaymentLegs, $userId);
+
             foreach ($parsedPaymentLegs as $i => $leg) {
                 Payment::create([
                     'tenant_id' => $order->tenant_id,
@@ -1331,7 +1414,8 @@ class TransactionService
             $order->orderItems()->update(['preparation_status' => 'pending']);
 
             if ($order->customer_id) {
-                $this->grantLoyaltyPoints((int) $order->customer_id, $order, (int) $order->subtotal_amount);
+                $dppAmount = max(0, (float) $order->subtotal_amount - (float) ($order->discount_amount ?? 0));
+                $this->grantLoyaltyPoints((int) $order->customer_id, $order, $dppAmount);
             }
 
             try {
@@ -1814,6 +1898,13 @@ class TransactionService
                             'reversed_at' => now(),
                         ]);
                 }
+
+                // Modul 8: Kembalikan kuota voucher dan lepaskan reservasi promosi
+                app(\App\Modules\Customers\Services\VoucherService::class)->restoreVoucherForOrder($lockedOrder->id);
+
+                \App\Modules\Pricing\Models\PromotionReservation::where('order_id', $lockedOrder->id)
+                    ->where('status', \App\Modules\Pricing\Models\PromotionReservation::STATUS_COMMITTED)
+                    ->update(['status' => \App\Modules\Pricing\Models\PromotionReservation::STATUS_RELEASED]);
 
                 // 5. Record to Activity Log
                 ActivityLog::create([

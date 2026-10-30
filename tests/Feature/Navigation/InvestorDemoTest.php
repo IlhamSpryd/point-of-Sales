@@ -75,11 +75,11 @@ class InvestorDemoTest extends TestCase
         ])->get(route('investor.demo'));
 
         $response->assertOk();
-        $response->assertSee('Pusat Visi Produk &amp; Demonstrasi Investor', false);
+        $response->assertSee('Product Vision &amp; Investor Demo Hub', false);
         $response->assertSee('Single Modular Core', false);
-        $response->assertSee('5 Alur Demonstrasi Terpadu', false);
-        $response->assertSee('Matriks 12 Domain Produk', false);
-        $response->assertSee('Keterlacakan 81 PAGE-ID', false);
+        $response->assertSee('5 Integrated Demo Workflows', false);
+        $response->assertSee('12 Strategic Product Domains', false);
+        $response->assertSee('81 PAGE-ID Traceability Register', false);
         $response->assertSee('PAGE-001', false);
         $response->assertSee('PAGE-081', false);
     }
@@ -98,14 +98,14 @@ class InvestorDemoTest extends TestCase
         $response->assertSee('2. Commerce Core', false);
         $response->assertSee('3. F&B Industry Pack', false);
         $response->assertSee('4. Retail Industry Pack', false);
-        $response->assertSee('5. Inventori & Suplai', false);
-        $response->assertSee('6. Analitik & Finansial', false);
-        $response->assertSee('7. CRM & Loyalitas', false);
-        $response->assertSee('8. Kitchen Display (KDS)', false);
+        $response->assertSee('5. Inventory & Supply', false);
+        $response->assertSee('6. Analytics & Financial', false);
+        $response->assertSee('7. CRM & Loyalty', false);
+        $response->assertSee('8. Kitchen Display System (KDS)', false);
         $response->assertSee('9. Table Management', false);
-        $response->assertSee('10. Pengadaan Formal (P2P)', false);
-        $response->assertSee('11. Keuangan & General Ledger', false);
-        $response->assertSee('12. Integrasi & Offline Sync', false);
+        $response->assertSee('10. Procure-to-Pay (P2P)', false);
+        $response->assertSee('11. Finance & General Ledger', false);
+        $response->assertSee('12. Integrations & Offline Sync', false);
     }
 
     public function test_cashier_role_cannot_access_investor_demo_hub(): void
@@ -147,11 +147,11 @@ class InvestorDemoTest extends TestCase
         ])->get(route('investor.demo', ['tab' => 'journeys']));
 
         $response->assertOk();
-        $response->assertSee('Alur A: Penjualan F&B Menuju Pengurangan Resep', false);
-        $response->assertSee('Alur B: Transaksi Ritel, Pemindaian Barcode', false);
-        $response->assertSee('Alur C: Penerimaan Barang Langsung & Rekalkulasi HPP', false);
-        $response->assertSee('Alur D: Tata Kelola Multi-Cabang & Isolasi Konteks Store', false);
-        $response->assertSee('Alur E: Etalase Kapabilitas Masa Depan (Fase F2 & F3)', false);
+        $response->assertSee('Workflow A: F&B Sales to Recipe Depletion', false);
+        $response->assertSee('Workflow B: Retail Transactions, Barcode Scanning', false);
+        $response->assertSee('Workflow C: Direct Goods Receipt & Moving Average COGS', false);
+        $response->assertSee('Workflow D: Multi-Branch Governance & Store Context Isolation', false);
+        $response->assertSee('Workflow E: Future Capabilities Showcase (Phases F2 & F3)', false);
     }
 
     public function test_traceability_matrix_contains_exact_81_page_ids_with_reconciled_counts(): void

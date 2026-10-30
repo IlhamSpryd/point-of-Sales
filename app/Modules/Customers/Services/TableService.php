@@ -48,7 +48,7 @@ class TableService
                     storeId: (int) $table->store_id,
                     subjectType: Table::class,
                     subjectId: (int) $table->id,
-                    description: "Meja '{$table->table_name}' dibuat pada cabang #{$table->store_id}.",
+                    description: "Table '{$table->table_name}' created at branch #{$table->store_id}.",
                     newValues: ['name' => $table->table_name, 'capacity' => $table->capacity, 'store_id' => $table->store_id]
                 );
             } catch (\Throwable) {
@@ -72,7 +72,7 @@ class TableService
                     storeId: (int) $table->store_id,
                     subjectType: Table::class,
                     subjectId: (int) $table->id,
-                    description: "Meja '{$table->table_name}' diperbarui.",
+                    description: "Table '{$table->table_name}' updated.",
                     oldValues: $oldValues,
                     newValues: $table->only(['table_name', 'capacity', 'area', 'operational_status', 'is_active'])
                 );
@@ -84,14 +84,13 @@ class TableService
     }
 
     /**
-     * Menghapus meja. Ditolak jika meja masih memiliki riwayat pesanan,
-     * demi menjaga integritas audit trail (INV-TBL-07).
+     * Delete table. Rejected if table has order history to preserve audit trail integrity.
      */
     public function delete(Table $table): bool
     {
         return DB::transaction(function () use ($table) {
             if ($table->orders()->exists()) {
-                throw new Exception('Tidak dapat menghapus meja "'.$table->table_name.'" karena masih memiliki riwayat pesanan.');
+                throw new Exception('Cannot delete table "'.$table->table_name.'" because it has existing order history.');
             }
 
             try {
@@ -102,7 +101,7 @@ class TableService
                     storeId: (int) $table->store_id,
                     subjectType: Table::class,
                     subjectId: (int) $table->id,
-                    description: "Meja '{$table->table_name}' dihapus."
+                    description: "Table '{$table->table_name}' deleted."
                 );
             } catch (\Throwable) {
             }
@@ -112,9 +111,7 @@ class TableService
     }
 
     /**
-     * Memperbarui kredensial QR Code dengan token kriptografis 64-hex baru.
-     * Menaikkan qr_token_version, memperbarui qr_rotated_at, dan menghapus cache lama.
-     * Nilai mentah token dilarang bocor ke log (ADR-010).
+     * Rotate table QR code credentials with a new 64-hex token.
      */
     public function rotateQrToken(Table $table, ?int $actorId = null): Table
     {
@@ -130,7 +127,7 @@ class TableService
                 'secure_token' => (string) Str::uuid(),
             ]);
 
-            // Bersihkan cache terkait meja ini secara atomik
+            // Clear table cache atomically
             Cache::forget('pos:qr:table:'.$table->id);
             if ($oldToken) {
                 Cache::forget('pos:qr:token:'.$oldToken);
@@ -144,7 +141,7 @@ class TableService
                     storeId: (int) $table->store_id,
                     subjectType: Table::class,
                     subjectId: (int) $table->id,
-                    description: "QR Code meja '{$table->table_name}' dirotasi ke versi {$newVersion}.",
+                    description: "Table QR Code for '{$table->table_name}' rotated to version {$newVersion}.",
                     metadata: [
                         'store_id' => $table->store_id,
                         'qr_token_version' => $newVersion,
@@ -159,14 +156,11 @@ class TableService
     }
 
     /**
-     * Membebaskan meja menjadi 'available'.
-     * Menegakkan INV-TBL-07: wajib menolak pembebasan meja apabila masih
-     * terdapat pesanan terkait yang belum dibayar (pending) dan belum dibatalkan (void/cancelled).
+     * Release table to 'available'.
      */
     public function releaseTable(Table $table, ?int $actorId = null): Table
     {
         return DB::transaction(function () use ($table, $actorId) {
-            // Kunci baris Table untuk serialisasi konkurensi (ADR-007)
             /** @var Table $lockedTable */
             $lockedTable = Table::withoutGlobalScopes()
                 ->where('tenant_id', $table->tenant_id)
@@ -175,7 +169,6 @@ class TableService
                 ->lockForUpdate()
                 ->firstOrFail();
 
-            // Periksa seluruh pesanan aktif pada meja ini
             $activeOrders = Order::withoutGlobalScopes()
                 ->where('tenant_id', $lockedTable->tenant_id)
                 ->where('store_id', $lockedTable->store_id)
@@ -185,7 +178,7 @@ class TableService
 
             if ($activeOrders->isNotEmpty()) {
                 $orderCodes = $activeOrders->pluck('order_code')->implode(', ');
-                throw new DomainException("Tidak dapat membebaskan meja '{$lockedTable->table_name}' karena masih memiliki pesanan aktif belum lunas ({$orderCodes}).");
+                throw new DomainException("Cannot release table '{$lockedTable->table_name}' because it has pending unpaid orders ({$orderCodes}).");
             }
 
             $lockedTable->update([
@@ -200,7 +193,7 @@ class TableService
                     storeId: (int) $lockedTable->store_id,
                     subjectType: Table::class,
                     subjectId: (int) $lockedTable->id,
-                    description: "Meja '{$lockedTable->table_name}' dibebaskan menjadi available."
+                    description: "Table '{$lockedTable->table_name}' released and marked available."
                 );
             } catch (\Throwable) {
             }
@@ -210,8 +203,7 @@ class TableService
     }
 
     /**
-     * Menonaktifkan meja secara aman.
-     * Ditolak jika meja saat ini sedang ditempati pesanan aktif.
+     * Safely deactivate table.
      */
     public function disableTable(Table $table, ?int $actorId = null): Table
     {
@@ -232,12 +224,12 @@ class TableService
                 ->exists();
 
             if ($activeOrders) {
-                throw new DomainException("Tidak dapat menonaktifkan meja '{$lockedTable->table_name}' saat masih terdapat pesanan aktif.");
+                throw new DomainException("Cannot deactivate table '{$lockedTable->table_name}' while it has active orders.");
             }
 
             $lockedTable->update([
                 'is_active' => false,
-                'operational_status' => 'reserved', // atau nonaktif
+                'operational_status' => 'reserved',
             ]);
 
             try {
@@ -248,7 +240,7 @@ class TableService
                     storeId: (int) $lockedTable->store_id,
                     subjectType: Table::class,
                     subjectId: (int) $lockedTable->id,
-                    description: "Meja '{$lockedTable->table_name}' dinonaktifkan."
+                    description: "Table '{$lockedTable->table_name}' deactivated."
                 );
             } catch (\Throwable) {
             }

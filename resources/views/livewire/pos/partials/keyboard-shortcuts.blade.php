@@ -3,28 +3,28 @@
     <div class="flex items-center gap-4 flex-wrap">
         <span class="inline-flex items-center gap-1.5">
             <x-ui.kbd>F2</x-ui.kbd>
-            <span>Cari Produk</span>
+            <span>Search Products</span>
         </span>
         <span class="inline-flex items-center gap-1.5">
             <x-ui.kbd>F4</x-ui.kbd>
-            <span>Proses Bayar</span>
+            <span>Process Payment</span>
         </span>
         <span class="inline-flex items-center gap-1.5">
             <x-ui.kbd>F8</x-ui.kbd>
-            <span>Tahan Keranjang</span>
+            <span>Park Cart</span>
         </span>
         <span class="inline-flex items-center gap-1.5">
             <x-ui.kbd>F9</x-ui.kbd>
-            <span>Keranjang Tertunda</span>
+            <span>Parked Carts</span>
         </span>
         <span class="inline-flex items-center gap-1.5">
             <x-ui.kbd>Esc</x-ui.kbd>
-            <span>Tutup Modal</span>
+            <span>Close Modal</span>
         </span>
     </div>
 
     <div class="flex items-center gap-1.5 text-gray-400">
         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-        <span>Mode Kasir Aktif</span>
+        <span>Cashier Mode Active</span>
     </div>
 </div>

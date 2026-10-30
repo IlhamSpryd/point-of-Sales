@@ -40,7 +40,7 @@
                             clearInterval(interval);
                         } else if(data.status === 'failed') {
                             this.loading = false;
-                            this.errorMessage = data.error_message || 'Ekspor gagal diproses.';
+                            this.errorMessage = data.error_message || 'Export failed to process.';
                             clearInterval(interval);
                             $wire.resetExport();
                         }
@@ -49,7 +49,7 @@
                         console.error('Error polling status:', err);
                         this.loading = false;
                         this.status = 'failed';
-                        this.errorMessage = 'Gagal memeriksa status ekspor (kesalahan jaringan atau server).';
+                        this.errorMessage = 'Failed to check export status (network or server error).';
                         clearInterval(interval);
                         $wire.resetExport();
                     });
@@ -66,7 +66,7 @@
         class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-50 dark:hover:bg-zinc-700 transition shadow-xs w-full sm:w-auto"
     >
         <span class="material-symbols-rounded text-base">download</span>
-        Ekspor Excel (.xlsx)
+        Export to Excel (.xlsx)
     </button>
     
     <!-- Processing State -->
@@ -80,7 +80,7 @@
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
-        Menyiapkan Ekspor...
+        Preparing Export...
     </button>
 
     <!-- Completed State -->
@@ -91,7 +91,7 @@
         download
     >
         <span class="material-symbols-rounded text-base">check_circle</span>
-        Unduh File Siap
+        Download File
     </a>
 
     <!-- Polling Error Message -->

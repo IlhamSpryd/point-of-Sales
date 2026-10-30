@@ -13,9 +13,9 @@ enum PreparationStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Pending => 'Menunggu Dapur',
-            self::Brewing => 'Sedang Diracik',
-            self::Ready => 'Siap Disajikan',
+            self::Pending => 'Queued',
+            self::Brewing => 'Preparing',
+            self::Ready => 'Ready to Serve',
         };
     }
 

@@ -245,6 +245,9 @@ class CartService
     public function refreshCartPrices(): void
     {
         $cart = $this->getCartArray();
+        $storeId = session('current_store_id') ?? app(TenantContext::class)->getStoreId();
+        $customerId = session('current_customer_id');
+        $priceResolver = app(CatalogPriceResolverService::class);
 
         foreach ($cart as $lineId => $item) {
             $product = Product::find($item['product_id']);
@@ -259,10 +262,17 @@ class CartService
             // PATCH FOR S-15: hanya modifier aktif.
             $modifiers = Modifier::whereIn('id', $modifierIds)->where('is_active', true)->with('modifierGroup')->get();
 
+            $basePrice = $priceResolver->resolvePrice(
+                $product,
+                $storeId,
+                $item['variant_id'] ?? null,
+                (float) ($item['qty'] ?? 1),
+                $customerId
+            );
             $extraPrice = $modifiers->sum('extra_price');
-            $unitPrice = $product->product_price + $extraPrice;
+            $unitPrice = $basePrice + $extraPrice;
 
-            $cart[$lineId]['base_price'] = $product->product_price;
+            $cart[$lineId]['base_price'] = $basePrice;
             $cart[$lineId]['unit_price'] = $unitPrice;
 
             // Perbarui juga data options agar sesuai

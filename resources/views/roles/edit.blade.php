@@ -1,17 +1,17 @@
 <x-app-layout>
     <div class="space-y-6" data-gsap="page-enter">
         <x-erp.page-header
-            title="Edit Peran"
-            description="Ubah hak akses dan konfigurasi wewenang peran sistem.">
+            title="Edit Role: {{ $role->name }}"
+            description="Update access permissions and authority settings for this role.">
             <x-slot:breadcrumbs>
                 <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
-                <x-ui.breadcrumbs.item href="{{ route('roles.index') }}">Peran</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('roles.index') }}">Roles</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Edit</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>
 
             <x-slot:actions>
                 <x-ui.button variant="secondary" href="{{ route('roles.index') }}" class="gap-2" wire:navigate>
-                    <span class="material-symbols-rounded text-base">arrow_back</span> Kembali
+                    <span class="material-symbols-rounded text-base">arrow_back</span> Back
                 </x-ui.button>
             </x-slot:actions>
         </x-erp.page-header>
@@ -24,18 +24,18 @@
                 <!-- Role Details Row -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <x-form-label for="name">Nama Peran</x-form-label>
+                        <x-form-label for="name">Role Name</x-form-label>
                         <x-form-input type="text" id="name" name="name" value="{{ old('name', $role->name) }}" 
-                               placeholder="Contoh: Manager" required class="{{ $errors->has('name') ? 'input-error' : '' }}" />
+                               placeholder="e.g. Manager" required class="{{ $errors->has('name') ? 'input-error' : '' }}" />
                         @error('name')
                             <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
                     
                     <div>
-                        <x-form-label for="description">Deskripsi Tugas (Opsional)</x-form-label>
+                        <x-form-label for="description">Role Description (Optional)</x-form-label>
                         <x-form-input type="text" id="description" name="description" value="{{ old('description', $role->description) }}" 
-                               placeholder="Penjelasan singkat tugas peran ini" class="{{ $errors->has('description') ? 'input-error' : '' }}" />
+                               placeholder="Brief summary of responsibilities for this role" class="{{ $errors->has('description') ? 'input-error' : '' }}" />
                         @error('description')
                             <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
@@ -45,16 +45,15 @@
                 <!-- Permissions Row -->
                 <div class="pt-4 border-t border-[#E5E7EB] dark:border-zinc-800">
                     <div class="mb-4">
-                        <h5 class="text-base font-semibold text-apeiron-ink dark:text-zinc-100">Hak Akses Modul (RBAC)</h5>
-                        <p class="text-sm text-zinc-500">Pilih modul dan izin spesifik yang diberikan kepada peran ini.</p>
+                        <h5 class="text-base font-semibold text-apeiron-ink dark:text-zinc-100">Module Access Privileges (RBAC)</h5>
+                        <p class="text-sm text-zinc-500">Select specific modules and access permissions granted to this role.</p>
                     </div>
 
-                    {{-- Disclaimer jujur — @see §2.4 audit navigasi --}}
                     <div class="mb-5 flex items-start gap-3 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 px-4 py-3" role="alert">
                         <span class="material-symbols-rounded text-[20px] text-amber-600 dark:text-amber-400 shrink-0 mt-0.5">info</span>
                         <div>
-                            <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">Izin granular belum ditegakkan secara otomatis</p>
-                            <p class="text-xs text-amber-700 dark:text-amber-400/80 mt-0.5">Izin yang dicentang di bawah akan tersimpan di database, namun akses modul saat ini masih ditentukan berdasarkan <strong>nama peran</strong> bawaan (Owner, Manager, Kasir, dll). Fitur penegakan otomatis izin per-modul sedang dalam pengembangan.</p>
+                            <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">Granular module permissions are advisory</p>
+                            <p class="text-xs text-amber-700 dark:text-amber-400/80 mt-0.5">Permissions selected below are stored in the database; however, module authorization currently maps to core standard roles (Owner, Manager, Cashier, etc.). Dynamic per-permission policy enforcement is being rolled out.</p>
                         </div>
                     </div>
                     
@@ -64,24 +63,24 @@
                         <label class="flex items-start gap-3 cursor-pointer group">
                             <input type="checkbox" name="permissions[can_access_pos]" value="1" {{ old('permissions.can_access_pos', $perms['can_access_pos'] ?? false) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
                             <div>
-                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">Akses Layar POS</span>
-                                <span class="block text-xs text-zinc-500">Melakukan transaksi dan kasir.</span>
+                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">POS Screen Access</span>
+                                <span class="block text-xs text-zinc-500">Process checkout transactions and cashier duties.</span>
                             </div>
                         </label>
 
                         <label class="flex items-start gap-3 cursor-pointer group">
                             <input type="checkbox" name="permissions[can_void_order]" value="1" {{ old('permissions.can_void_order', $perms['can_void_order'] ?? false) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
                             <div>
-                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">Otoritas Void</span>
-                                <span class="block text-xs text-zinc-500">Membatalkan pesanan terbayar.</span>
+                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">Void Authority</span>
+                                <span class="block text-xs text-zinc-500">Cancel paid orders and void receipts.</span>
                             </div>
                         </label>
 
                         <label class="flex items-start gap-3 cursor-pointer group">
                             <input type="checkbox" name="permissions[can_give_discount]" value="1" {{ old('permissions.can_give_discount', $perms['can_give_discount'] ?? false) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
                             <div>
-                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">Pemberian Diskon</span>
-                                <span class="block text-xs text-zinc-500">Memberikan potongan harga di POS.</span>
+                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">Discount Privileges</span>
+                                <span class="block text-xs text-zinc-500">Apply manual discounts at POS.</span>
                             </div>
                         </label>
 
@@ -89,24 +88,24 @@
                         <label class="flex items-start gap-3 cursor-pointer group">
                             <input type="checkbox" name="permissions[can_access_kds]" value="1" {{ old('permissions.can_access_kds', $perms['can_access_kds'] ?? false) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
                             <div>
-                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">Akses Dapur (KDS)</span>
-                                <span class="block text-xs text-zinc-500">Mengelola Kitchen Display System.</span>
+                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">Kitchen Screen (KDS)</span>
+                                <span class="block text-xs text-zinc-500">Manage Kitchen Display System.</span>
                             </div>
                         </label>
 
                         <label class="flex items-start gap-3 cursor-pointer group">
                             <input type="checkbox" name="permissions[can_manage_menu]" value="1" {{ old('permissions.can_manage_menu', $perms['can_manage_menu'] ?? false) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
                             <div>
-                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">Manajemen Menu</span>
-                                <span class="block text-xs text-zinc-500">Mengubah menu dan kategori.</span>
+                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">Catalog Management</span>
+                                <span class="block text-xs text-zinc-500">Modify items, pricing, and stock.</span>
                             </div>
                         </label>
 
                         <label class="flex items-start gap-3 cursor-pointer group">
                             <input type="checkbox" name="permissions[can_view_reports]" value="1" {{ old('permissions.can_view_reports', $perms['can_view_reports'] ?? false) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
                             <div>
-                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">Laporan Penjualan</span>
-                                <span class="block text-xs text-zinc-500">Melihat rekap dan laporan shift.</span>
+                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">Sales & Shift Reports</span>
+                                <span class="block text-xs text-zinc-500">Access sales summaries and shift reconciliations.</span>
                             </div>
                         </label>
                     </div>
@@ -118,18 +117,18 @@
                         <label class="flex items-center gap-3 cursor-pointer">
                             <input type="hidden" name="is_active" value="0">
                             <input type="checkbox" name="is_active" value="1" {{ old('is_active', $role->is_active) ? 'checked' : '' }} class="w-5 h-5 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
-                            <span class="text-sm font-medium text-apeiron-ink dark:text-zinc-200">Peran Aktif</span>
+                            <span class="text-sm font-medium text-apeiron-ink dark:text-zinc-200">Active Role</span>
                         </label>
                     </div>
-                    <p class="text-xs text-zinc-500 mt-1 ml-8">Peran yang dinonaktifkan tidak dapat ditugaskan ke karyawan baru.</p>
+                    <p class="text-xs text-zinc-500 mt-1 ml-8">Inactive roles cannot be assigned to new staff accounts.</p>
                 </div>
 
                 <div class="pt-6 border-t border-[#E5E7EB] dark:border-zinc-800 flex justify-end">
                     <x-ui.button type="submit" variant="primary" class="gap-2" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''">
                         <span x-show="!submitting" class="inline-flex items-center gap-1.5">
-                            <span class="material-symbols-rounded text-base">save</span> Simpan Perubahan
+                            <span class="material-symbols-rounded text-base">save</span> Update Role
                         </span>
-                        <span x-show="submitting" x-cloak>Menyimpan...</span>
+                        <span x-show="submitting" x-cloak>Saving...</span>
                     </x-ui.button>
                 </div>
             </form>

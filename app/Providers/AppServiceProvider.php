@@ -129,5 +129,10 @@ class AppServiceProvider extends ServiceProvider
         ]);
 
         RateLimiter::for('customer-poll', fn (Request $r) => Limit::perMinute(20)->by('sess:'.$sid($r)));
+
+        RateLimiter::for('voucher-check', fn (Request $r) => [
+            Limit::perMinute(5)->by('ip:'.$r->ip()),
+            Limit::perMinute(10)->by('user:'.($r->user()?->id ?? $sid($r))),
+        ]);
     }
 }

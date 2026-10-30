@@ -16,10 +16,10 @@ enum DebitNoteStatusEnum: string
     {
         return match ($this) {
             self::Draft => 'Draft',
-            self::Issued => 'Diterbitkan (Issued)',
-            self::PartiallyApplied => 'Diterapkan Sebagian (Partially Applied)',
-            self::FullyApplied => 'Diterapkan Penuh (Fully Applied)',
-            self::Cancelled => 'Dibatalkan (Cancelled)',
+            self::Issued => 'Issued',
+            self::PartiallyApplied => 'Partially Applied',
+            self::FullyApplied => 'Fully Applied',
+            self::Cancelled => 'Cancelled',
         };
     }
 

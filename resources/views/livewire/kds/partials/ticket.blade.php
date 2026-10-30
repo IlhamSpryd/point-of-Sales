@@ -2,7 +2,7 @@
     // Variabel dari pemanggil: $item (OrderItem), $variant ('pending' | 'brewing' | 'ready')
     $order = $item->order;
     $isTakeaway = $order->order_type?->value === 'takeaway';
-    $place = $order->table?->table_name ?? ($isTakeaway ? 'Takeaway' : 'Kasir');
+    $place = $order->table?->table_name ?? ($isTakeaway ? 'Takeaway' : 'Cashier');
     $options = collect($item->options ?? []);
     $showSla = $variant !== 'ready';
     $sla = $showSla ? $item->slaLevel() : 'ok';
@@ -52,7 +52,7 @@
                 default => 'secondary'
             }" class="{{ $sla === 'critical' ? 'animate-pulse' : '' }}">
                 <span class="material-symbols-rounded text-[13px] mr-1">schedule</span>
-                {{ $item->slaMinutesElapsed() }} mnt
+                {{ $item->slaMinutesElapsed() }} min
             </x-ui.badge>
         @endif
 
@@ -77,10 +77,10 @@
                     x-on:click="window.erpMotion?.pulseHighlight($el)"
                     class="mt-3.5 flex min-h-10 w-full items-center justify-center rounded-xl bg-apeiron-ink text-xs font-bold text-white shadow-sm transition-all duration-200 hover:bg-[#111111] active:scale-[0.98] disabled:cursor-wait disabled:opacity-60">
                 <span wire:loading.remove wire:target="claim({{ $item->id }})" class="flex items-center gap-1.5">
-                    <span class="material-symbols-rounded text-[16px]">skillet</span> Mulai Racik
+                    <span class="material-symbols-rounded text-[16px]">skillet</span> Start Prep
                 </span>
                 <span wire:loading wire:target="claim({{ $item->id }})" class="flex items-center gap-1.5">
-                    <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span> Memproses…
+                    <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span> Processing…
                 </span>
             </button>
         @endif
@@ -92,26 +92,26 @@
                             x-on:click="window.erpMotion?.pulseHighlight($el)"
                             class="flex min-h-10 flex-1 items-center justify-center rounded-xl bg-emerald-600 text-xs font-bold text-white shadow-sm transition-all duration-200 hover:bg-emerald-700 active:scale-[0.98] disabled:cursor-wait disabled:opacity-60">
                         <span wire:loading.remove wire:target="markReady({{ $item->id }})" class="flex items-center gap-1.5">
-                            <span class="material-symbols-rounded text-[16px]">check_circle</span> Selesai
+                            <span class="material-symbols-rounded text-[16px]">check_circle</span> Complete
                         </span>
                         <span wire:loading wire:target="markReady({{ $item->id }})" class="flex items-center gap-1.5">
-                            <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span> Memproses…
+                            <span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span> Processing…
                         </span>
                     </button>
                 @endif
                 <button type="button" wire:click="release({{ $item->id }})" wire:loading.attr="disabled" wire:target="release({{ $item->id }})"
                         x-on:click="window.erpMotion?.pulseHighlight($el)"
-                        title="Lepaskan item ini" aria-label="Lepaskan item ini"
+                        title="Release item" aria-label="Release item"
                         class="flex min-h-10 min-w-10 items-center justify-center rounded-xl border border-gray-200 bg-white text-gray-600 shadow-sm transition-all duration-200 hover:bg-gray-50 active:scale-[0.98] disabled:cursor-wait disabled:opacity-60 {{ $isMine ? '' : 'flex-1 gap-1.5 text-xs font-bold' }}">
                     <span wire:loading.remove wire:target="release({{ $item->id }})" class="flex items-center gap-1">
                         <span class="material-symbols-rounded text-[18px]">undo</span>
-                        @unless ($isMine) Lepaskan @endunless
+                        @unless ($isMine) Release @endunless
                     </span>
                     <span wire:loading wire:target="release({{ $item->id }})" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-400 border-t-gray-700"></span>
                 </button>
             </div>
         @else
-            <p class="mt-3.5 text-center text-xs font-medium text-gray-400">Sedang dikerjakan {{ $item->processedBy->name ?? 'staf lain' }}</p>
+            <p class="mt-3.5 text-center text-xs font-medium text-gray-400">Being prepared by {{ $item->processedBy->name ?? 'another staff' }}</p>
         @endif
     @elseif ($variant === 'ready')
         @if ($canProcess && ($isMine || $canOverride))
@@ -119,7 +119,7 @@
                     x-on:click="window.erpMotion?.pulseHighlight($el)"
                     class="mt-3.5 flex min-h-10 w-full items-center justify-center rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:bg-gray-50 active:scale-[0.98] disabled:cursor-wait disabled:opacity-60 text-xs font-bold text-gray-700">
                 <span wire:loading.remove wire:target="recall({{ $item->id }})" class="flex items-center gap-1.5">
-                    <span class="material-symbols-rounded text-[18px]">undo</span> Tarik Kembali (Recall)
+                    <span class="material-symbols-rounded text-[18px]">undo</span> Recall to Prep
                 </span>
                 <span wire:loading wire:target="recall({{ $item->id }})" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-gray-400 border-t-gray-700"></span>
             </button>

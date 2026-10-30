@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -33,6 +34,7 @@ class IngredientManager extends Component
         }
     }
 
+    #[Url(history: true)]
     public string $search = '';
 
     // Form properties

@@ -14,10 +14,10 @@ enum InvoiceMatchingStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::Unmatched => 'Belum Dicocokkan',
-            self::PartiallyMatched => 'Cocok Sebagian',
-            self::Matched => 'Cocok Penuh (Matched)',
-            self::VarianceDetected => 'Terdeteksi Varians',
+            self::Unmatched => 'Unmatched',
+            self::PartiallyMatched => 'Partially Matched',
+            self::Matched => 'Fully Matched',
+            self::VarianceDetected => 'Variance Detected',
         };
     }
 }

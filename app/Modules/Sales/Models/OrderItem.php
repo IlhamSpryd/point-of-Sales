@@ -61,6 +61,11 @@ class OrderItem extends Model
         'item_discount_amount',
         'allocated_order_discount_amount',
         'net_line_total',
+        'product_name_snapshot',
+        'sku_snapshot',
+        'hpp_snapshot',
+        'price_source',
+        'applied_promotions_snapshot',
     ];
 
     /**
@@ -75,6 +80,8 @@ class OrderItem extends Model
             'item_discount_amount' => 'decimal:2',
             'allocated_order_discount_amount' => 'decimal:2',
             'net_line_total' => 'decimal:2',
+            'hpp_snapshot' => 'decimal:2',
+            'applied_promotions_snapshot' => 'array',
         ];
     }
 

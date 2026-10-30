@@ -1,17 +1,17 @@
 <x-app-layout>
     <div class="space-y-6" data-gsap="page-enter">
         <x-erp.page-header
-            title="Tambah Cabang Baru"
-            description="Daftarkan outlet baru di bawah akun bisnis multi-tenant Anda.">
+            title="Add New Store Branch"
+            description="Register a new outlet branch under your multi-tenant enterprise account.">
             <x-slot:breadcrumbs>
                 <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
-                <x-ui.breadcrumbs.item href="{{ route('stores.index') }}">Cabang</x-ui.breadcrumbs.item>
-                <x-ui.breadcrumbs.item active>Tambah</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('stores.index') }}">Stores & Branches</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item active>Add New</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>
 
             <x-slot:actions>
                 <x-ui.button variant="secondary" href="{{ route('stores.index') }}" class="gap-2" wire:navigate>
-                    <span class="material-symbols-rounded text-base">arrow_back</span> Kembali
+                    <span class="material-symbols-rounded text-base">arrow_back</span> Back
                 </x-ui.button>
             </x-slot:actions>
         </x-erp.page-header>
@@ -22,30 +22,30 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <x-form-label for="name">Nama Cabang / Toko</x-form-label>
+                        <x-form-label for="name">Store / Branch Name</x-form-label>
                         <x-form-input type="text" id="name" name="name" value="{{ old('name') }}" 
-                               placeholder="Contoh: Apeiron Coffee Senopati" required :class="$errors->has('name') ? 'input-error' : ''" />
+                               placeholder="e.g. Apeiron Coffee Downtown" required :class="$errors->has('name') ? 'input-error' : ''" />
                         @error('name')
                             <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <x-form-label for="code">Kode Cabang (Opsional)</x-form-label>
+                        <x-form-label for="code">Store Code (Optional)</x-form-label>
                         <x-form-input type="text" id="code" name="code" value="{{ old('code') }}" 
-                               placeholder="Otomatis jika dikosongkan (STR-001)" :class="$errors->has('code') ? 'input-error' : ''" />
+                               placeholder="Auto-generated if blank (e.g. STR-001)" :class="$errors->has('code') ? 'input-error' : ''" />
                         @error('code')
                             <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <x-form-label for="timezone">Zona Waktu Operasional</x-form-label>
+                        <x-form-label for="timezone">Operational Timezone</x-form-label>
                         <div class="relative">
                             <select id="timezone" name="timezone" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-apeiron-ink dark:text-zinc-100 text-sm appearance-none focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 transition-all duration-200 shadow-xs {{ $errors->has('timezone') ? 'border-rose-300 focus:ring-rose-500' : '' }}" required>
-                                <option value="Asia/Jakarta" {{ old('timezone', 'Asia/Jakarta') === 'Asia/Jakarta' ? 'selected' : '' }}>WIB — Waktu Indonesia Barat (Asia/Jakarta)</option>
-                                <option value="Asia/Makassar" {{ old('timezone') === 'Asia/Makassar' ? 'selected' : '' }}>WITA — Waktu Indonesia Tengah (Asia/Makassar)</option>
-                                <option value="Asia/Jayapura" {{ old('timezone') === 'Asia/Jayapura' ? 'selected' : '' }}>WIT — Waktu Indonesia Timur (Asia/Jayapura)</option>
+                                <option value="Asia/Jakarta" {{ old('timezone', 'Asia/Jakarta') === 'Asia/Jakarta' ? 'selected' : '' }}>WIB — Western Indonesia Time (Asia/Jakarta)</option>
+                                <option value="Asia/Makassar" {{ old('timezone') === 'Asia/Makassar' ? 'selected' : '' }}>WITA — Central Indonesia Time (Asia/Makassar)</option>
+                                <option value="Asia/Jayapura" {{ old('timezone') === 'Asia/Jayapura' ? 'selected' : '' }}>WIT — Eastern Indonesia Time (Asia/Jayapura)</option>
                             </select>
                             <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-zinc-400">
                                 <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
@@ -57,17 +57,17 @@
                     </div>
 
                     <div>
-                        <x-form-label for="phone">Nomor Telepon Kontak</x-form-label>
+                        <x-form-label for="phone">Contact Phone Number</x-form-label>
                         <x-form-input type="text" id="phone" name="phone" value="{{ old('phone') }}" 
-                               placeholder="Contoh: 081234567890" :class="$errors->has('phone') ? 'input-error' : ''" />
+                               placeholder="e.g. +62 812 3456 7890" :class="$errors->has('phone') ? 'input-error' : ''" />
                         @error('phone')
                             <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div class="md:col-span-2">
-                        <x-form-label for="address">Alamat Lengkap Cabang</x-form-label>
-                        <textarea id="address" name="address" rows="3" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-apeiron-ink dark:text-zinc-100 text-sm focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 transition-all duration-200 shadow-xs {{ $errors->has('address') ? 'border-rose-300 focus:ring-rose-500' : '' }}" placeholder="Contoh: Jl. Senopati No. 45, Kebayoran Baru, Jakarta Selatan">{{ old('address') }}</textarea>
+                        <x-form-label for="address">Complete Store Address</x-form-label>
+                        <textarea id="address" name="address" rows="3" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-apeiron-ink dark:text-zinc-100 text-sm focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 transition-all duration-200 shadow-xs {{ $errors->has('address') ? 'border-rose-300 focus:ring-rose-500' : '' }}" placeholder="e.g. 45 Main Avenue, Financial District, South Jakarta">{{ old('address') }}</textarea>
                         @error('address')
                             <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
@@ -77,9 +77,9 @@
                 <div class="pt-4 border-t border-[#E5E7EB] dark:border-zinc-800 flex justify-end">
                     <x-ui.button type="submit" variant="primary" class="gap-2" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''">
                         <span x-show="!submitting" class="inline-flex items-center gap-1.5">
-                            <span class="material-symbols-rounded text-base">save</span> Simpan Cabang
+                            <span class="material-symbols-rounded text-base">save</span> Save Store Branch
                         </span>
-                        <span x-show="submitting" x-cloak>Menyimpan...</span>
+                        <span x-show="submitting" x-cloak>Saving...</span>
                     </x-ui.button>
                 </div>
             </form>

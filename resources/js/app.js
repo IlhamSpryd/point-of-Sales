@@ -2,6 +2,7 @@ import Alpine from 'alpinejs';
 import gsap from 'gsap';
 import Swal from './vendor/swal-bridge';
 import { erpMotion, initErpMotion, registerGsapAlpineDirectives } from './motion/erp-motion';
+import { initSidebarPersistence } from './navigation/sidebar-persistence';
 
 if (typeof window !== 'undefined') {
     window.gsap = gsap;
@@ -11,6 +12,7 @@ if (typeof window !== 'undefined') {
 }
 
 initErpMotion();
+initSidebarPersistence();
 
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.Livewire === 'undefined' && !window.Alpine) {

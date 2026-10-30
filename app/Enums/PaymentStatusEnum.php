@@ -17,11 +17,11 @@ enum PaymentStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::Pending => 'Menunggu',
-            self::Captured => 'Berhasil',
-            self::Failed => 'Gagal',
-            self::Refunded => 'Dikembalikan',
-            self::Voided => 'Dibatalkan (Void)',
+            self::Pending => 'Pending',
+            self::Captured => 'Captured',
+            self::Failed => 'Failed',
+            self::Refunded => 'Refunded',
+            self::Voided => 'Voided',
         };
     }
 

@@ -11,11 +11,11 @@
 
         <!-- Top Breadcrumbs & Page Header -->
         <x-erp.page-header
-            title="Pusat Visi Produk & Demonstrasi Investor"
-            description="Ekshibisi arsitektur ERP terpadu Apeiron System: Single Modular Core dengan F&B dan Retail Industry Packs.">
+            title="Product Vision & Investor Demo Hub"
+            description="Apeiron System Unified ERP Architecture Exhibition: Single Modular Core with F&B and Retail Industry Packs.">
             <x-slot:breadcrumbs>
                 <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
-                <x-ui.breadcrumbs.item active>Visi Produk & Roadmap</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item active>Product Vision & Roadmap</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>
 
             <x-slot:actions>
@@ -23,13 +23,13 @@
                     <a href="{{ route('transaction.create') }}" target="_blank">
                         <x-ui.button variant="secondary" class="gap-2">
                             <span class="material-symbols-rounded text-base">point_of_sale</span>
-                            Buka POS Kasir
+                            Open POS Terminal
                         </x-ui.button>
                     </a>
                     <a href="{{ route('dashboard') }}">
                         <x-ui.button variant="primary" class="gap-2">
                             <span class="material-symbols-rounded text-base">dashboard</span>
-                            Kembali ke Operasional
+                            Return to Operations
                         </x-ui.button>
                     </a>
                 </div>
@@ -42,7 +42,7 @@
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-rounded text-primary-600 text-lg">corporate_fare</span>
                     <div>
-                        <span class="text-zinc-400 font-medium block text-[10px] uppercase">Tenant Aktif</span>
+                        <span class="text-zinc-400 font-medium block text-[10px] uppercase">Active Tenant</span>
                         <span class="font-bold text-apeiron-ink dark:text-zinc-100">{{ $tenant?->name ?? 'Apeiron Enterprise Multi-Tenant' }}</span>
                     </div>
                 </div>
@@ -50,7 +50,7 @@
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-rounded text-primary-600 text-lg">store</span>
                     <div>
-                        <span class="text-zinc-400 font-medium block text-[10px] uppercase">Konteks Cabang</span>
+                        <span class="text-zinc-400 font-medium block text-[10px] uppercase">Branch Context</span>
                         <span class="font-bold text-apeiron-ink dark:text-zinc-100">{{ $realMetrics['current_store_name'] }}</span>
                     </div>
                 </div>
@@ -58,23 +58,23 @@
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-rounded text-emerald-600 text-lg">inventory_2</span>
                     <div>
-                        <span class="text-zinc-400 font-medium block text-[10px] uppercase">Total SKU / Produk Terdaftar</span>
-                        <span class="font-bold text-apeiron-ink dark:text-zinc-100">{{ $realMetrics['total_products'] }} Item</span>
+                        <span class="text-zinc-400 font-medium block text-[10px] uppercase">Registered Products / SKUs</span>
+                        <span class="font-bold text-apeiron-ink dark:text-zinc-100">{{ $realMetrics['total_products'] }} Items</span>
                     </div>
                 </div>
                 <div class="h-6 w-px bg-[#E5E7EB] dark:bg-zinc-800 hidden sm:block"></div>
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-rounded text-blue-600 text-lg">receipt_long</span>
                     <div>
-                        <span class="text-zinc-400 font-medium block text-[10px] uppercase">Pesanan Tercatat</span>
-                        <span class="font-bold text-apeiron-ink dark:text-zinc-100">{{ $realMetrics['total_orders'] }} Transaksi</span>
+                        <span class="text-zinc-400 font-medium block text-[10px] uppercase">Recorded Orders</span>
+                        <span class="font-bold text-apeiron-ink dark:text-zinc-100">{{ $realMetrics['total_orders'] }} Transactions</span>
                     </div>
                 </div>
             </div>
 
             <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/80 font-mono font-semibold text-[11px]">
                 <span class="size-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                Database Aktif: MySQL Multi-Tenant
+                Active Database: Multi-Tenant MySQL
             </div>
         </div>
 
@@ -84,35 +84,35 @@
                 :class="activeTab === 'overview' ? 'bg-[#202123] text-white font-semibold shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-apeiron-ink hover:bg-zinc-100 dark:hover:bg-zinc-800'"
                 class="px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2">
                 <span class="material-symbols-rounded text-base">architecture</span>
-                Visi Arsitektur & Modul
+                Architecture Vision & Modules
             </button>
 
             <button type="button" @click="switchTab('journeys')"
                 :class="activeTab === 'journeys' ? 'bg-[#202123] text-white font-semibold shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-apeiron-ink hover:bg-zinc-100 dark:hover:bg-zinc-800'"
                 class="px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2">
                 <span class="material-symbols-rounded text-base">route</span>
-                5 Alur Demonstrasi Terpadu
+                5 Integrated Demo Workflows
             </button>
 
             <button type="button" @click="switchTab('domains')"
                 :class="activeTab === 'domains' ? 'bg-[#202123] text-white font-semibold shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-apeiron-ink hover:bg-zinc-100 dark:hover:bg-zinc-800'"
                 class="px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2">
                 <span class="material-symbols-rounded text-base">dataset</span>
-                Matriks 12 Domain Produk
+                12 Strategic Product Domains
             </button>
 
             <button type="button" @click="switchTab('traceability')"
                 :class="activeTab === 'traceability' ? 'bg-[#202123] text-white font-semibold shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-apeiron-ink hover:bg-zinc-100 dark:hover:bg-zinc-800'"
                 class="px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2">
                 <span class="material-symbols-rounded text-base">checklist</span>
-                Keterlacakan 81 PAGE-ID
+                81 PAGE-ID Traceability Register
             </button>
 
             <button type="button" @click="switchTab('decisions')"
                 :class="activeTab === 'decisions' ? 'bg-[#202123] text-white font-semibold shadow-xs' : 'text-zinc-600 dark:text-zinc-400 hover:text-apeiron-ink hover:bg-zinc-100 dark:hover:bg-zinc-800'"
                 class="px-4 py-2.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2">
                 <span class="material-symbols-rounded text-base">help_center</span>
-                Dua Keputusan Produk
+                Product Decisions
             </button>
         </div>
 

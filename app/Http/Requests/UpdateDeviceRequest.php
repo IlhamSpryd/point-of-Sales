@@ -33,9 +33,9 @@ class UpdateDeviceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'device_name.required' => 'Nama perangkat kasir wajib diisi.',
-            'device_type.required' => 'Tipe perangkat wajib dipilih.',
-            'device_type.in' => 'Tipe perangkat tidak valid.',
+            'device_name.required' => 'Device name is required.',
+            'device_type.required' => 'Device type is required.',
+            'device_type.in' => 'Selected device type is invalid.',
         ];
     }
 }

@@ -4,10 +4,10 @@
         <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs font-semibold text-amber-900 flex items-center justify-between shadow-sm">
             <span class="flex items-center gap-1.5">
                 <span class="material-symbols-rounded text-base text-amber-700">lock</span>
-                Mode Pelunasan QR #{{ $pendingOrderCode }} (Terkunci)
+                QR Settlement Mode #{{ $pendingOrderCode }} (Locked)
             </span>
             <button type="button" wire:click="cancelPendingOrderMode" class="text-xs font-bold text-rose-600 hover:text-rose-800 transition-colors">
-                Batal
+                Cancel
             </button>
         </div>
     @endif
@@ -18,7 +18,7 @@
             <div class="flex items-center justify-between font-bold">
                 <span class="flex items-center gap-1">
                     <span class="material-symbols-rounded text-[16px] text-amber-600">warning</span>
-                    Peringatan Revalidasi Keranjang:
+                    Cart Revalidation Warnings:
                 </span>
                 <button type="button" wire:click="$set('resumeWarnings', [])" class="text-amber-500 hover:text-amber-800 font-bold">&times;</button>
             </div>
@@ -35,8 +35,8 @@
             <div class="w-16 h-16 rounded-2xl bg-gray-50 flex items-center justify-center text-gray-300 mb-3 border border-[#E5E7EB]">
                 <span class="material-symbols-rounded text-[36px]">local_mall</span>
             </div>
-            <p class="text-[14px] font-bold text-apeiron-ink">Keranjang Masih Kosong</p>
-            <p class="text-xs text-gray-400 mt-1 max-w-[200px]">Pilih produk dari katalog di sebelah kiri untuk memulai pesanan.</p>
+            <p class="text-[14px] font-bold text-apeiron-ink">Cart is Empty</p>
+            <p class="text-xs text-gray-400 mt-1 max-w-[200px]">Select products from the catalog on the left to start an order.</p>
         </div>
     @else
         @foreach ($this->cartLines as $line)
@@ -44,7 +44,7 @@
                 class="flex gap-3 p-3 bg-white rounded-xl border border-[#E5E7EB] shadow-xs relative group transition-all duration-200 hover:border-zinc-400">
                 @unless ($pendingOrderId)
                     <button type="button" wire:click="removeFromCart({{ $line['index'] }})"
-                        aria-label="Hapus {{ $line['product_name'] }} dari keranjang"
+                        aria-label="Remove {{ $line['product_name'] }} from cart"
                         class="absolute -top-2 -right-2 size-6 rounded-md bg-white border border-[#E5E7EB] text-zinc-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-300 shadow-xs transition-colors flex items-center justify-center cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500">
                         <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -75,7 +75,7 @@
                             </span>
                             @if (!$pendingOrderId)
                                 <div class="mt-1 flex items-center gap-1">
-                                    <span class="text-[10px] text-gray-400 font-medium">Diskon:</span>
+                                    <span class="text-[10px] text-gray-400 font-medium">Discount:</span>
                                     <input type="number" min="0" placeholder="Rp 0"
                                         value="{{ $this->cart[$line['index']]['item_discount_amount'] ?? '' }}"
                                         wire:change="setItemDiscount({{ $line['index'] }}, $event.target.value)"
@@ -90,7 +90,7 @@
                             @else
                                 <button type="button"
                                     wire:click="updateCartQty({{ $line['index'] }}, -1)"
-                                    aria-label="Kurangi jumlah {{ $line['product_name'] }}"
+                                    aria-label="Decrease quantity of {{ $line['product_name'] }}"
                                     class="w-6 h-6 flex items-center justify-center rounded text-gray-500 hover:text-apeiron-ink hover:bg-gray-200/60 active:scale-95 transition-all text-xs font-bold focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-900">
                                     -
                                 </button>
@@ -99,7 +99,7 @@
                                 </span>
                                 <button type="button"
                                     wire:click="updateCartQty({{ $line['index'] }}, 1)"
-                                    aria-label="Tambah jumlah {{ $line['product_name'] }}"
+                                    aria-label="Increase quantity of {{ $line['product_name'] }}"
                                     class="w-6 h-6 flex items-center justify-center rounded text-gray-500 hover:text-apeiron-ink hover:bg-gray-200/60 active:scale-95 transition-all text-xs font-bold focus:outline-none focus-visible:ring-1 focus-visible:ring-gray-900">
                                     +
                                 </button>

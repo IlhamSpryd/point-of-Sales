@@ -1,11 +1,11 @@
 <x-app-layout>
     <x-slot:header>
         <x-erp.page-header
-            title="Keuangan & Akuntansi (General Ledger)"
-            description="Pusat manajemen akuntansi dual-entry, bagan akun (COA), pemantauan arus kas bank, dan audit mutasi buku besar multi-cabang."
-            badge="MODUL 7"
+            title="Finance & Accounting (General Ledger)"
+            description="Dual-entry accounting hub, chart of accounts (COA), cash & bank flow monitoring, and multi-branch general ledger audit trail."
+            badge="MODULE 7"
             badgeVariant="neutral"
-            :breadcrumbs="[['label' => 'Dashboard', 'href' => route('dashboard')], ['label' => 'Keuangan & Akuntansi']]"
+            :breadcrumbs="[['label' => 'Dashboard', 'href' => route('dashboard')], ['label' => 'Finance & Accounting']]"
         />
     </x-slot:header>
 
@@ -13,30 +13,30 @@
         <!-- KPI Summary Cards -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" data-gsap="kpi-card">
             <x-erp.stat-card
-                label="Status Buku Besar"
-                :value="$activePeriod ? 'Periode ' . $activePeriod->period_code : 'Belum Ada Periode Aktif'"
-                :delta="$activePeriod ? 'Status: ' . $activePeriod->status->value : 'Perlu Setup'"
+                label="General Ledger Status"
+                :value="$activePeriod ? 'Period ' . $activePeriod->period_code : 'No Active Period'"
+                :delta="$activePeriod ? 'Status: ' . $activePeriod->status->value : 'Setup Required'"
                 :deltaVariant="$activePeriod ? 'positive' : 'warning'"
                 icon="account_balance"
             />
             <x-erp.stat-card
-                label="Jurnal Draf / Menunggu"
-                :value="$unpostedJournalsCount . ' Transaksi'"
-                :delta="$postedJournalsCount . ' Terposting'"
+                label="Draft / Pending Journals"
+                :value="$unpostedJournalsCount . ' Transactions'"
+                :delta="$postedJournalsCount . ' Posted'"
                 :deltaVariant="$unpostedJournalsCount === 0 ? 'positive' : 'warning'"
                 icon="rule"
             />
             <x-erp.stat-card
-                label="Bagan Akun (CoA) Aktif"
-                :value="$activeCoaCount . ' Akun Aktif'"
-                delta="Standar PSAK"
+                label="Active Chart of Accounts (COA)"
+                :value="$activeCoaCount . ' Active Accounts'"
+                delta="GAAP / PSAK Compliant"
                 deltaVariant="positive"
                 icon="account_tree"
             />
             <x-erp.stat-card
-                label="Integritas Outbox"
-                :value="$pendingOutboxCount === 0 ? '100% Sinkron' : $pendingOutboxCount . ' Tertunda'"
-                :delta="$pendingOutboxCount === 0 ? '0 Antrean' : 'Perlu Dispatch'"
+                label="Outbox Integrity"
+                :value="$pendingOutboxCount === 0 ? '100% Synchronized' : $pendingOutboxCount . ' Pending'"
+                :delta="$pendingOutboxCount === 0 ? '0 Queued' : 'Dispatch Required'"
                 :deltaVariant="$pendingOutboxCount === 0 ? 'positive' : 'warning'"
                 icon="verified"
             />
@@ -49,16 +49,16 @@
                     <span class="material-symbols-rounded text-xl">account_balance_wallet</span>
                 </div>
                 <div>
-                    <h3 class="text-base font-bold text-zinc-950 dark:text-white">Pusat Akuntansi & Rekonsiliasi Finansial</h3>
-                    <p class="text-xs text-zinc-500">Mencatat mutasi GL dari transaksi kasir, penerimaan barang, faktur pemasok, piutang pelanggan, dan retur.</p>
+                    <h3 class="text-base font-bold text-zinc-950 dark:text-white">Financial Accounting & Reconciliation Center</h3>
+                    <p class="text-xs text-zinc-500">Captures general ledger mutations from POS cashier sales, inventory receipts, supplier bills, customer receivables, and returns.</p>
                 </div>
             </div>
 
             <p class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                Modul 7 (Finance & General Ledger) beroperasi menerima stream data melalui tabel outbox akuntansi
-                (<code class="font-mono text-[11px] bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-800 dark:text-zinc-200">accounting_payable_outbox</code> dan
-                <code class="font-mono text-[11px] bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-800 dark:text-zinc-200">accounting_receivable_outbox</code>)
-                menghasilkan jurnal otomatis dengan kepatuhan penuh pada prinsip dual-entry, imutabilitas catatan terposting, dan audit trail PSAK.
+                Module 7 (Finance & General Ledger) consumes streaming transaction events via accounting outbox tables
+                (<code class="font-mono text-[11px] bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-800 dark:text-zinc-200">accounting_payable_outbox</code> and
+                <code class="font-mono text-[11px] bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-800 dark:text-zinc-200">accounting_receivable_outbox</code>),
+                generating automated balanced journal entries with strict adherence to dual-entry rules, posted record immutability, and full auditability.
             </p>
         </div>
 
@@ -68,29 +68,29 @@
                 <div class="flex items-center justify-between">
                     <h3 class="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                         <span class="material-symbols-rounded text-apeiron-primary text-base">receipt_long</span>
-                        Jurnal Transaksi Terbaru
+                        Recent Transaction Journals
                     </h3>
-                    <span class="text-xs text-zinc-400 font-mono">{{ $postedJournalsCount }} Jurnal Diposting</span>
+                    <span class="text-xs text-zinc-400 font-mono">{{ $postedJournalsCount }} Posted Journals</span>
                 </div>
 
                 <div class="card-surface rounded-2xl overflow-hidden border border-[#E5E7EB] dark:border-zinc-800 shadow-xs">
                     @if($recentJournals->isEmpty())
                         <div class="p-8 text-center space-y-2">
                             <span class="material-symbols-rounded text-3xl text-zinc-300 dark:text-zinc-600">hourglass_empty</span>
-                            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Belum ada jurnal transaksi tercatat</p>
+                            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">No transaction journals recorded yet</p>
                             <p class="text-xs text-zinc-400 max-w-sm mx-auto">
-                                Jurnal akan terbit secara otomatis saat transaksi kasir diselesaikan, penerimaan barang (GRN) disetujui, atau faktur diverifikasi.
+                                Journals are automatically posted upon cashier checkout, goods receipt (GRN) approval, or customer invoice verification.
                             </p>
                         </div>
                     @else
                         <div class="overflow-x-auto">
-                            <table class="w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
+                            <table class="table-standard w-full min-w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
                                 <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-xs font-semibold uppercase text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
                                     <tr>
-                                        <th class="px-5 py-3">No. Jurnal</th>
-                                        <th class="px-5 py-3">Tanggal</th>
-                                        <th class="px-5 py-3">Modul Sumber</th>
-                                        <th class="px-5 py-3 text-right">Debit / Kredit</th>
+                                        <th class="px-5 py-3">Journal No.</th>
+                                        <th class="px-5 py-3">Posting Date</th>
+                                        <th class="px-5 py-3">Source Module</th>
+                                        <th class="px-5 py-3 text-right">Debit / Credit</th>
                                         <th class="px-5 py-3 text-center">Status</th>
                                     </tr>
                                 </thead>
@@ -130,16 +130,16 @@
                 <div class="flex items-center justify-between">
                     <h3 class="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                         <span class="material-symbols-rounded text-apeiron-primary text-base">payments</span>
-                        Rekening Kas & Bank
+                        Cash & Bank Accounts
                     </h3>
-                    <span class="text-xs text-zinc-400 font-mono">{{ $cashBankAccounts->count() }} Akun</span>
+                    <span class="text-xs text-zinc-400 font-mono">{{ $cashBankAccounts->count() }} Accounts</span>
                 </div>
 
                 <div class="card-surface rounded-2xl p-5 border border-[#E5E7EB] dark:border-zinc-800 space-y-3 shadow-xs">
                     @if($cashBankAccounts->isEmpty())
                         <div class="text-center py-6 space-y-2">
                             <span class="material-symbols-rounded text-2xl text-zinc-300 dark:text-zinc-600">account_balance</span>
-                            <p class="text-xs text-zinc-500">Belum ada akun bank/kas terkonfigurasi.</p>
+                            <p class="text-xs text-zinc-500">No bank or cash accounts configured.</p>
                         </div>
                     @else
                         @foreach($cashBankAccounts as $account)
@@ -156,7 +156,7 @@
                                     <div class="text-xs font-bold font-mono text-zinc-900 dark:text-white tabular-nums">
                                         Rp {{ number_format((float) $account->current_balance, 2, ',', '.') }}
                                     </div>
-                                    <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Aktif</span>
+                                    <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Active</span>
                                 </div>
                             </div>
                         @endforeach

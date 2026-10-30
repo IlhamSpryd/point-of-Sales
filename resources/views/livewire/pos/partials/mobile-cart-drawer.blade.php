@@ -4,7 +4,7 @@
     @if(count($this->cartLines) > 0)
         <div class="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-[#E5E7EB] px-4 py-3 shadow-[0_-8px_30px_rgba(0,0,0,0.08)] flex items-center justify-between gap-3">
             <div class="min-w-0">
-                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Total ({{ count($this->cartLines) }} item)</span>
+                <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Total ({{ count($this->cartLines) }} {{ \Illuminate\Support\Str::plural('item', count($this->cartLines)) }})</span>
                 <span class="text-lg font-black text-apeiron-ink tabular-nums">
                     Rp {{ number_format($this->totalAmount, 0, ',', '.') }}
                 </span>
@@ -14,7 +14,7 @@
                 @click="$dispatch('open-drawer', 'pos-mobile-cart-drawer')"
                 class="px-5 py-2.5 bg-apeiron-ink text-white font-bold text-xs rounded-xl shadow-md hover:bg-[#111111] active:scale-95 transition-all flex items-center gap-2">
                 <span class="material-symbols-rounded text-[18px]">shopping_bag</span>
-                <span>Buka Keranjang</span>
+                <span>Open Cart</span>
                 <span class="bg-white/20 text-white text-[10px] px-1.5 py-0.5 rounded-full font-black">
                     {{ count($this->cartLines) }}
                 </span>
@@ -27,7 +27,7 @@
         <x-slot:header>
             <div class="flex items-center gap-2">
                 <span class="material-symbols-rounded text-apeiron-ink text-[22px]">shopping_bag</span>
-                <span>Keranjang Belanja</span>
+                <span>Shopping Cart</span>
                 <span class="bg-apeiron-ink text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
                     {{ count($this->cartLines) }}
                 </span>
@@ -52,7 +52,7 @@
                         @else
                             <x-search-input wire:model.live.debounce.300ms="customerSearch"
                                 x-on:focus="showResults = true" x-on:click.outside="showResults = false"
-                                placeholder="Tambah pelanggan (opsional)..." icon="person_add" />
+                                placeholder="Add customer (optional)..." icon="person_add" />
 
                             @if (mb_strlen(trim($customerSearch)) >= 2)
                                 <div x-show="showResults" x-cloak wire:loading.class="opacity-50"
@@ -67,7 +67,7 @@
                                             <span class="text-[11px] font-medium text-gray-400">{{ $c->phone ?? '-' }}</span>
                                         </button>
                                     @empty
-                                        <div class="px-3.5 py-3 text-xs text-gray-400 text-center">Pelanggan tidak ditemukan.</div>
+                                        <div class="px-3.5 py-3 text-xs text-gray-400 text-center">No customers found.</div>
                                     @endforelse
                                 </div>
                             @endif

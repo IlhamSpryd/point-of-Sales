@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Customers\Services;
 
 use App\Models\Customer;
+use App\Models\LoyaltyTier;
 use App\Models\User;
 use App\Services\Context\TenantContext;
 use Carbon\Carbon;
@@ -16,6 +17,120 @@ class LoyaltyService
     public function __construct(
         protected TenantContext $tenantContext
     ) {}
+
+    /**
+     * Hitung perolehan poin (earn) murni dari DPP:
+     * EarnPoints = floor(DPP / 10000) * TierMultiplier
+     */
+    public function calculateEarnablePoints(Customer $customer, float $dpp): int
+    {
+        if ($dpp <= 0) {
+            return 0;
+        }
+
+        $tenantId = (int) ($customer->tenant_id ?? $this->tenantContext->getTenantId());
+
+        $account = DB::table('customer_loyalty_accounts')
+            ->where('customer_id', $customer->id)
+            ->first();
+
+        $multiplier = 1.00;
+        if ($account && $account->current_tier_id) {
+            $tier = DB::table('loyalty_tiers')
+                ->where('id', $account->current_tier_id)
+                ->where('is_active', true)
+                ->first();
+            if ($tier) {
+                $multiplier = (float) $tier->points_multiplier;
+            }
+        } elseif ($tenantId > 0) {
+            $baseTier = DB::table('loyalty_tiers')
+                ->where('tenant_id', $tenantId)
+                ->where('is_active', true)
+                ->where('min_points', 0)
+                ->first();
+            if ($baseTier) {
+                $multiplier = (float) $baseTier->points_multiplier;
+            }
+        }
+
+        $baseUnits = floor($dpp / 10000);
+        $earned = (int) floor($baseUnits * $multiplier);
+
+        return max(0, $earned);
+    }
+
+    /**
+     * Konversi poin loyalitas ke nilai rupiah diskon (1 Poin = Rp100).
+     */
+    public function calculateRedeemValue(int $points): float
+    {
+        if ($points <= 0) {
+            return 0.0;
+        }
+
+        return (float) bcmul((string) $points, '100', 2);
+    }
+
+    /**
+     * Konversi nilai rupiah diskon ke kebutuhan poin (1 Poin = Rp100).
+     */
+    public function calculatePointsForDiscount(float $discountAmount): int
+    {
+        if ($discountAmount <= 0) {
+            return 0;
+        }
+
+        return (int) ceil($discountAmount / 100);
+    }
+
+    /**
+     * Evaluasi akumulasi belanja seumur hidup (lifetime_points_earned) terhadap
+     * loyalty_tiers.min_points dan perbarui current_tier_id jika memenuhi syarat.
+     */
+    public function checkAndUpgradeTier(Customer $customer, ?int $pointsOrSpend = null): ?LoyaltyTier
+    {
+        $tenantId = (int) ($customer->tenant_id ?? $this->tenantContext->getTenantId());
+
+        $account = DB::table('customer_loyalty_accounts')
+            ->where('customer_id', $customer->id)
+            ->first();
+
+        if (! $account) {
+            return null;
+        }
+
+        $metric = $pointsOrSpend !== null ? $pointsOrSpend : (int) $account->lifetime_points_earned;
+
+        $query = LoyaltyTier::where('is_active', true)
+            ->where('min_points', '<=', $metric)
+            ->orderByDesc('min_points');
+
+        if ($tenantId > 0) {
+            $query->where('tenant_id', $tenantId);
+        }
+
+        $eligibleTier = $query->first();
+
+        if (! $eligibleTier && $tenantId > 0) {
+            // Fallback: search global active tiers
+            $eligibleTier = LoyaltyTier::where('is_active', true)
+                ->where('min_points', '<=', $metric)
+                ->orderByDesc('min_points')
+                ->first();
+        }
+
+        if ($eligibleTier && (int) $account->current_tier_id !== (int) $eligibleTier->id) {
+            DB::table('customer_loyalty_accounts')
+                ->where('id', $account->id)
+                ->update([
+                    'current_tier_id' => $eligibleTier->id,
+                    'updated_at' => Carbon::now(),
+                ]);
+        }
+
+        return $eligibleTier;
+    }
 
     /**
      * Berikan poin loyalitas (Earn) kepada pelanggan atas transaksi.
@@ -162,12 +277,17 @@ class LoyaltyService
         ) {
             // 1. Kunci baris akun loyalitas customer (SELECT ... FOR UPDATE)
             $account = DB::table('customer_loyalty_accounts')
-                ->where('tenant_id', $tenantId)
                 ->where('customer_id', $customer->id)
                 ->lockForUpdate()
                 ->first();
 
             $currentBalance = $account ? (int) $account->current_points : 0;
+
+            if ($type === 'reversal' && ($currentBalance + $pointsDelta) < 0) {
+                // Jangan sampai saldo poin menjadi negatif akibat refund berlebih
+                $pointsDelta = -$currentBalance;
+            }
+
             $newBalance = $currentBalance + $pointsDelta;
 
             if ($newBalance < 0) {
@@ -206,6 +326,11 @@ class LoyaltyService
                 'created_by' => $actor?->id,
                 'created_at' => Carbon::now(),
             ]);
+
+            DB::table('customer_loyalty_accounts')
+                ->where('customer_id', $customer->id)
+                ->whereNull('tenant_id')
+                ->update(['tenant_id' => $tenantId]);
 
             return [
                 'customer_id' => (int) $customer->id,

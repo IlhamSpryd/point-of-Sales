@@ -15,11 +15,11 @@ enum TableStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::Available => 'Tersedia',
-            self::Occupied => 'Terisi',
-            self::Cleaning => 'Dibersihkan',
-            self::Reserved => 'Dipesan',
-            self::Disabled => 'Nonaktif',
+            self::Available => 'Available',
+            self::Occupied => 'Occupied',
+            self::Cleaning => 'Cleaning',
+            self::Reserved => 'Reserved',
+            self::Disabled => 'Disabled',
         };
     }
 

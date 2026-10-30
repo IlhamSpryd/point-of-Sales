@@ -30,9 +30,9 @@ class ImportProductsRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'file.required' => 'File CSV wajib diunggah.',
-            'file.mimes' => 'File harus berupa dokumen format CSV (.csv atau .txt).',
-            'file.max' => 'Ukuran file tidak boleh melebihi 2 MB.',
+            'file.required' => 'A CSV file must be uploaded.',
+            'file.mimes' => 'The file must be a CSV format document (.csv or .txt).',
+            'file.max' => 'The file size must not exceed 2 MB.',
         ];
     }
 }

@@ -139,6 +139,58 @@ class CreateOrder extends Component
 
     public string $appliedManualDiscountReason = '';
 
+    public ?int $manualDiscountApprovalId = null;
+
+    // Stored-Value Instruments (Gift Card & Store Credit)
+    public string $giftCardNumberInput = '';
+    public string $giftCardPinInput = '';
+    public float $storeCreditBalance = 0.0;
+
+    // Voucher Lifecycle State
+    public ?string $voucherCode = null;
+    public string $voucherInput = '';
+    public ?string $voucherError = null;
+
+    public function applyVoucher(): void
+    {
+        $this->voucherError = null;
+        $code = strtoupper(trim($this->voucherInput));
+        if (empty($code)) {
+            $this->voucherError = 'Kode voucher tidak boleh kosong.';
+            return;
+        }
+
+        try {
+            $customer = $this->customerId ? \App\Models\Customer::find($this->customerId) : null;
+            $subtotal = (string) $this->totalSubtotal();
+            $validation = app(\App\Modules\Customers\Services\VoucherService::class)
+                ->validateVoucher($code, $customer, $subtotal);
+
+            app(\App\Modules\Customers\Services\VoucherService::class)->reserveVoucher(
+                code: $code,
+                cartUuid: $this->idempotencyKey,
+                storeId: (int) ($this->activeStoreId ?? 1),
+                customer: $customer,
+                reservedAmount: (float) $validation['discount_amount']
+            );
+
+            $this->voucherCode = $code;
+            $this->voucherInput = '';
+            session()->flash('success', "Voucher '{$code}' berhasil diterapkan.");
+        } catch (\Throwable $e) {
+            $this->voucherError = $e->getMessage();
+        }
+    }
+
+    public function removeVoucher(): void
+    {
+        if ($this->voucherCode) {
+            app(\App\Modules\Customers\Services\VoucherService::class)->releaseVoucher($this->idempotencyKey);
+            $this->voucherCode = null;
+            $this->voucherError = null;
+        }
+    }
+
     #[Locked]
     public string $idempotencyKey;
 
@@ -318,12 +370,74 @@ class CreateOrder extends Component
         $this->customerId = $id;
         $this->customerName = $name;
         $this->customerSearch = '';
+
+        $sc = DB::table('store_credit_accounts')
+            ->where('customer_id', $id)
+            ->where('status', 'ACTIVE')
+            ->first();
+        $this->storeCreditBalance = $sc ? (float) $sc->current_balance : 0.0;
     }
 
     public function clearCustomer(): void
     {
         $this->customerId = null;
         $this->customerName = null;
+        $this->storeCreditBalance = 0.0;
+    }
+
+    public function addGiftCardPaymentLeg(string $cardNumber, int $amount, ?string $pin = null): void
+    {
+        $this->paymentLegs[] = [
+            'method' => 'gift_card',
+            'amount' => $amount,
+            'card_number' => $cardNumber,
+            'reference_number' => $cardNumber,
+            'pin' => $pin,
+        ];
+    }
+
+    public function addStoreCreditPaymentLeg(int $amount): void
+    {
+        $this->paymentLegs[] = [
+            'method' => 'store_credit',
+            'amount' => $amount,
+        ];
+    }
+
+    /**
+     * Menghitung rincian kalkulasi harga kasir secara real-time via UnifiedPricingCalculationPipelineService.
+     */
+    public function getCalculationBreakdown(): \App\Modules\Pricing\DataTransferObjects\CheckoutCalculationBreakdownDto
+    {
+        $tenantId = (int) app(TenantContext::class)->requireTenantId();
+        $storeId = (int) (app(TenantContext::class)->getStoreId() ?? $this->activeStoreId ?? 1);
+
+        $items = [];
+        foreach ($this->cart as $raw) {
+            $items[] = [
+                'product_id' => (int) $raw['product_id'],
+                'product_variant_id' => $raw['product_variant_id'] ?? null,
+                'quantity' => (float) ($raw['qty'] ?? 1),
+                'custom_price' => isset($raw['custom_price']) ? (float) $raw['custom_price'] : null,
+                'modifier_ids' => $raw['modifier_ids'] ?? [],
+                'item_discount_amount' => (float) ($raw['item_discount_amount'] ?? 0),
+                'item_discount_id' => $raw['item_discount_id'] ?? null,
+            ];
+        }
+
+        $input = new \App\Modules\Pricing\DataTransferObjects\CheckoutCalculationInputDto(
+            tenantId: $tenantId,
+            storeId: $storeId,
+            channel: 'pos_cashier',
+            customerId: $this->customerId,
+            items: $items,
+            voucherCode: $this->voucherCode ?? null,
+            discountId: $this->selectedDiscountId,
+            manualDiscountAmount: (float) $this->appliedManualDiscount,
+            hasCashPayment: $this->paymentMethod === 'cash' || collect($this->paymentLegs)->contains('method', 'cash')
+        );
+
+        return app(\App\Modules\Pricing\Services\UnifiedPricingCalculationPipelineService::class)->calculate($input);
     }
 
     // Modal state reset
@@ -684,23 +798,48 @@ class CreateOrder extends Component
         $this->validate([
             'manualDiscountAmount' => 'required|integer|min:1',
             'manualDiscountReason' => 'required|string|min:3|max:255',
-            'manualDiscountSupervisorPin' => 'required|string|min:4',
         ]);
 
-        $tenantId = app(TenantContext::class)->requireTenantId();
-        $isSupValid = app(CashierPinService::class)->verifySupervisorPin((int) Auth::id(), $this->manualDiscountSupervisorPin, $tenantId);
-        if (! $isSupValid) {
-            $this->addError('manualDiscountSupervisorPin', 'PIN Supervisor tidak sah.');
-            $this->dispatch('toast', message: 'PIN Supervisor tidak sah.', type: 'error');
+        $subtotal = (float) $this->cartSubtotal;
+        $amount = (float) $this->manualDiscountAmount;
+        $percent = $subtotal > 0 ? (($amount / $subtotal) * 100) : 100.0;
 
-            return;
+        $approvalService = app(\App\Modules\Pricing\Services\DiscountApprovalService::class);
+        $needsApproval = $approvalService->evaluateThreshold($percent, $amount, $subtotal);
+
+        if ($needsApproval) {
+            $this->validate([
+                'manualDiscountSupervisorPin' => 'required|string|min:4',
+            ]);
+
+            $storeId = (int) (app(TenantContext::class)->getStoreId() ?? Auth::user()?->store_id ?? 0);
+
+            try {
+                $approval = $approvalService->createApproval(
+                    requesterId: (int) Auth::id(),
+                    pin: $this->manualDiscountSupervisorPin,
+                    action: \App\Models\Approval::ACTION_MANUAL_DISCOUNT,
+                    amount: $amount,
+                    reason: $this->manualDiscountReason,
+                    storeId: $storeId
+                );
+                $this->manualDiscountApprovalId = (int) $approval->id;
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                $msg = $e->validator->errors()->first('pin') ?: $e->getMessage();
+                $this->addError('manualDiscountSupervisorPin', $msg);
+                $this->dispatch('toast', message: $msg, type: 'error');
+
+                return;
+            }
+        } else {
+            $this->manualDiscountApprovalId = null;
         }
 
         $this->appliedManualDiscount = (int) $this->manualDiscountAmount;
         $this->appliedManualDiscountReason = $this->manualDiscountReason;
         $this->isManualDiscountModalOpen = false;
         $this->manualDiscountSupervisorPin = '';
-        $this->dispatch('toast', message: 'Diskon manual supervisor berhasil diterapkan.', type: 'success');
+        $this->dispatch('toast', message: 'Diskon manual berhasil diterapkan.', type: 'success');
     }
 
     public function addPaymentLeg(): void
@@ -717,6 +856,7 @@ class CreateOrder extends Component
         $this->appliedManualDiscountReason = '';
         $this->manualDiscountAmount = 0;
         $this->manualDiscountReason = '';
+        $this->manualDiscountApprovalId = null;
         $this->dispatch('toast', message: 'Diskon manual dilepas.', type: 'info');
     }
 
@@ -1081,7 +1221,13 @@ class CreateOrder extends Component
                         ]);
                     }
 
-                    $normalizedLegs[] = ['method' => $method->value, 'amount' => $amount];
+                    $normalizedLegs[] = [
+                        'method' => $method->value,
+                        'amount' => $amount,
+                        'card_number' => $leg['card_number'] ?? $leg['reference_number'] ?? null,
+                        'reference_number' => $leg['reference_number'] ?? $leg['card_number'] ?? null,
+                        'pin' => $leg['pin'] ?? null,
+                    ];
                 }
             }
 

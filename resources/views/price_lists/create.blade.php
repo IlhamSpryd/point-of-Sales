@@ -147,7 +147,7 @@
                 </div>
 
                 <div class="overflow-x-auto border border-[#E5E7EB] rounded-2xl">
-                    <table class="w-full text-left text-sm">
+                    <table class="table-standard w-full min-w-full text-left text-sm">
                         <thead class="bg-[#F7F7F5] border-b border-[#E5E7EB] text-xs text-[#787774] uppercase">
                             <tr>
                                 <th class="px-4 py-3">Produk</th>
@@ -168,11 +168,11 @@
                                             @endforeach
                                         </select>
                                     </td>
-                                    <td class="px-4 py-2.5">
+                                    <td class="px-4 py-2.5 text-right">
                                         <input type="number" :name="'items[' + index + '][min_quantity]'" x-model="item.min_quantity" min="1" required
                                             class="w-full h-9 px-3 rounded-lg border border-[#E5E7EB] text-sm text-right tabular-nums focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
                                     </td>
-                                    <td class="px-4 py-2.5">
+                                    <td class="px-4 py-2.5 text-right">
                                         <input type="number" :name="'items[' + index + '][price]'" x-model="item.price" min="0" step="0.01" required
                                             class="w-full h-9 px-3 rounded-lg border border-[#E5E7EB] text-sm text-right tabular-nums focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
                                     </td>

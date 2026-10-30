@@ -3,49 +3,49 @@
 
     $allInventoryTabs = [
         [
-            'label' => 'Bahan Baku',
+            'label' => 'Raw Materials',
             'route' => 'inventory.ingredients',
             'active' => 'inventory.ingredients*',
             'icon' => 'egg_alt',
             'roles' => ['Owner', 'Manager', 'Inventory'],
         ],
         [
-            'label' => 'Penerimaan Barang',
+            'label' => 'Goods Receipt',
             'route' => 'inventory.goods-receipts',
             'active' => 'inventory.goods-receipts*',
             'icon' => 'input',
             'roles' => ['Owner', 'Manager', 'Inventory'],
         ],
         [
-            'label' => 'Penyesuaian Stok',
+            'label' => 'Stock Adjustments',
             'route' => 'inventory.adjustments',
             'active' => 'inventory.adjustments*',
             'icon' => 'tune',
             'roles' => ['Owner', 'Manager', 'Inventory'],
         ],
         [
-            'label' => 'Stock Opname',
+            'label' => 'Stock Count',
             'route' => 'inventory.opnames',
             'active' => 'inventory.opnames*',
             'icon' => 'fact_check',
             'roles' => ['Owner', 'Manager', 'Inventory'],
         ],
         [
-            'label' => 'Transfer Antarcabang',
+            'label' => 'Inter-Branch Transfer',
             'route' => 'inventory.transfers',
             'active' => 'inventory.transfers*',
             'icon' => 'local_shipping',
             'roles' => ['Owner', 'Manager', 'Inventory'],
         ],
         [
-            'label' => 'Retur Supplier',
+            'label' => 'Supplier Returns',
             'route' => 'inventory.supplier-returns',
             'active' => 'inventory.supplier-returns*',
             'icon' => 'keyboard_return',
             'roles' => ['Owner', 'Manager', 'Inventory'],
         ],
         [
-            'label' => 'Riwayat Mutasi',
+            'label' => 'Stock Ledger',
             'route' => 'inventory.ledger',
             'active' => 'inventory.ledger*',
             'icon' => 'history',
@@ -59,7 +59,7 @@
 @endphp
 
 <div class="w-full pb-3 mb-6 border-b border-[#E5E7EB]">
-    <nav aria-label="Sub-navigasi Manajemen Inventori"
+    <nav aria-label="Inventory Management Navigation"
         x-data
         x-init="$nextTick(() => {
             const activeTab = $el.querySelector('[aria-current=page]');
@@ -74,7 +74,7 @@
                 $isActive = request()->routeIs($tab['active']);
             @endphp
             <a href="{{ route($tab['route']) }}" wire:navigate
-                @click="if (window.apeironPosCartDirty && !confirm('Anda memiliki pesanan aktif di kasir. Pindah halaman akan membatalkan keranjang aktif. Lanjutkan?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }"
+                @click="if (window.apeironPosCartDirty && !confirm('You have an active order in the POS terminal. Navigating away will discard the active cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }"
                 @if ($isActive) aria-current="page" @endif
                 style="{{ $isActive ? 'background-color: #202020; color: #ffffff;' : '' }}"
                 class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink {{ $isActive ? 'inventory-nav-tab-active bg-apeiron-ink text-white shadow-sm' : 'inventory-nav-tab-inactive text-[#787774] hover:text-apeiron-ink hover:bg-[#F7F7F5]' }}">

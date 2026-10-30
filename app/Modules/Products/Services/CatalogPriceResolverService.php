@@ -35,6 +35,14 @@ use Illuminate\Support\Collection;
  */
 class CatalogPriceResolverService
 {
+    /** @var array<string, mixed> */
+    protected array $runtimeCache = [];
+
+    public function clearRuntimeCache(): void
+    {
+        $this->runtimeCache = [];
+    }
+
     /**
      * Menyelesaikan harga jual produk dengan hierarki prioritas penuh dan mengembalikan ResolvedPriceDto lengkap.
      */
@@ -54,7 +62,7 @@ class CatalogPriceResolverService
 
         // 1. Ambil Produk Master untuk base price
         /** @var Product|null $product */
-        $product = Product::withoutGlobalScopes()
+        $product = $context->product ?? Product::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->find($productId);
 
@@ -69,34 +77,52 @@ class CatalogPriceResolverService
                 ->find($variantId);
         }
 
+        // 0. Prioritas 0 — Harga Terbuka (Open Price)
+        if ($context->customPrice !== null) {
+            $isOpenPrice = (bool) ($variant?->is_open_price ?? $product?->is_open_price ?? false);
+            if ($isOpenPrice) {
+                return new ResolvedPriceDto(
+                    unitPrice: (float) $context->customPrice,
+                    baseUnitPrice: (float) $context->customPrice,
+                    pricingSource: ResolvedPriceDto::SOURCE_OPEN_PRICE,
+                    meta: ['tier' => 0, 'open_price' => true]
+                );
+            }
+        }
+
         // Resolusi Customer Group jika customerId ada namun customerGroupId belum dioper
         if ($customerId !== null && $customerGroupId === null) {
-            $customer = Customer::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
-                ->find($customerId);
-
-            if ($customer && $customer->customer_group_id) {
-                $customerGroupId = (int) $customer->customer_group_id;
+            $cgCacheKey = "cg_{$tenantId}_{$customerId}";
+            if (! array_key_exists($cgCacheKey, $this->runtimeCache)) {
+                $customer = Customer::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->find($customerId);
+                $this->runtimeCache[$cgCacheKey] = $customer?->customer_group_id ? (int) $customer->customer_group_id : null;
             }
+            $customerGroupId = $this->runtimeCache[$cgCacheKey];
         }
 
         // -------------------------------------------------------------
         // PRIORITAS 1: Kontrak Harga Khusus Pelanggan (CUSTOMER_CONTRACT)
         // -------------------------------------------------------------
         if ($customerId !== null) {
-            $contractPls = PriceList::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
-                ->where('customer_id', $customerId)
-                ->where('is_active', true)
-                ->where(function ($q) {
-                    $q->where('target_type', PriceList::TARGET_CUSTOMER_CONTRACT)
-                        ->orWhere('type', 'customer_specific');
-                })
-                ->where(fn ($q) => $q->whereNull('valid_from')->orWhere('valid_from', '<=', $now))
-                ->where(fn ($q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', $now))
-                ->orderBy('priority', 'asc')
-                ->orderBy('id', 'asc')
-                ->get();
+            $cKey = "cpls_{$tenantId}_{$customerId}";
+            if (! isset($this->runtimeCache[$cKey])) {
+                $this->runtimeCache[$cKey] = PriceList::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->where('customer_id', $customerId)
+                    ->where('is_active', true)
+                    ->where(function ($q) {
+                        $q->where('target_type', PriceList::TARGET_CUSTOMER_CONTRACT)
+                            ->orWhere('type', 'customer_specific');
+                    })
+                    ->where(fn ($q) => $q->whereNull('valid_from')->orWhere('valid_from', '<=', $now))
+                    ->where(fn ($q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', $now))
+                    ->orderBy('priority', 'asc')
+                    ->orderBy('id', 'asc')
+                    ->get();
+            }
+            $contractPls = $this->runtimeCache[$cKey];
 
             if ($contractPls->isNotEmpty()) {
                 $match = $this->findBestMatchingItemAcrossPriceLists($tenantId, $contractPls, $productId, $variantId, $quantity, $uomId, $baseUnitPrice);
@@ -121,19 +147,23 @@ class CatalogPriceResolverService
         // PRIORITAS 2: Harga Grup Pelanggan (CUSTOMER_GROUP)
         // -------------------------------------------------------------
         if ($customerGroupId !== null) {
-            $groupPls = PriceList::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
-                ->where('customer_group_id', $customerGroupId)
-                ->where('is_active', true)
-                ->where(function ($q) {
-                    $q->where('target_type', PriceList::TARGET_CUSTOMER_GROUP)
-                        ->orWhere('type', 'customer_tier');
-                })
-                ->where(fn ($q) => $q->whereNull('valid_from')->orWhere('valid_from', '<=', $now))
-                ->where(fn ($q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', $now))
-                ->orderBy('priority', 'asc')
-                ->orderBy('id', 'asc')
-                ->get();
+            $gKey = "gpls_{$tenantId}_{$customerGroupId}";
+            if (! isset($this->runtimeCache[$gKey])) {
+                $this->runtimeCache[$gKey] = PriceList::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->where('customer_group_id', $customerGroupId)
+                    ->where('is_active', true)
+                    ->where(function ($q) {
+                        $q->where('target_type', PriceList::TARGET_CUSTOMER_GROUP)
+                            ->orWhere('type', 'customer_tier');
+                    })
+                    ->where(fn ($q) => $q->whereNull('valid_from')->orWhere('valid_from', '<=', $now))
+                    ->where(fn ($q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', $now))
+                    ->orderBy('priority', 'asc')
+                    ->orderBy('id', 'asc')
+                    ->get();
+            }
+            $groupPls = $this->runtimeCache[$gKey];
 
             if ($groupPls->isNotEmpty()) {
                 $match = $this->findBestMatchingItemAcrossPriceLists($tenantId, $groupPls, $productId, $variantId, $quantity, $uomId, $baseUnitPrice);
@@ -158,32 +188,36 @@ class CatalogPriceResolverService
         // PRIORITAS 3: Store / Channel / Standard Price List & Branch Override
         // -------------------------------------------------------------
         // 3a. Price list spesifik cabang, kanal, loyalty tier, atau standar
-        $storePls = PriceList::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
-            ->where('is_active', true)
-            ->where(function ($q) {
-                $q->whereIn('target_type', [PriceList::TARGET_GENERAL, PriceList::TARGET_STORE])
-                    ->orWhereNull('target_type');
-            })
-            ->whereNotIn('type', ['customer_specific'])
-            ->where(fn ($q) => $q->whereNull('valid_from')->orWhere('valid_from', '<=', $now))
-            ->where(fn ($q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', $now))
-            ->where(function ($q) use ($storeIdInt, $loyaltyTierId, $channel) {
-                if ($storeIdInt !== null) {
-                    $q->orWhere(fn ($sub) => $sub->where('store_id', $storeIdInt));
-                    $q->orWhere(fn ($sub) => $sub->where('type', 'branch')->where('store_id', $storeIdInt));
-                }
-                if ($loyaltyTierId !== null) {
-                    $q->orWhere(fn ($sub) => $sub->where('type', 'customer_tier')->where('loyalty_tier_id', $loyaltyTierId));
-                }
-                if ($channel !== null) {
-                    $q->orWhere(fn ($sub) => $sub->where('type', 'channel')->where('channel', $channel));
-                }
-                $q->orWhereIn('type', ['wholesale', 'standard']);
-            })
-            ->orderBy('priority', 'asc')
-            ->orderBy('id', 'asc')
-            ->get();
+        $sKey = "spls_{$tenantId}_{$storeIdInt}_{$loyaltyTierId}_{$channel}";
+        if (! isset($this->runtimeCache[$sKey])) {
+            $this->runtimeCache[$sKey] = PriceList::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('is_active', true)
+                ->where(function ($q) {
+                    $q->whereIn('target_type', [PriceList::TARGET_GENERAL, PriceList::TARGET_STORE])
+                        ->orWhereNull('target_type');
+                })
+                ->whereNotIn('type', ['customer_specific'])
+                ->where(fn ($q) => $q->whereNull('valid_from')->orWhere('valid_from', '<=', $now))
+                ->where(fn ($q) => $q->whereNull('valid_until')->orWhere('valid_until', '>=', $now))
+                ->where(function ($q) use ($storeIdInt, $loyaltyTierId, $channel) {
+                    if ($storeIdInt !== null) {
+                        $q->orWhere(fn ($sub) => $sub->where('store_id', $storeIdInt));
+                        $q->orWhere(fn ($sub) => $sub->where('type', 'branch')->where('store_id', $storeIdInt));
+                    }
+                    if ($loyaltyTierId !== null) {
+                        $q->orWhere(fn ($sub) => $sub->where('type', 'customer_tier')->where('loyalty_tier_id', $loyaltyTierId));
+                    }
+                    if ($channel !== null) {
+                        $q->orWhere(fn ($sub) => $sub->where('type', 'channel')->where('channel', $channel));
+                    }
+                    $q->orWhereIn('type', ['wholesale', 'standard']);
+                })
+                ->orderBy('priority', 'asc')
+                ->orderBy('id', 'asc')
+                ->get();
+        }
+        $storePls = $this->runtimeCache[$sKey];
 
         if ($storePls->isNotEmpty()) {
             $match = $this->findBestMatchingItemAcrossPriceLists($tenantId, $storePls, $productId, $variantId, $quantity, $uomId, $baseUnitPrice);
@@ -270,7 +304,8 @@ class CatalogPriceResolverService
         ?int $customerId = null,
         ?int $loyaltyTierId = null,
         ?string $channel = null,
-        ?int $uomId = null
+        ?int $uomId = null,
+        ?float $customPrice = null
     ): float {
         $context = new PriceResolutionContextDto(
             tenantId: (int) $product->tenant_id,
@@ -282,6 +317,8 @@ class CatalogPriceResolverService
             customerId: $customerId,
             loyaltyTierId: $loyaltyTierId,
             channel: $channel,
+            customPrice: $customPrice,
+            product: $product,
         );
 
         return $this->resolveCustomerPrice($context)->unitPrice;

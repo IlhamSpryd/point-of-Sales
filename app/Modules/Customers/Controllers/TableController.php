@@ -37,7 +37,7 @@ class TableController extends Controller
     {
         $this->tableService->store($request->validated());
 
-        return redirect()->route('tables.index')->with('success', 'Meja berhasil ditambahkan.');
+        return redirect()->route('tables.index')->with('success', 'Table created successfully.');
     }
 
     public function edit(Table $table): View
@@ -49,7 +49,7 @@ class TableController extends Controller
     {
         $this->tableService->update($table, $request->validated());
 
-        return redirect()->route('tables.index')->with('success', 'Meja berhasil diperbarui.');
+        return redirect()->route('tables.index')->with('success', 'Table updated successfully.');
     }
 
     public function destroy(Table $table): RedirectResponse
@@ -57,7 +57,7 @@ class TableController extends Controller
         try {
             $this->tableService->delete($table);
 
-            return redirect()->route('tables.index')->with('success', 'Meja berhasil dihapus.');
+            return redirect()->route('tables.index')->with('success', 'Table deleted successfully.');
         } catch (ValidationException $e) {
             return redirect()->route('tables.index')->withErrors($e->validator);
         } catch (\Exception $e) {
@@ -67,7 +67,7 @@ class TableController extends Controller
                     'exception' => $e,
                 ]);
 
-                return redirect()->route('tables.index')->with('error', 'Terjadi kesalahan sistem saat menghapus meja. Silakan coba lagi.');
+                return redirect()->route('tables.index')->with('error', 'A system error occurred while deleting the table. Please try again.');
             }
 
             return redirect()->route('tables.index')->with('error', $e->getMessage());
@@ -77,7 +77,7 @@ class TableController extends Controller
                 'exception' => $e,
             ]);
 
-            return redirect()->route('tables.index')->with('error', 'Terjadi kesalahan sistem saat menghapus meja.');
+            return redirect()->route('tables.index')->with('error', 'A system error occurred while deleting the table.');
         }
     }
 
@@ -85,7 +85,7 @@ class TableController extends Controller
     {
         $this->tableService->rotateQrToken($table);
 
-        return redirect()->route('tables.index')->with('success', 'QR Code meja "'.$table->table_name.'" berhasil dirotasi ke versi baru.');
+        return redirect()->route('tables.index')->with('success', 'Table QR code for "'.$table->table_name.'" was rotated to a new token version successfully.');
     }
 
     public function release(Table $table): RedirectResponse
@@ -93,7 +93,7 @@ class TableController extends Controller
         try {
             $this->tableService->releaseTable($table);
 
-            return redirect()->route('tables.index')->with('success', 'Meja "'.$table->table_name.'" berhasil dibebaskan (tersedia kembali).');
+            return redirect()->route('tables.index')->with('success', 'Table "'.$table->table_name.'" has been released and marked available.');
         } catch (ValidationException $e) {
             return redirect()->route('tables.index')->withErrors($e->validator);
         } catch (\Throwable $e) {

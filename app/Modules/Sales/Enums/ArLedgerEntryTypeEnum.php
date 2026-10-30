@@ -15,11 +15,11 @@ enum ArLedgerEntryTypeEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::INVOICE_DEBIT => 'Debet Tagihan (Invoice)',
-            self::PAYMENT_CREDIT => 'Kredit Pembayaran (Payment)',
-            self::CREDIT_NOTE => 'Kredit Nota (Credit Note)',
-            self::DEBIT_ADJUSTMENT => 'Penyesuaian Debet',
-            self::REVERSAL => 'Pembalik (Reversal)',
+            self::INVOICE_DEBIT => 'Invoice Debit',
+            self::PAYMENT_CREDIT => 'Payment Credit',
+            self::CREDIT_NOTE => 'Credit Note',
+            self::DEBIT_ADJUSTMENT => 'Debit Adjustment',
+            self::REVERSAL => 'Reversal',
         };
     }
 

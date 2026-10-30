@@ -14,10 +14,10 @@ enum PoReceivingStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::NotReceived => 'Belum Diterima',
-            self::PartiallyReceived => 'Diterima Sebagian',
-            self::FullyReceived => 'Diterima Penuh',
-            self::OverReceived => 'Kelebihan Terima',
+            self::NotReceived => 'Not Received',
+            self::PartiallyReceived => 'Partially Received',
+            self::FullyReceived => 'Fully Received',
+            self::OverReceived => 'Over Received',
         };
     }
 

@@ -105,6 +105,7 @@ class Product extends Model
         'product_description',
         'stock',
         'is_active',
+        'is_open_price',
     ];
 
     public function setNameAttribute($value): void
@@ -259,6 +260,7 @@ class Product extends Model
             'has_variants' => 'boolean',
             'track_inventory' => 'boolean',
             'standard_cost' => 'decimal:2',
+            'is_open_price' => 'boolean',
         ];
     }
 

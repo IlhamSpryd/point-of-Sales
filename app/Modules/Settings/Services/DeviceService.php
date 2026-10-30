@@ -68,7 +68,7 @@ class DeviceService
         $tenantId = app(TenantContext::class)->requireTenantId();
 
         if ((int) $store->tenant_id !== (int) $tenantId) {
-            throw new DomainException('Cabang tidak valid untuk tenant yang sedang aktif.');
+            throw new DomainException('Invalid branch for the currently active tenant.');
         }
 
         $this->entitlementService->assertCanCreateDevice($tenantId, (int) $store->id);
@@ -101,7 +101,7 @@ class DeviceService
                 storeId: $store->id,
                 subjectType: Device::class,
                 subjectId: $device->id,
-                description: "Perangkat kasir '{$device->device_name}' ({$device->device_code}) didaftarkan untuk cabang '{$store->name}'.",
+                description: "Cashier device '{$device->device_name}' ({$device->device_code}) registered for branch '{$store->name}'.",
                 newValues: [
                     'device_name' => $device->device_name,
                     'device_type' => $device->device_type,
@@ -133,15 +133,15 @@ class DeviceService
                 ->first();
 
             if (! $device) {
-                throw new DomainException('Kode pairing tidak ditemukan atau sudah tidak valid.');
+                throw new DomainException('Pairing code not found or no longer valid.');
             }
 
             if ($device->status === Device::STATUS_REVOKED) {
-                throw new DomainException('Perangkat ini telah dicabut (revoked) oleh administrator.');
+                throw new DomainException('This device has been revoked by an administrator.');
             }
 
             if ($device->pairing_token_expires_at && $device->pairing_token_expires_at->isPast()) {
-                throw new DomainException('Kode pairing telah kedaluwarsa. Silakan minta kode baru dari dashboard.');
+                throw new DomainException('Pairing code has expired. Please request a new code from the dashboard.');
             }
 
             $oldStatus = $device->status;
@@ -168,7 +168,7 @@ class DeviceService
                 storeId: (int) $device->store_id,
                 subjectType: Device::class,
                 subjectId: $device->id,
-                description: "Terminal fisik kasir '{$device->device_name}' ({$device->device_code}) berhasil dipasangkan (paired).",
+                description: "Physical POS terminal '{$device->device_name}' ({$device->device_code}) successfully paired.",
                 oldValues: ['status' => $oldStatus],
                 newValues: [
                     'status' => Device::STATUS_PAIRED,
@@ -205,7 +205,7 @@ class DeviceService
                 storeId: (int) $device->store_id,
                 subjectType: Device::class,
                 subjectId: $device->id,
-                description: "Token pairing untuk perangkat '{$device->device_name}' ({$device->device_code}) diterbitkan ulang.",
+                description: "Pairing token for device '{$device->device_name}' ({$device->device_code}) regenerated.",
                 oldValues: ['status' => $oldStatus],
                 newValues: [
                     'status' => Device::STATUS_PENDING,
@@ -239,7 +239,7 @@ class DeviceService
                 storeId: (int) $device->store_id,
                 subjectType: Device::class,
                 subjectId: $device->id,
-                description: "Akses terminal kasir '{$device->device_name}' ({$device->device_code}) dicabut (revoked).",
+                description: "Access for POS terminal '{$device->device_name}' ({$device->device_code}) revoked.",
                 oldValues: ['status' => $oldStatus],
                 newValues: ['status' => Device::STATUS_REVOKED, 'is_active' => false]
             );
@@ -269,7 +269,7 @@ class DeviceService
                 storeId: (int) $device->store_id,
                 subjectType: Device::class,
                 subjectId: $device->id,
-                description: "Data perangkat '{$device->device_name}' ({$device->device_code}) diperbarui.",
+                description: "Device data for '{$device->device_name}' ({$device->device_code}) updated.",
                 oldValues: $oldValues,
                 newValues: $device->only(['device_name', 'device_type', 'is_active'])
             );
@@ -299,7 +299,7 @@ class DeviceService
                 storeId: $storeId,
                 subjectType: Device::class,
                 subjectId: $deviceId,
-                description: "Perangkat kasir '{$deviceName}' ({$deviceCode}) dihapus."
+                description: "Cashier device '{$deviceName}' ({$deviceCode}) deleted."
             );
 
             return (bool) $deleted;

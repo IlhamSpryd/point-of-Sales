@@ -18,15 +18,19 @@ enum PaymentMethod: string
     case Qris = 'qris';
     case Ewallet = 'ewallet';
     case Card = 'card';
+    case GiftCard = 'gift_card';
+    case StoreCredit = 'store_credit';
 
     /** Label ramah untuk UI (jangan pernah membandingkan string mentah di View). */
     public function label(): string
     {
         return match ($this) {
-            self::Cash => 'Tunai',
+            self::Cash => 'Cash',
             self::Qris => 'QRIS',
             self::Ewallet => 'E-Wallet',
-            self::Card => 'Kartu (Debit/Kredit)',
+            self::Card => 'Card (Debit / Credit)',
+            self::GiftCard => 'Gift Card',
+            self::StoreCredit => 'Store Credit',
         };
     }
 

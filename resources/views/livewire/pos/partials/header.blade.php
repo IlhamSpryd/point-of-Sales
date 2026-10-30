@@ -4,7 +4,7 @@
         <div class="flex items-center gap-3">
             {{-- Indikator Perangkat / Shift Aktif (Klik langsung ke Shift Index) --}}
             <a href="{{ route('shifts.index') }}"
-                title="Kelola Shift Kasir"
+                title="Manage Cashier Shifts"
                 class="hidden xl:flex items-center gap-2 px-3 py-1.5 bg-gray-50 hover:bg-gray-100 border border-[#E5E7EB]/80 rounded-xl text-xs font-bold text-gray-700 transition-colors">
                 <span class="w-2 h-2 rounded-full {{ $this->activeShift && $this->activeShift->status === 'open' ? 'bg-emerald-500 animate-pulse' : 'bg-rose-500' }}"></span>
                 <span>{{ $this->activeShift?->device?->device_name ?? 'POS Terminal' }}</span>
@@ -33,20 +33,20 @@
                     <div class="relative">
                         <select wire:model="tableId"
                             class="bg-gray-100/80 border border-[#E5E7EB]/50 text-gray-700 font-bold text-[13px] rounded-xl hover:bg-gray-200/50 hover:text-apeiron-ink focus:bg-white focus:border-gray-300 focus:ring-0 block pl-4 pr-9 py-1.5 transition-all duration-200 min-h-[36px] appearance-none cursor-pointer">
-                            <option value="">-- Pilih Meja --</option>
+                            <option value="">-- Select Table --</option>
                             @foreach ($this->activeTables as $table)
                                 @php
                                     $isAvailable = in_array($table->operational_status, ['available', 'reserved']);
                                     $statusLabel = match($table->operational_status) {
-                                        'occupied'   => ' (Terisi)',
-                                        'cleaning'   => ' (Dibersihkan)',
-                                        'reserved'   => ' (Reservasi)',
+                                        'occupied'   => ' (Occupied)',
+                                        'cleaning'   => ' (Cleaning)',
+                                        'reserved'   => ' (Reserved)',
                                         'available'  => '',
                                         default      => ' (' . ucfirst($table->operational_status) . ')',
                                     };
                                 @endphp
                                 <option value="{{ $table->id }}" @disabled(! $isAvailable)>
-                                    Meja {{ $table->table_name }}{{ $statusLabel }}
+                                    Table {{ $table->table_name }}{{ $statusLabel }}
                                 </option>
                             @endforeach
                         </select>
@@ -64,7 +64,7 @@
         <div class="flex items-center gap-2">
             <div class="relative flex-1 sm:flex-none sm:w-56 xl:w-72">
                 <x-search-input wire:model.live.debounce.300ms="search" id="search-input"
-                    placeholder="Cari produk / barcode..." />
+                    placeholder="Search products or scan barcode..." />
                 <div class="hidden md:flex absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none items-center gap-1">
                     <x-ui.kbd>F2</x-ui.kbd>
                 </div>
@@ -73,18 +73,18 @@
             {{-- Tombol Tahan Keranjang (F8) --}}
             <button type="button" wire:click="$set('isParkModalOpen', true)" :disabled="{{ count($cart) === 0 ? 'true' : 'false' }}"
                 class="disabled:opacity-40 disabled:cursor-not-allowed px-3 py-2 rounded-xl border border-[#E5E7EB] bg-white text-xs font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm"
-                title="Tahan Keranjang Saat Ini (Pintasan: F8)">
+                title="Park Current Cart (Shortcut: F8)">
                 <span class="material-symbols-rounded text-[18px]">pause_circle</span>
-                <span class="hidden md:inline">Tahan</span>
+                <span class="hidden md:inline">Park</span>
                 <x-ui.kbd class="hidden xl:inline-flex">F8</x-ui.kbd>
             </button>
 
             {{-- Tombol Daftar Keranjang Tertunda (F9) --}}
             <button type="button" wire:click="$set('isParkedListOpen', true)"
                 class="relative px-3 py-2 rounded-xl border border-[#E5E7EB] bg-white text-xs font-bold text-gray-700 hover:bg-gray-50 active:scale-95 transition-all flex items-center gap-1.5 shadow-sm"
-                title="Daftar Keranjang Tertunda (Pintasan: F9)">
+                title="Parked Carts List (Shortcut: F9)">
                 <span class="material-symbols-rounded text-[18px]">inbox</span>
-                <span class="hidden md:inline">Tertunda</span>
+                <span class="hidden md:inline">Parked</span>
                 <span class="text-xs">({{ $this->parkedCarts->count() }})</span>
                 <x-ui.kbd class="hidden xl:inline-flex">F9</x-ui.kbd>
                 @if($this->parkedCarts->count() > 0)
@@ -114,20 +114,20 @@
             <div class="relative">
                 <select wire:model="tableId"
                     class="w-full bg-gray-100/80 border border-[#E5E7EB]/50 text-gray-700 font-bold text-xs rounded-xl hover:bg-gray-200/50 hover:text-apeiron-ink focus:bg-white focus:border-gray-300 focus:ring-0 block pl-3 pr-8 py-1.5 transition-all duration-200 min-h-[36px] appearance-none cursor-pointer">
-                    <option value="">-- Pilih Meja --</option>
+                    <option value="">-- Select Table --</option>
                     @foreach ($this->activeTables as $table)
                         @php
                             $isAvailable = in_array($table->operational_status, ['available', 'reserved']);
                             $statusLabel = match($table->operational_status) {
-                                'occupied'   => ' (Terisi)',
-                                'cleaning'   => ' (Dibersihkan)',
-                                'reserved'   => ' (Reservasi)',
+                                'occupied'   => ' (Occupied)',
+                                'cleaning'   => ' (Cleaning)',
+                                'reserved'   => ' (Reserved)',
                                 'available'  => '',
                                 default      => ' (' . ucfirst($table->operational_status) . ')',
                             };
                         @endphp
                         <option value="{{ $table->id }}" @disabled(! $isAvailable)>
-                            Meja {{ $table->table_name }}{{ $statusLabel }}
+                            Table {{ $table->table_name }}{{ $statusLabel }}
                         </option>
                     @endforeach
                 </select>
@@ -150,7 +150,7 @@
                     :class="activeCategory === 'all' ? 'bg-apeiron-ink text-white shadow-sm' :
                         'bg-white text-gray-500 hover:bg-gray-50 hover:text-apeiron-ink border border-[#E5E7EB]'"
                     class="snap-start shrink-0 inline-flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink active:scale-95">
-                    <span class="tracking-tight">Semua</span>
+                    <span class="tracking-tight">All</span>
                     <span :class="activeCategory === 'all' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600'"
                         class="px-1.5 py-0.5 rounded-md text-[10px] font-black transition-colors">
                         {{ $this->categories->sum(fn($cat) => $cat->products->count()) }}

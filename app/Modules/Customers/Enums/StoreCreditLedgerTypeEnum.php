@@ -16,12 +16,12 @@ enum StoreCreditLedgerTypeEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::CREDIT_NOTE_ISSUE => 'Penerbitan Nota Kredit (Retur)',
-            self::OVERPAYMENT_ISSUE => 'Kelebihan Bayar Invoice',
-            self::REDEEM_ORDER => 'Pembayaran Pesanan POS / Toko',
-            self::REDEEM_INVOICE => 'Pelunasan Faktur Piutang (AR)',
-            self::REVERSAL => 'Reversal Pembatalan Transaksi',
-            self::EXPIRE => 'Kedaluwarsa Saldo',
+            self::CREDIT_NOTE_ISSUE => 'Credit Note Issuance (Return)',
+            self::OVERPAYMENT_ISSUE => 'Invoice Overpayment',
+            self::REDEEM_ORDER => 'POS / Store Order Payment',
+            self::REDEEM_INVOICE => 'AR Invoice Settlement',
+            self::REVERSAL => 'Transaction Cancellation Reversal',
+            self::EXPIRE => 'Balance Expiration',
         };
     }
 }

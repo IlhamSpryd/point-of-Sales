@@ -24,8 +24,10 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
         Route::get('/customers/credit', CustomerCreditManager::class)->name('customers.credit.index');
         Route::get('/customers/instruments', LoyaltyAndValueInstrumentManager::class)->name('customers.instruments.index');
 
-        // Diskon & Promo
+        // Diskon & Promo (Modul 8)
         Route::get('/discounts', [DiscountController::class, 'index'])->name('discounts.index');
+        Route::get('/pricing/promotions', \App\Livewire\Pricing\PromotionCampaignManager::class)->name('pricing.promotions.index');
+        Route::get('/pricing/vouchers', \App\Livewire\Pricing\VoucherManager::class)->name('pricing.vouchers.index');
 
         // Meja Resto & QR Token
         Route::post('tables/{table}/rotate-qr', [TableController::class, 'rotateQr'])->name('tables.rotate-qr');

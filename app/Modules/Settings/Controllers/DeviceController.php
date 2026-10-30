@@ -65,7 +65,7 @@ class DeviceController extends Controller
 
             return redirect()
                 ->route('devices.show', $device)
-                ->with('success', "Perangkat '{$device->device_name}' berhasil didaftarkan. Gunakan token pairing untuk menghubungkan kasir fisik.");
+                ->with('success', "Device '{$device->device_name}' has been successfully registered. Use the pairing token to connect the physical terminal.");
         } catch (DomainException $e) {
             return redirect()
                 ->back()
@@ -96,7 +96,7 @@ class DeviceController extends Controller
 
         return redirect()
             ->route('devices.show', $device)
-            ->with('success', "Informasi perangkat '{$device->device_name}' berhasil diperbarui.");
+            ->with('success', "Device information for '{$device->device_name}' has been successfully updated.");
     }
 
     public function destroy(Device $device): RedirectResponse
@@ -107,7 +107,7 @@ class DeviceController extends Controller
 
         return redirect()
             ->route('devices.index')
-            ->with('success', "Perangkat '{$device->device_name}' berhasil dihapus.");
+            ->with('success', "Device '{$device->device_name}' has been successfully deleted.");
     }
 
     public function revoke(Device $device): RedirectResponse
@@ -118,7 +118,7 @@ class DeviceController extends Controller
 
         return redirect()
             ->route('devices.show', $device)
-            ->with('success', "Akses perangkat '{$device->device_name}' telah dicabut.");
+            ->with('success', "Device access for '{$device->device_name}' has been revoked.");
     }
 
     public function regenerateToken(Device $device): RedirectResponse
@@ -129,11 +129,11 @@ class DeviceController extends Controller
 
         return redirect()
             ->route('devices.show', $device)
-            ->with('success', 'Token pairing baru berhasil diterbitkan.');
+            ->with('success', 'A new pairing token has been successfully generated.');
     }
 
     /**
-     * Endpoint API aktivasi/pairing terminal kasir fisik.
+     * Physical POS terminal activation/pairing API endpoint.
      */
     public function pair(PairDeviceRequest $request): JsonResponse
     {
@@ -147,7 +147,7 @@ class DeviceController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Perangkat kasir berhasil dihubungkan ke toko.',
+                'message' => 'Cashier device successfully connected to the store.',
                 'device' => [
                     'id' => $device->id,
                     'code' => $device->device_code,

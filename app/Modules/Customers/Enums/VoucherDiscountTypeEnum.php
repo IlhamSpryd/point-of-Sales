@@ -12,8 +12,8 @@ enum VoucherDiscountTypeEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::PERCENTAGE => 'Persentase (%)',
-            self::FIXED_AMOUNT => 'Nominal Tetap (Rp)',
+            self::PERCENTAGE => 'Percentage (%)',
+            self::FIXED_AMOUNT => 'Fixed Amount (Rp)',
         };
     }
 }

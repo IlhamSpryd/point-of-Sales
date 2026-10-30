@@ -96,9 +96,9 @@ class RoleController extends Controller
 
             return redirect()->route('roles.index')->with('success', 'Role deleted successfully.');
         } catch (QueryException $e) {
-            return redirect()->route('roles.index')->with('error', 'Data ini masih terhubung dengan data lain dan tidak dapat dihapus.');
+            return redirect()->route('roles.index')->with('error', 'This role is linked to other system records and cannot be deleted.');
         } catch (\Throwable $e) {
-            // Atasi lemparan kegagalan Exception bila terjadi dan beritahukan sebab kegagalannya.
+            // Handle and report exception message.
             return redirect()->route('roles.index')->with('error', $e->getMessage());
         }
     }

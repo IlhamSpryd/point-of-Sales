@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -26,12 +27,30 @@ class AccountsReceivableManager extends Component
     use RequiresTenantContext;
     use WithPagination;
 
+    #[Url(history: true)]
     public string $activeTab = 'invoices'; // invoices, payment, aging, statement
 
     // Filter Invoices
+    #[Url(history: true)]
     public string $search = '';
 
+    #[Url(history: true)]
     public string $statusFilter = '';
+
+    public function updatedActiveTab(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+    }
 
     // Modal Detail
     public bool $showDetailModal = false;

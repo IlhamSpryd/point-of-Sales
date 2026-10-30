@@ -15,9 +15,9 @@ enum StockTransferStatusEnum: string
     {
         return match ($this) {
             self::Draft => 'Draft',
-            self::InTransit => 'Dalam Pengiriman (In-Transit)',
-            self::Received => 'Diterima (Received)',
-            self::Cancelled => 'Dibatalkan (Cancelled)',
+            self::InTransit => 'In Transit',
+            self::Received => 'Received',
+            self::Cancelled => 'Cancelled',
         };
     }
 

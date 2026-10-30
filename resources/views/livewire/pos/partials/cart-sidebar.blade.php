@@ -4,7 +4,7 @@
     <div class="p-4 lg:p-5 border-b border-[#E5E7EB] flex flex-col shrink-0 bg-white">
         <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2.5">
-                <h2 class="text-lg font-bold text-apeiron-ink leading-none">Keranjang</h2>
+                <h2 class="text-lg font-bold text-apeiron-ink leading-none">Cart</h2>
                 <span class="bg-apeiron-ink text-white text-[11px] font-bold px-2 py-0.5 rounded-full transition-all duration-300">
                     {{ count($this->cartLines) }}
                 </span>
@@ -15,7 +15,7 @@
                         class="text-xs font-medium text-amber-700 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-200 flex items-center gap-1">
                         #{{ $pendingOrderCode }}
                         <button wire:click="cancelPendingOrderMode"
-                            class="hover:text-amber-800 hover:bg-amber-100 rounded p-0.5 transition-colors ml-1" title="Batalkan Self Order">
+                            class="hover:text-amber-800 hover:bg-amber-100 rounded p-0.5 transition-colors ml-1" title="Cancel Self-Order">
                             <span class="material-symbols-rounded text-[14px] block">close</span>
                         </button>
                     </span>
@@ -23,11 +23,11 @@
 
                 <button type="button"
                     x-on:click="
-                        if (confirm('Kosongkan semua item dari keranjang?')) {
+                        if (confirm('Clear all items from cart?')) {
                             $wire.clearCart();
                         }
                     "
-                    title="Kosongkan Keranjang"
+                    title="Clear Cart"
                     @if (count($this->cartLines) === 0) disabled @endif
                     class="{{ count($this->cartLines) === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-rose-50 hover:text-rose-600 cursor-pointer' }} text-gray-400 p-2 rounded-lg transition-colors flex items-center justify-center outline-none">
                     <svg class="h-4.5 w-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -54,7 +54,7 @@
                 @else
                     <x-search-input wire:model.live.debounce.300ms="customerSearch"
                         x-on:focus="showResults = true" x-on:click.outside="showResults = false"
-                        placeholder="Tambah pelanggan (opsional)..." icon="person_add" />
+                        placeholder="Add customer (optional)..." icon="person_add" />
 
                     @if (mb_strlen(trim($customerSearch)) >= 2)
                         <div x-show="showResults" x-cloak wire:loading.class="opacity-50"
@@ -69,7 +69,7 @@
                                     <span class="text-[11px] font-medium text-gray-400">{{ $c->phone ?? '-' }}</span>
                                 </button>
                             @empty
-                                <div class="px-3.5 py-3 text-xs text-gray-400 text-center">Pelanggan tidak ditemukan.</div>
+                                <div class="px-3.5 py-3 text-xs text-gray-400 text-center">No customers found.</div>
                             @endforelse
                         </div>
                     @endif

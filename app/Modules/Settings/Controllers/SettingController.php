@@ -44,6 +44,6 @@ class SettingController extends Controller
             }
         }
 
-        return redirect()->route('settings.index')->with('success', 'Pengaturan berhasil diperbarui.');
+        return redirect()->route('settings.index')->with('success', 'Settings successfully updated.');
     }
 }

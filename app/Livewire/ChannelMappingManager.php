@@ -30,7 +30,7 @@ class ChannelMappingManager extends Component
         $role = auth()->user()?->role;
         $roleName = $role?->name;
         if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager'], true)) {
-            abort(403, 'Anda tidak memiliki hak akses pemetaan kanal integrasi.');
+            abort(403, 'You do not have permission to manage channel integrations.');
         }
     }
 
@@ -39,7 +39,7 @@ class ChannelMappingManager extends Component
         $role = auth()->user()?->role;
         $roleName = $role?->name;
         if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager'], true)) {
-            abort(403, 'Anda tidak memiliki hak akses pemetaan kanal integrasi.');
+            abort(403, 'You do not have permission to manage channel integrations.');
         }
 
         $tenantId = app(TenantContext::class)->requireTenantId();
@@ -56,7 +56,7 @@ class ChannelMappingManager extends Component
         );
 
         $this->reset(['externalProductId', 'productId']);
-        session()->flash('message', 'Pemetaan berhasil disimpan.');
+        session()->flash('message', 'Channel mapping successfully saved.');
     }
 
     public function deleteMapping($id)
@@ -64,17 +64,17 @@ class ChannelMappingManager extends Component
         $role = auth()->user()?->role;
         $roleName = $role?->name;
         if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager'], true)) {
-            abort(403, 'Anda tidak memiliki hak akses pemetaan kanal integrasi.');
+            abort(403, 'You do not have permission to manage channel integrations.');
         }
 
         $tenantId = app(TenantContext::class)->requireTenantId();
         $mapping = ChannelProductMapping::where('tenant_id', $tenantId)->find($id);
         if (! $mapping) {
-            abort(404, 'Pemetaan kanal tidak ditemukan.');
+            abort(404, 'Channel mapping not found.');
         }
 
         $mapping->delete();
-        session()->flash('message', 'Pemetaan berhasil dihapus.');
+        session()->flash('message', 'Channel mapping successfully deleted.');
     }
 
     public function render()

@@ -7,7 +7,7 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
 
     <title>@yield('title', config('app.name'))</title>
-    <link rel="icon" href="{{ asset('assets/images/logo.png') }}" type="image/png">    
+    <x-favicon />
 
     
     <!-- Self-Hosted Fonts Preload -->

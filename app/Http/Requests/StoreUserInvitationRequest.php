@@ -50,14 +50,14 @@ class StoreUserInvitationRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Nama karyawan wajib diisi.',
-            'email.required' => 'Email karyawan wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
-            'role_id.required' => 'Peran wajib dipilih.',
-            'role_id.exists' => 'Peran yang dipilih tidak valid untuk bisnis ini.',
-            'store_ids.required' => 'Pilih minimal satu cabang penugasan.',
-            'store_ids.min' => 'Pilih minimal satu cabang penugasan.',
-            'store_ids.*.exists' => 'Cabang yang dipilih tidak valid untuk bisnis ini.',
+            'name.required' => 'Employee name is required.',
+            'email.required' => 'Employee email is required.',
+            'email.email' => 'Invalid email format.',
+            'role_id.required' => 'Role is required.',
+            'role_id.exists' => 'The selected role is invalid for this business.',
+            'store_ids.required' => 'Select at least one assigned branch.',
+            'store_ids.min' => 'Select at least one assigned branch.',
+            'store_ids.*.exists' => 'The selected branch is invalid for this business.',
         ];
     }
 }

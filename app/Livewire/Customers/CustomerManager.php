@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -30,12 +31,16 @@ class CustomerManager extends Component
     use RequiresTenantContext;
     use WithPagination;
 
+    #[Url(history: true)]
     public string $search = '';
 
+    #[Url(history: true)]
     public string $typeFilter = '';
 
+    #[Url(history: true)]
     public string $statusFilter = '';
 
+    #[Url(history: true)]
     public string $groupFilter = '';
 
     // Modal state

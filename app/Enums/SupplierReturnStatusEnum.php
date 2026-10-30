@@ -15,9 +15,9 @@ enum SupplierReturnStatusEnum: string
     {
         return match ($this) {
             self::Draft => 'Draft',
-            self::Posted => 'Sudah Diposting (Posted)',
-            self::Cancelled => 'Dibatalkan (Cancelled)',
-            self::Reversed => 'Direverse (Reversed)',
+            self::Posted => 'Posted',
+            self::Cancelled => 'Cancelled',
+            self::Reversed => 'Reversed',
         };
     }
 

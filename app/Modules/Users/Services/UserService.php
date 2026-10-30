@@ -91,7 +91,7 @@ class UserService
                     ->exists();
 
                 if ($hasOpenShift) {
-                    throw new \DomainException('Tidak dapat menonaktifkan kasir yang masih memiliki shift aktif. Silakan tutup shift terlebih dahulu.');
+                    throw new \DomainException('Cannot deactivate a cashier with an open active shift. Please close the active shift first.');
                 }
             }
 
@@ -111,7 +111,7 @@ class UserService
 
             $user->update($data);
 
-            // Invalidate active sessions jika password diubah, role diubah, atau user dinonaktifkan
+            // Invalidate active sessions if credentials or roles change
             if (isset($data['password_hash']) || (isset($data['is_active']) && ! $data['is_active']) || isset($data['role_id']) || isset($data['status'])) {
                 try {
                     DB::table('sessions')->where('user_id', $user->id)->delete();
@@ -124,12 +124,12 @@ class UserService
     }
 
     /**
-     * Coret pengguna. Pengguna ditolak menghapus profilnya sendiri!
+     * Delete user. Users cannot delete their own account.
      */
     public function delete(User $user): bool
     {
         if ($user->id === Auth::id()) {
-            throw new Exception('Anda tidak dapat menghapus akun sendiri.');
+            throw new Exception('You cannot delete your own account.');
         }
 
         $hasOpenShift = Shift::where('user_id', $user->id)
@@ -137,11 +137,11 @@ class UserService
             ->exists();
 
         if ($hasOpenShift) {
-            throw new \DomainException('Tidak dapat menghapus kasir yang masih memiliki shift aktif. Silakan tutup shift terlebih dahulu.');
+            throw new \DomainException('Cannot delete a cashier with an open active shift. Please close the active shift first.');
         }
 
         if ($user->orders()->exists()) {
-            throw new Exception('Data ini masih terhubung dengan data lain dan tidak dapat dihapus.');
+            throw new Exception('This user has associated transactions or orders and cannot be deleted.');
         }
 
         return DB::transaction(function () use ($user) {
@@ -155,8 +155,8 @@ class UserService
     }
 
     /**
-     * Mencabut akses cabang tertentu dari pengguna.
-     * Ditolak jika pengguna masih memiliki shift aktif di cabang tersebut.
+     * Revoke store access for a user.
+     * Rejected if user has an open active shift at that store.
      */
     public function revokeStoreAccess(User $user, int $storeId): void
     {
@@ -168,7 +168,7 @@ class UserService
             ->exists();
 
         if ($hasOpenShift) {
-            throw new \DomainException('Tidak dapat mencabut akses cabang untuk pengguna yang masih memiliki shift aktif di cabang ini. Silakan tutup shift terlebih dahulu.');
+            throw new \DomainException('Cannot revoke store branch access for a user with an open active shift at this branch. Please close the active shift first.');
         }
 
         DB::table('user_stores')

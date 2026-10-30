@@ -4,6 +4,7 @@
     'emptyIcon' => 'inbox',
     'isEmpty' => false,
     'colspan' => 6,
+    'fixed' => false,
 ])
 
 <div {{ $attributes->twMerge('card-surface flex flex-col overflow-hidden') }}>
@@ -14,7 +15,13 @@
     @endisset
 
     <div class="w-full overflow-x-auto table-scroll-shadow">
-        <table class="w-full caption-bottom text-xs sm:text-sm border-collapse">
+        <table class="table-standard w-full min-w-full caption-bottom text-xs sm:text-sm border-collapse {{ $fixed ? 'table-fixed' : '' }}">
+            @isset($colgroup)
+                <colgroup>
+                    {{ $colgroup }}
+                </colgroup>
+            @endisset
+
             @isset($head)
                 <thead class="border-b border-border bg-[#F7F7F5]">
                     <tr>

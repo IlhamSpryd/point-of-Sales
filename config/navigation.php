@@ -3,25 +3,24 @@
 declare(strict_types=1);
 
 /**
- * Sumber kebenaran tunggal untuk menu navigasi sidebar — Apeiron POS.
+ * Single source of truth for sidebar navigation menu — Apeiron POS.
  *
- * Setiap entri WAJIB memiliki key: label, icon, route, active, roles, scope.
- * - `roles` HARUS 100% sinkron dengan middleware `role:` di routes/web.php.
- * - `active` berisi string pola atau array pola untuk request()->routeIs().
- * - `scope` menandai cakupan data: 'store' (cabang aktif) atau 'tenant' (seluruh bisnis).
- * - Jangan tambahkan entri dengan route yang belum terdaftar di routes/web.php.
+ * Every entry MUST have keys: label, icon, route, active, roles, scope.
+ * - `roles` MUST be 100% in sync with `role:` middleware in routes/web.php.
+ * - `active` contains pattern string or array of patterns for request()->routeIs().
+ * - `scope` marks data boundary: 'store' (active branch) or 'tenant' (organization-wide).
+ * - Do not add entries with routes not registered in routes/web.php.
  *
- * File ini dipakai oleh:
- *   1. layouts/navigation.blade.php — render sidebar & drawer
- *   2. tests/Feature/Navigation/SidebarIntegrityTest.php — validasi otomatis
+ * Used by:
+ *   1. layouts/navigation.blade.php — renders sidebar & drawer
+ *   2. tests/Feature/Navigation/SidebarIntegrityTest.php — automated validation
  *
  * @see routes/web.php
- * @see docs/implementationPlanSidebarNavigation.md
  */
 
 return [
     'sections' => [
-        'Ikhtisar' => [
+        'Overview' => [
             [
                 'label' => 'Dashboard',
                 'icon' => 'space_dashboard',
@@ -31,9 +30,9 @@ return [
                 'scope' => 'tenant',
             ],
         ],
-        'Kasir & Operasional' => [
+        'Cashier & Operations' => [
             [
-                'label' => 'Kasir (POS)',
+                'label' => 'POS Terminal',
                 'icon' => 'point_of_sale',
                 'route' => 'transaction.create',
                 'active' => 'transaction.*',
@@ -41,7 +40,7 @@ return [
                 'scope' => 'store',
             ],
             [
-                'label' => 'Riwayat Pesanan',
+                'label' => 'Order History',
                 'icon' => 'receipt_long',
                 'route' => 'orders.index',
                 'active' => 'orders.*',
@@ -49,7 +48,7 @@ return [
                 'scope' => 'store',
             ],
             [
-                'label' => 'Shift Kasir',
+                'label' => 'Cashier Shifts',
                 'icon' => 'lock_clock',
                 'route' => 'shifts.index',
                 'active' => 'shifts.*',
@@ -57,9 +56,9 @@ return [
                 'scope' => 'store',
             ],
         ],
-        'Katalog & Resep' => [
+        'Catalog & Recipes' => [
             [
-                'label' => 'Katalog Produk',
+                'label' => 'Product Catalog',
                 'icon' => 'inventory_2',
                 'route' => 'products.index',
                 'active' => [
@@ -73,7 +72,7 @@ return [
                 'scope' => 'tenant',
             ],
             [
-                'label' => 'Daftar Harga',
+                'label' => 'Price Lists',
                 'icon' => 'price_change',
                 'route' => 'price-lists.index',
                 'active' => 'price-lists.*',
@@ -81,7 +80,7 @@ return [
                 'scope' => 'tenant',
             ],
             [
-                'label' => 'Asortimen Cabang',
+                'label' => 'Branch Assortment',
                 'icon' => 'storefront',
                 'route' => 'assortments.index',
                 'active' => 'assortments.*',
@@ -89,9 +88,9 @@ return [
                 'scope' => 'store',
             ],
         ],
-        'Inventori & Suplai' => [
+        'Inventory & Supply' => [
             [
-                'label' => 'Bahan Baku & Stok',
+                'label' => 'Raw Materials & Stock',
                 'icon' => 'warehouse',
                 'route' => 'inventory.ingredients',
                 'active' => 'inventory.ingredients*',
@@ -99,7 +98,7 @@ return [
                 'scope' => 'store',
             ],
             [
-                'label' => 'Operasional Stok',
+                'label' => 'Stock Operations',
                 'icon' => 'sync_alt',
                 'route' => 'inventory.goods-receipts',
                 'active' => [
@@ -113,7 +112,7 @@ return [
                 'scope' => 'store',
             ],
             [
-                'label' => 'Buku Besar Stok',
+                'label' => 'Stock Ledger',
                 'icon' => 'menu_book',
                 'route' => 'inventory.ledger',
                 'active' => 'inventory.ledger*',
@@ -121,7 +120,7 @@ return [
                 'scope' => 'store',
             ],
             [
-                'label' => 'Pengadaan (Purchasing)',
+                'label' => 'Purchasing',
                 'icon' => 'local_shipping',
                 'route' => 'purchasing.suppliers.index',
                 'active' => 'purchasing.*',
@@ -129,9 +128,9 @@ return [
                 'scope' => 'tenant',
             ],
         ],
-        'Analitik & Pelanggan' => [
+        'Analytics & Customers' => [
             [
-                'label' => 'Laporan Penjualan',
+                'label' => 'Sales Reports',
                 'icon' => 'analytics',
                 'route' => 'reports.sales',
                 'active' => 'reports.*',
@@ -139,7 +138,7 @@ return [
                 'scope' => 'tenant',
             ],
             [
-                'label' => 'Pelanggan & CRM',
+                'label' => 'Customers & CRM',
                 'icon' => 'groups',
                 'route' => 'customers.index',
                 'active' => 'customers.*',
@@ -147,17 +146,20 @@ return [
                 'scope' => 'tenant',
             ],
             [
-                'label' => 'Diskon & Promo',
+                'label' => 'Discounts & Promotions',
                 'icon' => 'sell',
                 'route' => 'discounts.index',
-                'active' => 'discounts.*',
+                'active' => [
+                    'discounts.*',
+                    'pricing.*',
+                ],
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'store',
             ],
         ],
-        'Pengaturan & Tata Kelola' => [
+        'Settings & Governance' => [
             [
-                'label' => 'Cabang',
+                'label' => 'Branches',
                 'icon' => 'storefront',
                 'route' => 'stores.index',
                 'active' => 'stores.*',
@@ -165,7 +167,7 @@ return [
                 'scope' => 'tenant',
             ],
             [
-                'label' => 'Pengguna',
+                'label' => 'Users',
                 'icon' => 'group',
                 'route' => 'users.index',
                 'active' => ['users.*', 'users.invitations.*'],
@@ -173,7 +175,7 @@ return [
                 'scope' => 'tenant',
             ],
             [
-                'label' => 'Peran',
+                'label' => 'Roles & Permissions',
                 'icon' => 'admin_panel_settings',
                 'route' => 'roles.index',
                 'active' => 'roles.*',
@@ -181,7 +183,7 @@ return [
                 'scope' => 'tenant',
             ],
             [
-                'label' => 'Perangkat POS',
+                'label' => 'POS Devices',
                 'icon' => 'devices',
                 'route' => 'devices.index',
                 'active' => 'devices.*',
@@ -189,7 +191,7 @@ return [
                 'scope' => 'store',
             ],
             [
-                'label' => 'Pengaturan Sistem',
+                'label' => 'System Settings',
                 'icon' => 'settings',
                 'route' => 'settings.index',
                 'active' => ['settings.*', 'tax-classes.*'],
@@ -197,7 +199,7 @@ return [
                 'scope' => 'tenant',
             ],
             [
-                'label' => 'Log Audit',
+                'label' => 'Audit Logs',
                 'icon' => 'manage_search',
                 'route' => 'activity-logs.index',
                 'active' => 'activity-logs.*',

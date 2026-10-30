@@ -1,21 +1,21 @@
 <div data-gsap="page-enter">
     @include('inventory.partials.sub-nav')
-    {{-- Header & Aksi Utama --}}
+    {{-- Header & Primary Action --}}
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Transfer Stok Antarcabang</h4>
+            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Inter-Branch Stock Transfers</h4>
             <p class="text-sm font-medium text-apeiron-muted mt-1">
-                Perpindahan stok antarcabang 2-tahap (Two-Phase Transfer) dengan akuntabilitas perjalanan (OD-03 & OD-06)
+                Two-phase inter-branch stock transfers with in-transit accountability (OD-03 & OD-06).
             </p>
         </div>
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
             <x-ui.button type="button" variant="primary" wire:click="openCreateModal" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                <span class="material-symbols-rounded text-[18px]">add</span> Buat Permintaan Transfer
+                <span class="material-symbols-rounded text-[18px]">add</span> New Transfer Request
             </x-ui.button>
         </div>
     </div>
 
-    {{-- Alert Notifikasi --}}
+    {{-- Notification Alert --}}
     @if (session()->has('message'))
         <x-ui.alert variant="success" class="mb-4">
             {{ session('message') }}
@@ -31,7 +31,7 @@
     {{-- Filter & Search Bar --}}
     <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
         <div class="relative w-full sm:w-80">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari nomor transfer, catatan..."
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search transfer number, notes..."
                    class="form-input w-full pl-10 pr-4 py-2 rounded-2xl border border-apeiron-border bg-white text-apeiron-ink placeholder-apeiron-muted focus:outline-none focus:ring-2 focus:ring-apeiron-ink shadow-sm text-sm">
             <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-apeiron-muted">
                 <span class="material-symbols-rounded text-[18px]">search</span>
@@ -42,9 +42,9 @@
             <div class="relative w-full sm:w-44">
                 <select wire:model.live="directionFilter"
                         class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-apeiron-border bg-white text-apeiron-ink focus:outline-none focus:ring-2 focus:ring-apeiron-ink text-sm shadow-sm appearance-none">
-                    <option value="ALL">Semua Arah</option>
-                    <option value="OUTBOUND">Keluar (Pengirim)</option>
-                    <option value="INBOUND">Masuk (Penerima)</option>
+                    <option value="ALL">All Directions</option>
+                    <option value="OUTBOUND">Outbound (Origin)</option>
+                    <option value="INBOUND">Inbound (Destination)</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-apeiron-muted">
                     <span class="material-symbols-rounded text-[18px]">swap_horiz</span>
@@ -54,7 +54,7 @@
             <div class="relative w-full sm:w-56">
                 <select wire:model.live="statusFilter"
                         class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-apeiron-border bg-white text-apeiron-ink focus:outline-none focus:ring-2 focus:ring-apeiron-ink text-sm shadow-sm appearance-none">
-                    <option value="ALL">Semua Status</option>
+                    <option value="ALL">All Statuses</option>
                     @foreach ($statusOptions as $s)
                         <option value="{{ $s->value }}">{{ $s->label() }}</option>
                     @endforeach
@@ -66,24 +66,24 @@
         </div>
     </div>
 
-    {{-- Tabel Stock Transfers --}}
+    {{-- Stock Transfers Table --}}
     <div class="card-surface overflow-hidden w-full shrink-0">
         <div class="overflow-x-auto">
             <x-data-table>
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">No. Dokumen</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Rute Transfer</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Transfer #</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Route</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-center">Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Total Item</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Waktu Eksekusi</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-center">Aksi</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Items</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Timestamps</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-center">Actions</th>
                 </x-slot:head>
 
                 @forelse ($transfers as $transfer)
                     <tr class="hover:bg-apeiron-surface transition-colors duration-150">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="text-sm font-bold text-apeiron-ink">{{ $transfer->transfer_number }}</span>
-                            <div class="text-xs text-apeiron-muted">Dibuat: {{ $transfer->creator->name ?? 'System' }}</div>
+                            <div class="text-xs text-apeiron-muted">Created by: {{ $transfer->creator->name ?? 'System' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-apeiron-ink">
                             <div class="flex items-center gap-2">
@@ -102,36 +102,36 @@
                             </x-ui.badge>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-apeiron-ink text-right">
-                            {{ $transfer->items_count }} item
+                            {{ $transfer->items_count }} items
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-xs text-apeiron-ink">
                             @if ($transfer->shipped_at)
-                                <div>Kirim: <span class="font-medium text-amber-700">{{ $transfer->shipped_at->format('d M H:i') }}</span></div>
+                                <div>Shipped: <span class="font-medium text-amber-700">{{ $transfer->shipped_at->format('d M H:i') }}</span></div>
                             @endif
                             @if ($transfer->received_at)
-                                <div>Terima: <span class="font-medium text-emerald-700">{{ $transfer->received_at->format('d M H:i') }}</span></div>
+                                <div>Received: <span class="font-medium text-emerald-700">{{ $transfer->received_at->format('d M H:i') }}</span></div>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                             <div class="flex items-center justify-center gap-2">
-                                <button type="button" wire:click="viewDetail({{ $transfer->id }})" class="p-1 hover:text-apeiron-ink text-apeiron-muted transition-colors" title="Lihat Rincian">
+                                <button type="button" wire:click="viewDetail({{ $transfer->id }})" class="p-1 hover:text-apeiron-ink text-apeiron-muted transition-colors" title="View Details">
                                     <span class="material-symbols-rounded text-[20px]">visibility</span>
                                 </button>
 
                                 @if ($transfer->status === \App\Enums\StockTransferStatusEnum::Draft && $transfer->from_store_id === $currentStoreId)
-                                    <button type="button" wire:click="shipTransfer({{ $transfer->id }})" wire:confirm="Kirim transfer barang ini sekarang? Stok di cabang pengirim akan dipotong." class="p-1 text-amber-600 hover:text-amber-800 transition-colors" title="Kirim Barang (Dispatch)">
+                                    <button type="button" wire:click="shipTransfer({{ $transfer->id }})" wire:confirm="Dispatch this stock transfer now? Stock at origin branch will be deducted." class="p-1 text-amber-600 hover:text-amber-800 transition-colors" title="Dispatch Goods">
                                         <span class="material-symbols-rounded text-[20px]">local_shipping</span>
                                     </button>
                                 @endif
 
                                 @if ($transfer->status === \App\Enums\StockTransferStatusEnum::InTransit && $transfer->to_store_id === $currentStoreId)
-                                    <button type="button" wire:click="openReceiveModal({{ $transfer->id }})" class="p-1 text-emerald-600 hover:text-emerald-800 transition-colors" title="Terima Barang di Cabang Tujuan">
+                                    <button type="button" wire:click="openReceiveModal({{ $transfer->id }})" class="p-1 text-emerald-600 hover:text-emerald-800 transition-colors" title="Receive Goods at Destination">
                                         <span class="material-symbols-rounded text-[20px]">inventory</span>
                                     </button>
                                 @endif
 
                                 @if ($transfer->status->canCancel())
-                                    <button type="button" wire:click="cancelTransfer({{ $transfer->id }})" wire:confirm="Yakin ingin membatalkan transfer ini? Jika dalam pengiriman, stok akan dikembalikan ke cabang pengirim." class="p-1 text-rose-500 hover:text-rose-700 transition-colors" title="Batalkan Transfer">
+                                    <button type="button" wire:click="cancelTransfer({{ $transfer->id }})" wire:confirm="Cancel this stock transfer? If already in transit, stock will be returned to origin branch." class="p-1 text-rose-500 hover:text-rose-700 transition-colors" title="Cancel Transfer">
                                         <span class="material-symbols-rounded text-[20px]">cancel</span>
                                     </button>
                                 @endif
@@ -141,7 +141,7 @@
                 @empty
                     <tr>
                         <td colspan="6" class="px-6 py-8 text-center text-sm text-apeiron-muted">
-                            Belum ada dokumen transfer stok antarcabang ditemukan.
+                            No inter-branch stock transfer documents found.
                         </td>
                     </tr>
                 @endforelse
@@ -155,10 +155,10 @@
         @endif
     </div>
 
-    {{-- MODAL 1: Form Buat Permintaan Transfer --}}
+    {{-- MODAL 1: Create Transfer Request Form --}}
     <x-ui.modal wire:model="showFormModal" maxWidth="3xl">
         <x-slot:header>
-            <h5 class="text-lg font-bold text-apeiron-ink">Buat Permintaan Transfer Stok Baru</h5>
+            <h5 class="text-lg font-bold text-apeiron-ink">New Stock Transfer Request</h5>
         </x-slot:header>
         <x-slot:content>
             @if ($errors->has('general'))
@@ -169,9 +169,9 @@
 
             <div class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-apeiron-ink uppercase tracking-wider mb-1">Cabang Tujuan</label>
+                    <label class="block text-xs font-bold text-apeiron-ink uppercase tracking-wider mb-1">Destination Branch</label>
                     <select wire:model="to_store_id" class="form-input w-full p-3 rounded-xl border border-apeiron-border text-sm">
-                        <option value="">-- Pilih Cabang Tujuan Penerima --</option>
+                        <option value="">-- Select Destination Branch --</option>
                         @foreach ($destinationStores as $dest)
                             <option value="{{ $dest->id }}">{{ $dest->name }}</option>
                         @endforeach
@@ -182,9 +182,9 @@
                 {{-- Dynamic Items Table --}}
                 <div>
                     <div class="flex items-center justify-between mb-2">
-                        <label class="block text-xs font-bold text-apeiron-ink uppercase tracking-wider">Item Barang yang Ditransfer</label>
+                        <label class="block text-xs font-bold text-apeiron-ink uppercase tracking-wider">Transfer Items</label>
                         <button type="button" wire:click="addItemRow" class="text-xs font-semibold text-apeiron-ink hover:underline flex items-center gap-1">
-                            <span class="material-symbols-rounded text-sm">add</span> Tambah Baris
+                            <span class="material-symbols-rounded text-sm">add</span> Add Line
                         </button>
                     </div>
 
@@ -193,22 +193,22 @@
                             <div class="p-3 rounded-2xl bg-apeiron-surface border border-apeiron-border flex flex-col sm:flex-row items-center gap-3 text-sm">
                                 <div class="w-full sm:w-32">
                                     <select wire:model.live="items.{{ $index }}.item_type" class="form-input w-full p-2 rounded-lg border border-apeiron-border text-xs">
-                                        <option value="product">Produk</option>
-                                        <option value="ingredient">Bahan Baku</option>
+                                        <option value="product">Product</option>
+                                        <option value="ingredient">Raw Material</option>
                                     </select>
                                 </div>
 
                                 <div class="w-full sm:flex-1">
                                     @if (($item['item_type'] ?? 'product') === 'product')
                                         <select wire:model="items.{{ $index }}.product_id" class="form-input w-full p-2 rounded-lg border border-apeiron-border text-xs">
-                                            <option value="">-- Pilih Produk --</option>
+                                            <option value="">-- Select Product --</option>
                                             @foreach ($availableProducts as $p)
                                                 <option value="{{ $p->id }}">{{ $p->name }} ({{ $p->code ?? '-' }})</option>
                                             @endforeach
                                         </select>
                                     @else
                                         <select wire:model="items.{{ $index }}.ingredient_id" class="form-input w-full p-2 rounded-lg border border-apeiron-border text-xs">
-                                            <option value="">-- Pilih Bahan Baku --</option>
+                                            <option value="">-- Select Raw Material --</option>
                                             @foreach ($availableIngredients as $ing)
                                                 <option value="{{ $ing->id }}">{{ $ing->name }} ({{ $ing->code ?? '-' }})</option>
                                             @endforeach
@@ -217,7 +217,7 @@
                                 </div>
 
                                 <div class="w-full sm:w-28">
-                                    <input type="number" step="0.0001" min="0.0001" wire:model="items.{{ $index }}.quantity_requested" placeholder="Kuantitas" class="form-input w-full p-2 rounded-lg border border-apeiron-border text-xs text-right font-semibold">
+                                    <input type="number" step="0.0001" min="0.0001" wire:model="items.{{ $index }}.quantity_requested" placeholder="Qty" class="form-input w-full p-2 rounded-lg border border-apeiron-border text-xs text-right font-semibold">
                                 </div>
 
                                 <button type="button" wire:click="removeItemRow({{ $index }})" class="p-1 text-rose-500 hover:text-rose-700">
@@ -229,42 +229,42 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-apeiron-ink uppercase tracking-wider mb-1">Catatan Dokumen</label>
-                    <textarea wire:model="notes" rows="2" placeholder="Tujuan pengiriman, armada, keterangan surat jalan, dll." class="form-input w-full p-3 rounded-xl border border-apeiron-border text-sm"></textarea>
+                    <label class="block text-xs font-bold text-apeiron-ink uppercase tracking-wider mb-1">Notes</label>
+                    <textarea wire:model="notes" rows="2" placeholder="Delivery notes, transport details, waybill reference, etc." class="form-input w-full p-3 rounded-xl border border-apeiron-border text-sm"></textarea>
                 </div>
             </div>
 
             <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-apeiron-border">
-                <x-ui.button type="button" variant="secondary" wire:click="closeFormModal">Batal</x-ui.button>
-                <x-ui.button type="button" variant="primary" wire:click="saveTransfer" x-on:click="window.erpMotion?.pulseHighlight($el)">Simpan Draft Transfer</x-ui.button>
+                <x-ui.button type="button" variant="secondary" wire:click="closeFormModal">Cancel</x-ui.button>
+                <x-ui.button type="button" variant="primary" wire:click="saveTransfer" x-on:click="window.erpMotion?.pulseHighlight($el)">Save Transfer Draft</x-ui.button>
             </div>
         </x-slot:content>
     </x-ui.modal>
 
-    {{-- MODAL 2: Penerimaan Transfer & Resolusi Selisih (OD-03) --}}
+    {{-- MODAL 2: Transfer Receipt & Discrepancy Resolution (OD-03) --}}
     <x-ui.modal wire:model="showReceiveModal" maxWidth="4xl">
         <x-slot:header>
             @if ($activeTransfer)
                 <div>
-                    <h5 class="text-lg font-bold text-apeiron-ink">Penerimaan Transfer Barang: {{ $activeTransfer->transfer_number }}</h5>
-                    <p class="text-xs text-apeiron-muted">Dari: {{ $activeTransfer->fromStore->name }} &rarr; Tujuan: {{ $activeTransfer->toStore->name }}</p>
+                    <h5 class="text-lg font-bold text-apeiron-ink">Receive Stock Transfer: {{ $activeTransfer->transfer_number }}</h5>
+                    <p class="text-xs text-apeiron-muted">Origin: {{ $activeTransfer->fromStore->name }} &rarr; Destination: {{ $activeTransfer->toStore->name }}</p>
                 </div>
             @endif
         </x-slot:header>
         <x-slot:content>
             @if ($activeTransfer)
                 <div class="p-3 mb-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900">
-                    <strong>Ketentuan Anti-Over-Receipt (OD-03):</strong> Kuantitas yang diterima tidak boleh melebihi kuantitas yang dikirim. Jika fisik barang yang diterima kurang, Anda wajib memilih resolusi penyelesaian selisih (kembalikan ke cabang pengirim atau hapus buku susut perjalanan).
+                    <strong>Anti-Over-Receipt Policy (OD-03):</strong> Received quantity cannot exceed shipped quantity. If physical count is short, a discrepancy resolution must be designated (return to origin or write off in transit).
                 </div>
 
                 <div class="max-h-80 overflow-y-auto mb-4">
-                    <table class="w-full text-left text-sm">
+                    <table class="table-standard w-full min-w-full text-left text-sm">
                         <thead class="bg-apeiron-surface text-xs font-semibold text-apeiron-muted uppercase">
                             <tr>
-                                <th class="p-3">Item Barang</th>
-                                <th class="p-3 text-right">Dikirim</th>
-                                <th class="p-3 text-right w-36">Diterima</th>
-                                <th class="p-3 w-48">Resolusi Jika Selisih</th>
+                                <th class="p-3">Item</th>
+                                <th class="p-3 text-right">Shipped</th>
+                                <th class="p-3 text-right w-36">Received</th>
+                                <th class="p-3 w-48">Discrepancy Resolution</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-apeiron-border">
@@ -276,11 +276,11 @@
                                         </div>
                                         <div class="text-xs text-apeiron-muted uppercase">{{ $item->item_type }}</div>
                                     </td>
-                                    <td class="p-3 text-right font-semibold text-apeiron-ink">
+                                    <td class="p-3 text-right font-semibold tabular-nums text-apeiron-ink">
                                         {{ number_format((float) $item->quantity_shipped, 2) }}
                                     </td>
                                     <td class="p-3 text-right">
-                                        <input type="number" step="0.0001" min="0" max="{{ $item->quantity_shipped }}" wire:model.live="receivedQuantities.{{ $item->id }}" class="form-input w-full p-2 text-right rounded-lg border border-apeiron-border text-sm font-semibold">
+                                        <input type="number" step="0.0001" min="0" max="{{ $item->quantity_shipped }}" wire:model.live="receivedQuantities.{{ $item->id }}" class="form-input w-full p-2 text-right tabular-nums rounded-lg border border-apeiron-border text-sm font-semibold">
                                         @error("receivedQuantities.{$item->id}") <span class="text-[10px] text-rose-600 block">{{ $message }}</span> @enderror
                                     </td>
                                     <td class="p-3">
@@ -290,13 +290,13 @@
                                         @endphp
                                         @if ($hasDiscrepancy)
                                             <select wire:model="discrepancyResolutions.{{ $item->id }}" class="form-input w-full p-2 rounded-lg border border-amber-300 bg-amber-50 text-xs font-medium">
-                                                <option value="NONE">-- Pilih Resolusi --</option>
-                                                <option value="RETURN_TO_SOURCE">Kembalikan ke Asal (Return)</option>
-                                                <option value="WRITE_OFF_IN_TRANSIT">Hapus Buku (Write-off)</option>
+                                                <option value="NONE">-- Select Resolution --</option>
+                                                <option value="RETURN_TO_SOURCE">Return to Origin</option>
+                                                <option value="WRITE_OFF_IN_TRANSIT">Write-off In Transit</option>
                                             </select>
                                         @else
                                             <span class="text-xs text-emerald-600 font-medium flex items-center gap-1">
-                                                <span class="material-symbols-rounded text-sm">check</span> Lengkap
+                                                <span class="material-symbols-rounded text-sm">check</span> Complete
                                             </span>
                                         @endif
                                     </td>
@@ -307,24 +307,24 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-apeiron-ink uppercase tracking-wider mb-1">Catatan Penerimaan</label>
-                    <input type="text" wire:model="receiveNotes" placeholder="Kondisi barang saat tiba di gudang..." class="form-input w-full p-2 rounded-xl border border-apeiron-border text-xs">
+                    <label class="block text-xs font-bold text-apeiron-ink uppercase tracking-wider mb-1">Receiving Notes</label>
+                    <input type="text" wire:model="receiveNotes" placeholder="Condition of goods upon arrival..." class="form-input w-full p-2 rounded-xl border border-apeiron-border text-xs">
                 </div>
 
                 <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-apeiron-border">
-                    <x-ui.button type="button" variant="secondary" wire:click="closeReceiveModal">Batal</x-ui.button>
-                    <x-ui.button type="button" variant="primary" wire:click="submitReceive" x-on:click="window.erpMotion?.pulseHighlight($el)">Konfirmasi Penerimaan Barang</x-ui.button>
+                    <x-ui.button type="button" variant="secondary" wire:click="closeReceiveModal">Cancel</x-ui.button>
+                    <x-ui.button type="button" variant="primary" wire:click="submitReceive" x-on:click="window.erpMotion?.pulseHighlight($el)">Confirm Goods Receipt</x-ui.button>
                 </div>
             @endif
         </x-slot:content>
     </x-ui.modal>
 
-    {{-- MODAL 3: Detail Dokumen Transfer --}}
+    {{-- MODAL 3: Transfer Document Details --}}
     <x-ui.modal wire:model="showDetailModal" maxWidth="4xl">
         <x-slot:header>
             @if ($selectedTransfer)
                 <div>
-                    <h5 class="text-lg font-bold text-apeiron-ink">Detail Transfer: {{ $selectedTransfer->transfer_number }}</h5>
+                    <h5 class="text-lg font-bold text-apeiron-ink">Transfer Details: {{ $selectedTransfer->transfer_number }}</h5>
                     <p class="text-xs text-apeiron-muted">Status: {{ $selectedTransfer->status->label() }}</p>
                 </div>
             @endif
@@ -333,33 +333,33 @@
             @if ($selectedTransfer)
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 p-4 rounded-2xl bg-apeiron-surface text-xs">
                     <div>
-                        <span class="text-apeiron-muted block">Cabang Pengirim</span>
+                        <span class="text-apeiron-muted block">Origin Branch</span>
                         <span class="font-semibold text-apeiron-ink">{{ $selectedTransfer->fromStore->name }}</span>
                     </div>
                     <div>
-                        <span class="text-apeiron-muted block">Cabang Penerima</span>
+                        <span class="text-apeiron-muted block">Destination Branch</span>
                         <span class="font-semibold text-apeiron-ink">{{ $selectedTransfer->toStore->name }}</span>
                     </div>
                     <div>
-                        <span class="text-apeiron-muted block">Waktu Kirim</span>
+                        <span class="text-apeiron-muted block">Shipped At</span>
                         <span class="font-semibold text-apeiron-ink">{{ $selectedTransfer->shipped_at?->format('d M Y H:i') ?? '-' }}</span>
                     </div>
                     <div>
-                        <span class="text-apeiron-muted block">Waktu Terima</span>
+                        <span class="text-apeiron-muted block">Received At</span>
                         <span class="font-semibold text-apeiron-ink">{{ $selectedTransfer->received_at?->format('d M Y H:i') ?? '-' }}</span>
                     </div>
                 </div>
 
                 <div class="max-h-80 overflow-y-auto mb-4">
-                    <table class="w-full text-left text-sm">
+                    <table class="table-standard w-full min-w-full text-left text-sm">
                         <thead class="bg-apeiron-surface text-xs font-semibold text-apeiron-muted uppercase">
                             <tr>
                                 <th class="p-3">Item</th>
-                                <th class="p-3 text-right">Diminta</th>
-                                <th class="p-3 text-right">Dikirim</th>
-                                <th class="p-3 text-right">Diterima</th>
+                                <th class="p-3 text-right">Requested</th>
+                                <th class="p-3 text-right">Shipped</th>
+                                <th class="p-3 text-right">Received</th>
                                 <th class="p-3 text-right">Carrying Cost</th>
-                                <th class="p-3 text-center">Resolusi Selisih</th>
+                                <th class="p-3 text-center">Discrepancy Resolution</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-apeiron-border">
@@ -371,10 +371,10 @@
                                         </div>
                                         <div class="text-xs text-apeiron-muted uppercase">{{ $item->item_type }}</div>
                                     </td>
-                                    <td class="p-3 text-right font-medium text-apeiron-ink">{{ number_format((float) $item->quantity_requested, 2) }}</td>
-                                    <td class="p-3 text-right font-medium text-apeiron-ink">{{ number_format((float) $item->quantity_shipped, 2) }}</td>
-                                    <td class="p-3 text-right font-semibold text-apeiron-ink">{{ $item->quantity_received !== null ? number_format((float) $item->quantity_received, 2) : '-' }}</td>
-                                    <td class="p-3 text-right text-xs font-mono">Rp {{ number_format((float) $item->carrying_unit_cost, 0, ',', '.') }}</td>
+                                    <td class="p-3 text-right font-medium tabular-nums text-apeiron-ink">{{ number_format((float) $item->quantity_requested, 2) }}</td>
+                                    <td class="p-3 text-right font-medium tabular-nums text-apeiron-ink">{{ number_format((float) $item->quantity_shipped, 2) }}</td>
+                                    <td class="p-3 text-right font-semibold tabular-nums text-apeiron-ink">{{ $item->quantity_received !== null ? number_format((float) $item->quantity_received, 2) : '-' }}</td>
+                                    <td class="p-3 text-right text-xs font-mono tabular-nums">Rp {{ number_format((float) $item->carrying_unit_cost, 0, ',', '.') }}</td>
                                     <td class="p-3 text-center text-xs">
                                         <span class="px-2 py-1 rounded bg-apeiron-surface border border-apeiron-border">
                                             {{ $item->discrepancy_resolution->value }}
@@ -387,7 +387,7 @@
                 </div>
 
                 <div class="flex items-center justify-end gap-3 pt-4 border-t border-apeiron-border">
-                    <x-ui.button type="button" variant="secondary" wire:click="closeDetailModal">Tutup</x-ui.button>
+                    <x-ui.button type="button" variant="secondary" wire:click="closeDetailModal">Close</x-ui.button>
                 </div>
             @endif
         </x-slot:content>

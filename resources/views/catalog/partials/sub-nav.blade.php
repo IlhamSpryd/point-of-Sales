@@ -3,56 +3,56 @@
 
     $allCatalogTabs = [
         [
-            'label' => 'Produk',
+            'label' => 'Products',
             'route' => 'products.index',
             'active' => 'products.*',
             'icon' => 'inventory_2',
             'roles' => ['Owner', 'Manager', 'Inventory'],
         ],
         [
-            'label' => 'Kategori',
+            'label' => 'Categories',
             'route' => 'categories.index',
             'active' => 'categories.*',
             'icon' => 'category',
             'roles' => ['Owner', 'Manager', 'Inventory'],
         ],
         [
-            'label' => 'Merek',
+            'label' => 'Brands',
             'route' => 'brands.index',
             'active' => 'brands.*',
             'icon' => 'verified',
             'roles' => ['Owner', 'Manager', 'Inventory'],
         ],
         [
-            'label' => 'Satuan Ukur',
+            'label' => 'Units of Measure',
             'route' => 'units-of-measure.index',
             'active' => 'units-of-measure.*',
             'icon' => 'straighten',
             'roles' => ['Owner', 'Manager', 'Inventory'],
         ],
         [
-            'label' => 'Varian & Modifier',
+            'label' => 'Variants & Modifiers',
             'route' => 'inventory.modifiers',
             'active' => 'inventory.modifiers',
             'icon' => 'tune',
             'roles' => ['Owner', 'Manager', 'Inventory'],
         ],
         [
-            'label' => 'Kelas Pajak',
+            'label' => 'Tax Classes',
             'route' => 'tax-classes.index',
             'active' => 'tax-classes.*',
             'icon' => 'percent',
             'roles' => ['Owner', 'Manager', 'Inventory'],
         ],
         [
-            'label' => 'Asortimen Cabang',
+            'label' => 'Branch Assortment',
             'route' => 'assortments.index',
             'active' => 'assortments.*',
             'icon' => 'storefront',
             'roles' => ['Owner', 'Manager', 'Inventory'],
         ],
         [
-            'label' => 'Daftar Harga',
+            'label' => 'Price Lists',
             'route' => 'price-lists.index',
             'active' => 'price-lists.*',
             'icon' => 'price_change',
@@ -66,7 +66,7 @@
 @endphp
 
 <div class="w-full pb-3 mb-6 border-b border-[#E5E7EB]">
-    <nav aria-label="Sub-navigasi Katalog Produk"
+    <nav aria-label="Product Catalog Navigation"
         x-data
         x-init="$nextTick(() => {
             const activeTab = $el.querySelector('[aria-current=page]');
@@ -81,7 +81,7 @@
                 $isActive = request()->routeIs($tab['active']);
             @endphp
             <a href="{{ route($tab['route']) }}" wire:navigate
-                @click="if (window.apeironPosCartDirty && !confirm('Anda memiliki pesanan aktif di kasir. Pindah halaman akan membatalkan keranjang aktif. Lanjutkan?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }"
+                @click="if (window.apeironPosCartDirty && !confirm('You have an active order in the POS terminal. Navigating away will discard the active cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }"
                 @if ($isActive) aria-current="page" @endif
                 style="{{ $isActive ? 'background-color: #202020; color: #ffffff;' : '' }}"
                 class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink {{ $isActive ? 'catalog-nav-tab-active bg-apeiron-ink text-white shadow-sm' : 'catalog-nav-tab-inactive text-[#787774] hover:text-apeiron-ink hover:bg-[#F7F7F5]' }}">

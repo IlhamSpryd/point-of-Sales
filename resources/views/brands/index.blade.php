@@ -38,31 +38,31 @@
 
         <!-- Header -->
         <x-erp.page-header
-            title="Merek Produk (Brands)"
-            description="Kelola merek atau produsen komoditas produk Anda untuk kategorisasi dan pelaporan.">
+            title="Product Brands"
+            description="Manage product brands and manufacturers for catalog classification and reporting.">
             <x-slot:breadcrumbs>
                 <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
-                <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Katalog</x-ui.breadcrumbs.item>
-                <x-ui.breadcrumbs.item active>Merek</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Catalog</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item active>Brands</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>
 
             <x-slot:actions>
                 @if($canManage)
                     <x-ui.button variant="primary" type="button" @click="openCreate()" class="gap-2">
                         <span class="material-symbols-rounded text-base">add</span>
-                        Tambah Merek
+                        Add Brand
                     </x-ui.button>
                 @endif
             </x-slot:actions>
         </x-erp.page-header>
 
         @if(session('success'))
-            <x-ui.alert type="success" title="Berhasil" class="rounded-2xl">
+            <x-ui.alert type="success" title="Success" class="rounded-2xl">
                 {{ session('success') }}
             </x-ui.alert>
         @endif
         @if(session('error'))
-            <x-ui.alert type="danger" title="Terjadi Kesalahan" class="rounded-2xl">
+            <x-ui.alert type="danger" title="Error" class="rounded-2xl">
                 {{ session('error') }}
             </x-ui.alert>
         @endif
@@ -71,23 +71,23 @@
         <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-[#E5E7EB] dark:border-zinc-800">
             <form method="GET" action="{{ route('brands.index') }}" class="relative w-full sm:w-80">
                 <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari merek..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search brands..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
             </form>
         </div>
 
         <!-- Table -->
         <div class="card-surface overflow-hidden rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 shadow-xs">
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-sm">
+                <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="border-b border-[#E5E7EB] dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                            <th class="px-6 py-4">Kode</th>
-                            <th class="px-6 py-4">Nama Merek</th>
-                            <th class="px-6 py-4">Deskripsi</th>
-                            <th class="px-6 py-4 text-right">Jumlah Produk</th>
+                            <th class="px-6 py-4">Code</th>
+                            <th class="px-6 py-4">Brand Name</th>
+                            <th class="px-6 py-4">Description</th>
+                            <th class="px-6 py-4 text-right">Products</th>
                             <th class="px-6 py-4 text-center">Status</th>
                             @if($canManage)
-                                <th class="px-6 py-4 text-right">Aksi</th>
+                                <th class="px-6 py-4 text-right">Actions</th>
                             @endif
                         </tr>
                     </thead>
@@ -97,10 +97,10 @@
                                 <td class="px-6 py-4 font-mono text-xs font-semibold text-apeiron-ink dark:text-white">{{ $brand->code }}</td>
                                 <td class="px-6 py-4 text-sm font-semibold text-zinc-900 dark:text-white">{{ $brand->name }}</td>
                                 <td class="px-6 py-4 text-sm text-zinc-500">{{ $brand->description ?? '—' }}</td>
-                                <td class="px-6 py-4 text-sm font-medium text-right text-zinc-900 dark:text-white font-mono">{{ $brand->products_count }}</td>
+                                <td class="px-6 py-4 text-sm font-medium text-right text-zinc-900 dark:text-white font-mono tabular-nums">{{ $brand->products_count }}</td>
                                 <td class="px-6 py-4 text-center">
                                     <x-ui.badge variant="{{ $brand->is_active ? 'success' : 'neutral' }}" size="sm">
-                                        {{ $brand->is_active ? 'Aktif' : 'Nonaktif' }}
+                                        {{ $brand->is_active ? 'Active' : 'Inactive' }}
                                     </x-ui.badge>
                                 </td>
                                 @if($canManage)
@@ -108,7 +108,7 @@
                                         <div class="flex items-center justify-end gap-1.5">
                                             <button type="button" @click="openEdit({{ json_encode($brand) }})"
                                                 class="p-1.5 rounded-lg text-zinc-500 hover:text-blue-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
-                                                title="Ubah merek">
+                                                title="Edit brand">
                                                 <span class="material-symbols-rounded text-lg">edit</span>
                                             </button>
                                             <form id="delete-brand-{{ $brand->id }}" action="{{ route('brands.destroy', $brand->id) }}" method="POST" class="inline-block">
@@ -116,7 +116,7 @@
                                                 @method('DELETE')
                                                 <button type="button" onclick="confirmDelete('delete-brand-{{ $brand->id }}', '{{ addslashes($brand->name) }}')"
                                                     class="p-1.5 rounded-lg text-zinc-500 hover:text-rose-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
-                                                    title="Hapus merek">
+                                                    title="Delete brand">
                                                     <span class="material-symbols-rounded text-lg">delete</span>
                                                 </button>
                                             </form>
@@ -128,7 +128,7 @@
                             <tr>
                                 <td colspan="{{ $canManage ? 6 : 5 }}" class="px-6 py-12 text-center text-zinc-400">
                                     <span class="material-symbols-rounded text-4xl block mb-2">verified</span>
-                                    Belum ada merek produk terdaftar.
+                                    No product brands registered.
                                 </td>
                             </tr>
                         @endforelse
@@ -146,7 +146,7 @@
         <!-- Modal Tambah / Sunting Merek -->
         <x-ui.modal x-model="showModal" maxWidth="md">
             <x-slot:title>
-                <span x-text="isEdit ? 'Sunting Merek' : 'Tambah Merek Baru'"></span>
+                <span x-text="isEdit ? 'Edit Brand' : 'Add New Brand'"></span>
             </x-slot:title>
 
             <x-slot:content>
@@ -157,19 +157,19 @@
                     </template>
 
                     <div>
-                        <x-ui.label for="brand_code">Kode Merek *</x-ui.label>
+                        <x-ui.label for="brand_code">Brand Code *</x-ui.label>
                         <input type="text" id="brand_code" name="code" x-model="code" required
                             class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 font-mono uppercase focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
                     </div>
 
                     <div>
-                        <x-ui.label for="brand_name">Nama Merek *</x-ui.label>
+                        <x-ui.label for="brand_name">Brand Name *</x-ui.label>
                         <input type="text" id="brand_name" name="name" x-model="name" required
                             class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
                     </div>
 
                     <div>
-                        <x-ui.label for="brand_desc">Deskripsi</x-ui.label>
+                        <x-ui.label for="brand_desc">Description</x-ui.label>
                         <textarea id="brand_desc" name="description" x-model="description" rows="3"
                             class="w-full p-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-sm focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20"></textarea>
                     </div>
@@ -178,7 +178,7 @@
                         <input type="hidden" name="is_active" value="0">
                         <input type="checkbox" id="brand_is_active" name="is_active" value="1" x-model="isActive"
                             class="rounded border-zinc-300 text-apeiron-primary shadow-xs focus:ring-apeiron-primary">
-                        <label for="brand_is_active" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Status Aktif</label>
+                        <label for="brand_is_active" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Active Status</label>
                     </div>
                 </form>
             </x-slot:content>
@@ -186,10 +186,10 @@
             <x-slot:footer>
                 <div class="flex justify-end gap-3">
                     <x-ui.button variant="secondary" type="button" @click="showModal = false">
-                        Batal
+                        Cancel
                     </x-ui.button>
                     <x-ui.button variant="primary" type="button" @click="document.getElementById('brandForm').submit()">
-                        Simpan
+                        Save
                     </x-ui.button>
                 </div>
             </x-slot:footer>

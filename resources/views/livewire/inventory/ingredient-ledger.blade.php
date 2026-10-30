@@ -2,17 +2,17 @@
     @include('inventory.partials.sub-nav')
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Riwayat Stok Bahan Baku</h4>
-            <p class="text-sm font-medium text-apeiron-muted mt-1">Laporan mutasi pergerakan stok secara historis (Ledger Immutable)</p>
+            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Raw Material Stock History</h4>
+            <p class="text-sm font-medium text-apeiron-muted mt-1">Historical stock movement ledger and immutable audit trail</p>
         </div>
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
             <x-ui.button type="button" variant="secondary" wire:navigate href="{{ route('inventory.ingredients') }}">
-                <span class="material-symbols-rounded text-[18px]">arrow_back</span> Kembali
+                <span class="material-symbols-rounded text-[18px]">arrow_back</span> Back
             </x-ui.button>
 
             <div class="relative w-full sm:w-48">
                 <select wire:model.live="ingredient_id" class="form-input w-full pl-3.5 pr-8 py-2 rounded-lg border border-[#E5E7EB] bg-white text-xs font-medium text-apeiron-ink focus:outline-none focus:ring-1 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all shadow-xs appearance-none">
-                    <option value="">Semua Bahan Baku</option>
+                    <option value="">All Raw Materials</option>
                     @foreach($ingredients as $ing)
                         <option value="{{ $ing->id }}">{{ $ing->name }}</option>
                     @endforeach
@@ -24,12 +24,12 @@
             
             <div class="relative w-full sm:w-48">
                 <select wire:model.live="type" class="form-input w-full pl-3.5 pr-8 py-2 rounded-lg border border-[#E5E7EB] bg-white text-xs font-medium text-apeiron-ink focus:outline-none focus:ring-1 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all shadow-xs appearance-none">
-                    <option value="">Semua Tipe Mutasi</option>
-                    <option value="sale_deduction">Penjualan (Keluar)</option>
-                    <option value="purchase_receipt">Pembelian (Masuk)</option>
-                    <option value="waste">Waste / Rusak (Keluar)</option>
-                    <option value="adjustment">Koreksi Manual</option>
-                    <option value="restore_compensation">Pembatalan (Masuk)</option>
+                    <option value="">All Movement Types</option>
+                    <option value="sale_deduction">Sales Deduction (Out)</option>
+                    <option value="purchase_receipt">Purchase Receipt (In)</option>
+                    <option value="waste">Waste / Damaged (Out)</option>
+                    <option value="adjustment">Manual Adjustment</option>
+                    <option value="restore_compensation">Order Cancellation (In)</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-apeiron-muted">
                     <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
@@ -42,11 +42,11 @@
         <div class="overflow-x-auto">
             <x-data-table>
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Waktu</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Bahan Baku</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Tipe</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Kuantitas</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Keterangan</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Timestamp</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Raw Material</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Type</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Quantity</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Reason / Notes</th>
                 </x-slot:head>
                     @forelse ($movements as $movement)
                         <tr class="hover:bg-apeiron-surface transition-colors duration-150">
@@ -61,11 +61,11 @@
                                 @php
                                     $typeVal = $movement->type instanceof \App\Enums\IngredientStockMovementTypeEnum ? $movement->type->value : $movement->type;
                                     $typeStr = match($typeVal) {
-                                        'sale_deduction' => 'Penjualan',
-                                        'purchase_receipt' => 'Pembelian Masuk',
-                                        'waste' => 'Barang Rusak',
-                                        'adjustment' => 'Koreksi Manual',
-                                        'restore_compensation' => 'Pembatalan Transaksi',
+                                        'sale_deduction' => 'Sales Deduction',
+                                        'purchase_receipt' => 'Purchase Receipt',
+                                        'waste' => 'Waste / Damaged',
+                                        'adjustment' => 'Manual Adjustment',
+                                        'restore_compensation' => 'Order Reversal',
                                         default => ucwords(str_replace('_', ' ', $typeVal))
                                     };
                                     $typeVariant = match($typeVal) {
@@ -95,7 +95,7 @@
                     @empty
                         <tr>
                             <td colspan="5" class="px-6 py-12 text-center">
-                                <x-empty-state icon="history" title="Belum Ada Riwayat" description="Riwayat pergerakan stok akan muncul secara otomatis saat terjadi transaksi atau penyesuaian stok." />
+                                <x-empty-state icon="history" title="No Movement History" description="Stock movement history will appear automatically when transactions, goods receipts, or adjustments occur." />
                             </td>
                         </tr>
                     @endforelse

@@ -3,28 +3,28 @@
 
     $allCustomerTabs = [
         [
-            'label' => 'Direktori Pelanggan',
+            'label' => 'Customer Directory',
             'route' => 'customers.index',
             'active' => 'customers.index',
             'icon' => 'person',
             'roles' => ['Owner', 'Manager'],
         ],
         [
-            'label' => 'Grup Pelanggan',
+            'label' => 'Customer Groups',
             'route' => 'customers.groups.index',
             'active' => 'customers.groups.*',
             'icon' => 'groups',
             'roles' => ['Owner', 'Manager'],
         ],
         [
-            'label' => 'Kontrol Kredit B2B',
+            'label' => 'B2B Credit Control',
             'route' => 'customers.credit.index',
             'active' => 'customers.credit.*',
             'icon' => 'credit_score',
             'roles' => ['Owner', 'Manager'],
         ],
         [
-            'label' => 'Loyalti, Voucher & Gift Card',
+            'label' => 'Loyalty, Vouchers & Gift Cards',
             'route' => 'customers.instruments.index',
             'active' => 'customers.instruments.*',
             'icon' => 'card_giftcard',
@@ -38,7 +38,7 @@
 @endphp
 
 <div class="w-full pb-3 mb-6 border-b border-[#E5E7EB]">
-    <nav aria-label="Sub-navigasi Pelanggan & Loyalti (CRM)"
+    <nav aria-label="Customer & Loyalty Navigation"
         x-data
         x-init="$nextTick(() => {
             const activeTab = $el.querySelector('[aria-current=page]');

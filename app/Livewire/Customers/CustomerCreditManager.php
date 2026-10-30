@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -24,9 +25,21 @@ class CustomerCreditManager extends Component
     use RequiresTenantContext;
     use WithPagination;
 
+    #[Url(history: true)]
     public string $search = '';
 
+    #[Url(history: true)]
     public string $statusFilter = '';
+
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+    }
 
     public bool $showEditModal = false;
 
@@ -99,8 +112,8 @@ class CustomerCreditManager extends Component
             'gracePeriodDays' => ['required', 'integer', 'min:0', 'max:90'],
             'limitChangeReason' => ['required', 'string', 'min:3'],
         ], [
-            'creditLimit.required' => 'Plafon batas kredit wajib diisi.',
-            'limitChangeReason.required' => 'Alasan perubahan batas kredit wajib diisi.',
+            'creditLimit.required' => 'Credit limit ceiling is required.',
+            'limitChangeReason.required' => 'Reason for credit limit adjustment is required.',
         ]);
 
         $actor = Auth::user();
@@ -109,7 +122,7 @@ class CustomerCreditManager extends Component
             $service->updateCreditLimit($customer->id, (string) $this->creditLimit, $actor, $this->limitChangeReason);
             $service->updateCreditTerms($customer->id, $this->paymentTermsDays, $this->gracePeriodDays, $actor, $this->limitChangeReason);
 
-            session()->flash('message', "Batas kredit dan termin pembayaran untuk {$customer->name} berhasil diperbarui.");
+            session()->flash('message', "Credit limit and payment terms for {$customer->name} successfully updated.");
             $this->closeEditModal();
         } catch (\Throwable $e) {
             session()->flash('error', $e->getMessage());
@@ -156,7 +169,7 @@ class CustomerCreditManager extends Component
             'targetStatus' => ['required', 'in:ACTIVE,ON_HOLD,SUSPENDED'],
             'statusChangeReason' => ['required', 'string', 'min:3'],
         ], [
-            'statusChangeReason.required' => 'Alasan perubahan status kredit wajib diisi.',
+            'statusChangeReason.required' => 'Reason for credit status change is required.',
         ]);
 
         $actor = Auth::user();
@@ -165,7 +178,7 @@ class CustomerCreditManager extends Component
             $statusEnum = CreditStatusEnum::from($this->targetStatus);
             $service->setCreditStatus($customer->id, $statusEnum, $actor, $this->statusChangeReason);
 
-            session()->flash('message', "Status kredit untuk {$customer->name} dialihkan ke {$statusEnum->value}.");
+            session()->flash('message', "Credit status for {$customer->name} updated to {$statusEnum->value}.");
             $this->closeStatusModal();
         } catch (\Throwable $e) {
             session()->flash('error', $e->getMessage());

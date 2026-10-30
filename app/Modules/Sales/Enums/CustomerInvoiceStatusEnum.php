@@ -15,11 +15,11 @@ enum CustomerInvoiceStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::DRAFT => 'Konsep (Draft)',
-            self::POSTED => 'Terbit (Posted)',
-            self::PARTIALLY_PAID => 'Dibayar Sebagian (Partially Paid)',
-            self::PAID => 'Lunas (Paid)',
-            self::VOIDED => 'Dibatalkan (Voided)',
+            self::DRAFT => 'Draft',
+            self::POSTED => 'Posted',
+            self::PARTIALLY_PAID => 'Partially Paid',
+            self::PAID => 'Paid',
+            self::VOIDED => 'Voided',
         };
     }
 

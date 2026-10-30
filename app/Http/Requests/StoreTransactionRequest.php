@@ -7,6 +7,8 @@ namespace App\Http\Requests;
 use App\Enums\OrderType;
 use App\Enums\PaymentMethod;
 use App\Models\Order;
+use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -37,6 +39,8 @@ class StoreTransactionRequest extends FormRequest
                         ->where('tenant_id', $tenantId);
                 }),
             ],
+            'items.*.variant_id' => ['nullable', 'integer'],
+            'items.*.custom_price' => ['nullable', 'numeric', 'min:0'],
             'items.*.quantity' => ['required', 'integer', 'min:1'],
             'items.*.extra_price' => ['nullable', 'numeric', 'min:0'],
             'items.*.options' => ['nullable', 'array'],
@@ -117,7 +121,40 @@ class StoreTransactionRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'items.*.product_id.exists' => 'Salah satu produk di keranjang sudah tidak tersedia atau dinonaktifkan. Silakan muat ulang halaman.',
+            'items.*.product_id.exists' => 'One of the items in your cart is no longer available or has been deactivated. Please refresh the page.',
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $user = $this->user();
+            $items = $this->input('items', []);
+            if (! is_array($items)) {
+                return;
+            }
+
+            foreach ($items as $index => $item) {
+                if (array_key_exists('custom_price', $item) && $item['custom_price'] !== null && $item['custom_price'] !== '') {
+                    $productId = $item['product_id'] ?? null;
+                    $variantId = $item['variant_id'] ?? null;
+
+                    $product = Product::find($productId);
+                    $variant = $variantId ? ProductVariant::find($variantId) : null;
+
+                    $isOpenPrice = (bool) ($variant?->is_open_price ?? $product?->is_open_price ?? false);
+
+                    if (! $isOpenPrice) {
+                        $validator->errors()->add("items.{$index}.custom_price", 'Produk ini tidak mendukung harga manual (open price).');
+                        continue;
+                    }
+
+                    $hasPermission = $user && ($user->hasPermission('pos.price.open_entry') || ($user->role?->is_admin ?? false) || ($user->role?->name === 'Owner'));
+                    if (! $hasPermission) {
+                        $validator->errors()->add("items.{$index}.custom_price", 'Anda tidak memiliki hak akses untuk memasukkan harga terbuka (open price).');
+                    }
+                }
+            }
+        });
     }
 }

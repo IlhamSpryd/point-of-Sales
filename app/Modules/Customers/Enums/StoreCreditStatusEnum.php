@@ -13,9 +13,9 @@ enum StoreCreditStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::ACTIVE => 'Aktif',
-            self::FROZEN => 'Dibekukan',
-            self::CLOSED => 'Ditutup',
+            self::ACTIVE => 'Active',
+            self::FROZEN => 'Frozen',
+            self::CLOSED => 'Closed',
         };
     }
 }

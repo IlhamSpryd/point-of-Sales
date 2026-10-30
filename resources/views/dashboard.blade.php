@@ -17,26 +17,26 @@
             <!-- Left: Bold Title + Horizontal Sub-Navigation Pills -->
             <div class="flex flex-wrap items-center gap-3 lg:gap-5">
                 <h1 class="text-2xl lg:text-[28px] font-bold text-[#171717] tracking-tight flex items-baseline gap-2">
-                    <span>대시보드</span>
-                    <span class="text-sm lg:text-base font-semibold text-[#737373] tracking-normal font-sans">(Dashboard Operasional)</span>
+                    <span>Dashboard</span>
+                    <span class="text-sm lg:text-base font-semibold text-[#737373] tracking-normal font-sans">(Operations)</span>
                 </h1>
                 
-                <nav class="hidden md:flex items-center gap-1 text-xs font-medium text-[#737373]" aria-label="Sub-navigasi Cepat">
+                <nav class="hidden md:flex items-center gap-1 text-xs font-medium text-[#737373]" aria-label="Quick Navigation">
                     <a href="{{ route('inventory.ingredients') }}" wire:navigate class="px-2.5 py-1.5 rounded-lg hover:text-[#171717] hover:bg-[#F5F5F5] transition-colors">
-                        물류 입출고 관리 (Bahan Baku)
+                        Raw Materials
                     </a>
                     <span class="text-[#D4D4D4]">•</span>
                     <a href="{{ route('orders.index') }}" wire:navigate class="px-2.5 py-1.5 rounded-lg hover:text-[#171717] hover:bg-[#F5F5F5] transition-colors">
-                        수출 서류 작성 (Riwayat Pesanan)
+                        Order History
                     </a>
                     <span class="text-[#D4D4D4]">•</span>
                     <a href="{{ route('products.index') }}" wire:navigate class="px-2.5 py-1.5 rounded-lg hover:text-[#171717] hover:bg-[#F5F5F5] transition-colors">
-                        브랜드 관리 (Katalog Produk)
+                        Product Catalog
                     </a>
                     @if(in_array(auth()->user()?->role?->name, ['Owner', 'Manager'], true))
                     <span class="text-[#D4D4D4]">•</span>
                     <a href="{{ route('investor.demo') }}" wire:navigate class="px-2.5 py-1.5 rounded-lg hover:text-[#171717] hover:bg-[#F5F5F5] transition-colors">
-                        바이어 관리 (Demo Investor)
+                        Investor Demo
                     </a>
                     @endif
                 </nav>
@@ -47,22 +47,22 @@
                 <a href="{{ route('transaction.create') }}" wire:navigate
                     class="inline-flex items-center gap-2 px-4 py-2 bg-[#171717] hover:bg-black text-white text-xs font-semibold rounded-xl shadow-xs transition-all duration-150 active:scale-[0.98] cursor-pointer">
                     <span class="material-symbols-rounded text-[18px]">receipt_long</span>
-                    <span>전체주문 (Transaksi Baru)</span>
+                    <span>New Order</span>
                 </a>
                 <a href="{{ route('products.index') }}" wire:navigate
                     class="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-[#F9FAFB] text-[#171717] text-xs font-semibold rounded-xl border border-[#E5E7EB] hover:border-[#D4D4D4] shadow-xs transition-all duration-150 active:scale-[0.98] cursor-pointer">
                     <span class="material-symbols-rounded text-[18px]">inventory_2</span>
-                    <span>전체상품 (Kelola Produk)</span>
+                    <span>Manage Products</span>
                 </a>
             </div>
         </header>
 
-        {{-- 2. TOP 3 KPI CARDS (오늘 주문 / 이번주 주문 / 이번달 주문) --}}
-        <section class="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6" aria-label="Ringkasan Pesanan Utama">
-            {{-- Card 1: 오늘 주문 (Pesanan Hari Ini) --}}
+        {{-- 2. TOP 3 KPI CARDS (Today / This Week / This Month) --}}
+        <section class="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6" aria-label="Primary Orders Summary">
+            {{-- Card 1: Today's Orders --}}
             <div class="bg-white rounded-2xl lg:rounded-3xl border border-[#E5E7EB] p-5 lg:p-6 shadow-xs flex flex-col justify-between hover:border-[#D4D4D4] transition-all">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs lg:text-sm font-medium text-[#737373]">오늘 주문 (Pesanan Hari Ini)</span>
+                    <span class="text-xs lg:text-sm font-medium text-[#737373]">Today's Orders</span>
                     <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200">
                         <span class="material-symbols-rounded text-[14px]">trending_up</span> +1.9%
                     </span>
@@ -72,10 +72,10 @@
                 </div>
             </div>
 
-            {{-- Card 2: 이번주 주문 (Pesanan Minggu Ini) --}}
+            {{-- Card 2: This Week's Orders --}}
             <div class="bg-white rounded-2xl lg:rounded-3xl border border-[#E5E7EB] p-5 lg:p-6 shadow-xs flex flex-col justify-between hover:border-[#D4D4D4] transition-all">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs lg:text-sm font-medium text-[#737373]">이번주 주문 (Pesanan Minggu Ini)</span>
+                    <span class="text-xs lg:text-sm font-medium text-[#737373]">This Week's Orders</span>
                     <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-200">
                         <span class="material-symbols-rounded text-[14px]">trending_down</span> -8.1%
                     </span>
@@ -85,10 +85,10 @@
                 </div>
             </div>
 
-            {{-- Card 3: 이번달 주문 (Pesanan Bulan Ini) --}}
+            {{-- Card 3: This Month's Orders --}}
             <div class="bg-white rounded-2xl lg:rounded-3xl border border-[#E5E7EB] p-5 lg:p-6 shadow-xs flex flex-col justify-between hover:border-[#D4D4D4] transition-all">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs lg:text-sm font-medium text-[#737373]">이번달 주문 (Pesanan Bulan Ini)</span>
+                    <span class="text-xs lg:text-sm font-medium text-[#737373]">This Month's Orders</span>
                     <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200">
                         <span class="material-symbols-rounded text-[14px]">trending_up</span> +24%
                     </span>
@@ -99,12 +99,12 @@
             </div>
         </section>
 
-        {{-- 3. MIDDLE MAIN SECTION: SALES PERFORMANCE & 31-DAY BAR HISTOGRAM (세일즈 실적) --}}
-        <section class="bg-white rounded-2xl lg:rounded-3xl border border-[#E5E7EB] p-6 lg:p-8 shadow-xs relative" aria-label="Performa Penjualan Bulanan">
+        {{-- 3. MIDDLE MAIN SECTION: SALES PERFORMANCE & 31-DAY BAR HISTOGRAM --}}
+        <section class="bg-white rounded-2xl lg:rounded-3xl border border-[#E5E7EB] p-6 lg:p-8 shadow-xs relative" aria-label="Monthly Sales Performance">
             {{-- Header of Section --}}
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
-                    <div class="text-xs lg:text-sm font-medium text-[#737373]">세일즈 실적 (Performa Penjualan)</div>
+                    <div class="text-xs lg:text-sm font-medium text-[#737373]">Sales Performance</div>
                     <div class="flex items-center gap-3 mt-1.5 flex-wrap">
                         <div class="text-2xl lg:text-3xl font-extrabold text-[#171717] tracking-tight">
                             Rp {{ number_format($totalEarnings, 0, ',', '.') }}
@@ -114,7 +114,7 @@
                         </span>
                     </div>
                     <div class="text-xs text-[#737373] mt-1 font-mono">
-                        {{ number_format($totalEarnings, 0, ',', '.') }} IDR · Akumulasi Real-Time
+                        {{ number_format($totalEarnings, 0, ',', '.') }} IDR · Real-Time Volume
                     </div>
                 </div>
 
@@ -122,10 +122,10 @@
                 <div class="flex items-center gap-3 shrink-0">
                     {{-- Mini Chart Toggle Icons --}}
                     <div class="flex items-center gap-1 bg-[#F5F5F5] p-1 rounded-xl border border-[#E5E7EB]">
-                        <button type="button" class="w-8 h-8 rounded-lg bg-white text-[#171717] shadow-xs flex items-center justify-center cursor-pointer" title="Histogram Bar">
+                        <button type="button" class="w-8 h-8 rounded-lg bg-white text-[#171717] shadow-xs flex items-center justify-center cursor-pointer" title="Bar Chart">
                             <span class="material-symbols-rounded text-[18px]">bar_chart</span>
                         </button>
-                        <button type="button" class="w-8 h-8 rounded-lg text-[#737373] hover:text-[#171717] flex items-center justify-center cursor-pointer" title="Kurva Spline">
+                        <button type="button" class="w-8 h-8 rounded-lg text-[#737373] hover:text-[#171717] flex items-center justify-center cursor-pointer" title="Spline Chart">
                             <span class="material-symbols-rounded text-[18px]">show_chart</span>
                         </button>
                     </div>
@@ -133,13 +133,13 @@
                     {{-- Segmented Time Filter --}}
                     <div class="inline-flex items-center bg-[#F5F5F5] p-1 rounded-xl border border-[#E5E7EB] text-xs font-medium">
                         <button type="button" class="px-3.5 py-1.5 rounded-lg bg-[#171717] text-white font-semibold shadow-xs">
-                            월간 (Bulanan)
+                            Monthly
                         </button>
                         <button type="button" class="px-3 py-1.5 rounded-lg text-[#737373] hover:text-[#171717] transition-colors">
-                            주간 (Mingguan)
+                            Weekly
                         </button>
                         <button type="button" class="px-3 py-1.5 rounded-lg text-[#737373] hover:text-[#171717] transition-colors">
-                            연간 (Tahunan)
+                            Yearly
                         </button>
                     </div>
                 </div>
@@ -147,7 +147,7 @@
 
             {{-- 31-Day Bar Histogram Chart --}}
             <div class="relative w-full pt-16 pb-2 overflow-x-auto scrollbar-hide">
-                {{-- Floating Tooltip Speech Bubble (Directly above active day 17) --}}
+                {{-- Floating Tooltip Speech Bubble (Directly above active day) --}}
                 @php
                     $activeColIndex = array_search($activeDay, array_column($monthlyHistogram, 'day'));
                     if ($activeColIndex === false) { $activeColIndex = 16; }
@@ -157,7 +157,7 @@
                      style="left: {{ $tooltipLeftPercent }}%;">
                     <div class="bg-white text-[#171717] border border-[#171717] rounded-xl px-3.5 py-2 shadow-xl text-center whitespace-nowrap">
                         <div class="text-[11px] font-semibold text-[#525252]">{{ $activeDayDate }}</div>
-                        <div class="text-xs font-bold text-[#171717] mt-0.5">수익 {{ $activeDayFormatted }}</div>
+                        <div class="text-xs font-bold text-[#171717] mt-0.5">Revenue {{ $activeDayFormatted }}</div>
                     </div>
                     {{-- Triangle Indicator --}}
                     <div class="w-0 h-0 border-x-[6px] border-x-transparent border-t-[7px] border-t-[#171717] mx-auto"></div>
@@ -168,12 +168,12 @@
                      style="display: grid; grid-template-columns: repeat(31, minmax(0, 1fr)); gap: 6px;">
                     @foreach($monthlyHistogram as $bar)
                         <div class="flex flex-col items-center h-full justify-end group cursor-pointer relative"
-                             title="Tgl {{ $bar['day'] }}: {{ $bar['formatted'] }} ({{ $bar['count'] }} transaksi)">
+                             title="Day {{ $bar['day'] }}: {{ $bar['formatted'] }} ({{ $bar['count'] }} transactions)">
                             
                             {{-- Hover Tooltip for inactive bars --}}
                             @if(!$bar['is_active'])
                                 <div class="absolute bottom-full mb-2 hidden group-hover:flex flex-col items-center -translate-x-1/2 left-1/2 pointer-events-none z-20 whitespace-nowrap bg-[#171717] text-white text-[10px] rounded-lg px-2 py-1 shadow-lg">
-                                    <span>Tgl {{ $bar['day'] }}: {{ $bar['formatted'] }}</span>
+                                    <span>Day {{ $bar['day'] }}: {{ $bar['formatted'] }}</span>
                                 </div>
                             @endif
 
@@ -197,12 +197,12 @@
             </div>
         </section>
 
-        {{-- 4. BOTTOM ROW: 3 FEATURE CARDS (분기 실적 / 물류 실적 / 서비스 실적) --}}
-        <section class="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6" aria-label="Analisis Kinerja Layanan & Logistik">
-            {{-- Card 1: 분기 실적 (Performa Kuartal) --}}
+        {{-- 4. BOTTOM ROW: 3 FEATURE CARDS (Quarterly / Logistics / Channels) --}}
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6" aria-label="Service Performance & Logistics Analysis">
+            {{-- Card 1: Quarterly Performance --}}
             <div class="bg-white rounded-2xl lg:rounded-3xl border border-[#E5E7EB] p-5 lg:p-6 shadow-xs flex flex-col justify-between hover:border-[#D4D4D4] transition-all">
                 <div>
-                    <div class="text-xs lg:text-sm font-medium text-[#737373]">분기 실적 (Performa Kuartal)</div>
+                    <div class="text-xs lg:text-sm font-medium text-[#737373]">Quarterly Performance</div>
                     <div class="flex items-center gap-2.5 mt-1.5">
                         <div class="text-xl lg:text-2xl font-bold text-[#171717] tracking-tight">
                             Rp {{ number_format($quarterEarnings, 0, ',', '.') }}
@@ -212,7 +212,7 @@
                         </span>
                     </div>
                     <div class="text-[11px] text-[#737373] mt-0.5 font-mono">
-                        144,094,882 IDR · Target Kuartal
+                        144,094,882 IDR · Quarterly Target
                     </div>
                 </div>
 
@@ -228,21 +228,21 @@
                 </div>
             </div>
 
-            {{-- Card 2: 물류 실적 (Stok & Logistik Bahan Baku) --}}
+            {{-- Card 2: Logistics & Raw Materials --}}
             <div class="bg-white rounded-2xl lg:rounded-3xl border border-[#E5E7EB] p-5 lg:p-6 shadow-xs flex flex-col justify-between hover:border-[#D4D4D4] transition-all">
                 <div class="flex items-start justify-between">
                     <div>
-                        <div class="text-xs lg:text-sm font-medium text-[#737373]">물류 실적 (Logistik & Bahan Baku)</div>
+                        <div class="text-xs lg:text-sm font-medium text-[#737373]">Logistics & Raw Materials</div>
                         <div class="flex items-center gap-2.5 mt-1.5">
                             <div class="text-xl lg:text-2xl font-bold text-[#171717] tracking-tight">
-                                {{ $lowStockCount }} Bahan Kritis
+                                {{ $lowStockCount }} Critical Items
                             </div>
                             <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200">
                                 <span class="material-symbols-rounded text-[13px]">trending_up</span> +2.1%
                             </span>
                         </div>
                         <div class="text-[11px] text-[#737373] mt-0.5 font-mono">
-                            {{ $productsCount }} Produk Aktif Terpantau
+                            {{ $productsCount }} Monitored Products
                         </div>
                     </div>
                     {{-- Mini icons --}}
@@ -268,21 +268,21 @@
                 </div>
             </div>
 
-            {{-- Card 3: 서비스 실적 (Saluran Transaksi & Layanan) --}}
+            {{-- Card 3: Transaction Channels --}}
             <div class="bg-white rounded-2xl lg:rounded-3xl border border-[#E5E7EB] p-5 lg:p-6 shadow-xs flex flex-col justify-between hover:border-[#D4D4D4] transition-all">
                 <div class="flex items-start justify-between">
                     <div>
-                        <div class="text-xs lg:text-sm font-medium text-[#737373]">서비스 실적 (Saluran Transaksi)</div>
+                        <div class="text-xs lg:text-sm font-medium text-[#737373]">Transaction Channels</div>
                         <div class="flex items-center gap-2.5 mt-1.5">
                             <div class="text-xl lg:text-2xl font-bold text-[#171717] tracking-tight">
-                                {{ number_format($totalPaidOrders, 0, ',', '.') }} Transaksi
+                                {{ number_format($totalPaidOrders, 0, ',', '.') }} Transactions
                             </div>
                             <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200">
                                 <span class="material-symbols-rounded text-[13px]">trending_up</span> +0.4%
                             </span>
                         </div>
                         <div class="text-[11px] text-[#737373] mt-0.5 font-mono">
-                            QRIS {{ $paymentBreakdown['qris']['percent'] ?? 0 }}% · Tunai {{ $paymentBreakdown['cash']['percent'] ?? 0 }}%
+                            QRIS {{ $paymentBreakdown['qris']['percent'] ?? 0 }}% · Cash {{ $paymentBreakdown['cash']['percent'] ?? 0 }}%
                         </div>
                     </div>
                     {{-- Mini icons --}}
@@ -304,35 +304,35 @@
         </section>
 
         {{-- 5. OPERATIONAL DETAILS (Preserved for full backend functionality & test fidelity) --}}
-        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t border-[#E5E7EB]" aria-label="Operasional & Inventori Terkini">
-            {{-- Left: Transaksi Terbaru --}}
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t border-[#E5E7EB]" aria-label="Recent Operations & Inventory">
+            {{-- Left: Recent Orders --}}
             <div class="bg-white rounded-2xl border border-[#E5E7EB] p-5 shadow-xs">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-sm font-bold text-[#171717] flex items-center gap-2">
                         <span class="material-symbols-rounded text-[18px] text-[#737373]">receipt_long</span>
-                        <span>Transaksi Terbaru</span>
+                        <span>Recent Orders</span>
                     </h2>
                     <a href="{{ route('orders.index') }}" wire:navigate class="text-xs font-semibold text-[#737373] hover:text-[#171717] transition-colors flex items-center gap-0.5">
-                        Lihat semua <span class="material-symbols-rounded text-[14px]">chevron_right</span>
+                        View all <span class="material-symbols-rounded text-[14px]">chevron_right</span>
                     </a>
                 </div>
 
                 <div class="divide-y divide-[#F0F0F0]">
                     @forelse($recentOrders as $order)
                         @php
-                            $customerName = $order->customer?->name ?? $order->user?->name ?? 'Pelanggan Ritel';
+                            $customerName = $order->customer?->name ?? $order->user?->name ?? 'Retail Customer';
                             $initial = strtoupper(substr($customerName, 0, 1));
-                            $storeName = $order->store?->name ?? ($activeStoreName ?? 'Cabang');
+                            $storeName = $order->store?->name ?? ($activeStoreName ?? 'Branch');
                             $methodRaw = $order->payment_method instanceof \BackedEnum ? $order->payment_method->value : (string) ($order->payment_method ?? '');
                             $paymentLabel = match(strtolower($methodRaw)) {
-                                'cash' => 'Tunai',
+                                'cash' => 'Cash',
                                 'qris' => 'QRIS',
                                 'ewallet' => 'E-Wallet',
-                                'card' => 'Kartu',
-                                default => !empty($methodRaw) ? strtoupper($methodRaw) : 'Tunai'
+                                'card' => 'Card',
+                                default => !empty($methodRaw) ? strtoupper($methodRaw) : 'Cash'
                             };
                             $dateStr = $order->created_at 
-                                ? $order->created_at->format('j') . ' ' . (\App\Services\DashboardService::ID_MONTHS[$order->created_at->month - 1] ?? '') . ', ' . $order->created_at->format('H:i') 
+                                ? $order->created_at->format('M j, H:i')
                                 : '';
                             $statusVal = $order->order_status->value ?? $order->order_status;
                         @endphp
@@ -349,31 +349,31 @@
                             <div class="text-right shrink-0">
                                 <div class="font-bold text-xs text-[#171717] font-mono">Rp {{ number_format($order->order_amount, 0, ',', '.') }}</div>
                                 @if($statusVal === 'paid' || $statusVal === 'completed')
-                                    <span class="inline-block mt-0.5 px-2 py-0.2 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Lunas</span>
+                                    <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Paid</span>
                                 @elseif($statusVal === 'pending')
-                                    <span class="inline-block mt-0.5 px-2 py-0.2 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">Menunggu</span>
+                                    <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">Pending</span>
                                 @else
-                                    <span class="inline-block mt-0.5 px-2 py-0.2 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">Batal</span>
+                                    <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 border border-rose-200">Cancelled</span>
                                 @endif
                             </div>
                         </div>
                     @empty
                         <div class="py-8 text-center text-xs text-[#737373]">
-                            Belum ada transaksi hari ini
+                            No transactions recorded today.
                         </div>
                     @endforelse
                 </div>
             </div>
 
-            {{-- Right: Prakiraan Restock Bahan Baku --}}
+            {{-- Right: Restock Forecast --}}
             <div class="bg-white rounded-2xl border border-[#E5E7EB] p-5 shadow-xs">
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-sm font-bold text-[#171717] flex items-center gap-2">
                         <span class="material-symbols-rounded text-[18px] text-[#737373]">warehouse</span>
-                        <span>Prakiraan Restock Bahan Baku</span>
+                        <span>Restock Forecast</span>
                     </h2>
                     <a href="{{ route('inventory.ingredients') }}" wire:navigate class="text-xs font-semibold text-[#737373] hover:text-[#171717] transition-colors flex items-center gap-0.5">
-                        Kelola stok <span class="material-symbols-rounded text-[14px]">chevron_right</span>
+                        Manage inventory <span class="material-symbols-rounded text-[14px]">chevron_right</span>
                     </a>
                 </div>
 
@@ -391,7 +391,7 @@
                         </div>
                     @empty
                         <div class="py-8 text-center text-xs text-[#737373]">
-                            Seluruh persediaan bahan baku dalam batas aman
+                            All raw material inventories are within safe levels.
                         </div>
                     @endforelse
                 </div>

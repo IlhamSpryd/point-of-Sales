@@ -8,17 +8,17 @@
     <div class="space-y-6" data-gsap="page-enter">
         <!-- Header -->
         <x-erp.page-header
-            title="Asortimen & Override Harga Cabang"
-            description="Atur ketersediaan produk per cabang dan harga jual khusus tingkat cabang tanpa duplikasi data master produk.">
+            title="Branch Assortments & Price Overrides"
+            description="Configure branch-level product availability and branch-specific pricing without duplicating master catalog records.">
             <x-slot:breadcrumbs>
                 <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
-                <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Katalog</x-ui.breadcrumbs.item>
-                <x-ui.breadcrumbs.item active>Asortimen Cabang</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('products.index') }}">Catalog</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item active>Branch Assortments</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>
 
             <x-slot:actions>
                 <form method="GET" action="{{ route('assortments.index') }}" class="flex items-center gap-2">
-                    <span class="text-xs font-semibold text-zinc-500 whitespace-nowrap">Pilih Cabang:</span>
+                    <span class="text-xs font-semibold text-zinc-500 whitespace-nowrap">Select Branch:</span>
                     <select id="store_filter" name="store_id" onchange="this.form.submit()"
                         class="h-10 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 text-sm bg-white dark:bg-zinc-800 font-medium text-zinc-800 dark:text-zinc-200 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
                         @foreach ($stores as $s)
@@ -32,28 +32,28 @@
         </x-erp.page-header>
 
         @if(session('success'))
-            <x-ui.alert type="success" title="Berhasil" class="rounded-2xl">
+            <x-ui.alert type="success" title="Success" class="rounded-2xl">
                 {{ session('success') }}
             </x-ui.alert>
         @endif
         @if(session('error'))
-            <x-ui.alert type="danger" title="Terjadi Kesalahan" class="rounded-2xl">
+            <x-ui.alert type="danger" title="Error" class="rounded-2xl">
                 {{ session('error') }}
             </x-ui.alert>
         @endif
 
         <div class="card-surface overflow-hidden rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 shadow-xs">
             <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-sm">
+                <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="border-b border-[#E5E7EB] dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                            <th class="px-6 py-4">Produk</th>
-                            <th class="px-6 py-4">Kategori</th>
-                            <th class="px-6 py-4 text-right">Harga Dasar</th>
-                            <th class="px-6 py-4 text-center">Tersedia di Cabang</th>
-                            <th class="px-6 py-4 text-right">Harga Khusus Cabang</th>
+                            <th class="px-6 py-4">Product</th>
+                            <th class="px-6 py-4">Category</th>
+                            <th class="px-6 py-4 text-right">Base Price</th>
+                            <th class="px-6 py-4 text-center">Available in Branch</th>
+                            <th class="px-6 py-4 text-right">Branch Price Override</th>
                             @if($canManage)
-                                <th class="px-6 py-4 text-right">Simpan</th>
+                                <th class="px-6 py-4 text-right">Save</th>
                             @endif
                         </tr>
                     </thead>
@@ -81,62 +81,63 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-zinc-600 dark:text-zinc-400">{{ $prod->category?->category_name ?? '—' }}</td>
-                                <td class="px-6 py-4 text-sm font-medium text-right text-zinc-900 dark:text-white font-mono">
+                                <td class="px-6 py-4 text-sm font-medium text-right text-zinc-900 dark:text-white font-mono tabular-nums">
                                     Rp {{ number_format((float) $prod->product_price, 0, ',', '.') }}
                                 </td>
 
-                                <td colspan="{{ $canManage ? 3 : 2 }}" class="p-0">
-                                    @if($canManage && $selectedStoreId)
-                                        <form action="{{ route('assortments.update') }}" method="POST" class="flex items-center justify-between w-full h-full px-6 py-3">
-                                            @csrf
-                                            <input type="hidden" name="store_id" value="{{ $selectedStoreId }}">
-                                            <input type="hidden" name="product_id" value="{{ $prod->id }}">
+                                @if($canManage && $selectedStoreId)
+                                    <form id="form-assortment-{{ $prod->id }}" action="{{ route('assortments.update') }}" method="POST" class="hidden">
+                                        @csrf
+                                        <input type="hidden" name="store_id" value="{{ $selectedStoreId }}">
+                                        <input type="hidden" name="product_id" value="{{ $prod->id }}">
+                                    </form>
 
-                                            <!-- Switch Ketersediaan -->
-                                            <div class="w-36 text-center">
-                                                <input type="hidden" name="is_available" value="0">
-                                                <label class="inline-flex items-center cursor-pointer gap-2">
-                                                    <input type="checkbox" name="is_available" value="1" {{ $isAvailable ? 'checked' : '' }}
-                                                        class="rounded border-zinc-300 text-apeiron-primary shadow-xs focus:ring-apeiron-primary h-4 w-4">
-                                                    <x-ui.badge variant="{{ $isAvailable ? 'success' : 'danger' }}" size="xs">
-                                                        {{ $isAvailable ? 'Tersedia' : 'Dinonaktifkan' }}
-                                                    </x-ui.badge>
-                                                </label>
-                                            </div>
+                                    <!-- Switch Ketersediaan -->
+                                    <td class="px-6 py-4 text-center">
+                                        <input type="hidden" name="is_available" value="0" form="form-assortment-{{ $prod->id }}">
+                                        <label class="inline-flex items-center justify-center cursor-pointer gap-2">
+                                            <input type="checkbox" name="is_available" value="1" {{ $isAvailable ? 'checked' : '' }}
+                                                form="form-assortment-{{ $prod->id }}"
+                                                class="rounded border-zinc-300 text-apeiron-primary shadow-xs focus:ring-apeiron-primary h-4 w-4">
+                                            <x-ui.badge variant="{{ $isAvailable ? 'success' : 'danger' }}" size="xs">
+                                                {{ $isAvailable ? 'Available' : 'Disabled' }}
+                                            </x-ui.badge>
+                                        </label>
+                                    </td>
 
-                                            <!-- Override Harga Cabang -->
-                                            <div class="w-48 text-right">
-                                                <input type="number" name="store_price_override" value="{{ $overridePrice }}" step="0.01" min="0"
-                                                    placeholder="Gunakan Dasar"
-                                                    class="w-full text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2 text-right font-mono text-zinc-800 dark:text-zinc-100 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
-                                            </div>
+                                    <!-- Override Harga Cabang -->
+                                    <td class="px-6 py-4 text-right">
+                                        <input type="number" name="store_price_override" value="{{ $overridePrice }}" step="0.01" min="0"
+                                            form="form-assortment-{{ $prod->id }}"
+                                            placeholder="Use Base Price"
+                                            class="w-48 inline-block text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2 text-right font-mono tabular-nums text-zinc-800 dark:text-zinc-100 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
+                                    </td>
 
-                                            <!-- Tombol Simpan Baris -->
-                                            <div class="w-20 text-right">
-                                                <x-ui.button variant="secondary" size="xs" type="submit">
-                                                    Simpan
-                                                </x-ui.button>
-                                            </div>
-                                        </form>
-                                    @else
-                                        <div class="flex items-center justify-between w-full px-6 py-4">
-                                            <div class="w-36 text-center">
-                                                <x-ui.badge variant="{{ $isAvailable ? 'success' : 'danger' }}" size="sm">
-                                                    {{ $isAvailable ? 'Tersedia' : 'Dinonaktifkan' }}
-                                                </x-ui.badge>
-                                            </div>
-                                            <div class="w-48 text-right text-sm font-semibold text-zinc-900 dark:text-white font-mono">
-                                                {{ $overridePrice ? 'Rp ' . number_format((float)$overridePrice, 0, ',', '.') : 'Harga Dasar' }}
-                                            </div>
-                                        </div>
+                                    <!-- Tombol Simpan Baris -->
+                                    <td class="px-6 py-4 text-right">
+                                        <x-ui.button variant="secondary" size="xs" type="submit" form="form-assortment-{{ $prod->id }}">
+                                            Save
+                                        </x-ui.button>
+                                    </td>
+                                @else
+                                    <td class="px-6 py-4 text-center">
+                                        <x-ui.badge variant="{{ $isAvailable ? 'success' : 'danger' }}" size="sm">
+                                            {{ $isAvailable ? 'Available' : 'Disabled' }}
+                                        </x-ui.badge>
+                                    </td>
+                                    <td class="px-6 py-4 text-right text-sm font-semibold text-zinc-900 dark:text-white font-mono tabular-nums">
+                                        {{ $overridePrice ? 'Rp ' . number_format((float)$overridePrice, 0, ',', '.') : 'Base Price' }}
+                                    </td>
+                                    @if($canManage)
+                                        <td class="px-6 py-4 text-right text-zinc-400 text-xs">—</td>
                                     @endif
-                                </td>
+                                @endif
                             </tr>
                         @empty
                             <tr>
                                 <td colspan="{{ $canManage ? 6 : 5 }}" class="px-6 py-12 text-center text-zinc-400">
                                     <span class="material-symbols-rounded text-4xl block mb-2">storefront</span>
-                                    Tidak ada produk ditemukan untuk cabang ini.
+                                    No products found for this branch.
                                 </td>
                             </tr>
                         @endforelse

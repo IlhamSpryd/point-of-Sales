@@ -1,17 +1,17 @@
 <x-app-layout>
     <div class="space-y-6" data-gsap="page-enter">
         <x-erp.page-header
-            title="Tambah Pengguna Baru"
-            description="Tambahkan pengguna baru dan atur kredensial akses sistem.">
+            title="Add New User"
+            description="Create a new system user and configure access credentials.">
             <x-slot:breadcrumbs>
                 <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
-                <x-ui.breadcrumbs.item href="{{ route('users.index') }}">Pengguna</x-ui.breadcrumbs.item>
-                <x-ui.breadcrumbs.item active>Tambah</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item href="{{ route('users.index') }}">Users</x-ui.breadcrumbs.item>
+                <x-ui.breadcrumbs.item active>Add New</x-ui.breadcrumbs.item>
             </x-slot:breadcrumbs>
 
             <x-slot:actions>
                 <x-ui.button variant="secondary" href="{{ route('users.index') }}" class="gap-2" wire:navigate>
-                    <span class="material-symbols-rounded text-base">arrow_back</span> Kembali
+                    <span class="material-symbols-rounded text-base">arrow_back</span> Back
                 </x-ui.button>
             </x-slot:actions>
         </x-erp.page-header>
@@ -23,16 +23,16 @@
                 <!-- Personal Info Row -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                        <x-form-label for="name">Nama Lengkap</x-form-label>
+                        <x-form-label for="name">Full Name</x-form-label>
                         <x-form-input type="text" id="name" name="name" value="{{ old('name') }}" 
-                               placeholder="Masukkan nama lengkap" required autocomplete="name" class="{{ $errors->has('name') ? 'input-error' : '' }}" />
+                               placeholder="Enter full name" required autocomplete="name" class="{{ $errors->has('name') ? 'input-error' : '' }}" />
                         @error('name')
                         <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <x-form-label for="email">Alamat Email</x-form-label>
+                        <x-form-label for="email">Email Address</x-form-label>
                         <x-form-input type="email" id="email" name="email" value="{{ old('email') }}" 
                                placeholder="example@domain.com" required autocomplete="username" class="{{ $errors->has('email') ? 'input-error' : '' }}" />
                         @error('email')
@@ -41,16 +41,16 @@
                     </div>
                     
                     <div>
-                        <x-form-label for="phone_number">Nomor HP / WhatsApp</x-form-label>
+                        <x-form-label for="phone_number">Phone Number / WhatsApp</x-form-label>
                         <x-form-input type="text" id="phone_number" name="phone_number" value="{{ old('phone_number') }}" 
-                               placeholder="08123456789" class="{{ $errors->has('phone_number') ? 'input-error' : '' }}" />
+                               placeholder="+62 812 3456 7890" class="{{ $errors->has('phone_number') ? 'input-error' : '' }}" />
                         @error('phone_number')
                         <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <x-form-label for="join_date">Tanggal Bergabung</x-form-label>
+                        <x-form-label for="join_date">Join Date</x-form-label>
                         <x-form-input type="date" id="join_date" name="join_date" value="{{ old('join_date') }}" 
                                class="{{ $errors->has('join_date') ? 'input-error' : '' }}" />
                         @error('join_date')
@@ -62,11 +62,11 @@
                 <!-- Role & Status Row -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-[#E5E7EB] dark:border-zinc-800">
                     <div>
-                        <x-form-label for="role_id">Pilih Peran</x-form-label>
+                        <x-form-label for="role_id">Select Role</x-form-label>
                         <div class="relative">
                             <select id="role_id" name="role_id" 
                                     class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-apeiron-ink dark:text-zinc-100 appearance-none focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 transition-all duration-200 shadow-xs {{ $errors->has('role_id') ? 'input-error' : '' }}" required>
-                                <option value="">Pilih Peran</option>
+                                <option value="">Select Role</option>
                                 @foreach($roles as $role)
                                     <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>
                                         {{ $role->name }}
@@ -86,7 +86,7 @@
                         <label class="flex items-center gap-3 cursor-pointer">
                             <input type="hidden" name="is_active" value="0">
                             <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="w-5 h-5 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
-                            <span class="text-sm font-medium text-apeiron-ink dark:text-zinc-200">Karyawan Aktif</span>
+                            <span class="text-sm font-medium text-apeiron-ink dark:text-zinc-200">Active Employee</span>
                         </label>
                     </div>
                 </div>
@@ -94,16 +94,16 @@
                 <!-- Security Row -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-[#E5E7EB] dark:border-zinc-800">
                     <div>
-                        <x-form-label for="pin_code">PIN Kasir (4-6 Digit)</x-form-label>
+                        <x-form-label for="pin_code">Cashier PIN (4-6 Digits)</x-form-label>
                         <x-form-input type="password" id="pin_code" name="pin_code" 
-                               placeholder="Contoh: 1234" class="{{ $errors->has('pin_code') ? 'input-error' : '' }}" />
+                               placeholder="e.g. 1234" class="{{ $errors->has('pin_code') ? 'input-error' : '' }}" />
                         @error('pin_code')
                         <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <x-form-label for="password">Kata Sandi Web</x-form-label>
+                        <x-form-label for="password">Web Password</x-form-label>
                         <x-form-input type="password" id="password" name="password" 
                                placeholder="••••••••" required autocomplete="new-password" class="{{ $errors->has('password') ? 'input-error' : '' }}" />
                         @error('password')
@@ -112,7 +112,7 @@
                     </div>
 
                     <div>
-                        <x-form-label for="password_confirmation">Konfirmasi Kata Sandi</x-form-label>
+                        <x-form-label for="password_confirmation">Confirm Password</x-form-label>
                         <x-form-input type="password" id="password_confirmation" name="password_confirmation" 
                                placeholder="••••••••" required autocomplete="new-password" />
                     </div>
@@ -121,9 +121,9 @@
                 <div class="pt-6 border-t border-[#E5E7EB] dark:border-zinc-800 flex justify-end">
                     <x-ui.button type="submit" variant="primary" class="gap-2" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''">
                         <span x-show="!submitting" class="inline-flex items-center gap-1.5">
-                            <span class="material-symbols-rounded text-base">save</span> Simpan Pengguna
+                            <span class="material-symbols-rounded text-base">save</span> Save User
                         </span>
-                        <span x-show="submitting" x-cloak>Menyimpan...</span>
+                        <span x-show="submitting" x-cloak>Saving...</span>
                     </x-ui.button>
                 </div>
             </form>

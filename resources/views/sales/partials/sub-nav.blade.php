@@ -3,28 +3,28 @@
 
     $allSalesTabs = [
         [
-            'label' => 'Pesanan Penjualan (SO)',
+            'label' => 'Sales Orders (SO)',
             'route' => 'sales.orders.index',
             'active' => 'sales.orders.*',
             'icon' => 'shopping_cart',
             'roles' => ['Owner', 'Manager', 'Sales', 'Admin', 'Finance'],
         ],
         [
-            'label' => 'Penawaran Harga (Quotation)',
+            'label' => 'Quotations',
             'route' => 'sales.quotations.index',
             'active' => 'sales.quotations.*',
             'icon' => 'request_quote',
             'roles' => ['Owner', 'Manager', 'Sales', 'Admin', 'Finance'],
         ],
         [
-            'label' => 'Faktur & Piutang (AR)',
+            'label' => 'Invoices & Accounts Receivable (AR)',
             'route' => 'sales.invoices.index',
             'active' => 'sales.invoices.*',
             'icon' => 'account_balance_wallet',
             'roles' => ['Owner', 'Manager', 'Sales', 'Admin', 'Finance'],
         ],
         [
-            'label' => 'Retur & Nota Kredit',
+            'label' => 'Returns & Credit Notes',
             'route' => 'sales.returns.index',
             'active' => 'sales.returns.*',
             'icon' => 'assignment_return',
@@ -38,7 +38,7 @@
 @endphp
 
 <div class="w-full pb-3 mb-6 border-b border-[#E5E7EB]">
-    <nav aria-label="Sub-navigasi Penjualan B2B & Piutang (AR)"
+    <nav aria-label="B2B Sales & Accounts Receivable Navigation"
         x-data
         x-init="$nextTick(() => {
             const activeTab = $el.querySelector('[aria-current=page]');

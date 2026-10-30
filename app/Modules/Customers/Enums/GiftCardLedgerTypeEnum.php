@@ -14,10 +14,10 @@ enum GiftCardLedgerTypeEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::ISSUE => 'Penerbitan Saldo Awal',
-            self::REDEEM => 'Penukaran / Pembayaran',
-            self::REFUND_REVERSAL => 'Pengembalian Dana / Reversal',
-            self::EXPIRE_WRITE_OFF => 'Penghapusan Kedaluwarsa',
+            self::ISSUE => 'Initial Balance Issuance',
+            self::REDEEM => 'Redemption / Payment',
+            self::REFUND_REVERSAL => 'Refund / Reversal',
+            self::EXPIRE_WRITE_OFF => 'Expiration Write-off',
         };
     }
 }

@@ -183,9 +183,9 @@ class TableConcurrencyAndLifecycleTest extends TestCase
         // 2. Attempt to release table while unpaid order is active -> MUST BE REJECTED (INV-TBL-07)
         try {
             app(TableService::class)->releaseTable($table);
-            $this->fail('Harusnya gagal membebaskan meja karena masih ada pesanan pending yang belum lunas (INV-TBL-07)');
+            $this->fail('Should fail to release table while unpaid pending orders exist (INV-TBL-07)');
         } catch (\DomainException $e) {
-            $this->assertStringContainsString('pesanan aktif', $e->getMessage());
+            $this->assertStringContainsString('unpaid orders', $e->getMessage());
         }
 
         // Table status must remain occupied
@@ -194,9 +194,9 @@ class TableConcurrencyAndLifecycleTest extends TestCase
         // 3. Attempt to disable table while unpaid order is active -> MUST BE REJECTED
         try {
             app(TableService::class)->disableTable($table);
-            $this->fail('Harusnya gagal menonaktifkan meja karena masih ada pesanan aktif');
+            $this->fail('Should fail to deactivate table while active unpaid orders exist');
         } catch (\DomainException $e) {
-            $this->assertStringContainsString('pesanan aktif', $e->getMessage());
+            $this->assertStringContainsString('unpaid orders', $e->getMessage());
         }
         $this->assertTrue($table->fresh()->is_active);
     }

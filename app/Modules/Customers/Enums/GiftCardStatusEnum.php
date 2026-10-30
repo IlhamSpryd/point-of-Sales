@@ -14,10 +14,10 @@ enum GiftCardStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::ACTIVE => 'Aktif',
-            self::DEPLETED => 'Saldo Habis',
-            self::EXPIRED => 'Kedaluwarsa',
-            self::BLOCKED => 'Diblokir',
+            self::ACTIVE => 'Active',
+            self::DEPLETED => 'Depleted',
+            self::EXPIRED => 'Expired',
+            self::BLOCKED => 'Blocked',
         };
     }
 }

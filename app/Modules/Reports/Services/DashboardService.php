@@ -278,9 +278,9 @@ class DashboardService
                     $days = $f->projected_days_remaining !== null ? (float) $f->projected_days_remaining : null;
                     $trend = $f->trend ?? 'stable';
                     $trendLabel = match ($trend) {
-                        'falling', 'down' => 'Turun',
-                        'rising', 'up' => 'Naik',
-                        default => 'Stabil',
+                        'falling', 'down' => 'Declining',
+                        'rising', 'up' => 'Rising',
+                        default => 'Stable',
                     };
                     $trendColor = match ($trend) {
                         'falling', 'down' => '#BE123C',
@@ -289,11 +289,11 @@ class DashboardService
                     };
 
                     $ingredient = $f->ingredient;
-                    $daysLabel = $days !== null ? round($days).' hari' : (($ingredient && $ingredient->current_stock <= 0) ? 'Habis' : 'Stok tipis');
+                    $daysLabel = $days !== null ? round($days).' days' : (($ingredient && $ingredient->current_stock <= 0) ? 'Out of stock' : 'Low stock');
                     $barWidth = $days !== null ? min(100, max(8, round(($days / 14) * 100))) : 12;
 
                     $restockList[] = [
-                        'name' => $ingredient ? $ingredient->name : 'Bahan Baku',
+                        'name' => $ingredient ? $ingredient->name : 'Raw Material',
                         'days' => $days,
                         'days_label' => $daysLabel,
                         'progress_percent' => $barWidth,
@@ -318,10 +318,10 @@ class DashboardService
                     $restockList[] = [
                         'name' => $ing->name,
                         'days' => $days,
-                        'days_label' => $stock <= 0 ? 'Habis' : $days.' hari',
+                        'days_label' => $stock <= 0 ? 'Out of stock' : $days.' days',
                         'progress_percent' => min(100, max(8, round(($days / 14) * 100))),
                         'trend' => $trend,
-                        'trend_label' => $trend === 'falling' ? 'Turun' : 'Stabil',
+                        'trend_label' => $trend === 'falling' ? 'Declining' : 'Stable',
                         'trend_color' => $trend === 'falling' ? '#BE123C' : '#6B6A66',
                     ];
                 }
@@ -330,29 +330,28 @@ class DashboardService
             // 7. Kalkulasi Koordinat SVG Curve
             $chartSvg = $this->buildChartSvg($revenueData, $chartDates);
 
-            // 8. Teks Greeting & Ringkasan Naratif
+            // 8. Greeting & Narrative Summary
             $hour = (int) Carbon::now('Asia/Jakarta')->format('G');
             $greeting = match (true) {
-                $hour >= 4 && $hour < 11 => 'Selamat pagi',
-                $hour >= 11 && $hour < 15 => 'Selamat siang',
-                $hour >= 15 && $hour < 18 => 'Selamat sore',
-                default => 'Selamat malam',
+                $hour >= 4 && $hour < 12 => 'Good morning',
+                $hour >= 12 && $hour < 18 => 'Good afternoon',
+                default => 'Good evening',
             };
 
             $userName = $user instanceof User ? $user->name : 'Owner';
-            // Ambil nama panggilan pertama jika ada
+            // First name
             $nameParts = explode(' ', trim($userName));
             $firstName = $nameParts[0] !== '' ? $nameParts[0] : 'Owner';
 
-            $earningsDir = ($earningsDeltaPercent ?? 0) >= 0 ? 'naik' : 'turun';
+            $earningsDir = ($earningsDeltaPercent ?? 0) >= 0 ? 'increased' : 'decreased';
             $earningsAbs = abs($earningsDeltaPercent ?? 0);
-            $ordersDir = ($ordersDeltaPercent ?? 0) >= 0 ? 'naik' : 'turun';
+            $ordersDir = ($ordersDeltaPercent ?? 0) >= 0 ? 'increased' : 'decreased';
             $ordersAbs = abs($ordersDeltaPercent ?? 0);
 
             if ($earningsDeltaPercent !== null && $ordersDeltaPercent !== null) {
-                $summaryText = "Bulan ini pendapatan {$earningsDir} <b>".number_format($earningsAbs, 1, ',', '.')."%</b> dan transaksi {$ordersDir} <b>".number_format($ordersAbs, 1, ',', '.')."%</b> dibanding bulan lalu. Ada <b>{$lowStockCount} produk</b> dengan stok tipis yang perlu dicek.";
+                $summaryText = "This month revenue {$earningsDir} by <b>".number_format($earningsAbs, 1, '.', ',')."%</b> and transactions {$ordersDir} by <b>".number_format($ordersAbs, 1, '.', ',')."%</b> compared to last month. There are <b>{$lowStockCount} items</b> with low stock requiring review.";
             } else {
-                $summaryText = 'Total akumulasi penjualan tercatat <b>Rp '.number_format($totalEarnings, 0, ',', '.').'</b> dari <b>'.number_format($totalOrders, 0, ',', '.')." transaksi</b>. Ada <b>{$lowStockCount} produk</b> dengan stok tipis yang perlu dicek.";
+                $summaryText = 'Total sales volume recorded at <b>Rp '.number_format($totalEarnings, 0, ',', '.').'</b> across <b>'.number_format($totalOrders, 0, ',', '.')." transactions</b>. There are <b>{$lowStockCount} items</b> with low stock requiring review.";
             }
 
             return compact(
@@ -391,7 +390,7 @@ class DashboardService
             );
         });
 
-        // Ambil data non-kalkulasi yang dinamis (transaksi terbaru & store context)
+        // Dynamic non-cached data (recent orders & store context)
         $recentOrderQuery = $isAllStores ? Order::allStores() : Order::query();
         $metrics['recentOrders'] = (clone $recentOrderQuery)
             ->with(['user', 'customer', 'store'])
@@ -400,11 +399,11 @@ class DashboardService
             ->get();
 
         $activeStore = ! $isAllStores ? Store::find($activeStoreId) : null;
-        $activeStoreName = 'Semua cabang';
-        $activeStoreBadge = 'Konsolidasi';
+        $activeStoreName = 'All Branches';
+        $activeStoreBadge = 'Consolidated';
         if (! $isAllStores) {
-            $activeStoreName = $activeStore ? $activeStore->name : 'Cabang Utama';
-            $activeStoreBadge = $activeStore && $activeStore->code ? $activeStore->code : 'Aktif';
+            $activeStoreName = $activeStore ? $activeStore->name : 'Main Branch';
+            $activeStoreBadge = $activeStore && $activeStore->code ? $activeStore->code : 'Active';
         }
         $metrics['activeStoreName'] = $activeStoreName;
         $metrics['activeStoreBadge'] = $activeStoreBadge;

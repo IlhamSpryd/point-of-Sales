@@ -112,9 +112,9 @@ class UserController extends Controller
 
             return redirect()->route('users.index')->with('success', 'User deleted successfully.');
         } catch (QueryException $e) {
-            return redirect()->route('users.index')->with('error', 'Data ini masih terhubung dengan data lain dan tidak dapat dihapus.');
+            return redirect()->route('users.index')->with('error', 'This user is linked to other system records and cannot be deleted.');
         } catch (\Throwable $e) {
-            // Menangkap potensi Error Exception bila penghapusan gagal.
+            // Catch error exception if deletion fails.
             return redirect()->route('users.index')->with('error', $e->getMessage());
         }
     }

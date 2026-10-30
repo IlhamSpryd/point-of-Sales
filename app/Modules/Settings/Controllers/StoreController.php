@@ -47,7 +47,7 @@ class StoreController extends Controller
 
             return redirect()
                 ->route('stores.index')
-                ->with('success', "Cabang '{$store->name}' berhasil ditambahkan.");
+                ->with('success', "Store '{$store->name}' successfully created.");
         } catch (DomainException $e) {
             return redirect()
                 ->back()
@@ -69,7 +69,7 @@ class StoreController extends Controller
 
         return redirect()
             ->route('stores.index')
-            ->with('success', "Informasi cabang '{$store->name}' berhasil diperbarui.");
+            ->with('success', "Store '{$store->name}' successfully updated.");
     }
 
     public function destroy(Store $store): RedirectResponse
@@ -81,7 +81,7 @@ class StoreController extends Controller
 
             return redirect()
                 ->route('stores.index')
-                ->with('success', "Cabang '{$store->name}' berhasil dihapus.");
+                ->with('success', "Store '{$store->name}' successfully deleted.");
         } catch (DomainException $e) {
             return redirect()
                 ->route('stores.index')

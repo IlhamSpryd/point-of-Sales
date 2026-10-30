@@ -6,6 +6,7 @@ use App\Livewire\Concerns\RequiresTenantContext;
 use App\Models\Ingredient;
 use App\Models\IngredientStockMovement;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -25,8 +26,10 @@ class IngredientLedger extends Component
         }
     }
 
+    #[Url(history: true)]
     public string $ingredient_id = '';
 
+    #[Url(history: true)]
     public string $type = '';
 
     public function updatingIngredientId()

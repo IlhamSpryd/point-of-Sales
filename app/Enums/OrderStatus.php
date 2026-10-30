@@ -27,13 +27,13 @@ enum OrderStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Pending => 'Menunggu Pembayaran',
-            self::Paid => 'Lunas',
-            self::Cancelled => 'Dibatalkan',
-            self::Expired => 'Kedaluwarsa',
-            self::Failed => 'Gagal',
-            self::Completed => 'Selesai',
-            self::Void => 'Di-void',
+            self::Pending => 'Pending Payment',
+            self::Paid => 'Paid',
+            self::Cancelled => 'Cancelled',
+            self::Expired => 'Expired',
+            self::Failed => 'Failed',
+            self::Completed => 'Completed',
+            self::Void => 'Voided',
         };
     }
 

@@ -18,6 +18,8 @@ final class ResolvedPriceDto
 
     public const SOURCE_BASE_PRODUCT = 'BASE_PRODUCT';
 
+    public const SOURCE_OPEN_PRICE = 'OPEN_PRICE';
+
     /**
      * @param  array<string, mixed>  $meta
      */

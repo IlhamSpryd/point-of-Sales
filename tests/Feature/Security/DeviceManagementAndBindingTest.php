@@ -255,7 +255,7 @@ class DeviceManagementAndBindingTest extends TestCase
         ]);
 
         $responseExpired->assertStatus(422);
-        $responseExpired->assertJsonFragment(['message' => 'Kode pairing telah kedaluwarsa. Silakan minta kode baru dari dashboard.']);
+        $responseExpired->assertJsonFragment(['message' => 'Pairing code has expired. Please request a new code from the dashboard.']);
     }
 
     public function test_owner_and_manager_can_revoke_paired_device(): void

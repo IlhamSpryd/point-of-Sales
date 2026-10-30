@@ -15,11 +15,11 @@ enum SalesReturnStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::PENDING_APPROVAL => 'Menunggu Persetujuan',
-            self::APPROVED => 'Disetujui',
-            self::COMPLETED => 'Selesai',
-            self::REJECTED => 'Ditolak',
-            self::CANCELLED => 'Dibatalkan',
+            self::PENDING_APPROVAL => 'Pending Approval',
+            self::APPROVED => 'Approved',
+            self::COMPLETED => 'Completed',
+            self::REJECTED => 'Rejected',
+            self::CANCELLED => 'Cancelled',
         };
     }
 }

@@ -16,12 +16,12 @@ enum CreditNoteStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::DRAFT => 'Draf',
-            self::ISSUED => 'Diterbitkan',
-            self::PARTIALLY_APPLIED => 'Diterapkan Sebagian',
-            self::APPLIED => 'Diterapkan Penuh',
-            self::CONVERTED_TO_STORE_CREDIT => 'Dikonversi ke Store Credit',
-            self::VOIDED => 'Dibatalkan',
+            self::DRAFT => 'Draft',
+            self::ISSUED => 'Issued',
+            self::PARTIALLY_APPLIED => 'Partially Applied',
+            self::APPLIED => 'Fully Applied',
+            self::CONVERTED_TO_STORE_CREDIT => 'Converted to Store Credit',
+            self::VOIDED => 'Voided',
         };
     }
 }

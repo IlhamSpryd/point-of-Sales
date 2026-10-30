@@ -19,6 +19,7 @@ use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -28,8 +29,10 @@ class StockOpnameManager extends Component
     use RequiresTenantContext;
     use WithPagination;
 
+    #[Url(history: true)]
     public string $search = '';
 
+    #[Url(history: true)]
     public string $statusFilter = 'ALL';
 
     // Modal states

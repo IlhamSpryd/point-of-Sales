@@ -83,10 +83,10 @@ class AsyncExportButton extends Component
             $task = $reportService->queueExport($start, $end, Auth::id());
             $this->taskId = $task->id;
         } catch (ValidationException $e) {
-            $this->addError('range', collect($e->errors())->flatten()->first() ?? 'Rentang tanggal tidak valid.');
+            $this->addError('range', collect($e->errors())->flatten()->first() ?? 'Invalid date range.');
         } catch (\Throwable $e) {
             Log::error('Export failed to queue: '.$e->getMessage(), ['exception' => $e]);
-            $this->addError('range', 'Terjadi kesalahan sistem saat memproses antrean ekspor.');
+            $this->addError('range', 'A system error occurred while queuing the export.');
         }
     }
 

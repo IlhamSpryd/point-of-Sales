@@ -24,10 +24,10 @@ enum SupplierStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::Active => 'Aktif',
-            self::OnHold => 'Ditahan (On Hold)',
-            self::Inactive => 'Non-Aktif',
-            self::Archived => 'Diarsipkan',
+            self::Active => 'Active',
+            self::OnHold => 'On Hold',
+            self::Inactive => 'Inactive',
+            self::Archived => 'Archived',
         };
     }
 

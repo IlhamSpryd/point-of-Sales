@@ -28,9 +28,9 @@ class StoreStoreRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required' => 'Nama cabang wajib diisi.',
-            'timezone.required' => 'Zona waktu cabang wajib dipilih.',
-            'timezone.in' => 'Zona waktu harus salah satu dari WIB (Asia/Jakarta), WITA (Asia/Makassar), atau WIT (Asia/Jayapura).',
+            'name.required' => 'Branch name is required.',
+            'timezone.required' => 'Branch timezone is required.',
+            'timezone.in' => 'Timezone must be one of WIB (Asia/Jakarta), WITA (Asia/Makassar), or WIT (Asia/Jayapura).',
         ];
     }
 }

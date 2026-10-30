@@ -13,9 +13,9 @@ enum StockTransferDiscrepancyResolutionEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::None => 'Tidak Ada Selisih',
-            self::ReturnToSource => 'Kembalikan Selisih ke Cabang Asal (Return to Source)',
-            self::WriteOffInTransit => 'Hapus Buku / Susut Perjalanan (Write-off in Transit)',
+            self::None => 'No Discrepancy',
+            self::ReturnToSource => 'Return Discrepancy to Source',
+            self::WriteOffInTransit => 'Write-off In-Transit Shrinkage',
         };
     }
 }

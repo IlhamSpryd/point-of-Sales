@@ -13,9 +13,9 @@ enum VoucherStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::ACTIVE => 'Aktif',
-            self::EXPIRED => 'Kedaluwarsa',
-            self::DISABLED => 'Dinonaktifkan',
+            self::ACTIVE => 'Active',
+            self::EXPIRED => 'Expired',
+            self::DISABLED => 'Disabled',
         };
     }
 }

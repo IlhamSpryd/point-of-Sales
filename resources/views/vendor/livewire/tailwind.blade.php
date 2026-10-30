@@ -1,18 +1,23 @@
 @php
 if (! isset($scrollTo)) {
-    $scrollTo = 'body';
+    $scrollTo = '#main-content';
 }
 
 $scrollIntoViewJsSnippet = ($scrollTo !== false)
     ? <<<JS
-       (\$el.closest('{$scrollTo}') || document.querySelector('{$scrollTo}')).scrollIntoView()
+       const mainTarget = document.querySelector('{$scrollTo}');
+       if (mainTarget) {
+           mainTarget.scrollTo({ top: 0, behavior: 'smooth' });
+       } else {
+           window.scrollTo({ top: 0, behavior: 'smooth' });
+       }
     JS
     : '';
 @endphp
 
 <div>
     @if ($paginator->hasPages())
-        <nav role="navigation" aria-label="Pagination Navigation" class="flex items-center justify-between">
+        <nav role="navigation" aria-label="Pagination Navigation" class="flex items-center justify-between select-none">
             {{-- Mobile: Simple Previous/Next --}}
             <div class="flex justify-between flex-1 sm:hidden">
                 @if ($paginator->onFirstPage())
@@ -20,13 +25,13 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
                         &laquo; Sebelumnya
                     </span>
                 @else
-                    <button type="button" wire:click="previousPage('{{ $paginator->getPageName() }}')" x-on:click="{{ $scrollIntoViewJsSnippet }}" class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-[#202020] bg-white border border-[#E5E7EB] rounded-lg hover:bg-[#F7F7F5] transition-colors duration-200 active:scale-[0.98]">
+                    <button type="button" wire:click="previousPage('{{ $paginator->getPageName() }}')" wire:loading.attr="disabled" x-on:click="{{ $scrollIntoViewJsSnippet }}" class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-[#202020] bg-white border border-[#E5E7EB] rounded-lg hover:bg-[#F7F7F5] transition-colors duration-200 active:scale-[0.98] disabled:opacity-50">
                         &laquo; Sebelumnya
                     </button>
                 @endif
 
                 @if ($paginator->hasMorePages())
-                    <button type="button" wire:click="nextPage('{{ $paginator->getPageName() }}')" x-on:click="{{ $scrollIntoViewJsSnippet }}" class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-[#202020] bg-white border border-[#E5E7EB] rounded-lg hover:bg-[#F7F7F5] transition-colors duration-200 active:scale-[0.98]">
+                    <button type="button" wire:click="nextPage('{{ $paginator->getPageName() }}')" wire:loading.attr="disabled" x-on:click="{{ $scrollIntoViewJsSnippet }}" class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-[#202020] bg-white border border-[#E5E7EB] rounded-lg hover:bg-[#F7F7F5] transition-colors duration-200 active:scale-[0.98] disabled:opacity-50">
                         Berikutnya &raquo;
                     </button>
                 @else
@@ -58,7 +63,7 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                             </span>
                         @else
-                            <button type="button" wire:click="previousPage('{{ $paginator->getPageName() }}')" x-on:click="{{ $scrollIntoViewJsSnippet }}" class="relative inline-flex items-center p-2 text-[#6B6A66] bg-white rounded-lg hover:bg-[#F1F1EF] hover:text-[#202020] transition-colors duration-200 active:scale-[0.98]">
+                            <button type="button" wire:click="previousPage('{{ $paginator->getPageName() }}')" wire:loading.attr="disabled" x-on:click="{{ $scrollIntoViewJsSnippet }}" aria-label="Previous Page" class="relative inline-flex items-center p-2 text-[#6B6A66] bg-white rounded-lg hover:bg-[#F1F1EF] hover:text-[#202020] transition-colors duration-200 active:scale-[0.98] disabled:opacity-50">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                             </button>
                         @endif
@@ -76,7 +81,7 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
                                     @if ($page == $paginator->currentPage())
                                         <span aria-current="page" class="relative inline-flex items-center px-3 py-1.5 text-sm font-semibold text-white bg-[#202020] rounded-lg shadow-xs">{{ $page }}</span>
                                     @else
-                                        <button type="button" wire:click="gotoPage({{ $page }}, '{{ $paginator->getPageName() }}')" x-on:click="{{ $scrollIntoViewJsSnippet }}" class="relative inline-flex items-center px-3 py-1.5 text-sm font-medium text-[#6B6A66] rounded-lg hover:bg-[#F1F1EF] hover:text-[#202020] transition-colors duration-200 active:scale-[0.98]">{{ $page }}</button>
+                                        <button type="button" wire:click="gotoPage({{ $page }}, '{{ $paginator->getPageName() }}')" wire:loading.attr="disabled" x-on:click="{{ $scrollIntoViewJsSnippet }}" class="relative inline-flex items-center px-3 py-1.5 text-sm font-medium text-[#6B6A66] rounded-lg hover:bg-[#F1F1EF] hover:text-[#202020] transition-colors duration-200 active:scale-[0.98] disabled:opacity-50">{{ $page }}</button>
                                     @endif
                                 @endforeach
                             @endif
@@ -84,7 +89,7 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
 
                         {{-- Next Page --}}
                         @if ($paginator->hasMorePages())
-                            <button type="button" wire:click="nextPage('{{ $paginator->getPageName() }}')" x-on:click="{{ $scrollIntoViewJsSnippet }}" class="relative inline-flex items-center p-2 text-[#6B6A66] bg-white rounded-lg hover:bg-[#F1F1EF] hover:text-[#202020] transition-colors duration-200 active:scale-[0.98]">
+                            <button type="button" wire:click="nextPage('{{ $paginator->getPageName() }}')" wire:loading.attr="disabled" x-on:click="{{ $scrollIntoViewJsSnippet }}" aria-label="Next Page" class="relative inline-flex items-center p-2 text-[#6B6A66] bg-white rounded-lg hover:bg-[#F1F1EF] hover:text-[#202020] transition-colors duration-200 active:scale-[0.98] disabled:opacity-50">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                             </button>
                         @else

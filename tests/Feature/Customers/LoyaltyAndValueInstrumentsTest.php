@@ -422,7 +422,7 @@ class LoyaltyAndValueInstrumentsTest extends TestCase
 
         Livewire::test(LoyaltyAndValueInstrumentManager::class)
             ->assertOk()
-            ->assertSee('Loyalitas')
+            ->assertSee('Loyalty')
             ->set('voucher_code', 'TESTDISC')
             ->set('voucher_name', 'Test Diskon Livewire')
             ->set('voucher_discount_type', 'PERCENTAGE')

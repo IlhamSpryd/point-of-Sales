@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -27,11 +28,29 @@ class PurchaseOrderManager extends Component
     use RequiresTenantContext;
     use WithPagination;
 
+    #[Url(history: true)]
     public string $search = '';
 
+    #[Url(history: true)]
     public string $statusFilter = '';
 
+    #[Url(history: true)]
     public ?int $supplierFilter = null;
+
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSupplierFilter(): void
+    {
+        $this->resetPage();
+    }
 
     // Modal State
     public bool $showCreateModal = false;

@@ -5,7 +5,7 @@
             <div id="cat-{{ $category->id }}" class="scroll-mt-32 mb-6">
                 <div class="flex items-center justify-between mb-3 px-1">
                     <h3 class="text-xs font-black uppercase tracking-wider text-gray-400">{{ $category->category_name }}</h3>
-                    <span class="text-[11px] font-semibold text-gray-400">{{ $category->products->count() }} item</span>
+                    <span class="text-[11px] font-semibold text-gray-400">{{ $category->products->count() }} {{ \Illuminate\Support\Str::plural('item', $category->products->count()) }}</span>
                 </div>
 
                 <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 lg:gap-4">
@@ -26,7 +26,7 @@
                             @endif
                             role="button" tabindex="{{ $isOutOfStock ? '-1' : '0' }}"
                             @if($isOutOfStock) aria-disabled="true" @endif
-                            aria-label="{{ $isOutOfStock ? ($product->product_name . ' - Stok Habis') : ('Tambah ' . $product->product_name . ' ke keranjang, harga Rp ' . number_format($product->product_price, 0, ',', '.')) }}"
+                            aria-label="{{ $isOutOfStock ? ($product->product_name . ' - Out of Stock') : ('Add ' . $product->product_name . ' to cart, price Rp ' . number_format($product->product_price, 0, ',', '.')) }}"
                             class="{{ $isOutOfStock ? 'opacity-60 cursor-not-allowed bg-gray-50 border border-[#E5E7EB]' : 'group bg-white border border-[#E5E7EB] shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] hover:border-apeiron-ink hover:shadow-md hover:-translate-y-0.5 cursor-pointer active:scale-[0.98]' }} rounded-2xl transition-all duration-200 flex flex-col h-full relative outline-none focus-visible:ring-2 focus-visible:ring-gray-900 select-none">
 
                             @if ($inCartQty > 0)
@@ -40,7 +40,7 @@
                             <div class="w-full aspect-square sm:aspect-[4/3] bg-gray-50 relative overflow-hidden group-hover:opacity-95 transition-opacity rounded-t-2xl shrink-0 border-b border-[#E5E7EB] flex items-center justify-center">
                                 @if ($isOutOfStock)
                                     <div class="absolute inset-0 bg-white/75 backdrop-blur-[1px] flex items-center justify-center z-10">
-                                        <span class="px-2.5 py-1 rounded-lg bg-gray-800 text-white text-[11px] font-bold uppercase tracking-wider">Stok Habis</span>
+                                        <span class="px-2.5 py-1 rounded-lg bg-gray-800 text-white text-[11px] font-bold uppercase tracking-wider">Out of Stock</span>
                                     </div>
                                 @endif
                                 @if ($product->product_photo)
@@ -65,7 +65,7 @@
                                         Rp {{ number_format($product->product_price, 0, ',', '.') }}
                                     </span>
                                     @if ($product->modifierGroups->count() > 0)
-                                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 uppercase tracking-tight">Opsi</span>
+                                        <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 uppercase tracking-tight">Options</span>
                                     @endif
                                 </div>
                             </div>

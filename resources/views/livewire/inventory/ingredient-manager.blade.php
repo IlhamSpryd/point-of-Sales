@@ -4,14 +4,14 @@
     <div class="flex items-center justify-between mb-6">
         <div>
             <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">
-                {{ $isEditing ? 'Ubah Bahan Baku' : 'Tambah Bahan Baku' }}
+                {{ $isEditing ? 'Edit Raw Material' : 'Add Raw Material' }}
             </h4>
             <p class="text-sm font-medium text-apeiron-muted mt-1">
-                {{ $isEditing ? 'Perbarui informasi data bahan baku' : 'Tambahkan bahan baku baru ke dalam inventaris' }}
+                {{ $isEditing ? 'Update raw material information' : 'Add a new raw material to inventory' }}
             </p>
         </div>
         <x-ui.button type="button" variant="secondary" wire:click="$set('showModal', false)">
-            <span class="material-symbols-rounded text-[18px]">arrow_back</span> Kembali
+            <span class="material-symbols-rounded text-[18px]">arrow_back</span> Back
         </x-ui.button>
     </div>
 
@@ -19,31 +19,31 @@
         <form wire:submit.prevent="save" class="p-6 md:p-8 space-y-6">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <x-form-label for="ingredient_code">Kode Bahan (Opsional)</x-form-label>
-                    <x-form-input type="text" id="ingredient_code" wire:model="ingredient_code" class="{{ $errors->has('ingredient_code') ? 'input-error' : '' }}" placeholder="Contoh: RM-001" />
+                    <x-form-label for="ingredient_code">Material Code (Optional)</x-form-label>
+                    <x-form-input type="text" id="ingredient_code" wire:model="ingredient_code" class="{{ $errors->has('ingredient_code') ? 'input-error' : '' }}" placeholder="e.g. RM-001" />
                     @error('ingredient_code') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
                 </div>
                 
                 <div>
-                    <x-form-label for="name">Nama Bahan <span class="text-rose-500">*</span></x-form-label>
-                    <x-form-input type="text" id="name" wire:model="name" required class="{{ $errors->has('name') ? 'input-error' : '' }}" placeholder="Masukkan nama bahan baku" />
+                    <x-form-label for="name">Material Name <span class="text-rose-500">*</span></x-form-label>
+                    <x-form-input type="text" id="name" wire:model="name" required class="{{ $errors->has('name') ? 'input-error' : '' }}" placeholder="Enter raw material name" />
                     @error('name') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                    <x-form-label for="unit">Satuan Dasar <span class="text-rose-500">*</span></x-form-label>
+                    <x-form-label for="unit">Base Unit <span class="text-rose-500">*</span></x-form-label>
                     <x-form-input type="text" id="unit" wire:model="unit" placeholder="g, ml, pcs..." required class="{{ $errors->has('unit') ? 'input-error' : '' }}" />
                     @error('unit') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <x-form-label for="cost_per_unit">Harga per Satuan (Rp) <span class="text-rose-500">*</span></x-form-label>
+                    <x-form-label for="cost_per_unit">Cost per Unit (Rp) <span class="text-rose-500">*</span></x-form-label>
                     <x-form-input type="number" id="cost_per_unit" step="0.01" wire:model="cost_per_unit" required class="{{ $errors->has('cost_per_unit') ? 'input-error' : '' }}" placeholder="0" />
                     @error('cost_per_unit') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
                 </div>
                 <div>
-                    <x-form-label for="reorder_level">Batas Minimum (Reorder Level) <span class="text-rose-500">*</span></x-form-label>
+                    <x-form-label for="reorder_level">Reorder Level (Min. Threshold) <span class="text-rose-500">*</span></x-form-label>
                     <x-form-input type="number" id="reorder_level" step="0.0001" wire:model="reorder_level" required class="{{ $errors->has('reorder_level') ? 'input-error' : '' }}" placeholder="0" />
                     @error('reorder_level') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
                 </div>
@@ -61,17 +61,17 @@
                         input[type="checkbox"]:checked ~ .dot { transform: translateX(100%); }
                     </style>
                     <div class="ml-3 text-sm font-semibold text-apeiron-ink">
-                        Bahan Baku Aktif
+                        Active Material
                     </div>
                 </label>
             </div>
 
             <div class="pt-4 border-t border-apeiron-border flex justify-end gap-3">
                 <x-ui.button type="button" variant="secondary" wire:click="$set('showModal', false)">
-                    Batal
+                    Cancel
                 </x-ui.button>
                 <x-ui.button type="submit" variant="primary" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                    <span class="material-symbols-rounded text-[18px]">save</span> Simpan
+                    <span class="material-symbols-rounded text-[18px]">save</span> Save
                 </x-ui.button>
             </div>
         </form>
@@ -79,15 +79,15 @@
     @else
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Manajemen Bahan Baku</h4>
-            <p class="text-sm font-medium text-apeiron-muted mt-1">Kelola data bahan baku dan sesuaikan stok (Bill of Materials)</p>
+            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Raw Materials & Ingredients</h4>
+            <p class="text-sm font-medium text-apeiron-muted mt-1">Manage raw materials inventory and configure Bill of Materials (BOM)</p>
         </div>
         <div class="flex items-center gap-3 w-full sm:w-auto">
             <div class="w-full sm:w-64">
-                <x-search-input wire:model.live.debounce.300ms="search" placeholder="Cari bahan baku..." />
+                <x-search-input wire:model.live.debounce.300ms="search" placeholder="Search raw materials..." />
             </div>
             <x-ui.button type="button" variant="primary" wire:click="create" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                <span class="material-symbols-rounded text-[18px]">add</span> Tambah
+                <span class="material-symbols-rounded text-[18px]">add</span> Add Material
             </x-ui.button>
         </div>
     </div>
@@ -103,11 +103,11 @@
         <div class="hidden lg:block overflow-x-auto flex-1 table-scroll-shadow">
             <x-data-table>
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Bahan Baku</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Stok Saat Ini</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Harga/Unit</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Raw Material</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Current Stock</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Cost/Unit</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
                     @forelse ($ingredients as $item)
                         <tr class="hover:bg-apeiron-surface/50 transition-colors duration-150">
@@ -126,7 +126,7 @@
                                         {{ number_format($displayStock, 2) }} {{ $item->unit }}
                                     </span>
                                     @if($displayStock <= $item->reorder_level)
-                                        <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700" title="Stok Menipis">!</span>
+                                        <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700" title="Low Stock">!</span>
                                     @endif
                                 </div>
                                 <div class="text-[10px] text-apeiron-muted mt-0.5 tabular-nums">Min: {{ number_format($item->reorder_level, 2) }}</div>
@@ -136,22 +136,22 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <x-ui.badge :variant="$item->is_active ? 'success' : 'secondary'">
-                                    {{ $item->is_active ? 'Aktif' : 'Nonaktif' }}
+                                    {{ $item->is_active ? 'Active' : 'Inactive' }}
                                 </x-ui.badge>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right space-x-2">
-                                <button wire:click="adjustStock({{ $item->id }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-colors duration-200 active:scale-90" title="Sesuaikan Stok">
+                                <button wire:click="adjustStock({{ $item->id }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-colors duration-200 active:scale-90" title="Adjust Stock">
                                     <span class="material-symbols-rounded text-[20px]">inventory</span>
                                 </button>
-                                <button wire:click="edit({{ $item->id }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-colors duration-200 active:scale-90" title="Ubah">
+                                <button wire:click="edit({{ $item->id }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-colors duration-200 active:scale-90" title="Edit">
                                     <span class="material-symbols-rounded text-[20px]">edit</span>
                                 </button>
                                 <button type="button"
                                     data-swal-delete
-                                    data-swal-title="Hapus Bahan Baku?"
-                                    data-swal-text="Bahan baku &quot;{{ $item->name }}&quot; akan dihapus permanen."
+                                    data-swal-title="Delete Raw Material?"
+                                    data-swal-text="Raw material &quot;{{ $item->name }}&quot; will be permanently deleted."
                                     data-wire-action="delete({{ $item->id }})"
-                                    class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90" title="Hapus">
+                                    class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90" title="Delete">
                                     <span class="material-symbols-rounded text-[20px]">delete</span>
                                 </button>
                             </td>
@@ -159,7 +159,7 @@
                     @empty
                         <tr>
                             <td colspan="5" class="px-6 py-12 text-center">
-                                <x-empty-state icon="inventory_2" title="Belum Ada Bahan Baku" description="Tambahkan bahan baku baru untuk mulai mengelola inventory dan resep produk." />
+                                <x-empty-state icon="inventory_2" title="No Raw Materials Found" description="Add new raw materials to start tracking inventory and product recipes." />
                             </td>
                         </tr>
                     @endforelse
@@ -177,7 +177,7 @@
                         </div>
                         <div class="flex flex-col items-end gap-1">
                             <x-ui.badge :variant="$item->is_active ? 'success' : 'secondary'">
-                                {{ $item->is_active ? 'Aktif' : 'Nonaktif' }}
+                                {{ $item->is_active ? 'Active' : 'Inactive' }}
                             </x-ui.badge>
                         </div>
                     </div>
@@ -186,22 +186,22 @@
                             @php
                                 $displayStock = (float) ($item->store_stock ?? $item->current_stock);
                             @endphp
-                            <span class="text-[11px] font-semibold text-apeiron-muted uppercase tracking-wider block mb-0.5">Stok: <span class="{{ $displayStock <= $item->reorder_level ? 'text-rose-600' : 'text-apeiron-ink' }}">{{ number_format($displayStock, 2) }} {{ $item->unit }}</span></span>
+                            <span class="text-[11px] font-semibold text-apeiron-muted uppercase tracking-wider block mb-0.5">Stock: <span class="{{ $displayStock <= $item->reorder_level ? 'text-rose-600' : 'text-apeiron-ink' }}">{{ number_format($displayStock, 2) }} {{ $item->unit }}</span></span>
                             <span class="text-xs text-apeiron-ink">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }} / {{ $item->unit }}</span>
                         </div>
                         <div class="flex items-center gap-1 shrink-0">
-                            <button wire:click="adjustStock({{ $item->id }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Sesuaikan Stok">
+                            <button wire:click="adjustStock({{ $item->id }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Adjust Stock">
                                 <span class="material-symbols-rounded text-[18px]">inventory</span>
                             </button>
-                            <button wire:click="edit({{ $item->id }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-blue-600 hover:bg-blue-50 transition-colors" title="Ubah">
+                            <button wire:click="edit({{ $item->id }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-blue-600 hover:bg-blue-50 transition-colors" title="Edit">
                                 <span class="material-symbols-rounded text-[18px]">edit</span>
                             </button>
                             <button type="button"
                                 data-swal-delete
-                                data-swal-title="Hapus Bahan Baku?"
-                                data-swal-text="Bahan baku &quot;{{ $item->name }}&quot; akan dihapus permanen."
+                                data-swal-title="Delete Raw Material?"
+                                data-swal-text="Raw material &quot;{{ $item->name }}&quot; will be permanently deleted."
                                 data-wire-action="delete({{ $item->id }})"
-                                class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus">
+                                class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-rose-600 hover:bg-rose-50 transition-colors" title="Delete">
                                 <span class="material-symbols-rounded text-[18px]">delete</span>
                             </button>
                         </div>
@@ -209,7 +209,7 @@
                 </div>
             @empty
                 <div class="py-8 text-center">
-                    <x-empty-state icon="inventory_2" title="Belum Ada Bahan Baku" description="Tambahkan bahan baku baru untuk mulai mengelola inventory dan resep produk." />
+                    <x-empty-state icon="inventory_2" title="No Raw Materials Found" description="Add new raw materials to start tracking inventory and product recipes." />
                 </div>
             @endforelse
         </div>
@@ -225,18 +225,18 @@
     <x-ui.modal wire:model="showAdjustModal" maxWidth="lg">
         <x-slot:header>
             <h3 class="text-lg font-bold text-apeiron-ink">
-                Sesuaikan Stok
+                Adjust Stock
             </h3>
         </x-slot:header>
         <x-slot:content>
             <form wire:submit.prevent="saveAdjustment" class="space-y-5">
                 <div>
-                    <x-form-label for="adjustType">Tipe Mutasi <span class="text-rose-500">*</span></x-form-label>
+                    <x-form-label for="adjustType">Adjustment Type <span class="text-rose-500">*</span></x-form-label>
                     <div class="relative">
                         <select id="adjustType" wire:model="adjustType" class="form-input w-full px-4 py-2.5 rounded-xl border border-apeiron-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('adjustType') ? 'input-error' : '' }}">
-                            <option value="purchase_receipt">Barang Masuk (Pembelian)</option>
-                            <option value="adjustment">Koreksi Manual (+ / -)</option>
-                            <option value="waste">Barang Rusak / Waste (-)</option>
+                            <option value="purchase_receipt">Goods Receipt (Purchase)</option>
+                            <option value="adjustment">Manual Correction (+ / -)</option>
+                            <option value="waste">Damaged Goods / Waste (-)</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-apeiron-muted">
                             <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
@@ -246,23 +246,23 @@
                 </div>
 
                 <div>
-                    <x-form-label for="adjustQuantity">Jumlah <span class="text-rose-500">*</span></x-form-label>
-                    <x-form-input type="number" id="adjustQuantity" step="0.0001" wire:model="adjustQuantity" placeholder="Gunakan minus (-) untuk pengurangan jika tipe Koreksi Manual" required class="{{ $errors->has('adjustQuantity') ? 'input-error' : '' }}" />
+                    <x-form-label for="adjustQuantity">Quantity <span class="text-rose-500">*</span></x-form-label>
+                    <x-form-input type="number" id="adjustQuantity" step="0.0001" wire:model="adjustQuantity" placeholder="Use minus (-) for deductions if using Manual Correction" required class="{{ $errors->has('adjustQuantity') ? 'input-error' : '' }}" />
                     @error('adjustQuantity') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
                 </div>
 
                 <div>
-                    <x-form-label for="adjustReason">Keterangan / Alasan (Opsional)</x-form-label>
-                    <textarea id="adjustReason" wire:model="adjustReason" rows="3" class="form-input w-full px-4 py-2.5 rounded-xl border border-apeiron-border bg-white text-apeiron-ink placeholder-apeiron-muted focus:outline-none focus:ring-2 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('adjustReason') ? 'input-error' : '' }}" placeholder="Catatan tambahan..."></textarea>
+                    <x-form-label for="adjustReason">Reason / Notes (Optional)</x-form-label>
+                    <textarea id="adjustReason" wire:model="adjustReason" rows="3" class="form-input w-full px-4 py-2.5 rounded-xl border border-apeiron-border bg-white text-apeiron-ink placeholder-apeiron-muted focus:outline-none focus:ring-2 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('adjustReason') ? 'input-error' : '' }}" placeholder="Additional notes..."></textarea>
                     @error('adjustReason') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
                 </div>
 
                 <div class="flex justify-end gap-3 pt-4 border-t border-apeiron-border">
                     <x-ui.button type="button" variant="secondary" wire:click="$set('showAdjustModal', false)">
-                        Batal
+                        Cancel
                     </x-ui.button>
                     <x-ui.button type="submit" variant="primary" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                        Simpan Perubahan
+                        Save Changes
                     </x-ui.button>
                 </div>
             </form>

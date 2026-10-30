@@ -20,13 +20,13 @@
     $currentSession = session('active_store_id');
     $isAll = ($currentSession === 'all' || $currentSession === null) && $isOwner;
     $currentStore = ! $isAll ? $stores->firstWhere('id', (int) $currentSession) : null;
-    $activeLabel = $isAll ? 'Semua Cabang (Konsolidasi)' : ($currentStore?->name ?? ($stores->first()?->name ?? 'Pilih Cabang'));
+    $activeLabel = $isAll ? 'All Branches (Consolidated)' : ($currentStore?->name ?? ($stores->first()?->name ?? 'Select Branch'));
 @endphp
 
 @if(count($stores) > 1 || $isOwner)
 <div x-data="{ open: false }" class="relative {{ $fullWidth ? 'w-full block' : 'inline-block' }} text-left" @click.outside="open = false" @keydown.escape.window="open = false">
     {{-- Trigger Button --}}
-    <button type="button" @click="open = !open" :aria-expanded="open.toString()" aria-haspopup="true" aria-label="Pilih cabang aktif"
+    <button type="button" @click="open = !open" :aria-expanded="open.toString()" aria-haspopup="true" aria-label="Select active branch"
         class="{{ $isDark ? 'justify-between bg-[#202020] hover:bg-[#262626] border-[#2E2E2E] text-white' : 'inline-flex bg-white hover:bg-[#F9FAFB] border-[#E5E7EB] text-[#202123]' }} items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg border shadow-xs transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white cursor-pointer {{ $fullWidth ? 'w-full' : '' }}">
         <div class="flex items-center gap-2 min-w-0">
             <span class="shrink-0 w-2 h-2 rounded-full {{ $isAll ? 'bg-amber-400' : 'bg-emerald-400' }}"></span>
@@ -47,15 +47,15 @@
         class="absolute {{ $fullWidth ? 'left-0' : 'right-0' }} mt-2 w-76 {{ $isDark ? 'bg-[#1E1E1E] text-white border-[#333333]' : 'bg-white text-[#202123] border-[#E5E7EB]' }} rounded-xl shadow-xl border p-1.5 z-50 overflow-hidden">
         
         <div class="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-[#737373] flex items-center justify-between border-b {{ $isDark ? 'border-[#2E2E2E]' : 'border-[#E5E7EB]' }} mb-1">
-            <span>Pilih Cakupan Cabang</span>
-            <span class="text-[9px] {{ $isDark ? 'bg-[#2A2A2A] text-[#A3A3A3] border-[#383838]' : 'bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]' }} font-medium px-1.5 py-0.5 rounded border">{{ count($stores) }} Cabang</span>
+            <span>Select Branch Scope</span>
+            <span class="text-[9px] {{ $isDark ? 'bg-[#2A2A2A] text-[#A3A3A3] border-[#383838]' : 'bg-[#F3F4F6] text-[#6B7280] border-[#E5E7EB]' }} font-medium px-1.5 py-0.5 rounded border">{{ count($stores) }} Branches</span>
         </div>
 
         <div class="max-h-72 overflow-y-auto space-y-0.5 pr-1 custom-scrollbar">
             @if($isOwner)
-            {{-- All Stores (Konsolidasi) Option for Owner --}}
+            {{-- All Stores (Consolidation) Option for Owner --}}
             <form action="{{ route('store.switch') }}" method="POST"
-                @submit="if (window.apeironPosCartDirty && !confirm('Anda memiliki pesanan aktif di kasir. Pindah cabang akan membatalkan keranjang aktif. Lanjutkan?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }">
+                @submit="if (window.apeironPosCartDirty && !confirm('You have an active order in the POS terminal. Switching branches will discard the active cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }">
                 @csrf
                 <input type="hidden" name="store_id" value="all">
                 <button type="submit"
@@ -63,8 +63,8 @@
                     <div class="flex items-center gap-2.5 truncate">
                         <span class="material-symbols-rounded text-[20px] {{ $isAll ? 'text-amber-600' : 'text-amber-500' }}">domain</span>
                         <div class="truncate">
-                            <p class="font-bold {{ $isAll ? ($isDark ? 'text-amber-300' : 'text-amber-950') : ($isDark ? 'text-white' : 'text-apeiron-ink') }}">Semua Cabang (Konsolidasi)</p>
-                            <p class="text-[10px] {{ $isAll ? ($isDark ? 'text-amber-400/80' : 'text-amber-700/80') : 'text-[#9B9A97]' }}">Total akumulasi seluruh {{ count($stores) }} cabang</p>
+                            <p class="font-bold {{ $isAll ? ($isDark ? 'text-amber-300' : 'text-amber-950') : ($isDark ? 'text-white' : 'text-apeiron-ink') }}">All Branches (Consolidated)</p>
+                            <p class="text-[10px] {{ $isAll ? ($isDark ? 'text-amber-400/80' : 'text-amber-700/80') : 'text-[#9B9A97]' }}">Aggregated total across all {{ count($stores) }} branches</p>
                         </div>
                     </div>
                     @if($isAll)
@@ -79,7 +79,7 @@
             @foreach($stores as $st)
                 @php $isSelected = ! $isAll && (int)$currentSession === $st->id; @endphp
                 <form action="{{ route('store.switch') }}" method="POST"
-                    @submit="if (window.apeironPosCartDirty && !confirm('Anda memiliki pesanan aktif di kasir. Pindah cabang akan membatalkan keranjang aktif. Lanjutkan?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }">
+                    @submit="if (window.apeironPosCartDirty && !confirm('You have an active order in the POS terminal. Switching branches will discard the active cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }">
                     @csrf
                     <input type="hidden" name="store_id" value="{{ $st->id }}">
                     <button type="submit"

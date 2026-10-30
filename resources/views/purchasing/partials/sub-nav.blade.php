@@ -3,35 +3,35 @@
 
     $allPurchasingTabs = [
         [
-            'label' => 'Pemasok',
+            'label' => 'Suppliers',
             'route' => 'purchasing.suppliers.index',
             'active' => 'purchasing.suppliers.*',
             'icon' => 'local_shipping',
             'roles' => ['Owner', 'Manager', 'Inventory'],
         ],
         [
-            'label' => 'Pesanan Pembelian (PO)',
+            'label' => 'Purchase Orders (PO)',
             'route' => 'purchasing.orders.index',
             'active' => 'purchasing.orders.*',
             'icon' => 'shopping_bag',
             'roles' => ['Owner', 'Manager', 'Inventory'],
         ],
         [
-            'label' => 'Penerimaan GRN',
+            'label' => 'Goods Receipt (GRN)',
             'route' => 'purchasing.grns.index',
             'active' => 'purchasing.grns.*',
             'icon' => 'input',
             'roles' => ['Owner', 'Manager', 'Inventory'],
         ],
         [
-            'label' => 'Faktur Pemasok (3-Way)',
+            'label' => 'Supplier Invoices (3-Way)',
             'route' => 'purchasing.invoices.index',
             'active' => 'purchasing.invoices.*',
             'icon' => 'receipt',
             'roles' => ['Owner', 'Manager', 'Inventory'],
         ],
         [
-            'label' => 'Retur Pembelian',
+            'label' => 'Purchase Returns',
             'route' => 'purchasing.returns.index',
             'active' => 'purchasing.returns.*',
             'icon' => 'keyboard_return',
@@ -45,7 +45,7 @@
 @endphp
 
 <div class="w-full pb-3 mb-6 border-b border-[#E5E7EB]">
-    <nav aria-label="Sub-navigasi Pengadaan (Purchasing)"
+    <nav aria-label="Purchasing Navigation"
         x-data
         x-init="$nextTick(() => {
             const activeTab = $el.querySelector('[aria-current=page]');
@@ -69,11 +69,11 @@
                     <span class="{{ $isActive ? 'text-white' : '' }}">{{ $tab['label'] }}</span>
                 </a>
             @else
-                <div aria-disabled="true" title="{{ $tab['label'] }} — segera hadir di Phase 6"
+                <div aria-disabled="true" title="{{ $tab['label'] }} — Coming in Phase 6"
                     class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-medium whitespace-nowrap text-[#C4C3C0] cursor-not-allowed">
                     <span class="material-symbols-rounded text-[18px] shrink-0 text-[#C4C3C0]">{{ $tab['icon'] }}</span>
                     <span>{{ $tab['label'] }}</span>
-                    <span class="text-[9px] font-bold uppercase tracking-wider text-[#9B9A97] bg-[#F1F1EF] border border-[#E5E7EB] rounded px-1.5 py-0.5">Segera</span>
+                    <span class="text-[9px] font-bold uppercase tracking-wider text-[#9B9A97] bg-[#F1F1EF] border border-[#E5E7EB] rounded px-1.5 py-0.5">Soon</span>
                 </div>
             @endif
         @endforeach

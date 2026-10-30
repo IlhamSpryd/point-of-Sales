@@ -30,19 +30,19 @@ class ReportController extends Controller
      */
     public function index(Request $request): View|BinaryFileResponse
     {
-        $title = 'Laporan Penjualan';
+        $title = 'Sales Report';
 
         $today = Carbon::today();
         $startOfWeek = Carbon::now()->startOfWeek();
         $startOfMonth = Carbon::now()->startOfMonth();
 
-        // Rekapitulasi Data Klasik
+        // Classic Data Recapitulation
         $dailySales = $this->reportService->getSalesSummary($today->copy()->startOfDay(), $today->copy()->endOfDay());
         $weeklySales = $this->reportService->getSalesSummary($startOfWeek, $today);
         $monthlySales = $this->reportService->getSalesSummary($startOfMonth, $today);
         $recentOrders = $this->reportService->getRecentPaidOrders($startOfMonth, $today);
 
-        // Filter Rentang Tanggal
+        // Date Range Filter
         $customStart = ($request->filled('start')) ? Carbon::parse($request->start)->startOfDay() : $startOfMonth;
         $customEnd = ($request->filled('end')) ? Carbon::parse($request->end)->endOfDay() : $today->copy()->endOfDay();
 
@@ -60,7 +60,7 @@ class ReportController extends Controller
         $tenantId = (int) $tenantContext->requireTenantId();
         $storeId = $tenantContext->getStoreId();
 
-        // Detailed Sales Summary untuk rentang yang dipilih
+        // Detailed Sales Summary for the selected range
         $detailedSummary = $this->reportService->getDetailedSalesSummary($customStart, $customEnd, $storeId);
 
         // Payment Method Breakdown
@@ -72,7 +72,7 @@ class ReportController extends Controller
             ->groupBy('payment_method')
             ->get();
 
-        // EOD Settlement Status untuk tanggal hari ini / bisnis
+        // EOD Settlement Status for today / current business date
         $businessDate = $today->toDateString();
         $eodSettlement = EodSettlement::with('closedByUser')
             ->where('tenant_id', $tenantId)
@@ -96,14 +96,14 @@ class ReportController extends Controller
     }
 
     /**
-     * Memproses penutupan buku akhir hari (End-of-Day / Z-Report Closing).
+     * Process End-of-Day (EOD / Z-Report) register closing.
      */
     public function closeEod(Request $request): RedirectResponse
     {
         $role = Auth::user()?->role;
         $roleName = $role?->name;
         if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager', 'Admin'], true)) {
-            abort(403, 'Hanya Owner atau Manager yang berhak melakukan penutupan End-of-Day.');
+            abort(403, 'Only Owners or Managers are authorized to perform End-of-Day closings.');
         }
 
         $validated = $request->validate([
@@ -126,13 +126,13 @@ class ReportController extends Controller
                 $validated['notes'] ?? null
             );
 
-            return back()->with('success', "End-of-Day (Z-Report) untuk tanggal {$validated['business_date']} berhasil ditutup dan dikunci.");
+            return back()->with('success', "End-of-Day (Z-Report) for {$validated['business_date']} was successfully closed and locked.");
         } catch (ValidationException $e) {
             $message = collect($e->errors())->flatten()->first() ?? $e->getMessage();
 
             return back()->with('error', $message)->withErrors($e->errors());
         } catch (\Throwable $e) {
-            return back()->with('error', 'Gagal memproses EOD: '.$e->getMessage());
+            return back()->with('error', 'Failed to process EOD: '.$e->getMessage());
         }
     }
 }

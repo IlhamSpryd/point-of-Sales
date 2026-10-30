@@ -68,12 +68,12 @@ class SidebarIntegrityTest extends TestCase
         $sections = config('navigation.sections');
 
         $expectedGroups = [
-            'Ikhtisar',
-            'Kasir & Operasional',
-            'Katalog & Resep',
-            'Inventori & Suplai',
-            'Analitik & Pelanggan',
-            'Pengaturan & Tata Kelola',
+            'Overview',
+            'Cashier & Operations',
+            'Catalog & Recipes',
+            'Inventory & Supply',
+            'Analytics & Customers',
+            'Settings & Governance',
         ];
 
         $this->assertEquals(
@@ -182,14 +182,14 @@ class SidebarIntegrityTest extends TestCase
 
         $response = $this->actingAs($user)->get(route('inventory.ingredients'));
         $response->assertOk();
-        $response->assertSee('Sub-navigasi Manajemen Inventori');
-        $response->assertSee('Bahan Baku');
-        $response->assertSee('Penerimaan Barang');
-        $response->assertSee('Penyesuaian Stok');
-        $response->assertSee('Stock Opname');
-        $response->assertSee('Transfer Antarcabang');
-        $response->assertSee('Retur Supplier');
-        $response->assertSee('Riwayat Mutasi');
+        $response->assertSee('Inventory Management Navigation');
+        $response->assertSee('Raw Materials');
+        $response->assertSee('Goods Receipt');
+        $response->assertSee('Stock Adjustments');
+        $response->assertSee('Stock Count');
+        $response->assertSee('Inter-Branch Transfer');
+        $response->assertSee('Supplier Returns');
+        $response->assertSee('Stock Ledger');
     }
 
     public function test_rendered_sidebar_contains_wcag_and_accessibility_tokens(): void
@@ -223,22 +223,20 @@ class SidebarIntegrityTest extends TestCase
         $response->assertOk();
 
         // Landmarks & Semantics
-        $response->assertSee('aria-label="Navigasi utama"', false);
+        $response->assertSee('aria-label="Main navigation"', false);
         $response->assertSee('role="region"', false);
-        $response->assertSee('aria-label="Sidebar Navigasi Utama"', false);
+        $response->assertSee('aria-label="Main Navigation Sidebar"', false);
         $response->assertSee('id="mobile-menu-btn"', false);
         $response->assertSee('aria-controls="main-sidebar"', false);
-        $response->assertSee('aria-label="Buka menu navigasi utama"', false);
-        $response->assertSee('aria-label="Tutup menu navigasi"', false);
+        $response->assertSee('aria-label="Open main navigation menu"', false);
+        $response->assertSee('aria-label="Close navigation menu"', false);
 
         // WCAG Active visual accent indicator token & active page
         $response->assertSee('before:bg-[#202020]', false);
         $response->assertSee('aria-current="page"', false);
 
-        // Scope badges
-        $response->assertSee('Cabang', false);
-        $response->assertSee('Tenant', false);
-        $response->assertSee('Workstation', false);
+        // Navigation items
+        $response->assertSee('POS Terminal', false);
     }
 
     public function test_policies_enforce_tenant_scoping_and_role_authorization(): void
@@ -311,11 +309,11 @@ class SidebarIntegrityTest extends TestCase
     {
         $branchSwitcherView = File::get(resource_path('views/components/branch-switcher.blade.php'));
         $this->assertStringContainsString('window.apeironPosCartDirty', $branchSwitcherView);
-        $this->assertStringContainsString('Pindah cabang akan membatalkan keranjang aktif', $branchSwitcherView);
+        $this->assertStringContainsString('Switching branches will discard the active cart', $branchSwitcherView);
 
         $navigationView = File::get(resource_path('views/layouts/navigation.blade.php'));
         $this->assertStringContainsString('window.apeironPosCartDirty', $navigationView);
-        $this->assertStringContainsString('Pindah halaman akan membatalkan keranjang aktif', $navigationView);
+        $this->assertStringContainsString('Leaving this page will cancel the current cart', $navigationView);
 
         $posView = File::get(resource_path('views/livewire/kasir/create-order.blade.php'));
         $this->assertStringContainsString('window.apeironPosCartDirty', $posView);

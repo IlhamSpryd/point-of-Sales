@@ -10,7 +10,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Menu — {{ config('app.name', 'Apeiron System') }}</title>
-    <link rel="icon" href="{{ asset('assets/images/logo.png') }}" type="image/png">
+    <x-favicon />
 
     <!-- Self-Hosted Fonts Preload -->
     <link rel="preload" href="{{ asset('fonts/plus-jakarta-sans.woff2') }}" as="font" type="font/woff2" crossorigin>

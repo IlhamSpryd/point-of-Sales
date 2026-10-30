@@ -1,11 +1,16 @@
 @php
 if (! isset($scrollTo)) {
-    $scrollTo = 'body';
+    $scrollTo = '#main-content';
 }
 
 $scrollIntoViewJsSnippet = ($scrollTo !== false)
     ? <<<JS
-       (\$el.closest('{$scrollTo}') || document.querySelector('{$scrollTo}')).scrollIntoView()
+       const mainTarget = document.querySelector('{$scrollTo}');
+       if (mainTarget) {
+           mainTarget.scrollTo({ top: 0, behavior: 'smooth' });
+       } else {
+           window.scrollTo({ top: 0, behavior: 'smooth' });
+       }
     JS
     : '';
 @endphp

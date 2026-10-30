@@ -102,37 +102,37 @@
         <div class="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xs flex flex-col justify-between">
             <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">KEEP (MVP)</span>
             <span class="text-2xl font-bold text-emerald-600 mt-1">34</span>
-            <span class="text-[10px] text-zinc-400">Kanvas Mandiri</span>
+            <span class="text-[10px] text-zinc-400">Standalone Canvas</span>
         </div>
         <div class="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xs flex flex-col justify-between">
             <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">DRAWER / MODAL</span>
             <span class="text-2xl font-bold text-blue-600 mt-1">17</span>
-            <span class="text-[10px] text-zinc-400">Aksi Kontekstual</span>
+            <span class="text-[10px] text-zinc-400">Contextual Action</span>
         </div>
         <div class="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xs flex flex-col justify-between">
             <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">MERGE</span>
             <span class="text-2xl font-bold text-amber-600 mt-1">4</span>
-            <span class="text-[10px] text-zinc-400">Form Gabungan</span>
+            <span class="text-[10px] text-zinc-400">Merged Forms</span>
         </div>
         <div class="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xs flex flex-col justify-between">
             <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">NAV CONSOLIDATION</span>
             <span class="text-2xl font-bold text-indigo-600 mt-1">4</span>
-            <span class="text-[10px] text-zinc-400">Sub-Nav / Tab</span>
+            <span class="text-[10px] text-zinc-400">Sub-Nav / Tabs</span>
         </div>
         <div class="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xs flex flex-col justify-between">
             <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">DEFER F2</span>
             <span class="text-2xl font-bold text-purple-600 mt-1">9</span>
-            <span class="text-[10px] text-zinc-400">Roadmap Fase 2</span>
+            <span class="text-[10px] text-zinc-400">Phase 2 Roadmap</span>
         </div>
         <div class="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 shadow-xs flex flex-col justify-between">
             <span class="text-[11px] font-semibold text-zinc-500 uppercase tracking-wider">DEFER F3</span>
             <span class="text-2xl font-bold text-zinc-600 mt-1">13</span>
-            <span class="text-[10px] text-zinc-400">Roadmap Fase 3</span>
+            <span class="text-[10px] text-zinc-400">Phase 3 Roadmap</span>
         </div>
         <div class="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-emerald-50 dark:bg-emerald-950/20 shadow-xs flex flex-col justify-between">
-            <span class="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">TOTAL INVENTORI</span>
+            <span class="text-[11px] font-semibold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">TOTAL INVENTORY</span>
             <span class="text-2xl font-bold text-emerald-700 dark:text-emerald-400 mt-1">81</span>
-            <span class="text-[10px] text-emerald-600 font-semibold">100% Tervalidasi</span>
+            <span class="text-[10px] text-emerald-600 font-semibold">100% Validated</span>
         </div>
     </div>
 
@@ -140,14 +140,14 @@
     <div class="card-surface p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div class="relative flex-1 max-w-md">
             <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-            <input type="text" x-model="searchQuery" placeholder="Cari PAGE-ID, nama layar, route, atau PRD..."
+            <input type="text" x-model="searchQuery" placeholder="Search PAGE-ID, screen name, route, or PRD..."
                 class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-apeiron-ink dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-primary-500/20">
         </div>
 
         <div class="flex items-center gap-2">
             <span class="text-xs text-zinc-400 font-semibold uppercase">Filter Status:</span>
             <select x-model="selectedClassification" class="px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-apeiron-ink dark:text-zinc-100 focus:outline-none">
-                <option value="">Semua Klasifikasi (81)</option>
+                <option value="">All Classifications (81)</option>
                 <option value="KEEP">KEEP (34)</option>
                 <option value="DRAWER/MODAL">DRAWER/MODAL (17)</option>
                 <option value="MERGE">MERGE (4)</option>
@@ -161,13 +161,13 @@
     <!-- Traceability Table -->
     <div class="card-surface overflow-hidden rounded-2xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-sm">
+            <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                 <thead>
                     <tr class="border-b border-zinc-200 dark:border-zinc-800 text-xs font-semibold text-zinc-500 uppercase tracking-wider bg-zinc-50/50 dark:bg-zinc-900/50">
                         <th class="px-6 py-3.5">PAGE-ID</th>
-                        <th class="px-6 py-3.5">Nama Layar Master Audit</th>
-                        <th class="px-6 py-3.5">Klasifikasi Utama</th>
-                        <th class="px-6 py-3.5">Perlakuan / Kanvas Konsolidasi</th>
+                        <th class="px-6 py-3.5">Master Audit Screen Name</th>
+                        <th class="px-6 py-3.5">Primary Classification</th>
+                        <th class="px-6 py-3.5">Treatment / Consolidated Canvas</th>
                         <th class="px-6 py-3.5">Route / Deep Link</th>
                         <th class="px-6 py-3.5">Ref. PRD</th>
                     </tr>

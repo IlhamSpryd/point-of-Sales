@@ -259,15 +259,15 @@ class UiUxDesignSystemAuditTest extends TestCase
         // x-badge Blade component rendering with Enum instance
         $renderedPaid = Blade::render('<x-badge :status="\App\Enums\OrderStatus::Paid" />');
         $this->assertStringContainsString('bg-success-50', $renderedPaid);
-        $this->assertStringContainsString('Lunas', $renderedPaid);
+        $this->assertStringContainsString('Paid', $renderedPaid);
 
         $renderedPending = Blade::render('<x-badge :status="\App\Enums\OrderStatus::Pending" />');
         $this->assertStringContainsString('bg-warning-50', $renderedPending);
-        $this->assertStringContainsString('Menunggu Pembayaran', $renderedPending);
+        $this->assertStringContainsString('Pending Payment', $renderedPending);
 
         $renderedVoid = Blade::render('<x-badge :status="\App\Enums\OrderStatus::Void" />');
         $this->assertStringContainsString('bg-danger-50', $renderedVoid);
-        $this->assertStringContainsString('Di-void', $renderedVoid);
+        $this->assertStringContainsString('Voided', $renderedVoid);
     }
 
     public function test_modal_and_toast_and_alert_wcag_a11y_attributes(): void

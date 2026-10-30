@@ -54,6 +54,7 @@ class ProductVariant extends Model
         'standard_cost',
         'is_active',
         'sort_order',
+        'is_open_price',
     ];
 
     protected $casts = [
@@ -62,6 +63,7 @@ class ProductVariant extends Model
         'standard_cost' => 'float',
         'is_active' => 'boolean',
         'sort_order' => 'integer',
+        'is_open_price' => 'boolean',
     ];
 
     public function tenant(): BelongsTo

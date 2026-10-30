@@ -16,10 +16,10 @@ enum StockOpnameStatusEnum: string
     {
         return match ($this) {
             self::Draft => 'Draft',
-            self::Counting => 'Sedang Dihitung (Counting)',
-            self::PendingApproval => 'Menunggu Persetujuan (Pending Approval)',
-            self::Approved => 'Disetujui & Disesuaikan (Approved)',
-            self::Cancelled => 'Dibatalkan (Cancelled)',
+            self::Counting => 'Counting',
+            self::PendingApproval => 'Pending Approval',
+            self::Approved => 'Approved & Adjusted',
+            self::Cancelled => 'Cancelled',
         };
     }
 

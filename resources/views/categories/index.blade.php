@@ -6,7 +6,7 @@
     <div x-data="{
         drawerOpen: {{ $errors->any() ? 'true' : 'false' }},
         drawerMode: '{{ old('_method') === 'PUT' ? 'edit' : 'create' }}',
-        drawerTitle: '{{ old('_method') === 'PUT' ? 'Ubah Kategori' : 'Tambah Kategori' }}',
+        drawerTitle: '{{ old('_method') === 'PUT' ? 'Edit Category' : 'Add Category' }}',
         actionUrl: '{{ old('_form_action', route('categories.store')) }}',
         form: {
             id: '{{ old('id', '') }}',
@@ -19,14 +19,14 @@
         },
         openCreate() {
             this.drawerMode = 'create';
-            this.drawerTitle = 'Tambah Kategori';
+            this.drawerTitle = 'Add Category';
             this.actionUrl = '{{ route('categories.store') }}';
             this.form = { id: '', category_code: '', category_name: '', parent_id: '', sort_order: 0, description: '', is_active: true };
             this.drawerOpen = true;
         },
         openEdit(cat) {
             this.drawerMode = 'edit';
-            this.drawerTitle = 'Ubah Kategori: ' + cat.category_name;
+            this.drawerTitle = 'Edit Category: ' + cat.category_name;
             this.actionUrl = '/categories/' + cat.id;
             this.form = {
                 id: cat.id,
@@ -44,20 +44,20 @@
 
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Kategori & Sub-Kategori</h4>
-                <p class="text-sm font-medium text-[#787774] mt-1">Kelola struktur klasifikasi komoditas produk Anda</p>
+                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Categories & Subcategories</h4>
+                <p class="text-sm font-medium text-[#787774] mt-1">Manage commodity classification hierarchies and product taxonomy</p>
             </div>
             
-            <x-list-toolbar search-action="{{ route('categories.index') }}" search-placeholder="Cari kategori...">
+            <x-list-toolbar search-action="{{ route('categories.index') }}" search-placeholder="Search categories...">
                 <x-slot:actions>
                     <a href="{{ route('categories.export') }}" class="flex-1 sm:flex-none">
                         <x-ui.button variant="secondary" class="w-full h-10">
-                            <span class="material-symbols-rounded text-[18px]">download</span> Ekspor Excel
+                            <span class="material-symbols-rounded text-[18px]">download</span> Export Excel
                         </x-ui.button>
                     </a>
                     @if($canManage)
                         <x-ui.button variant="primary" class="w-full sm:w-auto h-10" @click="openCreate()">
-                            <span class="material-symbols-rounded text-[18px]">add</span> Tambah Kategori
+                            <span class="material-symbols-rounded text-[18px]">add</span> Add Category
                         </x-ui.button>
                     @endif
                 </x-slot:actions>
@@ -76,12 +76,12 @@
             {{-- Desktop/tablet-landscape: existing table --}}
             <x-data-table :hideOnMobile="true">
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Kode</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Nama Kategori</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Induk (Parent)</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Code</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Category Name</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Parent Category</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Status</th>
                     @if($canManage)
-                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Aksi</th>
+                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Actions</th>
                     @endif
                 </x-slot:head>
                 
@@ -94,23 +94,23 @@
                                 <div class="text-xs text-[#787774] mt-0.5">{{ Str::limit($category->description, 50) }}</div>
                             @endif
                         </td>
-                        <td class="px-6 py-4 text-sm text-[#787774]">{{ $category->parent?->category_name ?? '— (Kategori Utama)' }}</td>
+                        <td class="px-6 py-4 text-sm text-[#787774]">{{ $category->parent?->category_name ?? '— (Primary Category)' }}</td>
                         <td class="px-6 py-4">
                             @if($category->is_active ?? true)
-                                <x-ui.badge variant="success" :dot="true">Aktif</x-ui.badge>
+                                <x-ui.badge variant="success" :dot="true">Active</x-ui.badge>
                             @else
-                                <x-ui.badge variant="secondary" :dot="true">Nonaktif</x-ui.badge>
+                                <x-ui.badge variant="secondary" :dot="true">Inactive</x-ui.badge>
                             @endif
                         </td>
                         @if($canManage)
                             <td class="px-6 py-4 text-right space-x-2">
-                                <button type="button" @click="openEdit({{ json_encode($category) }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200 active:scale-90" aria-label="Ubah kategori">
+                                <button type="button" @click="openEdit({{ json_encode($category) }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200 active:scale-90" aria-label="Edit category">
                                     <span class="material-symbols-rounded text-[20px]">edit</span>
                                 </button>
                                 <form id="delete-form-{{ $category->id }}" action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" onclick="confirmDelete('delete-form-{{ $category->id }}', '{{ addslashes($category->category_name) }}')" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90" aria-label="Hapus">
+                                    <button type="button" onclick="confirmDelete('delete-form-{{ $category->id }}', '{{ addslashes($category->category_name) }}')" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90" aria-label="Delete">
                                         <span class="material-symbols-rounded text-[20px]">delete</span>
                                     </button>
                                 </form>
@@ -124,7 +124,7 @@
                                 <div class="w-14 h-14 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
                                     <span class="material-symbols-rounded text-[28px] text-[#C4C3C0]">category</span>
                                 </div>
-                                <p class="font-medium">Kategori tidak ditemukan.</p>
+                                <p class="font-medium">No categories found.</p>
                             </div>
                         </td>
                     </tr>
@@ -144,13 +144,13 @@
                         </div>
                         @if($canManage)
                             <div class="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-[#E5E7EB]">
-                                <button type="button" @click="openEdit({{ json_encode($category) }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200" aria-label="Ubah kategori">
+                                <button type="button" @click="openEdit({{ json_encode($category) }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200" aria-label="Edit category">
                                     <span class="material-symbols-rounded text-[18px]">edit</span>
                                 </button>
                                 <form id="delete-form-mobile-{{ $category->id }}" action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" onclick="confirmDelete('delete-form-mobile-{{ $category->id }}', '{{ addslashes($category->category_name) }}')" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200" aria-label="Hapus">
+                                    <button type="button" onclick="confirmDelete('delete-form-mobile-{{ $category->id }}', '{{ addslashes($category->category_name) }}')" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200" aria-label="Delete">
                                         <span class="material-symbols-rounded text-[18px]">delete</span>
                                     </button>
                                 </form>
@@ -162,7 +162,7 @@
                         <div class="w-12 h-12 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
                             <span class="material-symbols-rounded text-[24px] text-[#C4C3C0]">category</span>
                         </div>
-                        <p class="font-medium">Kategori tidak ditemukan.</p>
+                        <p class="font-medium">No categories found.</p>
                     </div>
                 @endforelse
             </div>
@@ -185,19 +185,19 @@
                 <input type="hidden" name="_form_action" :value="actionUrl">
 
                 <div>
-                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Kode Kategori (Opsional)</label>
-                    <input type="text" name="category_code" x-model="form.category_code" placeholder="Contoh: BEV, FOOD" class="w-full rounded-xl border border-[#E5E7EB] px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
+                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Category Code (Optional)</label>
+                    <input type="text" name="category_code" x-model="form.category_code" placeholder="e.g. BEV, FOOD" class="w-full rounded-xl border border-[#E5E7EB] px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Nama Kategori <span class="text-rose-500">*</span></label>
-                    <input type="text" name="category_name" x-model="form.category_name" required placeholder="Masukkan nama kategori" class="w-full rounded-xl border border-[#E5E7EB] px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
+                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Category Name <span class="text-rose-500">*</span></label>
+                    <input type="text" name="category_name" x-model="form.category_name" required placeholder="Enter category name" class="w-full rounded-xl border border-[#E5E7EB] px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Kategori Induk (Parent)</label>
+                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Parent Category</label>
                     <select name="parent_id" x-model="form.parent_id" class="w-full rounded-xl border border-[#E5E7EB] bg-white px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
-                        <option value="">-- Tanpa Induk (Kategori Utama) --</option>
+                        <option value="">-- No Parent (Primary Category) --</option>
                         @foreach($parentCategories as $parent)
                             <option value="{{ $parent->id }}">{{ $parent->category_name }} ({{ $parent->category_code }})</option>
                         @endforeach
@@ -205,27 +205,27 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Urutan Tampilan</label>
+                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Display Order</label>
                     <input type="number" name="sort_order" x-model="form.sort_order" min="0" class="w-full rounded-xl border border-[#E5E7EB] px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Deskripsi</label>
-                    <textarea name="description" x-model="form.description" rows="3" placeholder="Deskripsi opsional..." class="w-full rounded-xl border border-[#E5E7EB] px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none"></textarea>
+                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Description</label>
+                    <textarea name="description" x-model="form.description" rows="3" placeholder="Optional description..." class="w-full rounded-xl border border-[#E5E7EB] px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none"></textarea>
                 </div>
 
                 <div class="flex items-center gap-2 pt-2">
                     <input type="checkbox" id="drawer_is_active" name="is_active" value="1" x-model="form.is_active" class="rounded border-[#E5E7EB] text-primary-600 focus:ring-primary-500">
-                    <label for="drawer_is_active" class="text-sm font-medium text-apeiron-ink">Status Aktif</label>
+                    <label for="drawer_is_active" class="text-sm font-medium text-apeiron-ink">Active Status</label>
                 </div>
             </form>
 
             <x-slot:footer>
                 <x-ui.button variant="secondary" type="button" @click="drawerOpen = false">
-                    Batal
+                    Cancel
                 </x-ui.button>
                 <x-ui.button variant="primary" type="submit" form="categoryDrawerForm">
-                    Simpan Perubahan
+                    Save Changes
                 </x-ui.button>
             </x-slot:footer>
         </x-ui.drawer>
