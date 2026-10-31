@@ -3,7 +3,7 @@
     {{-- Header & Primary Action --}}
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Stock Adjustments</h4>
+            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Stock Adjustments <span class="sr-only">Penyesuaian Stok (Stock Adjustment)</span></h4>
             <p class="text-sm font-medium text-apeiron-muted mt-1">
                 Direct structured stock corrections: damage, expiration, shrinkage, and production waste.
             </p>

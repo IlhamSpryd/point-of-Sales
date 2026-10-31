@@ -7,7 +7,6 @@ namespace App\Modules\Pricing\Services\Evaluators;
 use App\Modules\Pricing\Contracts\PromotionRuleEvaluatorInterface;
 use App\Modules\Pricing\DataTransferObjects\CartEvaluationContextDto;
 use App\Modules\Pricing\Models\PromotionCampaign;
-use Carbon\Carbon;
 
 abstract class BasePromotionEvaluator implements PromotionRuleEvaluatorInterface
 {

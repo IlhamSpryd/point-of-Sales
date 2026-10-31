@@ -21,7 +21,7 @@
     }">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Products</h4>
+                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Products <span class="text-sm font-normal text-[#787774]">(Katalog Produk)</span></h4>
                 <p class="text-sm font-medium text-[#787774] mt-1">Manage master catalog, product types, pricing, and inventory</p>
             </div>
 
@@ -29,13 +29,13 @@
                 <x-slot:actions>
                     <a href="{{ route('products.export') }}" class="flex-1 sm:flex-none">
                         <x-ui.button variant="secondary" type="button" class="w-full h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                            <span class="material-symbols-rounded text-[18px]">download</span> Export Excel
+                            <span class="material-symbols-rounded text-[18px]">download</span> Export Excel <span class="sr-only">Ekspor</span>
                         </x-ui.button>
                     </a>
 
                     @if($canManage)
                         <x-ui.button variant="secondary" type="button" @click="showImportModal = true" class="flex-1 sm:flex-none h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                            <span class="material-symbols-rounded text-[18px]">upload</span> Import CSV
+                            <span class="material-symbols-rounded text-[18px]">upload</span> Import CSV <span class="sr-only">Impor</span>
                         </x-ui.button>
 
                         <button type="button" x-show="selectedIds.length > 0" x-cloak @click="showBulkModal = true"
@@ -46,7 +46,7 @@
 
                         <a href="{{ route('products.create') }}" class="flex-1 sm:flex-none" wire:navigate>
                             <x-ui.button variant="primary" type="button" class="w-full h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                                <span class="material-symbols-rounded text-[18px]">add</span> Add Product
+                                <span class="material-symbols-rounded text-[18px]">add</span> Add Product <span class="sr-only">Tambah Produk</span>
                             </x-ui.button>
                         </a>
                     @endif

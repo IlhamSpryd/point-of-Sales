@@ -10,7 +10,6 @@ use App\Models\CustomerGroup;
 use App\Models\PriceList;
 use App\Models\PriceListItem;
 use App\Models\Product;
-use App\Models\ProductVariant;
 use App\Models\Role;
 use App\Models\Store;
 use App\Models\StoreProductAssortment;

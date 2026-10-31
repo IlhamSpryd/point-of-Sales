@@ -111,10 +111,10 @@ class PayrollPostingService
             }
 
             // Resolve CoA
-            $salaryAccount = $this->resolveAccount('SALARY_EXPENSE_DIRECT', $batch->tenant_id, ['EXPENSE_SALARY'], '5101');
-            $overtimeAccount = $this->resolveAccount('OVERTIME_EXPENSE', $batch->tenant_id, ['SALARY_EXPENSE_DIRECT'], '5102');
-            $commissionAccount = $this->resolveAccount('COMMISSION_EXPENSE', $batch->tenant_id, ['SALARY_EXPENSE_DIRECT'], '5103');
-            $bpjsEmployerAccount = $this->resolveAccount('BPJS_EMPLOYER_EXPENSE', $batch->tenant_id, ['SALARY_EXPENSE_DIRECT'], '5104');
+            $salaryAccount = $this->resolveAccount('SALARY_EXPENSE_DIRECT', $batch->tenant_id, ['EXPENSE_SALARY'], '5301');
+            $overtimeAccount = $this->resolveAccount('OVERTIME_EXPENSE', $batch->tenant_id, ['SALARY_EXPENSE_DIRECT'], '5302');
+            $commissionAccount = $this->resolveAccount('COMMISSION_EXPENSE', $batch->tenant_id, ['SALARY_EXPENSE_DIRECT'], '5303');
+            $bpjsEmployerAccount = $this->resolveAccount('BPJS_EMPLOYER_EXPENSE', $batch->tenant_id, ['SALARY_EXPENSE_DIRECT'], '5304');
 
             $payrollPayableAccount = $this->resolveAccount('PAYROLL_PAYABLE', $batch->tenant_id, [], '2102');
             $taxPph21PayableAccount = $this->resolveAccount('TAX_PPH21_PAYABLE', $batch->tenant_id, [], '2103');

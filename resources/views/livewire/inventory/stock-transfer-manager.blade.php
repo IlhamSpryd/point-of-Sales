@@ -3,7 +3,7 @@
     {{-- Header & Primary Action --}}
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Inter-Branch Stock Transfers</h4>
+            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Inter-Branch Stock Transfers <span class="sr-only">Transfer Stok Antarcabang</span></h4>
             <p class="text-sm font-medium text-apeiron-muted mt-1">
                 Two-phase inter-branch stock transfers with in-transit accountability (OD-03 & OD-06).
             </p>

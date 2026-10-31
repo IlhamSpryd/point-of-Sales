@@ -38,7 +38,7 @@
 
         <!-- Header -->
         <x-erp.page-header
-            title="Units of Measure"
+            title="Units of Measure (Satuan Ukur)"
             description="Manage product quantity units (Pcs, Kg, Liter, Box, etc.) and decimal precision for inventory tracking.">
             <x-slot:breadcrumbs>
                 <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>

@@ -60,7 +60,7 @@
                                     <div class="flex items-center gap-2">
                                         <span class="font-bold text-zinc-900 dark:text-white text-sm">{{ $store->name }}</span>
                                         @if($store->is_initial)
-                                            <x-ui.badge variant="info" size="xs">Primary Branch</x-ui.badge>
+                                            <x-ui.badge variant="info" size="xs">Primary Branch <span class="sr-only">Cabang Utama</span></x-ui.badge>
                                         @endif
                                     </div>
                                     <div class="text-xs text-zinc-400 mt-1 flex flex-col gap-0.5">

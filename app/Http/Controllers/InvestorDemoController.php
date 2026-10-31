@@ -8,7 +8,6 @@ use App\Models\Order;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\Tenant;
-use App\Models\User;
 use App\Services\Context\TenantContext;
 use Illuminate\Http\Request;
 use Illuminate\View\View;

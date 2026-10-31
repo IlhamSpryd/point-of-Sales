@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Modules\Sales\Services;
 
 use App\Enums\LoyaltyLedgerTypeEnum;
+use App\Enums\PaymentMethod;
 use App\Enums\ReturnDispositionEnum;
 use App\Enums\StockMovementType;
 use App\Models\CashDrawerMovement;
+use App\Models\Customer;
 use App\Models\Device;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -21,7 +23,7 @@ use App\Models\Shift;
 use App\Models\StockBalance;
 use App\Models\StockMovement;
 use App\Models\User;
-use App\Models\Customer;
+use App\Modules\Customers\Enums\StoreCreditLedgerTypeEnum;
 use App\Modules\Customers\Models\CustomerCreditAccount;
 use App\Modules\Customers\Services\GiftCardService;
 use App\Modules\Customers\Services\LoyaltyService;
@@ -466,7 +468,7 @@ class ReturnRefundService
                     }
 
                     // AC-3.3b: Refund ke Store Credit (Tender / Reversal)
-                    if ($targetMethod === 'store_credit' || $targetMethod === \App\Enums\PaymentMethod::StoreCredit->value) {
+                    if ($targetMethod === 'store_credit' || $targetMethod === PaymentMethod::StoreCredit->value) {
                         $cust = Customer::withoutGlobalScopes()->find($lockedOrder->customer_id);
                         if (! $cust) {
                             throw new DomainException('Pelanggan harus terdaftar untuk dapat menerima refund ke Store Credit.');
@@ -474,7 +476,7 @@ class ReturnRefundService
                         app(StoreCreditService::class)->issueStoreCredit(
                             customer: $cust,
                             amount: (string) $amount,
-                            entryType: \App\Modules\Customers\Enums\StoreCreditLedgerTypeEnum::REVERSAL,
+                            entryType: StoreCreditLedgerTypeEnum::REVERSAL,
                             storeId: (int) $lockedOrder->store_id,
                             referenceType: 'ORDER_RETURN',
                             referenceId: (int) $orderReturn->id,
@@ -484,7 +486,7 @@ class ReturnRefundService
                     }
 
                     // AC-3.3c: Refund ke Gift Card (Tender / Reversal)
-                    if ($targetMethod === 'gift_card' || $targetMethod === \App\Enums\PaymentMethod::GiftCard->value) {
+                    if ($targetMethod === 'gift_card' || $targetMethod === PaymentMethod::GiftCard->value) {
                         $cardNumber = $payment->reference_number;
                         if (! $cardNumber && ! empty($vAlloc['card_number'])) {
                             $cardNumber = $vAlloc['card_number'];

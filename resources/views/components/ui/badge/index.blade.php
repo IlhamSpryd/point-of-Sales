@@ -32,14 +32,14 @@
         default => 'secondary',
     };
 
-    $isBadge = $pill || $asBadge;
+    $isBadge = $pill || $asBadge || $dot || ($variant !== null && $variant !== 'secondary');
 
     $classes = \Illuminate\Support\Arr::toCssClasses([
         'inline-flex items-center whitespace-nowrap font-medium tracking-normal transition-colors',
         
-        // Explicit pill/chip tag style (when requested asBadge or pill)
+        // Explicit pill/chip tag style (when requested asBadge, pill, dot or specific variant)
         'border rounded-md px-2 py-0.5 text-xs' => $isBadge,
-        'bg-emerald-50 text-emerald-800 border-emerald-200/80' => $isBadge && $variant === 'success',
+        'bg-green-50 text-green-600 border-green-200/80' => $isBadge && $variant === 'success',
         'bg-rose-50 text-rose-800 border-rose-200/80' => $isBadge && $variant === 'destructive',
         'bg-amber-50 text-amber-800 border-amber-200/80' => $isBadge && $variant === 'warning',
         'bg-blue-50 text-blue-800 border-blue-200/80' => $isBadge && $variant === 'info',
@@ -60,6 +60,9 @@
 @endphp
 
 <span {{ $attributes->twMerge($classes) }}>
+    @if($dot)
+        <span class="w-1.5 h-1.5 rounded-full shrink-0 mr-1.5 {{ $variant === 'destructive' ? 'bg-rose-500' : ($variant === 'warning' ? 'bg-amber-500' : 'bg-emerald-500') }}" aria-hidden="true"></span>
+    @endif
     @if ($icon && $iconPosition === 'before')
         @if (\Illuminate\Support\Facades\View::exists('components.'.str_replace('.', '/', $icon)))
             <x-dynamic-component :component="$icon" class="size-3.5 shrink-0" />

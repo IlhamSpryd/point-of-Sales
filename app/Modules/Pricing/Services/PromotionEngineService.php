@@ -11,6 +11,7 @@ use App\Modules\Pricing\Models\PromotionReservation;
 use App\Modules\Pricing\Services\Evaluators\BundlePackageEvaluator;
 use App\Modules\Pricing\Services\Evaluators\BxgyRewardEvaluator;
 use App\Modules\Pricing\Services\Evaluators\HappyHourScheduleEvaluator;
+use App\Services\Context\TenantContext;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -103,7 +104,7 @@ class PromotionEngineService
         float $reservedAmount = 0.0
     ): int {
         return DB::transaction(function () use ($cartUuid, $campaignId, $voucherId, $storeId, $customerId, $reservedAmount) {
-            $tenantId = app(\App\Services\Context\TenantContext::class)->requireTenantId();
+            $tenantId = app(TenantContext::class)->requireTenantId();
 
             if ($campaignId !== null) {
                 $campaign = PromotionCampaign::where('tenant_id', $tenantId)

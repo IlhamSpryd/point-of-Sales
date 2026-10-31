@@ -13,6 +13,7 @@ use App\Modules\Pricing\Models\PromotionCampaign;
 use App\Modules\Pricing\Models\PromotionReward;
 use App\Modules\Pricing\Models\PromotionRule;
 use App\Modules\Pricing\Services\Evaluators\BundlePackageEvaluator;
+use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -45,7 +46,7 @@ class BundlePackageTest extends TestCase
             'access_status' => Tenant::ACCESS_ACTIVE,
         ]);
 
-        app(\App\Services\Context\TenantContext::class)->setTenantId($this->tenant->id);
+        app(TenantContext::class)->setTenantId($this->tenant->id);
 
         $this->store = Store::create([
             'tenant_id' => $this->tenant->id,
@@ -53,7 +54,7 @@ class BundlePackageTest extends TestCase
             'is_active' => true,
         ]);
 
-        app(\App\Services\Context\TenantContext::class)->setStoreId($this->store->id);
+        app(TenantContext::class)->setStoreId($this->store->id);
 
         $category = Category::create([
             'tenant_id' => $this->tenant->id,

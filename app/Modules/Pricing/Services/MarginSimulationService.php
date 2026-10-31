@@ -8,14 +8,15 @@ use App\Models\Product;
 use App\Models\User;
 use App\Modules\Pricing\DataTransferObjects\MarginSimulationResultDto;
 use App\Modules\Pricing\Models\PromotionCampaign;
-use DomainException;
+use App\Modules\Pricing\Models\PromotionReward;
+use App\Modules\Pricing\Models\PromotionRule;
 
 class MarginSimulationService
 {
     /**
      * Menjalankan simulasi dampak marjin kotor terhadap kampanye promosi secara murni read-only.
      *
-     * @param array<int, array{product: Product, quantity: float|int}> $productsWithQty
+     * @param  array<int, array{product: Product, quantity: float|int}>  $productsWithQty
      */
     public function simulate(PromotionCampaign $campaign, array $productsWithQty = []): MarginSimulationResultDto
     {
@@ -146,7 +147,7 @@ class MarginSimulationService
         $maxDiscount = 0.0;
 
         foreach ($campaign->rules as $rule) {
-            /** @var \App\Modules\Pricing\Models\PromotionRule $rule */
+            /** @var PromotionRule $rule */
             // Periksa apakah produk cocok dengan aturan
             $triggerProductIds = is_array($rule->trigger_product_ids) ? $rule->trigger_product_ids : [];
             $triggerCategoryIds = is_array($rule->trigger_category_ids) ? $rule->trigger_category_ids : [];
@@ -159,7 +160,7 @@ class MarginSimulationService
             }
 
             foreach ($rule->rewards as $reward) {
-                /** @var \App\Modules\Pricing\Models\PromotionReward $reward */
+                /** @var PromotionReward $reward */
                 $discount = 0.0;
                 switch ($reward->reward_type) {
                     case 'PERCENTAGE_DISCOUNT':

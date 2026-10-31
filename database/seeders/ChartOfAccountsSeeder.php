@@ -505,9 +505,9 @@ class ChartOfAccountsSeeder extends Seeder
                 'is_reconcilable' => false,
             ],
 
-            // 5. DIRECT EXPENSES / PAYROLL (5100 - 5199)
+            // 5. DIRECT EXPENSES / PAYROLL (5300 - 5399)
             [
-                'account_code' => '5101',
+                'account_code' => '5301',
                 'account_name' => 'Beban Gaji Staf Operasional',
                 'account_type' => AccountTypeEnum::EXPENSE,
                 'account_subtype' => AccountSubtypeEnum::OPERATING_EXPENSE,
@@ -519,7 +519,7 @@ class ChartOfAccountsSeeder extends Seeder
                 'is_reconcilable' => false,
             ],
             [
-                'account_code' => '5102',
+                'account_code' => '5302',
                 'account_name' => 'Beban Upah Lembur Karyawan',
                 'account_type' => AccountTypeEnum::EXPENSE,
                 'account_subtype' => AccountSubtypeEnum::OPERATING_EXPENSE,
@@ -531,7 +531,7 @@ class ChartOfAccountsSeeder extends Seeder
                 'is_reconcilable' => false,
             ],
             [
-                'account_code' => '5103',
+                'account_code' => '5303',
                 'account_name' => 'Beban Komisi & Insentif Penjualan',
                 'account_type' => AccountTypeEnum::EXPENSE,
                 'account_subtype' => AccountSubtypeEnum::OPERATING_EXPENSE,
@@ -543,7 +543,7 @@ class ChartOfAccountsSeeder extends Seeder
                 'is_reconcilable' => false,
             ],
             [
-                'account_code' => '5104',
+                'account_code' => '5304',
                 'account_name' => 'Beban BPJS Ketenagakerjaan & Kesehatan (Pemberi Kerja)',
                 'account_type' => AccountTypeEnum::EXPENSE,
                 'account_subtype' => AccountSubtypeEnum::OPERATING_EXPENSE,

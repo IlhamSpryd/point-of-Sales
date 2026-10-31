@@ -166,6 +166,7 @@ class CustomerPricingResolutionTest extends TestCase
             'price' => 140000.00,
         ]);
 
+        $this->resolver->clearRuntimeCache();
         $resolvedPl = $this->resolver->resolveCustomerPrice($context);
         $this->assertEquals(140000.00, $resolvedPl->unitPrice);
         $this->assertEquals(ResolvedPriceDto::SOURCE_STORE_PRICE_LIST, $resolvedPl->pricingSource);

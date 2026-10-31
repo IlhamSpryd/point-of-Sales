@@ -21,12 +21,17 @@ class Approval extends Model
     use ScopedToTenant;
 
     public const STATUS_APPROVED = 'APPROVED';
+
     public const STATUS_REJECTED = 'REJECTED';
+
     public const STATUS_CONSUMED = 'CONSUMED';
+
     public const STATUS_VOIDED = 'VOIDED';
 
     public const ACTION_MANUAL_DISCOUNT = 'MANUAL_DISCOUNT';
+
     public const ACTION_OPEN_PRICE = 'OPEN_PRICE';
+
     public const ACTION_VOID_ORDER = 'VOID_ORDER';
 
     protected $fillable = [

@@ -146,6 +146,7 @@ class StoreTransactionRequest extends FormRequest
 
                     if (! $isOpenPrice) {
                         $validator->errors()->add("items.{$index}.custom_price", 'Produk ini tidak mendukung harga manual (open price).');
+
                         continue;
                     }
 

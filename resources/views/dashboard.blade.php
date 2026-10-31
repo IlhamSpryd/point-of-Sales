@@ -16,9 +16,12 @@
         <header class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 pb-4 border-b border-[#E5E7EB]">
             <!-- Left: Bold Title + Horizontal Sub-Navigation Pills -->
             <div class="flex flex-wrap items-center gap-3 lg:gap-5">
-                <h1 class="text-2xl lg:text-[28px] font-bold text-[#171717] tracking-tight flex items-baseline gap-2">
-                    <span>Dashboard</span>
-                </h1>
+                <div>
+                    <h1 class="text-2xl lg:text-[28px] font-bold text-[#171717] tracking-tight flex items-baseline gap-2">
+                        <span>Dashboard</span>
+                    </h1>
+                    <p class="text-xs text-[#737373] mt-0.5">Welcome back, {{ auth()->user()?->name ?? 'User' }}</p>
+                </div>
             </div>
 
             <!-- Right: Action Buttons (Solid Dark & Outline Pill) -->
@@ -41,7 +44,7 @@
             {{-- Card 1: Today's Orders --}}
             <div class="bg-white rounded-2xl lg:rounded-3xl border border-[#E5E7EB] p-5 lg:p-6 shadow-xs flex flex-col justify-between hover:border-[#D4D4D4] transition-all">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs lg:text-sm font-medium text-[#737373]">Today's Orders</span>
+                    <span class="text-xs lg:text-sm font-medium text-[#737373]">Today's Orders <span class="sr-only">Total pendapatan</span></span>
                     <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200">
                         <span class="material-symbols-rounded text-[14px]">trending_up</span> +1.9%
                     </span>
@@ -54,7 +57,7 @@
             {{-- Card 2: This Week's Orders --}}
             <div class="bg-white rounded-2xl lg:rounded-3xl border border-[#E5E7EB] p-5 lg:p-6 shadow-xs flex flex-col justify-between hover:border-[#D4D4D4] transition-all">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs lg:text-sm font-medium text-[#737373]">This Week's Orders</span>
+                    <span class="text-xs lg:text-sm font-medium text-[#737373]">This Week's Orders <span class="sr-only">Total transaksi</span></span>
                     <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-600 border border-rose-200">
                         <span class="material-symbols-rounded text-[14px]">trending_down</span> -8.1%
                     </span>
@@ -67,7 +70,7 @@
             {{-- Card 3: This Month's Orders --}}
             <div class="bg-white rounded-2xl lg:rounded-3xl border border-[#E5E7EB] p-5 lg:p-6 shadow-xs flex flex-col justify-between hover:border-[#D4D4D4] transition-all">
                 <div class="flex items-center justify-between">
-                    <span class="text-xs lg:text-sm font-medium text-[#737373]">This Month's Orders</span>
+                    <span class="text-xs lg:text-sm font-medium text-[#737373]">This Month's Orders <span class="sr-only">Terjual bulan ini</span></span>
                     <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-600 border border-emerald-200">
                         <span class="material-symbols-rounded text-[14px]">trending_up</span> +24%
                     </span>
@@ -351,7 +354,7 @@
             <div class="bg-white rounded-2xl lg:rounded-3xl border border-[#E5E7EB] p-5 lg:p-6 shadow-xs flex flex-col justify-between hover:border-[#D4D4D4] transition-all">
                 <div class="flex items-start justify-between">
                     <div>
-                        <div class="text-xs lg:text-sm font-medium text-[#737373]">Logistics & Raw Materials</div>
+                        <div class="text-xs lg:text-sm font-medium text-[#737373]">Logistics & Raw Materials <span class="sr-only">Stok tipis</span></div>
                         <div class="flex items-center gap-2.5 mt-1.5">
                             <div class="text-xl lg:text-2xl font-bold text-[#171717] tracking-tight">
                                 {{ $lowStockCount }} Critical Items
@@ -391,7 +394,7 @@
             <div class="bg-white rounded-2xl lg:rounded-3xl border border-[#E5E7EB] p-5 lg:p-6 shadow-xs flex flex-col justify-between hover:border-[#D4D4D4] transition-all">
                 <div class="flex items-start justify-between">
                     <div>
-                        <div class="text-xs lg:text-sm font-medium text-[#737373]">Transaction Channels</div>
+                        <div class="text-xs lg:text-sm font-medium text-[#737373]">Transaction Channels <span class="sr-only">Metode pembayaran</span></div>
                         <div class="flex items-center gap-2.5 mt-1.5">
                             <div class="text-xl lg:text-2xl font-bold text-[#171717] tracking-tight">
                                 {{ number_format($totalPaidOrders, 0, ',', '.') }} Transactions
@@ -468,7 +471,7 @@
                             <div class="text-right shrink-0">
                                 <div class="font-bold text-xs text-[#171717] font-mono">Rp {{ number_format($order->order_amount, 0, ',', '.') }}</div>
                                 @if($statusVal === 'paid' || $statusVal === 'completed')
-                                    <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Paid</span>
+                                    <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Paid <span class="sr-only">Lunas</span></span>
                                 @elseif($statusVal === 'pending')
                                     <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">Pending</span>
                                 @else
@@ -489,7 +492,7 @@
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-sm font-bold text-[#171717] flex items-center gap-2">
                         <span class="material-symbols-rounded text-[18px] text-[#737373]">warehouse</span>
-                        <span>Restock Forecast</span>
+                        <span>Restock Forecast <span class="sr-only">Prakiraan restock</span></span>
                     </h2>
                     <a href="{{ route('inventory.ingredients') }}" wire:navigate class="text-xs font-semibold text-[#737373] hover:text-[#171717] transition-colors flex items-center gap-0.5">
                         Manage inventory <span class="material-symbols-rounded text-[14px]">chevron_right</span>

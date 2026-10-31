@@ -9,10 +9,10 @@ use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatusEnum;
 use App\Enums\ReturnDispositionEnum;
-use App\Models\CashDrawerMovement;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Device;
+use App\Models\LoyaltyTier;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
@@ -25,19 +25,17 @@ use App\Models\User;
 use App\Modules\Customers\Enums\StoreCreditLedgerTypeEnum;
 use App\Modules\Customers\Enums\VoucherDiscountTypeEnum;
 use App\Modules\Customers\Enums\VoucherStatusEnum;
-use App\Models\LoyaltyTier;
 use App\Modules\Customers\Models\StoreCreditAccount;
 use App\Modules\Customers\Models\StoreCreditLedger;
 use App\Modules\Customers\Models\Voucher;
-use App\Services\CashierPinService;
 use App\Modules\Customers\Services\LoyaltyService;
 use App\Modules\Customers\Services\StoreCreditService;
 use App\Modules\Customers\Services\VoucherService;
 use App\Modules\Pricing\Models\PromotionReservation;
 use App\Modules\Sales\Services\ReturnRefundService;
 use App\Modules\Sales\Services\TransactionService;
+use App\Services\CashierPinService;
 use App\Services\Context\TenantContext;
-use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
@@ -47,18 +45,31 @@ class RefundReversalIntegrationTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $supervisor;
+
     protected User $cashier;
+
     protected Shift $shift;
+
     protected Device $device;
+
     protected Customer $customer;
+
     protected Product $productA;
+
     protected Product $productB;
+
     protected ReturnRefundService $returnService;
+
     protected LoyaltyService $loyaltyService;
+
     protected VoucherService $voucherService;
+
     protected StoreCreditService $storeCreditService;
+
     protected TransactionService $transactionService;
 
     protected function afterSubclassSetUp(): void

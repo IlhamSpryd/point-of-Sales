@@ -25,6 +25,7 @@ class LoyaltyLedgerSeeder extends Seeder
         ini_set('memory_limit', '2G');
 
         // Drop triggers temporarily for bulk insert, we'll recompute balances
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_loyalty_ledger_before_delete');
         DB::unprepared('DROP TRIGGER IF EXISTS trg_loyalty_ledger_no_delete');
         DB::unprepared('DROP TRIGGER IF EXISTS trg_loyalty_ledger_no_update');
         DB::unprepared('DROP TRIGGER IF EXISTS trg_loyalty_ledger_hash_chain');
@@ -210,7 +211,7 @@ class LoyaltyLedgerSeeder extends Seeder
             END
         ");
         DB::unprepared("
-            CREATE TRIGGER trg_loyalty_ledger_no_delete BEFORE DELETE ON loyalty_ledger FOR EACH ROW
+            CREATE TRIGGER trg_loyalty_ledger_before_delete BEFORE DELETE ON loyalty_ledger FOR EACH ROW
             BEGIN
                 SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'loyalty_ledger bersifat append-only: DELETE dilarang.';
             END

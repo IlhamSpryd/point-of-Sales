@@ -16,7 +16,6 @@ use App\Modules\Pricing\DataTransferObjects\CheckoutCalculationBreakdownDto;
 use App\Modules\Pricing\DataTransferObjects\CheckoutCalculationInputDto;
 use App\Services\CatalogPriceResolverService;
 use Carbon\Carbon;
-use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
 class UnifiedPricingCalculationPipelineService

@@ -44,7 +44,7 @@
 
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Categories & Subcategories</h4>
+                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Categories & Subcategories <span class="text-sm font-normal text-[#787774]">(Kategori & Sub-Kategori)</span></h4>
                 <p class="text-sm font-medium text-[#787774] mt-1">Manage commodity classification hierarchies and product taxonomy</p>
             </div>
             

@@ -21,7 +21,9 @@ class PromotionReservation extends Model
     use ScopedToTenant;
 
     public const STATUS_RESERVED = 'RESERVED';
+
     public const STATUS_COMMITTED = 'COMMITTED';
+
     public const STATUS_RELEASED = 'RELEASED';
 
     protected $fillable = [

@@ -6,8 +6,8 @@ namespace App\Livewire\Pricing;
 
 use App\Livewire\Concerns\RequiresTenantContext;
 use App\Modules\Pricing\Models\PromotionCampaign;
-use App\Modules\Pricing\Models\PromotionRule;
 use App\Modules\Pricing\Models\PromotionReward;
+use App\Modules\Pricing\Models\PromotionRule;
 use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
@@ -23,33 +23,53 @@ class PromotionCampaignManager extends Component
     use WithPagination;
 
     public string $search = '';
+
     public string $statusFilter = 'ALL';
+
     public string $typeFilter = 'ALL';
 
     // Form Modal State
     public bool $isFormModalOpen = false;
+
     public ?int $editingCampaignId = null;
 
     public string $campaignCode = '';
+
     public string $name = '';
+
     public string $description = '';
+
     public string $type = 'AUTOMATIC_DISCOUNT';
+
     public string $startDatetime = '';
+
     public string $endDatetime = '';
+
     public array $allowedDays = [];
+
     public ?string $startTime = null;
+
     public ?string $endTime = null;
+
     public int $priority = 10;
+
     public ?int $maxUsageLimit = null;
+
     public int $maxUsagePerCustomer = 1;
+
     public bool $isStackable = false;
+
     public string $status = 'ACTIVE';
 
     // Simplified rule & reward fields for quick creation
     public string $rewardType = 'PERCENTAGE_DISCOUNT';
+
     public ?float $discountPercentage = 10.0;
+
     public ?float $discountFixedAmount = null;
+
     public ?float $maxDiscountAmount = null;
+
     public float $minOrderAmount = 0.0;
 
     protected function rules(): array
@@ -76,7 +96,7 @@ class PromotionCampaignManager extends Component
     {
         $this->resetValidation();
         $this->editingCampaignId = null;
-        $this->campaignCode = 'PROMO-' . strtoupper(Str::random(6));
+        $this->campaignCode = 'PROMO-'.strtoupper(Str::random(6));
         $this->name = '';
         $this->description = '';
         $this->type = 'AUTOMATIC_DISCOUNT';
@@ -125,9 +145,11 @@ class PromotionCampaignManager extends Component
         $this->isStackable = (bool) $campaign->is_stackable;
         $this->status = $campaign->status;
 
+        /** @var PromotionRule|null $firstRule */
         $firstRule = $campaign->rules->first();
         if ($firstRule) {
             $this->minOrderAmount = (float) $firstRule->min_order_amount;
+            /** @var PromotionReward|null $firstReward */
             $firstReward = $firstRule->rewards->first();
             if ($firstReward) {
                 $this->rewardType = $firstReward->reward_type;
@@ -157,7 +179,7 @@ class PromotionCampaignManager extends Component
                 'type' => $this->type,
                 'start_datetime' => Carbon::parse($this->startDatetime),
                 'end_datetime' => Carbon::parse($this->endDatetime),
-                'allowed_days' => !empty($this->allowedDays) ? $this->allowedDays : null,
+                'allowed_days' => ! empty($this->allowedDays) ? $this->allowedDays : null,
                 'start_time' => $this->type === 'HAPPY_HOUR' ? $this->startTime : null,
                 'end_time' => $this->type === 'HAPPY_HOUR' ? $this->endTime : null,
                 'priority' => $this->priority,
@@ -230,7 +252,7 @@ class PromotionCampaignManager extends Component
             ->orderBy('priority', 'desc')
             ->orderBy('id', 'desc');
 
-        if (!empty($this->search)) {
+        if (! empty($this->search)) {
             $query->where(function ($q) {
                 $q->where('name', 'like', "%{$this->search}%")
                     ->orWhere('campaign_code', 'like', "%{$this->search}%");

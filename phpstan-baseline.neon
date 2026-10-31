@@ -79,6 +79,12 @@ parameters:
 			path: app/Http/Controllers/Auth/TwoFactorAuthenticationController.php
 
 		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Controllers/InvestorDemoController.php
+
+		-
 			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -101,6 +107,18 @@ parameters:
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Http/Requests/StoreRoleRequest.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Requests/StoreTransactionRequest.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_open_price" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Http/Requests/StoreTransactionRequest.php
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
@@ -259,22 +277,34 @@ parameters:
 			path: app/Livewire/Kasir/CreateOrder.php
 
 		-
-			message: '#^Offset ''amount'' on array\{method\: string, amount\: int\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Livewire/Kasir/CreateOrder.php
-
-		-
-			message: '#^Offset ''method'' on array\{method\: string, amount\: int\} on left side of \?\? always exists and is not nullable\.$#'
-			identifier: nullCoalesce.offset
-			count: 1
-			path: app/Livewire/Kasir/CreateOrder.php
-
-		-
 			message: '#^Using nullsafe property access on non\-nullable type string\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Livewire/Kasir/CreateOrder.php
+
+		-
+			message: '#^Instanceof between string and App\\Modules\\Customers\\Enums\\VoucherDiscountTypeEnum will always evaluate to false\.$#'
+			identifier: instanceof.alwaysFalse
+			count: 1
+			path: app/Livewire/Pricing/VoucherManager.php
+
+		-
+			message: '#^Instanceof between string and App\\Modules\\Customers\\Enums\\VoucherStatusEnum will always evaluate to false\.$#'
+			identifier: instanceof.alwaysFalse
+			count: 1
+			path: app/Livewire/Pricing/VoucherManager.php
+
+		-
+			message: '#^Property App\\Modules\\Customers\\Models\\Voucher\:\:\$status \(string\) does not accept App\\Modules\\Customers\\Enums\\VoucherStatusEnum\:\:ACTIVE\.$#'
+			identifier: assign.propertyType
+			count: 1
+			path: app/Livewire/Pricing/VoucherManager.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Modules\\Customers\\Enums\\VoucherStatusEnum\:\:ACTIVE will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Livewire/Pricing/VoucherManager.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
@@ -487,6 +517,12 @@ parameters:
 			path: app/Modules/Customers/Models/Voucher.php
 
 		-
+			message: '#^Strict comparison using \=\=\= between string and App\\Modules\\Customers\\Enums\\VoucherStatusEnum\:\:ACTIVE will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Modules/Customers/Models/Voucher.php
+
+		-
 			message: '#^Unreachable statement \- code above always terminates\.$#'
 			identifier: deadCode.unreachable
 			count: 1
@@ -537,11 +573,23 @@ parameters:
 		-
 			message: '#^Property App\\Modules\\Customers\\Models\\GiftCard\:\:\$status \(string\) does not accept App\\Modules\\Customers\\Enums\\GiftCardStatusEnum\:\:ACTIVE\.$#'
 			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Customers/Services/GiftCardService.php
+
+		-
+			message: '#^Property App\\Modules\\Customers\\Models\\GiftCard\:\:\$status \(string\) does not accept App\\Modules\\Customers\\Enums\\GiftCardStatusEnum\:\:BLOCKED\.$#'
+			identifier: assign.propertyType
 			count: 1
 			path: app/Modules/Customers/Services/GiftCardService.php
 
 		-
 			message: '#^Property App\\Modules\\Customers\\Models\\GiftCard\:\:\$status \(string\) does not accept App\\Modules\\Customers\\Enums\\GiftCardStatusEnum\:\:DEPLETED\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Customers/Services/GiftCardService.php
+
+		-
+			message: '#^Property App\\Modules\\Customers\\Models\\GiftCard\:\:\$status \(string\) does not accept App\\Modules\\Customers\\Enums\\GiftCardStatusEnum\:\:EXPIRED\.$#'
 			identifier: assign.propertyType
 			count: 1
 			path: app/Modules/Customers/Services/GiftCardService.php
@@ -559,9 +607,21 @@ parameters:
 			path: app/Modules/Customers/Services/StoreCreditService.php
 
 		-
-			message: '#^Property App\\Modules\\Customers\\Models\\Voucher\:\:\$status \(string\) does not accept App\\Modules\\Customers\\Enums\\VoucherStatusEnum\:\:EXPIRED\.$#'
+			message: '#^Property App\\Modules\\Customers\\Models\\Voucher\:\:\$status \(string\) does not accept App\\Modules\\Customers\\Enums\\VoucherStatusEnum\:\:ACTIVE\.$#'
+			identifier: assign.propertyType
+			count: 2
+			path: app/Modules/Customers/Services/VoucherService.php
+
+		-
+			message: '#^Property App\\Modules\\Customers\\Models\\Voucher\:\:\$status \(string\) does not accept App\\Modules\\Customers\\Enums\\VoucherStatusEnum\:\:DISABLED\.$#'
 			identifier: assign.propertyType
 			count: 1
+			path: app/Modules/Customers/Services/VoucherService.php
+
+		-
+			message: '#^Property App\\Modules\\Customers\\Models\\Voucher\:\:\$status \(string\) does not accept App\\Modules\\Customers\\Enums\\VoucherStatusEnum\:\:EXPIRED\.$#'
+			identifier: assign.propertyType
+			count: 2
 			path: app/Modules/Customers/Services/VoucherService.php
 
 		-
@@ -1177,6 +1237,66 @@ parameters:
 			path: app/Modules/Inventory/Controllers/RestockForecastController.php
 
 		-
+			message: '#^Comparison operation "\<\=" between int\<1, max\> and 0 is always false\.$#'
+			identifier: smallerOrEqual.alwaysFalse
+			count: 1
+			path: app/Modules/Pricing/Services/Evaluators/BundlePackageEvaluator.php
+
+		-
+			message: '#^Call to function is_array\(\) with string\|null will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 2
+			path: app/Modules/Pricing/Services/MarginSimulationService.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Modules/Pricing/Services/MarginSimulationService.php
+
+		-
+			message: '#^Negated boolean expression is always false\.$#'
+			identifier: booleanNot.alwaysFalse
+			count: 2
+			path: app/Modules/Pricing/Services/MarginSimulationService.php
+
+		-
+			message: '#^Offset ''quantity'' on array\{product\: App\\Models\\Product, quantity\: float\|int\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Modules/Pricing/Services/MarginSimulationService.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
+			count: 1
+			path: app/Modules/Pricing/Services/MarginSimulationService.php
+
+		-
+			message: '#^Result of \|\| is always true\.$#'
+			identifier: booleanOr.alwaysTrue
+			count: 2
+			path: app/Modules/Pricing/Services/MarginSimulationService.php
+
+		-
+			message: '#^Variable \$triggerCategoryIds in empty\(\) always exists and is always falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Modules/Pricing/Services/MarginSimulationService.php
+
+		-
+			message: '#^Variable \$triggerProductIds in empty\(\) always exists and is always falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: app/Modules/Pricing/Services/MarginSimulationService.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>is_open_price" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: app/Modules/Products/Services/CatalogPriceResolverService.php
+
+		-
 			message: '#^Using nullsafe property access "\?\-\>price" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -1215,7 +1335,7 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$jumlah\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 4
 			path: app/Modules/Reports/Services/DashboardService.php
 
 		-
@@ -1245,13 +1365,13 @@ parameters:
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$this_month_orders\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 2
 			path: app/Modules/Reports/Services/DashboardService.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$total\.$#'
 			identifier: property.notFound
-			count: 1
+			count: 7
 			path: app/Modules/Reports/Services/DashboardService.php
 
 		-
@@ -1909,6 +2029,18 @@ parameters:
 			path: app/Modules/Sales/Services/ReturnRefundService.php
 
 		-
+			message: '#^Offset ''card_number'' does not exist on array\{payment\: App\\Models\\Payment, amount\: float, original_method\: ''card''\|''cash''\|''ewallet''\|''gift_card''\|''qris''\|''store_credit'', refund_method\: string, is_override\: bool, override_reason\: string\|null\}\.$#'
+			identifier: offsetAccess.notFound
+			count: 1
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
+			message: '#^Offset ''card_number'' on array\{payment\: App\\Models\\Payment, amount\: float, original_method\: ''card''\|''cash''\|''ewallet''\|''gift_card''\|''qris''\|''store_credit'', refund_method\: string, is_override\: bool, override_reason\: string\|null\} in empty\(\) does not exist\.$#'
+			identifier: empty.offset
+			count: 1
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
 			message: '#^Offset ''disposition'' on array\{order_item_id\: int, quantity\: int, disposition\: App\\Enums\\ReturnDispositionEnum\|string, disposition_reason\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
 			identifier: nullCoalesce.offset
 			count: 2
@@ -1947,6 +2079,12 @@ parameters:
 		-
 			message: '#^Property App\\Modules\\Sales\\Models\\SalesCreditNote\:\:\$status \(string\) does not accept App\\Modules\\Sales\\Enums\\CreditNoteStatusEnum\:\:CONVERTED_TO_STORE_CREDIT\.$#'
 			identifier: assign.propertyType
+			count: 1
+			path: app/Modules/Sales/Services/ReturnRefundService.php
+
+		-
+			message: '#^Result of && is always false\.$#'
+			identifier: booleanAnd.alwaysFalse
 			count: 1
 			path: app/Modules/Sales/Services/ReturnRefundService.php
 
@@ -2341,12 +2479,6 @@ parameters:
 			path: app/Modules/Sales/Services/TransactionService.php
 
 		-
-			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$points_multiplier\.$#'
-			identifier: property.notFound
-			count: 1
-			path: app/Modules/Sales/Services/TransactionService.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_id\.$#'
 			identifier: property.notFound
 			count: 2
@@ -2398,6 +2530,12 @@ parameters:
 			message: '#^Offset ''amount_tendered'' on array\{method\: App\\Enums\\PaymentMethod, amount\: int, reference_number\: string\|null, idempotency_key\: string\|null\} on left side of \?\? does not exist\.$#'
 			identifier: nullCoalesce.offset
 			count: 2
+			path: app/Modules/Sales/Services/TransactionService.php
+
+		-
+			message: '#^Offset ''card_number'' on array\{method\: App\\Enums\\PaymentMethod, amount\: int, reference_number\: null, idempotency_key\: string\|null\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
 			path: app/Modules/Sales/Services/TransactionService.php
 
 		-
@@ -2474,12 +2612,6 @@ parameters:
 
 		-
 			message: '#^Using nullsafe property access "\?\-\>current_points" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
-			identifier: nullsafe.neverNull
-			count: 2
-			path: app/Modules/Sales/Services/TransactionService.php
-
-		-
-			message: '#^Using nullsafe property access "\?\-\>points_multiplier" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
 			path: app/Modules/Sales/Services/TransactionService.php
@@ -2683,6 +2815,18 @@ parameters:
 			path: app/Policies/JournalEntryPolicy.php
 
 		-
+			message: '#^Access to an undefined property App\\Models\\Modifier\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/ModifierPolicy.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Payment\:\:\$tenant_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Policies/PaymentPolicy.php
+
+		-
 			message: '#^Using nullsafe property access "\?\-\>is_admin" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
 			identifier: nullsafe.neverNull
 			count: 1
@@ -2723,6 +2867,12 @@ parameters:
 			identifier: method.notFound
 			count: 1
 			path: app/Policies/VoucherPolicy.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Providers/AppServiceProvider.php
 
 		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$product_name\.$#'

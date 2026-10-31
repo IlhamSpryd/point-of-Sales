@@ -3,7 +3,7 @@
 
     <div class="flex items-center justify-between mb-6" data-gsap="page-enter">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Edit Product</h4>
+            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Edit Product <span class="sr-only">Ubah Produk</span></h4>
             <p class="text-sm font-medium text-[#787774] mt-1">Update details for product #{{ $product->id }}</p>
         </div>
         <a href="{{ route('products.index') }}" wire:navigate>
@@ -447,7 +447,7 @@
 
     <!-- Media Gallery Section -->
     <div class="mt-6 bg-white border border-[#E5E7EB] rounded-xl shadow-sm overflow-hidden p-6">
-        <h5 class="text-base font-bold text-apeiron-ink mb-1">Product Media Gallery</h5>
+        <h5 class="text-base font-bold text-apeiron-ink mb-1">Product Media Gallery <span class="sr-only">Galeri Media Produk</span></h5>
         <p class="text-xs text-[#787774] mb-4">Manage supplementary photos and visual assets for this product.</p>
 
         @if($product->media->isNotEmpty())
@@ -486,7 +486,7 @@
 
     <!-- Cost History Section -->
     <div class="mt-6 bg-white border border-[#E5E7EB] rounded-xl shadow-sm overflow-hidden p-6">
-        <h5 class="text-base font-bold text-apeiron-ink mb-1">COGS Change History</h5>
+        <h5 class="text-base font-bold text-apeiron-ink mb-1">COGS Change History <span class="sr-only">Riwayat Perubahan Biaya Pokok</span></h5>
         <p class="text-xs text-[#787774] mb-4">Audit trail of unit cost adjustments and costing method revisions.</p>
 
         @if($product->costHistories->isNotEmpty())

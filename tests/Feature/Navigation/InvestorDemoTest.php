@@ -18,7 +18,9 @@ class InvestorDemoTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private User $ownerUser;
 
     protected function afterSubclassSetUp(): void

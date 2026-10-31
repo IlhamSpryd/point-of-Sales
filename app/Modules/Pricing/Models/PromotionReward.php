@@ -19,8 +19,11 @@ class PromotionReward extends Model
     use ScopedToTenant;
 
     public const REWARD_PERCENTAGE_DISCOUNT = 'PERCENTAGE_DISCOUNT';
+
     public const REWARD_FIXED_AMOUNT_DISCOUNT = 'FIXED_AMOUNT_DISCOUNT';
+
     public const REWARD_FREE_PRODUCT = 'FREE_PRODUCT';
+
     public const REWARD_SPECIAL_PRICE_PRODUCT = 'SPECIAL_PRICE_PRODUCT';
 
     protected $fillable = [

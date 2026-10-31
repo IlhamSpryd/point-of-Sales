@@ -2,7 +2,7 @@
     <x-slot name="header">
         <x-erp.page-header
             title="Order & Transaction History"
-            description="Monitor all cashier transactions, self-order settlements, status reconciliations, and sales audit logs.">
+            description="Monitor all cashier transactions, self-order settlements, status reconciliations, and sales audit logs. (Riwayat Pesanan)">
         </x-erp.page-header>
     </x-slot>
 

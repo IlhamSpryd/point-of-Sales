@@ -8,6 +8,7 @@ use App\Modules\Pricing\DataTransferObjects\AppliedPromotionDto;
 use App\Modules\Pricing\DataTransferObjects\CartEvaluationContextDto;
 use App\Modules\Pricing\Models\PromotionCampaign;
 use App\Modules\Pricing\Models\PromotionReward;
+use App\Modules\Pricing\Models\PromotionRule;
 
 class BundlePackageEvaluator extends BasePromotionEvaluator
 {
@@ -20,7 +21,7 @@ class BundlePackageEvaluator extends BasePromotionEvaluator
         $applied = [];
 
         foreach ($campaign->rules as $rule) {
-            /** @var \App\Modules\Pricing\Models\PromotionRule $rule */
+            /** @var PromotionRule $rule */
             $requiredProductIds = array_map(fn ($id) => (int) $id, $rule->trigger_product_ids ?? []);
             if (empty($requiredProductIds)) {
                 continue;
@@ -54,7 +55,7 @@ class BundlePackageEvaluator extends BasePromotionEvaluator
             }
 
             foreach ($rule->rewards as $reward) {
-                /** @var \App\Modules\Pricing\Models\PromotionReward $reward */
+                /** @var PromotionReward $reward */
                 // Hitung harga normal 1 set bundle
                 $normalPricePerSet = 0.0;
                 $componentNormalTotal = 0.0;

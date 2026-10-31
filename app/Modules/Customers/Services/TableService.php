@@ -224,7 +224,7 @@ class TableService
                 ->exists();
 
             if ($activeOrders) {
-                throw new DomainException("Cannot deactivate table '{$lockedTable->table_name}' while it has active orders.");
+                throw new DomainException("Cannot deactivate table '{$lockedTable->table_name}' while it has active unpaid orders.");
             }
 
             $lockedTable->update([

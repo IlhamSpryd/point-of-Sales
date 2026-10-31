@@ -23,12 +23,19 @@ class MarginSimulationCalculationTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $managerUser;
+
     protected User $ownerUser;
+
     protected Category $category;
+
     protected Product $normalProduct;
+
     protected Product $lowMarginProduct;
+
     protected MarginSimulationService $service;
 
     protected function afterSubclassSetUp(): void

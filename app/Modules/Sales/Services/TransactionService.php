@@ -45,7 +45,11 @@ use App\Modules\Customers\Enums\StoreCreditLedgerTypeEnum;
 use App\Modules\Customers\Services\GiftCardService;
 use App\Modules\Customers\Services\LoyaltyService;
 use App\Modules\Customers\Services\StoreCreditService;
+use App\Modules\Customers\Services\VoucherService;
 use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
+use App\Modules\Pricing\Models\PromotionReservation;
+use App\Modules\Pricing\Services\DiscountAllocationService;
+use App\Modules\Pricing\Services\DiscountApprovalService;
 use App\Services\CatalogPriceResolverService;
 use App\Services\Context\TenantContext;
 use App\Services\EntitlementService;
@@ -634,7 +638,7 @@ class TransactionService
 
                 // [INCREMENT 4] Alokasi proporsional diskon order ke setiap baris item via DiscountAllocationService (Largest Remainder Method)
                 $lineNets = array_column($lines, 'effective_subtotal');
-                $allocatedOrderDiscounts = app(\App\Modules\Pricing\Services\DiscountAllocationService::class)->allocate(
+                $allocatedOrderDiscounts = app(DiscountAllocationService::class)->allocate(
                     (float) $discountAmount,
                     $lineNets
                 );
@@ -751,12 +755,12 @@ class TransactionService
 
                 // Konsumsi approval token jika ada
                 if (! empty($data['approval_id'])) {
-                    app(\App\Modules\Pricing\Services\DiscountApprovalService::class)->consumeApproval((int) $data['approval_id'], (int) $order->id);
+                    app(DiscountApprovalService::class)->consumeApproval((int) $data['approval_id'], (int) $order->id);
                 }
 
                 // Komit voucher reservation jika ada
                 if (! empty($data['cart_uuid'])) {
-                    app(\App\Modules\Customers\Services\VoucherService::class)->commitVoucher((string) $data['cart_uuid'], (int) $order->id);
+                    app(VoucherService::class)->commitVoucher((string) $data['cart_uuid'], (int) $order->id);
                 }
 
                 // Buat order items
@@ -1900,11 +1904,11 @@ class TransactionService
                 }
 
                 // Modul 8: Kembalikan kuota voucher dan lepaskan reservasi promosi
-                app(\App\Modules\Customers\Services\VoucherService::class)->restoreVoucherForOrder($lockedOrder->id);
+                app(VoucherService::class)->restoreVoucherForOrder($lockedOrder->id);
 
-                \App\Modules\Pricing\Models\PromotionReservation::where('order_id', $lockedOrder->id)
-                    ->where('status', \App\Modules\Pricing\Models\PromotionReservation::STATUS_COMMITTED)
-                    ->update(['status' => \App\Modules\Pricing\Models\PromotionReservation::STATUS_RELEASED]);
+                PromotionReservation::where('order_id', $lockedOrder->id)
+                    ->where('status', PromotionReservation::STATUS_COMMITTED)
+                    ->update(['status' => PromotionReservation::STATUS_RELEASED]);
 
                 // 5. Record to Activity Log
                 ActivityLog::create([

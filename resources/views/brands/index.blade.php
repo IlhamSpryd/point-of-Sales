@@ -38,7 +38,7 @@
 
         <!-- Header -->
         <x-erp.page-header
-            title="Product Brands"
+            title="Product Brands (Merek Produk)"
             description="Manage product brands and manufacturers for catalog classification and reporting.">
             <x-slot:breadcrumbs>
                 <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>

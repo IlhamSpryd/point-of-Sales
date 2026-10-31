@@ -7,7 +7,6 @@ namespace Database\Seeders;
 use App\Models\Role;
 use App\Models\Tenant;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 
 class Modul8PermissionsSeeder extends Seeder
 {
@@ -67,7 +66,7 @@ class Modul8PermissionsSeeder extends Seeder
                     default => [],
                 };
 
-                if (!empty($newPerms)) {
+                if (! empty($newPerms)) {
                     $merged = array_values(array_unique(array_merge($currentPerms, $newPerms)));
                     $role->permissions = $merged;
                     $role->save();

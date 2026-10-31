@@ -7,7 +7,7 @@
             <span>/</span>
             <span class="text-apeiron-ink font-medium">Edit</span>
         </div>
-        <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Edit Price List: {{ $priceList->name }}</h4>
+        <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Edit Price List: {{ $priceList->name }} (Sunting Daftar Harga)</h4>
     </div>
 
     @if($errors->any())

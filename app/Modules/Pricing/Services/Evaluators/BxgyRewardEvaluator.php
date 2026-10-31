@@ -21,7 +21,7 @@ class BxgyRewardEvaluator extends BasePromotionEvaluator
         $applied = [];
 
         foreach ($campaign->rules as $rule) {
-            /** @var \App\Modules\Pricing\Models\PromotionRule $rule */
+            /** @var PromotionRule $rule */
             $triggerProductIds = array_map(fn ($id) => (int) $id, $rule->trigger_product_ids ?? []);
             $triggerCategoryIds = array_map(fn ($id) => (int) $id, $rule->trigger_category_ids ?? []);
             $reqTriggerQty = max(1, (int) ($rule->min_order_qty ?? 1));
@@ -47,7 +47,7 @@ class BxgyRewardEvaluator extends BasePromotionEvaluator
             }
 
             foreach ($rule->rewards as $reward) {
-                /** @var \App\Modules\Pricing\Models\PromotionReward $reward */
+                /** @var PromotionReward $reward */
                 // 2. Kumpulkan kandidat item reward di keranjang
                 $candidateUnits = [];
 

@@ -38,6 +38,8 @@ class Voucher extends Model
         'used_count',
         'valid_from',
         'valid_until',
+        'starts_at',
+        'expires_at',
         'status',
     ];
 
@@ -89,7 +91,7 @@ class Voucher extends Model
 
     public function getStartsAtAttribute(): ?Carbon
     {
-        return $this->valid_from;
+        return $this->valid_from ? Carbon::parse((string) $this->valid_from) : null;
     }
 
     public function setStartsAtAttribute(mixed $value): void
@@ -99,7 +101,7 @@ class Voucher extends Model
 
     public function getExpiresAtAttribute(): ?Carbon
     {
-        return $this->valid_until;
+        return $this->valid_until ? Carbon::parse((string) $this->valid_until) : null;
     }
 
     public function setExpiresAtAttribute(mixed $value): void

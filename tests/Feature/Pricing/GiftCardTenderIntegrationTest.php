@@ -14,13 +14,11 @@ use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Customers\Enums\GiftCardStatusEnum;
-use App\Modules\Customers\Models\GiftCard;
 use App\Modules\Customers\Services\GiftCardService;
 use App\Modules\Sales\Services\TransactionService;
 use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class GiftCardTenderIntegrationTest extends TestCase
@@ -28,12 +26,19 @@ class GiftCardTenderIntegrationTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $user;
+
     protected Shift $shift;
+
     protected Customer $customer;
+
     protected Product $product;
+
     protected GiftCardService $giftCardService;
+
     protected TransactionService $transactionService;
 
     protected function afterSubclassSetUp(): void

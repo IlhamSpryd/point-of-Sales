@@ -22,7 +22,6 @@ use App\Modules\Pricing\Services\UnifiedPricingCalculationPipelineService;
 use App\Modules\Sales\Services\TransactionService;
 use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class UnifiedPricingPipelineComprehensiveTest extends TestCase
@@ -30,14 +29,23 @@ class UnifiedPricingPipelineComprehensiveTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $user;
+
     protected Shift $shift;
+
     protected Customer $customer;
+
     protected Category $category;
+
     protected Product $productA;
+
     protected Product $productB;
+
     protected UnifiedPricingCalculationPipelineService $pipeline;
+
     protected TransactionService $transactionService;
 
     protected function afterSubclassSetUp(): void

@@ -283,11 +283,11 @@ class VoucherService
                         ->first();
 
                     if ($voucher) {
-                        $voucher->increment('used_count');
+                        $voucher->used_count = (int) $voucher->used_count + 1;
                         if ($voucher->max_uses > 0 && $voucher->used_count >= $voucher->max_uses) {
                             $voucher->status = VoucherStatusEnum::EXPIRED;
-                            $voucher->save();
                         }
+                        $voucher->save();
                     }
                 }
             }
@@ -356,7 +356,8 @@ class VoucherService
     public function restoreVoucherForOrder(int $orderId): void
     {
         DB::transaction(function () use ($orderId) {
-            $reservations = PromotionReservation::where('order_id', $orderId)
+            $reservations = PromotionReservation::withoutGlobalScopes()
+                ->where('order_id', $orderId)
                 ->where('status', PromotionReservation::STATUS_COMMITTED)
                 ->lockForUpdate()
                 ->get();
@@ -373,11 +374,13 @@ class VoucherService
                         ->first();
 
                     if ($voucher && $voucher->used_count > 0) {
-                        $voucher->decrement('used_count');
+                        $voucher->used_count = max(0, (int) $voucher->used_count - 1);
 
                         $now = Carbon::now();
-                        $dateValid = (! $voucher->starts_at || $now->gte($voucher->starts_at)) &&
-                                     (! $voucher->expires_at || $now->lte($voucher->expires_at));
+                        $startsAt = $voucher->starts_at ?? $voucher->valid_from;
+                        $expiresAt = $voucher->expires_at ?? $voucher->valid_until;
+                        $dateValid = (! $startsAt || $now->gte($startsAt)) &&
+                                     (! $expiresAt || $now->lte($expiresAt));
 
                         if ($dateValid && ($voucher->max_uses === 0 || $voucher->used_count < $voucher->max_uses)) {
                             $voucher->status = VoucherStatusEnum::ACTIVE;

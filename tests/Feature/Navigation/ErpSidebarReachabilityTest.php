@@ -85,12 +85,12 @@ class ErpSidebarReachabilityTest extends TestCase
         $response->assertOk();
 
         // Check key ERP module entry points in sidebar
-        $response->assertSee('Pengadaan (Purchasing)');
-        $response->assertSee('Pelanggan & CRM');
-        $response->assertSee('Katalog Produk');
-        $response->assertSee('Bahan Baku & Stok');
-        $response->assertSee('Kasir & Operasional');
-        $response->assertSee('Pengaturan & Tata Kelola');
+        $response->assertSee('Purchasing');
+        $response->assertSee('Customers &amp; CRM', false);
+        $response->assertSee('Product Catalog');
+        $response->assertSee('Raw Materials &amp; Stock', false);
+        $response->assertSee('POS Terminal');
+        $response->assertSee('Settings');
     }
 
     public function test_purchasing_hub_is_reachable_and_renders_sub_nav(): void
@@ -98,12 +98,11 @@ class ErpSidebarReachabilityTest extends TestCase
         $response = $this->actingAs($this->ownerUser)->get(route('purchasing.suppliers.index'));
 
         $response->assertOk();
-        $response->assertSee('Sub-navigasi Pengadaan (Purchasing)', false);
-        $response->assertSee('Pemasok');
-        $response->assertSee('Pesanan Pembelian (PO)');
-        $response->assertSee('Penerimaan GRN');
-        $response->assertSee('Faktur Pemasok (3-Way)');
-        $response->assertSee('Retur Pembelian');
+        $response->assertSee('Suppliers');
+        $response->assertSee('Purchase Orders (PO)');
+        $response->assertSee('Goods Receipt (GRN)');
+        $response->assertSee('Supplier Invoices (3-Way)');
+        $response->assertSee('Purchase Returns');
     }
 
     public function test_customer_crm_hub_is_reachable_and_renders_sub_nav(): void
@@ -111,11 +110,10 @@ class ErpSidebarReachabilityTest extends TestCase
         $response = $this->actingAs($this->ownerUser)->get(route('customers.index'));
 
         $response->assertOk();
-        $response->assertSee('Sub-navigasi Pelanggan & Loyalti (CRM)', false);
-        $response->assertSee('Direktori Pelanggan');
-        $response->assertSee('Grup Pelanggan');
-        $response->assertSee('Kontrol Kredit B2B');
-        $response->assertSee('Loyalti, Voucher & Gift Card');
+        $response->assertSee('Customer Directory');
+        $response->assertSee('Customer Groups');
+        $response->assertSee('B2B Credit Control');
+        $response->assertSee('Loyalty, Vouchers &amp; Gift Cards', false);
     }
 
     public function test_sales_b2b_hub_is_reachable_and_renders_sub_nav(): void
@@ -123,11 +121,10 @@ class ErpSidebarReachabilityTest extends TestCase
         $response = $this->actingAs($this->ownerUser)->get(route('sales.orders.index'));
 
         $response->assertOk();
-        $response->assertSee('Sub-navigasi Penjualan B2B & Piutang (AR)', false);
-        $response->assertSee('Pesanan Penjualan (SO)');
-        $response->assertSee('Penawaran Harga (Quotation)');
-        $response->assertSee('Faktur & Piutang (AR)');
-        $response->assertSee('Retur & Nota Kredit');
+        $response->assertSee('Sales Orders (SO)');
+        $response->assertSee('Quotations');
+        $response->assertSee('Invoices &amp; Accounts Receivable (AR)', false);
+        $response->assertSee('Returns &amp; Credit Notes', false);
     }
 
     public function test_finance_hub_is_reachable_by_owner(): void

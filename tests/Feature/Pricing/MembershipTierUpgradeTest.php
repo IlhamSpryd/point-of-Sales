@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Pricing;
 
 use App\Enums\OrderStatus;
+use App\Models\Category;
 use App\Models\Customer;
-use App\Models\CustomerLoyaltyAccount;
 use App\Models\LoyaltyTier;
 use App\Models\Product;
 use App\Models\Role;
@@ -26,13 +26,21 @@ class MembershipTierUpgradeTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $user;
+
     protected Shift $shift;
+
     protected Customer $customer;
+
     protected LoyaltyTier $bronzeTier;
+
     protected LoyaltyTier $silverTier;
+
     protected LoyaltyTier $goldTier;
+
     protected LoyaltyService $loyaltyService;
 
     protected function afterSubclassSetUp(): void
@@ -165,7 +173,7 @@ class MembershipTierUpgradeTest extends TestCase
     public function test_transaction_service_triggers_tier_upgrade_on_order_completion(): void
     {
         // Buat kategori dan produk dengan harga Rp 5.000.000 -> menghasilkan 500 poin (naik ke Silver)
-        $category = \App\Models\Category::create([
+        $category = Category::create([
             'tenant_id' => $this->tenant->id,
             'category_name' => 'Elektronik',
             'is_active' => true,

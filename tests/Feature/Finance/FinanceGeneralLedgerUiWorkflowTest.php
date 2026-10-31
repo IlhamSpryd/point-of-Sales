@@ -209,7 +209,13 @@ class FinanceGeneralLedgerUiWorkflowTest extends TestCase
             ->set('selectedFiscalYear', 2026)
             ->call('generateFiscalYearPeriods');
 
-        $this->assertDatabaseCount('accounting_periods', 12);
+        $this->assertEquals(
+            12,
+            AccountingPeriod::withoutGlobalScopes()
+                ->where('tenant_id', $this->tenant->id)
+                ->where('fiscal_year', 2026)
+                ->count()
+        );
 
         /** @var AccountingPeriod $period */
         $period = AccountingPeriod::withoutGlobalScopes()

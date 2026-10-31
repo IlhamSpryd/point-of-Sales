@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Products\DataTransferObjects;
 
+use App\Models\Product;
 use Carbon\CarbonInterface;
 
 final class PriceResolutionContextDto
@@ -21,7 +22,7 @@ final class PriceResolutionContextDto
         public readonly ?string $channel = null,
         public readonly ?CarbonInterface $transactionDate = null,
         public readonly ?float $customPrice = null,
-        public readonly ?\App\Models\Product $product = null,
+        public readonly ?Product $product = null,
     ) {}
 
     /**

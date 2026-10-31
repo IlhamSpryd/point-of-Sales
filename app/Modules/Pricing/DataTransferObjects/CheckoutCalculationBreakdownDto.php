@@ -7,8 +7,8 @@ namespace App\Modules\Pricing\DataTransferObjects;
 class CheckoutCalculationBreakdownDto
 {
     /**
-     * @param array<int, array<string, mixed>> $lineBreakdowns
-     * @param array<int, array<string, mixed>> $appliedPromotionsSummary
+     * @param  array<int, array<string, mixed>>  $lineBreakdowns
+     * @param  array<int, array<string, mixed>>  $appliedPromotionsSummary
      */
     public function __construct(
         public float $lineSubtotal,

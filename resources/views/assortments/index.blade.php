@@ -8,7 +8,7 @@
     <div class="space-y-6" data-gsap="page-enter">
         <!-- Header -->
         <x-erp.page-header
-            title="Branch Assortments & Price Overrides"
+            title="Branch Assortments & Price Overrides (Asortimen Cabang)"
             description="Configure branch-level product availability and branch-specific pricing without duplicating master catalog records.">
             <x-slot:breadcrumbs>
                 <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>

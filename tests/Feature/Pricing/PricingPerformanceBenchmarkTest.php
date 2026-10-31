@@ -29,14 +29,22 @@ class PricingPerformanceBenchmarkTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $user;
+
     protected Shift $shift;
+
     protected Customer $customer;
+
     protected Category $category;
+
     /** @var array<int, Product> */
     protected array $products = [];
+
     protected Voucher $voucher;
+
     protected UnifiedPricingCalculationPipelineService $pipeline;
 
     protected function afterSubclassSetUp(): void

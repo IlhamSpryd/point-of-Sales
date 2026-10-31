@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Customers;
 
 use App\Livewire\Customers\LoyaltyAndValueInstrumentManager;
+use App\Livewire\Pricing\VoucherManager;
 use App\Models\Customer;
 use App\Models\Role;
 use App\Models\Store;
@@ -507,7 +508,7 @@ class LoyaltyAndValueInstrumentsTest extends TestCase
         $from = '2026-11-01T08:00';
         $until = '2026-11-30T23:59';
 
-        Livewire::test(\App\Livewire\Pricing\VoucherManager::class)
+        Livewire::test(VoucherManager::class)
             ->assertOk()
             ->call('openCreateModal')
             ->set('code', 'DATEPERSIST10')
@@ -529,7 +530,7 @@ class LoyaltyAndValueInstrumentsTest extends TestCase
         $this->assertEquals('2026-11-30 23:59:00', $savedVoucher->valid_until->format('Y-m-d H:i:s'));
 
         // Test editing loads the dates into startsAt and expiresAt
-        Livewire::test(\App\Livewire\Pricing\VoucherManager::class)
+        Livewire::test(VoucherManager::class)
             ->assertOk()
             ->call('openEditModal', $savedVoucher->id)
             ->assertSet('startsAt', $from)

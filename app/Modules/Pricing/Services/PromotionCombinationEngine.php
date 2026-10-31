@@ -186,7 +186,7 @@ class PromotionCombinationEngine
     /**
      * Menyelesaikan kombinasi seluruh diskon tingkat pesanan (promo otomatis, voucher, diskon manual).
      *
-     * @param array<int, array{type: string, amount: float, is_stackable: bool}> $orderDiscounts
+     * @param  array<int, array{type: string, amount: float, is_stackable: bool}>  $orderDiscounts
      */
     public function resolveOrderDiscounts(array $orderDiscounts, float $orderSubtotal): float
     {

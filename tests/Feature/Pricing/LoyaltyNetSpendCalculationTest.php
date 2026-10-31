@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Pricing;
 
 use App\Models\Customer;
-use App\Models\CustomerLoyaltyAccount;
-use App\Models\LoyaltyLedger;
 use App\Models\LoyaltyTier;
 use App\Models\Role;
 use App\Models\Store;
@@ -23,9 +21,13 @@ class LoyaltyNetSpendCalculationTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $user;
+
     protected Customer $customer;
+
     protected LoyaltyService $loyaltyService;
 
     protected function afterSubclassSetUp(): void

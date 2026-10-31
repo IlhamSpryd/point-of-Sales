@@ -20,7 +20,6 @@ use App\Modules\Sales\Services\TransactionService;
 use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class StoreCreditTenderIntegrationTest extends TestCase
@@ -28,12 +27,19 @@ class StoreCreditTenderIntegrationTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $user;
+
     protected Shift $shift;
+
     protected Customer $customer;
+
     protected Product $product;
+
     protected StoreCreditService $storeCreditService;
+
     protected TransactionService $transactionService;
 
     protected function afterSubclassSetUp(): void

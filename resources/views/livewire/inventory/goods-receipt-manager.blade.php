@@ -3,7 +3,7 @@
     {{-- Header & Aksi Utama --}}
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Goods Receipt</h4>
+            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Goods Receipt <span class="sr-only">Penerimaan Barang (Goods Receipt)</span></h4>
             <p class="text-sm font-medium text-apeiron-muted mt-1">
                 Record physical receipt of products & ingredients, recalculate WAC valuation, and capture lot batch/expiry details
             </p>

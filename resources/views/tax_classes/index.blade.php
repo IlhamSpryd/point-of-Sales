@@ -38,7 +38,7 @@
 
         <!-- Header -->
         <x-erp.page-header
-            title="Tax Classes"
+            title="Tax Classes (Kelas Pajak)"
             description="Manage tax rate classifications for product commodities (VAT 11%, Tax-Exempt, etc.) across retail and B2B transactions.">
             <x-slot:breadcrumbs>
                 <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>

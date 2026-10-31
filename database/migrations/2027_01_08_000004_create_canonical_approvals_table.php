@@ -36,7 +36,7 @@ return new class extends Migration
         }
 
         if (DB::connection()->getDriverName() === 'mysql') {
-            DB::unprepared("DROP TRIGGER IF EXISTS trg_approvals_before_update;");
+            DB::unprepared('DROP TRIGGER IF EXISTS trg_approvals_before_update;');
             DB::unprepared("
                 CREATE TRIGGER trg_approvals_before_update BEFORE UPDATE ON approvals
                 FOR EACH ROW
@@ -54,7 +54,7 @@ return new class extends Migration
                 END;
             ");
 
-            DB::unprepared("DROP TRIGGER IF EXISTS trg_approvals_before_delete;");
+            DB::unprepared('DROP TRIGGER IF EXISTS trg_approvals_before_delete;');
             DB::unprepared("
                 CREATE TRIGGER trg_approvals_before_delete BEFORE DELETE ON approvals
                 FOR EACH ROW
@@ -68,8 +68,8 @@ return new class extends Migration
     public function down(): void
     {
         if (DB::connection()->getDriverName() === 'mysql') {
-            DB::unprepared("DROP TRIGGER IF EXISTS trg_approvals_before_update;");
-            DB::unprepared("DROP TRIGGER IF EXISTS trg_approvals_before_delete;");
+            DB::unprepared('DROP TRIGGER IF EXISTS trg_approvals_before_update;');
+            DB::unprepared('DROP TRIGGER IF EXISTS trg_approvals_before_delete;');
         }
 
         Schema::dropIfExists('approvals');

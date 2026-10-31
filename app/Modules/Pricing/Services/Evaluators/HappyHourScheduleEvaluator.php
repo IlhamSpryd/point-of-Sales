@@ -22,7 +22,7 @@ class HappyHourScheduleEvaluator extends BasePromotionEvaluator
         $cartSubtotal = $context->getSubtotal();
 
         foreach ($campaign->rules as $rule) {
-            /** @var \App\Modules\Pricing\Models\PromotionRule $rule */
+            /** @var PromotionRule $rule */
             $isRuleSatisfied = false;
             $matchingLineIndices = [];
 
@@ -66,7 +66,7 @@ class HappyHourScheduleEvaluator extends BasePromotionEvaluator
             }
 
             foreach ($rule->rewards as $reward) {
-                /** @var \App\Modules\Pricing\Models\PromotionReward $reward */
+                /** @var PromotionReward $reward */
                 if ($rule->rule_type === PromotionRule::RULE_CART_TOTAL) {
                     // Diskon tingkat keranjang / order
                     $discount = $this->calculateDiscountAmount($reward, $cartSubtotal);

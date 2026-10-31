@@ -32,9 +32,7 @@ use App\Models\User;
 use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Attributes\Url;
-use Livewire\Livewire;
 use ReflectionClass;
-use ReflectionProperty;
 use Tests\TestCase;
 
 class NavigationUxAndPaginationTest extends TestCase

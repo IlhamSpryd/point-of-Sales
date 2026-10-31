@@ -19,8 +19,11 @@ class PromotionRule extends Model
     use ScopedToTenant;
 
     public const RULE_CART_TOTAL = 'CART_TOTAL';
+
     public const RULE_PRODUCT_MATCH = 'PRODUCT_MATCH';
+
     public const RULE_CATEGORY_MATCH = 'CATEGORY_MATCH';
+
     public const RULE_BXGY_TRIGGER = 'BXGY_TRIGGER';
 
     protected $fillable = [

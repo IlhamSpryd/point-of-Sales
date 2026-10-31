@@ -138,8 +138,8 @@ class JournalEntryManager extends Component
         $totalCredit = '0.00';
 
         foreach ($this->lines as $line) {
-            $debit = bcadd((string) ($line['debit_amount'] ?? '0.00'), '0', 2);
-            $credit = bcadd((string) ($line['credit_amount'] ?? '0.00'), '0', 2);
+            $debit = bcadd((string) $line['debit_amount'], '0', 2);
+            $credit = bcadd((string) $line['credit_amount'], '0', 2);
 
             $totalDebit = bcadd($totalDebit, $debit, 2);
             $totalCredit = bcadd($totalCredit, $credit, 2);
@@ -171,7 +171,7 @@ class JournalEntryManager extends Component
             'lines.*.description' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $balance = $this->balanceSummary;
+        $balance = $this->getBalanceSummaryProperty();
         if (! $balance['isBalanced']) {
             $this->addError('lines', 'Jurnal tidak seimbang. Total Debit (Rp '.number_format((float) $balance['totalDebit'], 2).') wajib sama dengan Total Credit (Rp '.number_format((float) $balance['totalCredit'], 2).') dan lebih dari 0.');
 
@@ -227,7 +227,7 @@ class JournalEntryManager extends Component
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
         $this->selectedJournal = JournalEntry::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
-            ->with(['lines.account', 'creator'])
+            ->with(['lines.account', 'createdByUser'])
             ->findOrFail($id);
 
         $this->selectedJournalId = $this->selectedJournal->id;

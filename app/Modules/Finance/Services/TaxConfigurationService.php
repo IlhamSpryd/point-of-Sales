@@ -286,16 +286,10 @@ class TaxConfigurationService
     }
 
     /**
-     * Pembulatan Half-Up presisi desimal berbasis string/bcmath.
+     * Pembulatan Half-Up presisi desimal standar keuangan.
      */
     private function roundAmount(string $val, int $scale = 2): string
     {
-        $isNegative = str_starts_with($val, '-');
-        $half = '0.'.str_repeat('0', $scale).'5';
-        $adjusted = $isNegative
-            ? bcsub($val, $half, $scale + 2)
-            : bcadd($val, $half, $scale + 2);
-
-        return bcadd($adjusted, '0', $scale);
+        return number_format(round((float) $val, $scale, PHP_ROUND_HALF_UP), $scale, '.', '');
     }
 }

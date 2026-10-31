@@ -15,8 +15,11 @@ use Livewire\Component;
 class MarginSimulationModal extends Component
 {
     public bool $isOpen = false;
+
     public ?int $campaignId = null;
+
     public ?MarginSimulationResultDto $simulation = null;
+
     public bool $canPublish = false;
 
     #[On('open-margin-simulation')]
@@ -43,6 +46,7 @@ class MarginSimulationModal extends Component
         $campaign = PromotionCampaign::with(['rules.rewards'])->find($this->campaignId);
         if (! $campaign) {
             $this->close();
+
             return;
         }
 

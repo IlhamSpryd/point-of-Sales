@@ -39,6 +39,7 @@ class IngredientStockMovementSeeder extends Seeder
         // Instead, we'll just truncate with FK checks off.
         DB::statement('SET FOREIGN_KEY_CHECKS=0');
         // Drop append-only triggers temporarily
+        DB::unprepared('DROP TRIGGER IF EXISTS trg_ingredient_stock_movements_before_delete');
         DB::unprepared('DROP TRIGGER IF EXISTS trg_ingredient_stock_movements_no_delete');
         DB::unprepared('DROP TRIGGER IF EXISTS trg_ingredient_stock_movements_no_update');
         DB::table('ingredient_stock_movements')->truncate();
@@ -140,7 +141,7 @@ class IngredientStockMovementSeeder extends Seeder
 
         // Recreate triggers
         DB::unprepared("
-            CREATE TRIGGER trg_ingredient_stock_movements_no_delete BEFORE DELETE ON ingredient_stock_movements FOR EACH ROW
+            CREATE TRIGGER trg_ingredient_stock_movements_before_delete BEFORE DELETE ON ingredient_stock_movements FOR EACH ROW
             BEGIN
                 SIGNAL SQLSTATE '45000'
                     SET MESSAGE_TEXT = 'ingredient_stock_movements bersifat append-only: DELETE dilarang.';

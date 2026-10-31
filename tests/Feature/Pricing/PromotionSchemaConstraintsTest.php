@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\Pricing;
 
 use App\Models\Approval;
-use App\Models\Category;
-use App\Models\Product;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;

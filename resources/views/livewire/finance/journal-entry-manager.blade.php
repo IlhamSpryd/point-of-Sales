@@ -344,7 +344,7 @@
                         </div>
                         <div class="flex justify-between">
                             <span class="text-zinc-500">Diposting Oleh:</span>
-                            <span class="text-zinc-900 dark:text-zinc-100 font-medium">{{ $selectedJournal->creator?->name ?? 'System Auto' }}</span>
+                            <span class="text-zinc-900 dark:text-zinc-100 font-medium">{{ $selectedJournal->createdByUser?->name ?? 'System Auto' }}</span>
                         </div>
                         @if($selectedJournal->reversed_by_journal_id)
                             <div class="flex justify-between text-rose-500">

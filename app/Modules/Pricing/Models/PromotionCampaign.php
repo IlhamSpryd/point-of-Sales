@@ -25,15 +25,23 @@ class PromotionCampaign extends Model
     use ScopedToTenant;
 
     public const TYPE_AUTOMATIC_DISCOUNT = 'AUTOMATIC_DISCOUNT';
+
     public const TYPE_BUY_X_GET_Y = 'BUY_X_GET_Y';
+
     public const TYPE_BUNDLE_PACKAGE = 'BUNDLE_PACKAGE';
+
     public const TYPE_HAPPY_HOUR = 'HAPPY_HOUR';
 
     public const STATUS_DRAFT = 'DRAFT';
+
     public const STATUS_SCHEDULED = 'SCHEDULED';
+
     public const STATUS_ACTIVE = 'ACTIVE';
+
     public const STATUS_PAUSED = 'PAUSED';
+
     public const STATUS_EXPIRED = 'EXPIRED';
+
     public const STATUS_ARCHIVED = 'ARCHIVED';
 
     protected $fillable = [
