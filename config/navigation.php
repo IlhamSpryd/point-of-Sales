@@ -40,6 +40,14 @@ return [
                 'scope' => 'store',
             ],
             [
+                'label' => 'Table Management',
+                'icon' => 'table_restaurant',
+                'route' => 'tables.index',
+                'active' => 'tables.*',
+                'roles' => ['Owner', 'Manager'],
+                'scope' => 'store',
+            ],
+            [
                 'label' => 'Order History',
                 'icon' => 'receipt_long',
                 'route' => 'orders.index',

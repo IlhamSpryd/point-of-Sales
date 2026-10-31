@@ -249,6 +249,13 @@ class TableService
         });
     }
 
+    public function deactivateTable(Table|int $table, ?int $actorId = null): Table
+    {
+        $tableModel = $table instanceof Table ? $table : Table::findOrFail($table);
+
+        return $this->disableTable($tableModel, $actorId);
+    }
+
     /**
      * Kompatibilitas wrapper lama untuk regenerateToken.
      */

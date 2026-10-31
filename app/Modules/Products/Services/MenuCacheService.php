@@ -10,6 +10,7 @@ use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Store;
+use App\Modules\Inventory\Services\ProductFulfillmentResolverService;
 use App\Services\CatalogPriceResolverService;
 use App\Services\Context\TenantContext;
 use Illuminate\Contracts\Cache\LockTimeoutException;
@@ -57,7 +58,7 @@ class MenuCacheService
 
             $categories = Category::with([
                 'products' => function ($q) use ($storeId) {
-                    $q->availableForOrder()->with(['modifierGroups.modifiers', 'storeAssortments']);
+                    $q->availableForOrder()->with(['modifierGroups.modifiers', 'storeAssortments', 'ingredients']);
                     if ($storeId) {
                         $q->whereDoesntHave('storeAssortments', function ($a) use ($storeId) {
                             $a->where('store_id', $storeId)->where('is_available', false);
@@ -68,13 +69,19 @@ class MenuCacheService
 
             if ($storeId) {
                 $resolver = app(CatalogPriceResolverService::class);
+                $fulfillmentResolver = app(ProductFulfillmentResolverService::class);
+                $allProducts = collect();
+
                 foreach ($categories as $cat) {
                     foreach ($cat->products as $prod) {
                         if ($prod instanceof Product) {
                             $prod->product_price = (int) round($resolver->resolvePrice($prod, $storeId));
+                            $allProducts->push($prod);
                         }
                     }
                 }
+
+                $fulfillmentResolver->resolveBatch($allProducts, $storeId);
             }
 
             return $categories;
@@ -131,7 +138,7 @@ class MenuCacheService
 
         $productQuery = Product::where('is_active', true)
             ->where('status', 'active')
-            ->with(['category', 'modifierGroups.modifiers', 'storeAssortments']);
+            ->with(['category', 'modifierGroups.modifiers', 'storeAssortments', 'ingredients']);
 
         if ($storeId) {
             $productQuery->whereDoesntHave('storeAssortments', function ($a) use ($storeId) {
@@ -143,9 +150,11 @@ class MenuCacheService
 
         if ($storeId) {
             $resolver = app(CatalogPriceResolverService::class);
+            $fulfillmentResolver = app(ProductFulfillmentResolverService::class);
             foreach ($products as $prod) {
                 $prod->product_price = (int) round($resolver->resolvePrice($prod, $storeId));
             }
+            $fulfillmentResolver->resolveBatch($products, $storeId);
         }
 
         return [

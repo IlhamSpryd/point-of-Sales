@@ -28,7 +28,7 @@ return [
     'kds_sla_critical_minutes' => env('KDS_SLA_CRITICAL_MINUTES', 15),
 
     // Phase 14: Shadow balances authority flag
-    'stock_balances_authoritative' => env('POS_STOCK_BALANCES_AUTHORITATIVE', false),
+    'stock_balances_authoritative' => env('POS_STOCK_BALANCES_AUTHORITATIVE', true),
 
     // Sprint 2: Owner self-registration flag (defaults to false for terminal lockdown)
     'allow_web_registration' => env('POS_ALLOW_WEB_REGISTRATION', false),

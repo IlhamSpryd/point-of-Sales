@@ -50,6 +50,7 @@ use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
 use App\Modules\Pricing\Models\PromotionReservation;
 use App\Modules\Pricing\Services\DiscountAllocationService;
 use App\Modules\Pricing\Services\DiscountApprovalService;
+use App\Modules\Products\Services\MenuCacheService;
 use App\Services\CatalogPriceResolverService;
 use App\Services\Context\TenantContext;
 use App\Services\EntitlementService;
@@ -2199,12 +2200,24 @@ class TransactionService
             ]);
         }
 
-        // Satu-satunya penulis baris balance adalah hook `Product::saved()`
-        // (Phase 13) yang menghitung delta dari kolom legacy -- sehingga
-        // MIRROR kolom legacy di bawah otomatis memperbarui balance sekali
-        // tanpa double-write.
-        $product->stock = (int) round((float) $product->stock + (float) $delta);
-        $product->save();
+        DB::table('product_stock_balances')
+            ->where('tenant_id', $tenantId)
+            ->where('store_id', $storeId)
+            ->where('product_id', $product->id)
+            ->update([
+                'quantity' => DB::raw("quantity + ({$delta})"),
+                'updated_at' => now(),
+            ]);
+
+        $newStock = max(0, (int) round((float) $product->stock + (float) $delta));
+        DB::table('products')
+            ->where('id', $product->id)
+            ->update([
+                'stock' => $newStock,
+                'updated_at' => now(),
+            ]);
+
+        DB::afterCommit(fn () => app(MenuCacheService::class)->flush($tenantId, $storeId));
     }
 
     /**
@@ -2233,10 +2246,24 @@ class TransactionService
             ]);
         }
 
-        // Mirror kolom legacy; hook `Ingredient::saved()` (Phase 13) yang
-        // meneruskan delta ke baris balance store aktif.
-        $ingredient->current_stock = bcadd((string) $ingredient->current_stock, $delta, 4);
-        $ingredient->save();
+        DB::table('ingredient_stock_balances')
+            ->where('tenant_id', $tenantId)
+            ->where('store_id', $storeId)
+            ->where('ingredient_id', $ingredient->id)
+            ->update([
+                'quantity' => DB::raw("quantity + ({$delta})"),
+                'updated_at' => now(),
+            ]);
+
+        $newLegacyStock = max(0.0, (float) $ingredient->current_stock + (float) $delta);
+        DB::table('ingredients')
+            ->where('id', $ingredient->id)
+            ->update([
+                'current_stock' => number_format($newLegacyStock, 4, '.', ''),
+                'updated_at' => now(),
+            ]);
+
+        DB::afterCommit(fn () => app(MenuCacheService::class)->flush($tenantId, $storeId));
     }
 
     /**

@@ -104,10 +104,19 @@
                 @foreach ($allProducts as $product)
                     @php
                         $inCartQty = $this->cartQtyByProduct[$product->id] ?? 0;
-                        $tracksStock = (bool) ($product->track_inventory ?? true)
-                            && ! ($product->isService() || $product->isNonInventory() || $product->isBundle());
-                        $isOutOfStock = $tracksStock && !is_null($product->stock) && $product->stock <= 0;
-                        $isLowStock = $tracksStock && !is_null($product->stock) && $product->stock > 0 && $product->stock <= 10;
+                        $hasBom = $product->relationLoaded('ingredients') && $product->ingredients->isNotEmpty();
+                        if ($hasBom) {
+                            $isFulfillable = $product->is_fulfillable ?? true;
+                            $isOutOfStock = ! $isFulfillable;
+                            $isLowStock = $isFulfillable && isset($product->available_portions) && $product->available_portions > 0 && $product->available_portions <= 10;
+                            $tracksStock = true;
+                        } else {
+                            $tracksStock = (bool) ($product->track_inventory ?? true)
+                                && ! ($product->isService() || $product->isNonInventory() || $product->isBundle());
+                            $isFulfillable = $product->is_fulfillable ?? (! $tracksStock || ($product->stock > 0));
+                            $isOutOfStock = ! $isFulfillable;
+                            $isLowStock = $tracksStock && !is_null($product->stock) && $product->stock > 0 && $product->stock <= 10;
+                        }
                     @endphp
                     <div wire:key="product-{{ $product->id }}"
                         x-show="matchesCategory({{ $product->cat_id }}, {{ (!empty($product->is_favorite) || !empty($product->is_featured)) ? 'true' : 'false' }})"
@@ -135,7 +144,7 @@
                                     </span>
                                 @elseif ($isLowStock)
                                     <span class="absolute top-2 left-2 z-20 px-2 py-0.5 rounded-[5px] bg-[#FEE2E2] border border-[#FECACA] text-[#DC2626] font-label-sm text-[10px] font-medium font-mono">
-                                        Sisa {{ $product->stock }}
+                                        Sisa {{ $hasBom ? $product->available_portions : $product->stock }}
                                     </span>
                                 @endif
 
@@ -150,7 +159,11 @@
                                     </div>
                                 @endif
 
-                                @if ($tracksStock && !is_null($product->stock) && $product->stock > 0)
+                                @if ($hasBom && isset($product->available_portions) && $product->available_portions > 0)
+                                    <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded-[5px] bg-white/95 backdrop-blur-sm border border-[#E5E5E5] text-[#525252] font-label-sm text-[10px] font-mono shadow-2xs">
+                                        Porsi: {{ $product->available_portions }}
+                                    </span>
+                                @elseif (!$hasBom && $tracksStock && !is_null($product->stock) && $product->stock > 0)
                                     <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded-[5px] bg-white/95 backdrop-blur-sm border border-[#E5E5E5] text-[#525252] font-label-sm text-[10px] font-mono shadow-2xs">
                                         Stok: {{ $product->stock }}
                                     </span>
@@ -184,8 +197,8 @@
                             <span class="font-numeric-currency text-[14px] font-semibold text-[#111827] font-mono">
                                 Rp {{ number_format($product->product_price, 0, ',', '.') }}
                             </span>
-                            <button class="flex items-center justify-center w-7 h-7 rounded-md bg-[#F4F4F5] hover:bg-[#171717] hover:text-white transition-colors text-[#111827] cursor-pointer"
-                                type="button" title="Tambah"
+                            <button class="flex items-center justify-center w-7 h-7 rounded-md {{ $isOutOfStock ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-[#F4F4F5] hover:bg-[#171717] hover:text-white text-[#111827] cursor-pointer' }} transition-colors"
+                                type="button" title="{{ $isOutOfStock ? ($hasBom ? 'Bahan baku tidak mencukupi (Habis)' : 'Stok produk habis') : 'Tambah' }}"
                                 @if(!$isOutOfStock)
                                     x-on:click.stop="window.erpMotion?.pulseHighlight($el); $wire.{{ $product->modifierGroups->count() > 0 ? "openModifierPicker({$product->id})" : "addToCartDirectly({$product->id})" }}"
                                 @else

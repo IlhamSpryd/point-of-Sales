@@ -8,8 +8,10 @@ use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
 use App\Models\Ingredient;
 use App\Models\Product;
+use App\Modules\Products\Services\MenuCacheService;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Support\Facades\DB;
 
 /**
  * [D2-BE-005] Pivot resep produk (BOM): product_ingredients.
@@ -19,6 +21,9 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
  * kalau tidak, composite FK product_ingredients_product_id_composite_foreign
  * akan menolak baris tersebut.
  *
+ * @property int|null $tenant_id
+ * @property int $product_id
+ * @property int $ingredient_id
  * @property float|string $quantity_required
  */
 class ProductIngredient extends Pivot
@@ -29,6 +34,33 @@ class ProductIngredient extends Pivot
     protected $table = 'product_ingredients';
 
     protected $guarded = [];
+
+    protected static function booted(): void
+    {
+        static::saved(function (self $pivot) {
+            $tenantId = $pivot->tenant_id;
+            if ($tenantId) {
+                DB::afterCommit(function () use ($tenantId) {
+                    try {
+                        app(MenuCacheService::class)->flush((int) $tenantId);
+                    } catch (\Throwable) {
+                    }
+                });
+            }
+        });
+
+        static::deleted(function (self $pivot) {
+            $tenantId = $pivot->tenant_id;
+            if ($tenantId) {
+                DB::afterCommit(function () use ($tenantId) {
+                    try {
+                        app(MenuCacheService::class)->flush((int) $tenantId);
+                    } catch (\Throwable) {
+                    }
+                });
+            }
+        });
+    }
 
     public function product(): BelongsTo
     {

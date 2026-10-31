@@ -112,13 +112,13 @@ class SidebarIntegrityTest extends TestCase
                 ->all();
         };
 
-        // 1. Owner sees 26 operational items across ERP pillars (including 6 HR items)
+        // 1. Owner sees 27 operational items across ERP pillars (including Table Management & 6 HR items)
         $ownerRoutes = $getVisibleRoutes('Owner');
-        $this->assertCount(26, $ownerRoutes);
+        $this->assertCount(27, $ownerRoutes);
 
-        // 2. Manager sees 22 items (all except stores, users, roles, settings)
+        // 2. Manager sees 23 items (including Table Management, all except stores, users, roles, settings)
         $managerRoutes = $getVisibleRoutes('Manager');
-        $this->assertCount(22, $managerRoutes);
+        $this->assertCount(23, $managerRoutes);
         $this->assertNotContains('stores.index', $managerRoutes);
         $this->assertNotContains('users.index', $managerRoutes);
         $this->assertNotContains('roles.index', $managerRoutes);

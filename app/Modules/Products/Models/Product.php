@@ -59,6 +59,9 @@ use Illuminate\Support\Facades\DB;
  * @property int $stock
  * @property string $status
  * @property bool $is_active
+ * @property bool|null $is_fulfillable
+ * @property int|null $available_portions
+ * @property bool|null $has_bom
  * @property-read Category|null $category
  * @property-read Brand|null $brand
  * @property-read UnitOfMeasure|null $baseUom
@@ -352,7 +355,8 @@ class Product extends Model
             ->where(function ($q) {
                 $q->where('track_inventory', false)
                     ->orWhereIn('product_type', ['service', 'non_inventory', 'bundle'])
-                    ->orWhere('stock', '>', 0);
+                    ->orWhere('stock', '>', 0)
+                    ->orWhereHas('ingredients');
             });
     }
 
