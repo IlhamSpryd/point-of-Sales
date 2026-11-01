@@ -25,7 +25,8 @@ class ShiftService
 {
     public function __construct(
         protected AuditTrailService $auditTrail,
-        protected CashierPinService $cashierPinService
+        protected CashierPinService $cashierPinService,
+        protected TenantContext $tenantContext
     ) {}
 
     /**
@@ -52,9 +53,8 @@ class ShiftService
         } else {
             $cashierUserId = $tenantIdOrUserId;
             $openingBalance = (int) $storeIdOrOpeningBalance;
-            $tenantContext = app(TenantContext::class);
-            $tenantId = $tenantContext->getTenantId();
-            $storeId = $tenantContext->getStoreId();
+            $tenantId = $this->tenantContext->getTenantId();
+            $storeId = $this->tenantContext->getStoreId();
         }
 
         $user = User::withoutGlobalScopes()->find($cashierUserId);
@@ -64,6 +64,10 @@ class ShiftService
 
         if ($tenantId === null) {
             $tenantId = (int) $user->tenant_id;
+        }
+
+        if ($tenantId <= 0) {
+            throw new DomainException('Konteks tenant aktif tidak ditemukan untuk kasir ini.');
         }
 
         // Validasi PIN jika disertakan atau wajib
@@ -77,7 +81,10 @@ class ShiftService
 
         // Resolusi dan validasi store_id
         if ($storeId === null) {
-            $userStore = DB::table('user_stores')->where('user_id', $user->id)->value('store_id');
+            $userStore = DB::table('user_stores')
+                ->where('tenant_id', $tenantId)
+                ->where('user_id', $user->id)
+                ->value('store_id');
             $tenantStore = $userStore ?: DB::table('stores')->where('tenant_id', $tenantId)->value('id');
             $storeId = $userStore
                 ? (int) $userStore
@@ -722,24 +729,55 @@ class ShiftService
 
     /**
      * Memeriksa otorisasi supervisor/manajer/owner untuk cabang terkait.
+     * Enforces fail-closed multi-tenant boundary checks (Batch 1A).
      */
     public function canAuthorizeSupervisor(User $user, int $storeId): bool
     {
+        // 1. Resolve and validate the authoritative tenant ID
+        try {
+            $tenantId = (int) ($user->tenant_id ?? $this->tenantContext->requireTenantId());
+        } catch (\RuntimeException $e) {
+            throw new DomainException('Konteks tenant aktif tidak ditemukan untuk verifikasi otorisasi supervisor.', 0, $e);
+        }
+
+        if ($tenantId <= 0) {
+            throw new DomainException('Konteks tenant aktif tidak ditemukan untuk verifikasi otorisasi supervisor.');
+        }
+
+        // 2. Guarding IDOR: Pastikan storeId yang diminta adalah sah milik tenant yang sama
+        $storeBelongsToTenant = DB::table('stores')
+            ->where('tenant_id', $tenantId)
+            ->where('id', $storeId)
+            ->exists();
+
+        if (! $storeBelongsToTenant) {
+            return false;
+        }
+
+        // 3. Only after store ownership validation, evaluate role & supervisor permissions
         $roleName = $user->role?->name;
         if (! in_array($roleName, ['Supervisor', 'Manager', 'Owner', 'Admin'], true) && ! (bool) $user->role?->is_admin) {
             return false;
         }
 
+        // Owner & Admin memiliki wewenang atas seluruh cabang milik tenant-nya
         if (in_array($roleName, ['Owner', 'Admin'], true) || (bool) $user->role?->is_admin) {
             return true;
         }
 
-        $hasAssignments = DB::table('user_stores')->where('user_id', $user->id)->exists();
+        // 4. Supervisor & Manager: periksa assignment di user_stores milik tenant
+        $hasAssignments = DB::table('user_stores')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $user->id)
+            ->exists();
+
         if (! $hasAssignments) {
+            // Jika belum dibatasi ke cabang spesifik dalam tenant-nya, diizinkan untuk cabang tenant tersebut
             return true;
         }
 
         return DB::table('user_stores')
+            ->where('tenant_id', $tenantId)
             ->where('user_id', $user->id)
             ->where('store_id', $storeId)
             ->exists();

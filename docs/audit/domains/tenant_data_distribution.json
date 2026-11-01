@@ -1,0 +1,1739 @@
+{
+    "purchase_cost_allocations": {
+        "t1": 0,
+        "t2": 73,
+        "t3": 80,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "tax_account_mappings": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "promotion_reservations": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "ar_ledger_entries": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "devices": {
+        "t1": 1,
+        "t2": 12,
+        "t3": 10,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "work_schedules": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "purchase_orders": {
+        "t1": 0,
+        "t2": 187,
+        "t3": 158,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "departments": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "user_oauth_identities": {
+        "t1": 0,
+        "t2": 4,
+        "t3": 3,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "roles": {
+        "t1": 8,
+        "t2": 8,
+        "t3": 8,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "price_lists": {
+        "t1": 0,
+        "t2": 12,
+        "t3": 11,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "modifier_groups": {
+        "t1": 0,
+        "t2": 4,
+        "t3": 4,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "commission_rules": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "payroll_items": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "ap_payments": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "stock_opname_items": {
+        "t1": 0,
+        "t2": 104,
+        "t3": 89,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "tenant_subscriptions": {
+        "t1": 1,
+        "t2": 1,
+        "t3": 1,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "purchase_debit_note_applications": {
+        "t1": 0,
+        "t2": 6,
+        "t3": 3,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "loyalty_tiers": {
+        "t1": 0,
+        "t2": 5,
+        "t3": 5,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "export_tasks": {
+        "t1": 0,
+        "t2": 6,
+        "t3": 4,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "customer_loyalty_accounts": {
+        "t1": 0,
+        "t2": 900,
+        "t3": 900,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "stock_transfers": {
+        "t1": 0,
+        "t2": 3,
+        "t3": 3,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "stock_adjustment_items": {
+        "t1": 0,
+        "t2": 35,
+        "t3": 39,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "purchase_requests": {
+        "t1": 0,
+        "t2": 45,
+        "t3": 78,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "modifier_ingredients": {
+        "t1": 0,
+        "t2": 6,
+        "t3": 6,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "purchase_request_lines": {
+        "t1": 0,
+        "t2": 209,
+        "t3": 358,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "modifier_group_product": {
+        "t1": 0,
+        "t2": 136,
+        "t3": 136,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "overtime_records": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "employee_bank_accounts": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "cash_drawer_movements": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "stores": {
+        "t1": 1,
+        "t2": 6,
+        "t3": 5,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "payroll_periods": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "purchase_return_lines": {
+        "t1": 0,
+        "t2": 9,
+        "t3": 5,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "email_outbox": {
+        "t1": 1,
+        "t2": 52,
+        "t3": 54,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "account_period_balances": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "customer_contacts": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "parked_carts": {
+        "t1": 0,
+        "t2": 37,
+        "t3": 30,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "shifts": {
+        "t1": 0,
+        "t2": 3751,
+        "t3": 3274,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "product_variants": {
+        "t1": 0,
+        "t2": 60,
+        "t3": 60,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "tax_codes": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "leave_transactions": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "store_credit_accounts": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "sales_order_lines": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "ingredient_restock_forecasts": {
+        "t1": 0,
+        "t2": 58,
+        "t3": 58,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "employee_compensations": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "goods_receipts": {
+        "t1": 0,
+        "t2": 39,
+        "t3": 39,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "stock_movements": {
+        "t1": 0,
+        "t2": 23546,
+        "t3": 20032,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "fixed_assets": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "employee_employment_histories": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "accounting_receivable_outboxes": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "accounting_periods": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "store_credit_ledgers": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "commission_records": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "orders": {
+        "t1": 0,
+        "t2": 105029,
+        "t3": 89195,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "payments": {
+        "t1": 0,
+        "t2": 110130,
+        "t3": 93557,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "customer_invoices": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "supplier_contacts": {
+        "t1": 0,
+        "t2": 16,
+        "t3": 16,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "purchase_approval_requests": {
+        "t1": 0,
+        "t2": 40,
+        "t3": 39,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "brands": {
+        "t1": 0,
+        "t2": 5,
+        "t3": 5,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "eod_settlements": {
+        "t1": 0,
+        "t2": 1875,
+        "t3": 1637,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "user_invitations": {
+        "t1": 0,
+        "t2": 29,
+        "t3": 32,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "purchase_order_lines": {
+        "t1": 0,
+        "t2": 895,
+        "t3": 708,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "channel_product_mappings": {
+        "t1": 0,
+        "t2": 198,
+        "t3": 198,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "tax_classes": {
+        "t1": 0,
+        "t2": 3,
+        "t3": 3,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "expense_categories": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "attendance_breaks": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "goods_received_note_lines": {
+        "t1": 0,
+        "t2": 895,
+        "t3": 708,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "cash_bank_accounts": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "users": {
+        "t1": 3,
+        "t2": 43,
+        "t3": 36,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "ingredient_stock_movements": {
+        "t1": 0,
+        "t2": 906208,
+        "t3": 771452,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "email_verification_otps": {
+        "t1": 0,
+        "t2": 1,
+        "t3": 1,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "fixed_asset_disposals": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "employees": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "journal_entries": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "approvals": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "channel_order_logs": {
+        "t1": 0,
+        "t2": 603,
+        "t3": 615,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "leave_policies": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "bank_reconciliation_sessions": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "expense_attachments": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "ar_payment_allocations": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "attendance_records": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "product_unit_conversions": {
+        "t1": 0,
+        "t2": 66,
+        "t3": 66,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "accounting_payable_outbox": {
+        "t1": 0,
+        "t2": 152,
+        "t3": 134,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "discounts": {
+        "t1": 0,
+        "t2": 6,
+        "t3": 6,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "discount_redemptions": {
+        "t1": 0,
+        "t2": 652,
+        "t3": 686,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "product_cost_histories": {
+        "t1": 0,
+        "t2": 132,
+        "t3": 132,
+        "t4": 0,
+        "t5": 0,
+        "t6": 1,
+        "t_other": 0
+    },
+    "journal_lines": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "payroll_adjustments": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "goods_receipt_items": {
+        "t1": 0,
+        "t2": 184,
+        "t3": 185,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "product_media": {
+        "t1": 0,
+        "t2": 64,
+        "t3": 63,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "payroll_records": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "payroll_batches": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "stock_transfer_items": {
+        "t1": 0,
+        "t2": 9,
+        "t3": 12,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "store_product_assortments": {
+        "t1": 0,
+        "t2": 379,
+        "t3": 315,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "purchase_approval_rules": {
+        "t1": 0,
+        "t2": 5,
+        "t3": 5,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "products": {
+        "t1": 0,
+        "t2": 66,
+        "t3": 66,
+        "t4": 0,
+        "t5": 0,
+        "t6": 1,
+        "t_other": 0
+    },
+    "reorder_suggestions": {
+        "t1": 0,
+        "t2": 78,
+        "t3": 74,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "employee_branch_assignments": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "tax_ledger_entries": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "bank_statements": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "sales_credit_note_applications": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "supplier_invoice_lines": {
+        "t1": 0,
+        "t2": 888,
+        "t3": 708,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "gift_card_ledgers": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "promotion_store_mappings": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "supplier_invoices": {
+        "t1": 0,
+        "t2": 180,
+        "t3": 152,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "leave_balances": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "categories": {
+        "t1": 0,
+        "t2": 12,
+        "t3": 12,
+        "t4": 0,
+        "t5": 0,
+        "t6": 1,
+        "t_other": 0
+    },
+    "order_items": {
+        "t1": 0,
+        "t2": 249231,
+        "t3": 212731,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "vouchers": {
+        "t1": 1,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "chart_of_accounts": {
+        "t1": 54,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "order_item_modifiers": {
+        "t1": 0,
+        "t2": 132033,
+        "t3": 112920,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "loyalty_ledger": {
+        "t1": 0,
+        "t2": 39068,
+        "t3": 32952,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "ar_receipts": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "price_list_items": {
+        "t1": 0,
+        "t2": 1476,
+        "t3": 1353,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "purchase_order_revisions": {
+        "t1": 0,
+        "t2": 4,
+        "t3": 1,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "expense_approvals": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "sales_credit_notes": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "supplier_returns": {
+        "t1": 0,
+        "t2": 6,
+        "t3": 3,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "receipt_print_logs": {
+        "t1": 0,
+        "t2": 1591,
+        "t3": 1571,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "product_ingredients": {
+        "t1": 0,
+        "t2": 259,
+        "t3": 259,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "ap_ledger_entries": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "period_closing_logs": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "product_variant_attribute_values": {
+        "t1": 0,
+        "t2": 60,
+        "t3": 60,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "stock_opnames": {
+        "t1": 0,
+        "t2": 12,
+        "t3": 10,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "customer_merge_logs": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "quotation_lines": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "posting_rule_versions": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "payment_attempts": {
+        "t1": 0,
+        "t2": 2169,
+        "t3": 2185,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "expenses": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "employee_id_sequences": {
+        "t1": 1,
+        "t2": 1,
+        "t3": 1,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "supplier_invoice_grn_matches": {
+        "t1": 0,
+        "t2": 888,
+        "t3": 708,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "customers": {
+        "t1": 0,
+        "t2": 900,
+        "t3": 900,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "tenant_entitlement_overrides": {
+        "t1": 0,
+        "t2": 3,
+        "t3": 3,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "bank_statement_lines": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "quotations": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "customer_credit_logs": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "suppliers": {
+        "t1": 0,
+        "t2": 8,
+        "t3": 8,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "product_attribute_values": {
+        "t1": 0,
+        "t2": 12,
+        "t3": 12,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "fixed_asset_depreciation_schedules": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "employee_tax_profiles": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "inventory_valuation_snapshots": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "financial_event_outboxes": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "order_returns": {
+        "t1": 0,
+        "t2": 2616,
+        "t3": 2261,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "ingredients": {
+        "t1": 0,
+        "t2": 58,
+        "t3": 58,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "ingredient_stock_balances": {
+        "t1": 0,
+        "t2": 348,
+        "t3": 290,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "period_closing_checklists": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "tax_rates": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "goods_received_notes": {
+        "t1": 0,
+        "t2": 181,
+        "t3": 152,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "employee_bpjs_profiles": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "purchase_additional_costs": {
+        "t1": 0,
+        "t2": 17,
+        "t3": 15,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "shift_handovers": {
+        "t1": 0,
+        "t2": 16,
+        "t3": 15,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "product_stock_balances": {
+        "t1": 0,
+        "t2": 60,
+        "t3": 50,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "promotion_rules": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "posting_rules": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "product_bundle_items": {
+        "t1": 0,
+        "t2": 18,
+        "t3": 18,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "job_titles": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "order_return_items": {
+        "t1": 0,
+        "t2": 3016,
+        "t3": 2619,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "leave_requests": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "customer_addresses": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "supplier_return_items": {
+        "t1": 0,
+        "t2": 9,
+        "t3": 5,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "sales_orders": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "customer_groups": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "purchase_order_line_pr_allocations": {
+        "t1": 0,
+        "t2": 164,
+        "t3": 286,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "user_stores": {
+        "t1": 1,
+        "t2": 48,
+        "t3": 40,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "promotion_rewards": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "activity_logs": {
+        "t1": 6,
+        "t2": 1036,
+        "t3": 1012,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "tables": {
+        "t1": 0,
+        "t2": 91,
+        "t3": 79,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "document_sequences": {
+        "t1": 0,
+        "t2": 48,
+        "t3": 40,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "stock_adjustments": {
+        "t1": 0,
+        "t2": 12,
+        "t3": 10,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "purchase_approval_logs": {
+        "t1": 0,
+        "t2": 80,
+        "t3": 78,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "product_attributes": {
+        "t1": 0,
+        "t2": 5,
+        "t3": 5,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "ap_payment_allocations": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "expense_lines": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "customer_credit_accounts": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "shift_templates": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "settings": {
+        "t1": 7,
+        "t2": 9,
+        "t3": 9,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "units_of_measure": {
+        "t1": 0,
+        "t2": 10,
+        "t3": 10,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "purchase_returns": {
+        "t1": 0,
+        "t2": 6,
+        "t3": 3,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "purchase_debit_notes": {
+        "t1": 0,
+        "t2": 6,
+        "t3": 3,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "supplier_performance_logs": {
+        "t1": 0,
+        "t2": 184,
+        "t3": 185,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "fixed_asset_categories": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "customer_invoice_lines": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "posting_rule_lines": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "modifiers": {
+        "t1": 0,
+        "t2": 14,
+        "t3": 14,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "promotion_campaigns": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "user_invitation_stores": {
+        "t1": 0,
+        "t2": 29,
+        "t3": 32,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "cash_bank_transactions": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "supplier_products": {
+        "t1": 0,
+        "t2": 58,
+        "t3": 58,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "payment_refunds": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "bank_reconciliation_matches": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "owner_onboarding_tokens": {
+        "t1": 1,
+        "t2": 2,
+        "t3": 1,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "salary_components": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    },
+    "gift_cards": {
+        "t1": 0,
+        "t2": 0,
+        "t3": 0,
+        "t4": 0,
+        "t5": 0,
+        "t6": 0,
+        "t_other": 0
+    }
+}

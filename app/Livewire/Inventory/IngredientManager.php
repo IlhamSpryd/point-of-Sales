@@ -263,14 +263,16 @@ class IngredientManager extends Component
 
     public function render()
     {
+        $tenantId = app(TenantContext::class)->requireTenantId();
         $storeId = app(TenantContext::class)->getStoreId();
 
         $ingredients = Ingredient::query()
             ->select('ingredients.*')
-            ->when($storeId, function ($query) use ($storeId) {
+            ->when($storeId, function ($query) use ($storeId, $tenantId) {
                 $query->addSelect([
                     'store_stock' => DB::table('ingredient_stock_balances')
                         ->select('quantity')
+                        ->where('ingredient_stock_balances.tenant_id', $tenantId)
                         ->whereColumn('ingredient_stock_balances.ingredient_id', 'ingredients.id')
                         ->where('ingredient_stock_balances.store_id', $storeId)
                         ->limit(1),

@@ -156,6 +156,7 @@ class DocumentSequenceService
 
                     // 3. Perbarui nilai sequence yang dikunci
                     DB::table('document_sequences')
+                        ->where('tenant_id', $tenantId)
                         ->where('id', $seq->id)
                         ->update([
                             'last_value' => $nextVal,

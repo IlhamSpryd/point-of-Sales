@@ -19,6 +19,39 @@ class LoyaltyService
     ) {}
 
     /**
+     * Resolusi dan validasi konsistensi tenant ID secara Fail-Closed (Batch 1A).
+     *
+     * @throws \RuntimeException
+     */
+    protected function resolveAndValidateTenantId(Customer $customer): int
+    {
+        $contextTenantId = $this->tenantContext->getTenantId();
+        $rawCustomerTenant = $customer->getAttribute('tenant_id');
+        $customerTenantId = $rawCustomerTenant !== null ? (int) $rawCustomerTenant : null;
+
+        // 1. Validasi tenant ID pelanggan jika ada
+        if ($customerTenantId !== null && $customerTenantId <= 0) {
+            throw new \RuntimeException('Tenant ID pelanggan tidak valid.');
+        }
+
+        // 2. Dapatkan authoritative tenant ID dari context server-side atau requireTenantId()
+        if ($contextTenantId === null || $contextTenantId <= 0) {
+            $contextTenantId = $this->tenantContext->requireTenantId();
+        }
+
+        if ($contextTenantId <= 0) {
+            throw new \RuntimeException('Konteks tenant yang valid wajib tersedia untuk kalkulasi poin loyalitas.');
+        }
+
+        // 3. Pastikan customer belongs to the active tenant context (fail-closed jika konflik)
+        if ($customerTenantId !== null && $customerTenantId !== $contextTenantId) {
+            throw new \RuntimeException("Konflik isolasi tenant: konteks tenant ({$contextTenantId}) tidak sesuai dengan tenant pelanggan ({$customerTenantId}).");
+        }
+
+        return $contextTenantId;
+    }
+
+    /**
      * Hitung perolehan poin (earn) murni dari DPP:
      * EarnPoints = floor(DPP / 10000) * TierMultiplier
      */
@@ -28,22 +61,24 @@ class LoyaltyService
             return 0;
         }
 
-        $tenantId = (int) ($customer->tenant_id ?? $this->tenantContext->getTenantId());
+        $tenantId = $this->resolveAndValidateTenantId($customer);
 
         $account = DB::table('customer_loyalty_accounts')
+            ->where('tenant_id', $tenantId)
             ->where('customer_id', $customer->id)
             ->first();
 
         $multiplier = 1.00;
         if ($account && $account->current_tier_id) {
             $tier = DB::table('loyalty_tiers')
+                ->where('tenant_id', $tenantId)
                 ->where('id', $account->current_tier_id)
                 ->where('is_active', true)
                 ->first();
             if ($tier) {
                 $multiplier = (float) $tier->points_multiplier;
             }
-        } elseif ($tenantId > 0) {
+        } else {
             $baseTier = DB::table('loyalty_tiers')
                 ->where('tenant_id', $tenantId)
                 ->where('is_active', true)
@@ -90,9 +125,10 @@ class LoyaltyService
      */
     public function checkAndUpgradeTier(Customer $customer, ?int $pointsOrSpend = null): ?LoyaltyTier
     {
-        $tenantId = (int) ($customer->tenant_id ?? $this->tenantContext->getTenantId());
+        $tenantId = $this->resolveAndValidateTenantId($customer);
 
         $account = DB::table('customer_loyalty_accounts')
+            ->where('tenant_id', $tenantId)
             ->where('customer_id', $customer->id)
             ->first();
 
@@ -102,26 +138,15 @@ class LoyaltyService
 
         $metric = $pointsOrSpend !== null ? $pointsOrSpend : (int) $account->lifetime_points_earned;
 
-        $query = LoyaltyTier::where('is_active', true)
+        $eligibleTier = LoyaltyTier::where('tenant_id', $tenantId)
+            ->where('is_active', true)
             ->where('min_points', '<=', $metric)
-            ->orderByDesc('min_points');
-
-        if ($tenantId > 0) {
-            $query->where('tenant_id', $tenantId);
-        }
-
-        $eligibleTier = $query->first();
-
-        if (! $eligibleTier && $tenantId > 0) {
-            // Fallback: search global active tiers
-            $eligibleTier = LoyaltyTier::where('is_active', true)
-                ->where('min_points', '<=', $metric)
-                ->orderByDesc('min_points')
-                ->first();
-        }
+            ->orderByDesc('min_points')
+            ->first();
 
         if ($eligibleTier && (int) $account->current_tier_id !== (int) $eligibleTier->id) {
             DB::table('customer_loyalty_accounts')
+                ->where('tenant_id', $tenantId)
                 ->where('id', $account->id)
                 ->update([
                     'current_tier_id' => $eligibleTier->id,
@@ -263,7 +288,7 @@ class LoyaltyService
         ?User $actor,
         ?string $idempotencyKey
     ): array {
-        $tenantId = (int) ($customer->tenant_id ?? $this->tenantContext->requireTenantId());
+        $tenantId = $this->resolveAndValidateTenantId($customer);
 
         return DB::transaction(function () use (
             $tenantId,
@@ -277,6 +302,7 @@ class LoyaltyService
         ) {
             // 1. Kunci baris akun loyalitas customer (SELECT ... FOR UPDATE)
             $account = DB::table('customer_loyalty_accounts')
+                ->where('tenant_id', $tenantId)
                 ->where('customer_id', $customer->id)
                 ->lockForUpdate()
                 ->first();
@@ -347,7 +373,7 @@ class LoyaltyService
      */
     public function getCurrentPoints(Customer $customer): int
     {
-        $tenantId = (int) ($customer->tenant_id ?? $this->tenantContext->requireTenantId());
+        $tenantId = $this->resolveAndValidateTenantId($customer);
 
         $account = DB::table('customer_loyalty_accounts')
             ->where('tenant_id', $tenantId)

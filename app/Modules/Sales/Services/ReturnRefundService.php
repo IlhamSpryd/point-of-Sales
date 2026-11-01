@@ -535,12 +535,14 @@ class ReturnRefundService
                 // 9. Pembalikan Poin Loyalitas Proporsional (ADR-010, FASE 11)
                 if ($lockedOrder->customer_id) {
                     $earnedPoints = (int) DB::table('loyalty_ledger')
+                        ->where('tenant_id', $lockedOrder->tenant_id)
                         ->where('order_id', $lockedOrder->id)
                         ->where('type', LoyaltyLedgerTypeEnum::Earn->value)
                         ->sum('points');
 
                     if ($earnedPoints > 0) {
                         $alreadyReversed = (int) abs(DB::table('loyalty_ledger')
+                            ->where('tenant_id', $lockedOrder->tenant_id)
                             ->where('order_id', $lockedOrder->id)
                             ->where('type', LoyaltyLedgerTypeEnum::Reversal->value)
                             ->sum('points'));

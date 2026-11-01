@@ -137,4 +137,68 @@ class ShiftServiceTest extends TestCase
 
         $this->assertNull($closedShift);
     }
+
+    public function test_shift_supervisor_authorization_strictly_rejects_cross_tenant_store(): void
+    {
+        $context = app(TenantContext::class);
+        $context->setTenantId($this->tenantA->id);
+        $context->setStoreId($this->storeA->id);
+
+        $service = app(ShiftService::class);
+
+        // 1. Owner of Tenant A is rejected when attempting to authorize Store B belonging to Tenant B
+        $canAuthStoreB = $service->canAuthorizeSupervisor($this->userAOwner, $this->storeB->id);
+        $this->assertFalse($canAuthStoreB, 'Owner of Tenant A must NEVER authorize Store B of Tenant B');
+
+        // 2. Owner of Tenant A is authorized for Store A belonging to Tenant A
+        $canAuthStoreA = $service->canAuthorizeSupervisor($this->userAOwner, $this->storeA->id);
+        $this->assertTrue($canAuthStoreA, 'Owner of Tenant A must be authorized for own store');
+
+        // 3. Supervisor of Tenant A assigned to Store A
+        $roleSupervisorA = \App\Models\Role::withoutTenantScope()->firstOrCreate(
+            ['name' => 'Supervisor', 'tenant_id' => $this->tenantA->id],
+            ['is_active' => 1]
+        );
+        $supervisorA = \App\Models\User::create([
+            'name' => 'Supervisor A',
+            'email' => 'spvA_test@example.com',
+            'password' => bcrypt('password'),
+            'pin_hash' => bcrypt('123456'),
+            'tenant_id' => $this->tenantA->id,
+            'role_id' => $roleSupervisorA->id,
+            'is_active' => 1,
+        ]);
+        $supervisorA->stores()->attach($this->storeA->id, ['tenant_id' => $this->tenantA->id]);
+
+        // Supervisor A can authorize assigned Store A
+        $this->assertTrue($service->canAuthorizeSupervisor($supervisorA, $this->storeA->id));
+
+        // Supervisor A CANNOT authorize Store B belonging to Tenant B
+        $this->assertFalse($service->canAuthorizeSupervisor($supervisorA, $this->storeB->id));
+    }
+
+    public function test_shift_service_fails_closed_when_tenant_is_missing_or_invalid(): void
+    {
+        $context = app(TenantContext::class);
+        $context->clear();
+
+        $service = app(ShiftService::class);
+
+        $invalidUser = new \App\Models\User();
+        $invalidUser->id = 8888;
+        $invalidUser->tenant_id = null;
+
+        // 1. canAuthorizeSupervisor fails closed when tenant context is missing
+        $threwDomainException = false;
+        try {
+            $service->canAuthorizeSupervisor($invalidUser, $this->storeA->id);
+        } catch (\DomainException $e) {
+            $threwDomainException = true;
+        }
+        $this->assertTrue($threwDomainException, 'canAuthorizeSupervisor must throw DomainException when tenant cannot be resolved');
+
+        // 2. openShift fails closed when tenant context is missing
+        $this->expectException(\DomainException::class);
+        $service->openShift(0, 0);
+    }
 }

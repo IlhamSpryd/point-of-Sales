@@ -19,6 +19,8 @@ use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Shift;
 use App\Models\Table;
+use App\Modules\Customers\Enums\StoreCreditStatusEnum;
+use App\Modules\Customers\Models\StoreCreditAccount;
 use App\Modules\Customers\Services\VoucherService;
 use App\Modules\Pricing\DataTransferObjects\CheckoutCalculationBreakdownDto;
 use App\Modules\Pricing\DataTransferObjects\CheckoutCalculationInputDto;
@@ -381,7 +383,17 @@ class CreateOrder extends Component
 
     public function selectCustomer(int $id, string $name): void
     {
-        if (! Customer::where('id', $id)->where('is_active', true)->exists()) {
+        $tenantId = (int) app(TenantContext::class)->requireTenantId();
+
+        $customerExists = Customer::query()
+            ->where('tenant_id', $tenantId)
+            ->where('id', $id)
+            ->where('is_active', true)
+            ->exists();
+
+        if (! $customerExists) {
+            $this->storeCreditBalance = 0.0;
+
             return;
         }
 
@@ -389,10 +401,12 @@ class CreateOrder extends Component
         $this->customerName = $name;
         $this->customerSearch = '';
 
-        $sc = DB::table('store_credit_accounts')
+        $sc = StoreCreditAccount::query()
+            ->where('tenant_id', $tenantId)
             ->where('customer_id', $id)
-            ->where('status', 'ACTIVE')
+            ->where('status', StoreCreditStatusEnum::ACTIVE)
             ->first();
+
         $this->storeCreditBalance = $sc ? (float) $sc->current_balance : 0.0;
     }
 

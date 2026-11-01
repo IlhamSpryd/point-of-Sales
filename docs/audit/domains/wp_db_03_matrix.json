@@ -1,0 +1,549 @@
+{
+    "tables_38": {
+        "product_cost_histories": {
+            "expected_name": "pch_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "pch_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "purchase_requests": {
+            "expected_name": "pr_tenant_fk",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "pr_tenant_fk",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "purchase_request_lines": {
+            "expected_name": "pr_lines_tenant_fk",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "pr_lines_tenant_fk",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "purchase_approval_requests": {
+            "expected_name": "pareq_tenant_fk",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "pareq_tenant_fk",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "purchase_approval_logs": {
+            "expected_name": "palog_tenant_fk",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "palog_tenant_fk",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "payroll_records": {
+            "expected_name": "payroll_records_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "payroll_records_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "payroll_batches": {
+            "expected_name": "payroll_batches_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "payroll_batches_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "payroll_items": {
+            "expected_name": "payroll_items_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "payroll_items_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "payroll_periods": {
+            "expected_name": "payroll_periods_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "payroll_periods_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "payroll_adjustments": {
+            "expected_name": "payroll_adjustments_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "payroll_adjustments_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "commission_records": {
+            "expected_name": "commission_records_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "commission_records_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "commission_rules": {
+            "expected_name": "commission_rules_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "commission_rules_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "leave_transactions": {
+            "expected_name": "leave_transactions_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "leave_transactions_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "leave_balances": {
+            "expected_name": "leave_balances_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "leave_balances_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "leave_requests": {
+            "expected_name": "leave_requests_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "leave_requests_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "leave_policies": {
+            "expected_name": "leave_policies_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "leave_policies_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "employee_compensations": {
+            "expected_name": "employee_compensations_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "employee_compensations_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "employee_tax_profiles": {
+            "expected_name": "employee_tax_profiles_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "employee_tax_profiles_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "employee_bpjs_profiles": {
+            "expected_name": "employee_bpjs_profiles_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "employee_bpjs_profiles_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "employee_bank_accounts": {
+            "expected_name": "employee_bank_accounts_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "employee_bank_accounts_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "employees": {
+            "expected_name": "employees_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "employees_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "departments": {
+            "expected_name": "departments_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "departments_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "job_titles": {
+            "expected_name": "job_titles_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "job_titles_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "employee_branch_assignments": {
+            "expected_name": "employee_branch_assignments_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "employee_branch_assignments_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "employee_employment_histories": {
+            "expected_name": "employee_employment_histories_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "employee_employment_histories_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "employee_id_sequences": {
+            "expected_name": "fk_eis_tenant",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "fk_eis_tenant",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "attendance_records": {
+            "expected_name": "attendance_records_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "attendance_records_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "attendance_breaks": {
+            "expected_name": "attendance_breaks_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "attendance_breaks_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "overtime_records": {
+            "expected_name": "overtime_records_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "overtime_records_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "work_schedules": {
+            "expected_name": "work_schedules_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "work_schedules_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "shift_templates": {
+            "expected_name": "shift_templates_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "shift_templates_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "suppliers": {
+            "expected_name": "suppliers_tenant_fk",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "suppliers_tenant_fk",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "customer_groups": {
+            "expected_name": "customer_groups_tenant_fk",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "customer_groups_tenant_fk",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "brands": {
+            "expected_name": "brands_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "brands_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "units_of_measure": {
+            "expected_name": "uom_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "uom_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "tax_classes": {
+            "expected_name": "tax_classes_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "tax_classes_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "devices": {
+            "expected_name": "devices_tenant_id_foreign",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "devices_tenant_id_foreign",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        },
+        "document_sequences": {
+            "expected_name": "doc_sequences_tenant_fk",
+            "actual_fks": [
+                {
+                    "CONSTRAINT_NAME": "doc_sequences_tenant_fk",
+                    "COLUMN_NAME": "tenant_id",
+                    "REFERENCED_TABLE_NAME": "tenants",
+                    "REFERENCED_COLUMN_NAME": "id",
+                    "DELETE_RULE": "RESTRICT",
+                    "UPDATE_RULE": "RESTRICT"
+                }
+            ]
+        }
+    },
+    "remaining_cascade": [
+        {
+            "TABLE_NAME": "tenant_subscriptions",
+            "CONSTRAINT_NAME": "tenant_subscriptions_tenant_id_foreign",
+            "COLUMN_NAME": "tenant_id",
+            "REFERENCED_TABLE_NAME": "tenants",
+            "DELETE_RULE": "CASCADE"
+        },
+        {
+            "TABLE_NAME": "user_invitations",
+            "CONSTRAINT_NAME": "fk_invitations_tenant",
+            "COLUMN_NAME": "tenant_id",
+            "REFERENCED_TABLE_NAME": "tenants",
+            "DELETE_RULE": "CASCADE"
+        },
+        {
+            "TABLE_NAME": "product_unit_conversions",
+            "CONSTRAINT_NAME": "puc_tenant_id_foreign",
+            "COLUMN_NAME": "tenant_id",
+            "REFERENCED_TABLE_NAME": "tenants",
+            "DELETE_RULE": "CASCADE"
+        },
+        {
+            "TABLE_NAME": "product_media",
+            "CONSTRAINT_NAME": "pm_tenant_id_foreign",
+            "COLUMN_NAME": "tenant_id",
+            "REFERENCED_TABLE_NAME": "tenants",
+            "DELETE_RULE": "CASCADE"
+        },
+        {
+            "TABLE_NAME": "purchase_approval_rules",
+            "CONSTRAINT_NAME": "par_tenant_fk",
+            "COLUMN_NAME": "tenant_id",
+            "REFERENCED_TABLE_NAME": "tenants",
+            "DELETE_RULE": "CASCADE"
+        },
+        {
+            "TABLE_NAME": "tenant_entitlement_overrides",
+            "CONSTRAINT_NAME": "tenant_overrides_tenant_id_foreign",
+            "COLUMN_NAME": "tenant_id",
+            "REFERENCED_TABLE_NAME": "tenants",
+            "DELETE_RULE": "CASCADE"
+        },
+        {
+            "TABLE_NAME": "salary_components",
+            "CONSTRAINT_NAME": "salary_components_tenant_id_foreign",
+            "COLUMN_NAME": "tenant_id",
+            "REFERENCED_TABLE_NAME": "tenants",
+            "DELETE_RULE": "CASCADE"
+        }
+    ]
+}
