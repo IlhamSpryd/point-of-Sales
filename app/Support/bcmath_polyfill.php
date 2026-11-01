@@ -222,7 +222,7 @@ if (! extension_loaded('bcmath')) {
                 $num = (int) $d1;
                 $denom = (int) $d2 * (10 ** (-$shift));
             }
-            $q = intdiv($num, $denom);
+            $q = (is_int($num) && is_int($denom)) ? intdiv($num, $denom) : (int) floor((float) $num / (float) $denom);
             $sign = ($s1 * $s2 === -1) ? -1 : 1;
 
             return _bc_format($sign, (string) abs($q), $s + 1, $s);

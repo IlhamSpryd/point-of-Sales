@@ -24,6 +24,7 @@ class UnitOfMeasure extends Model
     protected $table = 'units_of_measure';
 
     protected $fillable = [
+        'tenant_id',
         'code',
         'name',
         'precision_scale',

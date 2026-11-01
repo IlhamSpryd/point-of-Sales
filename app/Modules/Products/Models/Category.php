@@ -38,6 +38,7 @@ class Category extends Model
      * Komponen isian kolom database kategori.
      */
     protected $fillable = [
+        'tenant_id',
         'category_name',
         'name',
         'category_code',

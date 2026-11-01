@@ -22,12 +22,24 @@ class ProductUnitConversion extends Model
     use ScopedToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'product_id',
         'from_uom_id',
         'to_uom_id',
         'conversion_factor',
+        'multiplier',
         'barcode',
     ];
+
+    public function getMultiplierAttribute(): ?string
+    {
+        return isset($this->attributes['conversion_factor']) ? (string) $this->attributes['conversion_factor'] : null;
+    }
+
+    public function setMultiplierAttribute(mixed $value): void
+    {
+        $this->attributes['conversion_factor'] = $value;
+    }
 
     protected function casts(): array
     {

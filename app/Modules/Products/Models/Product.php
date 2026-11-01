@@ -87,6 +87,7 @@ class Product extends Model
      * Atribut yang diizinkan untuk diisi massal oleh aplikasi.
      */
     protected $fillable = [
+        'tenant_id',
         'category_id',
         'brand_id',
         'base_uom_id',

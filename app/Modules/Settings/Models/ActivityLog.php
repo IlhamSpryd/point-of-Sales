@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Modules\Settings\Models;
 
-use App\Models\Concerns\AssignsStore;
 use App\Models\Concerns\AssignsTenant;
-use App\Models\Concerns\ScopedToStore;
 use App\Models\Concerns\ScopedToTenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -32,16 +30,25 @@ use Illuminate\Support\Carbon;
  */
 class ActivityLog extends Model
 {
-    use AssignsStore;
     use AssignsTenant;
-    use ScopedToStore;
     use ScopedToTenant;
 
     protected $fillable = [
-        'user_id', 'action', 'subject_type', 'subject_id',
+        'tenant_id', 'store_id', 'user_id', 'action', 'subject_type', 'subject_id',
         'description', 'old_values', 'new_values', 'ip_address',
         'user_agent', 'metadata',
     ];
+
+    protected static function booted(): void
+    {
+        static::updating(function () {
+            throw new \RuntimeException('Activity logs are append-only and cannot be updated.');
+        });
+
+        static::deleting(function () {
+            throw new \RuntimeException('Activity logs are append-only and cannot be deleted.');
+        });
+    }
 
     protected function casts(): array
     {

@@ -1,8 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Modules\Users\Models;
 
 use App\Models\Concerns\AssignsTenant;
+use App\Models\Concerns\ScopedToTenant;
 use App\Models\EmailVerificationOtp;
 use App\Models\Role;
 use App\Models\Store;
@@ -55,8 +58,10 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
     use AssignsTenant;
     use HasFactory, Notifiable, SoftDeletes;
     use MustVerifyEmail;
+    use ScopedToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'employee_id',
         'name',
         'email',
@@ -69,6 +74,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         'password',
         'password_hash',
         'pin_hash',
+        'cashier_pin',
         'join_date',
         'role_id',
         'is_active',
@@ -149,6 +155,17 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         $hash = $value !== null ? (Hash::needsRehash($value) ? Hash::make($value) : $value) : null;
         $this->attributes['password_hash'] = $hash;
         $this->attributes['password'] = $hash;
+    }
+
+    public function setCashierPinAttribute(?string $value): void
+    {
+        $hash = $value !== null ? (Hash::needsRehash($value) ? Hash::make($value) : $value) : null;
+        $this->attributes['pin_hash'] = $hash;
+    }
+
+    public function getCashierPinAttribute(): ?string
+    {
+        return $this->attributes['pin_hash'] ?? null;
     }
 
     public function isLockedOut(): bool

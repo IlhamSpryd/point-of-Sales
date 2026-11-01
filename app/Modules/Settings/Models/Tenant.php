@@ -101,11 +101,11 @@ class Tenant extends Model
 
     public function stores()
     {
-        return $this->hasMany(Store::class);
+        return $this->hasMany(Store::class)->withoutGlobalScope(\App\Models\Scopes\TenantScope::class);
     }
 
     public function users()
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(User::class)->withoutGlobalScope(\App\Models\Scopes\TenantScope::class);
     }
 }

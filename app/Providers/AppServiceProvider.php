@@ -47,6 +47,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        \Illuminate\Support\Facades\Auth::provider('eloquent', function ($app, array $config) {
+            return new \App\Core\Auth\TenantAwareUserProvider($app['hash'], $config['model']);
+        });
+
         Livewire::addPersistentMiddleware([
             SetTenantContext::class,
             'tenant.context',

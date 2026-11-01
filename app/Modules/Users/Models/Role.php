@@ -31,6 +31,7 @@ class Role extends Model
     use ScopedToTenant;
 
     protected $fillable = [
+        'tenant_id',
         'role_code',
         'name',
         'description',
