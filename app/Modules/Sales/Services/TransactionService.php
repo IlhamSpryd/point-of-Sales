@@ -37,7 +37,6 @@ use App\Models\PaymentAttempt;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Shift;
-use App\Models\StockMovement;
 use App\Models\Store;
 use App\Models\Table;
 use App\Models\User;
@@ -47,10 +46,10 @@ use App\Modules\Customers\Services\LoyaltyService;
 use App\Modules\Customers\Services\StoreCreditService;
 use App\Modules\Customers\Services\VoucherService;
 use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
+use App\Modules\Inventory\Services\InventoryLedgerService;
 use App\Modules\Pricing\Models\PromotionReservation;
 use App\Modules\Pricing\Services\DiscountAllocationService;
 use App\Modules\Pricing\Services\DiscountApprovalService;
-use App\Modules\Products\Services\MenuCacheService;
 use App\Services\CatalogPriceResolverService;
 use App\Services\Context\TenantContext;
 use App\Services\EntitlementService;
@@ -340,27 +339,13 @@ class TransactionService
                     // SUDAH punya resep atau service/non_inventory/bundle TIDAK PERNAH
                     // menyentuh products.stock.
                     if ($needsStockDeduction) {
-                        if ((bool) config('pos.stock_balances_authoritative', false)) {
-                            // [PHASE 14] Balance row adalah otoritas; products.stock
-                            // ditulis sebagai mirror dalam statement yang sama.
-                            $balance = $lockedProductBalances->get($product->id);
-                            $available = $balance ? $balance->quantity : '0';
+                        $balance = $lockedProductBalances->get($product->id);
+                        $available = $balance ? $balance->quantity : $product->stock;
 
-                            if ($this->compareScaled((string) $available, (string) $item['quantity']) < 0) {
-                                throw ValidationException::withMessages([
-                                    'items' => 'Stok produk "'.$product->product_name.'" tidak mencukupi. (Sisa: '.$available.')',
-                                ]);
-                            }
-
-                            $this->applyProductBalanceDelta($product, $balance, (string) (-1 * (float) $item['quantity']));
-                        } else {
-                            if ($product->stock < $item['quantity']) {
-                                throw ValidationException::withMessages([
-                                    'items' => 'Stok produk "'.$product->product_name.'" tidak mencukupi. (Sisa: '.$product->stock.')',
-                                ]);
-                            }
-                            $product->stock -= $item['quantity'];
-                            $product->save();
+                        if ($this->compareScaled((string) $available, (string) $item['quantity']) < 0) {
+                            throw ValidationException::withMessages([
+                                'items' => 'Stok produk "'.$product->product_name.'" tidak mencukupi. (Sisa: '.$available.')',
+                            ]);
                         }
                     }
 
@@ -517,68 +502,39 @@ class TransactionService
                         // is_active/arsip tetap divalidasi dari master data tanpa lock.
                         $lockedIngredients = Ingredient::whereIn('id', $ingredientIds)->get()->keyBy('id');
                         $lockedIngredientBalances = $this->lockIngredientBalances($ingredientIds, $storeIdForStock);
-
-                        foreach ($ingredientIds as $ingredientId) {
-                            $needed = $ingredientRequirements[$ingredientId];
-                            $ingredient = $lockedIngredients->get($ingredientId);
-
-                            if (! $ingredient) {
-                                throw ValidationException::withMessages([
-                                    'items' => 'Bahan baku dengan ID '.$ingredientId.' tidak ditemukan atau sudah diarsipkan.',
-                                ]);
-                            }
-
-                            if (! $ingredient->is_active) {
-                                throw ValidationException::withMessages([
-                                    'items' => 'Bahan baku "'.$ingredient->name.'" sedang dinonaktifkan dan tidak dapat dipakai.',
-                                ]);
-                            }
-
-                            $balance = $lockedIngredientBalances->get($ingredientId);
-                            $available = $balance ? $balance->quantity : '0';
-
-                            if ($this->compareScaled((string) $available, $needed) < 0) {
-                                throw ValidationException::withMessages([
-                                    'items' => 'Stok bahan baku "'.$ingredient->name.'" tidak mencukupi. '
-                                        .'(Dibutuhkan: '.$needed.' '.$ingredient->unit.', Tersedia: '.$available.' '.$ingredient->unit.')',
-                                ]);
-                            }
-
-                            // Deduct balance (authority) + mirror kolom legacy.
-                            $this->applyIngredientBalanceDelta($ingredient, $balance, (string) (-1 * (float) $needed));
-                        }
                     } else {
                         $lockedIngredients = Ingredient::whereIn('id', $ingredientIds)
                             ->orderBy('id')
                             ->lockForUpdate()
                             ->get()
                             ->keyBy('id');
+                        $lockedIngredientBalances = collect();
+                    }
 
-                        foreach ($ingredientIds as $ingredientId) {
-                            $needed = $ingredientRequirements[$ingredientId];
-                            $ingredient = $lockedIngredients->get($ingredientId);
+                    foreach ($ingredientIds as $ingredientId) {
+                        $needed = $ingredientRequirements[$ingredientId];
+                        $ingredient = $lockedIngredients->get($ingredientId);
 
-                            if (! $ingredient) {
-                                throw ValidationException::withMessages([
-                                    'items' => 'Bahan baku dengan ID '.$ingredientId.' tidak ditemukan atau sudah diarsipkan.',
-                                ]);
-                            }
+                        if (! $ingredient) {
+                            throw ValidationException::withMessages([
+                                'items' => 'Bahan baku dengan ID '.$ingredientId.' tidak ditemukan atau sudah diarsipkan.',
+                            ]);
+                        }
 
-                            if (! $ingredient->is_active) {
-                                throw ValidationException::withMessages([
-                                    'items' => 'Bahan baku "'.$ingredient->name.'" sedang dinonaktifkan dan tidak dapat dipakai.',
-                                ]);
-                            }
+                        if (! $ingredient->is_active) {
+                            throw ValidationException::withMessages([
+                                'items' => 'Bahan baku "'.$ingredient->name.'" sedang dinonaktifkan dan tidak dapat dipakai.',
+                            ]);
+                        }
 
-                            if (bccomp((string) $ingredient->current_stock, $needed, 4) < 0) {
-                                throw ValidationException::withMessages([
-                                    'items' => 'Stok bahan baku "'.$ingredient->name.'" tidak mencukupi. '
-                                        .'(Dibutuhkan: '.$needed.' '.$ingredient->unit.', Tersedia: '.$ingredient->current_stock.' '.$ingredient->unit.')',
-                                ]);
-                            }
+                        $balance = $lockedIngredientBalances->get($ingredientId);
+                        $available = $balance ? $balance->quantity : $ingredient->current_stock;
 
-                            $ingredient->current_stock = bcsub((string) $ingredient->current_stock, $needed, 4);
-                            $ingredient->save();
+                        if ($this->compareScaled((string) $available, $needed) < 0) {
+                            throw ValidationException::withMessages([
+                                'items' => 'Stok bahan baku "'.$ingredient->name.'" tidak mencukupi. '
+                                    .'(Dibutuhkan: '.$needed.' '.$ingredient->unit.', Tersedia: '.$available.' '.$ingredient->unit.')',
+                            ]);
                         }
                     }
                 }
@@ -783,19 +739,21 @@ class TransactionService
                     $createdItems[] = $orderItem;
 
                     if (! empty($line['needs_stock_deduction'])) {
-                        DB::table('stock_movements')->insert([
-                            'tenant_id' => $order->tenant_id,
-                            'store_id' => $order->store_id,
-                            'product_id' => $line['product_id'],
-                            'order_id' => $order->id,
-                            'order_item_id' => $orderItem->id,
-                            'type' => 'sale_deduction',
-                            'quantity' => -$line['qty'],
-                            'reason' => 'Checkout via POS',
-                            'idempotency_key' => "sale:{$order->id}:{$orderItem->id}",
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
+                        $product = $products->find($line['product_id']);
+                        app(InventoryLedgerService::class)->recordMovement(
+                            tenantId: (int) $order->tenant_id,
+                            storeId: (int) $order->store_id,
+                            itemType: 'product',
+                            itemId: (int) $line['product_id'],
+                            quantityDelta: -$line['qty'],
+                            type: StockMovementType::SaleDeduction,
+                            unitCost: $product?->standard_cost ? (float) $product->standard_cost : null,
+                            reason: 'Checkout via POS',
+                            idempotencyKey: "sale:{$order->id}:{$orderItem->id}",
+                            orderId: (int) $order->id,
+                            orderItemId: (int) $orderItem->id,
+                            userId: (int) $userId
+                        );
                     }
 
                     if (! empty($line['options'])) {
@@ -830,17 +788,20 @@ class TransactionService
                         $ingredient = $lockedIngredients->get($consumption['ingredient_id']);
                         $idempotencyKey = 'sale_deduction:'.$order->order_code.':'.$orderItemId.':'.$consumption['ingredient_id'];
 
-                        IngredientStockMovement::create([
-                            'ingredient_id' => $consumption['ingredient_id'],
-                            'order_id' => $order->id,
-                            'order_item_id' => $orderItemId,
-                            'type' => IngredientStockMovementTypeEnum::SaleDeduction,
-                            'quantity' => bcmul($consumption['qty'], '-1', 4), // signed: keluar = negatif
-                            'unit_cost' => $ingredient?->cost_per_unit,
-                            'reason' => 'Konsumsi otomatis saat penjualan order '.$order->order_code.'.',
-                            'idempotency_key' => $idempotencyKey,
-                            'created_by' => $userId,
-                        ]);
+                        app(InventoryLedgerService::class)->recordMovement(
+                            tenantId: (int) $order->tenant_id,
+                            storeId: (int) $order->store_id,
+                            itemType: 'ingredient',
+                            itemId: (int) $consumption['ingredient_id'],
+                            quantityDelta: bcmul($consumption['qty'], '-1', 4),
+                            type: IngredientStockMovementTypeEnum::SaleDeduction,
+                            unitCost: $ingredient?->cost_per_unit,
+                            reason: 'Konsumsi otomatis saat penjualan order '.$order->order_code.'.',
+                            idempotencyKey: $idempotencyKey,
+                            orderId: (int) $order->id,
+                            orderItemId: (int) $orderItemId,
+                            userId: (int) $userId
+                        );
                     }
                 }
 
@@ -1989,6 +1950,7 @@ class TransactionService
         // store aktif si pemanggil.
         $orderStoreId = $order->store_id;
         $balancesAuthoritative = (bool) config('pos.stock_balances_authoritative', false);
+        $userId = $order->voided_by ?? $order->user_id ?? (auth()->check() ? auth()->id() : null);
 
         $productIds = $items->pluck('product_id')->unique()->sort()->values();
 
@@ -2026,26 +1988,20 @@ class TransactionService
 
             $idempotencyKey = 'stock_restore:'.$order->order_code.':'.$item->id;
 
-            $movement = StockMovement::firstOrCreate(
-                ['idempotency_key' => $idempotencyKey],
-                [
-                    'product_id' => $product->id,
-                    'order_id' => $order->id,
-                    'order_item_id' => $item->id,
-                    'type' => StockMovementType::RestoreCompensation,
-                    'quantity' => $item->qty,
-                    'reason' => "Kompensasi stok otomatis: order {$order->order_code} berubah ke status {$order->order_status->value}.",
-                ]
+            app(InventoryLedgerService::class)->recordMovement(
+                tenantId: (int) $order->tenant_id,
+                storeId: (int) $orderStoreId,
+                itemType: 'product',
+                itemId: (int) $product->id,
+                quantityDelta: (float) $item->qty,
+                type: StockMovementType::RestoreCompensation,
+                unitCost: $product->standard_cost ? (float) $product->standard_cost : null,
+                reason: "Kompensasi stok otomatis: order {$order->order_code} berubah ke status {$order->order_status->value}.",
+                idempotencyKey: $idempotencyKey,
+                orderId: (int) $order->id,
+                orderItemId: (int) $item->id,
+                userId: $userId
             );
-
-            if ($movement->wasRecentlyCreated) {
-                if ($balancesAuthoritative) {
-                    $this->applyProductBalanceDelta($product, $productBalances->get($product->id), (string) $item->qty);
-                } else {
-                    $product->stock += $item->qty;
-                    $product->save();
-                }
-            }
         }
 
         // 2. Restore Ingredient Stock (BOM)
@@ -2063,10 +2019,6 @@ class TransactionService
                 ->get()
                 ->keyBy('id');
 
-            $ingredientBalances = $balancesAuthoritative
-                ? $this->lockIngredientBalances($ingredientIds->all(), $orderStoreId)
-                : collect();
-
             foreach ($deductions as $deduction) {
                 $ingredient = $lockedIngredients->get($deduction->ingredient_id);
                 if (! $ingredient) {
@@ -2075,31 +2027,20 @@ class TransactionService
 
                 $idempotencyKey = 'ingredient_restore:'.$order->order_code.':'.$deduction->id;
 
-                $movement = IngredientStockMovement::firstOrCreate(
-                    ['idempotency_key' => $idempotencyKey],
-                    [
-                        'ingredient_id' => $ingredient->id,
-                        'order_id' => $order->id,
-                        'order_item_id' => $deduction->order_item_id,
-                        'type' => IngredientStockMovementTypeEnum::RestoreCompensation,
-                        // Deduction quantity disimpen negatif, jadi abs() untuk restore positif
-                        'quantity' => abs((float) $deduction->quantity),
-                        'unit_cost' => $ingredient->cost_per_unit,
-                        'reason' => "Kompensasi bahan baku otomatis: order {$order->order_code} berubah ke status {$order->order_status->value}.",
-                        'created_by' => null,
-                    ]
+                app(InventoryLedgerService::class)->recordMovement(
+                    tenantId: (int) $order->tenant_id,
+                    storeId: (int) $orderStoreId,
+                    itemType: 'ingredient',
+                    itemId: (int) $ingredient->id,
+                    quantityDelta: abs((float) $deduction->quantity),
+                    type: IngredientStockMovementTypeEnum::RestoreCompensation,
+                    unitCost: $ingredient->cost_per_unit ? (float) $ingredient->cost_per_unit : null,
+                    reason: "Kompensasi bahan baku otomatis: order {$order->order_code} berubah ke status {$order->order_status->value}.",
+                    idempotencyKey: $idempotencyKey,
+                    orderId: (int) $order->id,
+                    orderItemId: (int) $deduction->order_item_id,
+                    userId: $userId
                 );
-
-                if ($movement->wasRecentlyCreated) {
-                    $restoreQty = (string) abs((float) $deduction->quantity);
-
-                    if ($balancesAuthoritative) {
-                        $this->applyIngredientBalanceDelta($ingredient, $ingredientBalances->get($ingredient->id), $restoreQty);
-                    } else {
-                        $ingredient->current_stock = bcadd((string) $ingredient->current_stock, $restoreQty, 4);
-                        $ingredient->save();
-                    }
-                }
             }
         }
     }
@@ -2177,7 +2118,7 @@ class TransactionService
      * [PHASE 14] Terapkan delta pada baris balance produk (otoritas) PLUS
      * mirror ke kolom legacy products.stock dalam satu jalur.
      */
-    private function applyProductBalanceDelta(Product $product, ?object $balance, string $delta): void
+    protected function applyProductBalanceDelta(Product $product, ?object $balance, string $delta): void
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
         $storeId = $balance->store_id ?? app(TenantContext::class)->getStoreId();
@@ -2186,45 +2127,25 @@ class TransactionService
             throw new \RuntimeException('Store aktif tidak tersedia untuk pembaruan balance stok produk.');
         }
 
-        if ($balance === null) {
-            // Baris belum ada (mis. store baru) -> pre-create sebelum mirror.
-            DB::table('product_stock_balances')->insertOrIgnore([
-                'tenant_id' => $tenantId,
-                'store_id' => $storeId,
-                'product_id' => $product->id,
-                'quantity' => 0,
-                'baseline_quantity' => 0,
-                'baseline_movement_id' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+        $type = bccomp($delta, '0', 4) >= 0 ? StockMovementType::RestoreCompensation : StockMovementType::SaleDeduction;
 
-        DB::table('product_stock_balances')
-            ->where('tenant_id', $tenantId)
-            ->where('store_id', $storeId)
-            ->where('product_id', $product->id)
-            ->update([
-                'quantity' => DB::raw("quantity + ({$delta})"),
-                'updated_at' => now(),
-            ]);
-
-        $newStock = max(0, (int) round((float) $product->stock + (float) $delta));
-        DB::table('products')
-            ->where('id', $product->id)
-            ->update([
-                'stock' => $newStock,
-                'updated_at' => now(),
-            ]);
-
-        DB::afterCommit(fn () => app(MenuCacheService::class)->flush($tenantId, $storeId));
+        app(InventoryLedgerService::class)->recordMovement(
+            tenantId: $tenantId,
+            storeId: (int) $storeId,
+            itemType: 'product',
+            itemId: (int) $product->id,
+            quantityDelta: (float) $delta,
+            type: $type,
+            unitCost: $product->standard_cost ? (float) $product->standard_cost : null,
+            reason: 'Pembaruan delta balance stok produk via TransactionService.'
+        );
     }
 
     /**
      * [PHASE 14] Terapkan delta pada baris balance bahan baku (otoritas)
      * PLUS mirror ke kolom legacy ingredients.current_stock.
      */
-    private function applyIngredientBalanceDelta(Ingredient $ingredient, ?object $balance, string $delta): void
+    protected function applyIngredientBalanceDelta(Ingredient $ingredient, ?object $balance, string $delta): void
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
         $storeId = $balance->store_id ?? app(TenantContext::class)->getStoreId();
@@ -2233,37 +2154,18 @@ class TransactionService
             throw new \RuntimeException('Store aktif tidak tersedia untuk pembaruan balance stok bahan baku.');
         }
 
-        if ($balance === null) {
-            DB::table('ingredient_stock_balances')->insertOrIgnore([
-                'tenant_id' => $tenantId,
-                'store_id' => $storeId,
-                'ingredient_id' => $ingredient->id,
-                'quantity' => 0,
-                'baseline_quantity' => 0,
-                'baseline_movement_id' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-        }
+        $type = bccomp($delta, '0', 4) >= 0 ? IngredientStockMovementTypeEnum::RestoreCompensation : IngredientStockMovementTypeEnum::SaleDeduction;
 
-        DB::table('ingredient_stock_balances')
-            ->where('tenant_id', $tenantId)
-            ->where('store_id', $storeId)
-            ->where('ingredient_id', $ingredient->id)
-            ->update([
-                'quantity' => DB::raw("quantity + ({$delta})"),
-                'updated_at' => now(),
-            ]);
-
-        $newLegacyStock = max(0.0, (float) $ingredient->current_stock + (float) $delta);
-        DB::table('ingredients')
-            ->where('id', $ingredient->id)
-            ->update([
-                'current_stock' => number_format($newLegacyStock, 4, '.', ''),
-                'updated_at' => now(),
-            ]);
-
-        DB::afterCommit(fn () => app(MenuCacheService::class)->flush($tenantId, $storeId));
+        app(InventoryLedgerService::class)->recordMovement(
+            tenantId: $tenantId,
+            storeId: (int) $storeId,
+            itemType: 'ingredient',
+            itemId: (int) $ingredient->id,
+            quantityDelta: (float) $delta,
+            type: $type,
+            unitCost: $ingredient->cost_per_unit ? (float) $ingredient->cost_per_unit : null,
+            reason: 'Pembaruan delta balance bahan baku via TransactionService.'
+        );
     }
 
     /**

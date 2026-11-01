@@ -10,7 +10,6 @@ use App\Modules\Sales\Services\SalesOrderService;
 use App\Services\Context\TenantContext;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
@@ -70,7 +69,7 @@ class SalesOrderManager extends Component
         $so = SalesOrder::with(['customer', 'store', 'lines.product', 'lines.variant', 'createdBy', 'confirmedBy', 'cancelledBy', 'quotation', 'orders'])
             ->findOrFail($id);
 
-        Gate::authorize('view', $so);
+        $this->authorize('view', $so);
 
         $this->selectedSOId = $so->id;
         $this->selectedSO = $so;
@@ -87,7 +86,7 @@ class SalesOrderManager extends Component
     public function confirmOrder(SalesOrderService $soService, int $id): void
     {
         $so = SalesOrder::findOrFail($id);
-        Gate::authorize('confirm', $so);
+        $this->authorize('confirm', $so);
 
         $actor = Auth::user();
         try {
@@ -102,7 +101,7 @@ class SalesOrderManager extends Component
     public function openFulfillModal(int $id): void
     {
         $so = SalesOrder::with('lines.product')->findOrFail($id);
-        Gate::authorize('fulfill', $so);
+        $this->authorize('fulfill', $so);
 
         $this->selectedSOId = $so->id;
         $this->selectedSO = $so;
@@ -129,7 +128,7 @@ class SalesOrderManager extends Component
         }
 
         $so = SalesOrder::findOrFail($this->selectedSOId);
-        Gate::authorize('fulfill', $so);
+        $this->authorize('fulfill', $so);
 
         $actor = Auth::user();
 
@@ -165,7 +164,7 @@ class SalesOrderManager extends Component
     public function openCancelModal(int $id): void
     {
         $so = SalesOrder::findOrFail($id);
-        Gate::authorize('cancel', $so);
+        $this->authorize('cancel', $so);
 
         $this->selectedSOId = $so->id;
         $this->selectedSO = $so;
@@ -186,7 +185,7 @@ class SalesOrderManager extends Component
         }
 
         $so = SalesOrder::findOrFail($this->selectedSOId);
-        Gate::authorize('cancel', $so);
+        $this->authorize('cancel', $so);
 
         $this->validate([
             'cancelReason' => ['required', 'string', 'min:3'],
@@ -212,7 +211,7 @@ class SalesOrderManager extends Component
     public function repeatOrder(SalesOrderService $soService, int $id): void
     {
         $so = SalesOrder::findOrFail($id);
-        Gate::authorize('create', SalesOrder::class);
+        $this->authorize('create', SalesOrder::class);
 
         $actor = Auth::user();
 
@@ -227,7 +226,7 @@ class SalesOrderManager extends Component
 
     public function render(): View
     {
-        Gate::authorize('viewAny', SalesOrder::class);
+        $this->authorize('viewAny', SalesOrder::class);
 
         $tenantId = app(TenantContext::class)->requireTenantId();
 

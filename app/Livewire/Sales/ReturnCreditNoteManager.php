@@ -72,6 +72,8 @@ class ReturnCreditNoteManager extends Component
         $this->selectedCreditNoteId = $creditNoteId;
 
         $cn = SalesCreditNote::findOrFail($creditNoteId);
+        $this->authorize('apply', $cn);
+
         $this->applyAmount = (string) $cn->remaining_amount;
         $this->targetInvoiceId = null;
         $this->showApplyModal = true;
@@ -93,8 +95,10 @@ class ReturnCreditNoteManager extends Component
             'applyAmount' => 'required|numeric|min:0.01',
         ]);
 
+        $cn = SalesCreditNote::findOrFail($this->selectedCreditNoteId);
+        $this->authorize('apply', $cn);
+
         try {
-            $cn = SalesCreditNote::findOrFail($this->selectedCreditNoteId);
             $invoice = CustomerInvoice::findOrFail($this->targetInvoiceId);
 
             $service->applyCreditNoteToInvoice(
@@ -115,8 +119,10 @@ class ReturnCreditNoteManager extends Component
     {
         $this->reset(['errorMessage', 'successMessage']);
 
+        $cn = SalesCreditNote::findOrFail($creditNoteId);
+        $this->authorize('apply', $cn);
+
         try {
-            $cn = SalesCreditNote::findOrFail($creditNoteId);
             $service->convertCreditNoteToStoreCredit($cn, (int) Auth::id());
             $this->successMessage = "Nota Kredit #{$cn->credit_note_number} berhasil dikonversi ke Store Credit.";
         } catch (Exception $e) {

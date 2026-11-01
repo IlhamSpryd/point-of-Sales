@@ -8,6 +8,7 @@ use App\Modules\Finance\Models\FinancialEventOutbox;
 use App\Modules\Finance\Services\PostingEngineService;
 use App\Services\Context\TenantContext;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 class ProcessFinancialOutboxCommand extends Command
 {
@@ -40,7 +41,9 @@ class ProcessFinancialOutboxCommand extends Command
             $query->where('tenant_id', (int) $tenantId);
         }
 
-        $records = $query->get();
+        $records = DB::transaction(function () use ($query) {
+            return $query->lock('FOR UPDATE SKIP LOCKED')->get();
+        });
 
         if ($records->isEmpty()) {
             $this->info('Tidak ada peristiwa finansial yang pending.');

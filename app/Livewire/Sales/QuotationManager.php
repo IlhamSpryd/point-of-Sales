@@ -13,7 +13,6 @@ use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
@@ -105,7 +104,7 @@ class QuotationManager extends Component
 
     public function openCreateModal(): void
     {
-        Gate::authorize('create', Quotation::class);
+        $this->authorize('create', Quotation::class);
 
         $this->resetValidation();
         $this->customer_id = null;
@@ -126,7 +125,7 @@ class QuotationManager extends Component
 
     public function createQuotation(QuotationService $quotationService): void
     {
-        Gate::authorize('create', Quotation::class);
+        $this->authorize('create', Quotation::class);
 
         $this->validate([
             'customer_id' => ['required', 'integer'],
@@ -172,7 +171,7 @@ class QuotationManager extends Component
         $quotation = Quotation::with(['customer', 'store', 'lines.product', 'lines.variant', 'createdBy', 'approvedBy', 'convertedSalesOrder'])
             ->findOrFail($id);
 
-        Gate::authorize('view', $quotation);
+        $this->authorize('view', $quotation);
 
         $this->selectedQuotationId = $quotation->id;
         $this->selectedQuotation = $quotation;
@@ -189,7 +188,7 @@ class QuotationManager extends Component
     public function submitForApprovalOrSend(QuotationService $quotationService, int $id): void
     {
         $quotation = Quotation::findOrFail($id);
-        Gate::authorize('update', $quotation);
+        $this->authorize('update', $quotation);
 
         $actor = Auth::user();
         $updated = $quotationService->submitForApprovalOrSend($quotation, $actor);
@@ -201,7 +200,7 @@ class QuotationManager extends Component
     public function approve(QuotationService $quotationService, int $id): void
     {
         $quotation = Quotation::findOrFail($id);
-        Gate::authorize('approve', $quotation);
+        $this->authorize('approve', $quotation);
 
         $actor = Auth::user();
         $approved = $quotationService->approve($quotation, $actor);
@@ -224,7 +223,7 @@ class QuotationManager extends Component
         }
 
         $quotation = Quotation::findOrFail($this->selectedQuotationId);
-        Gate::authorize('update', $quotation);
+        $this->authorize('update', $quotation);
 
         $this->validate([
             'rejectReason' => ['required', 'string', 'min:3'],
@@ -246,7 +245,7 @@ class QuotationManager extends Component
     public function accept(QuotationService $quotationService, int $id): void
     {
         $quotation = Quotation::findOrFail($id);
-        Gate::authorize('update', $quotation);
+        $this->authorize('update', $quotation);
 
         $actor = Auth::user();
         $accepted = $quotationService->accept($quotation, $actor);
@@ -258,7 +257,7 @@ class QuotationManager extends Component
     public function convertToSalesOrder(QuotationService $quotationService, int $id): void
     {
         $quotation = Quotation::findOrFail($id);
-        Gate::authorize('convert', $quotation);
+        $this->authorize('convert', $quotation);
 
         $actor = Auth::user();
 
@@ -273,7 +272,7 @@ class QuotationManager extends Component
 
     public function render(): View
     {
-        Gate::authorize('viewAny', Quotation::class);
+        $this->authorize('viewAny', Quotation::class);
 
         $tenantId = app(TenantContext::class)->requireTenantId();
 

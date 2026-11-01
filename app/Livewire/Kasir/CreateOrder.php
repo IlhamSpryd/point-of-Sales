@@ -140,10 +140,6 @@ class CreateOrder extends Component
 
     public string $manualDiscountReason = '';
 
-    public string $manualDiscountSupervisorPin = '';
-
-    public ?string $supervisorPinInput = null;
-
     public int $appliedManualDiscount = 0;
 
     public string $appliedManualDiscountReason = '';
@@ -818,13 +814,10 @@ class CreateOrder extends Component
         return (int) collect($this->cart)->sum(fn ($item) => (int) ($item['item_discount_amount'] ?? 0));
     }
 
-    public function applyManualDiscount(): void
+    public function applyManualDiscount(string $pin = ''): void
     {
         if ($this->manualDiscountAmountInput !== null) {
             $this->manualDiscountAmount = (int) $this->manualDiscountAmountInput;
-        }
-        if ($this->supervisorPinInput !== null) {
-            $this->manualDiscountSupervisorPin = $this->supervisorPinInput;
         }
 
         $this->validate([
@@ -840,16 +833,24 @@ class CreateOrder extends Component
         $needsApproval = $approvalService->evaluateThreshold($percent, $amount, $subtotal);
 
         if ($needsApproval) {
-            $this->validate([
-                'manualDiscountSupervisorPin' => 'required|string|min:4',
-            ]);
+            $pinValidator = validator(
+                ['pin' => $pin],
+                ['pin' => 'required|string|min:4'],
+                ['pin.required' => 'PIN Supervisor wajib diisi.', 'pin.min' => 'PIN Supervisor minimal 4 karakter.']
+            );
+
+            if ($pinValidator->fails()) {
+                $this->addError('manualDiscountSupervisorPin', $pinValidator->errors()->first('pin'));
+
+                return;
+            }
 
             $storeId = (int) (app(TenantContext::class)->getStoreId() ?? Auth::user()->store_id ?? 0);
 
             try {
                 $approval = $approvalService->createApproval(
                     requesterId: (int) Auth::id(),
-                    pin: $this->manualDiscountSupervisorPin,
+                    pin: $pin,
                     action: Approval::ACTION_MANUAL_DISCOUNT,
                     amount: $amount,
                     reason: $this->manualDiscountReason,
@@ -870,7 +871,6 @@ class CreateOrder extends Component
         $this->appliedManualDiscount = (int) $this->manualDiscountAmount;
         $this->appliedManualDiscountReason = $this->manualDiscountReason;
         $this->isManualDiscountModalOpen = false;
-        $this->manualDiscountSupervisorPin = '';
         $this->dispatch('toast', message: 'Diskon manual berhasil diterapkan.', type: 'success');
     }
 

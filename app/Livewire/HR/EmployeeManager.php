@@ -85,6 +85,8 @@ class EmployeeManager extends Component
 
     public function openCreateModal(): void
     {
+        $this->authorize('create', Employee::class);
+
         $this->reset(['employeeNumber', 'fullName', 'email', 'phoneNumber', 'nationalIdNumber', 'departmentId', 'jobTitleId']);
         $this->employeeNumber = 'EMP-'.strtoupper(bin2hex(random_bytes(3)));
         $this->hireDate = now()->toDateString();
@@ -98,6 +100,8 @@ class EmployeeManager extends Component
 
     public function saveEmployee(): void
     {
+        $this->authorize('create', Employee::class);
+
         $this->validate();
 
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
@@ -134,6 +138,8 @@ class EmployeeManager extends Component
             ->first();
 
         if ($employee) {
+            $this->authorize('update', $employee);
+
             $isActive = $employee->employment_status === EmploymentStatusEnum::ACTIVE;
             $employee->employment_status = $isActive ? EmploymentStatusEnum::TERMINATED : EmploymentStatusEnum::ACTIVE;
             $employee->save();

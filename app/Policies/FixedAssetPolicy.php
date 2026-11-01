@@ -10,11 +10,16 @@ use App\Modules\Finance\Models\FixedAsset;
 
 class FixedAssetPolicy
 {
+    private function isOwner(User $user): bool
+    {
+        return strtolower($user->role->name ?? '') === 'owner';
+    }
+
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('finance.fixed_assets.view')
-            || $user->hasPermissionTo('finance.fixed_assets.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermission('finance.fixed_assets.view')
+            || $user->hasPermission('finance.fixed_assets.manage')
+            || $this->isOwner($user);
     }
 
     public function view(User $user, FixedAsset $asset): bool
@@ -23,15 +28,15 @@ class FixedAssetPolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.fixed_assets.view')
-            || $user->hasPermissionTo('finance.fixed_assets.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermission('finance.fixed_assets.view')
+            || $user->hasPermission('finance.fixed_assets.manage')
+            || $this->isOwner($user);
     }
 
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('finance.fixed_assets.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermission('finance.fixed_assets.manage')
+            || $this->isOwner($user);
     }
 
     public function update(User $user, FixedAsset $asset): bool
@@ -44,8 +49,8 @@ class FixedAssetPolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.fixed_assets.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermission('finance.fixed_assets.manage')
+            || $this->isOwner($user);
     }
 
     public function delete(User $user, FixedAsset $asset): bool
@@ -58,8 +63,8 @@ class FixedAssetPolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.fixed_assets.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermission('finance.fixed_assets.manage')
+            || $this->isOwner($user);
     }
 
     public function capitalize(User $user, FixedAsset $asset): bool
@@ -72,8 +77,8 @@ class FixedAssetPolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.fixed_assets.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermission('finance.fixed_assets.manage')
+            || $this->isOwner($user);
     }
 
     public function dispose(User $user, FixedAsset $asset): bool
@@ -86,7 +91,7 @@ class FixedAssetPolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.fixed_assets.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermission('finance.fixed_assets.manage')
+            || $this->isOwner($user);
     }
 }

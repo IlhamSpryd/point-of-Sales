@@ -52,11 +52,11 @@ class TenantQueryScopingStaticCheckTest extends TestCase
                 continue;
             }
 
-            $relPath = str_replace(base_path() . DIRECTORY_SEPARATOR, '', $file->getRealPath());
+            $relPath = str_replace(base_path().DIRECTORY_SEPARATOR, '', $file->getRealPath());
 
             // Kecualikan offline dataset seeders / generators yang beroperasi di luar runtime transaksi
-            if (str_contains($relPath, 'Support' . DIRECTORY_SEPARATOR . 'Dataset') ||
-                str_contains($relPath, 'Console' . DIRECTORY_SEPARATOR . 'Commands' . DIRECTORY_SEPARATOR . 'Populate')) {
+            if (str_contains($relPath, 'Support'.DIRECTORY_SEPARATOR.'Dataset') ||
+                str_contains($relPath, 'Console'.DIRECTORY_SEPARATOR.'Commands'.DIRECTORY_SEPARATOR.'Populate')) {
                 continue;
             }
 
@@ -64,7 +64,7 @@ class TenantQueryScopingStaticCheckTest extends TestCase
 
             foreach ($this->sensitiveTables as $tableName) {
                 // Match pola: DB::table('table_name') hingga akhir statement (titik koma)
-                $pattern = "/(DB::table\(\s*['\"]" . preg_quote($tableName, '/') . "['\"]\s*\)(?:(?!;).)*;)/s";
+                $pattern = "/(DB::table\(\s*['\"]".preg_quote($tableName, '/')."['\"]\s*\)(?:(?!;).)*;)/s";
                 if (! preg_match_all($pattern, $content, $matches, PREG_OFFSET_CAPTURE)) {
                     continue;
                 }
@@ -92,7 +92,7 @@ class TenantQueryScopingStaticCheckTest extends TestCase
         $this->assertGreaterThan(0, $queriesChecked, 'Sanity check: At least one raw query on sensitive tables was inspected.');
         $this->assertEmpty(
             $violations,
-            "Security CI Guard Failure: Found raw queries on multi-tenant tables without tenant_id scoping:\n" .
+            "Security CI Guard Failure: Found raw queries on multi-tenant tables without tenant_id scoping:\n".
             implode("\n", $violations)
         );
     }

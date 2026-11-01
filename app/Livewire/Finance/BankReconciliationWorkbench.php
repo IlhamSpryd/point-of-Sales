@@ -114,6 +114,8 @@ class BankReconciliationWorkbench extends Component
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->selectedAccountId);
 
+        $this->authorize('reconcile', $account);
+
         /** @var User $actor */
         $actor = Auth::user();
 
@@ -145,6 +147,8 @@ class BankReconciliationWorkbench extends Component
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->selectedSessionId);
 
+        $this->authorize('reconcile', $session->account);
+
         /** @var User $actor */
         $actor = Auth::user();
 
@@ -169,6 +173,8 @@ class BankReconciliationWorkbench extends Component
         $session = BankReconciliationSession::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->selectedSessionId);
+
+        $this->authorize('reconcile', $session->account);
 
         $statementLine = BankStatementLine::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
@@ -197,6 +203,8 @@ class BankReconciliationWorkbench extends Component
             ->where('tenant_id', $tenantId)
             ->findOrFail($matchId);
 
+        $this->authorize('reconcile', $match->session->account);
+
         /** @var User $actor */
         $actor = Auth::user();
 
@@ -218,6 +226,8 @@ class BankReconciliationWorkbench extends Component
         $session = BankReconciliationSession::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->selectedSessionId);
+
+        $this->authorize('reconcile', $session->account);
 
         /** @var User $actor */
         $actor = Auth::user();

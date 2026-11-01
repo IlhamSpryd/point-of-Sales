@@ -29,6 +29,8 @@ class LeaveManager extends Component
 
     public function approve(int $requestId, LeaveService $leaveService): void
     {
+        $this->authorize('approve', LeaveRequest::class);
+
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         /** @var LeaveRequest|null $request */
@@ -40,6 +42,8 @@ class LeaveManager extends Component
         if (! $request) {
             return;
         }
+
+        $this->authorize('approve', $request);
 
         $primaryBranch = $request->employee?->primaryBranchAssignment;
         $storeId = $primaryBranch ? $primaryBranch->store_id : 0;
@@ -70,6 +74,8 @@ class LeaveManager extends Component
 
     public function reject(int $requestId, LeaveService $leaveService): void
     {
+        $this->authorize('reject', LeaveRequest::class);
+
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         /** @var LeaveRequest|null $request */
@@ -81,6 +87,8 @@ class LeaveManager extends Component
         if (! $request) {
             return;
         }
+
+        $this->authorize('reject', $request);
 
         try {
             $leaveService->rejectLeaveRequest($tenantId, $request->id, (int) Auth::id(), 'Ditolak oleh manajemen.');

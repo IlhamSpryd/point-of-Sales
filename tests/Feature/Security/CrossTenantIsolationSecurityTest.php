@@ -130,7 +130,7 @@ class CrossTenantIsolationSecurityTest extends TestCase
         try {
             DB::table('promotion_campaigns')->insert([
                 'tenant_id' => 999999,
-                'campaign_code' => 'TEST_INVALID_TENANT_' . uniqid(),
+                'campaign_code' => 'TEST_INVALID_TENANT_'.uniqid(),
                 'name' => 'Invalid Tenant Campaign',
                 'type' => 'AUTOMATIC_DISCOUNT',
                 'start_datetime' => now(),
@@ -169,7 +169,7 @@ class CrossTenantIsolationSecurityTest extends TestCase
         DB::table('purchase_requests')->insert([
             'tenant_id' => $this->tenantA->id,
             'store_id' => $this->storeA->id,
-            'pr_number' => 'PR-SEC-' . uniqid(),
+            'pr_number' => 'PR-SEC-'.uniqid(),
             'requested_by_user_id' => $this->userAOwner->id,
             'required_by_date' => now()->addDays(7)->toDateString(),
             'created_at' => now(),

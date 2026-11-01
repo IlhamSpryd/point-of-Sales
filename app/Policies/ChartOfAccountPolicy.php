@@ -9,9 +9,14 @@ use App\Modules\Finance\Models\ChartOfAccount;
 
 class ChartOfAccountPolicy
 {
+    private function isOwner(User $user): bool
+    {
+        return strtolower($user->role->name ?? '') === 'owner';
+    }
+
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('finance.coa.view') || $user->hasRole('owner');
+        return $user->hasPermission('finance.coa.view') || $this->isOwner($user);
     }
 
     public function view(User $user, ChartOfAccount $account): bool
@@ -20,12 +25,12 @@ class ChartOfAccountPolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.coa.view') || $user->hasRole('owner');
+        return $user->hasPermission('finance.coa.view') || $this->isOwner($user);
     }
 
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('finance.coa.manage') || $user->hasRole('owner');
+        return $user->hasPermission('finance.coa.manage') || $this->isOwner($user);
     }
 
     public function update(User $user, ChartOfAccount $account): bool
@@ -34,7 +39,7 @@ class ChartOfAccountPolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.coa.manage') || $user->hasRole('owner');
+        return $user->hasPermission('finance.coa.manage') || $this->isOwner($user);
     }
 
     public function delete(User $user, ChartOfAccount $account): bool
@@ -48,6 +53,6 @@ class ChartOfAccountPolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.coa.manage') || $user->hasRole('owner');
+        return $user->hasPermission('finance.coa.manage') || $this->isOwner($user);
     }
 }

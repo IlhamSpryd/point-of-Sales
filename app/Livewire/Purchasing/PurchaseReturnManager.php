@@ -13,7 +13,6 @@ use App\Modules\Purchasing\Models\SupplierInvoice;
 use App\Modules\Purchasing\Services\PurchaseReturnService;
 use App\Services\Context\TenantContext;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -92,7 +91,7 @@ class PurchaseReturnManager extends Component
 
     public function openCreateModal(): void
     {
-        Gate::authorize('create', PurchaseReturn::class);
+        $this->authorize('create', PurchaseReturn::class);
 
         $this->resetValidation();
         $this->selectedGrnId = null;
@@ -142,7 +141,7 @@ class PurchaseReturnManager extends Component
 
     public function saveDraftReturn(PurchaseReturnService $service): void
     {
-        Gate::authorize('create', PurchaseReturn::class);
+        $this->authorize('create', PurchaseReturn::class);
 
         $this->validate([
             'selectedGrnId' => 'required|integer',
@@ -189,7 +188,7 @@ class PurchaseReturnManager extends Component
     public function viewReturn(int $id): void
     {
         $ret = PurchaseReturn::with(['supplier', 'store', 'goodsReceivedNote', 'lines.purchasable', 'debitNote.applications'])->findOrFail($id);
-        Gate::authorize('view', $ret);
+        $this->authorize('view', $ret);
 
         $this->selectedReturnId = $ret->id;
         $this->selectedReturn = $ret;
@@ -199,7 +198,7 @@ class PurchaseReturnManager extends Component
     public function postReturn(int $id, PurchaseReturnService $service): void
     {
         $ret = PurchaseReturn::findOrFail($id);
-        Gate::authorize('update', $ret);
+        $this->authorize('update', $ret);
 
         try {
             $result = $service->postPurchaseReturn($ret->id, auth()->user());
@@ -218,6 +217,8 @@ class PurchaseReturnManager extends Component
 
     public function openApplyModal(int $debitNoteId): void
     {
+        $this->authorize('update', PurchaseReturn::class);
+
         $dn = PurchaseDebitNote::with('supplier')->findOrFail($debitNoteId);
         $this->selectedDebitNoteId = $dn->id;
         $this->selectedDebitNote = $dn;
@@ -230,6 +231,8 @@ class PurchaseReturnManager extends Component
 
     public function applyDebitNote(PurchaseReturnService $service): void
     {
+        $this->authorize('update', PurchaseReturn::class);
+
         if (! $this->selectedDebitNoteId) {
             return;
         }

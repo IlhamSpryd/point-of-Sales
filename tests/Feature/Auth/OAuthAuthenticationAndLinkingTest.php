@@ -496,9 +496,9 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
         // 1. Awalnya belum tertaut
         $res1 = $this->actingAs($user)->get(route('profile.edit'));
         $res1->assertOk();
-        $res1->assertSee('Akun Tertaut (Google &amp; Apple SSO)', false);
-        $res1->assertSee('Tautkan Akun Google');
-        $res1->assertSee('Tautkan Akun Apple');
+        $res1->assertSee('Linked Accounts (Google &amp; Apple SSO)', false);
+        $res1->assertSee('Link Google Account');
+        $res1->assertSee('Link Apple Account');
 
         // 2. Tautkan Google
         UserOAuthIdentity::create([
@@ -517,7 +517,7 @@ class OAuthAuthenticationAndLinkingTest extends TestCase
         $res2 = $this->actingAs($user)->get(route('profile.edit'));
         $res2->assertOk();
         $res2->assertSee('user.google@gmail.com');
-        $res2->assertSee('Tertaut');
+        $res2->assertSee('Linked');
         $res2->assertSee('btn-unlink-google', false);
     }
 }

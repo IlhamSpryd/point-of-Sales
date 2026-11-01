@@ -14,7 +14,6 @@ use App\Modules\Inventory\Services\StockOpnameService;
 use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Livewire\Attributes\Layout;
@@ -161,10 +160,8 @@ class StockOpnameManager extends Component
             return;
         }
 
+        $this->authorize('create', [StockOpname::class, $storeId]);
         $user = auth()->user();
-        if (! $user || ! Gate::allows('create', [StockOpname::class, $storeId])) {
-            abort(403, 'Anda tidak memiliki wewenang untuk membuat sesi opname di cabang ini.');
-        }
 
         $this->validate([
             'notes' => 'nullable|string|max:500',
@@ -201,11 +198,8 @@ class StockOpnameManager extends Component
     public function startCounting(int $opnameId, StockOpnameService $service): void
     {
         $opname = $this->findScopedOpname($opnameId);
+        $this->authorize('startCounting', $opname);
         $user = auth()->user();
-
-        if (! $user || ! Gate::allows('startCounting', $opname)) {
-            abort(403, 'Anda tidak memiliki wewenang untuk memulai proses hitung sesi opname ini.');
-        }
 
         try {
             $service->startCounting($opname, (int) $user->id);
@@ -218,11 +212,7 @@ class StockOpnameManager extends Component
     public function openCountModal(int $opnameId): void
     {
         $opname = $this->findScopedOpname($opnameId);
-        $user = auth()->user();
-
-        if (! $user || ! Gate::allows('recordCount', $opname)) {
-            abort(403, 'Anda tidak memiliki wewenang untuk mengisi hitungan opname.');
-        }
+        $this->authorize('recordCount', $opname);
 
         $this->activeOpnameId = $opname->id;
         $this->countedQuantities = [];
@@ -251,11 +241,8 @@ class StockOpnameManager extends Component
         }
 
         $opname = $this->findScopedOpname($this->activeOpnameId);
+        $this->authorize('recordCount', $opname);
         $user = auth()->user();
-
-        if (! $user || ! Gate::allows('recordCount', $opname)) {
-            abort(403, 'Anda tidak memiliki wewenang untuk menyimpan hasil hitung.');
-        }
 
         $counts = [];
         foreach ($this->countedQuantities as $itemId => $qty) {
@@ -280,11 +267,8 @@ class StockOpnameManager extends Component
     public function submitForApproval(int $opnameId, StockOpnameService $service): void
     {
         $opname = $this->findScopedOpname($opnameId);
+        $this->authorize('submit', $opname);
         $user = auth()->user();
-
-        if (! $user || ! Gate::allows('submit', $opname)) {
-            abort(403, 'Anda tidak memiliki wewenang untuk mengajukan sesi opname.');
-        }
 
         try {
             $service->submitForApproval($opname, (int) $user->id);
@@ -297,11 +281,8 @@ class StockOpnameManager extends Component
     public function approveOpname(int $opnameId, StockOpnameService $service): void
     {
         $opname = $this->findScopedOpname($opnameId);
+        $this->authorize('approve', $opname);
         $user = auth()->user();
-
-        if (! $user || ! Gate::allows('approve', $opname)) {
-            abort(403, 'Hanya Manajer atau Pemilik cabang yang dapat menyetujui rekonsiliasi opname.');
-        }
 
         try {
             $service->approveOpname($opname, (int) $user->id);
@@ -324,11 +305,8 @@ class StockOpnameManager extends Component
         }
 
         $opname = $this->findScopedOpname($this->activeOpnameId);
+        $this->authorize('approve', $opname);
         $user = auth()->user();
-
-        if (! $user || ! Gate::allows('approve', $opname)) {
-            abort(403, 'Anda tidak memiliki wewenang untuk meresolusi drift.');
-        }
 
         try {
             $service->resolveDrift($opname, $itemId, $mode, (int) $user->id);
@@ -351,11 +329,8 @@ class StockOpnameManager extends Component
     public function cancelOpname(int $opnameId, StockOpnameService $service): void
     {
         $opname = $this->findScopedOpname($opnameId);
+        $this->authorize('cancel', $opname);
         $user = auth()->user();
-
-        if (! $user || ! Gate::allows('cancel', $opname)) {
-            abort(403, 'Anda tidak memiliki wewenang untuk membatalkan sesi opname.');
-        }
 
         try {
             $service->cancelSession($opname, (int) $user->id, 'Dibatalkan oleh pengguna.');

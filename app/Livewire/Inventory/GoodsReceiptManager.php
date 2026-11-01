@@ -12,7 +12,6 @@ use App\Modules\Inventory\Services\GoodsReceiptService;
 use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Livewire\Attributes\Layout;
@@ -170,7 +169,7 @@ class GoodsReceiptManager extends Component
 
             if ($this->isEditing && $this->editingReceiptId) {
                 $receipt = GoodsReceipt::findOrFail($this->editingReceiptId);
-                Gate::authorize('update', $receipt);
+                $this->authorize('update', $receipt);
 
                 $service->updateDraft($receipt, [
                     'supplier_reference' => $this->supplier_reference,
@@ -182,7 +181,7 @@ class GoodsReceiptManager extends Component
 
                 session()->flash('message', "Draft {$receipt->receipt_number} berhasil diperbarui.");
             } else {
-                Gate::authorize('create', [GoodsReceipt::class, $storeId]);
+                $this->authorize('create', [GoodsReceipt::class, $storeId]);
 
                 $receipt = $service->createDraft($tenantId, $storeId, [
                     'receipt_number' => $this->receipt_number ?: null,
@@ -206,7 +205,7 @@ class GoodsReceiptManager extends Component
     public function post(int $receiptId, GoodsReceiptService $service): void
     {
         $receipt = GoodsReceipt::findOrFail($receiptId);
-        Gate::authorize('post', $receipt);
+        $this->authorize('post', $receipt);
 
         try {
             $service->postReceipt($receipt, (int) auth()->id());
@@ -219,7 +218,7 @@ class GoodsReceiptManager extends Component
     public function cancel(int $receiptId, GoodsReceiptService $service): void
     {
         $receipt = GoodsReceipt::findOrFail($receiptId);
-        Gate::authorize('cancel', $receipt);
+        $this->authorize('cancel', $receipt);
 
         try {
             $service->cancelDraft($receipt, (int) auth()->id());
@@ -232,7 +231,7 @@ class GoodsReceiptManager extends Component
     public function openReverseModal(int $receiptId): void
     {
         $receipt = GoodsReceipt::findOrFail($receiptId);
-        Gate::authorize('reverse', $receipt);
+        $this->authorize('reverse', $receipt);
 
         $this->reversalReceiptId = $receiptId;
         $this->reversal_reason = '';
@@ -250,7 +249,7 @@ class GoodsReceiptManager extends Component
         }
 
         $receipt = GoodsReceipt::findOrFail($this->reversalReceiptId);
-        Gate::authorize('reverse', $receipt);
+        $this->authorize('reverse', $receipt);
 
         try {
             $service->reverseReceipt($receipt, (int) auth()->id(), $this->reversal_reason);

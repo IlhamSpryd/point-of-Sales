@@ -9,6 +9,7 @@
 
     <div class="space-y-4 text-xs" x-data="{
         subtotal: {{ (int) $this->subtotal }},
+        supervisorPin: '',
         setPercent(pct) {
             const calculated = Math.round(this.subtotal * (pct / 100));
             $wire.set('manualDiscountAmount', calculated);
@@ -44,7 +45,7 @@
             </div>
         </div>
 
-        <form id="manual-discount-form" wire:submit.prevent="applyManualDiscount" class="space-y-3.5">
+        <form id="manual-discount-form" wire:submit.prevent="applyManualDiscount(supervisorPin)" class="space-y-3.5">
             <div>
                 <label class="font-headline-sm text-[11px] font-semibold text-[#111827] uppercase tracking-wider block mb-1">
                     Nominal Diskon (Rp)
@@ -73,7 +74,7 @@
                     <span class="material-symbols-rounded text-[15px]">lock</span>
                     <span>Otorisasi PIN Supervisor</span>
                 </div>
-                <input type="password" wire:model="manualDiscountSupervisorPin" maxlength="6"
+                <input type="password" x-model="supervisorPin" maxlength="6"
                     class="w-full h-9 px-3 bg-white border border-amber-300 rounded-lg text-center font-mono font-bold text-xs tracking-widest text-[#111827] focus:outline-none focus:border-amber-600 transition-all"
                     placeholder="••••••">
                 <span class="text-[10px] text-amber-700 block">Wajib jika diskon melebihi ambang batas otorisasi kasir.</span>

@@ -12,6 +12,34 @@
         </x-ui.alert>
     @enderror
 
+    {{-- Station Filter Bar (FINDING-P2-05) --}}
+    <div class="flex items-center justify-between bg-white border border-gray-200 rounded-2xl px-5 py-3 shadow-xs">
+        <div class="flex items-center gap-2">
+            <span class="material-symbols-rounded text-gray-400 text-lg">tune</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Stasiun:</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <button
+                type="button"
+                wire:click="setStationFilter('all')"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all {{ $stationFilter === 'all' ? 'bg-apeiron-ink text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                Semua Stasiun
+            </button>
+            <button
+                type="button"
+                wire:click="setStationFilter('kitchen')"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all {{ $stationFilter === 'kitchen' ? 'bg-amber-600 text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                Kitchen (Food)
+            </button>
+            <button
+                type="button"
+                wire:click="setStationFilter('bar')"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all {{ $stationFilter === 'bar' ? 'bg-sky-600 text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                Bar (Drinks)
+            </button>
+        </div>
+    </div>
+
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 3xl:gap-8 4xl:grid-cols-4">
 
         {{-- COLUMN 1: QUEUED --}}

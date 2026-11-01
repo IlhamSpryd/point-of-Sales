@@ -9,11 +9,16 @@ use App\Modules\Finance\Models\CashBankAccount;
 
 class CashBankAccountPolicy
 {
+    private function isOwner(User $user): bool
+    {
+        return strtolower($user->role->name ?? '') === 'owner';
+    }
+
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('finance.cash_bank.view')
-            || $user->hasPermissionTo('finance.cash_bank.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermission('finance.cash_bank.view')
+            || $user->hasPermission('finance.cash_bank.manage')
+            || $this->isOwner($user);
     }
 
     public function view(User $user, CashBankAccount $account): bool
@@ -22,14 +27,14 @@ class CashBankAccountPolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.cash_bank.view')
-            || $user->hasPermissionTo('finance.cash_bank.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermission('finance.cash_bank.view')
+            || $user->hasPermission('finance.cash_bank.manage')
+            || $this->isOwner($user);
     }
 
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('finance.cash_bank.manage') || $user->hasRole('owner');
+        return $user->hasPermission('finance.cash_bank.manage') || $this->isOwner($user);
     }
 
     public function update(User $user, CashBankAccount $account): bool
@@ -38,7 +43,7 @@ class CashBankAccountPolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.cash_bank.manage') || $user->hasRole('owner');
+        return $user->hasPermission('finance.cash_bank.manage') || $this->isOwner($user);
     }
 
     public function delete(User $user, CashBankAccount $account): bool
@@ -52,7 +57,7 @@ class CashBankAccountPolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.cash_bank.manage') || $user->hasRole('owner');
+        return $user->hasPermission('finance.cash_bank.manage') || $this->isOwner($user);
     }
 
     public function transfer(User $user, CashBankAccount $account): bool
@@ -61,9 +66,9 @@ class CashBankAccountPolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.cash_bank.transfer')
-            || $user->hasPermissionTo('finance.cash_bank.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermission('finance.cash_bank.transfer')
+            || $user->hasPermission('finance.cash_bank.manage')
+            || $this->isOwner($user);
     }
 
     public function reconcile(User $user, CashBankAccount $account): bool
@@ -72,8 +77,8 @@ class CashBankAccountPolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.cash_bank.reconcile')
-            || $user->hasPermissionTo('finance.cash_bank.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermission('finance.cash_bank.reconcile')
+            || $user->hasPermission('finance.cash_bank.manage')
+            || $this->isOwner($user);
     }
 }

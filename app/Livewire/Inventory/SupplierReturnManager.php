@@ -13,7 +13,6 @@ use App\Modules\Inventory\Services\SupplierReturnService;
 use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Livewire\Attributes\Layout;
@@ -87,6 +86,11 @@ class SupplierReturnManager extends Component
     public function boot(): void
     {
         $this->bootRequiresTenantContext();
+
+        $user = auth()->user();
+        if (! $user || ! $user->role || ! in_array($user->role->name, ['Owner', 'Manager', 'Inventory'], true)) {
+            abort(403, 'Anda tidak memiliki hak akses untuk halaman Retur Pemasok.');
+        }
     }
 
     public function mount(): void
@@ -157,10 +161,8 @@ class SupplierReturnManager extends Component
             return;
         }
 
+        $this->authorize('create', [SupplierReturn::class, $storeId]);
         $user = auth()->user();
-        if (! $user || ! Gate::allows('create', [SupplierReturn::class, $storeId])) {
-            abort(403, 'Anda tidak memiliki wewenang untuk membuat retur supplier di cabang ini.');
-        }
 
         $this->validate([
             'goods_receipt_id' => 'nullable|integer',
@@ -219,11 +221,8 @@ class SupplierReturnManager extends Component
     public function postReturn(int $returnId, SupplierReturnService $service): void
     {
         $return = $this->findScopedReturn($returnId);
+        $this->authorize('post', $return);
         $user = auth()->user();
-
-        if (! $user || ! Gate::allows('post', $return)) {
-            abort(403, 'Anda tidak memiliki wewenang untuk memposting retur ini.');
-        }
 
         try {
             $service->postReturn($return, (int) $user->id);
@@ -238,11 +237,8 @@ class SupplierReturnManager extends Component
     public function cancelReturn(int $returnId, SupplierReturnService $service): void
     {
         $return = $this->findScopedReturn($returnId);
+        $this->authorize('cancel', $return);
         $user = auth()->user();
-
-        if (! $user || ! Gate::allows('cancel', $return)) {
-            abort(403, 'Anda tidak memiliki wewenang untuk membatalkan retur ini.');
-        }
 
         try {
             $service->cancelDraft($return, (int) $user->id, 'Dibatalkan dari antarmuka web.');
@@ -255,11 +251,7 @@ class SupplierReturnManager extends Component
     public function openReverseModal(int $returnId): void
     {
         $return = $this->findScopedReturn($returnId);
-        $user = auth()->user();
-
-        if (! $user || ! Gate::allows('reverse', $return)) {
-            abort(403, 'Anda tidak memiliki wewenang untuk melakukan pembalikan (reverse) retur.');
-        }
+        $this->authorize('reverse', $return);
 
         $this->reversalReturnId = $return->id;
         $this->reversal_reason = '';
@@ -280,11 +272,8 @@ class SupplierReturnManager extends Component
         }
 
         $return = $this->findScopedReturn($this->reversalReturnId);
+        $this->authorize('reverse', $return);
         $user = auth()->user();
-
-        if (! $user || ! Gate::allows('reverse', $return)) {
-            abort(403, 'Anda tidak memiliki wewenang untuk membalikkan retur ini.');
-        }
 
         $this->validate([
             'reversal_reason' => 'required|string|min:5|max:255',

@@ -16,6 +16,7 @@ use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Attributes\Url;
@@ -27,6 +28,9 @@ class JournalEntryManager extends Component
 {
     use RequiresTenantContext;
     use WithPagination;
+
+    #[Locked]
+    public string $workbenchIdempotencyKey = '';
 
     #[Url(history: true)]
     public string $search = '';
@@ -96,6 +100,11 @@ class JournalEntryManager extends Component
 
     public function openWorkbenchModal(): void
     {
+        $this->authorize('create', JournalEntry::class);
+
+        $tenantId = (int) app(TenantContext::class)->requireTenantId();
+        $this->workbenchIdempotencyKey = 'manual_journal:'.$tenantId.':'.(string) Str::uuid();
+
         $this->resetValidation();
         $this->postingDate = now()->toDateString();
         $this->storeId = null;
@@ -158,6 +167,8 @@ class JournalEntryManager extends Component
 
     public function postManualJournal(PostingEngineService $postingEngine): void
     {
+        $this->authorize('create', JournalEntry::class);
+
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         $this->validate([
@@ -202,11 +213,15 @@ class JournalEntryManager extends Component
             );
         }, $this->lines);
 
+        if (empty($this->workbenchIdempotencyKey)) {
+            $this->workbenchIdempotencyKey = 'manual_journal:'.$tenantId.':'.(string) Str::uuid();
+        }
+
         $dto = new ManualJournalDto(
             tenantId: $tenantId,
             storeId: $this->storeId,
             postingDate: $this->postingDate,
-            idempotencyKey: 'manual_journal:'.$tenantId.':'.uniqid('', true),
+            idempotencyKey: $this->workbenchIdempotencyKey,
             lines: $lineDtos,
             notes: trim($this->notes),
             currencyCode: 'IDR',
@@ -252,6 +267,8 @@ class JournalEntryManager extends Component
         $journal = JournalEntry::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->findOrFail($this->selectedJournalId);
+
+        $this->authorize('reverse', $journal);
 
         /** @var User $actor */
         $actor = Auth::user();

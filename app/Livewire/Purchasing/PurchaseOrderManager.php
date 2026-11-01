@@ -14,7 +14,6 @@ use App\Modules\Purchasing\Models\SupplierProduct;
 use App\Modules\Purchasing\Services\PurchaseOrderService;
 use App\Services\Context\TenantContext;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -100,7 +99,7 @@ class PurchaseOrderManager extends Component
 
     public function openCreateModal(): void
     {
-        Gate::authorize('create', PurchaseOrder::class);
+        $this->authorize('create', PurchaseOrder::class);
 
         $this->resetValidation();
         $this->orderDate = now()->toDateString();
@@ -185,7 +184,7 @@ class PurchaseOrderManager extends Component
 
     public function savePurchaseOrder(PurchaseOrderService $service): void
     {
-        Gate::authorize('create', PurchaseOrder::class);
+        $this->authorize('create', PurchaseOrder::class);
 
         $this->validate([
             'storeId' => 'required|integer',
@@ -230,7 +229,7 @@ class PurchaseOrderManager extends Component
     public function viewPo(int $id): void
     {
         $po = PurchaseOrder::with(['supplier', 'store', 'lines.purchasable'])->findOrFail($id);
-        Gate::authorize('view', $po);
+        $this->authorize('view', $po);
 
         $this->selectedPoId = $po->id;
         $this->selectedPo = $po;
@@ -240,7 +239,7 @@ class PurchaseOrderManager extends Component
     public function submitPo(int $id, PurchaseOrderService $service): void
     {
         $po = PurchaseOrder::findOrFail($id);
-        Gate::authorize('update', $po);
+        $this->authorize('update', $po);
 
         try {
             $updated = $service->submitPurchaseOrder($po, auth()->user());
@@ -254,7 +253,7 @@ class PurchaseOrderManager extends Component
     public function releasePo(int $id, PurchaseOrderService $service): void
     {
         $po = PurchaseOrder::findOrFail($id);
-        Gate::authorize('update', $po);
+        $this->authorize('update', $po);
 
         try {
             $updated = $service->releasePurchaseOrder($po, auth()->user());
@@ -268,7 +267,7 @@ class PurchaseOrderManager extends Component
     public function confirmCancelPo(int $id): void
     {
         $po = PurchaseOrder::findOrFail($id);
-        Gate::authorize('update', $po);
+        $this->authorize('update', $po);
 
         $this->selectedPoId = $po->id;
         $this->selectedPo = $po;
@@ -283,7 +282,7 @@ class PurchaseOrderManager extends Component
         }
 
         $po = PurchaseOrder::findOrFail($this->selectedPoId);
-        Gate::authorize('update', $po);
+        $this->authorize('update', $po);
 
         try {
             $service->cancelPurchaseOrder($po, auth()->user(), $this->cancelReason ?: 'Dibatalkan oleh pengguna.');

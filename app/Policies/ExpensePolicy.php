@@ -10,11 +10,16 @@ use App\Modules\Finance\Models\Expense;
 
 class ExpensePolicy
 {
+    private function isOwner(User $user): bool
+    {
+        return strtolower($user->role->name ?? '') === 'owner';
+    }
+
     public function viewAny(User $user): bool
     {
-        return $user->hasPermissionTo('finance.expense.view')
-            || $user->hasPermissionTo('finance.expense.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermission('finance.expense.view')
+            || $user->hasPermission('finance.expense.manage')
+            || $this->isOwner($user);
     }
 
     public function view(User $user, Expense $expense): bool
@@ -23,17 +28,17 @@ class ExpensePolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.expense.view')
-            || $user->hasPermissionTo('finance.expense.manage')
-            || $user->hasRole('owner')
+        return $user->hasPermission('finance.expense.view')
+            || $user->hasPermission('finance.expense.manage')
+            || $this->isOwner($user)
             || $expense->submitted_by_user_id === $user->id;
     }
 
     public function create(User $user): bool
     {
-        return $user->hasPermissionTo('finance.expense.create')
-            || $user->hasPermissionTo('finance.expense.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermission('finance.expense.create')
+            || $user->hasPermission('finance.expense.manage')
+            || $this->isOwner($user);
     }
 
     public function update(User $user, Expense $expense): bool
@@ -47,8 +52,8 @@ class ExpensePolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.expense.manage')
-            || $user->hasRole('owner')
+        return $user->hasPermission('finance.expense.manage')
+            || $this->isOwner($user)
             || $expense->submitted_by_user_id === $user->id;
     }
 
@@ -63,8 +68,8 @@ class ExpensePolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.expense.manage')
-            || $user->hasRole('owner')
+        return $user->hasPermission('finance.expense.manage')
+            || $this->isOwner($user)
             || $expense->submitted_by_user_id === $user->id;
     }
 
@@ -96,9 +101,9 @@ class ExpensePolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.expense.approve')
-            || $user->hasPermissionTo('finance.expense.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermission('finance.expense.approve')
+            || $user->hasPermission('finance.expense.manage')
+            || $this->isOwner($user);
     }
 
     public function reject(User $user, Expense $expense): bool
@@ -116,9 +121,9 @@ class ExpensePolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.expense.approve')
-            || $user->hasPermissionTo('finance.expense.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermission('finance.expense.approve')
+            || $user->hasPermission('finance.expense.manage')
+            || $this->isOwner($user);
     }
 
     public function recordPayment(User $user, Expense $expense): bool
@@ -131,8 +136,8 @@ class ExpensePolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.expense.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermission('finance.expense.manage')
+            || $this->isOwner($user);
     }
 
     public function void(User $user, Expense $expense): bool
@@ -145,7 +150,7 @@ class ExpensePolicy
             return false;
         }
 
-        return $user->hasPermissionTo('finance.expense.manage')
-            || $user->hasRole('owner');
+        return $user->hasPermission('finance.expense.manage')
+            || $this->isOwner($user);
     }
 }

@@ -6,6 +6,7 @@ use App\Models\Store;
 use App\Models\Tenant;
 use App\Services\Context\TenantContext;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Str;
 
 trait WithDefaultTenant
 {
@@ -30,7 +31,7 @@ trait WithDefaultTenant
         }
 
         $this->defaultTenant = Tenant::create([
-            'name' => 'Default Test Tenant',
+            'name' => 'Default Test Tenant '.Str::random(8),
             'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             'access_status' => Tenant::ACCESS_ACTIVE,
             'status' => 'active',

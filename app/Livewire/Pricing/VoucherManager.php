@@ -81,6 +81,8 @@ class VoucherManager extends Component
 
     public function openCreateModal(): void
     {
+        $this->authorize('create', Voucher::class);
+
         $this->resetValidation();
         $this->editingVoucherId = null;
         $this->generateCode();
@@ -107,6 +109,8 @@ class VoucherManager extends Component
             ->where('id', $id)
             ->firstOrFail();
 
+        $this->authorize('update', $voucher);
+
         $this->editingVoucherId = $voucher->id;
         $this->code = $voucher->code;
         $this->name = $voucher->name;
@@ -127,6 +131,16 @@ class VoucherManager extends Component
 
     public function save(): void
     {
+        if ($this->editingVoucherId) {
+            $existing = Voucher::withoutGlobalScopes()
+                ->where('tenant_id', (int) app(TenantContext::class)->requireTenantId())
+                ->where('id', $this->editingVoucherId)
+                ->firstOrFail();
+            $this->authorize('update', $existing);
+        } else {
+            $this->authorize('create', Voucher::class);
+        }
+
         $this->validate();
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
@@ -166,6 +180,8 @@ class VoucherManager extends Component
             ->where('tenant_id', $tenantId)
             ->where('id', $id)
             ->firstOrFail();
+
+        $this->authorize('update', $voucher);
 
         $newStatus = $voucher->status === VoucherStatusEnum::ACTIVE
             ? VoucherStatusEnum::DISABLED

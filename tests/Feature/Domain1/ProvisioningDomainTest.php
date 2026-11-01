@@ -47,6 +47,14 @@ class ProvisioningDomainTest extends TestCase
         parent::afterSubclassSetUp();
         config(['services.provisioning.secret_current' => $this->secret]);
         config(['services.provisioning.secret_previous' => null]);
+
+        if (Tenant::count() > 0) {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0');
+            DB::table('stores')->delete();
+            DB::table('users')->delete();
+            DB::table('tenants')->delete();
+            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+        }
     }
 
     // ------------------------------------------------------------------

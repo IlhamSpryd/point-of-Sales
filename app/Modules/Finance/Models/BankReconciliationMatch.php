@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $matched_by_user_id
  * @property CarbonInterface $created_at
  * @property CarbonInterface $updated_at
+ * @property-read BankReconciliationSession|null $session
  */
 class BankReconciliationMatch extends Model
 {

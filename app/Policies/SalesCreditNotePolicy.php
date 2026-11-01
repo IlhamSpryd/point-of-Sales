@@ -48,6 +48,6 @@ class SalesCreditNotePolicy
             return true;
         }
 
-        return (bool) $user->role?->hasPermission($permission);
+        return $user->hasPermission($permission) || (bool) $user->role?->hasPermission($permission);
     }
 }

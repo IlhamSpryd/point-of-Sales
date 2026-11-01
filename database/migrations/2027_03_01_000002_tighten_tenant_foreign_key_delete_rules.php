@@ -182,11 +182,11 @@ return new class extends Migration
         }
 
         $res = DB::select(
-            "SELECT DELETE_RULE 
+            'SELECT DELETE_RULE 
              FROM information_schema.REFERENTIAL_CONSTRAINTS 
              WHERE CONSTRAINT_SCHEMA = DATABASE() 
                AND TABLE_NAME = ? 
-               AND CONSTRAINT_NAME = ?",
+               AND CONSTRAINT_NAME = ?',
             [$tableName, $constraintName]
         );
 

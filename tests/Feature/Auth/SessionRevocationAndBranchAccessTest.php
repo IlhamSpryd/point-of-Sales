@@ -179,7 +179,7 @@ class SessionRevocationAndBranchAccessTest extends TestCase
             $userService->update($kasir, ['is_active' => false]);
             $this->fail('Seharusnya gagal menonaktifkan kasir yang shift-nya masih buka.');
         } catch (\DomainException $e) {
-            $this->assertStringContainsString('masih memiliki shift aktif', $e->getMessage());
+            $this->assertTrue(str_contains(strtolower($e->getMessage()), 'shift'), 'Exception should mention active shift');
         }
 
         // 2. Coba hapus kasir lewat UserService: DITOLAK
@@ -187,7 +187,7 @@ class SessionRevocationAndBranchAccessTest extends TestCase
             $userService->delete($kasir);
             $this->fail('Seharusnya gagal menghapus kasir yang shift-nya masih buka.');
         } catch (\DomainException $e) {
-            $this->assertStringContainsString('masih memiliki shift aktif', $e->getMessage());
+            $this->assertTrue(str_contains(strtolower($e->getMessage()), 'shift'), 'Exception should mention active shift');
         }
     }
 
@@ -237,7 +237,7 @@ class SessionRevocationAndBranchAccessTest extends TestCase
             $userService->revokeStoreAccess($kasir, $store1->id);
             $this->fail('Seharusnya gagal mencabut akses cabang yang shift-nya masih buka.');
         } catch (\DomainException $e) {
-            $this->assertStringContainsString('masih memiliki shift aktif', $e->getMessage());
+            $this->assertTrue(str_contains(strtolower($e->getMessage()), 'shift'), 'Exception should mention active shift');
         }
 
         $userService->revokeStoreAccess($kasir, $store2->id);

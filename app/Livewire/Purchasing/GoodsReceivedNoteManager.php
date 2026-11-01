@@ -10,7 +10,6 @@ use App\Modules\Purchasing\Models\PurchaseOrder;
 use App\Modules\Purchasing\Services\GoodsReceivedNoteService;
 use App\Services\Context\TenantContext;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -84,7 +83,7 @@ class GoodsReceivedNoteManager extends Component
 
     public function openCreateModal(): void
     {
-        Gate::authorize('create', GoodsReceivedNote::class);
+        $this->authorize('create', GoodsReceivedNote::class);
 
         $this->resetValidation();
         $this->selectedPoId = null;
@@ -144,7 +143,7 @@ class GoodsReceivedNoteManager extends Component
 
     public function saveDraftGrn(GoodsReceivedNoteService $service): void
     {
-        Gate::authorize('create', GoodsReceivedNote::class);
+        $this->authorize('create', GoodsReceivedNote::class);
 
         $this->validate([
             'selectedPoId' => 'required|integer',
@@ -185,7 +184,7 @@ class GoodsReceivedNoteManager extends Component
     public function viewGrn(int $id): void
     {
         $grn = GoodsReceivedNote::with(['purchaseOrder.supplier', 'store', 'lines.purchasable'])->findOrFail($id);
-        Gate::authorize('view', $grn);
+        $this->authorize('view', $grn);
 
         $this->selectedGrnId = $grn->id;
         $this->selectedGrn = $grn;
@@ -195,7 +194,7 @@ class GoodsReceivedNoteManager extends Component
     public function postGrn(int $id, GoodsReceivedNoteService $service): void
     {
         $grn = GoodsReceivedNote::findOrFail($id);
-        Gate::authorize('update', $grn);
+        $this->authorize('update', $grn);
 
         try {
             $posted = $service->postGrn($grn, auth()->user());
@@ -209,7 +208,7 @@ class GoodsReceivedNoteManager extends Component
     public function confirmReverseGrn(int $id): void
     {
         $grn = GoodsReceivedNote::findOrFail($id);
-        Gate::authorize('update', $grn);
+        $this->authorize('update', $grn);
 
         $this->selectedGrnId = $grn->id;
         $this->selectedGrn = $grn;
@@ -224,7 +223,7 @@ class GoodsReceivedNoteManager extends Component
         }
 
         $grn = GoodsReceivedNote::findOrFail($this->selectedGrnId);
-        Gate::authorize('update', $grn);
+        $this->authorize('update', $grn);
 
         $this->validate([
             'reverseReason' => 'required|string|min:5',

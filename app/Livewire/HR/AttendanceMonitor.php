@@ -51,6 +51,8 @@ class AttendanceMonitor extends Component
 
     public function openCorrectionModal(int $recordId): void
     {
+        $this->authorize('update', AttendanceRecord::class);
+
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         /** @var AttendanceRecord|null $record */
@@ -77,6 +79,8 @@ class AttendanceMonitor extends Component
 
     public function saveCorrection(): void
     {
+        $this->authorize('update', AttendanceRecord::class);
+
         if (! $this->editingRecordId || empty($this->correctionReason)) {
             session()->flash('error', 'Alasan koreksi absensi wajib diisi.');
 
@@ -92,6 +96,8 @@ class AttendanceMonitor extends Component
             ->first();
 
         if ($record) {
+            $this->authorize('update', $record);
+
             $record->clock_in_at = ! empty($this->correctedClockIn) ? Carbon::parse($this->correctedClockIn) : null;
             $record->clock_out_at = ! empty($this->correctedClockOut) ? Carbon::parse($this->correctedClockOut) : null;
             $prefix = (is_string($record->notes) && $record->notes !== '') ? $record->notes.' | ' : '';

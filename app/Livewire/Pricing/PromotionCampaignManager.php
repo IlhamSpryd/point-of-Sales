@@ -94,6 +94,8 @@ class PromotionCampaignManager extends Component
 
     public function openCreateModal(): void
     {
+        $this->authorize('create', PromotionCampaign::class);
+
         $this->resetValidation();
         $this->editingCampaignId = null;
         $this->campaignCode = 'PROMO-'.strtoupper(Str::random(6));
@@ -128,6 +130,8 @@ class PromotionCampaignManager extends Component
             ->where('id', $id)
             ->with(['rules.rewards'])
             ->firstOrFail();
+
+        $this->authorize('update', $campaign);
 
         $this->editingCampaignId = $campaign->id;
         $this->campaignCode = $campaign->campaign_code;
@@ -164,6 +168,16 @@ class PromotionCampaignManager extends Component
 
     public function save(): void
     {
+        if ($this->editingCampaignId) {
+            $existing = PromotionCampaign::withoutGlobalScopes()
+                ->where('tenant_id', (int) app(TenantContext::class)->requireTenantId())
+                ->where('id', $this->editingCampaignId)
+                ->firstOrFail();
+            $this->authorize('update', $existing);
+        } else {
+            $this->authorize('create', PromotionCampaign::class);
+        }
+
         $this->validate();
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
         $storeId = app(TenantContext::class)->getStoreId();
@@ -230,6 +244,8 @@ class PromotionCampaignManager extends Component
             ->where('tenant_id', $tenantId)
             ->where('id', $id)
             ->firstOrFail();
+
+        $this->authorize('update', $campaign);
 
         $campaign->status = $campaign->status === 'ACTIVE' ? 'PAUSED' : 'ACTIVE';
         $campaign->save();

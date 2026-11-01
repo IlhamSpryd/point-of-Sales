@@ -4,11 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Customers;
 
+use App\Livewire\Kasir\CreateOrder;
 use App\Models\Customer;
 use App\Models\CustomerGroup;
+use App\Models\LoyaltyTier;
+use App\Modules\Customers\Enums\StoreCreditStatusEnum;
+use App\Modules\Customers\Models\StoreCreditAccount;
 use App\Modules\Customers\Services\CustomerService;
+use App\Modules\Customers\Services\LoyaltyService;
+use App\Modules\Purchasing\Services\DocumentSequenceService;
 use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Livewire\Livewire;
 use Tests\Support\TwoTenantFixture;
 use Tests\TestCase;
 
@@ -99,11 +107,11 @@ class CustomerTenantIsolationTest extends TestCase
             'customer_type' => 'b2c',
         ]);
 
-        \App\Modules\Customers\Models\StoreCreditAccount::create([
+        StoreCreditAccount::create([
             'tenant_id' => $this->tenantA->id,
             'customer_id' => $customerA->id,
             'current_balance' => 250000.00,
-            'status' => \App\Modules\Customers\Enums\StoreCreditStatusEnum::ACTIVE,
+            'status' => StoreCreditStatusEnum::ACTIVE,
         ]);
 
         // 2. Setup Customer and StoreCreditAccount in Tenant B
@@ -114,11 +122,11 @@ class CustomerTenantIsolationTest extends TestCase
             'email' => 'tenantB@cust.com',
             'customer_type' => 'b2c',
         ]);
-        \App\Modules\Customers\Models\StoreCreditAccount::create([
+        StoreCreditAccount::create([
             'tenant_id' => $this->tenantB->id,
             'customer_id' => $customerB->id,
             'current_balance' => 75000.00,
-            'status' => \App\Modules\Customers\Enums\StoreCreditStatusEnum::ACTIVE,
+            'status' => StoreCreditStatusEnum::ACTIVE,
         ]);
 
         // 3. User A (Owner in Tenant A, Store A) accesses POS
@@ -127,13 +135,13 @@ class CustomerTenantIsolationTest extends TestCase
         $this->actingAs($this->userAOwner);
 
         // Attempting to select Tenant B's customer from Tenant A cashier interface (IDOR attempt)
-        \Livewire\Livewire::test(\App\Livewire\Kasir\CreateOrder::class)
+        Livewire::test(CreateOrder::class)
             ->call('selectCustomer', $customerB->id, $customerB->name)
             ->assertSet('customerId', null)
             ->assertSet('storeCreditBalance', 0.0);
 
         // Selecting Tenant A's own customer succeeds and loads store credit balance
-        \Livewire\Livewire::test(\App\Livewire\Kasir\CreateOrder::class)
+        Livewire::test(CreateOrder::class)
             ->call('selectCustomer', $customerA->id, $customerA->name)
             ->assertSet('customerId', $customerA->id)
             ->assertSet('storeCreditBalance', 250000.0);
@@ -142,11 +150,11 @@ class CustomerTenantIsolationTest extends TestCase
     public function test_loyalty_service_tenant_isolation_prevents_cross_tenant_access(): void
     {
         $context = app(TenantContext::class);
-        $loyaltyService = app(\App\Modules\Customers\Services\LoyaltyService::class);
+        $loyaltyService = app(LoyaltyService::class);
 
         // Setup Tier for Tenant A
         $context->setTenantId($this->tenantA->id);
-        $tierA = \App\Models\LoyaltyTier::create([
+        $tierA = LoyaltyTier::create([
             'tenant_id' => $this->tenantA->id,
             'name' => 'Gold A',
             'min_points' => 100,
@@ -156,7 +164,7 @@ class CustomerTenantIsolationTest extends TestCase
 
         // Setup Tier for Tenant B
         $context->setTenantId($this->tenantB->id);
-        $tierB = \App\Models\LoyaltyTier::create([
+        $tierB = LoyaltyTier::create([
             'tenant_id' => $this->tenantB->id,
             'name' => 'Diamond B',
             'min_points' => 100,
@@ -172,7 +180,7 @@ class CustomerTenantIsolationTest extends TestCase
             'email' => 'loyala@test.com',
             'customer_type' => 'b2c',
         ]);
-        \Illuminate\Support\Facades\DB::table('customer_loyalty_accounts')
+        DB::table('customer_loyalty_accounts')
             ->where('customer_id', $customerA->id)
             ->update([
                 'current_points' => 150,
@@ -200,7 +208,7 @@ class CustomerTenantIsolationTest extends TestCase
 
     public function test_document_sequence_service_isolates_sequences_between_tenants(): void
     {
-        $docSeqService = app(\App\Modules\Purchasing\Services\DocumentSequenceService::class);
+        $docSeqService = app(DocumentSequenceService::class);
 
         $seqA1 = $docSeqService->nextValue((int) $this->tenantA->id, 'PO', null, '202611');
         $seqA2 = $docSeqService->nextValue((int) $this->tenantA->id, 'PO', null, '202611');
@@ -211,14 +219,14 @@ class CustomerTenantIsolationTest extends TestCase
         $this->assertEquals(2, $seqA2);
         $this->assertEquals(1, $seqB1);
 
-        $rowA = \Illuminate\Support\Facades\DB::table('document_sequences')
+        $rowA = DB::table('document_sequences')
             ->where('tenant_id', $this->tenantA->id)
             ->where('doc_type', 'PO')
             ->first();
         $this->assertNotNull($rowA);
         $this->assertEquals(2, $rowA->last_value);
 
-        $rowB = \Illuminate\Support\Facades\DB::table('document_sequences')
+        $rowB = DB::table('document_sequences')
             ->where('tenant_id', $this->tenantB->id)
             ->where('doc_type', 'PO')
             ->first();
@@ -231,9 +239,9 @@ class CustomerTenantIsolationTest extends TestCase
         $context = app(TenantContext::class);
         $context->clear();
 
-        $loyaltyService = app(\App\Modules\Customers\Services\LoyaltyService::class);
+        $loyaltyService = app(LoyaltyService::class);
 
-        $unscopedCustomer = new Customer();
+        $unscopedCustomer = new Customer;
         $unscopedCustomer->id = 9999;
         $unscopedCustomer->setAttribute('tenant_id', null);
 
@@ -247,9 +255,9 @@ class CustomerTenantIsolationTest extends TestCase
         $context = app(TenantContext::class);
         $context->clear();
 
-        $loyaltyService = app(\App\Modules\Customers\Services\LoyaltyService::class);
+        $loyaltyService = app(LoyaltyService::class);
 
-        $unscopedCustomer = new Customer();
+        $unscopedCustomer = new Customer;
         $unscopedCustomer->id = 9999;
         $unscopedCustomer->setAttribute('tenant_id', null);
 
@@ -261,7 +269,7 @@ class CustomerTenantIsolationTest extends TestCase
     public function test_loyalty_service_fails_closed_when_customer_tenant_conflicts_with_active_context(): void
     {
         $context = app(TenantContext::class);
-        $loyaltyService = app(\App\Modules\Customers\Services\LoyaltyService::class);
+        $loyaltyService = app(LoyaltyService::class);
 
         // Customer created in Tenant A
         $context->setTenantId($this->tenantA->id);

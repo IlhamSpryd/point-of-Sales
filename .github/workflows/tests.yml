@@ -61,7 +61,7 @@ jobs:
     timeout-minutes: 25
     services:
       mysql:
-        image: mysql:8.0
+        image: mariadb:10.11
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: apeiron_pos_test

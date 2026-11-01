@@ -16,11 +16,11 @@ class StoreCreditPolicy
             return false;
         }
 
-        if ((bool) $role->is_admin || $role->name === 'Owner' || $role->name === 'Manager') {
+        if ((bool) $role->is_admin || strtolower($role->name ?? '') === 'owner' || strtolower($role->name ?? '') === 'manager') {
             return true;
         }
 
-        return $user->hasPermissionTo($permission);
+        return $user->hasPermission($permission);
     }
 
     public function viewAny(User $user): bool

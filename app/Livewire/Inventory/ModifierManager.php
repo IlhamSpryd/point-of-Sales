@@ -100,7 +100,7 @@ class ModifierManager extends Component
 
     public function saveGroup()
     {
-        Gate::authorize('manageRecipe', Ingredient::class);
+        $this->authorize('create', Modifier::class);
         $this->validate([
             'groupForm.name' => 'required|string|max:255',
             'groupForm.selection_type' => ['required', Rule::in(['single', 'multiple'])],
@@ -121,7 +121,7 @@ class ModifierManager extends Component
 
     public function deleteGroup($id)
     {
-        Gate::authorize('manageRecipe', Ingredient::class);
+        $this->authorize('create', Modifier::class);
         ModifierGroup::findOrFail($id)->delete();
         app(MenuCacheService::class)->flush();
         $this->loadData();
@@ -142,7 +142,7 @@ class ModifierManager extends Component
 
     public function createModifier($groupId)
     {
-        Gate::authorize('manageRecipe', Ingredient::class);
+        $this->authorize('create', Modifier::class);
         $this->resetModifierForm();
         $group = ModifierGroup::findOrFail($groupId);
         $this->selectedGroupId = $group->id;
@@ -151,8 +151,8 @@ class ModifierManager extends Component
 
     public function editModifier($id)
     {
-        Gate::authorize('manageRecipe', Ingredient::class);
         $modifier = Modifier::with('ingredients')->findOrFail($id);
+        $this->authorize('update', $modifier);
         $this->editingModifierId = $modifier->id;
         $this->selectedGroupId = $modifier->modifier_group_id;
 
@@ -201,8 +201,10 @@ class ModifierManager extends Component
 
         if ($this->editingModifierId) {
             $modifier = Modifier::findOrFail($this->editingModifierId);
+            $this->authorize('update', $modifier);
             $modifier->update($data);
         } else {
+            $this->authorize('create', Modifier::class);
             $modifier = Modifier::create($data);
         }
 
@@ -228,8 +230,9 @@ class ModifierManager extends Component
 
     public function deleteModifier($id)
     {
-        Gate::authorize('manageRecipe', Ingredient::class);
-        Modifier::findOrFail($id)->delete();
+        $modifier = Modifier::findOrFail($id);
+        $this->authorize('delete', $modifier);
+        $modifier->delete();
         app(MenuCacheService::class)->flush();
         $this->loadData();
     }

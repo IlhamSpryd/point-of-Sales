@@ -8,11 +8,14 @@ use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\QueryException;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class DatabaseSchemaAndTriggersTest extends TestCase
 {
+    use RefreshDatabase;
+
     protected Tenant $tenant;
 
     protected Store $store;

@@ -13,7 +13,6 @@ use App\Modules\Inventory\Services\StockAdjustmentService;
 use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Livewire\Attributes\Layout;
@@ -179,7 +178,7 @@ class StockAdjustmentManager extends Component
 
             if ($this->isEditing && $this->editingAdjustmentId) {
                 $adjustment = StockAdjustment::findOrFail($this->editingAdjustmentId);
-                Gate::authorize('update', $adjustment);
+                $this->authorize('update', $adjustment);
 
                 $service->updateDraft($adjustment, [
                     'reason_code' => $this->reason_code,
@@ -190,7 +189,7 @@ class StockAdjustmentManager extends Component
 
                 session()->flash('message', "Draft penyesuaian stok {$adjustment->adjustment_number} berhasil diperbarui.");
             } else {
-                Gate::authorize('create', [StockAdjustment::class, $storeId]);
+                $this->authorize('create', [StockAdjustment::class, $storeId]);
 
                 $adjustment = $service->createDraft($tenantId, $storeId, [
                     'adjustment_number' => $this->adjustment_number ?: null,
@@ -213,7 +212,7 @@ class StockAdjustmentManager extends Component
     public function post(int $adjustmentId, StockAdjustmentService $service): void
     {
         $adjustment = StockAdjustment::findOrFail($adjustmentId);
-        Gate::authorize('post', $adjustment);
+        $this->authorize('post', $adjustment);
 
         try {
             $service->postAdjustment($adjustment, (int) auth()->id());
@@ -226,7 +225,7 @@ class StockAdjustmentManager extends Component
     public function cancel(int $adjustmentId, StockAdjustmentService $service): void
     {
         $adjustment = StockAdjustment::findOrFail($adjustmentId);
-        Gate::authorize('cancel', $adjustment);
+        $this->authorize('cancel', $adjustment);
 
         try {
             $service->cancelDraft($adjustment, (int) auth()->id());

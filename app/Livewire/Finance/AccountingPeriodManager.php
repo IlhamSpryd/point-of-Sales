@@ -50,6 +50,8 @@ class AccountingPeriodManager extends Component
 
     public function generateFiscalYearPeriods(AccountingPeriodService $service): void
     {
+        $this->authorize('manage', AccountingPeriod::class);
+
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         try {
@@ -62,6 +64,15 @@ class AccountingPeriodManager extends Component
 
     public function softClose(int $periodId, AccountingPeriodService $service): void
     {
+        $this->authorize('close', AccountingPeriod::class);
+
+        $tenantId = (int) app(TenantContext::class)->requireTenantId();
+        $period = AccountingPeriod::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->findOrFail($periodId);
+
+        $this->authorize('close', $period);
+
         /** @var User $actor */
         $actor = Auth::user();
 
@@ -75,6 +86,15 @@ class AccountingPeriodManager extends Component
 
     public function hardClose(int $periodId, AccountingPeriodService $service): void
     {
+        $this->authorize('close', AccountingPeriod::class);
+
+        $tenantId = (int) app(TenantContext::class)->requireTenantId();
+        $period = AccountingPeriod::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->findOrFail($periodId);
+
+        $this->authorize('close', $period);
+
         /** @var User $actor */
         $actor = Auth::user();
 
@@ -88,6 +108,15 @@ class AccountingPeriodManager extends Component
 
     public function lock(int $periodId, AccountingPeriodService $service): void
     {
+        $this->authorize('close', AccountingPeriod::class);
+
+        $tenantId = (int) app(TenantContext::class)->requireTenantId();
+        $period = AccountingPeriod::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->findOrFail($periodId);
+
+        $this->authorize('close', $period);
+
         /** @var User $actor */
         $actor = Auth::user();
 
@@ -101,6 +130,8 @@ class AccountingPeriodManager extends Component
 
     public function openReopenModal(int $periodId): void
     {
+        $this->authorize('reopen', AccountingPeriod::class);
+
         $this->resetValidation();
         $this->selectedPeriodId = $periodId;
         $this->reopenReason = '';
@@ -109,9 +140,18 @@ class AccountingPeriodManager extends Component
 
     public function confirmReopen(AccountingPeriodService $service): void
     {
+        $this->authorize('reopen', AccountingPeriod::class);
+
         $this->validate([
             'reopenReason' => ['required', 'string', 'min:5', 'max:255'],
         ]);
+
+        $tenantId = (int) app(TenantContext::class)->requireTenantId();
+        $period = AccountingPeriod::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->findOrFail($this->selectedPeriodId);
+
+        $this->authorize('reopen', $period);
 
         /** @var User $actor */
         $actor = Auth::user();

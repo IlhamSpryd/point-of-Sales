@@ -14,6 +14,7 @@ use App\Models\Store;
 use App\Modules\Finance\Services\InventoryAccountingService;
 use App\Modules\Inventory\Models\StockTransfer;
 use App\Modules\Inventory\Models\StockTransferItem;
+use App\Modules\Purchasing\Services\DocumentSequenceService;
 use App\Modules\Settings\Services\AuditTrailService;
 use DomainException;
 use Illuminate\Support\Facades\DB;
@@ -44,7 +45,8 @@ class StockTransferService
 {
     public function __construct(
         protected InventoryLedgerService $ledgerService,
-        protected AuditTrailService $auditTrailService
+        protected AuditTrailService $auditTrailService,
+        protected ?DocumentSequenceService $sequenceService = null
     ) {}
 
     /**
@@ -670,28 +672,24 @@ class StockTransferService
 
     /**
      * Generate format nomor transfer stok unik: TRF-{from_store_id}-{to_store_id}-{YYYYMMDD}-{XXXX}
+     * Dialokasikan secara atomik melalui DocumentSequenceService (FINDING-P2-06).
      */
     protected function generateTransferNumber(int $tenantId, int $fromStoreId, int $toStoreId): string
     {
         $datePrefix = date('Ymd');
         $prefix = "TRF-{$fromStoreId}-{$toStoreId}-{$datePrefix}-";
 
-        $latest = StockTransfer::withoutTenantScope()
-            ->withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
-            ->where('from_store_id', $fromStoreId)
-            ->where('to_store_id', $toStoreId)
-            ->where('transfer_number', 'LIKE', "{$prefix}%")
-            ->orderByDesc('transfer_number')
-            ->value('transfer_number');
+        $sequenceService = $this->sequenceService ?? app(DocumentSequenceService::class);
+        $seq = $sequenceService->nextValue(
+            tenantId: $tenantId,
+            docType: 'TRF',
+            storeId: $fromStoreId,
+            periodKey: $datePrefix,
+            customPrefix: $prefix
+        );
 
-        if ($latest) {
-            $lastSeq = (int) substr($latest, -4);
-            $seq = str_pad((string) ($lastSeq + 1), 4, '0', STR_PAD_LEFT);
-        } else {
-            $seq = '0001';
-        }
+        $paddedSeq = str_pad((string) $seq, 4, '0', STR_PAD_LEFT);
 
-        return "{$prefix}{$seq}";
+        return "{$prefix}{$paddedSeq}";
     }
 }

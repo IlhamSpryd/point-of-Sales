@@ -14,7 +14,6 @@ use App\Modules\Inventory\Services\StockTransferService;
 use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use Livewire\Attributes\Layout;
@@ -159,10 +158,8 @@ class StockTransferManager extends Component
             return;
         }
 
+        $this->authorize('create', [StockTransfer::class, $fromStoreId, (int) $this->to_store_id]);
         $user = auth()->user();
-        if (! $user || ! Gate::allows('create', [StockTransfer::class, $fromStoreId, (int) $this->to_store_id])) {
-            abort(403, 'Anda tidak memiliki wewenang untuk membuat permintaan transfer dari cabang ini.');
-        }
 
         $this->validate([
             'to_store_id' => 'required|integer|different:fromStoreId',
@@ -199,11 +196,8 @@ class StockTransferManager extends Component
     public function shipTransfer(int $transferId, StockTransferService $service): void
     {
         $transfer = $this->findScopedTransfer($transferId);
+        $this->authorize('ship', $transfer);
         $user = auth()->user();
-
-        if (! $user || ! Gate::allows('ship', $transfer)) {
-            abort(403, 'Anda tidak memiliki wewenang untuk mengirimkan transfer ini.');
-        }
 
         try {
             $service->shipTransfer($transfer, (int) $user->id);
@@ -218,11 +212,7 @@ class StockTransferManager extends Component
     public function openReceiveModal(int $transferId): void
     {
         $transfer = $this->findScopedTransfer($transferId);
-        $user = auth()->user();
-
-        if (! $user || ! Gate::allows('receive', $transfer)) {
-            abort(403, 'Anda tidak memiliki wewenang untuk menerima transfer di cabang ini.');
-        }
+        $this->authorize('receive', $transfer);
 
         $this->activeTransferId = $transfer->id;
         $this->receivedQuantities = [];
@@ -257,11 +247,8 @@ class StockTransferManager extends Component
         }
 
         $transfer = $this->findScopedTransfer($this->activeTransferId);
+        $this->authorize('receive', $transfer);
         $user = auth()->user();
-
-        if (! $user || ! Gate::allows('receive', $transfer)) {
-            abort(403, 'Anda tidak memiliki wewenang untuk menerima transfer ini.');
-        }
 
         $receiptItems = [];
         foreach ($transfer->items as $item) {
@@ -303,11 +290,8 @@ class StockTransferManager extends Component
     public function cancelTransfer(int $transferId, StockTransferService $service): void
     {
         $transfer = $this->findScopedTransfer($transferId);
+        $this->authorize('cancel', $transfer);
         $user = auth()->user();
-
-        if (! $user || ! Gate::allows('cancel', $transfer)) {
-            abort(403, 'Anda tidak memiliki wewenang untuk membatalkan transfer ini.');
-        }
 
         try {
             $service->cancelTransfer($transfer, (int) $user->id, 'Dibatalkan oleh pengguna.');

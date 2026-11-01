@@ -393,8 +393,7 @@ class Modul2MvcAndBladeIntegrationTest extends TestCase
             // 5. Manual Discount Override dengan PIN Supervisor
             ->set('manualDiscountAmountInput', '5000')
             ->set('manualDiscountReason', 'Diskon Loyalitas Pelanggan')
-            ->set('supervisorPinInput', '112233')
-            ->call('applyManualDiscount')
+            ->call('applyManualDiscount', '112233')
             ->assertSet('manualDiscountAmount', 5000)
             // 6. Split Tender Payment Leg
             ->set('paymentMethod', 'cash')

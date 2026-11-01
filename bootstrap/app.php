@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AssignCorrelationId;
 use App\Http\Middleware\EnforceEmailVerification;
 use App\Http\Middleware\EnforceEntitlement;
 use App\Http\Middleware\EnsureOnboardingCompleted;
@@ -41,10 +42,12 @@ return Application::configure(basePath: dirname(__DIR__))
         );
 
         // PATCH FOR P-11: security headers global.
+        $middleware->prepend(AssignCorrelationId::class);
         $middleware->append(SecurityHeaders::class);
 
         // Daftarkan alias middleware 'role' untuk RoleMiddleware RBAC UjiKom
         $middleware->alias([
+            'correlation.id' => AssignCorrelationId::class,
             'role' => RoleMiddleware::class,
             'table.token' => ResolveTableFromToken::class,
             'table.session' => EnsureTableSession::class,
@@ -58,6 +61,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
 
         $middleware->priority([
+            AssignCorrelationId::class,
             StartSession::class,
             ShareErrorsFromSession::class,
             AuthenticatesRequests::class,

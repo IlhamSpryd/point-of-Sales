@@ -53,6 +53,8 @@ class PayrollBatchManager extends Component
 
     public function openCreateModal(): void
     {
+        $this->authorize('create', PayrollBatch::class);
+
         $now = now();
         $this->periodStartDate = $now->startOfMonth()->toDateString();
         $this->periodEndDate = $now->endOfMonth()->toDateString();
@@ -68,6 +70,8 @@ class PayrollBatchManager extends Component
 
     public function createBatch(PayrollBatchService $batchService): void
     {
+        $this->authorize('create', PayrollBatch::class);
+
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
 
         try {
@@ -101,6 +105,8 @@ class PayrollBatchManager extends Component
             return;
         }
 
+        $this->authorize('calculate', $batch);
+
         try {
             $batchService->executeCalculation($batch);
             session()->flash('success', "Kalkulasi batch penggajian [{$batch->batch_number}] selesai.");
@@ -122,6 +128,8 @@ class PayrollBatchManager extends Component
         if (! $batch) {
             return;
         }
+
+        $this->authorize('finalize', $batch);
 
         try {
             // Buat otorisasi persetujuan

@@ -7,7 +7,9 @@ namespace Tests\Feature\Services;
 use App\Models\CashDrawerMovement;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\Role;
 use App\Models\Shift;
+use App\Models\User;
 use App\Services\Context\TenantContext;
 use App\Services\ShiftService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -155,11 +157,11 @@ class ShiftServiceTest extends TestCase
         $this->assertTrue($canAuthStoreA, 'Owner of Tenant A must be authorized for own store');
 
         // 3. Supervisor of Tenant A assigned to Store A
-        $roleSupervisorA = \App\Models\Role::withoutTenantScope()->firstOrCreate(
+        $roleSupervisorA = Role::withoutTenantScope()->firstOrCreate(
             ['name' => 'Supervisor', 'tenant_id' => $this->tenantA->id],
             ['is_active' => 1]
         );
-        $supervisorA = \App\Models\User::create([
+        $supervisorA = User::create([
             'name' => 'Supervisor A',
             'email' => 'spvA_test@example.com',
             'password' => bcrypt('password'),
@@ -184,7 +186,7 @@ class ShiftServiceTest extends TestCase
 
         $service = app(ShiftService::class);
 
-        $invalidUser = new \App\Models\User();
+        $invalidUser = new User;
         $invalidUser->id = 8888;
         $invalidUser->tenant_id = null;
 

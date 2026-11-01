@@ -35,7 +35,9 @@ class ApOutboxConsumerService
             $query->where('tenant_id', $tenantId);
         }
 
-        $records = $query->get();
+        $records = DB::transaction(function () use ($query) {
+            return $query->lock('FOR UPDATE SKIP LOCKED')->get();
+        });
         $processedCount = 0;
 
         foreach ($records as $outbox) {

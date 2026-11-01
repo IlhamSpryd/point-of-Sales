@@ -66,3 +66,16 @@ Schedule::command('identity:prune-challenges')
     ->withoutOverlapping(30)
     ->onOneServer()
     ->runInBackground();
+
+// WP-CORE-01 & FINDING-P1-01, FINDING-P1-02: Subledger and Financial Outbox processing
+Schedule::command('finance:process-subledgers')
+    ->everyMinute()
+    ->withoutOverlapping(10)
+    ->onOneServer()
+    ->runInBackground();
+
+Schedule::command('finance:process-outbox')
+    ->everyFiveMinutes()
+    ->withoutOverlapping(10)
+    ->onOneServer()
+    ->runInBackground();

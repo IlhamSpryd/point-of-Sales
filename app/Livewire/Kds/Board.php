@@ -23,6 +23,8 @@ class Board extends Component
 {
     use RequiresTenantContext;
 
+    public string $stationFilter = 'all';
+
     public function boot(): void
     {
         $this->bootRequiresTenantContext();
@@ -70,6 +72,12 @@ class Board extends Component
             (int) Auth::id(),
             canManage: in_array(Auth::user()->role?->name, ['Owner', 'Manager'], true),
         ));
+    }
+
+    public function setStationFilter(string $station): void
+    {
+        $normalized = strtolower(trim($station));
+        $this->stationFilter = in_array($normalized, ['kitchen', 'bar'], true) ? $normalized : 'all';
     }
 
     public function dismissError(): void
@@ -136,9 +144,38 @@ class Board extends Component
      */
     private function baseQuery(): Builder
     {
-        return OrderItem::query()
-            ->with(['product', 'order.table'])
+        $query = OrderItem::query()
+            ->with(['product.category', 'order.table'])
             ->whereHas('order', fn ($q) => $q->where('order_status', OrderStatus::Paid->value));
+
+        if ($this->stationFilter === 'bar') {
+            $query->whereHas('product.category', function ($q) {
+                $q->where(function ($catQuery) {
+                    $catQuery->where('category_name', 'LIKE', '%beverage%')
+                        ->orWhere('category_name', 'LIKE', '%minuman%')
+                        ->orWhere('category_name', 'LIKE', '%bar%')
+                        ->orWhere('category_name', 'LIKE', '%coffee%')
+                        ->orWhere('category_name', 'LIKE', '%kopi%')
+                        ->orWhere('category_name', 'LIKE', '%drink%')
+                        ->orWhere('category_name', 'LIKE', '%tea%')
+                        ->orWhere('category_name', 'LIKE', '%juice%');
+                });
+            });
+        } elseif ($this->stationFilter === 'kitchen') {
+            $query->whereHas('product.category', function ($q) {
+                $q->where(function ($catQuery) {
+                    $catQuery->where('category_name', 'LIKE', '%food%')
+                        ->orWhere('category_name', 'LIKE', '%makanan%')
+                        ->orWhere('category_name', 'LIKE', '%kitchen%')
+                        ->orWhere('category_name', 'LIKE', '%dapur%')
+                        ->orWhere('category_name', 'LIKE', '%snack%')
+                        ->orWhere('category_name', 'LIKE', '%dessert%')
+                        ->orWhere('category_name', 'LIKE', '%meal%');
+                });
+            });
+        }
+
+        return $query;
     }
 
     public function render()

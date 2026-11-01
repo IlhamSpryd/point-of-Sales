@@ -151,7 +151,7 @@ class SupplierInvoiceManager extends Component
 
     public function saveInvoice(SupplierInvoiceMatchingService $service): void
     {
-        Gate::authorize('create', SupplierInvoice::class);
+        $this->authorize('create', SupplierInvoice::class);
 
         $this->validate([
             'selectedPoId' => 'required|integer',
@@ -196,7 +196,7 @@ class SupplierInvoiceManager extends Component
     public function viewInvoice(int $id): void
     {
         $inv = SupplierInvoice::with(['supplier', 'store', 'lines.purchasable', 'grnMatches.goodsReceivedNoteLine'])->findOrFail($id);
-        Gate::authorize('view', $inv);
+        $this->authorize('view', $inv);
 
         $this->selectedInvoiceId = $inv->id;
         $this->selectedInvoice = $inv;
@@ -206,7 +206,7 @@ class SupplierInvoiceManager extends Component
     public function openMatchWorkbench(int $id): void
     {
         $inv = SupplierInvoice::with(['purchaseOrder.lines', 'lines.purchasable'])->findOrFail($id);
-        Gate::authorize('update', $inv);
+        $this->authorize('update', $inv);
 
         $this->selectedInvoiceId = $inv->id;
         $this->selectedInvoice = $inv;
@@ -252,7 +252,7 @@ class SupplierInvoiceManager extends Component
         }
 
         $inv = SupplierInvoice::findOrFail($this->selectedInvoiceId);
-        Gate::authorize('update', $inv);
+        $this->authorize('update', $inv);
 
         $plan = [];
         foreach ($this->matchPlanLines as $m) {
@@ -294,7 +294,7 @@ class SupplierInvoiceManager extends Component
         }
 
         $inv = SupplierInvoice::findOrFail($this->selectedInvoiceId);
-        Gate::authorize('update', $inv);
+        $this->authorize('update', $inv);
 
         $this->validate([
             'varianceNotes' => 'required|string|min:5',
@@ -315,7 +315,7 @@ class SupplierInvoiceManager extends Component
     public function approvePayable(int $id, SupplierInvoiceMatchingService $service): void
     {
         $inv = SupplierInvoice::findOrFail($id);
-        Gate::authorize('update', $inv);
+        $this->authorize('update', $inv);
 
         try {
             $approved = $service->approvePayable($inv, auth()->user());

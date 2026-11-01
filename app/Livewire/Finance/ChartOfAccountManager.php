@@ -86,6 +86,8 @@ class ChartOfAccountManager extends Component
 
     public function openCreateModal(?int $parentId = null): void
     {
+        $this->authorize('create', ChartOfAccount::class);
+
         $this->resetValidation();
         $this->editingAccountId = null;
         $this->accountCode = '';
@@ -185,9 +187,14 @@ class ChartOfAccountManager extends Component
         ];
 
         if ($this->editingAccountId) {
+            $account = ChartOfAccount::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->findOrFail($this->editingAccountId);
+            $this->authorize('update', $account);
             $service->updateAccount($this->editingAccountId, $payload, $actor);
             session()->flash('success', 'Akun berhasil diperbarui.');
         } else {
+            $this->authorize('create', ChartOfAccount::class);
             $service->createAccount($payload, $actor);
             session()->flash('success', 'Akun baru berhasil ditambahkan.');
         }
@@ -201,6 +208,8 @@ class ChartOfAccountManager extends Component
         $account = ChartOfAccount::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->findOrFail($id);
+
+        $this->authorize('update', $account);
 
         /** @var User|null $actor */
         $actor = Auth::user();

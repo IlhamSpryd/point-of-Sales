@@ -419,12 +419,21 @@ class InventoryLedgerService
         $table = $itemType === 'product' ? 'product_stock_balances' : 'ingredient_stock_balances';
         $column = $itemType === 'product' ? 'product_id' : 'ingredient_id';
 
+        $initialQty = 0;
+        if ($itemType === 'product') {
+            $legacyStock = DB::table('products')->where('tenant_id', $tenantId)->where('id', $itemId)->value('stock');
+            $initialQty = $legacyStock !== null ? (float) $legacyStock : 0;
+        } else {
+            $legacyStock = DB::table('ingredients')->where('tenant_id', $tenantId)->where('id', $itemId)->value('current_stock');
+            $initialQty = $legacyStock !== null ? (float) $legacyStock : 0;
+        }
+
         DB::table($table)->insertOrIgnore([
             'tenant_id' => $tenantId,
             'store_id' => $storeId,
             $column => $itemId,
-            'quantity' => 0,
-            'baseline_quantity' => 0,
+            'quantity' => $initialQty,
+            'baseline_quantity' => $initialQty,
             'baseline_movement_id' => 0,
             'min_stock_level' => 0,
             'reorder_point' => 0,
@@ -531,7 +540,7 @@ class InventoryLedgerService
                 ->where('tenant_id', $tenantId)
                 ->where('id', $itemId)
                 ->update([
-                    'stock' => DB::raw("stock + ({$intDelta})"),
+                    'stock' => DB::raw("GREATEST(0, CAST(stock AS SIGNED) + ({$intDelta}))"),
                     'updated_at' => now(),
                 ]);
         } else {
@@ -539,7 +548,7 @@ class InventoryLedgerService
                 ->where('tenant_id', $tenantId)
                 ->where('id', $itemId)
                 ->update([
-                    'current_stock' => DB::raw("current_stock + ({$delta})"),
+                    'current_stock' => DB::raw("GREATEST(0, CAST(current_stock AS DECIMAL(15, 4)) + ({$delta}))"),
                     'updated_at' => now(),
                 ]);
         }

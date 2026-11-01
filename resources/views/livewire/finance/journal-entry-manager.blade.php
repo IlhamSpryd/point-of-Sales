@@ -307,6 +307,8 @@
                             Batal
                         </button>
                         <button type="submit"
+                                wire:loading.attr="disabled"
+                                wire:target="postManualJournal"
                                 @if(! $balance['isBalanced']) disabled @endif
                                 class="inline-flex items-center gap-2 px-5 py-2 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-xl transition-colors shadow-xs disabled:opacity-40 disabled:cursor-not-allowed">
                             <span class="material-symbols-rounded text-sm">send</span>
