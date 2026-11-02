@@ -94,6 +94,7 @@ class Product extends Model
         'product_name',
         'name',
         'product_code',
+        'sku',
         'barcode',
         'product_type',
         'status',
@@ -102,8 +103,10 @@ class Product extends Model
         'product_photo',
         'product_price',
         'price',
+        'base_price',
         'costing_method',
         'standard_cost',
+        'cost_price',
         'tax_class_id',
         'is_tax_inclusive',
         'product_description',
@@ -142,6 +145,26 @@ class Product extends Model
     public function getPriceAttribute(): mixed
     {
         return $this->attributes['product_price'] ?? null;
+    }
+
+    public function setBasePriceAttribute($value): void
+    {
+        $this->attributes['product_price'] = $value;
+    }
+
+    public function getBasePriceAttribute(): mixed
+    {
+        return $this->attributes['product_price'] ?? null;
+    }
+
+    public function setCostPriceAttribute($value): void
+    {
+        $this->attributes['standard_cost'] = $value;
+    }
+
+    public function getCostPriceAttribute(): mixed
+    {
+        return $this->attributes['standard_cost'] ?? 0;
     }
 
     public function setSkuAttribute($value): void

@@ -36,9 +36,20 @@ class StoreProductAssortment extends Model
         'product_id',
         'product_variant_id',
         'is_available',
+        'is_active',
         'store_price_override',
         'allowed_channels',
     ];
+
+    public function setIsActiveAttribute(mixed $value): void
+    {
+        $this->attributes['is_available'] = (bool) $value;
+    }
+
+    public function getIsActiveAttribute(): bool
+    {
+        return (bool) ($this->attributes['is_available'] ?? true);
+    }
 
     protected function casts(): array
     {

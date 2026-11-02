@@ -27,15 +27,60 @@ class ProductCostHistory extends Model
     protected $table = 'product_cost_histories';
 
     protected $fillable = [
+        'tenant_id',
         'store_id',
         'product_id',
         'costing_method',
         'old_cost',
         'new_cost',
+        'cost_price',
         'reason',
         'changed_by',
+        'created_by_user_id',
         'effective_at',
+        'effective_date',
     ];
+
+    public function setCostPriceAttribute(mixed $value): void
+    {
+        $this->attributes['new_cost'] = $value;
+    }
+
+    public function getCostPriceAttribute(): mixed
+    {
+        return $this->attributes['new_cost'] ?? 0;
+    }
+
+    public function setEffectiveDateAttribute(mixed $value): void
+    {
+        $this->attributes['effective_at'] = $value;
+    }
+
+    public function getEffectiveDateAttribute(): mixed
+    {
+        return $this->attributes['effective_at'] ?? null;
+    }
+
+    public function setCreatedByUserIdAttribute(mixed $value): void
+    {
+        $this->attributes['changed_by'] = $value;
+    }
+
+    public function getCreatedByUserIdAttribute(): mixed
+    {
+        return $this->attributes['changed_by'] ?? null;
+    }
+
+    protected static function booted(): void
+    {
+        static::updating(function () {
+            throw new \RuntimeException('ProductCostHistory is append-only and cannot be updated.');
+        });
+
+        static::deleting(function () {
+            throw new \RuntimeException('ProductCostHistory is append-only and cannot be deleted.');
+        });
+    }
 
     protected function casts(): array
     {

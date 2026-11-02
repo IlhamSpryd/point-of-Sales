@@ -16,6 +16,19 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property string $code
+ * @property string $name
+ * @property VoucherStatusEnum|string $status
+ * @property VoucherDiscountTypeEnum|string $discount_type
+ * @property string|float $discount_value
+ * @property string|float|null $max_discount_amount
+ * @property string|float|null $min_order_amount
+ * @property int $max_uses
+ * @property int $used_count
+ */
 class Voucher extends Model
 {
     use AssignsTenant;

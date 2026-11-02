@@ -86,11 +86,13 @@ class CustomerCreditAccount extends Model
     /**
      * Hitung total eksposur kredit saat ini menggunakan BCMath.
      * Total Eksposur = reserved_exposure + invoiced_exposure - unapplied_credit_balance.
+     *
+     * @return numeric-string
      */
     public function getTotalExposure(): string
     {
-        $gross = bcadd((string) $this->reserved_exposure, (string) $this->invoiced_exposure, 2);
-        $net = bcsub($gross, (string) $this->unapplied_credit_balance, 2);
+        $gross = bcadd((string) (float) $this->reserved_exposure, (string) (float) $this->invoiced_exposure, 2);
+        $net = bcsub($gross, (string) (float) $this->unapplied_credit_balance, 2);
 
         return bccomp($net, '0.00', 2) > 0 ? $net : '0.00';
     }
@@ -98,10 +100,12 @@ class CustomerCreditAccount extends Model
     /**
      * Hitung sisa plafon kredit yang masih tersedia.
      * Sisa Kredit = credit_limit - total_exposure.
+     *
+     * @return numeric-string
      */
     public function getAvailableCredit(): string
     {
-        $avail = bcsub((string) $this->credit_limit, $this->getTotalExposure(), 2);
+        $avail = bcsub((string) (float) $this->credit_limit, $this->getTotalExposure(), 2);
 
         return bccomp($avail, '0.00', 2) > 0 ? $avail : '0.00';
     }
