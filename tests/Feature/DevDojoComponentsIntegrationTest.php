@@ -17,6 +17,16 @@ class DevDojoComponentsIntegrationTest extends TestCase
         $this->assertStringContainsString('bg-linear-to-b', $html);
     }
 
+    public function test_can_render_button_with_icon_touch_size(): void
+    {
+        $html = Blade::render('<x-ui.button size="icon-touch" icon="add" />');
+
+        $this->assertStringContainsString('size-11', $html);
+        $this->assertStringContainsString('min-w-11', $html);
+        $this->assertStringContainsString('min-h-11', $html);
+        $this->assertStringContainsString('add', $html);
+    }
+
     public function test_can_render_devdojo_ui_card_component(): void
     {
         $html = Blade::render('<x-ui.card>Isi Konten</x-ui.card>');
@@ -362,5 +372,27 @@ class DevDojoComponentsIntegrationTest extends TestCase
         $plainComponent->updatedSelectAll(true);
         $this->assertSame([], $plainComponent->selected);
     }
+
+    public function test_can_render_erp_shell_with_header_filters_and_content(): void
+    {
+        $html = Blade::render('
+            <x-erp.shell title="Purchasing Orders" description="Manage enterprise purchase orders">
+                <x-slot:actions>
+                    <button type="button">Create PO</button>
+                </x-slot:actions>
+                <x-slot:filters>
+                    <div>Filter Bar Mock</div>
+                </x-slot:filters>
+                <div>Table Content Mock</div>
+            </x-erp.shell>
+        ');
+
+        $this->assertStringContainsString('Purchasing Orders', $html);
+        $this->assertStringContainsString('Manage enterprise purchase orders', $html);
+        $this->assertStringContainsString('Create PO', $html);
+        $this->assertStringContainsString('Filter Bar Mock', $html);
+        $this->assertStringContainsString('Table Content Mock', $html);
+    }
 }
+
 

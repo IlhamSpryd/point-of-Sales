@@ -36,6 +36,10 @@
             $sizeClasses = 'size-8 p-0 rounded-md';
             $loaderClasses = 'size-3.5';
             break;
+        case 'icon-touch':
+            $sizeClasses = 'size-11 min-w-11 min-h-11 p-0 rounded-xl';
+            $loaderClasses = 'size-5';
+            break;
         default:
             $sizeClasses = 'h-9 px-3.5 text-xs sm:text-sm rounded-lg gap-1.5';
             $loaderClasses = 'size-3.5';

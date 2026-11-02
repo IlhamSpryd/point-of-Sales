@@ -32,11 +32,13 @@ Urutan disesuaikan dengan dependensi aktual (token → komponen → halaman), bu
 5. [x] **Mobile card-list untuk halaman `hideOnMobile` (RS-02)**: Dipertahankan dan distandarkan menggunakan semantic token (`bg-card`, `border-border`, `text-foreground`, `text-muted-foreground`).
 6. [x] **Verifikasi**: PHPUnit 25 tests (`DevDojoComponentsIntegrationTest` 23/23 PASS, `LivewireTenancyIsolationTest` 2/2 PASS); Larastan 0 errors pada concerns dan purchasing managers.
 
-## Phase 4 — ERP Module Consistency (berjalan paralel Gelombang 7)
-1. Dashboard refactor ke page-header + stat-card (LA-06/LI-09).
-2. RBI (Modul 15) langsung dibangun di atas design system baru — jangan tunggu semua modul.
-3. Finance/HR/Purchasing sweep hex & komponen legacy.
-4. POS: audit icon-touch size, tester tablet.
+## Phase 4 — ERP Module Consistency (COMPLETED — 2026-11-02)
+1. [x] **Dashboard refactor ke `x-erp.page-header` + `x-erp.stat-card` (LA-06, LI-09)**: `dashboard.blade.php` direfaktor menghilangkan padding oversized (p-9) dan rounded-3xl menjadi enterprise density (`p-4 sm:p-6 lg:p-8`, `rounded-xl`), header disatukan ke `<x-erp.page-header>`, 3 KPI utama memakai `<x-erp.stat-card>`, dan seluruh arbitrary hex di histogram/spline chart, feature cards, serta operational details disubstitusi dengan token semantik (`card-surface`, `bg-background`, `border-border`, `text-foreground`, `text-muted-foreground`). Teruji via `DashboardV2RedesignTest` + `DashboardMetricsAndButtonsTest` 8/8 PASS (173 assertions).
+2. [x] **Manager shell L4 `<x-erp.shell>` (LA-02, LA-03)**: Dibuat `resources/views/components/erp/shell.blade.php` menggabungkan page-header, breadcrumbs, filter slot, dan table body untuk standardisasi scaffolding manager Livewire. Teruji via `DevDojoComponentsIntegrationTest`.
+3. [x] **Finance, HR, dan Purchasing sweep hex & token (LI-03, LA-02)**: Seluruh arbitrary hex (`border-[#E5E7EB] dark:border-zinc-800`, `bg-[#171717]`, dsb) di `livewire/finance/` (accounting period, COA, journal entry, bank reconciliation), `livewire/purchasing/` (GRN, PO, supplier, purchase return, supplier invoice), dan `livewire/hr/` (sub-nav) dibersihkan tuntas ke 0 hit.
+4. [x] **POS touch target audit & size `icon-touch` (AX-04, RS-03)**: Menambahkan varian size `icon-touch` (`size-11 min-w-11 min-h-11 p-0 rounded-xl`) pada `<x-ui.button>` untuk memenuhi standar WCAG 2.5.5 / 2.5.8 touch target (>= 44x44px) bagi tablet POS dan kasir.
+5. [x] **RBI (Modul 15) alignment**: Menggunakan token SSOT dan struktur komponen L1–L4 tanpa mengganggu proses paralel Wave 7.
+6. [x] **Verifikasi**: PHPUnit 33 tests (`DevDojoComponentsIntegrationTest` 25/25 PASS, `DashboardV2RedesignTest` + `DashboardMetricsAndButtonsTest` 8/8 PASS); Larastan 0 errors.
 
 ## Phase 5 — Quality (berkelanjutan)
 1. axe-core smoke via browser-automation skill pada 10 halaman kritis (AX-02 dsb).

@@ -29,7 +29,7 @@
     </div>
 
     <!-- Filter & Search Toolbar -->
-    <div class="card-surface p-4 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 flex flex-col md:flex-row gap-3 items-center justify-between shadow-xs">
+    <div class="card-surface p-4 rounded-2xl border border-border flex flex-col md:flex-row gap-3 items-center justify-between shadow-xs">
         <div class="relative w-full md:w-80">
             <span class="material-symbols-rounded absolute left-3 top-2.5 text-zinc-400 text-sm">search</span>
             <input type="text"
@@ -55,7 +55,7 @@
     </div>
 
     <!-- Table Container -->
-    <div class="card-surface rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 overflow-hidden shadow-xs">
+    <div class="card-surface rounded-2xl border border-border overflow-hidden shadow-xs">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
                 <thead class="bg-zinc-50 dark:bg-zinc-900/60 text-zinc-500 font-semibold border-b border-zinc-200 dark:border-zinc-800">

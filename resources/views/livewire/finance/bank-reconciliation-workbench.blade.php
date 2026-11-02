@@ -53,7 +53,7 @@
 
     @if ($session)
         <!-- Reconciliation Summary Card -->
-        <div class="card-surface p-5 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 space-y-4 shadow-xs">
+        <div class="card-surface p-5 rounded-2xl border border-border space-y-4 shadow-xs">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-zinc-200 dark:border-zinc-800">
                 <div>
                     <div class="flex items-center gap-2">
@@ -134,7 +134,7 @@
             <!-- Two-Column Workbench (Statement Lines vs Cash/Bank Transactions) -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Left: Bank Statement Lines -->
-                <div class="card-surface rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 overflow-hidden shadow-xs">
+                <div class="card-surface rounded-2xl border border-border overflow-hidden shadow-xs">
                     <div class="p-3 bg-zinc-50 dark:bg-zinc-900/60 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
                         <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
                             <span class="material-symbols-rounded text-sm text-blue-500">account_balance</span>
@@ -176,7 +176,7 @@
                 </div>
 
                 <!-- Right: Cash/Bank Journal Transactions -->
-                <div class="card-surface rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 overflow-hidden shadow-xs">
+                <div class="card-surface rounded-2xl border border-border overflow-hidden shadow-xs">
                     <div class="p-3 bg-zinc-50 dark:bg-zinc-900/60 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
                         <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
                             <span class="material-symbols-rounded text-sm text-purple-500">menu_book</span>
@@ -214,7 +214,7 @@
         @endif
 
         <!-- Matched Pairs List -->
-        <div class="card-surface rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 overflow-hidden shadow-xs">
+        <div class="card-surface rounded-2xl border border-border overflow-hidden shadow-xs">
             <div class="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
                 <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                     <span class="material-symbols-rounded text-base text-emerald-500">check_circle</span>
@@ -277,7 +277,7 @@
             </div>
         </div>
     @else
-        <div class="card-surface p-12 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 text-center space-y-3 shadow-xs">
+        <div class="card-surface p-12 rounded-2xl border border-border text-center space-y-3 shadow-xs">
             <span class="material-symbols-rounded text-4xl text-zinc-400">account_balance</span>
             <h3 class="text-base font-bold text-zinc-950 dark:text-white">Tidak Ada Sesi Rekonsiliasi Aktif</h3>
             <p class="text-xs text-zinc-500 max-w-sm mx-auto">Pilih akun kas/bank dan klik tombol "Mulai Sesi Baru" untuk memulai pencocokan mutasi rekening koran.</p>

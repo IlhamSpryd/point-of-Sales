@@ -26,7 +26,7 @@
 <div data-gsap="kpi-card" {{ $attributes->twMerge('card-surface bg-card border border-border rounded-xl p-5 flex flex-col justify-between gap-3 shadow-xs hover:border-border-strong transition-all') }}>
     <div class="flex items-center justify-between gap-2">
         <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground truncate">
-            {{ $displayLabel }}
+            {!! $displayLabel !!}
         </span>
         @if ($icon)
             <span class="inline-flex size-9 items-center justify-center rounded-lg bg-secondary text-foreground border border-border shrink-0">

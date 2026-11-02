@@ -28,7 +28,7 @@
     @endif
 
     <!-- Filter & Toolbar -->
-    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-[#E5E7EB] dark:border-zinc-800">
+    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-border">
         <div class="flex-1 max-w-md">
             <x-ui.input
                 type="text"
