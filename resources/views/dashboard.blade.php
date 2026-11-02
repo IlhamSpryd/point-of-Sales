@@ -49,7 +49,7 @@
                         <span class="material-symbols-rounded text-[14px]">trending_up</span> +1.9%
                     </span>
                 </div>
-                <div class="mt-4 text-3xl lg:text-4xl font-extrabold text-[#171717] tracking-tight">
+                <div class="mt-4 text-3xl lg:text-4xl font-extrabold text-[#171717] tracking-tight numeric">
                     {{ $displayTodayOrders }}
                 </div>
             </div>
@@ -62,7 +62,7 @@
                         <span class="material-symbols-rounded text-[14px]">trending_down</span> -8.1%
                     </span>
                 </div>
-                <div class="mt-4 text-3xl lg:text-4xl font-extrabold text-[#171717] tracking-tight">
+                <div class="mt-4 text-3xl lg:text-4xl font-extrabold text-[#171717] tracking-tight numeric">
                     {{ $displayWeekOrders }}
                 </div>
             </div>
@@ -75,7 +75,7 @@
                         <span class="material-symbols-rounded text-[14px]">trending_up</span> +24%
                     </span>
                 </div>
-                <div class="mt-4 text-3xl lg:text-4xl font-extrabold text-[#171717] tracking-tight">
+                <div class="mt-4 text-3xl lg:text-4xl font-extrabold text-[#171717] tracking-tight numeric">
                     {{ number_format($displayMonthOrders, 0, ',', '.') }}
                 </div>
             </div>

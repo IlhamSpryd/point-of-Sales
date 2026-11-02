@@ -23,7 +23,7 @@
             @endisset
 
             @isset($head)
-                <thead class="border-b border-border bg-[#F7F7F5]">
+                <thead class="border-b border-border bg-surface-table-header">
                     <tr>
                         {{ $head }}
                     </tr>
@@ -36,7 +36,7 @@
                         <td colspan="{{ $colspan }}" class="p-0">
                             <x-ui.empty-state :title="$emptyTitle" :description="$emptyDescription" class="border-0 py-14">
                                 <x-slot:icon>
-                                    <span class="material-symbols-rounded text-2xl" aria-hidden="true">{{ $emptyIcon }}</span>
+                                    <x-ui.icon :name="$emptyIcon" size="xl" />
                                 </x-slot:icon>
                                 @isset($emptyAction)
                                     {{ $emptyAction }}
@@ -50,7 +50,7 @@
             </tbody>
 
             @isset($foot)
-                <tfoot class="border-t-2 border-border bg-[#F7F7F5] font-semibold">
+                <tfoot class="border-t-2 border-border bg-surface-table-header font-semibold">
                     {{ $foot }}
                 </tfoot>
             @endisset

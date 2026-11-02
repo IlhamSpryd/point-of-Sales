@@ -172,4 +172,20 @@ class DevDojoComponentsIntegrationTest extends TestCase
 
         $this->assertStringContainsString('class=', (string) $merged);
     }
+
+    public function test_can_render_ui_icon_primitive(): void
+    {
+        $html = Blade::render('<x-ui.icon name="dashboard" size="md" />');
+
+        $this->assertStringContainsString('dashboard', $html);
+        $this->assertStringContainsString('material-symbols-rounded', $html);
+        $this->assertStringContainsString('aria-hidden="true"', $html);
+        $this->assertStringContainsString('font-variation-settings', $html);
+
+        $htmlWithLabel = Blade::render('<x-ui.icon name="lock" size="lg" fill label="Terkunci" />');
+        $this->assertStringContainsString('lock', $htmlWithLabel);
+        $this->assertStringContainsString('role="img"', $htmlWithLabel);
+        $this->assertStringContainsString('aria-label="Terkunci"', $htmlWithLabel);
+        $this->assertStringContainsString("'FILL' 1", $htmlWithLabel);
+    }
 }

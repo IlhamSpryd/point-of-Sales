@@ -21,10 +21,10 @@
         'relative w-full rounded-xl border p-4 text-xs sm:text-sm flex items-start gap-3',
         'bg-card text-card-foreground border-border' => $resolvedVariant === 'primary',
         'bg-secondary text-secondary-foreground border-border' => $resolvedVariant === 'secondary',
-        'bg-[#FFF1F2] bg-rose-50 text-[#BE123C] border-rose-200' => $resolvedVariant === 'destructive',
-        'bg-[#EFF6FF] text-[#1D4ED8] border-blue-200' => $resolvedVariant === 'info',
-        'bg-[#ECFDF5] bg-green-50 text-[#047857] border-emerald-200' => $resolvedVariant === 'success',
-        'bg-[#FBF3E7] text-[#8A5A16] border-amber-200' => $resolvedVariant === 'warning',
+        'bg-rose-50 text-rose-700 border-rose-200' => $resolvedVariant === 'destructive',
+        'bg-blue-50 text-blue-700 border-blue-200' => $resolvedVariant === 'info',
+        'bg-emerald-50 text-emerald-700 border-emerald-200' => $resolvedVariant === 'success',
+        'bg-amber-50 text-amber-700 border-amber-200' => $resolvedVariant === 'warning',
     ]);
 
     $defaultIconNames = [

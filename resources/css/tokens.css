@@ -1,0 +1,261 @@
+/**
+ * Apeiron Systems — Unified Design Tokens (tokens.css)
+ * --------------------------------------------------------------------------
+ * Single Source of Truth for Design Tokens (Tailwind CSS v4 CSS-first).
+ * Architecture: Primitives -> Semantic -> Components (shadcn-inspired).
+ *
+ * DO NOT introduce arbitrary hex classes. Use semantic tokens below.
+ */
+
+:root {
+    color-scheme: light;
+
+    /* ── Typography Fonts ── */
+    --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-brand: "Plus Jakarta Sans", sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+    /* ── Semantic Colors (Light) ── */
+    --background: #F7F7F8;
+    --foreground: #202123;
+
+    --card: #FFFFFF;
+    --card-foreground: #202123;
+
+    --popover: #FFFFFF;
+    --popover-foreground: #202123;
+
+    --primary: #171717;
+    --primary-foreground: #FFFFFF;
+
+    --secondary: #F3F4F6;
+    --secondary-foreground: #202123;
+
+    --muted: #F3F4F6;
+    --muted-foreground: #6B7280;
+
+    --accent: #F3F4F6;
+    --accent-foreground: #202123;
+
+    --destructive: #B91C1C;
+    --destructive-foreground: #FFFFFF;
+
+    --success: #047857;
+    --warning: #B45309;
+    --info: #1D4ED8;
+
+    --border: #E5E7EB;
+    --border-strong: #D1D5DB;
+    --input: #E5E7EB;
+    --ring: #171717;
+
+    /* ── ERP-Specific Semantic Tokens ── */
+    --surface-table-header: #F9FAFB;
+    --shell: #171717;
+
+    /* ── Sidebar Tokens ── */
+    --sidebar-background: #171717;
+    --sidebar-foreground: #D4D4D4;
+    --sidebar-primary: #FFFFFF;
+    --sidebar-primary-foreground: #171717;
+    --sidebar-accent: #2D2D2D;
+    --sidebar-accent-foreground: #FFFFFF;
+    --sidebar-border: #262626;
+    --sidebar-ring: #FFFFFF;
+
+    /* ── Shape Scale (Measured Enterprise Radii) ── */
+    --radius-control: 8px;     /* inputs, buttons, selects */
+    --radius-card: 12px;       /* cards, table containers, popovers */
+    --radius-dialog: 16px;     /* modals, drawers */
+    --radius-sheet: 16px;
+    --radius-pill: 9999px;
+
+    /* ── Deprecated Radius Aliases (Backward Compatibility) ── */
+    --radius-small: 6px;
+    --radius-medium: 8px;
+    --radius-large: 12px;
+
+    /* ── Motion Tokens ── */
+    --dur-micro: 120ms;
+    --dur-fast: 200ms;
+    --dur-medium: 350ms;
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-ui: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Dark Mode Tokens (Preserved & Dormant until Phase 5 activation) ── */
+.dark {
+    color-scheme: dark;
+
+    --background: oklch(0.12 0 0);
+    --foreground: oklch(0.96 0 0);
+
+    --card: oklch(0.16 0 0);
+    --card-foreground: oklch(0.96 0 0);
+
+    --popover: oklch(0.16 0 0);
+    --popover-foreground: oklch(0.96 0 0);
+
+    --primary: oklch(0.96 0 0);
+    --primary-foreground: oklch(0.14 0 0);
+
+    --secondary: oklch(0.22 0 0);
+    --secondary-foreground: oklch(0.96 0 0);
+
+    --muted: oklch(0.22 0 0);
+    --muted-foreground: oklch(0.70 0 0);
+
+    --accent: oklch(0.22 0 0);
+    --accent-foreground: oklch(0.96 0 0);
+
+    --destructive: oklch(0.65 0.20 22);
+    --destructive-foreground: oklch(0.985 0 0);
+
+    --success: oklch(0.62 0.17 155);
+    --warning: oklch(0.75 0.16 75);
+    --info: oklch(0.60 0.18 250);
+
+    --border: oklch(1 0 0 / 12%);
+    --border-strong: oklch(1 0 0 / 20%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.96 0 0);
+
+    --surface-table-header: oklch(0.14 0 0);
+    --shell: oklch(0.10 0 0);
+
+    --sidebar-background: oklch(0.16 0 0);
+    --sidebar-foreground: oklch(0.96 0 0);
+    --sidebar-primary: oklch(0.96 0 0);
+    --sidebar-primary-foreground: oklch(0.16 0 0);
+    --sidebar-accent: oklch(0.22 0 0);
+    --sidebar-accent-foreground: oklch(0.96 0 0);
+    --sidebar-border: oklch(1 0 0 / 12%);
+    --sidebar-ring: oklch(0.96 0 0);
+}
+
+/* ── KDS Theme (Kitchen Display System Screens) ── */
+[data-theme="kds-dark"] {
+    --color-apeiron-bg: #0A0A08;
+    --color-apeiron-ink: #F5F4F0;
+    --color-apeiron-muted: #A9A79E;
+    --color-apeiron-border: #383830;
+    --color-apeiron-surface: #171714;
+    --color-table-header-bg: #0A0A08;
+}
+
+@media (min-width: 1920px) {
+    [data-theme="kds-dark"] { font-size: 18px; }
+}
+@media (min-width: 2560px) {
+    [data-theme="kds-dark"] { font-size: 24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --dur-micro: 0ms;
+        --dur-fast: 0ms;
+        --dur-medium: 0ms;
+    }
+    * {
+        transition-duration: 0ms !important;
+        animation-duration: 0ms !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════
+   UNIFIED THEME — Single @theme inline definition (AC-T1)
+   ═══════════════════════════════════════════════════════ */
+@theme inline {
+    --font-sans: var(--font-sans);
+    --font-brand: var(--font-brand);
+    --font-mono: var(--font-mono);
+
+    /* ── Semantic Colors ── */
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-border: var(--border);
+    --color-border-strong: var(--border-strong);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    /* ── ERP-Specific Semantic Tokens ── */
+    --color-surface-table-header: var(--surface-table-header);
+    --color-shell: var(--shell);
+
+    /* ── Sidebar Tokens ── */
+    --color-sidebar-background: var(--sidebar-background);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+
+    /* ── Shape Scale ── */
+    --radius-control: var(--radius-control);
+    --radius-card: var(--radius-card);
+    --radius-dialog: var(--radius-dialog);
+    --radius-sheet: var(--radius-sheet);
+    --radius-pill: var(--radius-pill);
+
+    /* ── Deprecated Radius Aliases (Mapped 1:1) ── */
+    --radius-small: var(--radius-small);
+    --radius-medium: var(--radius-control);
+    --radius-large: var(--radius-card);
+
+    /* ── Legacy Apeiron Token Aliases (Mapped 1:1) ── */
+    --color-apeiron-bg: var(--card);
+    --color-apeiron-ink: var(--foreground);
+    --color-apeiron-muted: var(--muted-foreground);
+    --color-apeiron-muted-700: #4B5563;
+    --color-apeiron-border: var(--border);
+    --color-apeiron-surface: var(--secondary);
+    --color-apeiron-sidebar: var(--shell);
+    --color-table-header-bg: var(--surface-table-header);
+
+    /* ── Semantic Status Colors ── */
+    --color-status-success: var(--success);
+    --color-status-warning: var(--warning);
+    --color-status-error: var(--destructive);
+    --color-status-info: var(--info);
+    --color-status-draft: var(--muted-foreground);
+
+    /* ── Breakpoints ── */
+    --breakpoint-3xl: 1920px;
+    --breakpoint-4xl: 2560px;
+}
+
+/* ═══════════════════════════════════════════════════════
+   UTILITY CLASSES (LI-07, POS safe area)
+   ═══════════════════════════════════════════════════════ */
+.numeric {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+}
+
+.pb-safe {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 1.25rem);
+}

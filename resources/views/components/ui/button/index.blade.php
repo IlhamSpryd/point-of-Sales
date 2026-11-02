@@ -44,26 +44,26 @@
 
     switch ($variant ?? 'primary') {
         case 'primary':
-            $typeClasses = 'border-transparent no-underline bg-[#171717] bg-linear-to-b text-white hover:bg-[#262626] focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1';
+            $typeClasses = 'border-transparent no-underline bg-primary bg-linear-to-b text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
             break;
         case 'secondary':
-            $typeClasses = 'border-border no-underline text-secondary-foreground bg-white hover:bg-secondary focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1';
+            $typeClasses = 'border-border no-underline text-secondary-foreground bg-card hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
             break;
         case 'destructive':
         case 'danger':
-            $typeClasses = 'border-transparent no-underline bg-destructive text-white hover:bg-rose-700 focus-visible:ring-2 focus-visible:ring-rose-500/40 focus-visible:ring-offset-1';
+            $typeClasses = 'border-transparent no-underline bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-2 focus-visible:ring-destructive/40 focus-visible:ring-offset-1';
             break;
         case 'outline':
-            $typeClasses = 'no-underline text-foreground bg-background hover:bg-secondary border-border focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1';
+            $typeClasses = 'no-underline text-foreground bg-background hover:bg-secondary border-border focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
             break;
         case 'ghost':
-            $typeClasses = 'border-transparent no-underline text-foreground hover:bg-secondary focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1';
+            $typeClasses = 'border-transparent no-underline text-foreground hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
             break;
         case 'link':
             $typeClasses = 'border-transparent no-underline text-foreground hover:underline px-0 h-auto';
             break;
         default:
-            $typeClasses = 'border-transparent no-underline bg-[#171717] text-white hover:bg-[#262626] focus-visible:ring-2 focus-visible:ring-zinc-400 focus-visible:ring-offset-1';
+            $typeClasses = 'border-transparent no-underline bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
             break;
     }
 

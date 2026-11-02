@@ -7,12 +7,13 @@ Urutan disesuaikan dengan dependensi aktual (token → komponen → halaman), bu
 2. [x] Dokumentasikan konvensi di CLAUDE/AGENTS & APEIRON_GEMINI_ENGINEERING_RULES: token resmi, larangan hex baru (Zero Hardcoded Hex Policy).
 3. [x] Buat error pages kustom 403/404/500 mengikuti design token (HI-04) — `resources/views/errors/{layout,403,404,500}.blade.php` teruji via `CustomErrorPagesTest` (3/3 PASS).
 
-## Phase 1 — Foundation (1–2 minggu)
-1. **Konsolidasi token** → `tokens.css`; hapus duplikasi app.css/components.css; alias deprecated (LI-01).
-2. Sweep hardcoded hex **di komponen reusable dulu** (ui/*, erp/*, pagination vendor, swal-bridge) — halaman menyusul per-modul (LI-03).
-3. Tambah `<x-ui.icon>` registry + ganti pemakaian bertahap (LI-08).
-4. Serif numeric: utility `.numeric` + terapkan di tabel & KPI (LI-07).
-5. Keputusan dark mode: **tunda aktivasi** sampai Phase 1 selesai; bersihkan atau pertahankan `.dark` token set (TH-01).
+## Phase 1 — Foundation (COMPLETED — 2026-11-02)
+1. [x] **Konsolidasi token** → `resources/css/tokens.css` sebagai Single Source of Truth; `@theme inline` tunggal (AC-T1); alias deprecated dipertahankan (`rounded-medium/small/large`, `apeiron-*`) (LI-01).
+2. [x] **Sweep hardcoded hex di komponen reusable**: 0 hardcoded hex di `resources/views/components/**`, pagination vendor `tailwind.blade.php`, dan `swal-bridge.js` (AC-T2, LI-03).
+3. [x] **Primitive `<x-ui.icon>`**: variation settings terpusat, support sizes xs/sm/md/lg/xl/2xl, a11y role/aria-label (LI-08), teruji di `DevDojoComponentsIntegrationTest`.
+4. [x] **Utility `.numeric`**: font-mono + tabular-nums di `tokens.css`, diterapkan di `stat-card`, KPI dashboard, dan vendor pagination (LI-07).
+5. [x] **Dark mode dormant**: token set `.dark` dipertahankan dalam `tokens.css` namun dinonaktifkan (`color-scheme: light`) sampai AC-TH1 (TH-01).
+6. [x] **Verifikasi**: PHPUnit 35 tests, 411 assertions PASS; Larastan 0 errors pada file tersentuh.
 
 ## Phase 2 — Core Interaction (2–3 minggu)
 1. `x-erp.form-field` + migrasi form-input/form-label → ui (LI-02, FM-03).

@@ -15,10 +15,10 @@
     ];
 
     $variants = [
-        'primary'   => 'bg-apeiron-ink text-white hover:bg-[#262626] focus-visible:ring-apeiron-ink',
-        'secondary' => 'bg-white text-gray-700 border border-apeiron-border hover:bg-gray-50 focus-visible:ring-apeiron-ink',
-        'danger'    => 'bg-rose-600 text-white hover:bg-rose-700 focus-visible:ring-rose-500',
-        'ghost'     => 'bg-transparent text-gray-600 hover:bg-gray-100 hover:text-apeiron-ink focus-visible:ring-zinc-400',
+        'primary'   => 'bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring',
+        'secondary' => 'bg-card text-foreground border border-border hover:bg-muted focus-visible:ring-ring',
+        'danger'    => 'bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-destructive',
+        'ghost'     => 'bg-transparent text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring',
     ];
 
     $classes = $baseClasses . ' ' . ($sizes[$size] ?? $sizes['md']) . ' ' . ($variants[$variant] ?? $variants['primary']);

@@ -17,17 +17,17 @@
             </colgroup>
         @endisset
         @if(isset($head))
-            <thead class="sticky top-0 z-10 shadow-2xs border-b border-[#E5E7EB]">
-                <tr class="bg-[#F9FAFB]">
+            <thead class="sticky top-0 z-10 shadow-2xs border-b border-border">
+                <tr class="bg-surface-table-header">
                     {{ $head }}
                 </tr>
             </thead>
         @endif
-        <tbody class="divide-y divide-apeiron-border bg-white">
+        <tbody class="divide-y divide-border bg-card">
             {{ $slot }}
         </tbody>
         @isset($foot)
-            <tfoot class="border-t-2 border-[#E5E7EB] bg-[#F9FAFB] font-semibold">
+            <tfoot class="border-t-2 border-border bg-surface-table-header font-semibold">
                 {{ $foot }}
             </tfoot>
         @endisset

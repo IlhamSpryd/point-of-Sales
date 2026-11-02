@@ -60,27 +60,28 @@ const Swal = {
             }
 
             const panel = document.createElement('div');
-            panel.className = 'w-full max-w-md rounded-2xl bg-white border border-[#E9E9E7] shadow-xl p-6 text-[#202020] focus:outline-none';
+            panel.className = 'w-full max-w-md rounded-2xl bg-card border border-border shadow-xl p-6 text-foreground focus:outline-none';
             panel.tabIndex = -1;
 
             const isDestructive = confirmButtonColor.toLowerCase() === '#be123c'
                 || confirmButtonColor.toLowerCase() === '#e11d48'
+                || confirmButtonColor.toLowerCase() === 'destructive'
                 || icon === 'warning'
                 || icon === 'error';
 
             const iconBadgeClass = isDestructive
-                ? 'bg-[#FFF1F2] text-[#E11D48] border-[#FECDD3]'
-                : 'bg-[#F7F7F5] text-[#202020] border-[#E9E9E7]';
+                ? 'bg-destructive/10 text-destructive border-destructive/20'
+                : 'bg-muted text-foreground border-border';
 
             const iconSymbol = icon === 'error'
                 ? 'error'
                 : (icon === 'success' ? 'check_circle' : (icon === 'warning' ? 'warning' : 'info'));
 
             const confirmBtnClass = isDestructive
-                ? 'inline-flex items-center justify-center h-10 px-4 rounded-lg text-xs font-semibold text-white bg-[#E11D48] hover:bg-[#BE123C] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#E11D48] transition-colors cursor-pointer'
-                : 'inline-flex items-center justify-center h-10 px-4 rounded-lg text-xs font-semibold text-white bg-[#202020] hover:bg-[#141413] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#202020] transition-colors cursor-pointer';
+                ? 'inline-flex items-center justify-center h-10 px-4 rounded-lg text-xs font-semibold text-destructive-foreground bg-destructive hover:bg-destructive/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-destructive transition-colors cursor-pointer'
+                : 'inline-flex items-center justify-center h-10 px-4 rounded-lg text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors cursor-pointer';
 
-            const cancelBtnClass = 'inline-flex items-center justify-center h-10 px-4 rounded-lg text-xs font-semibold text-[#202020] bg-white border border-[#E9E9E7] hover:bg-[#F7F7F5] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#202020] transition-colors cursor-pointer';
+            const cancelBtnClass = 'inline-flex items-center justify-center h-10 px-4 rounded-lg text-xs font-semibold text-foreground bg-card border border-border hover:bg-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors cursor-pointer';
 
             panel.innerHTML = `
                 <div class="flex items-start gap-4">
@@ -88,8 +89,8 @@ const Swal = {
                         <span class="material-symbols-rounded text-xl" aria-hidden="true">${iconSymbol}</span>
                     </div>
                     <div class="flex-1 min-w-0">
-                        <h3 id="apeiron-swal-title" class="text-base font-bold text-[#202020] tracking-tight"></h3>
-                        <div id="apeiron-swal-desc" class="mt-1.5 text-xs text-[#6B6A66] leading-relaxed"></div>
+                        <h3 id="apeiron-swal-title" class="text-base font-bold text-foreground tracking-tight"></h3>
+                        <div id="apeiron-swal-desc" class="mt-1.5 text-xs text-muted-foreground leading-relaxed"></div>
                     </div>
                 </div>
                 <div data-swal-actions class="mt-6 flex items-center justify-end gap-2.5"></div>
@@ -219,8 +220,8 @@ const Swal = {
         const actionsEl = activeOverlay.querySelector('[data-swal-actions]');
         if (actionsEl) {
             actionsEl.innerHTML = `
-                <div class="inline-flex items-center gap-2 text-xs font-medium text-[#6B6A66]" role="status" aria-live="polite">
-                    <span class="spinner !border-[#202020]/20 !border-t-[#202020]"></span>
+                <div class="inline-flex items-center gap-2 text-xs font-medium text-muted-foreground" role="status" aria-live="polite">
+                    <span class="spinner !border-primary/20 !border-t-primary"></span>
                     <span>Memproses...</span>
                 </div>
             `;
