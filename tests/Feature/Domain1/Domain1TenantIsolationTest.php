@@ -475,7 +475,7 @@ class Domain1TenantIsolationTest extends TestCase
     /** NEG-13: User Tenant A is denied (403/404) when attempting to download an ExportTask belonging to Tenant B. */
     public function test_export_download_idor(): void
     {
-        $userA = User::find($this->userAId);
+        $userA = User::withoutGlobalScopes()->findOrFail($this->userAId);
         $taskB = app(TenantContext::class)->runAs($this->tenantBId, $this->storeBId, function () {
             return ExportTask::create([
                 'type' => 'sales_report',
