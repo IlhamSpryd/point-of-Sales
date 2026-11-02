@@ -9,6 +9,7 @@ enum PreparationStatus: string
     case Pending = 'pending';
     case Brewing = 'brewing';
     case Ready = 'ready';
+    case Served = 'served';
 
     public function label(): string
     {
@@ -16,6 +17,7 @@ enum PreparationStatus: string
             self::Pending => 'Queued',
             self::Brewing => 'Preparing',
             self::Ready => 'Ready to Serve',
+            self::Served => 'Served',
         };
     }
 
@@ -25,6 +27,7 @@ enum PreparationStatus: string
             self::Pending => 'warning',
             self::Brewing => 'info',
             self::Ready => 'success',
+            self::Served => 'secondary',
         };
     }
 }

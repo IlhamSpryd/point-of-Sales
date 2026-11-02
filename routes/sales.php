@@ -31,6 +31,7 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
     // Kasir POS
     Route::middleware('role:Owner,Manager,Kasir')->group(function () {
         Route::get('/transaction', CreateOrder::class)->name('transaction.create');
+        Route::get('/kasir', CreateOrder::class)->name('kasir.index');
         Route::post('/transaction', [TransactionController::class, 'store'])->name('transaction.store');
         Route::get('/transaction/receipt/{orderCode}', [TransactionController::class, 'receipt'])->name('transaction.receipt');
         Route::post('/api/orders/{order_number}/sync-status', [TransactionController::class, 'syncMidtrans'])->name('api.order.sync-status');

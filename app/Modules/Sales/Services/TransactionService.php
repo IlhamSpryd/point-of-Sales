@@ -37,6 +37,7 @@ use App\Models\PaymentAttempt;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Shift;
+use App\Modules\Sales\Exceptions\ShiftClosedException;
 use App\Models\Store;
 use App\Models\Table;
 use App\Models\User;
@@ -181,9 +182,7 @@ class TransactionService
                     $shift = Shift::lockForUpdate()->find($data['shift_id']);
 
                     if (! $shift || $shift->status !== 'open') {
-                        throw ValidationException::withMessages([
-                            'shift' => 'Shift Anda baru saja ditutup. Transaksi ini dibatalkan, silakan buka shift baru sebelum melanjutkan.',
-                        ]);
+                        throw new ShiftClosedException('Shift Anda baru saja ditutup. Transaksi ini dibatalkan, silakan buka shift baru sebelum melanjutkan.');
                     }
                 }
 
@@ -1209,9 +1208,7 @@ class TransactionService
             ->value('id');
 
         if ($shiftId === null) {
-            throw ValidationException::withMessages([
-                'shift' => 'Anda belum membuka shift kasir. Silakan buka shift terlebih dahulu sebelum memproses transaksi.',
-            ]);
+            throw new ShiftClosedException('Anda belum membuka shift kasir. Silakan buka shift terlebih dahulu sebelum memproses transaksi.');
         }
 
         return $shiftId;
@@ -1325,9 +1322,7 @@ class TransactionService
             if ($shiftId) {
                 $shift = Shift::lockForUpdate()->find($shiftId);
                 if (! $shift || $shift->status !== 'open') {
-                    throw ValidationException::withMessages([
-                        'shift' => 'Shift Anda baru saja ditutup. Transaksi ini dibatalkan.',
-                    ]);
+                    throw new ShiftClosedException('Shift Anda baru saja ditutup. Transaksi ini dibatalkan.');
                 }
                 $resolvedDeviceId = $resolvedDeviceId ?? $shift->device_id;
             }
@@ -1874,6 +1869,8 @@ class TransactionService
 
                 // 5. Record to Activity Log
                 ActivityLog::create([
+                    'tenant_id' => $lockedOrder->tenant_id,
+                    'store_id' => $lockedOrder->store_id,
                     'user_id' => $userId,
                     'action' => 'VOID_ORDER',
                     'description' => "Membatalkan pesanan {$lockedOrder->order_code}. Alasan: {$reason}",

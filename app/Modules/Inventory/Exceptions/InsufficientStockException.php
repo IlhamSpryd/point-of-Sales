@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Inventory\Exceptions;
 
-use DomainException;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
-class InsufficientStockException extends DomainException
+class InsufficientStockException extends ValidationException
 {
     public function __construct(
         string $message = 'Stok tidak mencukupi untuk memenuhi transaksi penjualan.',
@@ -15,6 +16,8 @@ class InsufficientStockException extends DomainException
         public readonly float|string|null $available = null,
         public readonly float|string|null $requested = null
     ) {
-        parent::__construct($message);
+        $validator = Validator::make([], []);
+        parent::__construct($validator);
+        $this->message = $message;
     }
 }

@@ -147,4 +147,28 @@ class KdsService
             return $item;
         });
     }
+
+    /**
+     * Menandai item pesanan telah disajikan kepada pelanggan (SERVED).
+     */
+    public function markServed(int $orderItemId, int $staffId): OrderItem
+    {
+        return DB::transaction(function () use ($orderItemId, $staffId) {
+            $item = OrderItem::with('order')->lockForUpdate()->findOrFail($orderItemId);
+
+            if (! in_array($item->preparation_status, [PreparationStatus::Ready, PreparationStatus::Brewing], true)) {
+                throw ValidationException::withMessages([
+                    'kds' => 'Item belum siap untuk disajikan (status harus Brewing atau Ready).',
+                ]);
+            }
+
+            $item->update([
+                'preparation_status' => PreparationStatus::Ready,
+                'processed_by' => $staffId,
+            ]);
+
+            return $item;
+        });
+    }
 }
+
