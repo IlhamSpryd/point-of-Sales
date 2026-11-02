@@ -45,21 +45,27 @@
     @endif
 
     <div class="card-surface flex flex-col flex-1 min-h-0">
-        <x-data-table>
+        <x-erp.data-table
+            :is-empty="$priceLists->isEmpty()"
+            empty-title="No custom price lists or wholesale rules registered."
+            empty-description="Create custom price tiers and wholesale pricing rules."
+            empty-icon="price_change"
+            :colspan="$canManage ? 8 : 7"
+        >
             <x-slot:head>
-                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-center">Priority</th>
-                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Code & Name</th>
-                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Rule Type</th>
-                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Scope / Target</th>
-                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Items</th>
-                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Validity Period</th>
-                <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Status</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Priority</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Code & Name</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rule Type</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Scope / Target</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Items</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Validity Period</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
                 @if($canManage)
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Actions</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 @endif
             </x-slot:head>
 
-            @forelse($priceLists as $pl)
+            @foreach($priceLists as $pl)
                 @php
                     $typeLabels = [
                         'standard' => 'Standard',
@@ -140,17 +146,8 @@
                         </td>
                     @endif
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="{{ $canManage ? 8 : 7 }}" class="px-6 py-12 text-center text-[#9B9A97] text-sm">
-                        <div class="flex flex-col items-center justify-center">
-                            <span class="material-symbols-rounded text-4xl text-[#C4C3C0] mb-2">price_change</span>
-                            <p class="font-medium">No custom price lists or wholesale rules registered.</p>
-                        </div>
-                    </td>
-                </tr>
-            @endforelse
-        </x-data-table>
+            @endforeach
+        </x-erp.data-table>
 
         <div class="p-4 border-t border-[#E5E7EB]">
             {{ $priceLists->links() }}

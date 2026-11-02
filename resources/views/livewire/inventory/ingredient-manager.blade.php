@@ -101,38 +101,45 @@
     <div class="card-surface flex flex-col flex-1 min-h-0 w-full shrink-0">
         {{-- Desktop/tablet-landscape: existing table --}}
         <div class="hidden lg:block overflow-x-auto flex-1 table-scroll-shadow">
-            <x-data-table>
+            <x-erp.data-table
+                loading-target="search, filterCategory"
+                :is-empty="$ingredients->isEmpty()"
+                empty-title="No Raw Materials Found"
+                empty-description="Add new raw materials to start tracking inventory and product recipes."
+                empty-icon="inventory_2"
+                :colspan="5"
+            >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Raw Material</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Current Stock</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Cost/Unit</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Actions</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Raw Material</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Current Stock</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Cost/Unit</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
-                    @forelse ($ingredients as $item)
-                        <tr class="hover:bg-apeiron-surface/50 transition-colors duration-150">
+                    @foreach ($ingredients as $item)
+                        <tr class="hover:bg-muted/40 transition-colors duration-150">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-semibold text-apeiron-ink">{{ $item->name }}</span>
-                                    <span class="text-xs text-apeiron-muted">{{ $item->ingredient_code ?? '-' }}</span>
+                                    <span class="text-sm font-semibold text-foreground">{{ $item->name }}</span>
+                                    <span class="text-xs text-muted-foreground">{{ $item->ingredient_code ?? '-' }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                            <td class="px-6 py-4 whitespace-nowrap text-right font-mono tabular-nums numeric">
                                 @php
                                     $displayStock = (float) ($item->store_stock ?? $item->current_stock);
                                 @endphp
                                 <div class="flex items-center justify-end gap-2">
-                                    <span class="text-sm font-medium tabular-nums {{ $displayStock <= $item->reorder_level ? 'text-rose-600' : 'text-apeiron-ink' }}">
+                                    <span class="text-sm font-medium tabular-nums {{ $displayStock <= $item->reorder_level ? 'text-destructive font-bold' : 'text-foreground' }}">
                                         {{ number_format($displayStock, 2) }} {{ $item->unit }}
                                     </span>
                                     @if($displayStock <= $item->reorder_level)
-                                        <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700" title="Low Stock">!</span>
+                                        <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-destructive/10 text-destructive" title="Low Stock">!</span>
                                     @endif
                                 </div>
-                                <div class="text-[10px] text-apeiron-muted mt-0.5 tabular-nums">Min: {{ number_format($item->reorder_level, 2) }}</div>
+                                <div class="text-[10px] text-muted-foreground mt-0.5 tabular-nums">Min: {{ number_format($item->reorder_level, 2) }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <span class="text-sm text-apeiron-ink tabular-nums">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }}</span>
+                            <td class="px-6 py-4 whitespace-nowrap text-right font-mono tabular-nums numeric">
+                                <span class="text-sm text-foreground tabular-nums">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <x-ui.badge :variant="$item->is_active ? 'success' : 'secondary'">
@@ -140,30 +147,28 @@
                                 </x-ui.badge>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right space-x-2">
-                                <button wire:click="adjustStock({{ $item->id }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-colors duration-200 active:scale-90" title="Adjust Stock">
-                                    <span class="material-symbols-rounded text-[20px]">inventory</span>
+                                <button wire:click="adjustStock({{ $item->id }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-200 active:scale-95" title="Adjust Stock">
+                                    <x-ui.icon name="inventory" size="sm" />
                                 </button>
-                                <button wire:click="edit({{ $item->id }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-600 hover:bg-primary-50 transition-colors duration-200 active:scale-90" title="Edit">
-                                    <span class="material-symbols-rounded text-[20px]">edit</span>
+                                <button wire:click="edit({{ $item->id }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-200 active:scale-95" title="Edit">
+                                    <x-ui.icon name="edit" size="sm" />
                                 </button>
-                                <button type="button"
-                                    data-swal-delete
-                                    data-swal-title="Delete Raw Material?"
-                                    data-swal-text="Raw material &quot;{{ $item->name }}&quot; will be permanently deleted."
-                                    data-wire-action="delete({{ $item->id }})"
-                                    class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90" title="Delete">
-                                    <span class="material-symbols-rounded text-[20px]">delete</span>
+                                <button
+                                    type="button"
+                                    x-on:click="$dispatch('erp-confirm', {
+                                        title: 'Delete Raw Material?',
+                                        message: 'Raw material &quot;{{ $item->name }}&quot; will be permanently deleted.',
+                                        variant: 'destructive',
+                                        confirmText: 'Hapus',
+                                        onConfirm: () => $wire.delete({{ $item->id }})
+                                    })"
+                                    class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-medium text-destructive hover:bg-destructive/10 transition-colors duration-200 active:scale-95" title="Delete">
+                                    <x-ui.icon name="delete" size="sm" />
                                 </button>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-6 py-12 text-center">
-                                <x-empty-state icon="inventory_2" title="No Raw Materials Found" description="Add new raw materials to start tracking inventory and product recipes." />
-                            </td>
-                        </tr>
-                    @endforelse
-            </x-data-table>
+                    @endforeach
+            </x-erp.data-table>
         </div>
 
         {{-- Mobile/tablet-portrait: card list --}}

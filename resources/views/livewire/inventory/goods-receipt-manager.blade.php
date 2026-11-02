@@ -58,18 +58,25 @@
     {{-- Tabel Goods Receipts --}}
     <div class="card-surface overflow-hidden w-full shrink-0">
         <div class="overflow-x-auto">
-            <x-data-table>
+            <x-erp.data-table
+                loading-target="search, statusFilter"
+                :is-empty="$receipts->isEmpty()"
+                empty-title="No goods receipt documents match the selected criteria."
+                empty-description="Record incoming stock items from local suppliers or direct receipts."
+                empty-icon="move_to_inbox"
+                :colspan="7"
+            >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Receipt No.</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Received At</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Supplier / PO</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-center">Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Items</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Total Value</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-center">Actions</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Receipt No.</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Received At</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Supplier / PO</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Items</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Total Value</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Actions</th>
                 </x-slot:head>
 
-                @forelse ($receipts as $receipt)
+                @foreach ($receipts as $receipt)
                     <tr class="hover:bg-apeiron-surface transition-colors duration-150">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="text-sm font-bold text-apeiron-ink">{{ $receipt->receipt_number }}</span>
@@ -114,14 +121,8 @@
                             @endif
                         </td>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" class="px-6 py-8 text-center text-sm text-apeiron-muted">
-                            No goods receipt documents match the selected criteria.
-                        </td>
-                    </tr>
-                @endforelse
-            </x-data-table>
+                @endforeach
+            </x-erp.data-table>
         </div>
         @if ($receipts->hasPages())
             <div class="p-4 border-t border-apeiron-border">

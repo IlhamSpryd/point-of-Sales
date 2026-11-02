@@ -59,24 +59,31 @@
         </div>
     </div>
 
+    @php
+        $journalColumns = [
+            ['key' => 'journal_number', 'label' => 'Nomor Jurnal', 'sortable' => true],
+            ['key' => 'posting_date', 'label' => 'Tanggal Posting', 'sortable' => true],
+            ['key' => 'source_module', 'label' => 'Sumber & Tipe'],
+            ['key' => 'notes', 'label' => 'Keterangan'],
+            ['key' => 'total_debit', 'label' => 'Total Debit', 'numeric' => true, 'sortable' => true],
+            ['key' => 'total_credit', 'label' => 'Total Credit', 'numeric' => true, 'sortable' => true],
+            ['key' => 'status', 'label' => 'Status', 'align' => 'center'],
+            ['key' => 'actions', 'label' => 'Aksi', 'align' => 'right'],
+        ];
+    @endphp
+
     <!-- Table Container -->
-    <div class="card-surface rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 overflow-hidden shadow-xs">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-xs">
-                <thead class="bg-zinc-50 dark:bg-zinc-900/60 text-zinc-500 font-semibold border-b border-zinc-200 dark:border-zinc-800">
-                    <tr>
-                        <th class="px-4 py-3">Nomor Jurnal</th>
-                        <th class="px-4 py-3">Tanggal Posting</th>
-                        <th class="px-4 py-3">Sumber & Tipe</th>
-                        <th class="px-4 py-3">Keterangan</th>
-                        <th class="px-4 py-3 text-right">Total Debit</th>
-                        <th class="px-4 py-3 text-right">Total Credit</th>
-                        <th class="px-4 py-3 text-center">Status</th>
-                        <th class="px-4 py-3 text-right">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
-                    @forelse ($journals as $journal)
+    <x-erp.data-table
+        :columns="$journalColumns"
+        :rows="$journals"
+        loading-target="search, filterModule, filterStatus"
+        :is-empty="$journals->isEmpty()"
+        empty-title="Belum ada catatan jurnal umum yang terdaftar."
+        empty-description="Buat jurnal manual baru atau periksa filter yang aktif."
+        empty-icon="receipt_long"
+        :colspan="8"
+    >
+        @foreach ($journals as $journal)
                         <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/30 transition-colors">
                             <td class="px-4 py-3 font-mono font-medium text-zinc-950 dark:text-white">
                                 {{ $journal->journal_number }}
@@ -124,24 +131,8 @@
                                 </div>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="8" class="px-4 py-12 text-center text-zinc-400">
-                                <span class="material-symbols-rounded text-3xl mb-1 text-zinc-300">receipt_long</span>
-                                <p class="text-xs">Belum ada catatan jurnal umum yang terdaftar.</p>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        @if ($journals->hasPages())
-            <div class="p-3 border-t border-zinc-200 dark:border-zinc-800">
-                {{ $journals->links() }}
-            </div>
-        @endif
-    </div>
+        @endforeach
+    </x-erp.data-table>
 
     <!-- Workbench Modal: Manual Journal Creation -->
     @if ($showWorkbenchModal)

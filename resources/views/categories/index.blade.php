@@ -44,8 +44,8 @@
 
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Categories & Subcategories <span class="text-sm font-normal text-[#787774]">(Kategori & Sub-Kategori)</span></h4>
-                <p class="text-sm font-medium text-[#787774] mt-1">Manage commodity classification hierarchies and product taxonomy</p>
+                <h4 class="text-xl font-bold text-foreground tracking-tight">Categories & Subcategories <span class="text-sm font-normal text-muted-foreground">(Kategori & Sub-Kategori)</span></h4>
+                <p class="text-sm font-medium text-muted-foreground mt-1">Manage commodity classification hierarchies and product taxonomy</p>
             </div>
             
             <x-list-toolbar search-action="{{ route('categories.index') }}" search-placeholder="Search categories...">
@@ -73,28 +73,35 @@
         @endif
 
         <div class="card-surface flex flex-col flex-1 min-h-0">
-            {{-- Desktop/tablet-landscape: existing table --}}
-            <x-data-table :hideOnMobile="true">
+            {{-- Desktop/tablet-landscape: data table --}}
+            <x-erp.data-table
+                :hide-on-mobile="true"
+                :is-empty="$categories->isEmpty()"
+                empty-title="No categories found."
+                empty-description="Create categories and subcategories to organize products."
+                empty-icon="category"
+                :colspan="$canManage ? 5 : 4"
+            >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Code</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Category Name</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Parent Category</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Code</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category Name</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Parent Category</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
                     @if($canManage)
-                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Actions</th>
+                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                     @endif
                 </x-slot:head>
                 
-                @forelse($categories as $category)
-                    <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
-                        <td class="px-6 py-4 font-mono font-semibold text-apeiron-ink text-xs">{{ $category->category_code }}</td>
+                @foreach($categories as $category)
+                    <tr class="hover:bg-muted/40 transition-colors duration-200">
+                        <td class="px-6 py-4 font-mono font-semibold text-foreground text-xs">{{ $category->category_code }}</td>
                         <td class="px-6 py-4">
-                            <div class="font-semibold text-apeiron-ink text-sm">{{ $category->category_name }}</div>
+                            <div class="font-semibold text-foreground text-sm">{{ $category->category_name }}</div>
                             @if($category->description)
-                                <div class="text-xs text-[#787774] mt-0.5">{{ Str::limit($category->description, 50) }}</div>
+                                <div class="text-xs text-muted-foreground mt-0.5">{{ Str::limit($category->description, 50) }}</div>
                             @endif
                         </td>
-                        <td class="px-6 py-4 text-sm text-[#787774]">{{ $category->parent?->category_name ?? '— (Primary Category)' }}</td>
+                        <td class="px-6 py-4 text-sm text-muted-foreground">{{ $category->parent?->category_name ?? '— (Primary Category)' }}</td>
                         <td class="px-6 py-4">
                             @if($category->is_active ?? true)
                                 <x-ui.badge variant="success" :dot="true">Active</x-ui.badge>
@@ -104,32 +111,21 @@
                         </td>
                         @if($canManage)
                             <td class="px-6 py-4 text-right space-x-2">
-                                <button type="button" @click="openEdit({{ json_encode($category) }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200 active:scale-90" aria-label="Edit category">
+                                <button type="button" @click="openEdit({{ json_encode($category) }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary hover:text-primary/80 hover:bg-muted transition-colors duration-200 active:scale-90" aria-label="Edit category">
                                     <span class="material-symbols-rounded text-[20px]">edit</span>
                                 </button>
                                 <form id="delete-form-{{ $category->id }}" action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" onclick="confirmSubmit('delete-form-{{ $category->id }}', '{{ addslashes($category->category_name) }}')" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90" aria-label="Delete">
+                                    <button type="button" onclick="confirmSubmit('delete-form-{{ $category->id }}', '{{ addslashes($category->category_name) }}')" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-destructive hover:text-destructive/80 hover:bg-destructive/10 transition-colors duration-200 active:scale-90" aria-label="Delete">
                                         <span class="material-symbols-rounded text-[20px]">delete</span>
                                     </button>
                                 </form>
                             </td>
                         @endif
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="{{ $canManage ? 5 : 4 }}" class="px-6 py-12 text-center text-muted-foreground text-sm">
-                            <div class="flex flex-col items-center justify-center">
-                                <div class="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-3">
-                                    <span class="material-symbols-rounded text-[28px] text-muted-foreground">category</span>
-                                </div>
-                                <p class="font-medium">No categories found.</p>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </x-data-table>
+                @endforeach
+            </x-erp.data-table>
 
             {{-- Mobile/tablet-portrait: card list --}}
             <div class="lg:hidden flex flex-col gap-3 p-4 overflow-y-auto flex-1">

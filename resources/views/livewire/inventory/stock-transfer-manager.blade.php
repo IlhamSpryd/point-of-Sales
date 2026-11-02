@@ -69,17 +69,24 @@
     {{-- Stock Transfers Table --}}
     <div class="card-surface overflow-hidden w-full shrink-0">
         <div class="overflow-x-auto">
-            <x-data-table>
+            <x-erp.data-table
+                loading-target="search, statusFilter"
+                :is-empty="$transfers->isEmpty()"
+                empty-title="No inter-branch stock transfer documents found"
+                empty-description="Create a new transfer request to move items between branches."
+                empty-icon="local_shipping"
+                :colspan="6"
+            >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Transfer #</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Route</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-center">Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Items</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Timestamps</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-center">Actions</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Transfer #</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Route</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Items</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Timestamps</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Actions</th>
                 </x-slot:head>
 
-                @forelse ($transfers as $transfer)
+                @foreach ($transfers as $transfer)
                     <tr class="hover:bg-apeiron-surface transition-colors duration-150">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="text-sm font-bold text-apeiron-ink">{{ $transfer->transfer_number }}</span>
@@ -138,14 +145,8 @@
                             </div>
                         </td>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="px-6 py-8 text-center text-sm text-apeiron-muted">
-                            No inter-branch stock transfer documents found.
-                        </td>
-                    </tr>
-                @endforelse
-            </x-data-table>
+                @endforeach
+            </x-erp.data-table>
         </div>
 
         @if ($transfers->hasPages())

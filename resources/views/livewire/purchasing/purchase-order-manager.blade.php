@@ -57,24 +57,33 @@
         </div>
     </div>
 
+    @php
+        $poColumns = [
+            ['key' => 'po_number', 'label' => 'PO # & Date', 'sortable' => true],
+            ['key' => 'supplier_id', 'label' => 'Supplier'],
+            ['key' => 'store_id', 'label' => 'Branch'],
+            ['key' => 'total_amount', 'label' => 'Total Amount', 'numeric' => true, 'sortable' => true],
+            ['key' => 'receiving_status', 'label' => 'Receipt Status', 'align' => 'center'],
+            ['key' => 'invoicing_status', 'label' => 'Invoice Match', 'align' => 'center'],
+            ['key' => 'status', 'label' => 'PO Status', 'align' => 'center', 'sortable' => true],
+            ['key' => 'actions', 'label' => 'Actions', 'align' => 'right'],
+        ];
+    @endphp
+
     <!-- Data Table -->
-    <div class="card-surface rounded-2xl overflow-hidden border border-[#E5E7EB] dark:border-zinc-800 shadow-sm">
-        <div class="overflow-x-auto">
-            <table class="table-standard w-full min-w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
-                <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-xs font-semibold uppercase text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
-                    <tr>
-                        <th class="px-6 py-4">PO # & Date</th>
-                        <th class="px-6 py-4">Supplier</th>
-                        <th class="px-6 py-4">Branch</th>
-                        <th class="px-6 py-4 text-right">Total Amount</th>
-                        <th class="px-6 py-4 text-center">Receipt Status</th>
-                        <th class="px-6 py-4 text-center">Invoice Match</th>
-                        <th class="px-6 py-4 text-center">PO Status</th>
-                        <th class="px-6 py-4 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-                    @forelse($purchaseOrders as $po)
+    <x-erp.data-table
+        :columns="$poColumns"
+        :rows="$purchaseOrders"
+        :sort-field="$sortField"
+        :sort-direction="$sortDirection"
+        loading-target="search, statusFilter, supplierFilter, sortBy"
+        :is-empty="$purchaseOrders->isEmpty()"
+        empty-title="No purchase orders found"
+        empty-description="Create a new purchase order to start the procurement process."
+        empty-icon="receipt_long"
+        :colspan="8"
+    >
+        @foreach($purchaseOrders as $po)
                     <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
                         <td class="px-6 py-4">
                             <div class="font-bold text-zinc-900 dark:text-white font-mono">{{ $po->po_number }}</div>
@@ -174,27 +183,8 @@
                             </div>
                         </td>
                     </tr>
-                    @empty
-                    <tr>
-                        <td colspan="8" class="px-6 py-12 text-center">
-                            <div class="flex flex-col items-center justify-center">
-                                <span class="material-symbols-rounded text-5xl text-zinc-300 dark:text-zinc-700">receipt_long</span>
-                                <h3 class="mt-2 text-sm font-semibold text-zinc-900 dark:text-white">No purchase orders found</h3>
-                                <p class="mt-1 text-xs text-zinc-500">Create a new purchase order to start the procurement process.</p>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        @if($purchaseOrders->hasPages())
-        <div class="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800">
-            {{ $purchaseOrders->links() }}
-        </div>
-        @endif
-    </div>
+        @endforeach
+    </x-erp.data-table>
 
     <!-- Modal Buat Draf PO Baru -->
     <x-ui.modal wire:model="showCreateModal" maxWidth="4xl">

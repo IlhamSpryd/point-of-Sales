@@ -56,22 +56,25 @@
     </div>
 
     {{-- Supplier Returns Table --}}
-    <div class="card-surface overflow-hidden w-full shrink-0">
-        <div class="overflow-x-auto">
-            <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
-                <thead>
-                    <tr class="border-b border-apeiron-border bg-apeiron-surface text-apeiron-muted uppercase tracking-wider text-[11px] font-bold">
-                        <th class="px-6 py-4">Return #</th>
-                        <th class="px-6 py-4">Return Date</th>
-                        <th class="px-6 py-4">Supplier</th>
-                        <th class="px-6 py-4">Reference</th>
-                        <th class="px-6 py-4">Status</th>
-                        <th class="px-6 py-4">Created / Posted By</th>
-                        <th class="px-6 py-4 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-apeiron-border">
-                    @forelse ($returns as $ret)
+    <x-erp.data-table
+        loading-target="search, statusFilter"
+        :is-empty="$returns->isEmpty()"
+        empty-title="No supplier return documents found."
+        empty-description="Create a return to supplier against delivered goods."
+        empty-icon="keyboard_return"
+        :colspan="7"
+    >
+        <x-slot:head>
+            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Return #</th>
+            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Return Date</th>
+            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Supplier</th>
+            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reference</th>
+            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Created / Posted By</th>
+            <th class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
+        </x-slot:head>
+
+        @foreach ($returns as $ret)
                         <tr class="hover:bg-apeiron-surface/40 transition-colors">
                             <td class="px-6 py-4 font-bold text-apeiron-ink">
                                 {{ $ret->return_number }}
@@ -134,25 +137,8 @@
                                 </div>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-apeiron-muted">
-                                <div class="flex flex-col items-center justify-center gap-2">
-                                    <span class="material-symbols-rounded text-[40px] text-apeiron-muted/60">keyboard_return</span>
-                                    <p class="font-medium text-sm">No supplier return documents found.</p>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        @if ($returns->hasPages())
-            <div class="px-6 py-4 border-t border-apeiron-border bg-apeiron-surface">
-                {{ $returns->links() }}
-            </div>
-        @endif
-    </div>
+                @endforeach
+    </x-erp.data-table>
 
     {{-- Return Draft Form Modal --}}
     <x-ui.modal wire:model="showFormModal" maxWidth="4xl">

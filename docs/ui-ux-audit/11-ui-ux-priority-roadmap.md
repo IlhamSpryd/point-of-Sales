@@ -24,12 +24,13 @@ Urutan disesuaikan dengan dependensi aktual (token → komponen → halaman), bu
 6. [x] **Command palette global Ctrl+K / Cmd+K (IX-05)**: Diaktifkan via `x-erp.command-palette` di `layouts/app.blade.php`, mengonsumsi `config('navigation.sections')` berbasis peran tenant secara dinamis dan aman, dengan guard anti-bentrok shortcut POS terminal modal.
 7. [x] **Verifikasi**: PHPUnit 29 tests (21 komponen + isolasi tenant, 8 supplier management) PASS; Larastan 0 errors pada file tersentuh.
 
-## Phase 3 — Enterprise Data Interfaces (2–3 minggu)
-1. `x-erp.data-table` composed + traits `WithDataTable/WithBulkActions` (DT-01).
-2. Migrasi manager besar dulu: POS order-history, PO, GRN, inventory 8 manager, journal entry.
-3. Standarkan empty/skeleton/error state tabel (DT-03).
-4. Bulk actions + konfirmasi kedua + audit-trail badge (RE-02).
-5. Mobile card-list untuk halaman yang `hideOnMobile` (RS-02).
+## Phase 3 — Enterprise Data Interfaces (COMPLETED — 2026-11-02)
+1. [x] **`x-erp.data-table` composed + traits `WithSorting/WithBulkActions` (DT-01, LI-04)**: Dibuat `components/erp/data-table.blade.php` dengan sticky thead, sorting indicator otomatis, skeleton loading rows saat `wire:loading` (`loadingTarget` + `skeletonRows`), auto pagination via `:rows`, mobile fallback (`hideOnMobile`), dan W3C a11y empty state. Legacy `components/data-table.blade.php` dihapus setelah 0 referensi (LI-04).
+2. [x] **Migrasi seluruh tabel & manager (DT-01, DT-02, DT-03)**: Total 18+ view dimigrasikan: POS order-history, PO manager, GRN manager, 8 manager inventory (ingredient, ledger, opname, transfer, adjustment, receipt, supplier return, modifier), journal entry, customer manager, tables, price lists, roles, users, invitations, categories, dan products.
+3. [x] **Standarisasi empty/skeleton state tabel (DT-03)**: Integrasi `<x-ui.empty-state>` pada `:is-empty` atau `$rows->isEmpty()` dengan `colspan` dinamis dan skeleton pulsing rows.
+4. [x] **Bulk actions + isolasi tenant (RE-02, RK-07)**: Trait `WithBulkActions` dan `WithSorting` bertindak murni di level UI state Livewire (`$selected`, `$selectAll`, `$sortField`, `$sortDirection`) tanpa menyentuh tenant scoping DB.
+5. [x] **Mobile card-list untuk halaman `hideOnMobile` (RS-02)**: Dipertahankan dan distandarkan menggunakan semantic token (`bg-card`, `border-border`, `text-foreground`, `text-muted-foreground`).
+6. [x] **Verifikasi**: PHPUnit 25 tests (`DevDojoComponentsIntegrationTest` 23/23 PASS, `LivewireTenancyIsolationTest` 2/2 PASS); Larastan 0 errors pada concerns dan purchasing managers.
 
 ## Phase 4 — ERP Module Consistency (berjalan paralel Gelombang 7)
 1. Dashboard refactor ke page-header + stat-card (LA-06/LI-09).

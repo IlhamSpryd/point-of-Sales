@@ -205,12 +205,15 @@
                             <span class="material-symbols-rounded text-[18px]">edit</span>
                         </button>
                         <button type="button"
-                            data-swal-delete
-                            data-swal-title="Delete Modifier Group?"
-                            data-swal-text="This group and all associated options will be permanently deleted."
-                            data-wire-action="deleteGroup({{ $group->id }})"
-                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors" title="Delete Group">
-                            <span class="material-symbols-rounded text-[18px]">delete</span>
+                            x-on:click="$dispatch('erp-confirm', {
+                                title: 'Delete Modifier Group?',
+                                message: 'This group and all associated options will be permanently deleted.',
+                                variant: 'destructive',
+                                confirmText: 'Hapus',
+                                onConfirm: () => $wire.deleteGroup({{ $group->id }})
+                            })"
+                            class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-destructive hover:bg-destructive/10 transition-colors" title="Delete Group">
+                            <x-ui.icon name="delete" size="sm" />
                         </button>
                     </div>
                 </div>
@@ -218,29 +221,32 @@
                 <!-- Modifiers inside Group -->
                 <div class="space-y-3">
                     @forelse($group->modifiers as $modifier)
-                    <div class="flex items-center justify-between p-3 bg-apeiron-surface rounded-xl border border-apeiron-border">
+                    <div class="flex items-center justify-between p-3 bg-muted/30 rounded-xl border border-border">
                         <div class="flex items-center space-x-4">
                             <div>
-                                <span class="font-medium text-apeiron-ink">{{ $modifier->name }}</span>
+                                <span class="font-medium text-foreground">{{ $modifier->name }}</span>
                                 @if($modifier->is_default)
-                                    <span class="ml-2 text-[10px] font-bold bg-primary-100 text-primary-700 px-2 py-0.5 rounded uppercase tracking-wider">Default</span>
+                                    <span class="ml-2 text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded uppercase tracking-wider">Default</span>
                                 @endif
                             </div>
-                            <span class="text-sm font-semibold text-emerald-600">+Rp {{ number_format($modifier->extra_price, 0, ',', '.') }}</span>
+                            <span class="text-sm font-semibold text-success font-mono tabular-nums">+Rp {{ number_format($modifier->extra_price, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex items-center space-x-4">
                             @if($modifier->ingredients->isNotEmpty())
-                                <span class="text-xs text-apeiron-muted flex items-center gap-1">
-                                    <span class="material-symbols-rounded text-[14px]">inventory_2</span> {{ $modifier->ingredients->count() }} Ingredients
+                                <span class="text-xs text-muted-foreground flex items-center gap-1">
+                                    <x-ui.icon name="inventory_2" size="xs" /> {{ $modifier->ingredients->count() }} Ingredients
                                 </span>
                             @endif
-                            <button wire:click="editModifier({{ $modifier->id }})" class="text-apeiron-muted hover:text-apeiron-ink text-sm font-medium transition-colors">Edit</button>
+                            <button wire:click="editModifier({{ $modifier->id }})" class="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">Edit</button>
                             <button type="button"
-                                data-swal-delete
-                                data-swal-title="Delete Modifier Option?"
-                                data-swal-text="Option &quot;{{ $modifier->name }}&quot; will be permanently deleted."
-                                data-wire-action="deleteModifier({{ $modifier->id }})"
-                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-rose-600 hover:bg-rose-50 transition-colors" title="Delete"><span class="material-symbols-rounded text-[18px]">delete</span></button>
+                                x-on:click="$dispatch('erp-confirm', {
+                                    title: 'Delete Modifier Option?',
+                                    message: 'Option &quot;{{ $modifier->name }}&quot; will be permanently deleted.',
+                                    variant: 'destructive',
+                                    confirmText: 'Hapus',
+                                    onConfirm: () => $wire.deleteModifier({{ $modifier->id }})
+                                })"
+                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-destructive hover:bg-destructive/10 transition-colors" title="Delete"><x-ui.icon name="delete" size="sm" /></button>
                         </div>
                     </div>
                     @empty

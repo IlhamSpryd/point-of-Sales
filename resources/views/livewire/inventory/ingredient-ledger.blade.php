@@ -40,15 +40,22 @@
 
     <div class="card-surface overflow-hidden w-full shrink-0">
         <div class="overflow-x-auto">
-            <x-data-table>
+            <x-erp.data-table
+                loading-target="filterIngredient, filterType, startDate, endDate"
+                :is-empty="$movements->isEmpty()"
+                empty-title="No Movement History"
+                empty-description="Stock movement history will appear automatically when transactions, goods receipts, or adjustments occur."
+                empty-icon="history"
+                :colspan="5"
+            >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Timestamp</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Raw Material</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Type</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Quantity</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Reason / Notes</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Timestamp</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Raw Material</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Quantity</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reason / Notes</th>
                 </x-slot:head>
-                    @forelse ($movements as $movement)
+                    @foreach ($movements as $movement)
                         <tr class="hover:bg-apeiron-surface transition-colors duration-150">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-apeiron-ink">{{ $movement->created_at->format('d M Y') }}</div>
@@ -92,14 +99,8 @@
                                 </span>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-6 py-12 text-center">
-                                <x-empty-state icon="history" title="No Movement History" description="Stock movement history will appear automatically when transactions, goods receipts, or adjustments occur." />
-                            </td>
-                        </tr>
-                    @endforelse
-            </x-data-table>
+                    @endforeach
+            </x-erp.data-table>
         </div>
         @if($movements->hasPages())
             <div class="p-4 border-t border-apeiron-border shrink-0">

@@ -26,6 +26,7 @@ class PurchaseOrderManager extends Component
 {
     use RequiresTenantContext;
     use WithPagination;
+    use \App\Livewire\Concerns\WithSorting;
 
     #[Url(history: true)]
     public string $search = '';
@@ -298,10 +299,14 @@ class PurchaseOrderManager extends Component
     {
         $tenantId = app(TenantContext::class)->getTenantId();
 
+        $allowedSortFields = ['po_number', 'order_date', 'total_amount', 'status', 'id'];
+        $sortCol = in_array($this->sortField, $allowedSortFields, true) ? $this->sortField : 'id';
+        $sortDir = $this->sortDirection === 'asc' ? 'asc' : 'desc';
+
         $query = PurchaseOrder::query()
             ->with(['supplier', 'store'])
             ->where('tenant_id', $tenantId)
-            ->latest('id');
+            ->orderBy($sortCol, $sortDir);
 
         if (! empty($this->search)) {
             $query->where(function ($q) {

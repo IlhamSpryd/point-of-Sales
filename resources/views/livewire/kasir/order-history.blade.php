@@ -84,10 +84,17 @@
     </div>
 
     {{-- ==================== ORDER HISTORY TABLE ==================== --}}
-    <div class="bg-white rounded-2xl border border-[#E5E7EB] shadow-sm flex flex-col flex-1 min-h-0 overflow-hidden">
+    <div class="bg-card rounded-2xl border border-border shadow-2xs flex flex-col flex-1 min-h-0 overflow-hidden">
         {{-- Desktop Table --}}
         <div class="hidden lg:block overflow-auto flex-1">
-            <x-data-table>
+            <x-erp.data-table
+                loading-target="search, statusFilter, datePreset, startDate, endDate"
+                :is-empty="$this->orders->isEmpty()"
+                empty-title="No orders found."
+                empty-description="Try adjusting the status filters or date range."
+                empty-icon="receipt_long"
+                :colspan="8"
+            >
                 <x-slot:head>
                     <th scope="col" class="px-6 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider text-left">Order Code</th>
                     <th scope="col" class="px-6 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider text-left">Cashier &amp; Type</th>
@@ -98,7 +105,7 @@
                     <th scope="col" class="px-6 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider text-left">Status</th>
                     <th scope="col" class="px-6 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
-                @forelse ($this->orders as $order)
+                @foreach ($this->orders as $order)
                     @php
                         $stVal = $order->order_status->value ?? (string) $order->order_status;
                         $stVariant = match($stVal) {
@@ -192,20 +199,8 @@
                             </div>
                         </td>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="8" class="px-6 py-14 text-center text-gray-400 text-xs">
-                            <div class="flex flex-col items-center justify-center">
-                                <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-2 border border-[#E5E7EB]">
-                                    <span class="material-symbols-rounded text-[24px] text-gray-400">receipt_long</span>
-                                </div>
-                                <p class="font-bold text-gray-600">No orders found.</p>
-                                <p class="text-gray-400 mt-0.5">Try adjusting the status filters or date range.</p>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </x-data-table>
+                @endforeach
+            </x-erp.data-table>
         </div>
 
         {{-- Mobile Cards --}}
@@ -247,7 +242,7 @@
             @endforelse
         </div>
 
-        <div class="p-4 border-t border-[#E5E7EB] shrink-0">
+        <div class="p-4 border-t border-border shrink-0">
             {{ $this->orders->links() }}
         </div>
     </div>

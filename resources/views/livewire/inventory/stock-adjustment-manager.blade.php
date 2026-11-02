@@ -70,18 +70,25 @@
     {{-- Stock Adjustments Table --}}
     <div class="card-surface overflow-hidden w-full shrink-0">
         <div class="overflow-x-auto">
-            <x-data-table>
+            <x-erp.data-table
+                loading-target="search, statusFilter"
+                :is-empty="$adjustments->isEmpty()"
+                empty-title="No stock adjustment documents recorded."
+                empty-description="Create an adjustment to rectify stock discrepancies or record shrinkage."
+                empty-icon="tune"
+                :colspan="7"
+            >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Adjustment #</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Adjustment Date</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Reason Code</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-center">Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Items</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Total Value</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-center">Actions</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Adjustment #</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Adjustment Date</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reason Code</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Items</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Total Value</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Actions</th>
                 </x-slot:head>
 
-                @forelse ($adjustments as $adjustment)
+                @foreach ($adjustments as $adjustment)
                     <tr class="hover:bg-apeiron-surface transition-colors duration-150">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="text-sm font-bold text-apeiron-ink">{{ $adjustment->adjustment_number }}</span>
@@ -119,14 +126,8 @@
                             @endif
                         </td>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="7" class="px-6 py-8 text-center text-sm text-apeiron-muted">
-                            No stock adjustment documents recorded.
-                        </td>
-                    </tr>
-                @endforelse
-            </x-data-table>
+                @endforeach
+            </x-erp.data-table>
         </div>
         @if ($adjustments->hasPages())
             <div class="p-4 border-t border-apeiron-border">

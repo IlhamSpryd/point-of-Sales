@@ -50,15 +50,22 @@
 
         <div class="card-surface flex flex-col flex-1 min-h-0 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 overflow-hidden shadow-xs">
         {{-- Desktop/tablet-landscape: existing table --}}
-        <x-data-table :hideOnMobile="true">
+        <x-erp.data-table
+            :hideOnMobile="true"
+            :is-empty="$tables->isEmpty()"
+            empty-title="No tables registered for this store branch yet."
+            empty-description="Click the Add Table button above to configure a new table."
+            empty-icon="table_restaurant"
+            :colspan="5"
+        >
             <x-slot:head>
-                <th scope="col" class="px-6 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider text-left">Table Code</th>
-                <th scope="col" class="px-6 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider text-left">Name & Area</th>
-                <th scope="col" class="px-6 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider text-left">Operational Status</th>
-                <th scope="col" class="px-6 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider text-left">Self-Order QR Code</th>
-                <th scope="col" class="px-6 py-3.5 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                <th scope="col" class="px-6 py-3.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-left">Table Code</th>
+                <th scope="col" class="px-6 py-3.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-left">Name & Area</th>
+                <th scope="col" class="px-6 py-3.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-left">Operational Status</th>
+                <th scope="col" class="px-6 py-3.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-left">Self-Order QR Code</th>
+                <th scope="col" class="px-6 py-3.5 text-xs font-bold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
             </x-slot:head>
-            @forelse($tables as $table)
+            @foreach($tables as $table)
                 @php
                     $routeToken = $table->qr_token ?? $table->secure_token;
                 @endphp
@@ -140,20 +147,8 @@
                         </form>
                     </td>
                 </tr>
-            @empty
-                <tr>
-                    <td colspan="5" class="px-6 py-12 text-center text-gray-400 text-sm">
-                        <div class="flex flex-col items-center justify-center">
-                            <div class="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center mb-3 border border-gray-100">
-                                <span class="material-symbols-rounded text-[28px] text-gray-400">table_restaurant</span>
-                            </div>
-                            <p class="font-bold text-gray-600">No tables registered for this store branch yet.</p>
-                            <p class="text-xs text-gray-400 mt-1">Click the Add Table button above to configure a new table.</p>
-                        </div>
-                    </td>
-                </tr>
-            @endforelse
-        </x-data-table>
+            @endforeach
+        </x-erp.data-table>
 
         {{-- Mobile/tablet-portrait: card list --}}
         <div class="lg:hidden flex flex-col gap-3 p-4 overflow-y-auto flex-1">

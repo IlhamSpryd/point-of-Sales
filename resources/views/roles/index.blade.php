@@ -43,16 +43,23 @@
 
         <div class="card-surface flex flex-col flex-1 min-h-0 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 overflow-hidden shadow-xs">
             {{-- Desktop/tablet-landscape: existing table --}}
-            <x-data-table :hideOnMobile="true">
+            <x-erp.data-table
+                :hideOnMobile="true"
+                :is-empty="$roles->isEmpty()"
+                empty-title="No roles found."
+                empty-description="Create roles to manage tenant access permissions."
+                empty-icon="admin_panel_settings"
+                :colspan="5"
+            >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Role Code / ID</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Role Name</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Permissions & Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Users</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider text-right">Actions</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Role Code / ID</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Role Name</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Permissions & Status</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Users</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
                 
-                @forelse($roles as $role)
+                @foreach($roles as $role)
                     <tr class="hover:bg-zinc-50/70 dark:hover:bg-zinc-800/50 transition-colors duration-150">
                         <td class="px-6 py-4 font-mono font-medium text-apeiron-ink text-sm">{{ $role->role_code }}</td>
                         <td class="px-6 py-4">
@@ -89,19 +96,8 @@
                             </form>
                         </td>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="5" class="px-6 py-12 text-center text-zinc-400 text-sm">
-                            <div class="flex flex-col items-center justify-center">
-                                <div class="w-14 h-14 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3">
-                                    <span class="material-symbols-rounded text-[28px] text-zinc-400">admin_panel_settings</span>
-                                </div>
-                                <p class="font-medium text-zinc-600 dark:text-zinc-300">No roles found.</p>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </x-data-table>
+                @endforeach
+            </x-erp.data-table>
 
             {{-- Mobile/tablet-portrait: card list --}}
             <div class="lg:hidden flex flex-col gap-3 p-4 overflow-y-auto flex-1">

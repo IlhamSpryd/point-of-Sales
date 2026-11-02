@@ -47,23 +47,32 @@
         </div>
     </div>
 
+    @php
+        $grnColumns = [
+            ['key' => 'grn_number', 'label' => 'GRN Number & Date', 'sortable' => true],
+            ['key' => 'purchase_order_id', 'label' => 'PO Reference & DO'],
+            ['key' => 'supplier_id', 'label' => 'Supplier'],
+            ['key' => 'store_id', 'label' => 'Warehouse / Branch'],
+            ['key' => 'matching_status', 'label' => 'Invoice Match (3-Way)', 'align' => 'center'],
+            ['key' => 'status', 'label' => 'GRN Status', 'align' => 'center', 'sortable' => true],
+            ['key' => 'actions', 'label' => 'Actions', 'align' => 'right'],
+        ];
+    @endphp
+
     <!-- Data Table -->
-    <div class="card-surface rounded-2xl overflow-hidden border border-[#E5E7EB] dark:border-zinc-800 shadow-sm">
-        <div class="overflow-x-auto">
-            <table class="table-standard w-full min-w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
-                <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-xs font-semibold uppercase text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
-                    <tr>
-                        <th class="px-6 py-4">GRN Number & Date</th>
-                        <th class="px-6 py-4">PO Reference & DO</th>
-                        <th class="px-6 py-4">Supplier</th>
-                        <th class="px-6 py-4">Warehouse / Branch</th>
-                        <th class="px-6 py-4 text-center">Invoice Match (3-Way)</th>
-                        <th class="px-6 py-4 text-center">GRN Status</th>
-                        <th class="px-6 py-4 text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
-                    @forelse($grns as $grn)
+    <x-erp.data-table
+        :columns="$grnColumns"
+        :rows="$grns"
+        :sort-field="$sortField"
+        :sort-direction="$sortDirection"
+        loading-target="search, statusFilter, sortBy"
+        :is-empty="$grns->isEmpty()"
+        empty-title="No goods received notes found"
+        empty-description="Receive deliveries from vendors against issued Purchase Orders."
+        empty-icon="move_to_inbox"
+        :colspan="7"
+    >
+        @foreach($grns as $grn)
                     <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
                         <td class="px-6 py-4">
                             <div class="font-bold text-zinc-900 dark:text-white font-mono">{{ $grn->grn_number }}</div>
@@ -138,27 +147,8 @@
                             </div>
                         </td>
                     </tr>
-                    @empty
-                    <tr>
-                        <td colspan="7" class="px-6 py-12 text-center">
-                            <div class="flex flex-col items-center justify-center">
-                                <span class="material-symbols-rounded text-5xl text-zinc-300 dark:text-zinc-700">move_to_inbox</span>
-                                <h3 class="mt-2 text-sm font-semibold text-zinc-900 dark:text-white">No goods received notes found</h3>
-                                <p class="mt-1 text-xs text-zinc-500">Receive deliveries from vendors against issued Purchase Orders.</p>
-                            </div>
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-
-        @if($grns->hasPages())
-        <div class="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800">
-            {{ $grns->links() }}
-        </div>
-        @endif
-    </div>
+        @endforeach
+    </x-erp.data-table>
 
     <!-- Modal Buat GRN Baru -->
     <x-ui.modal wire:model="showCreateModal" maxWidth="4xl">

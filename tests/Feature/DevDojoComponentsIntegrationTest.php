@@ -249,4 +249,118 @@ class DevDojoComponentsIntegrationTest extends TestCase
         $this->assertStringContainsString('type="email"', $inputHtml);
         $this->assertStringContainsString('placeholder="user@apeiron.id"', $inputHtml);
     }
+
+    public function test_can_render_erp_data_table_with_columns_and_sorting(): void
+    {
+        $columns = [
+            ['key' => 'order_no', 'label' => 'No. Order', 'sortable' => true],
+            ['key' => 'total', 'label' => 'Total', 'numeric' => true, 'sortable' => true],
+            ['key' => 'status', 'label' => 'Status', 'badge' => true],
+        ];
+
+        $html = Blade::render('
+            <x-erp.data-table :columns="$columns" sort-field="order_no" sort-direction="asc">
+                <tr>
+                    <td>ORD-001</td>
+                    <td class="text-right font-mono tabular-nums">Rp 150.000</td>
+                    <td>Selesai</td>
+                </tr>
+            </x-erp.data-table>
+        ', ['columns' => $columns]);
+
+        $this->assertStringContainsString('No. Order', $html);
+        $this->assertStringContainsString('Total', $html);
+        $this->assertStringContainsString('text-right', $html);
+        $this->assertStringContainsString('font-mono tabular-nums', $html);
+        $this->assertStringContainsString('arrow_upward', $html);
+        $this->assertStringContainsString('ORD-001', $html);
+    }
+
+    public function test_can_render_erp_data_table_empty_state(): void
+    {
+        $columns = [
+            ['key' => 'code', 'label' => 'Kode'],
+            ['key' => 'name', 'label' => 'Nama'],
+        ];
+
+        $html = Blade::render('
+            <x-erp.data-table :columns="$columns" :is-empty="true" empty-title="Tidak Ada Pesanan" />
+        ', ['columns' => $columns]);
+
+        $this->assertStringContainsString('Tidak Ada Pesanan', $html);
+        $this->assertStringContainsString('colspan="2"', $html);
+    }
+
+    public function test_can_render_erp_data_table_with_head_and_rows(): void
+    {
+        $html = Blade::render('
+            <x-erp.data-table>
+                <x-slot:head>
+                    <th>Kolom A</th>
+                </x-slot:head>
+                <tr><td>Nilai A</td></tr>
+            </x-erp.data-table>
+        ');
+
+        $this->assertStringContainsString('Kolom A', $html);
+        $this->assertStringContainsString('Nilai A', $html);
+        $this->assertStringContainsString('data-table', $html);
+    }
+
+    public function test_livewire_concerns_with_sorting_and_bulk_actions(): void
+    {
+        $component = new class {
+            use \App\Livewire\Concerns\WithSorting;
+            use \App\Livewire\Concerns\WithBulkActions;
+
+            public int $resetPageCalled = 0;
+
+            public function resetPage(): void
+            {
+                $this->resetPageCalled++;
+            }
+
+            public function getSelectableIds(): array
+            {
+                return [101, 102, 103];
+            }
+        };
+
+        // Test sorting
+        $this->assertSame('created_at', $component->sortField);
+        $this->assertSame('desc', $component->sortDirection);
+
+        $component->sortBy('order_no');
+        $this->assertSame('order_no', $component->sortField);
+        $this->assertSame('asc', $component->sortDirection);
+        $this->assertSame(1, $component->resetPageCalled);
+
+        $component->sortBy('order_no');
+        $this->assertSame('desc', $component->sortDirection);
+        $this->assertSame(2, $component->resetPageCalled);
+
+        // Test bulk actions
+        $this->assertSame([], $component->selected);
+        $this->assertSame(0, $component->getSelectedCountProperty());
+
+        $component->updatedSelectAll(true);
+        $this->assertSame(['101', '102', '103'], $component->selected);
+        $this->assertSame(3, $component->getSelectedCountProperty());
+        $this->assertTrue($component->isSelected(102));
+
+        $component->clearSelected();
+        $this->assertSame([], $component->selected);
+        $this->assertSame(0, $component->getSelectedCountProperty());
+
+        // Test plain component without resetPage or getSelectableIds
+        $plainComponent = new class {
+            use \App\Livewire\Concerns\WithSorting;
+            use \App\Livewire\Concerns\WithBulkActions;
+        };
+        $plainComponent->sortBy('title');
+        $this->assertSame('title', $plainComponent->sortField);
+        $plainComponent->updatedSelectAll(true);
+        $this->assertSame([], $plainComponent->selected);
+    }
 }
+

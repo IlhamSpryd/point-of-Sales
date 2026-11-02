@@ -62,17 +62,24 @@
 
         <div class="card-surface flex flex-col flex-1 min-h-0 overflow-hidden">
             {{-- Desktop/tablet-landscape: existing table --}}
-            <x-data-table :hideOnMobile="true">
+            <x-erp.data-table
+                :hideOnMobile="true"
+                :is-empty="$users->isEmpty()"
+                empty-title="No users found."
+                empty-description="Invite users or add new team members."
+                empty-icon="group"
+                :colspan="6"
+            >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Employee ID</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Employee</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Contact</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Role & Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Joined Date</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider text-right">Actions</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Employee ID</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Employee</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Contact</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Role & Status</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Joined Date</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
                 
-                @forelse($users as $user)
+                @foreach($users as $user)
                     <tr class="hover:bg-zinc-50/70 dark:hover:bg-zinc-800/50 transition-colors duration-150">
                         <td class="px-6 py-4 font-mono font-medium text-apeiron-ink text-sm">{{ $user->employee_id }}</td>
                         <td class="px-6 py-4">
@@ -116,19 +123,8 @@
                             @endif
                         </td>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-zinc-400 text-sm">
-                            <div class="flex flex-col items-center justify-center">
-                                <div class="w-14 h-14 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3">
-                                    <span class="material-symbols-rounded text-[28px] text-zinc-400">group</span>
-                                </div>
-                                <p class="font-medium text-zinc-600 dark:text-zinc-300">No users found.</p>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </x-data-table>
+                @endforeach
+            </x-erp.data-table>
 
             {{-- Mobile/tablet-portrait: card list --}}
             <div class="lg:hidden flex flex-col gap-3 p-4 overflow-y-auto flex-1">

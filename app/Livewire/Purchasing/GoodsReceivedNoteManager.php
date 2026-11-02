@@ -22,6 +22,7 @@ class GoodsReceivedNoteManager extends Component
 {
     use RequiresTenantContext;
     use WithPagination;
+    use \App\Livewire\Concerns\WithSorting;
 
     #[Url(history: true)]
     public string $search = '';
@@ -245,10 +246,14 @@ class GoodsReceivedNoteManager extends Component
     {
         $tenantId = app(TenantContext::class)->getTenantId();
 
+        $allowedSortFields = ['grn_number', 'received_date', 'status', 'id'];
+        $sortCol = in_array($this->sortField, $allowedSortFields, true) ? $this->sortField : 'id';
+        $sortDir = $this->sortDirection === 'asc' ? 'asc' : 'desc';
+
         $query = GoodsReceivedNote::query()
             ->with(['purchaseOrder.supplier', 'store'])
             ->where('tenant_id', $tenantId)
-            ->latest('id');
+            ->orderBy($sortCol, $sortDir);
 
         if (! empty($this->search)) {
             $query->where(function ($q) {

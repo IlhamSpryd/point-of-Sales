@@ -34,18 +34,24 @@
             </x-ui.alert>
         @endif
 
-        <div class="card-surface flex flex-col flex-1 min-h-0 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 overflow-hidden shadow-xs">
-            <x-data-table>
+        <div class="card-surface flex flex-col flex-1 min-h-0 rounded-2xl border border-border overflow-hidden shadow-xs">
+            <x-erp.data-table
+                :is-empty="$invitations->isEmpty()"
+                empty-title="No staff invitations have been issued yet."
+                empty-description="Send candidate invitations to add team members to your store."
+                empty-icon="forward_to_inbox"
+                :colspan="6"
+            >
                 <x-slot:head>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Candidate Name</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Email</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Role & Branches</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider">Expires At</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-zinc-500 uppercase tracking-wider text-right">Actions</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Candidate Name</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Email</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Role & Branches</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Expires At</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
 
-                @forelse($invitations as $invitation)
+                @foreach($invitations as $invitation)
                     <tr class="hover:bg-zinc-50/70 dark:hover:bg-zinc-800/50 transition-colors duration-150">
                         <td class="px-6 py-4 font-semibold text-apeiron-ink dark:text-zinc-100 text-sm">{{ $invitation->name }}</td>
                         <td class="px-6 py-4 text-sm text-zinc-600 dark:text-zinc-300">{{ $invitation->email }}</td>
@@ -93,16 +99,10 @@
                             @endif
                         </td>
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-zinc-400 text-sm">
-                            No staff invitations have been issued yet.
-                        </td>
-                    </tr>
-                @endforelse
-            </x-data-table>
+                @endforeach
+            </x-erp.data-table>
 
-            <div class="p-4 border-t border-[#E5E7EB] dark:border-zinc-800 shrink-0">
+            <div class="p-4 border-t border-border shrink-0">
                 {{ $invitations->links() }}
             </div>
         </div>

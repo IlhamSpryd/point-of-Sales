@@ -74,26 +74,32 @@
         @endif
 
         <div class="card-surface flex flex-col flex-1 min-h-0">
-            <x-data-table>
+            <x-erp.data-table
+                :is-empty="$products->isEmpty()"
+                empty-title="No products found."
+                empty-description="Create products or import them using CSV."
+                empty-icon="inventory_2"
+                :colspan="$canManage ? 8 : 7"
+            >
                 <x-slot:head>
                     @if($canManage)
                         <th scope="col" class="px-4 py-4 w-10 text-center">
                             <input type="checkbox" x-model="selectAll" @change="toggleAll()"
-                                class="rounded border-gray-300 text-apeiron-ink focus:ring-apeiron-ink h-4 w-4">
+                                class="rounded border-border text-primary focus:ring-ring h-4 w-4">
                         </th>
                     @endif
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Product</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Type</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Category & Brand</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Selling Price</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Physical Stock</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Product</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Category & Brand</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Selling Price</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Physical Stock</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
                     @if($canManage)
-                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-[#787774] uppercase tracking-wider text-right">Actions</th>
+                        <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                     @endif
                 </x-slot:head>
 
-                @forelse($products as $product)
+                @foreach($products as $product)
                     @php
                         $typeBadges = [
                             'standard' => ['label' => 'Standard', 'type' => 'secondary'],
@@ -110,28 +116,28 @@
                         $prodType = $product->product_type ?? 'standard';
                         $prodStatus = $product->status ?? ($product->is_active ? 'active' : 'inactive');
                     @endphp
-                    <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
+                    <tr class="hover:bg-muted/40 transition-colors duration-200">
                         @if($canManage)
                             <td class="px-4 py-4 text-center">
                                 <input type="checkbox" value="{{ $product->id }}" x-model="selectedIds"
-                                    class="product-checkbox rounded border-gray-300 text-apeiron-ink focus:ring-apeiron-ink h-4 w-4">
+                                    class="product-checkbox rounded border-border text-primary focus:ring-ring h-4 w-4">
                             </td>
                         @endif
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
                                 @if($product->product_photo)
-                                    <img src="{{ asset('storage/' . $product->product_photo) }}" alt="{{ $product->product_name }}" loading="lazy" class="w-10 h-10 rounded-xl object-cover border border-[#E5E7EB]">
+                                    <img src="{{ asset('storage/' . $product->product_photo) }}" alt="{{ $product->product_name }}" loading="lazy" class="w-10 h-10 rounded-xl object-cover border border-border">
                                 @else
-                                    <div class="w-10 h-10 rounded-xl bg-[#F1F1EF] flex items-center justify-center text-[#C4C3C0]">
+                                    <div class="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
                                         <span class="material-symbols-rounded">image</span>
                                     </div>
                                 @endif
                                 <div>
-                                    <div class="font-semibold text-apeiron-ink text-sm">{{ $product->product_name }}</div>
-                                    <div class="font-mono text-xs text-[#787774]">
+                                    <div class="font-semibold text-foreground text-sm">{{ $product->product_name }}</div>
+                                    <div class="font-mono text-xs text-muted-foreground">
                                         {{ $product->product_code }}
                                         @if($product->barcode)
-                                             <span class="text-[#9B9A97] ml-1">[{{ $product->barcode }}]</span>
+                                             <span class="text-muted-foreground/80 ml-1">[{{ $product->barcode }}]</span>
                                         @endif
                                     </div>
                                 </div>
@@ -142,21 +148,21 @@
                                 {{ $typeBadges[$prodType]['label'] ?? $prodType }}
                             </x-ui.badge>
                         </td>
-                        <td class="px-6 py-4 text-sm text-[#787774]">
-                            <div class="font-medium text-apeiron-ink">{{ $product->category?->category_name ?? '—' }}</div>
-                            <div class="text-xs text-[#9B9A97]">{{ $product->brand?->name ?? 'No Brand' }}</div>
+                        <td class="px-6 py-4 text-sm text-muted-foreground">
+                            <div class="font-medium text-foreground">{{ $product->category?->category_name ?? '—' }}</div>
+                            <div class="text-xs text-muted-foreground/80">{{ $product->brand?->name ?? 'No Brand' }}</div>
                         </td>
-                        <td class="px-6 py-4 text-sm font-semibold text-apeiron-ink text-right tabular-nums">
+                        <td class="px-6 py-4 text-sm font-semibold text-foreground text-right tabular-nums numeric">
                             Rp {{ number_format($product->product_price, 0, ',', '.') }}
                         </td>
-                        <td class="px-6 py-4 text-sm text-[#787774] text-right tabular-nums">
+                        <td class="px-6 py-4 text-sm text-muted-foreground text-right tabular-nums numeric">
                             @if($product->track_inventory)
-                                <span class="font-semibold {{ $product->stock <= 0 ? 'text-danger-600' : 'text-apeiron-ink' }}">
+                                <span class="font-semibold {{ $product->stock <= 0 ? 'text-destructive' : 'text-foreground' }}">
                                     {{ $product->stock }}
                                 </span>
-                                <span class="text-xs text-[#9B9A97] ml-0.5">{{ $product->baseUom?->code ?? 'Pcs' }}</span>
+                                <span class="text-xs text-muted-foreground/80 ml-0.5">{{ $product->baseUom?->code ?? 'Pcs' }}</span>
                             @else
-                                <span class="text-xs text-[#9B9A97] italic">Untracked</span>
+                                <span class="text-xs text-muted-foreground/80 italic">Untracked</span>
                             @endif
                         </td>
                         <td class="px-6 py-4">
@@ -166,34 +172,23 @@
                         </td>
                         @if($canManage)
                             <td class="px-6 py-4 text-right space-x-1">
-                                <a href="{{ route('products.edit', $product->id) }}" class="inline-flex items-center justify-center min-w-9 min-h-9 rounded-lg text-primary-500 hover:text-primary-700 hover:bg-primary-100 transition-colors" aria-label="Edit product" wire:navigate>
+                                <a href="{{ route('products.edit', $product->id) }}" class="inline-flex items-center justify-center min-w-9 min-h-9 rounded-lg text-primary hover:text-primary/80 hover:bg-muted transition-colors" aria-label="Edit product" wire:navigate>
                                     <span class="material-symbols-rounded text-[20px]">edit</span>
                                 </a>
                                 <form id="delete-form-{{ $product->id }}" action="{{ route('products.destroy', $product->id) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" onclick="confirmSubmit('delete-form-{{ $product->id }}', '{{ addslashes($product->product_name) }}')" class="inline-flex items-center justify-center min-w-9 min-h-9 rounded-lg text-danger-500 hover:text-danger-700 hover:bg-danger-50 transition-colors" aria-label="Delete">
+                                    <button type="button" onclick="confirmSubmit('delete-form-{{ $product->id }}', '{{ addslashes($product->product_name) }}')" class="inline-flex items-center justify-center min-w-9 min-h-9 rounded-lg text-destructive hover:text-destructive/80 hover:bg-destructive/10 transition-colors" aria-label="Delete">
                                         <span class="material-symbols-rounded text-[20px]">delete</span>
                                     </button>
                                 </form>
                             </td>
                         @endif
                     </tr>
-                @empty
-                    <tr>
-                        <td colspan="{{ $canManage ? 8 : 7 }}" class="px-6 py-12 text-center text-[#9B9A97] text-sm">
-                            <div class="flex flex-col items-center justify-center">
-                                <div class="w-14 h-14 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
-                                    <span class="material-symbols-rounded text-[28px] text-[#C4C3C0]">inventory_2</span>
-                                </div>
-                                <p class="font-medium">No products found.</p>
-                            </div>
-                        </td>
-                    </tr>
-                @endforelse
-            </x-data-table>
+                @endforeach
+            </x-erp.data-table>
 
-            <div class="p-4 border-t border-[#E5E7EB]">
+            <div class="p-4 border-t border-border">
                 {{ $products->links() }}
             </div>
         </div>

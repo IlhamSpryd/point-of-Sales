@@ -66,22 +66,29 @@
         </div>
     </div>
 
+    @php
+        $customerColumns = [
+            ['key' => 'name', 'label' => 'Code & Name', 'sortable' => true],
+            ['key' => 'customer_type', 'label' => 'Type & Group'],
+            ['key' => 'phone', 'label' => 'Contact'],
+            ['key' => 'address', 'label' => 'Primary Address'],
+            ['key' => 'is_active', 'label' => 'Status', 'align' => 'center'],
+            ['key' => 'actions', 'label' => 'Action', 'align' => 'right'],
+        ];
+    @endphp
+
     <!-- Data Table -->
-    <div class="card-surface rounded-2xl overflow-hidden border border-[#E5E7EB] dark:border-zinc-800 shadow-xs">
-        <div class="overflow-x-auto">
-            <table class="table-standard w-full min-w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
-                <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-xs font-semibold uppercase text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
-                    <tr>
-                        <th class="px-6 py-4">Code & Name</th>
-                        <th class="px-6 py-4">Type & Group</th>
-                        <th class="px-6 py-4">Contact</th>
-                        <th class="px-6 py-4">Primary Address</th>
-                        <th class="px-6 py-4 text-center">Status</th>
-                        <th class="px-6 py-4 text-right">Action</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800">
-                    @forelse($customers as $c)
+    <x-erp.data-table
+        :columns="$customerColumns"
+        :rows="$customers"
+        loading-target="search, typeFilter, groupFilter, statusFilter"
+        :is-empty="$customers->isEmpty()"
+        empty-title="No customer data matches the search criteria."
+        empty-description="Add a new customer to register customer records."
+        empty-icon="person_off"
+        :colspan="6"
+    >
+        @foreach($customers as $c)
                     <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition">
                         <td class="px-6 py-4">
                             <div class="font-semibold text-apeiron-ink dark:text-white">{{ $c->name }}</div>
@@ -171,23 +178,8 @@
                             </div>
                         </td>
                     </tr>
-                    @empty
-                    <tr>
-                        <td colspan="6" class="px-6 py-12 text-center text-zinc-400">
-                            <span class="material-symbols-rounded text-4xl block mb-2">person_off</span>
-                            No customer data matches the search criteria.
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        @if($customers->hasPages())
-            <div class="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800">
-                {{ $customers->links() }}
-            </div>
-        @endif
-    </div>
+        @endforeach
+    </x-erp.data-table>
 
     <!-- Modal 1: Customer Form -->
     <x-ui.modal wire:model="showModal" maxWidth="2xl">
