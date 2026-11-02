@@ -138,10 +138,18 @@ return [
         ],
         'Analytics & Customers' => [
             [
+                'label' => 'BI & Analytics',
+                'icon' => 'query_stats',
+                'route' => 'reports.analytics',
+                'active' => 'reports.analytics',
+                'roles' => ['Owner', 'Manager'],
+                'scope' => 'tenant',
+            ],
+            [
                 'label' => 'Sales Reports',
                 'icon' => 'analytics',
                 'route' => 'reports.sales',
-                'active' => 'reports.*',
+                'active' => 'reports.sales',
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'tenant',
             ],

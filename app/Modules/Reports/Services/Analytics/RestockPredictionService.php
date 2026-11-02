@@ -60,7 +60,7 @@ class RestockPredictionService
         return $updated;
     }
 
-    private function upsertForecast(Ingredient $ingredient, $row, int $halfWindowDays, Carbon $now, int $tenantId): void
+    private function upsertForecast(Ingredient $ingredient, ?object $row, int $halfWindowDays, Carbon $now, int $tenantId): void
     {
         $totalConsumed = (float) ($row->total_consumed ?? 0);
         $recentAvg = (float) ($row->recent_half ?? 0) / $halfWindowDays;

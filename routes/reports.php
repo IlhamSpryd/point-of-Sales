@@ -17,6 +17,7 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
     // Dashboard & Laporan Penjualan
     Route::middleware('role:Owner,Manager')->group(function () {
         Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/analytics', \App\Livewire\Reports\AdvancedAnalyticsDashboard::class)->name('reports.analytics');
         Route::get('/reports/sales', [ReportController::class, 'index'])->name('reports.sales');
         Route::post('/reports/sales/eod-close', [ReportController::class, 'closeEod'])->name('reports.eod-close');
     });
