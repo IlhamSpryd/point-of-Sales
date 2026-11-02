@@ -25,7 +25,7 @@ class SystemUserResolver
     {
         $email = static::selfOrderEmail($tenantId);
 
-        $user = User::withoutGlobalScope('tenant')->where('email', $email)->where('tenant_id', $tenantId)->first();
+        $user = User::withoutGlobalScopes()->where('email', $email)->where('tenant_id', $tenantId)->first();
 
         if (! $user) {
             Log::critical("System user missing: Self order user not found for tenant {$tenantId} (email: {$email})");
@@ -39,7 +39,7 @@ class SystemUserResolver
     {
         $email = static::channelEmail($tenantId);
 
-        $user = User::withoutGlobalScope('tenant')->where('email', $email)->where('tenant_id', $tenantId)->first();
+        $user = User::withoutGlobalScopes()->where('email', $email)->where('tenant_id', $tenantId)->first();
 
         if (! $user) {
             Log::critical("System user missing: Channel order user not found for tenant {$tenantId} (email: {$email})");
