@@ -39,9 +39,11 @@ class SetTenantContext
                 DB::table('sessions')->where('user_id', $user->id)->delete();
             } catch (\Throwable) {
             }
-            Auth::guard('web')->logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+            if ($request->hasSession()) {
+                Auth::guard('web')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
             abort(403, 'Your account is inactive or has been deleted.');
         }
 
@@ -50,26 +52,39 @@ class SetTenantContext
 
         // 4. If tenant_id is null, deny access
         if ($tenantId === null) {
-            Auth::guard('web')->logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+            if ($request->hasSession()) {
+                Auth::guard('web')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
             abort(403, 'User does not belong to any tenant.');
         }
 
         // 5. Validate tenant exists and is not soft-deleted
         $tenant = $user->tenant;
         if (! $tenant || $tenant->trashed()) {
-            Auth::guard('web')->logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+            if ($request->hasSession()) {
+                Auth::guard('web')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
             abort(403, 'Your account is inactive or has been deleted.'); // Keep messages generic
         }
 
         // 5b. Block operational access when tenant is suspended (billing, admin, or manual)
         if ($tenant->isSuspended()) {
-            Auth::guard('web')->logout();
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+            if ($request->expectsJson() || $request->is('api/*') || $request->wantsJson()) {
+                return response()->json([
+                    'error' => 'TENANT_SUSPENDED',
+                    'message' => 'Your business workspace is currently suspended. Please contact customer support.',
+                ], 403);
+            }
+
+            if ($request->hasSession()) {
+                Auth::guard('web')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+            }
             abort(403, 'Your business workspace is currently suspended. Please contact customer support.');
         }
 
@@ -78,14 +93,16 @@ class SetTenantContext
 
         // 7. Resolve active store (cabang). TIDAK PERNAH dari input request.
         $allowed = $this->storeResolver->allowedStoreIdsFor($user, $tenantId);
-        $sessionStoreId = $request->session()->get('active_store_id');
+        $sessionStoreId = $request->hasSession() ? $request->session()->get('active_store_id') : null;
         $isOwner = $user->role?->name === 'Owner' || (bool) ($user->role?->is_admin ?? false);
         $wantsAllStores = $isOwner && ($sessionStoreId === 'all' || $sessionStoreId === null);
 
         if (empty($allowed)) {
             if ($isOwner && ! $tenant->isOnboardingCompleted()) {
                 $this->tenantContext->setStoreId(null);
-                $request->session()->put('active_store_id', null);
+                if ($request->hasSession()) {
+                    $request->session()->put('active_store_id', null);
+                }
                 $this->tenantContext->setAllowedStoreIds([]);
 
                 return $next($request);
@@ -100,7 +117,9 @@ class SetTenantContext
         );
 
         $this->tenantContext->setStoreId($activeStoreId);
-        $request->session()->put('active_store_id', $wantsAllStores ? 'all' : $activeStoreId);
+        if ($request->hasSession()) {
+            $request->session()->put('active_store_id', $wantsAllStores ? 'all' : $activeStoreId);
+        }
 
         // Himpunan store yang diizinkan disimpan agar lapisan laporan dapat
         // mengecek izin all-stores tanpa query ulang.

@@ -26,6 +26,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
 
+use Laravel\Sanctum\HasApiTokens;
+
 /**
  * @property int $id
  * @property int|null $tenant_id
@@ -56,6 +58,7 @@ use Illuminate\Support\Facades\Hash;
 class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVerifyEmail
 {
     use AssignsTenant;
+    use HasApiTokens;
     use HasFactory, Notifiable, SoftDeletes;
     use MustVerifyEmail;
     use ScopedToTenant;

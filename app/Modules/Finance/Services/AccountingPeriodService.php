@@ -11,6 +11,7 @@ use App\Modules\Finance\Enums\AccountTypeEnum;
 use App\Modules\Finance\Enums\JournalTypeEnum;
 use App\Modules\Finance\Enums\NormalBalanceEnum;
 use App\Modules\Finance\Exceptions\ClosedAccountingPeriodException;
+use App\Modules\Finance\Exceptions\PeriodClosedException;
 use App\Modules\Finance\Exceptions\ReconciliationGateFailedException;
 use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Models\AccountPeriodBalance;
@@ -113,11 +114,11 @@ class AccountingPeriodService
             ->first();
 
         if (! $period) {
-            throw ClosedAccountingPeriodException::forDate($dateStr);
+            throw PeriodClosedException::forDate($dateStr);
         }
 
         if (! $period->isPostingAllowed()) {
-            throw ClosedAccountingPeriodException::forPeriod($period->period_code, $period->status->value);
+            throw PeriodClosedException::forPeriod($period->period_code, $period->status->value);
         }
 
         return $period;

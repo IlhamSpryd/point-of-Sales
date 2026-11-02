@@ -134,7 +134,7 @@ class EntitlementService
             ->count();
 
         if ($currentCount >= $quota) {
-            throw new DomainException("Batas kuota cabang ({$quota}) untuk paket langganan Anda telah tercapai. Silakan upgrade paket Anda untuk menambah cabang baru.");
+            throw \App\Modules\Subscription\Exceptions\PlanLimitExceededException::forQuota('cabang / store', $quota);
         }
     }
 

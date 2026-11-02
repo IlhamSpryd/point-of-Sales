@@ -27,3 +27,19 @@ Route::post('/v1/provisioning/registrations', [ProvisioningController::class, 's
 Route::post('/devices/pair', [DeviceController::class, 'pair'])
     ->middleware('throttle:10,1')
     ->name('api.devices.pair');
+
+// Midtrans Payment Webhook Notification
+Route::post('/payment/notification', [\App\Modules\Integration\Controllers\PaymentNotificationController::class, 'handle'])
+    ->name('api.payment.notification');
+
+// Scoped Sanctum REST API for external integrations (e.g. n8n)
+Route::middleware(['auth:sanctum', 'tenant.context'])->group(function () {
+    Route::get('/v1/orders', function (\Illuminate\Http\Request $request, \App\Modules\Integration\Services\SanctumScopeGuardService $guard) {
+        $guard->authorize($request, 'orders:read');
+
+        return response()->json([
+            'status' => 'OK',
+            'orders' => [],
+        ]);
+    })->name('api.v1.orders');
+});
