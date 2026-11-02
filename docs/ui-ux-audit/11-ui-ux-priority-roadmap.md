@@ -2,10 +2,10 @@
 
 Urutan disesuaikan dengan dependensi aktual (token → komponen → halaman), bukan urutan baku brief.
 
-## Phase 0 — Guardrail (1–2 hari, tanpa risiko)
-1. Matikan/flag `preview` DevDojo di non-local (DD-R2).
-2. Dokumentasikan konvensi di CLAUDE/AGENTS: token resmi, larangan hex baru (pre-commit grep hook opsional).
-3. Buat error pages kustom 403/404/500 (HI-04) — kecil, dampak besar.
+## Phase 0 — Guardrail (COMPLETED — 2026-11-02)
+1. [x] Matikan/flag `preview` DevDojo di non-local (`config/components.php` via `COMPONENTS_PREVIEW`) (DD-R2).
+2. [x] Dokumentasikan konvensi di CLAUDE/AGENTS & APEIRON_GEMINI_ENGINEERING_RULES: token resmi, larangan hex baru (Zero Hardcoded Hex Policy).
+3. [x] Buat error pages kustom 403/404/500 mengikuti design token (HI-04) — `resources/views/errors/{layout,403,404,500}.blade.php` teruji via `CustomErrorPagesTest` (3/3 PASS).
 
 ## Phase 1 — Foundation (1–2 minggu)
 1. **Konsolidasi token** → `tokens.css`; hapus duplikasi app.css/components.css; alias deprecated (LI-01).

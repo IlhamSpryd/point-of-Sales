@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'preview' => true,
+    'preview' => env('COMPONENTS_PREVIEW', in_array(env('APP_ENV'), ['local', 'testing'], true)),
 
     /*
     |--------------------------------------------------------------------------
