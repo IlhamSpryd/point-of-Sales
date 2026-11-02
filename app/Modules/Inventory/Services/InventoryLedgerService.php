@@ -8,6 +8,7 @@ use App\Enums\IngredientStockMovementTypeEnum;
 use App\Enums\StockMovementType;
 use App\Models\Ingredient;
 use App\Models\Product;
+use App\Modules\Inventory\Exceptions\InsufficientStockException;
 use App\Services\AuditTrailService;
 use App\Services\MenuCacheService;
 use DomainException;
@@ -177,9 +178,13 @@ class InventoryLedgerService
                 $projectedQty = bcadd((string) $balanceRow->quantity, $target['net_delta'], 6);
                 if (bccomp($projectedQty, '0', 4) < 0) {
                     $itemName = $this->resolveItemName($tenantId, $target['item_type'], $target['item_id']);
-                    throw ValidationException::withMessages([
-                        'stock' => "Stok {$target['item_type']} \"{$itemName}\" di cabang ini tidak mencukupi untuk mutasi keluar. (Tersedia: {$balanceRow->quantity}, Dibutuhkan: ".abs((float) $target['net_delta']).')',
-                    ]);
+                    throw new InsufficientStockException(
+                        message: "Stok {$target['item_type']} \"{$itemName}\" di cabang ini tidak mencukupi untuk mutasi keluar. (Tersedia: {$balanceRow->quantity}, Dibutuhkan: ".abs((float) $target['net_delta']).')',
+                        itemType: $target['item_type'],
+                        itemId: $target['item_id'],
+                        available: (string) $balanceRow->quantity,
+                        requested: (string) abs((float) $target['net_delta'])
+                    );
                 }
 
                 $lockedBalances[$key] = $balanceRow;
@@ -238,7 +243,12 @@ class InventoryLedgerService
                     idempotencyKey: $idempotencyKey,
                     orderId: $m['order_id'] ?? null,
                     orderItemId: $m['order_item_id'] ?? null,
-                    userId: $m['user_id'] ?? null
+                    userId: $m['user_id'] ?? null,
+                    variantId: $m['variant_id'] ?? null,
+                    balanceBefore: $previousQty,
+                    balanceAfter: $newQty,
+                    referenceType: $m['reference_type'] ?? null,
+                    referenceId: $m['reference_id'] ?? null
                 );
 
                 // 8. Perbarui baris proyeksi balance
@@ -469,21 +479,31 @@ class InventoryLedgerService
         string $unitCost,
         string $reason,
         string $idempotencyKey,
-        ?int $orderId,
-        ?int $orderItemId,
-        ?int $userId
+        ?int $orderId = null,
+        ?int $orderItemId = null,
+        ?int $userId = null,
+        ?int $variantId = null,
+        string $balanceBefore = '0.0000',
+        string $balanceAfter = '0.0000',
+        ?string $referenceType = null,
+        ?int $referenceId = null
     ): int {
         if ($itemType === 'product') {
             return (int) DB::table('stock_movements')->insertGetId([
                 'tenant_id' => $tenantId,
                 'store_id' => $storeId,
                 'product_id' => $itemId,
+                'variant_id' => $variantId,
                 'order_id' => $orderId,
                 'order_item_id' => $orderItemId,
                 'type' => $type,
                 'quantity' => (int) round((float) $quantity),
+                'balance_before' => $balanceBefore,
+                'balance_after' => $balanceAfter,
                 'unit_cost' => $unitCost,
                 'reason' => $reason,
+                'reference_type' => $referenceType ?? ($orderId ? 'order' : null),
+                'reference_id' => $referenceId ?? $orderId,
                 'idempotency_key' => $idempotencyKey,
                 'created_at' => now(),
                 'updated_at' => now(),
