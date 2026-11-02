@@ -393,6 +393,64 @@ class DevDojoComponentsIntegrationTest extends TestCase
         $this->assertStringContainsString('Filter Bar Mock', $html);
         $this->assertStringContainsString('Table Content Mock', $html);
     }
+
+    public function test_livewire_interacts_with_toast_concern(): void
+    {
+        $toastComponent = new class extends \Livewire\Component {
+            use \App\Livewire\Concerns\InteractsWithToast;
+
+            /** @var array<int, array{0: string, 1: array<string, mixed>}> */
+            public array $dispatchedEvents = [];
+
+            /**
+             * @param string $event
+             * @param mixed ...$params
+             */
+            public function dispatch($event, ...$params): self
+            {
+                $this->dispatchedEvents[] = [$event, $params[0] ?? []];
+                return $this;
+            }
+
+            public function triggerSuccess(): void
+            {
+                $this->toastSuccess('Berhasil disimpan', 'Keterangan');
+            }
+
+            public function triggerError(): void
+            {
+                $this->toastError('Gagal memproses');
+            }
+
+            public function triggerWarning(): void
+            {
+                $this->toastWarning('Peringatan');
+            }
+
+            public function triggerInfo(): void
+            {
+                $this->toastInfo('Informasi');
+            }
+        };
+
+        $toastComponent->triggerSuccess();
+        $this->assertCount(1, $toastComponent->dispatchedEvents);
+        $this->assertSame('toast', $toastComponent->dispatchedEvents[0][0]);
+        $this->assertSame('Berhasil disimpan', $toastComponent->dispatchedEvents[0][1]['message']);
+        $this->assertSame('success', $toastComponent->dispatchedEvents[0][1]['type']);
+
+        $toastComponent->triggerError();
+        $this->assertCount(2, $toastComponent->dispatchedEvents);
+        $this->assertSame('error', $toastComponent->dispatchedEvents[1][1]['type']);
+
+        $toastComponent->triggerWarning();
+        $this->assertCount(3, $toastComponent->dispatchedEvents);
+        $this->assertSame('warning', $toastComponent->dispatchedEvents[2][1]['type']);
+
+        $toastComponent->triggerInfo();
+        $this->assertCount(4, $toastComponent->dispatchedEvents);
+        $this->assertSame('info', $toastComponent->dispatchedEvents[3][1]['type']);
+    }
 }
 
 
