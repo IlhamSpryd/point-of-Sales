@@ -112,7 +112,7 @@
                                             <form id="delete-tax-{{ $tax->id }}" action="{{ route('tax-classes.destroy', $tax->id) }}" method="POST" class="inline-block">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="button" onclick="confirmDelete('delete-tax-{{ $tax->id }}', '{{ addslashes($tax->name) }}')"
+                                                <button type="button" onclick="confirmSubmit('delete-tax-{{ $tax->id }}', '{{ addslashes($tax->name) }}')"
                                                     class="p-1.5 rounded-lg text-zinc-500 hover:text-rose-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
                                                     title="Delete tax class">
                                                     <span class="material-symbols-rounded text-lg">delete</span>

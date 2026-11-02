@@ -204,17 +204,18 @@
 
         <x-slot:content>
             <form id="createPoForm" wire:submit="savePurchaseOrder" class="space-y-6">
+                <x-erp.dirty-guard watch="items" />
                 <!-- Header Info -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800">
                     <div>
-                        <x-ui.label for="supplierId">Supplier *</x-ui.label>
-                        <x-ui.select id="supplierId" wire:model.live="supplierId" required>
-                            <option value="">-- Select Supplier --</option>
-                            @foreach($suppliers as $s)
-                                <option value="{{ $s->id }}">{{ $s->name }} ({{ $s->code }})</option>
-                            @endforeach
-                        </x-ui.select>
-                        <x-input-error :messages="$errors->get('supplierId')" class="mt-1" />
+                        <x-erp.form-field label="Supplier" required :error="$errors->first('supplierId')">
+                            <x-erp.searchable-select
+                                id="supplierId"
+                                wire:model.live="supplierId"
+                                :options="collect($suppliers)->map(fn($s) => ['value' => (string) $s->id, 'label' => $s->name . ' (' . $s->code . ')'])->all()"
+                                placeholder="-- Select Supplier --"
+                            />
+                        </x-erp.form-field>
                     </div>
 
                     <div>
@@ -272,18 +273,17 @@
                                         </select>
                                     </td>
                                     <td class="px-3 py-2">
-                                        <select wire:model.live="items.{{ $i }}.purchasable_id" wire:change="onItemSelected({{ $i }})" required class="w-full text-xs rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 py-1">
-                                            <option value="">-- Select Item --</option>
-                                            @if(($item['purchasable_type'] ?? 'product') === 'product')
-                                                @foreach($products as $p)
-                                                    <option value="{{ $p->id }}">{{ $p->product_name }}</option>
-                                                @endforeach
-                                            @else
-                                                @foreach($ingredients as $ing)
-                                                    <option value="{{ $ing->id }}">{{ $ing->name }} ({{ $ing->unit }})</option>
-                                                @endforeach
-                                            @endif
-                                        </select>
+                                        @php
+                                            $poItemOptions = (($item['purchasable_type'] ?? 'product') === 'product')
+                                                ? collect($products)->map(fn($p) => ['value' => (string) $p->id, 'label' => $p->product_name])->all()
+                                                : collect($ingredients)->map(fn($ing) => ['value' => (string) $ing->id, 'label' => $ing->name . ' (' . $ing->unit . ')'])->all();
+                                        @endphp
+                                        <x-erp.searchable-select
+                                            wire:model.live="items.{{ $i }}.purchasable_id"
+                                            :options="$poItemOptions"
+                                            placeholder="-- Select Item --"
+                                            @change="$wire.onItemSelected({{ $i }})"
+                                        />
                                     </td>
                                     <td class="px-3 py-2">
                                         <input type="text" wire:model="items.{{ $i }}.purchase_uom" class="w-full text-xs rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 py-1 uppercase" />

@@ -15,22 +15,22 @@
         x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
     ><span class="material-symbols-rounded text-[18px]">delete</span> {{ __('Delete Account') }}</x-ui.button>
 
-    <x-modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" focusable>
+    <x-ui.modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" maxWidth="md">
         <form method="post" action="{{ route('profile.destroy') }}" class="p-6">
             @csrf
             @method('delete')
 
-            <h2 class="text-lg font-bold text-apeiron-ink">
+            <h2 class="text-lg font-bold text-foreground">
                 {{ __('Are you sure you want to delete your account?') }}
             </h2>
 
-            <p class="mt-1 text-sm text-[#787774]">
+            <p class="mt-1 text-sm text-muted-foreground">
                 {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please enter your password to confirm you would like to permanently delete your account.') }}
             </p>
 
             <div class="mt-6">
-                <x-form-label for="password">{{ __('Password') }}</x-form-label>
-                <x-form-input
+                <x-ui.label for="password">{{ __('Password') }}</x-ui.label>
+                <x-ui.input
                     id="password"
                     name="password"
                     type="password"
@@ -38,7 +38,7 @@
                     placeholder="{{ __('Password') }}"
                 />
                 @error('password', 'userDeletion')
-                    <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                    <p class="text-sm text-destructive mt-1.5 font-medium">{{ $message }}</p>
                 @enderror
             </div>
 
@@ -52,5 +52,5 @@
                 </x-ui.button>
             </div>
         </form>
-    </x-modal>
+    </x-ui.modal>
 </section>

@@ -133,7 +133,7 @@
                         <form id="delete-form-{{ $table->id }}" action="{{ route('tables.destroy', $routeToken) }}" method="POST" class="inline-block">
                             @csrf
                             @method('DELETE')
-                            <button type="button" onclick="confirmDelete('delete-form-{{ $table->id }}', '{{ $table->table_name }}')"
+                            <button type="button" onclick="confirmSubmit('delete-form-{{ $table->id }}', '{{ $table->table_name }}')"
                                 class="inline-flex items-center justify-center size-9 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors active:scale-90" aria-label="Delete table">
                                 <span class="material-symbols-rounded text-[20px]">delete</span>
                             </button>
@@ -217,7 +217,7 @@
                             <form id="delete-form-mobile-{{ $table->id }}" action="{{ route('tables.destroy', $routeToken) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
-                                <button type="button" onclick="confirmDelete('delete-form-mobile-{{ $table->id }}', '{{ $table->table_name }}')" class="size-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" aria-label="Delete table">
+                                <button type="button" onclick="confirmSubmit('delete-form-mobile-{{ $table->id }}', '{{ $table->table_name }}')" class="size-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" aria-label="Delete table">
                                     <span class="material-symbols-rounded text-[18px]">delete</span>
                                 </button>
                             </form>

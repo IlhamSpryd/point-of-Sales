@@ -188,4 +188,65 @@ class DevDojoComponentsIntegrationTest extends TestCase
         $this->assertStringContainsString('aria-label="Terkunci"', $htmlWithLabel);
         $this->assertStringContainsString("'FILL' 1", $htmlWithLabel);
     }
+
+    public function test_can_render_erp_form_field_with_label_required_and_error(): void
+    {
+        $html = Blade::render('
+            <x-erp.form-field label="Pemasok" required hint="Pilih pemasok utama" error="Pemasok wajib dipilih.">
+                <input type="text" name="supplier_id" id="supplier_id" />
+            </x-erp.form-field>
+        ');
+
+        $this->assertStringContainsString('Pemasok', $html);
+        $this->assertStringContainsString('*', $html);
+        $this->assertStringContainsString('(wajib diisi)', $html);
+        $this->assertStringContainsString('Pemasok wajib dipilih.', $html);
+        $this->assertStringContainsString('role="alert"', $html);
+    }
+
+    public function test_can_render_erp_searchable_select(): void
+    {
+        $options = [
+            ['value' => '1', 'label' => 'Biji Kopi Arabika'],
+            ['value' => '2', 'label' => 'Susu Segar 1L'],
+        ];
+
+        $html = Blade::render('
+            <x-erp.searchable-select
+                id="item_selector"
+                :options="$options"
+                placeholder="Pilih Bahan Baku..."
+                clearable
+            />
+        ', ['options' => $options]);
+
+        $this->assertStringContainsString('role="combobox"', $html);
+        $this->assertStringContainsString('role="listbox"', $html);
+        $this->assertStringContainsString('Pilih Bahan Baku...', $html);
+        $this->assertStringContainsString('Biji Kopi Arabika', $html);
+        $this->assertStringContainsString('aria-label="Bersihkan pilihan"', $html);
+    }
+
+    public function test_can_render_erp_confirm_dialog_and_dirty_guard(): void
+    {
+        $confirmHtml = Blade::render('<x-erp.confirm-dialog />');
+        $this->assertStringContainsString('confirmSubmit', $confirmHtml);
+        $this->assertStringContainsString('window.confirmDelete', $confirmHtml);
+        $this->assertStringContainsString('@erp-confirm.window', $confirmHtml);
+
+        $guardHtml = Blade::render('<x-erp.dirty-guard watch="cart" />');
+        $this->assertStringContainsString('livewireNavigateHandler', $guardHtml);
+        $this->assertStringContainsString('beforeUnloadHandler', $guardHtml);
+    }
+
+    public function test_can_render_forwarded_legacy_form_input_and_label(): void
+    {
+        $labelHtml = Blade::render('<x-form-label for="user_email">Alamat Email</x-form-label>');
+        $this->assertStringContainsString('Alamat Email', $labelHtml);
+        $this->assertStringContainsString('for="user_email"', $labelHtml);
+
+        $inputHtml = Blade::render('<x-form-input name="user_email" type="email" placeholder="user@apeiron.id" />');
+        $this->assertStringContainsString('type="email"', $inputHtml);
+        $this->assertStringContainsString('placeholder="user@apeiron.id"', $inputHtml);
+    }
 }

@@ -160,6 +160,7 @@
                 </div>
 
                 <form wire:submit="postManualJournal" class="space-y-4">
+                    <x-erp.dirty-guard watch="lines" />
                     <!-- General Header Information -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
@@ -223,14 +224,18 @@
                                     @foreach ($lines as $index => $line)
                                         <tr>
                                             <td class="p-2">
-                                                <select wire:model.live="lines.{{ $index }}.account_id"
-                                                        class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-mono">
-                                                    <option value="">-- Pilih Akun --</option>
-                                                    @foreach ($accounts as $acc)
-                                                        <option value="{{ $acc->id }}">[{{ $acc->account_code }}] {{ $acc->account_name }} ({{ $acc->normal_balance->value }})</option>
-                                                    @endforeach
-                                                </select>
-                                                @error("lines.{$index}.account_id") <span class="text-[10px] text-rose-500 block">{{ $message }}</span> @enderror
+                                                @php
+                                                    $accOptions = collect($accounts)->map(fn($acc) => [
+                                                        'value' => (string) $acc->id,
+                                                        'label' => "[{$acc->account_code}] {$acc->account_name} ({$acc->normal_balance->value})"
+                                                    ])->all();
+                                                @endphp
+                                                <x-erp.searchable-select
+                                                    wire:model.live="lines.{{ $index }}.account_id"
+                                                    :options="$accOptions"
+                                                    placeholder="-- Pilih Akun --"
+                                                />
+                                                @error("lines.{$index}.account_id") <span class="text-[10px] text-destructive block mt-1">{{ $message }}</span> @enderror
                                             </td>
                                             <td class="p-2">
                                                 <input type="text"

@@ -153,17 +153,18 @@
         </x-slot:title>
 
         <x-slot:content>
+            <x-erp.dirty-guard watch="lines" />
             <div class="space-y-5">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <x-ui.label for="quotation_customer_id">Customer *</x-ui.label>
-                        <x-ui.select id="quotation_customer_id" wire:model="customer_id">
-                            <option value="">-- Select Customer --</option>
-                            @foreach($customers as $c)
-                                <option value="{{ $c->id }}">{{ $c->name }} ({{ $c->customer_code }}){{ $c->company_name ? ' - ' . $c->company_name : '' }}</option>
-                            @endforeach
-                        </x-ui.select>
-                        @error('customer_id') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                        <x-erp.form-field label="Customer" required :error="$errors->first('customer_id')">
+                            <x-erp.searchable-select
+                                id="quotation_customer_id"
+                                wire:model="customer_id"
+                                :options="collect($customers)->map(fn($c) => ['value' => (string) $c->id, 'label' => $c->name . ' (' . $c->customer_code . ')' . ($c->company_name ? ' - ' . $c->company_name : '')])->all()"
+                                placeholder="-- Select Customer --"
+                            />
+                        </x-erp.form-field>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2">

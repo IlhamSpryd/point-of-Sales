@@ -168,17 +168,24 @@
 
         <x-slot:content>
             <form id="createGrnForm" wire:submit="saveDraftGrn" class="space-y-6">
+                <x-erp.dirty-guard watch="lines" />
                 <!-- Info Header -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800">
                     <div class="md:col-span-2">
-                        <x-ui.label for="selectedPoId">Select Purchase Order (PO) *</x-ui.label>
-                        <x-ui.select id="selectedPoId" wire:model.live="selectedPoId" required>
-                            <option value="">-- Select Issued PO --</option>
-                            @foreach($availablePos as $po)
-                                <option value="{{ $po->id }}">{{ $po->po_number }} &bull; {{ $po->supplier?->name }} (Rp {{ number_format((float) $po->total_amount, 0) }})</option>
-                            @endforeach
-                        </x-ui.select>
-                        <x-input-error :messages="$errors->get('selectedPoId')" class="mt-1" />
+                        @php
+                            $poOptions = collect($availablePos)->map(fn($po) => [
+                                'value' => (string) $po->id,
+                                'label' => "{$po->po_number} • {$po->supplier?->name} (Rp " . number_format((float) $po->total_amount, 0) . ")"
+                            ])->all();
+                        @endphp
+                        <x-erp.form-field label="Select Purchase Order (PO)" required :error="$errors->first('selectedPoId')">
+                            <x-erp.searchable-select
+                                id="selectedPoId"
+                                wire:model.live="selectedPoId"
+                                :options="$poOptions"
+                                placeholder="-- Select Issued PO --"
+                            />
+                        </x-erp.form-field>
                     </div>
 
                     <div>

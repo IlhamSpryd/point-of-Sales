@@ -1,5 +1,9 @@
-@props(['value'])
+@props([
+    'value' => null,
+    'for' => '',
+])
 
-<label {{ $attributes->merge(['class' => 'block text-sm font-medium text-apeiron-ink mb-1.5']) }}>
+{{-- Deprecated: use <x-ui.label> or <x-erp.form-field> instead --}}
+<x-ui.label :for="$for ?: (string) $attributes->get('for')" {{ $attributes }}>
     {{ $value ?? $slot }}
-</label>
+</x-ui.label>

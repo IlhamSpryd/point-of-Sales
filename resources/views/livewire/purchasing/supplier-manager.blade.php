@@ -370,20 +370,19 @@
                             </x-ui.select>
                         </div>
                         <div class="md:col-span-2">
-                            <x-ui.label for="catalogPurchasableId">Select Master Item *</x-ui.label>
-                            <x-ui.select id="catalogPurchasableId" wire:model="catalogPurchasableId" required>
-                                <option value="">-- Select Item --</option>
-                                @if($catalogPurchasableType === 'product')
-                                    @foreach($availableProducts as $prod)
-                                        <option value="{{ $prod->id }}">{{ $prod->name }} (SKU: {{ $prod->sku }})</option>
-                                    @endforeach
-                                @else
-                                    @foreach($availableIngredients as $ing)
-                                        <option value="{{ $ing->id }}">{{ $ing->name }} (Unit: {{ $ing->unit }})</option>
-                                    @endforeach
-                                @endif
-                            </x-ui.select>
-                            <x-input-error :messages="$errors->get('catalogPurchasableId')" class="mt-1" />
+                            @php
+                                $catalogOpts = ($catalogPurchasableType === 'product')
+                                    ? collect($availableProducts)->map(fn($prod) => ['value' => (string) $prod->id, 'label' => $prod->name . ' (SKU: ' . $prod->sku . ')'])->all()
+                                    : collect($availableIngredients)->map(fn($ing) => ['value' => (string) $ing->id, 'label' => $ing->name . ' (Unit: ' . $ing->unit . ')'])->all();
+                            @endphp
+                            <x-erp.form-field label="Select Master Item" required :error="$errors->first('catalogPurchasableId')">
+                                <x-erp.searchable-select
+                                    id="catalogPurchasableId"
+                                    wire:model="catalogPurchasableId"
+                                    :options="$catalogOpts"
+                                    placeholder="-- Select Item --"
+                                />
+                            </x-erp.form-field>
                         </div>
                     </div>
 

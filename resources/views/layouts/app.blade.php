@@ -189,13 +189,13 @@
     </div>
 
     @livewireScripts
-    @include('partials.sweetalert-confirm-delete')
     <x-fullscreen-toggle />
     
     <script src="https://cdn.jsdelivr.net/npm/qz-tray@2.2.4/qz-tray.js"></script>
     <x-qz-print />
     <x-ui.toast />
     <x-erp.confirm-dialog />
+    <x-erp.command-palette />
 </body>
 
 </html>

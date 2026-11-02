@@ -110,7 +110,7 @@
                                 <form id="delete-form-{{ $category->id }}" action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" onclick="confirmDelete('delete-form-{{ $category->id }}', '{{ addslashes($category->category_name) }}')" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90" aria-label="Delete">
+                                    <button type="button" onclick="confirmSubmit('delete-form-{{ $category->id }}', '{{ addslashes($category->category_name) }}')" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200 active:scale-90" aria-label="Delete">
                                         <span class="material-symbols-rounded text-[20px]">delete</span>
                                     </button>
                                 </form>
@@ -119,10 +119,10 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="{{ $canManage ? 5 : 4 }}" class="px-6 py-12 text-center text-[#9B9A97] text-sm">
+                        <td colspan="{{ $canManage ? 5 : 4 }}" class="px-6 py-12 text-center text-muted-foreground text-sm">
                             <div class="flex flex-col items-center justify-center">
-                                <div class="w-14 h-14 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
-                                    <span class="material-symbols-rounded text-[28px] text-[#C4C3C0]">category</span>
+                                <div class="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center mb-3">
+                                    <span class="material-symbols-rounded text-[28px] text-muted-foreground">category</span>
                                 </div>
                                 <p class="font-medium">No categories found.</p>
                             </div>
@@ -137,20 +137,20 @@
                     <div class="card-surface p-4">
                         <div class="flex justify-between items-start">
                             <div class="flex flex-col">
-                                <span class="font-bold text-apeiron-ink text-sm">{{ $category->category_name }}</span>
-                                <span class="text-xs text-[#787774]">{{ $category->category_code }}</span>
+                                <span class="font-bold text-foreground text-sm">{{ $category->category_name }}</span>
+                                <span class="text-xs text-muted-foreground">{{ $category->category_code }}</span>
                             </div>
-                            <span class="text-[11px] font-medium text-[#9B9A97]">{{ $category->created_at?->format('d M Y') ?? '—' }}</span>
+                            <span class="text-[11px] font-medium text-muted-foreground">{{ $category->created_at?->format('d M Y') ?? '—' }}</span>
                         </div>
                         @if($canManage)
-                            <div class="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-[#E5E7EB]">
+                            <div class="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-border">
                                 <button type="button" @click="openEdit({{ json_encode($category) }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200" aria-label="Edit category">
                                     <span class="material-symbols-rounded text-[18px]">edit</span>
                                 </button>
                                 <form id="delete-form-mobile-{{ $category->id }}" action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" onclick="confirmDelete('delete-form-mobile-{{ $category->id }}', '{{ addslashes($category->category_name) }}')" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200" aria-label="Delete">
+                                    <button type="button" onclick="confirmSubmit('delete-form-mobile-{{ $category->id }}', '{{ addslashes($category->category_name) }}')" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200" aria-label="Delete">
                                         <span class="material-symbols-rounded text-[18px]">delete</span>
                                     </button>
                                 </form>

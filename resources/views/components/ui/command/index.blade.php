@@ -1,6 +1,7 @@
 @props([
     'items' => [],
-    'placeholder' => 'Type a command or search…',
+    'placeholder' => 'Ketik perintah atau cari menu… (Ctrl+K)',
+    'headless' => false,
 ])
 
 <div
@@ -36,6 +37,10 @@
             return 3 + gaps + title.length / 100;
         },
         openPalette() {
+            // Hindari konflik jika modal pembayaran/PIN kasir aktif
+            if (document.querySelector('#livewire-pos-root [aria-modal=\'true\']')) {
+                return;
+            }
             this.open = true;
             this.search = '';
             this.active = 0;
@@ -52,8 +57,15 @@
         },
         select(item) {
             if (! item) return;
-            this.$dispatch('command-select', { value: item.value, title: item.title });
+            this.$dispatch('command-select', { value: item.value, title: item.title, url: item.url });
             this.open = false;
+            if (item.url) {
+                if (window.Livewire && typeof window.Livewire.navigate === 'function') {
+                    window.Livewire.navigate(item.url);
+                } else {
+                    window.location.href = item.url;
+                }
+            }
         },
         showGroup(item, index) {
             // Results are ranked while searching, so group headers only make
@@ -68,17 +80,19 @@
     {{ $attributes->twMerge('inline-block') }}
 >
     {{-- Trigger --}}
-    <div @click="openPalette()">
-        @if (isset($trigger))
-            {{ $trigger }}
-        @else
-            <button type="button" class="inline-flex items-center gap-2 rounded-medium border border-foreground/10 bg-background px-3 py-2 text-sm text-foreground/50 transition hover:bg-secondary">
-                <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
-                <span>Search…</span>
-                <kbd class="ml-6 rounded-small border border-foreground/10 bg-secondary px-1.5 py-0.5 font-mono text-[10px] text-foreground/60">⌘K</kbd>
-            </button>
-        @endif
-    </div>
+    @if (!$headless)
+        <div @click="openPalette()">
+            @if (isset($trigger))
+                {{ $trigger }}
+            @else
+                <button type="button" class="inline-flex items-center gap-2 rounded-control border border-border bg-background px-3 py-1.5 text-xs text-muted-foreground transition hover:bg-muted hover:text-foreground">
+                    <x-ui.icon name="search" size="xs" />
+                    <span>Cari menu…</span>
+                    <kbd class="ml-4 rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">⌘K</kbd>
+                </button>
+            @endif
+        </div>
+    @endif
 
     {{-- Palette, teleported so it is never clipped. --}}
     <template x-teleport="body">

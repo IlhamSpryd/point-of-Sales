@@ -15,14 +15,14 @@ Urutan disesuaikan dengan dependensi aktual (token → komponen → halaman), bu
 5. [x] **Dark mode dormant**: token set `.dark` dipertahankan dalam `tokens.css` namun dinonaktifkan (`color-scheme: light`) sampai AC-TH1 (TH-01).
 6. [x] **Verifikasi**: PHPUnit 35 tests, 411 assertions PASS; Larastan 0 errors pada file tersentuh.
 
-## Phase 2 — Core Interaction (2–3 minggu)
-1. `x-erp.form-field` + migrasi form-input/form-label → ui (LI-02, FM-03).
-2. `x-erp.searchable-select` + replace native select pada 5 form tertinggi (FM-01).
-3. Satukan confirm dialog (IX-01): tambah mode form-submit, sweep 9 file swal, deprecate partial.
-4. Standarkan toast dispatch untuk aksi Livewire (IX-04).
-5. `x-erp.dirty-guard` untuk form panjang (FM-05).
-6. Konvensi button loading/target di semua aksi Livewire (IX-03).
-7. Aktifkan command palette Ctrl+K navigasi (IX-05) — aset sudah ada.
+## Phase 2 — Core Interaction (COMPLETED — 2026-11-02)
+1. [x] **`x-erp.form-field` + migrasi legacy inputs**: `form-field.blade.php` (label/required asterisk + sr-only/error/hint wrapper) sesuai spesifikasi 09 §4; legacy `form-input` & `form-label` dimigrasikan meneruskan ke `ui.input` & `ui.label`; modal delete-user dimigrasikan ke `ui.modal` (LI-02, FM-03, AC-C1).
+2. [x] **`x-erp.searchable-select`**: Alpine listbox, W3C ARIA 1.2 Combobox pattern (`role="combobox"`, `role="listbox"`, `role="option"`, `aria-selected`), roving keyboard navigation, debounce 300ms, clearable, token styling. Mengganti native `<select>` pada 5 form prioritas: PO lines & supplier select, Journal entry lines, Sales quotation customer, Supplier manager item select, GRN PO select (FM-01).
+3. [x] **Satukan confirm dialog (IX-01)**: `x-erp.confirm-dialog` mendukung mode form-submit (`confirmSubmit(formId, itemName, options)`) + bridge `window.confirmDelete`. 9 file pemakai sweetalert disweep ke `confirmSubmit`; `resources/views/partials/sweetalert-confirm-delete.blade.php` dihapus setelah 0 referensi.
+4. [x] **Standarisasi toast dispatch (IX-04)**: Dibuat trait `app/Livewire/Concerns/InteractsWithToast.php` (`toast()`, `toastSuccess()`, `toastError()`, `toastWarning()`, `toastInfo()`) yang mendispatch browser event `toast` untuk ditangkap `<x-ui.toast>`.
+5. [x] **`x-erp.dirty-guard` (FM-05)**: Guard navigasi tab close/reload (`beforeunload`) dan Livewire SPA transition (`livewire:navigate`), diterapkan pada form panjang: PO, GRN, Sales Quotation, dan Journal Entry.
+6. [x] **Command palette global Ctrl+K / Cmd+K (IX-05)**: Diaktifkan via `x-erp.command-palette` di `layouts/app.blade.php`, mengonsumsi `config('navigation.sections')` berbasis peran tenant secara dinamis dan aman, dengan guard anti-bentrok shortcut POS terminal modal.
+7. [x] **Verifikasi**: PHPUnit 29 tests (21 komponen + isolasi tenant, 8 supplier management) PASS; Larastan 0 errors pada file tersentuh.
 
 ## Phase 3 — Enterprise Data Interfaces (2–3 minggu)
 1. `x-erp.data-table` composed + traits `WithDataTable/WithBulkActions` (DT-01).
