@@ -16,6 +16,16 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $shift_id
+ * @property int $amount
+ * @property int $created_by
+ * @property int|null $approved_by
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int|null $device_id
+ */
 class CashDrawerMovement extends Model
 {
     use AssignsStore, AssignsTenant;
@@ -32,21 +42,33 @@ class CashDrawerMovement extends Model
         'amount' => 'integer',
     ];
 
+    /**
+     * @return BelongsTo<Shift, $this>
+     */
     public function shift(): BelongsTo
     {
         return $this->belongsTo(Shift::class);
     }
 
+    /**
+     * @return BelongsTo<Device, $this>
+     */
     public function device(): BelongsTo
     {
         return $this->belongsTo(Device::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function approvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');

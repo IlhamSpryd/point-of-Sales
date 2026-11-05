@@ -168,6 +168,25 @@ class OvertimeCalculationTest extends TestCase
 
         $amount = $this->service->calculateOvertimeAmount(3.5, $rate);
         $this->assertEquals(105000.00, $amount);
+        $this->assertSame('30000.00', $rate);
+        $this->assertSame('105000.00', $amount);
+    }
+
+    public function test_bcmath_precision_boundary_and_one_cent_difference(): void
+    {
+        // Uji batas pembulatan non-terminating decimal: Rp 5.000.000 / 173 = 28901.7341... -> '28901.73'
+        $rate = $this->service->calculateHourlyRateBasis('5000000.00');
+        $this->assertSame('28901.73', $rate);
+
+        // 1.5 jam lembur * 28901.73 = 43352.595 -> dibulatkan HALF_UP ke '43352.60'
+        $amountBase = $this->service->calculateOvertimeAmount('1.50', $rate);
+        $this->assertSame('43352.60', $amountBase);
+
+        // Uji sensitivitas perbedaan 1 sen (0.01) pada tarif dasar jam lembur (28901.74 * 1.50 = 43352.61)
+        $ratePlusOneCent = bcadd($rate, '0.01', 2);
+        $amountPlus = $this->service->calculateOvertimeAmount('1.50', $ratePlusOneCent);
+        $this->assertSame('43352.61', $amountPlus);
+        $this->assertSame('0.01', bcsub($amountPlus, $amountBase, 2));
     }
 
     public function test_create_overtime_record_with_approved_spkl(): void

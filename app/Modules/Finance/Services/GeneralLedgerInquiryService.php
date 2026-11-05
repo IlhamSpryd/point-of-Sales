@@ -25,7 +25,7 @@ class GeneralLedgerInquiryService
      * @return array{
      *     account: ChartOfAccount,
      *     opening_balance: string,
-     *     lines: Collection,
+     *     lines: Collection<int, array<string, mixed>>,
      *     total_debit: string,
      *     total_credit: string,
      *     closing_balance: string
@@ -69,8 +69,8 @@ class GeneralLedgerInquiryService
         $priorCredit = (string) ($priorTotals->prior_credit ?? '0.00');
 
         $openingBalance = ($account->normal_balance === NormalBalanceEnum::DEBIT)
-            ? bcsub($priorDebit, $priorCredit, 2)
-            : bcsub($priorCredit, $priorDebit, 2);
+            ? bcsub(bc_num($priorDebit), bc_num($priorCredit), 2)
+            : bcsub(bc_num($priorCredit), bc_num($priorDebit), 2);
 
         // 2. Ambil mutasi dalam periode
         $linesQuery = JournalLine::withoutTenantScope()
@@ -108,13 +108,14 @@ class GeneralLedgerInquiryService
 
             $currentBalance = bcadd($currentBalance, $movement, 2);
 
+            $journalEntry = $line->journalEntry;
             $processedLines->push([
                 'id' => $line->id,
                 'journal_id' => $line->journal_entry_id,
-                'journal_number' => $line->journalEntry->journal_number,
-                'posting_date' => $line->journalEntry->posting_date->toDateString(),
-                'source_type' => $line->journalEntry->source_type,
-                'source_number' => $line->journalEntry->source_number,
+                'journal_number' => $journalEntry?->journal_number,
+                'posting_date' => $journalEntry?->posting_date?->toDateString(),
+                'source_type' => $journalEntry?->source_type,
+                'source_number' => $journalEntry?->source_number,
                 'description' => $line->description,
                 'debit_amount' => $dr,
                 'credit_amount' => $cr,

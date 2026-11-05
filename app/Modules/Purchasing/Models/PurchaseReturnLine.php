@@ -24,12 +24,12 @@ use Illuminate\Support\Carbon;
  * @property int $line_number
  * @property string $purchasable_type
  * @property int $purchasable_id
- * @property string $return_qty
- * @property string $unit_cost
- * @property string $subtotal
- * @property string $tax_rate
- * @property string $tax_amount
- * @property string $total_amount
+ * @property numeric-string $return_qty
+ * @property numeric-string $unit_cost
+ * @property numeric-string $subtotal
+ * @property numeric-string $tax_rate
+ * @property numeric-string $tax_amount
+ * @property numeric-string $total_amount
  * @property string|null $reason
  * @property int|null $stock_movement_id
  * @property int|null $ingredient_stock_movement_id
@@ -96,6 +96,9 @@ class PurchaseReturnLine extends Model
         return $this->belongsTo(PurchaseOrderLine::class, 'purchase_order_line_id');
     }
 
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function purchasable(): MorphTo
     {
         return $this->morphTo();

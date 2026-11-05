@@ -40,8 +40,11 @@ class UserInvitationController extends Controller
      */
     public function store(StoreUserInvitationRequest $request): RedirectResponse
     {
+        $user = $request->user();
+        abort_unless($user !== null, 401);
+
         try {
-            $this->invitationService->issueInvitation($request->user(), $request->validated());
+            $this->invitationService->issueInvitation($user, $request->validated());
 
             return redirect()->route('users.index')
                 ->with('success', 'Undangan karyawan berhasil dikirim.');
@@ -58,8 +61,10 @@ class UserInvitationController extends Controller
     public function resend(Request $request, int $id): RedirectResponse
     {
         Gate::authorize('create', UserInvitation::class);
+        $user = $request->user();
+        abort_unless($user !== null, 401);
 
-        $this->invitationService->resendInvitation($request->user(), $id);
+        $this->invitationService->resendInvitation($user, $id);
 
         return redirect()->back()
             ->with('success', 'Undangan telah dikirim ulang.');
@@ -71,8 +76,10 @@ class UserInvitationController extends Controller
     public function revoke(Request $request, int $id): RedirectResponse
     {
         Gate::authorize('create', UserInvitation::class);
+        $user = $request->user();
+        abort_unless($user !== null, 401);
 
-        $this->invitationService->revokeInvitation($request->user(), $id);
+        $this->invitationService->revokeInvitation($user, $id);
 
         return redirect()->back()
             ->with('success', 'Undangan berhasil dicabut.');
@@ -123,7 +130,7 @@ class UserInvitationController extends Controller
 
         Auth::login($user);
         $request->session()->regenerate();
-        app(TenantContext::class)->setTenantId($user->tenant_id);
+        app(TenantContext::class)->setTenantId((int) $user->tenant_id);
 
         return redirect()->route('dashboard')
             ->with('success', 'Selamat datang! Akun karyawan Anda telah aktif.');

@@ -7,6 +7,7 @@ namespace App\Modules\Settings\Models;
 use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
 use App\Models\Tenant;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,7 +25,10 @@ use Illuminate\Support\Carbon;
 class TenantEntitlementOverride extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToTenant;
 
     protected $fillable = [
@@ -43,6 +47,9 @@ class TenantEntitlementOverride extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);

@@ -135,7 +135,7 @@
             x-on:keydown="handleKey({{ $i }}, $event)"
             x-on:paste="handlePaste($event)"
             x-on:focus="$el.select()"
-            class="size-11 rounded-medium border border-input bg-background text-center text-lg font-medium text-foreground shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-primary/10 dark:bg-input/30"
+            class="size-11 rounded-medium border border-input bg-background text-center text-lg font-medium text-foreground shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring"
         />
     @endfor
 </div>

@@ -49,7 +49,7 @@ class UnitOfMeasureController extends Controller
         $tenantId = app(TenantContext::class)->requireTenantId();
         $uom = UnitOfMeasure::create($request->validated());
 
-        $this->auditTrail->log(
+        $this->auditTrail?->log(
             tenantId: $tenantId,
             action: 'uom.created',
             userId: auth()->id(),
@@ -73,7 +73,7 @@ class UnitOfMeasureController extends Controller
 
         $unitOfMeasure->update($request->validated());
 
-        $this->auditTrail->log(
+        $this->auditTrail?->log(
             tenantId: $tenantId,
             action: 'uom.updated',
             userId: auth()->id(),
@@ -103,7 +103,7 @@ class UnitOfMeasureController extends Controller
 
             $unitOfMeasure->delete();
 
-            $this->auditTrail->log(
+            $this->auditTrail?->log(
                 tenantId: $tenantId,
                 action: 'uom.deleted',
                 userId: auth()->id(),

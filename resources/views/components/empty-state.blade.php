@@ -5,8 +5,8 @@
     'action' => null
 ])
 
-<div {{ $attributes->merge(['class' => 'flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-border bg-muted/40 dark:bg-zinc-900/40']) }}>
-    <div class="w-12 h-12 bg-card dark:bg-zinc-800 rounded-lg flex items-center justify-center mb-3 border border-border">
+<div {{ $attributes->merge(['class' => 'flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-border bg-muted']) }}>
+    <div class="w-12 h-12 bg-card rounded-lg flex items-center justify-center mb-3 border border-border">
         <x-ui.icon :name="$icon" size="xl" class="text-muted-foreground" />
     </div>
     <h3 class="text-lg font-bold text-foreground">{{ $title }}</h3>

@@ -11,6 +11,7 @@ use App\Core\Traits\ScopedToTenant;
 use App\Models\Ingredient;
 use App\Models\Product;
 use App\Models\Store;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,8 +27,8 @@ use Illuminate\Support\Carbon;
  * @property string $item_type // 'product' | 'ingredient'
  * @property ?int $product_id
  * @property ?int $ingredient_id
- * @property string $quantity
- * @property string $unit_cost
+ * @property numeric-string $quantity
+ * @property numeric-string $unit_cost
  * @property ?string $reason
  * @property ?string $notes
  * @property ?Carbon $created_at
@@ -37,7 +38,10 @@ class SupplierReturnItem extends Model
 {
     use AssignsStore;
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToStore;
     use ScopedToTenant;
 

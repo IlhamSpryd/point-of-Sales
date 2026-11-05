@@ -47,7 +47,8 @@ class StatutoryRuleVersion extends Model
     }
 
     /**
-     * @param  Builder<StatutoryRuleVersion>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeActiveOn(Builder $query, CarbonInterface|string $date): Builder
     {
@@ -61,7 +62,8 @@ class StatutoryRuleVersion extends Model
     }
 
     /**
-     * @param  Builder<StatutoryRuleVersion>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeCategory(Builder $query, string $category, string $jurisdiction = 'ID'): Builder
     {

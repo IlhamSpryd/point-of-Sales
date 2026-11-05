@@ -119,6 +119,8 @@ class MarginSimulationService
 
     /**
      * Memvalidasi apakah kampanye dapat dipublikasikan (Negative Margin Guard).
+     *
+     * @param  array<int, array{product: Product, quantity: float|int}>  $productsWithQty
      */
     public function canPublish(PromotionCampaign $campaign, User $actor, array $productsWithQty = []): bool
     {
@@ -199,13 +201,13 @@ class MarginSimulationService
     {
         $productIds = [];
         foreach ($campaign->rules as $rule) {
-            if (! empty($rule->trigger_product_ids) && is_array($rule->trigger_product_ids)) {
+            if (! empty($rule->trigger_product_ids)) {
                 $productIds = array_merge($productIds, $rule->trigger_product_ids);
             }
         }
 
         $query = Product::where('tenant_id', $campaign->tenant_id)->where('is_active', true);
-        if (! empty($productIds)) {
+        if ($productIds !== []) {
             $query->whereIn('id', array_unique($productIds));
         } else {
             $query->limit(10);

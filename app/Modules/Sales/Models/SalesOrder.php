@@ -16,17 +16,43 @@ use App\Models\User;
 use App\Modules\Sales\Enums\SalesOrderFulfillmentStatusEnum;
 use App\Modules\Sales\Enums\SalesOrderInvoicingStatusEnum;
 use App\Modules\Sales\Enums\SalesOrderStatusEnum;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property numeric-string $subtotal
+ * @property numeric-string $discount_amount
+ * @property numeric-string $tax_amount
+ * @property numeric-string $shipping_amount
+ * @property numeric-string $total_amount
+ * @property numeric-string $reserved_credit_amount
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int $customer_id
+ * @property int|null $quotation_id
+ * @property int|null $billing_address_id
+ * @property int|null $shipping_address_id
+ * @property int $payment_terms_days
+ * @property int|null $source_repeat_order_id
+ * @property int|null $credit_override_approved_by
+ * @property int $created_by_user_id
+ * @property int|null $confirmed_by_user_id
+ * @property int|null $cancelled_by_user_id
+ * @property array<int|string, mixed>|string|null $customer_snapshot_json
+ */
 class SalesOrder extends Model
 {
     use AssignsStore;
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToStore;
     use ScopedToTenant;
     use SoftDeletes;
@@ -90,71 +116,113 @@ class SalesOrder extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return BelongsTo<Quotation, $this>
+     */
     public function quotation(): BelongsTo
     {
         return $this->belongsTo(Quotation::class, 'quotation_id');
     }
 
+    /**
+     * @return BelongsTo<CustomerAddress, $this>
+     */
     public function billingAddress(): BelongsTo
     {
         return $this->belongsTo(CustomerAddress::class, 'billing_address_id');
     }
 
+    /**
+     * @return BelongsTo<CustomerAddress, $this>
+     */
     public function shippingAddress(): BelongsTo
     {
         return $this->belongsTo(CustomerAddress::class, 'shipping_address_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function confirmedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'confirmed_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function cancelledBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'cancelled_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function creditOverrideApprovedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'credit_override_approved_by');
     }
 
+    /**
+     * @return BelongsTo<self, $this>
+     */
     public function sourceRepeatOrder(): BelongsTo
     {
         return $this->belongsTo(self::class, 'source_repeat_order_id');
     }
 
+    /**
+     * @return HasMany<SalesOrderLine, $this>
+     */
     public function lines(): HasMany
     {
         return $this->hasMany(SalesOrderLine::class, 'sales_order_id')->orderBy('line_number');
     }
 
+    /**
+     * @return HasMany<Order, $this>
+     */
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class, 'sales_order_id');
     }
 
+    /**
+     * @return HasMany<CustomerInvoice, $this>
+     */
     public function invoices(): HasMany
     {
         return $this->hasMany(CustomerInvoice::class, 'sales_order_id');

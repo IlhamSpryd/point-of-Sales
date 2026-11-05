@@ -416,11 +416,11 @@ class ShiftService
     public function recordCashMovement(
         int $arg1,
         int $arg2,
-        $arg3,
-        $arg4 = null,
-        $arg5 = null,
-        $arg6 = null,
-        $arg7 = null,
+        mixed $arg3,
+        mixed $arg4 = null,
+        mixed $arg5 = null,
+        mixed $arg6 = null,
+        mixed $arg7 = null,
         ?string $approverPin = null
     ): ?CashDrawerMovement {
         if (is_string($arg3)) {
@@ -467,7 +467,10 @@ class ShiftService
 
             $activeCashierId = $shift->active_cashier_id ?? $shift->user_id;
             $user = User::withoutGlobalScopes()->find($userId);
-            $isSupervisor = $user && $this->canAuthorizeSupervisor($user, (int) $shift->store_id);
+            if (! $user) {
+                return null;
+            }
+            $isSupervisor = $this->canAuthorizeSupervisor($user, (int) $shift->store_id);
 
             if ((int) $activeCashierId !== (int) $userId && ! $isSupervisor) {
                 return null;
@@ -559,10 +562,10 @@ class ShiftService
      */
     public function closeShift(
         int $shiftIdOrUserId,
-        $arg2 = null,
-        $arg3 = null,
-        $arg4 = null,
-        $arg5 = null,
+        mixed $arg2 = null,
+        mixed $arg3 = null,
+        mixed $arg4 = null,
+        mixed $arg5 = null,
         bool $isForceClose = false,
         ?string $forceCloseReason = null
     ): ?Shift {
@@ -716,7 +719,8 @@ class ShiftService
         string $supervisorPin,
         string $reason
     ): Shift {
-        return $this->closeShift(
+        /** @var Shift $closedShift */
+        $closedShift = $this->closeShift(
             $shiftId,
             0,
             $supervisorUserId,
@@ -725,6 +729,8 @@ class ShiftService
             true,
             $reason
         );
+
+        return $closedShift;
     }
 
     /**

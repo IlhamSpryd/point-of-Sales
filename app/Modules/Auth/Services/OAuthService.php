@@ -25,7 +25,7 @@ class OAuthService
     public const INTENT_ACCEPT_INVITATION = 'accept_invitation';
 
     /**
-     * @var array<string, callable|array> Test payload fakes for unit/feature tests
+     * @var array<string, callable|array<string, mixed>> Test payload fakes for unit/feature tests
      */
     protected static array $testTokenPayloads = [];
 
@@ -324,6 +324,8 @@ class OAuthService
 
     /**
      * Konversi JWK RSA (n, e) ke PEM X.509 RSA public key menggunakan ASN.1 DER encoding.
+     *
+     * @param  array<string, mixed>  $jwk
      */
     public function jwkToPem(array $jwk): ?string
     {

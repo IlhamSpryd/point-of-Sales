@@ -20,6 +20,8 @@ class FinancialOutboxDispatcherService
 {
     /**
      * Menulis rekaman outbox finansial ke tabel financial_event_outboxes di dalam transaksi yang sama.
+     *
+     * @param  array<string, mixed>  $payload
      */
     public function recordOutboxEvent(
         int $tenantId,
@@ -88,7 +90,7 @@ class FinancialOutboxDispatcherService
             $qty = abs((float) $mov->quantity);
             // Ambil standard_cost atau moving average cost dari product
             $cost = (string) ($mov->product?->standard_cost ?? $mov->product?->cost_price ?? $mov->unit_cost ?? '0.00');
-            $lineCost = bcmul((string) $qty, $cost, 2);
+            $lineCost = bcmul(bc_num($qty), bc_num($cost), 2);
             $cogsRetail = bcadd($cogsRetail, $lineCost, 2);
         }
 
@@ -118,7 +120,8 @@ class FinancialOutboxDispatcherService
 
         foreach ($payments as $p) {
             $amt = bcadd((string) $p->amount, '0', 2);
-            $method = (string) ($p->payment_method->value ?? $p->payment_method);
+            $rawPm = $p->getAttribute('payment_method');
+            $method = $rawPm instanceof \BackedEnum ? (string) $rawPm->value : (string) $rawPm;
             $paymentDetails[] = [
                 'payment_id' => $p->id,
                 'method' => $method,
@@ -183,15 +186,16 @@ class FinancialOutboxDispatcherService
 
         foreach ($returnItems as $item) {
             $cost = (string) ($item->product?->standard_cost ?? $item->product?->cost_price ?? '0.00');
-            $lineCost = bcmul((string) $item->quantity_returned, $cost, 2);
+            $lineCost = bcmul(bc_num($item->quantity_returned), bc_num($cost), 2);
 
+            $rawDisposition = $item->getAttribute('disposition');
             $isRestock = false;
-            if (is_object($item->disposition) && method_exists($item->disposition, 'isRestock')) {
-                $isRestock = $item->disposition->isRestock();
-            } elseif (is_string($item->disposition)) {
-                $isRestock = $item->disposition === 'restock';
-            } elseif (is_object($item->disposition) && property_exists($item->disposition, 'value')) {
-                $isRestock = $item->disposition->value === 'restock';
+            if (is_object($rawDisposition) && method_exists($rawDisposition, 'isRestock')) {
+                $isRestock = $rawDisposition->isRestock();
+            } elseif (is_string($rawDisposition)) {
+                $isRestock = $rawDisposition === 'restock';
+            } elseif (is_object($rawDisposition) && property_exists($rawDisposition, 'value')) {
+                $isRestock = $rawDisposition->value === 'restock';
             }
 
             if ($isRestock) {

@@ -103,20 +103,29 @@ class TenantContext
     /**
      * Executes the given callback under the specified tenant (and optional store) context.
      * Restores the previous context afterwards.
+     *
+     * Bypass flag SELALU dinonaktifkan selama callback berjalan. Tanpa ini,
+     * pemanggilan runAs() setelah runWithoutTenant() (mis. provisioning:
+     * cek email -> buat tenant) akan mewarisi isBypassed = true sehingga
+     * TenantScope tidak aktif dan isolasi tenant fail-open. Flag dipulihkan
+     * ke nilai sebelumnya setelah callback selesai.
      */
     public function runAs(int $tenantId, ?int $storeId, Closure $cb): mixed
     {
         $prevTenantId = $this->tenantId;
         $prevStoreId = $this->storeId;
+        $prevBypassed = $this->isBypassed;
 
         $this->tenantId = $tenantId;
         $this->storeId = $storeId;
+        $this->isBypassed = false;
 
         try {
             return $cb();
         } finally {
             $this->tenantId = $prevTenantId;
             $this->storeId = $prevStoreId;
+            $this->isBypassed = $prevBypassed;
         }
     }
 

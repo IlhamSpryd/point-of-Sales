@@ -67,6 +67,6 @@ class CommissionManager extends Component
             'totalEarned' => $totalEarned,
             'totalReversed' => $totalReversed,
             'netCommission' => $totalEarned - $totalReversed,
-        ])->layout('layouts.app', ['header' => 'Rekapitulasi Komisi Penjualan']);
+        ])->layout('layouts.app', ['title' => 'Rekapitulasi Komisi Penjualan — Apeiron']);
     }
 }

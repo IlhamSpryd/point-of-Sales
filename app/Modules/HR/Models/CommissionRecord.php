@@ -26,8 +26,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $commission_rule_id
  * @property int $order_id
  * @property int|null $order_item_id
- * @property float $calculation_basis_amount
- * @property float $commission_amount
+ * @property numeric-string $calculation_basis_amount
+ * @property numeric-string $commission_amount
  * @property CommissionRecordTypeEnum $type
  * @property int|null $reversal_source_id
  * @property CommissionRecordStatusEnum $status
@@ -139,7 +139,8 @@ class CommissionRecord extends Model
     }
 
     /**
-     * @param  Builder<CommissionRecord>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopePending(Builder $query): Builder
     {

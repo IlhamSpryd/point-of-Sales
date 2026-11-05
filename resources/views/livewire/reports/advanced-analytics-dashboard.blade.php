@@ -47,7 +47,7 @@
     </div>
 
     {{-- Filter Bar --}}
-    <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-wrap items-center justify-between gap-4">
+    <div class="bg-white dark:bg-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-wrap items-center justify-between gap-4">
         {{-- Navigation Tabs --}}
         <div class="flex items-center gap-1 p-1 bg-zinc-100 dark:bg-zinc-900 rounded-lg">
             <button wire:click="setTab('sales')" type="button"
@@ -119,7 +119,7 @@
 
     {{-- Loading Skeleton State --}}
     <div wire:loading class="w-full">
-        <div class="p-8 bg-white dark:bg-[#1E1E1E] rounded-xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-center gap-3">
+        <div class="p-8 bg-white dark:bg-card rounded-xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-center gap-3">
             <span class="material-symbols-rounded text-2xl animate-spin text-indigo-600 dark:text-indigo-400">progress_activity</span>
             <span class="text-sm font-medium text-zinc-600 dark:text-zinc-300">Memuat data analitik...</span>
         </div>
@@ -133,7 +133,7 @@
                 {{-- MoM Growth Metric Cards --}}
                 @if (isset($momComparison))
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                        <div class="bg-white dark:bg-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
                             <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Pendapatan Bulan Berjalan</span>
                             <div class="mt-1 flex items-baseline justify-between">
                                 <span class="text-lg font-bold text-zinc-900 dark:text-zinc-100">Rp {{ number_format((float) $momComparison['current_revenue'], 0, ',', '.') }}</span>
@@ -144,7 +144,7 @@
                             <span class="text-[11px] text-zinc-400 mt-1 block">Bulan lalu: Rp {{ number_format((float) $momComparison['previous_revenue'], 0, ',', '.') }}</span>
                         </div>
 
-                        <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                        <div class="bg-white dark:bg-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
                             <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Total Pesanan</span>
                             <div class="mt-1 flex items-baseline justify-between">
                                 <span class="text-lg font-bold text-zinc-900 dark:text-zinc-100">{{ number_format($momComparison['current_orders']) }}</span>
@@ -155,7 +155,7 @@
                             <span class="text-[11px] text-zinc-400 mt-1 block">Bulan lalu: {{ number_format($momComparison['previous_orders']) }} pesanan</span>
                         </div>
 
-                        <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                        <div class="bg-white dark:bg-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
                             <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Rata-rata Nilai Pesanan (AOV)</span>
                             <div class="mt-1 flex items-baseline justify-between">
                                 <span class="text-lg font-bold text-zinc-900 dark:text-zinc-100">Rp {{ number_format((float) $momComparison['current_aov'], 0, ',', '.') }}</span>
@@ -166,7 +166,7 @@
                             <span class="text-[11px] text-zinc-400 mt-1 block">Bulan lalu: Rp {{ number_format((float) $momComparison['previous_aov'], 0, ',', '.') }}</span>
                         </div>
 
-                        <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                        <div class="bg-white dark:bg-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
                             <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Pertumbuhan Nominal Omzet</span>
                             @php
                                 $nominalDiff = bcsub($momComparison['current_revenue'], $momComparison['previous_revenue'], 2);
@@ -187,7 +187,7 @@
                 {{-- Top Products & Basket Analysis Tables --}}
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {{-- Top 10 SKU --}}
-                    <div class="bg-white dark:bg-[#1E1E1E] rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs p-5">
+                    <div class="bg-white dark:bg-card rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs p-5">
                         <div class="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800">
                             <h2 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Top 10 Produk Terlaris</h2>
                             <span class="text-xs text-zinc-400">Rentang Periode</span>
@@ -224,7 +224,7 @@
                     </div>
 
                     {{-- Market Basket Analysis (Co-occurrence) --}}
-                    <div class="bg-white dark:bg-[#1E1E1E] rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs p-5">
+                    <div class="bg-white dark:bg-card rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs p-5">
                         <div class="flex items-center justify-between pb-3 border-b border-zinc-100 dark:border-zinc-800">
                             <h2 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Market Basket Analysis (Pasangan Produk)</h2>
                             <span class="text-xs text-zinc-400">Cross-Selling</span>
@@ -267,7 +267,7 @@
             <div class="space-y-6">
                 {{-- Valuation & Turnover Cards --}}
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                    <div class="bg-white dark:bg-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
                         <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Total Valuasi Persediaan</span>
                         <div class="mt-1">
                             <span class="text-xl font-bold text-zinc-900 dark:text-zinc-100">Rp {{ number_format((float) ($valuation['total_valuation'] ?? 0), 0, ',', '.') }}</span>
@@ -275,7 +275,7 @@
                         <span class="text-[11px] text-zinc-400 mt-1 block">Status: {{ $valuation['reconciliation_status'] ?? 'MATCHED' }} ({{ $valuation['total_items_tracked'] ?? 0 }} SKU)</span>
                     </div>
 
-                    <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                    <div class="bg-white dark:bg-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
                         <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Rasio Perputaran (Turnover Rate)</span>
                         <div class="mt-1 flex items-baseline justify-between">
                             <span class="text-xl font-bold text-zinc-900 dark:text-zinc-100">{{ $turnover['turnover_ratio'] ?? '0.00' }}x</span>
@@ -286,7 +286,7 @@
                         <span class="text-[11px] text-zinc-400 mt-1 block">DSI: {{ $turnover['days_sales_of_inventory'] ?? '0' }} hari penjualan persediaan</span>
                     </div>
 
-                    <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                    <div class="bg-white dark:bg-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
                         <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Modal Tertanam di Stok Mati</span>
                         <div class="mt-1">
                             <span class="text-xl font-bold text-rose-600 dark:text-rose-400">Rp {{ number_format((float) ($deadStock['total_dead_stock_value'] ?? 0), 0, ',', '.') }}</span>
@@ -298,7 +298,7 @@
                 {{-- Stock Aging Buckets & Dead Stock List --}}
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {{-- Aging Buckets --}}
-                    <div class="bg-white dark:bg-[#1E1E1E] rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs p-5">
+                    <div class="bg-white dark:bg-card rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs p-5">
                         <h2 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 pb-3 border-b border-zinc-100 dark:border-zinc-800">
                             Distribusi Umur Stok (Stock Aging)
                         </h2>
@@ -319,7 +319,7 @@
                     </div>
 
                     {{-- Dead Stock Items --}}
-                    <div class="bg-white dark:bg-[#1E1E1E] rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs p-5">
+                    <div class="bg-white dark:bg-card rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs p-5">
                         <h2 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 pb-3 border-b border-zinc-100 dark:border-zinc-800">
                             Daftar Barang Mengendap (Dead Stock > 30 Hari)
                         </h2>
@@ -371,7 +371,7 @@
                 @if (isset($plSummary))
                     {{-- Executive P&L Cards --}}
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                        <div class="bg-white dark:bg-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
                             <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Total Pendapatan (Revenue)</span>
                             <div class="mt-1 text-xl font-bold text-zinc-900 dark:text-zinc-100">
                                 Rp {{ number_format((float) $plSummary['revenue'], 0, ',', '.') }}
@@ -379,7 +379,7 @@
                             <span class="text-[11px] text-zinc-400 mt-1 block">Buku Besar Akun 4xxx</span>
                         </div>
 
-                        <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                        <div class="bg-white dark:bg-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
                             <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Harga Pokok Penjualan (HPP)</span>
                             <div class="mt-1 text-xl font-bold text-zinc-900 dark:text-zinc-100">
                                 Rp {{ number_format((float) $plSummary['cogs'], 0, ',', '.') }}
@@ -387,7 +387,7 @@
                             <span class="text-[11px] text-zinc-400 mt-1 block">Buku Besar Akun 5xxx</span>
                         </div>
 
-                        <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                        <div class="bg-white dark:bg-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
                             <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Laba Kotor (Gross Profit)</span>
                             <div class="mt-1 flex items-baseline justify-between">
                                 <span class="text-xl font-bold text-emerald-600 dark:text-emerald-400">
@@ -400,7 +400,7 @@
                             <span class="text-[11px] text-zinc-400 mt-1 block">Margin Kotor Penjualan</span>
                         </div>
 
-                        <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                        <div class="bg-white dark:bg-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
                             <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Laba Bersih (Net Profit)</span>
                             <div class="mt-1 flex items-baseline justify-between">
                                 <span class="text-xl font-bold text-indigo-600 dark:text-indigo-400">
@@ -415,7 +415,7 @@
                     </div>
 
                     {{-- P&L Breakdown Table --}}
-                    <div class="bg-white dark:bg-[#1E1E1E] rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs p-5">
+                    <div class="bg-white dark:bg-card rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs p-5">
                         <h2 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 pb-3 border-b border-zinc-100 dark:border-zinc-800">
                             Rincian Pos Akun Buku Besar (Posting Terkonfirmasi)
                         </h2>
@@ -458,7 +458,7 @@
             <div class="space-y-6">
                 {{-- CLV & Loyalty Cards --}}
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                    <div class="bg-white dark:bg-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
                         <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Total Pelanggan Terlacak</span>
                         <div class="mt-1 text-xl font-bold text-zinc-900 dark:text-zinc-100">
                             {{ number_format($clvSummary['total_tracked_customers'] ?? 0) }} orang
@@ -466,7 +466,7 @@
                         <span class="text-[11px] text-zinc-400 mt-1 block">Pelanggan teridentifikasi transaksi</span>
                     </div>
 
-                    <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                    <div class="bg-white dark:bg-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
                         <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Rata-rata Nilai Seumur Hidup (CLV)</span>
                         <div class="mt-1 text-xl font-bold text-zinc-900 dark:text-zinc-100">
                             Rp {{ number_format((float) ($clvSummary['average_clv'] ?? 0), 0, ',', '.') }}
@@ -474,7 +474,7 @@
                         <span class="text-[11px] text-zinc-400 mt-1 block">Rata-rata {{ $clvSummary['average_order_frequency'] ?? '0' }}x belanja</span>
                     </div>
 
-                    <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                    <div class="bg-white dark:bg-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
                         <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Poin Loyalitas Diperoleh</span>
                         <div class="mt-1 text-xl font-bold text-emerald-600 dark:text-emerald-400">
                             +{{ number_format((float) ($loyaltyMovement['points_earned'] ?? 0), 0) }}
@@ -482,7 +482,7 @@
                         <span class="text-[11px] text-zinc-400 mt-1 block">Audit buku besar loyalty_ledger</span>
                     </div>
 
-                    <div class="bg-white dark:bg-[#1E1E1E] p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
+                    <div class="bg-white dark:bg-card p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs">
                         <span class="text-xs font-medium text-zinc-500 dark:text-zinc-400">Poin Ditukarkan (Redeemed)</span>
                         <div class="mt-1 text-xl font-bold text-amber-600 dark:text-amber-400">
                             -{{ number_format((float) ($loyaltyMovement['points_redeemed'] ?? 0), 0) }}
@@ -494,7 +494,7 @@
                 {{-- RFM Segments & Top Customers --}}
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {{-- RFM Segments --}}
-                    <div class="bg-white dark:bg-[#1E1E1E] rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs p-5">
+                    <div class="bg-white dark:bg-card rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs p-5">
                         <h2 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 pb-3 border-b border-zinc-100 dark:border-zinc-800">
                             Segmentasi Pelanggan RFM (Recency, Frequency, Monetary)
                         </h2>
@@ -515,7 +515,7 @@
                     </div>
 
                     {{-- Top Customers --}}
-                    <div class="bg-white dark:bg-[#1E1E1E] rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs p-5">
+                    <div class="bg-white dark:bg-card rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-xs p-5">
                         <h2 class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 pb-3 border-b border-zinc-100 dark:border-zinc-800">
                             Top 10 Pelanggan Paling Loyal
                         </h2>

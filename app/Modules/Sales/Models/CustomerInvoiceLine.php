@@ -10,14 +10,35 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Tenant;
 use App\Models\UnitOfMeasure;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property numeric-string $quantity
+ * @property numeric-string $unit_price
+ * @property numeric-string $discount_amount
+ * @property numeric-string $tax_rate
+ * @property numeric-string $tax_amount
+ * @property numeric-string $line_total
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $customer_invoice_id
+ * @property int|null $sales_order_line_id
+ * @property int|null $order_item_id
+ * @property int $line_number
+ * @property int $product_id
+ * @property int|null $variant_id
+ * @property int|null $uom_id
+ */
 class CustomerInvoiceLine extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToTenant;
 
     protected $fillable = [
@@ -51,31 +72,49 @@ class CustomerInvoiceLine extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<CustomerInvoice, $this>
+     */
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(CustomerInvoice::class, 'customer_invoice_id');
     }
 
+    /**
+     * @return BelongsTo<Product, $this>
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
+    /**
+     * @return BelongsTo<ProductVariant, $this>
+     */
     public function variant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class);
     }
 
+    /**
+     * @return BelongsTo<UnitOfMeasure, $this>
+     */
     public function uom(): BelongsTo
     {
         return $this->belongsTo(UnitOfMeasure::class);
     }
 
+    /**
+     * @return BelongsTo<SalesOrderLine, $this>
+     */
     public function salesOrderLine(): BelongsTo
     {
         return $this->belongsTo(SalesOrderLine::class);

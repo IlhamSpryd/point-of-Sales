@@ -17,7 +17,11 @@ final class GoFoodOrderNormalizer implements ChannelOrderNormalizer
 {
     public function normalize(array $payload): NormalizedChannelOrder
     {
-        $items = collect($payload['order_items'] ?? $payload['items'] ?? [])
+        /** @var array<int, array<string, mixed>> $rawItems */
+        $rawItems = is_array($payload['order_items'] ?? $payload['items'] ?? null)
+            ? array_values($payload['order_items'] ?? $payload['items'])
+            : [];
+        $items = collect($rawItems)
             ->map(fn (array $item) => new NormalizedChannelOrderItem(
                 externalProductId: (string) ($item['item_id'] ?? $item['sku'] ?? ''),
                 name: (string) ($item['name'] ?? 'Item GoFood'),

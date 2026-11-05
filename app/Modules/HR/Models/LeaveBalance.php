@@ -17,10 +17,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $employee_id
  * @property int $leave_policy_id
  * @property int $year
- * @property float $allocated_days
- * @property float $used_days
- * @property float $remaining_days
- * @property float $expired_days
+ * @property float|numeric-string $allocated_days
+ * @property float|numeric-string $used_days
+ * @property float|numeric-string $remaining_days
+ * @property numeric-string $expired_days
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
  * @property-read Tenant|null $tenant

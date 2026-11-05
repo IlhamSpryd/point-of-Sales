@@ -132,17 +132,17 @@ class CustomerRegistrationService
 
         // Jika diawali 0, ganti dengan +62 (Indonesia)
         if (str_starts_with($cleaned, '0')) {
-            return '+62' . substr($cleaned, 1);
+            return '+62'.substr($cleaned, 1);
         }
 
         // Jika diawali 62 tanpa '+', tambahkan '+'
         if (str_starts_with($cleaned, '62')) {
-            return '+' . $cleaned;
+            return '+'.$cleaned;
         }
 
         // Jika diawali angka 8 (misal 812xxxx), tambahkan +62
         if (str_starts_with($cleaned, '8')) {
-            return '+62' . $cleaned;
+            return '+62'.$cleaned;
         }
 
         // Jika sudah diawali '+', kembalikan langsung
@@ -150,7 +150,7 @@ class CustomerRegistrationService
             return $cleaned;
         }
 
-        return '+' . $cleaned;
+        return '+'.$cleaned;
     }
 
     /**
@@ -185,6 +185,6 @@ class CustomerRegistrationService
         $timestamp = (string) time();
         $random = str_pad((string) mt_rand(100, 999), 3, '0', STR_PAD_LEFT);
 
-        return "CUST-{$tenantId}-" . substr($timestamp, -5) . $random;
+        return "CUST-{$tenantId}-".substr($timestamp, -5).$random;
     }
 }

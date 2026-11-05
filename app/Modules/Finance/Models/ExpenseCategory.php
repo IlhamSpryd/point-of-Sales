@@ -38,16 +38,25 @@ class ExpenseCategory extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<ChartOfAccount, $this>
+     */
     public function glAccount(): BelongsTo
     {
         return $this->belongsTo(ChartOfAccount::class, 'expense_gl_account_id');
     }
 
+    /**
+     * @return HasMany<Expense, $this>
+     */
     public function expenses(): HasMany
     {
         return $this->hasMany(Expense::class, 'category_id');

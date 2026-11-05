@@ -17,7 +17,7 @@
                     value="{{ request($searchName) }}"
                     placeholder="{{ $searchPlaceholder }}"
                     aria-label="{{ $searchPlaceholder }}"
-                    class="h-9 w-full rounded-medium border border-input bg-background pl-9 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-primary/10 outline-none"
+                    class="h-9 w-full rounded-medium border border-input bg-background pl-9 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring outline-none"
                 />
             </form>
         @elseif ($searchModel)
@@ -28,7 +28,7 @@
                     wire:model.live.debounce.300ms="{{ $searchModel }}"
                     placeholder="{{ $searchPlaceholder }}"
                     aria-label="{{ $searchPlaceholder }}"
-                    class="h-9 w-full rounded-medium border border-input bg-background pl-9 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-primary/10 outline-none"
+                    class="h-9 w-full rounded-medium border border-input bg-background pl-9 pr-3 text-xs sm:text-sm text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring outline-none"
                 />
             </div>
         @endif

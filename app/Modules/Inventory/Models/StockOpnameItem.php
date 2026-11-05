@@ -12,6 +12,7 @@ use App\Enums\StockOpnameDriftResolutionEnum;
 use App\Models\Ingredient;
 use App\Models\Product;
 use App\Models\Store;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,7 +28,7 @@ use Illuminate\Support\Carbon;
  * @property string $item_type // 'product' | 'ingredient'
  * @property ?int $product_id
  * @property ?int $ingredient_id
- * @property string $snapshot_on_hand
+ * @property numeric-string $snapshot_on_hand
  * @property ?int $snapshot_last_movement_id
  * @property ?string $counted_quantity
  * @property ?string $variance_quantity
@@ -41,7 +42,10 @@ class StockOpnameItem extends Model
 {
     use AssignsStore;
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToStore;
     use ScopedToTenant;
 

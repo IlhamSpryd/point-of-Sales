@@ -9,6 +9,17 @@ use App\Models\Concerns\ScopedToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property numeric-string $quantity
+ * @property numeric-string|null $unit_cost
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int $ingredient_id
+ * @property int|null $order_id
+ * @property int|null $order_item_id
+ * @property int|null $created_by
+ */
 class IngredientStockMovement extends Model
 {
     use AssignsTenant, ScopedToTenant;

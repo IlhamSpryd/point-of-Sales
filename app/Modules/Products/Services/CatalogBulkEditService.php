@@ -59,7 +59,7 @@ class CatalogBulkEditService
 
             $this->menuCache->flush($tenantId);
 
-            $this->auditTrail->log(
+            $this->auditTrail?->log(
                 tenantId: $tenantId,
                 action: 'catalog.bulk_update_status',
                 description: "Memperbarui status {$updatedCount} produk menjadi '{$newStatus}'.",
@@ -112,7 +112,7 @@ class CatalogBulkEditService
 
             $this->menuCache->flush($tenantId);
 
-            $this->auditTrail->log(
+            $this->auditTrail?->log(
                 tenantId: $tenantId,
                 action: 'catalog.bulk_update_category',
                 description: "Memperbarui kategori untuk {$updatedCount} produk.",
@@ -171,7 +171,7 @@ class CatalogBulkEditService
 
             $this->menuCache->flush($tenantId);
 
-            $this->auditTrail->log(
+            $this->auditTrail?->log(
                 tenantId: $tenantId,
                 action: 'catalog.bulk_update_price',
                 description: "Memperbarui harga untuk {$updatedCount} produk dengan mode '{$mode}'.",
@@ -249,7 +249,7 @@ class CatalogBulkEditService
 
             $this->menuCache->flush($tenantId, $storeId);
 
-            $this->auditTrail->log(
+            $this->auditTrail?->log(
                 tenantId: $tenantId,
                 action: 'catalog.bulk_update_assortment',
                 description: "Memperbarui asortimen cabang {$storeId} untuk {$updatedCount} produk.",

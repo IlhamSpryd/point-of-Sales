@@ -18,12 +18,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $supplier_invoice_id
  * @property int $supplier_invoice_line_id
  * @property int $goods_received_note_line_id
- * @property string $matched_qty
- * @property string $po_unit_price
- * @property string $invoice_unit_price
- * @property string $qty_variance
- * @property string $price_variance_amount
- * @property string $tax_variance_amount
+ * @property numeric-string $matched_qty
+ * @property numeric-string $po_unit_price
+ * @property numeric-string $invoice_unit_price
+ * @property numeric-string $qty_variance
+ * @property numeric-string $price_variance_amount
+ * @property numeric-string $tax_variance_amount
  * @property string $variance_status
  * @property bool $is_variance_approved
  * @property int|null $variance_approved_by_user_id
@@ -60,6 +60,9 @@ class SupplierInvoiceGrnMatch extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
@@ -89,6 +92,9 @@ class SupplierInvoiceGrnMatch extends Model
         return $this->belongsTo(GoodsReceivedNoteLine::class, 'goods_received_note_line_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function varianceApprovedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'variance_approved_by_user_id');

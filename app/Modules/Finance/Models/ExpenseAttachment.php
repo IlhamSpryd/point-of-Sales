@@ -38,11 +38,17 @@ class ExpenseAttachment extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Expense, $this>
+     */
     public function expense(): BelongsTo
     {
         return $this->belongsTo(Expense::class, 'expense_id');

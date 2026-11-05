@@ -7,30 +7,30 @@
 @php
     $config = match($type) {
         'error', 'danger', 'rose' => [
-            'class' => 'bg-rose-50 border border-rose-200 text-rose-800',
+            'class' => 'bg-destructive-muted border border-destructive-border text-destructive',
             'icon' => 'error',
-            'btn' => 'text-rose-500 hover:text-rose-700',
+            'btn' => 'text-destructive hover:text-destructive',
             'role' => 'alert',
             'ariaLive' => 'assertive',
         ],
         'warning', 'amber' => [
-            'class' => 'bg-amber-50 border border-amber-200 text-amber-800',
+            'class' => 'bg-warning-muted border border-warning-border text-warning',
             'icon' => 'warning',
-            'btn' => 'text-amber-500 hover:text-amber-700',
+            'btn' => 'text-warning hover:text-warning',
             'role' => 'status',
             'ariaLive' => 'polite',
         ],
         'info', 'blue', 'sky' => [
-            'class' => 'bg-sky-50 border border-sky-200 text-sky-800',
+            'class' => 'bg-info-muted border border-info-border text-info',
             'icon' => 'info',
-            'btn' => 'text-sky-500 hover:text-sky-700',
+            'btn' => 'text-info hover:text-info',
             'role' => 'status',
             'ariaLive' => 'polite',
         ],
         default => [ // success
-            'class' => 'bg-emerald-50 border border-emerald-200 text-emerald-800',
+            'class' => 'bg-success-muted border border-success-border text-success',
             'icon' => 'check_circle',
-            'btn' => 'text-emerald-500 hover:text-emerald-700',
+            'btn' => 'text-success hover:text-success',
             'role' => 'status',
             'ariaLive' => 'polite',
         ],

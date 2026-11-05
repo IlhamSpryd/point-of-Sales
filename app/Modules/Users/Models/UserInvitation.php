@@ -7,6 +7,7 @@ use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\UserInvitationStore;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -33,6 +34,7 @@ use Illuminate\Support\Carbon;
  */
 class UserInvitation extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     public const STATUS_PENDING = 'pending';
@@ -79,26 +81,41 @@ class UserInvitation extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Role, $this>
+     */
     public function role(): BelongsTo
     {
         return $this->belongsTo(Role::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function invitedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'invited_by_user_id');
     }
 
+    /**
+     * @return BelongsToMany<Store, $this>
+     */
     public function stores(): BelongsToMany
     {
         return $this->belongsToMany(Store::class, 'user_invitation_stores');
     }
 
+    /**
+     * @return HasMany<UserInvitationStore, $this>
+     */
     public function invitationStores(): HasMany
     {
         return $this->hasMany(UserInvitationStore::class);

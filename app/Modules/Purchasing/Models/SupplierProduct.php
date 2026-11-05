@@ -12,6 +12,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property numeric-string $uom_conversion_factor
+ * @property numeric-string $standard_price
+ * @property numeric-string|null $last_purchase_price
+ * @property numeric-string $min_order_qty
+ * @property numeric-string $order_multiple_qty
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $supplier_id
+ * @property int $purchasable_id
+ * @property int $lead_time_days
+ */
 class SupplierProduct extends Model
 {
     use AssignsTenant;
@@ -39,16 +51,25 @@ class SupplierProduct extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Supplier, $this>
+     */
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class, 'supplier_id');
     }
 
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function purchasable(): MorphTo
     {
         return $this->morphTo();
@@ -56,10 +77,12 @@ class SupplierProduct extends Model
 
     /**
      * Konversi kuantitas dari purchase UoM ke base stock UoM menggunakan BCMath.
+     *
+     * @return numeric-string
      */
     public function calculateBaseQty(string|int|float $purchaseQty): string
     {
-        return bcmul((string) $purchaseQty, (string) $this->uom_conversion_factor, 4);
+        return bcmul(bc_num($purchaseQty), bc_num($this->uom_conversion_factor), 4);
     }
 
     /**

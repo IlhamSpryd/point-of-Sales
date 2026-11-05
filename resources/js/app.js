@@ -14,7 +14,14 @@ if (typeof window !== 'undefined') {
 initErpMotion();
 initSidebarPersistence();
 
+document.addEventListener('alpine:init', () => {
+    // Livewire 4 sudah membundel & mem-boot Alpine sendiri. Daftarkan direktif
+    // kami ke instance yang BENAR (window.Alpine), bukan instance import lokal.
+    registerGsapAlpineDirectives(window.Alpine ?? Alpine);
+});
+
 document.addEventListener('DOMContentLoaded', () => {
+    // Fallback: hanya boot Alpine sendiri bila Livewire (yang menyediakannya) absen.
     if (typeof window.Livewire === 'undefined' && !window.Alpine) {
         window.Alpine = Alpine;
         registerGsapAlpineDirectives(Alpine);

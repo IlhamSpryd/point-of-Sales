@@ -52,12 +52,27 @@ class LoyaltyService
     }
 
     /**
-     * Hitung perolehan poin (earn) murni dari DPP:
+     * Mengonversi input numerik menjadi numeric-string aman bagi BCMath.
+     *
+     * @return numeric-string
+     */
+    private function toNumericString(string|int|float $value, int $scale = 4): string
+    {
+        $raw = is_string($value) && is_numeric($value) ? $value : (string) $value;
+        /** @var numeric-string $safeRaw */
+        $safeRaw = is_numeric($raw) ? $raw : '0';
+
+        return bcadd($safeRaw, '0', $scale);
+    }
+
+    /**
+     * Hitung perolehan poin (earn) murni dari DPP berbasis BCMath:
      * EarnPoints = floor(DPP / 10000) * TierMultiplier
      */
-    public function calculateEarnablePoints(Customer $customer, float $dpp): int
+    public function calculateEarnablePoints(Customer $customer, string|int|float $dpp): int
     {
-        if ($dpp <= 0) {
+        $dppStr = $this->toNumericString($dpp, 4);
+        if (bccomp($dppStr, '0.0000', 4) <= 0) {
             return 0;
         }
 
@@ -68,15 +83,15 @@ class LoyaltyService
             ->where('customer_id', $customer->id)
             ->first();
 
-        $multiplier = 1.00;
+        $multiplier = '1.0000';
         if ($account && $account->current_tier_id) {
             $tier = DB::table('loyalty_tiers')
                 ->where('tenant_id', $tenantId)
                 ->where('id', $account->current_tier_id)
                 ->where('is_active', true)
                 ->first();
-            if ($tier) {
-                $multiplier = (float) $tier->points_multiplier;
+            if ($tier && is_numeric((string) $tier->points_multiplier)) {
+                $multiplier = $this->toNumericString((string) $tier->points_multiplier, 4);
             }
         } else {
             $baseTier = DB::table('loyalty_tiers')
@@ -84,39 +99,58 @@ class LoyaltyService
                 ->where('is_active', true)
                 ->where('min_points', 0)
                 ->first();
-            if ($baseTier) {
-                $multiplier = (float) $baseTier->points_multiplier;
+            if ($baseTier && is_numeric((string) $baseTier->points_multiplier)) {
+                $multiplier = $this->toNumericString((string) $baseTier->points_multiplier, 4);
             }
         }
 
-        $baseUnits = floor($dpp / 10000);
-        $earned = (int) floor($baseUnits * $multiplier);
+        $dppIntPart = (int) explode('.', $dppStr)[0];
+        $baseUnits = intdiv($dppIntPart, 10000);
+        if ($baseUnits <= 0) {
+            return 0;
+        }
+
+        $baseUnitsStr = (string) $baseUnits;
+        $rawPoints = bcmul($baseUnitsStr, $multiplier, 4);
+        $earned = (int) explode('.', $rawPoints)[0];
 
         return max(0, $earned);
     }
 
     /**
-     * Konversi poin loyalitas ke nilai rupiah diskon (1 Poin = Rp100).
+     * Konversi poin loyalitas ke nilai rupiah diskon (1 Poin = Rp100) dalam numeric-string.
+     *
+     * @return numeric-string
      */
-    public function calculateRedeemValue(int $points): float
+    public function calculateRedeemValue(int $points): string
     {
         if ($points <= 0) {
-            return 0.0;
+            return '0.00';
         }
 
-        return (float) bcmul((string) $points, '100', 2);
+        $pointsStr = (string) $points;
+
+        return bcmul($pointsStr, '100', 2);
     }
 
     /**
-     * Konversi nilai rupiah diskon ke kebutuhan poin (1 Poin = Rp100).
+     * Konversi nilai rupiah diskon ke kebutuhan poin (1 Poin = Rp100, dibulatkan ke atas) menggunakan BCMath.
      */
-    public function calculatePointsForDiscount(float $discountAmount): int
+    public function calculatePointsForDiscount(string|int|float $discountAmount): int
     {
-        if ($discountAmount <= 0) {
+        $discStr = $this->toNumericString($discountAmount, 4);
+        if (bccomp($discStr, '0.0000', 4) <= 0) {
             return 0;
         }
 
-        return (int) ceil($discountAmount / 100);
+        $rawQuotient = bcdiv($discStr, '100', 6);
+        $parts = explode('.', $rawQuotient);
+        $quotient = (int) $parts[0];
+        if (isset($parts[1]) && rtrim($parts[1], '0') !== '') {
+            $quotient++;
+        }
+
+        return $quotient;
     }
 
     /**
@@ -160,7 +194,7 @@ class LoyaltyService
     /**
      * Berikan poin loyalitas (Earn) kepada pelanggan atas transaksi.
      *
-     * @return array{customer_id: int, points_earned: int, balance_after: int, ledger_id: int}
+     * @return array<string, mixed>
      */
     public function earnPoints(
         Customer $customer,
@@ -189,7 +223,7 @@ class LoyaltyService
     /**
      * Tukarkan poin loyalitas (Redeem) untuk diskon / reward.
      *
-     * @return array{customer_id: int, points_redeemed: int, balance_after: int, ledger_id: int}
+     * @return array<string, mixed>
      */
     public function redeemPoints(
         Customer $customer,
@@ -218,7 +252,7 @@ class LoyaltyService
     /**
      * Reversal pemotongan poin akibat pembatalan atau retur penjualan.
      *
-     * @return array{customer_id: int, points_reversed: int, balance_after: int, ledger_id: int}
+     * @return array<string, mixed>
      */
     public function reversePoints(
         Customer $customer,
@@ -246,6 +280,8 @@ class LoyaltyService
 
     /**
      * Penyesuaian manual (Adjustment / Bonus / Expiry) oleh user berwenang.
+     *
+     * @return array<string, mixed>
      */
     public function adjustPoints(
         Customer $customer,
@@ -278,6 +314,8 @@ class LoyaltyService
     /**
      * Eksekusi mutasi buku besar poin loyalitas dengan penguncian deterministik A0/A8
      * dan koeksistensi trigger DB trg_loyalty_ledger_sync_account.
+     *
+     * @return array<string, mixed>
      */
     protected function recordLoyaltyMutation(
         Customer $customer,

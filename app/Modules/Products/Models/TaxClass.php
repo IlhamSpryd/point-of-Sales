@@ -7,6 +7,7 @@ namespace App\Modules\Products\Models;
 use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
 use App\Models\Product;
+use Database\Factories\TaxClassFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -15,11 +16,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * TaxClass: Master klasifikasi dan tarif persentase pajak produk per tenant.
  *
  * @property array<int, array<string, mixed>>|null $composite_rates
+ * @property numeric-string $rate
+ * @property int $id
+ * @property int $tenant_id
  */
 class TaxClass extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<TaxClassFactory> */
     use HasFactory;
+
     use ScopedToTenant;
 
     protected $table = 'tax_classes';
@@ -84,6 +91,9 @@ class TaxClass extends Model
         return $total;
     }
 
+    /**
+     * @return HasMany<Product, $this>
+     */
     public function products(): HasMany
     {
         return $this->hasMany(Product::class, 'tax_class_id');

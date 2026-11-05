@@ -22,9 +22,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $category_id
  * @property string $expense_number
  * @property CarbonInterface|string $expense_date
- * @property string $subtotal_amount
- * @property string $tax_amount
- * @property string $total_amount
+ * @property numeric-string $subtotal_amount
+ * @property numeric-string $tax_amount
+ * @property numeric-string $total_amount
  * @property string|null $description
  * @property ExpenseStatusEnum $status
  * @property int|null $submitted_by_user_id
@@ -63,61 +63,97 @@ class Expense extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<ExpenseCategory, $this>
+     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(ExpenseCategory::class, 'category_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function submittedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'submitted_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function approvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<CashBankAccount, $this>
+     */
     public function cashBankAccount(): BelongsTo
     {
         return $this->belongsTo(CashBankAccount::class, 'cash_bank_account_id');
     }
 
+    /**
+     * @return BelongsTo<CashBankTransaction, $this>
+     */
     public function cashBankTransaction(): BelongsTo
     {
         return $this->belongsTo(CashBankTransaction::class, 'cash_bank_transaction_id');
     }
 
+    /**
+     * @return BelongsTo<JournalEntry, $this>
+     */
     public function accrualJournal(): BelongsTo
     {
         return $this->belongsTo(JournalEntry::class, 'accrual_journal_id');
     }
 
+    /**
+     * @return BelongsTo<JournalEntry, $this>
+     */
     public function paymentJournal(): BelongsTo
     {
         return $this->belongsTo(JournalEntry::class, 'payment_journal_id');
     }
 
+    /**
+     * @return HasMany<ExpenseLine, $this>
+     */
     public function lines(): HasMany
     {
         return $this->hasMany(ExpenseLine::class, 'expense_id');
     }
 
+    /**
+     * @return HasMany<ExpenseAttachment, $this>
+     */
     public function attachments(): HasMany
     {
         return $this->hasMany(ExpenseAttachment::class, 'expense_id');
     }
 
+    /**
+     * @return HasMany<ExpenseApproval, $this>
+     */
     public function approvals(): HasMany
     {
         return $this->hasMany(ExpenseApproval::class, 'expense_id');

@@ -31,7 +31,9 @@ class Wave2PricingTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private Category $category;
 
     protected function afterSubclassSetUp(): void
@@ -214,7 +216,7 @@ class Wave2PricingTest extends TestCase
         // Buat Role Supervisor dan User Supervisor dengan bcrypt PIN nyata
         $supervisorRole = Role::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'role_code' => 'SPV-' . uniqid(),
+            'role_code' => 'SPV-'.uniqid(),
             'name' => 'Supervisor',
             'is_active' => true,
         ]);
@@ -222,7 +224,7 @@ class Wave2PricingTest extends TestCase
         User::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Supervisor Budi',
-            'email' => 'spv.' . uniqid() . '@example.com',
+            'email' => 'spv.'.uniqid().'@example.com',
             'password' => Hash::make('secret'),
             'pin_hash' => Hash::make('889900'),
             'role_id' => $supervisorRole->id,

@@ -30,9 +30,9 @@
                 input.dispatchEvent(new Event('change', { bubbles: true }));
             }
         }"
-        {{ $attributes->only('class')->twMerge('flex h-9 w-full items-stretch overflow-hidden rounded-medium border border-input bg-background shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-primary/10 dark:bg-input/30 '.($errorKey && $errors->has($errorKey) ? 'border-destructive ring-destructive/20' : '')) }}>
+        {{ $attributes->only('class')->twMerge('flex h-9 w-full items-stretch overflow-hidden rounded-medium border border-input bg-background shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-[3px] focus-within:ring-ring '.($errorKey && $errors->has($errorKey) ? 'border-destructive ring-destructive-border' : '')) }}>
         <button type="button" @click="stepBy(-1)" tabindex="-1" aria-label="Decrease" @disabled($disabled)
-            class="flex w-9 shrink-0 items-center justify-center border-r border-input text-foreground/50 outline-none transition hover:bg-secondary hover:text-foreground disabled:pointer-events-none disabled:opacity-40">
+            class="flex w-9 shrink-0 items-center justify-center border-r border-input text-muted-foreground outline-none transition hover:bg-secondary hover:text-foreground disabled:pointer-events-none disabled:opacity-40">
             <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14" /></svg>
         </button>
         <input
@@ -47,10 +47,10 @@
             @disabled($disabled)
             @if($errorKey && $errors->has($errorKey)) aria-invalid="true" @endif
             {{ $attributes->withoutTwMergeClasses()->except(['class']) }}
-            class="w-full min-w-0 flex-1 border-none bg-transparent px-2 text-center text-base text-foreground outline-none [appearance:textfield] selection:bg-primary selection:text-primary-foreground placeholder:text-foreground/30 focus:outline-none focus:ring-0 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            class="w-full min-w-0 flex-1 border-none bg-transparent px-2 text-center text-base text-foreground outline-none [appearance:textfield] selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
         />
         <button type="button" @click="stepBy(1)" tabindex="-1" aria-label="Increase" @disabled($disabled)
-            class="flex w-9 shrink-0 items-center justify-center border-l border-input text-foreground/50 outline-none transition hover:bg-secondary hover:text-foreground disabled:pointer-events-none disabled:opacity-40">
+            class="flex w-9 shrink-0 items-center justify-center border-l border-input text-muted-foreground outline-none transition hover:bg-secondary hover:text-foreground disabled:pointer-events-none disabled:opacity-40">
             <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M12 5v14" /></svg>
         </button>
     </div>

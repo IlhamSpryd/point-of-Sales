@@ -33,7 +33,7 @@ class GiftCardService
         $tenantId = (int) $this->tenantContext->requireTenantId();
         $storeId = (int) ($data['store_id'] ?? $this->tenantContext->getStoreId() ?? 0);
 
-        $initialAmount = bcadd((string) ($data['amount'] ?? $data['initial_amount'] ?? '0'), '0', 2);
+        $initialAmount = bcadd(bc_num($data['amount'] ?? $data['initial_amount'] ?? '0'), '0', 2);
         if (bccomp($initialAmount, '0.00', 2) <= 0) {
             throw ValidationException::withMessages(['amount' => ['Nilai saldo awal Gift Card harus lebih besar dari 0.']]);
         }
@@ -113,7 +113,7 @@ class GiftCardService
     ): array {
         $tenantId = (int) $this->tenantContext->requireTenantId();
         $cardNumber = strtoupper(trim($cardNumber));
-        $redeemAmount = bcadd($amount, '0', 2);
+        $redeemAmount = bcadd(bc_num($amount), '0', 2);
 
         if (bccomp($redeemAmount, '0.00', 2) <= 0) {
             throw new DomainException('Jumlah penukaran saldo Gift Card harus lebih besar dari 0.');
@@ -183,6 +183,8 @@ class GiftCardService
 
     /**
      * Kembalikan dana / reversal retur ke Gift Card.
+     *
+     * @return array<string, mixed>
      */
     public function refundToGiftCard(
         string $cardNumber,
@@ -195,7 +197,7 @@ class GiftCardService
     ): array {
         $tenantId = (int) $this->tenantContext->requireTenantId();
         $cardNumber = strtoupper(trim($cardNumber));
-        $refundAmount = bcadd($amount, '0', 2);
+        $refundAmount = bcadd(bc_num($amount), '0', 2);
 
         if (bccomp($refundAmount, '0.00', 2) <= 0) {
             throw new DomainException('Jumlah pengembalian ke Gift Card harus lebih besar dari 0.');

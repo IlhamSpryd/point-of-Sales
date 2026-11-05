@@ -20,8 +20,6 @@ use App\Modules\Sales\Enums\CustomerInvoiceStatusEnum;
 use App\Modules\Sales\Enums\SalesOrderFulfillmentStatusEnum;
 use App\Modules\Sales\Enums\SalesOrderStatusEnum;
 use App\Modules\Sales\Models\CustomerInvoice;
-use App\Modules\Sales\Models\Quotation;
-use App\Modules\Sales\Models\SalesOrder;
 use App\Modules\Sales\Services\B2BSalesOrderService;
 use App\Services\Context\TenantContext;
 use DomainException;
@@ -34,11 +32,17 @@ class Wave4B2bSalesOrderTest extends TestCase
     use RefreshDatabase;
 
     protected Tenant $tenant;
+
     protected Store $store;
+
     protected User $salesUser;
+
     protected Customer $customer;
+
     protected Product $product;
+
     protected B2BSalesOrderService $b2bSalesService;
+
     protected InventoryLedgerService $inventoryLedgerService;
 
     protected function afterSubclassSetUp(): void

@@ -50,20 +50,20 @@
         {{ $attributes->withoutTwMergeClasses()->except(['class']) }}
     />
 
-    <span {{ $attributes->twMergeFor('track', $trackClasses . ' relative inline-flex flex-shrink-0 items-center rounded-full bg-foreground/15 transition-colors duration-200 ease-out group-data-checked:bg-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary/20 peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background') }}>
-        <span {{ $attributes->twMergeFor('thumb', $thumbClasses . ' pointer-events-none ml-0.5 inline-block transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-out') }}></span>
+    <span {{ $attributes->twMergeFor('track', $trackClasses . ' relative inline-flex flex-shrink-0 items-center rounded-full bg-secondary transition-colors duration-200 ease-out group-data-checked:bg-primary peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-background') }}>
+        <span {{ $attributes->twMergeFor('thumb', $thumbClasses . ' pointer-events-none ml-0.5 inline-block transform rounded-full bg-background shadow-sm ring-0 transition duration-200 ease-out') }}></span>
     </span>
 
     @if ($label || $description)
         <span class="flex flex-col">
             @if ($label)
-                <span {{ $attributes->twMergeFor('label', 'text-sm font-medium select-none text-foreground/90') }}>
+                <span {{ $attributes->twMergeFor('label', 'text-sm font-medium select-none text-foreground') }}>
                     {{ $label }}
                 </span>
             @endif
 
             @if ($description)
-                <span {{ $attributes->twMergeFor('description', 'text-sm text-foreground/50') }}>
+                <span {{ $attributes->twMergeFor('description', 'text-sm text-muted-foreground') }}>
                     {{ $description }}
                 </span>
             @endif

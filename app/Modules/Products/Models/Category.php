@@ -5,6 +5,7 @@ namespace App\Modules\Products\Models;
 use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
 use App\Models\Product;
+use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,11 +27,15 @@ use Illuminate\Support\Str;
  * @property int $sort_order
  * @property bool $is_active
  * @property-read Category|null $parent
+ * @property int|null $name_uniqueness_key
  */
 class Category extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<CategoryFactory> */
     use HasFactory;
+
     use ScopedToTenant;
     use SoftDeletes;
 
@@ -48,7 +53,7 @@ class Category extends Model
         'is_active',
     ];
 
-    public function setNameAttribute($value): void
+    public function setNameAttribute(mixed $value): void
     {
         $this->attributes['category_name'] = $value;
     }
@@ -58,7 +63,7 @@ class Category extends Model
         return $this->attributes['category_name'] ?? null;
     }
 
-    public function setSlugAttribute($value): void
+    public function setSlugAttribute(mixed $value): void
     {
         // Table categories does not have a slug column; virtual attribute ignored during insertion
     }
@@ -89,6 +94,8 @@ class Category extends Model
 
     /**
      * Relasi (BelongsTo): Kategori induk (jika hierarkis).
+     *
+     * @return BelongsTo<Category, $this>
      */
     public function parent(): BelongsTo
     {
@@ -97,6 +104,8 @@ class Category extends Model
 
     /**
      * Relasi (HasMany): Subkategori turunan.
+     *
+     * @return HasMany<Category, $this>
      */
     public function children(): HasMany
     {
@@ -105,6 +114,8 @@ class Category extends Model
 
     /**
      * Relasi (HasMany): Sebuah kategori lazimnya memayungi banyak daftar produk.
+     *
+     * @return HasMany<Product, $this>
      */
     public function products(): HasMany
     {
@@ -113,6 +124,9 @@ class Category extends Model
 
     /**
      * Scope: Kategori aktif saja.
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeActive(Builder $query): Builder
     {
@@ -121,6 +135,9 @@ class Category extends Model
 
     /**
      * Scope: Kategori tingkat teratas (tanpa parent).
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeRoot(Builder $query): Builder
     {

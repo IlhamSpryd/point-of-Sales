@@ -106,7 +106,7 @@ class PurchaseRequestService
                 }
 
                 $requestedQty = (string) ($line['requested_qty'] ?? '0.0000');
-                if (bccomp($requestedQty, '0', 4) <= 0) {
+                if (bccomp(bc_num($requestedQty), '0', 4) <= 0) {
                     throw ValidationException::withMessages([
                         "lines.{$index}.requested_qty" => ['Kuantitas permintaan harus lebih besar dari 0.'],
                     ]);
@@ -120,13 +120,13 @@ class PurchaseRequestService
                 }
 
                 $unitPrice = (string) ($line['estimated_unit_price'] ?? '0.0000');
-                if (bccomp($unitPrice, '0', 4) < 0) {
+                if (bccomp(bc_num($unitPrice), '0', 4) < 0) {
                     throw ValidationException::withMessages([
                         "lines.{$index}.estimated_unit_price" => ['Estimasi harga satuan tidak boleh negatif.'],
                     ]);
                 }
 
-                $subtotal = bcmul($requestedQty, $unitPrice, 2);
+                $subtotal = bcmul(bc_num($requestedQty), bc_num($unitPrice), 2);
                 $totalEstimatedAmount = bcadd($totalEstimatedAmount, $subtotal, 2);
 
                 PurchaseRequestLine::query()->create([
@@ -203,7 +203,7 @@ class PurchaseRequestService
                 $uom = trim((string) ($line['uom'] ?? ''));
                 $unitPrice = (string) ($line['estimated_unit_price'] ?? '0.0000');
 
-                $subtotal = bcmul($requestedQty, $unitPrice, 2);
+                $subtotal = bcmul(bc_num($requestedQty), bc_num($unitPrice), 2);
                 $totalEstimatedAmount = bcadd($totalEstimatedAmount, $subtotal, 2);
 
                 PurchaseRequestLine::query()->create([
@@ -273,7 +273,7 @@ class PurchaseRequestService
                 description: "Permintaan Pembelian {$pr->pr_number} diajukan ke alur persetujuan."
             );
 
-            return $pr->fresh(['lines', 'approvalRequests']);
+            return $pr->fresh(['lines', 'approvalRequests']) ?? $pr;
         });
     }
 

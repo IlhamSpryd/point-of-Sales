@@ -23,7 +23,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6" data-gsap="page-enter">
             <div>
                 <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Price Lists & Tiered Pricing (Daftar Harga)</h4>
-                <p class="text-sm font-medium text-[#787774] mt-1">Manage volume-tiered wholesale rules, loyalty tier pricing, and customer contracts</p>
+                <p class="text-sm font-medium text-muted-foreground mt-1">Manage volume-tiered wholesale rules, loyalty tier pricing, and customer contracts</p>
             </div>
 
             <x-list-toolbar search-action="{{ route('price-lists.index') }}" search-placeholder="Search price lists...">
@@ -84,18 +84,18 @@
                         'channel' => 'secondary',
                     ];
                 @endphp
-                <tr class="hover:bg-[#F7F7F5] transition-colors duration-200">
+                <tr class="hover:bg-muted transition-colors duration-200">
                     <td class="px-6 py-4 text-center font-bold text-sm text-apeiron-ink tabular-nums">#{{ $pl->priority }}</td>
                     <td class="px-6 py-4">
                         <div class="font-semibold text-sm text-apeiron-ink">{{ $pl->name }}</div>
-                        <div class="font-mono text-xs text-[#787774]">{{ $pl->code }}</div>
+                        <div class="font-mono text-xs text-muted-foreground">{{ $pl->code }}</div>
                     </td>
                     <td class="px-6 py-4">
                         <x-ui.badge :variant="$typeBadgeTypes[$pl->type] ?? 'secondary'">
                             {{ $typeLabels[$pl->type] ?? $pl->type }}
                         </x-ui.badge>
                     </td>
-                    <td class="px-6 py-4 text-sm text-[#787774]">
+                    <td class="px-6 py-4 text-sm text-muted-foreground">
                         @if($pl->customer)
                             <div class="font-medium text-apeiron-ink">{{ $pl->customer->name }}</div>
                             <div class="text-xs">Custom Customer</div>
@@ -109,15 +109,15 @@
                             <div class="font-medium text-apeiron-ink">{{ strtoupper($pl->channel) }}</div>
                             <div class="text-xs">Channel</div>
                         @else
-                            <span class="text-xs italic text-[#9B9A97]">All Customers / Global</span>
+                            <span class="text-xs italic text-muted-foreground">All Customers / Global</span>
                         @endif
                     </td>
                     <td class="px-6 py-4 text-sm font-semibold text-right text-apeiron-ink tabular-nums">{{ $pl->items_count }} items</td>
-                    <td class="px-6 py-4 text-xs text-[#787774]">
+                    <td class="px-6 py-4 text-xs text-muted-foreground">
                         @if($pl->valid_from || $pl->valid_until)
                             {{ $pl->valid_from?->format('d/m/Y') ?? 'Start' }} to {{ $pl->valid_until?->format('d/m/Y') ?? 'Indefinite' }}
                         @else
-                            <span class="text-xs text-[#9B9A97]">Permanent</span>
+                            <span class="text-xs text-muted-foreground">Permanent</span>
                         @endif
                     </td>
                     <td class="px-6 py-4">
@@ -149,7 +149,7 @@
             @endforeach
         </x-erp.data-table>
 
-        <div class="p-4 border-t border-[#E5E7EB]">
+        <div class="p-4 border-t border-border">
             {{ $priceLists->links() }}
         </div>
     </div>
@@ -165,18 +165,18 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Price List Code <span class="text-rose-500">*</span></label>
-                        <input type="text" name="code" value="{{ old('code') }}" required maxlength="64" placeholder="e.g. PL-WHOLESALE-01" class="w-full rounded-xl border border-[#E5E7EB] px-3.5 py-2 text-sm uppercase focus:border-primary-500 focus:outline-none">
+                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Price List Code <span class="text-rose-500">*</span></label>
+                        <input type="text" name="code" value="{{ old('code') }}" required maxlength="64" placeholder="e.g. PL-WHOLESALE-01" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm uppercase focus:border-primary-500 focus:outline-none">
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Price Rule Name <span class="text-rose-500">*</span></label>
-                        <input type="text" name="name" value="{{ old('name') }}" required maxlength="150" placeholder="e.g. Wholesale Price Min. 10 Pcs" class="w-full rounded-xl border border-[#E5E7EB] px-3.5 py-2 text-sm focus:border-primary-500 focus:outline-none">
+                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Price Rule Name <span class="text-rose-500">*</span></label>
+                        <input type="text" name="name" value="{{ old('name') }}" required maxlength="150" placeholder="e.g. Wholesale Price Min. 10 Pcs" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm focus:border-primary-500 focus:outline-none">
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Rule Type / Scope <span class="text-rose-500">*</span></label>
-                        <select name="type" x-model="type" required class="w-full rounded-xl border border-[#E5E7EB] bg-white px-3.5 py-2 text-sm focus:border-primary-500 focus:outline-none">
+                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Rule Type / Scope <span class="text-rose-500">*</span></label>
+                        <select name="type" x-model="type" required class="w-full rounded-xl border border-border bg-white px-3.5 py-2 text-sm focus:border-primary-500 focus:outline-none">
                             <option value="standard">Standard (Global / General)</option>
                             <option value="wholesale">Tiered Wholesale (Volume Qty)</option>
                             <option value="customer_tier">Loyalty Member Tier</option>
@@ -187,15 +187,15 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Execution Priority</label>
-                        <input type="number" name="priority" value="{{ old('priority', 0) }}" min="0" class="w-full rounded-xl border border-[#E5E7EB] px-3.5 py-2 text-sm focus:border-primary-500 focus:outline-none">
+                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Execution Priority</label>
+                        <input type="number" name="priority" value="{{ old('priority', 0) }}" min="0" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm focus:border-primary-500 focus:outline-none">
                     </div>
                 </div>
 
                 {{-- Target Fields based on Type --}}
                 <div x-show="type === 'branch'" class="p-3 bg-zinc-50 rounded-xl border border-zinc-200">
-                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Target Branch</label>
-                    <select name="store_id" class="w-full rounded-xl border border-[#E5E7EB] bg-white px-3.5 py-2 text-sm">
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Target Branch</label>
+                    <select name="store_id" class="w-full rounded-xl border border-border bg-white px-3.5 py-2 text-sm">
                         <option value="">Select Branch</option>
                         @foreach($stores as $st)
                             <option value="{{ $st->id }}">{{ $st->name }}</option>
@@ -204,8 +204,8 @@
                 </div>
 
                 <div x-show="type === 'customer_specific'" class="p-3 bg-zinc-50 rounded-xl border border-zinc-200">
-                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Target Customer</label>
-                    <select name="customer_id" class="w-full rounded-xl border border-[#E5E7EB] bg-white px-3.5 py-2 text-sm">
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Target Customer</label>
+                    <select name="customer_id" class="w-full rounded-xl border border-border bg-white px-3.5 py-2 text-sm">
                         <option value="">Select Customer</option>
                         @foreach($customers as $cust)
                             <option value="{{ $cust->id }}">{{ $cust->name }} ({{ $cust->phone ?? '-' }})</option>
@@ -214,8 +214,8 @@
                 </div>
 
                 <div x-show="type === 'customer_tier'" class="p-3 bg-zinc-50 rounded-xl border border-zinc-200">
-                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Target Loyalty Tier</label>
-                    <select name="loyalty_tier_id" class="w-full rounded-xl border border-[#E5E7EB] bg-white px-3.5 py-2 text-sm">
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Target Loyalty Tier</label>
+                    <select name="loyalty_tier_id" class="w-full rounded-xl border border-border bg-white px-3.5 py-2 text-sm">
                         <option value="">Select Tier</option>
                         @foreach($loyaltyTiers as $tier)
                             <option value="{{ $tier->id }}">{{ $tier->name }}</option>
@@ -224,29 +224,29 @@
                 </div>
 
                 <div x-show="type === 'channel'" class="p-3 bg-zinc-50 rounded-xl border border-zinc-200">
-                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Channel Name</label>
-                    <input type="text" name="channel" placeholder="e.g. GoFood, GrabFood, ShopeeFood" class="w-full rounded-xl border border-[#E5E7EB] px-3.5 py-2 text-sm">
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Channel Name</label>
+                    <input type="text" name="channel" placeholder="e.g. GoFood, GrabFood, ShopeeFood" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm">
                 </div>
 
                 {{-- Date range & status --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Valid From</label>
-                        <input type="date" name="valid_from" value="{{ old('valid_from') }}" class="w-full rounded-xl border border-[#E5E7EB] px-3.5 py-2 text-sm">
+                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Valid From</label>
+                        <input type="date" name="valid_from" value="{{ old('valid_from') }}" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Valid Until</label>
-                        <input type="date" name="valid_until" value="{{ old('valid_until') }}" class="w-full rounded-xl border border-[#E5E7EB] px-3.5 py-2 text-sm">
+                        <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Valid Until</label>
+                        <input type="date" name="valid_until" value="{{ old('valid_until') }}" class="w-full rounded-xl border border-border px-3.5 py-2 text-sm">
                     </div>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" id="pl_is_active" name="is_active" value="1" checked class="rounded border-[#E5E7EB] text-primary-600 focus:ring-primary-500">
+                    <input type="checkbox" id="pl_is_active" name="is_active" value="1" checked class="rounded border-border text-primary-600 focus:ring-primary-500">
                     <label for="pl_is_active" class="text-sm font-medium text-apeiron-ink">Activate this price rule immediately</label>
                 </div>
 
                 {{-- Item Pricing Repeater --}}
-                <div class="pt-3 border-t border-[#E5E7EB]">
+                <div class="pt-3 border-t border-border">
                     <div class="flex items-center justify-between mb-2">
                         <h5 class="text-sm font-bold text-apeiron-ink">Product Pricing Rules</h5>
                         <button type="button" @click="addItem()" class="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-800 font-semibold">
@@ -257,14 +257,14 @@
                     <div class="space-y-2">
                         <template x-for="(item, idx) in items" :key="idx">
                             <div class="flex items-center gap-2 p-2 bg-zinc-50 rounded-lg border border-zinc-200">
-                                <select :name="`items[${idx}][product_id]`" x-model="item.product_id" required class="flex-1 rounded-lg border border-[#E5E7EB] bg-white px-2 py-1.5 text-xs">
+                                <select :name="`items[${idx}][product_id]`" x-model="item.product_id" required class="flex-1 rounded-lg border border-border bg-white px-2 py-1.5 text-xs">
                                     <option value="">Select Product</option>
                                     @foreach($products as $prod)
                                         <option value="{{ $prod->id }}">{{ $prod->product_name }}</option>
                                     @endforeach
                                 </select>
-                                <input type="number" :name="`items[${idx}][min_quantity]`" x-model="item.min_quantity" placeholder="Min. Qty" min="1" required class="w-20 rounded-lg border border-[#E5E7EB] px-2 py-1.5 text-xs text-right">
-                                <input type="number" :name="`items[${idx}][price]`" x-model="item.price" placeholder="Price (Rp)" min="0" step="100" required class="w-28 rounded-lg border border-[#E5E7EB] px-2 py-1.5 text-xs text-right">
+                                <input type="number" :name="`items[${idx}][min_quantity]`" x-model="item.min_quantity" placeholder="Min. Qty" min="1" required class="w-20 rounded-lg border border-border px-2 py-1.5 text-xs text-right">
+                                <input type="number" :name="`items[${idx}][price]`" x-model="item.price" placeholder="Price (Rp)" min="0" step="100" required class="w-28 rounded-lg border border-border px-2 py-1.5 text-xs text-right">
                                 <button type="button" @click="removeItem(idx)" class="text-rose-500 hover:text-rose-700 p-1" title="Remove Row">
                                     <span class="material-symbols-rounded text-sm">delete</span>
                                 </button>

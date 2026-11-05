@@ -21,6 +21,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property numeric-string $subtotal_returned
+ * @property numeric-string $discount_reversed
+ * @property numeric-string $tax_returned
+ * @property numeric-string $service_charge_returned
+ * @property numeric-string $total_refundable_amount
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int $order_id
+ * @property int|null $customer_id
+ * @property int|null $customer_invoice_id
+ * @property int $shift_id
+ * @property int $device_id
+ * @property int $requested_by_user_id
+ * @property int $approved_by_user_id
+ */
 class OrderReturn extends Model
 {
     use AssignsStore, AssignsTenant;
@@ -64,16 +81,25 @@ class OrderReturn extends Model
         'completed_at',
     ];
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'customer_id');
     }
 
+    /**
+     * @return BelongsTo<CustomerInvoice, $this>
+     */
     public function customerInvoice(): BelongsTo
     {
         return $this->belongsTo(CustomerInvoice::class, 'customer_invoice_id');
     }
 
+    /**
+     * @return HasOne<SalesCreditNote, $this>
+     */
     public function creditNote(): HasOne
     {
         return $this->hasOne(SalesCreditNote::class, 'order_return_id');
@@ -91,41 +117,65 @@ class OrderReturn extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Order, $this>
+     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<Shift, $this>
+     */
     public function shift(): BelongsTo
     {
         return $this->belongsTo(Shift::class);
     }
 
+    /**
+     * @return BelongsTo<Device, $this>
+     */
     public function device(): BelongsTo
     {
         return $this->belongsTo(Device::class);
     }
 
+    /**
+     * @return HasMany<OrderReturnItem, $this>
+     */
     public function returnItems(): HasMany
     {
         return $this->hasMany(OrderReturnItem::class);
     }
 
+    /**
+     * @return HasMany<PaymentRefund, $this>
+     */
     public function refunds(): HasMany
     {
         return $this->hasMany(PaymentRefund::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function requestedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requested_by_user_id')->withTrashed();
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function approvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by_user_id')->withTrashed();

@@ -28,6 +28,7 @@ class TwoFactorAuthenticationController extends Controller
     public function enable(Request $request): RedirectResponse|JsonResponse
     {
         $user = $request->user();
+        abort_unless($user instanceof User, 401);
 
         if ($user->hasTwoFactorEnabled()) {
             return back()->with('info', 'Autentikasi dua faktor sudah aktif pada akun Anda.');
@@ -70,6 +71,7 @@ class TwoFactorAuthenticationController extends Controller
         ]);
 
         $user = $request->user();
+        abort_unless($user instanceof User, 401);
         $code = (string) $request->input('code');
 
         if (! $this->twoFactorService->confirmTwoFactor($user, $code)) {
@@ -101,6 +103,7 @@ class TwoFactorAuthenticationController extends Controller
     public function disable(Request $request): RedirectResponse|JsonResponse
     {
         $user = $request->user();
+        abort_unless($user instanceof User, 401);
 
         // Jika user memiliki kata sandi, minta konfirmasi kata sandi
         if (! empty($user->password_hash) || ! empty($user->password)) {
@@ -108,8 +111,8 @@ class TwoFactorAuthenticationController extends Controller
                 'password' => ['required', 'string'],
             ]);
 
-            $currentHash = $user->password_hash ?? $user->password;
-            if (! Hash::check($request->input('password'), $currentHash)) {
+            $currentHash = (string) ($user->password_hash ?? $user->password ?? '');
+            if (! Hash::check((string) $request->input('password'), $currentHash)) {
                 if ($request->wantsJson()) {
                     return response()->json([
                         'success' => false,
@@ -148,7 +151,7 @@ class TwoFactorAuthenticationController extends Controller
 
         if (! $user && $pendingId) {
             $startedAt = (int) $request->session()->get('login.mfa_started_at', 0);
-            if (now()->timestamp - $startedAt > 300) {
+            if ((int) now()->timestamp - $startedAt > 300) {
                 $request->session()->forget(['login.mfa_user_id', 'login.mfa_remember', 'login.mfa_started_at']);
 
                 return redirect()->route('login')->withErrors(['email' => 'Sesi verifikasi 2FA telah kedaluwarsa. Silakan login kembali.']);
@@ -174,7 +177,7 @@ class TwoFactorAuthenticationController extends Controller
             $pendingId = $request->session()->get('login.mfa_user_id');
             $startedAt = (int) $request->session()->get('login.mfa_started_at', 0);
 
-            if (! $pendingId || (now()->timestamp - $startedAt > 300)) {
+            if (! $pendingId || ((int) now()->timestamp - $startedAt > 300)) {
                 $request->session()->forget(['login.mfa_user_id', 'login.mfa_remember', 'login.mfa_started_at']);
 
                 if ($request->wantsJson()) {
@@ -187,7 +190,7 @@ class TwoFactorAuthenticationController extends Controller
                 return redirect()->route('login')->withErrors(['email' => 'Sesi verifikasi 2FA telah kedaluwarsa. Silakan login kembali.']);
             }
 
-            $user = User::withoutGlobalScopes()->find($pendingId);
+            $user = User::withoutGlobalScopes()->find((int) $pendingId);
 
             if (! $user || ! $user->hasTwoFactorEnabled() || ! $user->is_active || (bool) $user->tenant?->isSuspended()) {
                 $request->session()->forget(['login.mfa_user_id', 'login.mfa_remember', 'login.mfa_started_at']);

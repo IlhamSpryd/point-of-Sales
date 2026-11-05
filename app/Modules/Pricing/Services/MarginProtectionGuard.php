@@ -4,11 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Pricing\Services;
 
-use App\Modules\Core\Services\CashierAuthService;
 use App\Modules\Users\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
-use RuntimeException;
 
 /**
  * MarginProtectionGuard — Penjaga ambang batas margin minimum keuntungan produk.

@@ -15,17 +15,41 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Sales\Enums\CustomerInvoiceStatusEnum;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property numeric-string $subtotal
+ * @property numeric-string $discount_amount
+ * @property numeric-string $tax_amount
+ * @property numeric-string $shipping_amount
+ * @property numeric-string $total_amount
+ * @property numeric-string $paid_amount
+ * @property numeric-string $credit_applied_amount
+ * @property numeric-string $balance_due
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int $customer_id
+ * @property int|null $sales_order_id
+ * @property int|null $order_id
+ * @property int|null $gl_journal_entry_id
+ * @property int $payment_terms_days
+ * @property int|null $posted_by_user_id
+ * @property int|null $voided_by_user_id
+ */
 class CustomerInvoice extends Model
 {
     use AssignsStore;
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToStore;
     use ScopedToTenant;
     use SoftDeletes;
@@ -83,56 +107,89 @@ class CustomerInvoice extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return BelongsTo<SalesOrder, $this>
+     */
     public function salesOrder(): BelongsTo
     {
         return $this->belongsTo(SalesOrder::class);
     }
 
+    /**
+     * @return BelongsTo<Order, $this>
+     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function postedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'posted_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function voidedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'voided_by_user_id');
     }
 
+    /**
+     * @return HasMany<CustomerInvoiceLine, $this>
+     */
     public function lines(): HasMany
     {
         return $this->hasMany(CustomerInvoiceLine::class, 'customer_invoice_id')->orderBy('line_number');
     }
 
+    /**
+     * @return HasMany<ArLedgerEntry, $this>
+     */
     public function ledgerEntries(): HasMany
     {
         return $this->hasMany(ArLedgerEntry::class, 'customer_invoice_id');
     }
 
+    /**
+     * @return HasMany<ArPaymentAllocation, $this>
+     */
     public function allocations(): HasMany
     {
         return $this->hasMany(ArPaymentAllocation::class, 'customer_invoice_id');
     }
 
+    /**
+     * @return HasMany<SalesCreditNoteApplication, $this>
+     */
     public function creditNoteApplications(): HasMany
     {
         return $this->hasMany(SalesCreditNoteApplication::class, 'customer_invoice_id');

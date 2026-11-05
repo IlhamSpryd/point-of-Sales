@@ -15,53 +15,102 @@
     --font-brand: "Plus Jakarta Sans", sans-serif;
     --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-    /* ── Semantic Colors (Light) ── */
-    --background: #F7F7F8;
-    --foreground: #202123;
+    /* ── Semantic Colors (Light) — canonical values per
+       docs/ui-ux-audit/color-system/02 §11 (contrast-verified) ── */
 
+    /* Surfaces */
+    --background: #FAFAFA;
+    --foreground: #09090B;
     --card: #FFFFFF;
-    --card-foreground: #202123;
-
+    --card-foreground: #09090B;
     --popover: #FFFFFF;
-    --popover-foreground: #202123;
+    --popover-foreground: #09090B;
 
-    --primary: #171717;
-    --primary-foreground: #FFFFFF;
+    /* Primary / Secondary */
+    --primary: #18181B;
+    --primary-foreground: #FAFAFA;
+    --secondary: #F4F4F5;
+    --secondary-foreground: #18181B;
 
-    --secondary: #F3F4F6;
-    --secondary-foreground: #202123;
+    /* Muted / Accent */
+    --muted: #F4F4F5;
+    --muted-foreground: #6B6B74;
+    --accent: #F4F4F5;
+    --accent-foreground: #18181B;
 
-    --muted: #F3F4F6;
-    --muted-foreground: #6B7280;
+    /* Form & interaction */
+    --border: #E4E4E7;
+    --border-strong: #D4D4D8;
+    --input: #E4E4E7;
+    --ring: #A1A1AA;
+    --focus: #18181B;
+    --disabled: #A1A1AA;
+    --disabled-bg: #F4F4F5;
+    --selection: #18181B;
+    --selection-foreground: #FAFAFA;
 
-    --accent: #F3F4F6;
-    --accent-foreground: #202123;
-
-    --destructive: #B91C1C;
-    --destructive-foreground: #FFFFFF;
-
-    --success: #047857;
+    /* Status */
+    --success: #15803D;
+    --success-foreground: #052E16;
+    --success-muted: #F0FDF4;
+    --success-border: #BBF7D0;
     --warning: #B45309;
+    --warning-foreground: #451A03;
+    --warning-muted: #FFFBEB;
+    --warning-border: #FDE68A;
+    --destructive: #B91C1C;
+    --destructive-foreground: #450A0A;
+    --destructive-muted: #FEF2F2;
+    --destructive-border: #FECACA;
     --info: #1D4ED8;
+    --info-foreground: #172554;
+    --info-muted: #EFF6FF;
+    --info-border: #BFDBFE;
+    --neutral: #6B6B74;
+    --neutral-muted: #F4F4F5;
+    --neutral-border: #E4E4E7;
 
-    --border: #E5E7EB;
-    --border-strong: #D1D5DB;
-    --input: #E5E7EB;
-    --ring: #171717;
+    /* ERP surfaces */
+    --surface-table-header: #FAFAFA;
+    --surface-inset: #F4F4F5;
 
-    /* ── ERP-Specific Semantic Tokens ── */
-    --surface-table-header: #F9FAFB;
-    --shell: #171717;
+    /* Charts */
+    --chart-1: #18181B;
+    --chart-2: #980000;
+    --chart-3: #1D4ED8;
+    --chart-4: #4C1D95;
+    --chart-5: #9D174D;
+    --chart-6: #C2410C;
+    --chart-7: #065F46;
+    --chart-8: #57534E;
+    --chart-grid: #E4E4E7;
+    --chart-axis-label: #6B6B74;
 
-    /* ── Sidebar Tokens ── */
-    --sidebar-background: #171717;
-    --sidebar-foreground: #D4D4D4;
-    --sidebar-primary: #FFFFFF;
-    --sidebar-primary-foreground: #171717;
-    --sidebar-accent: #2D2D2D;
-    --sidebar-accent-foreground: #FFFFFF;
-    --sidebar-border: #262626;
-    --sidebar-ring: #FFFFFF;
+    /* Shell */
+    --shell: #18181B;
+    --shell-foreground: #A1A1AA;
+    --shell-foreground-active: #FAFAFA;
+    --shell-accent: #27272A;
+    --shell-border: #27272A;
+    --shell-ring: #FAFAFA;
+
+    /* Sidebar → shell aliases (04 §3; kept for one release) */
+    --sidebar-background: var(--shell);
+    --sidebar-foreground: var(--shell-foreground);
+    --sidebar-primary: var(--shell-foreground-active);
+    --sidebar-primary-foreground: var(--shell);
+    --sidebar-accent: var(--shell-accent);
+    --sidebar-accent-foreground: var(--shell-foreground-active);
+    --sidebar-border: var(--shell-border);
+    --sidebar-ring: var(--shell-ring);
+
+    /* Overlay */
+    --overlay-scrim: rgb(9 9 11 / 0.40);
+
+    /* Elevation */
+    --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.04);
+    --shadow-popover: 0 4px 12px -2px rgb(0 0 0 / 0.08);
+    --shadow-dialog: 0 12px 32px -8px rgb(0 0 0 / 0.16);
 
     /* ── Shape Scale (Measured Enterprise Radii) ── */
     --radius-control: 8px;     /* inputs, buttons, selects */
@@ -87,50 +136,86 @@
 .dark {
     color-scheme: dark;
 
-    --background: oklch(0.12 0 0);
-    --foreground: oklch(0.96 0 0);
+    --background: #0A0A0B;
+    --foreground: #FAFAFA;
 
-    --card: oklch(0.16 0 0);
-    --card-foreground: oklch(0.96 0 0);
+    --card: #141415;
+    --card-foreground: #FAFAFA;
 
-    --popover: oklch(0.16 0 0);
-    --popover-foreground: oklch(0.96 0 0);
+    --popover: #1A1A1C;
+    --popover-foreground: #FAFAFA;
 
-    --primary: oklch(0.96 0 0);
-    --primary-foreground: oklch(0.14 0 0);
+    --primary: #FAFAFA;
+    --primary-foreground: #18181B;
 
-    --secondary: oklch(0.22 0 0);
-    --secondary-foreground: oklch(0.96 0 0);
+    --secondary: #1F1F21;
+    --secondary-foreground: #FAFAFA;
 
-    --muted: oklch(0.22 0 0);
-    --muted-foreground: oklch(0.70 0 0);
+    --muted: #1F1F21;
+    --muted-foreground: #A1A1AA;
 
-    --accent: oklch(0.22 0 0);
-    --accent-foreground: oklch(0.96 0 0);
+    --accent: #27272A;
+    --accent-foreground: #FAFAFA;
 
-    --destructive: oklch(0.65 0.20 22);
-    --destructive-foreground: oklch(0.985 0 0);
+    --border: rgb(255 255 255 / 0.10);
+    --border-strong: rgb(255 255 255 / 0.18);
+    --input: rgb(255 255 255 / 0.14);
+    --ring: #71717A;
+    --focus: #FAFAFA;
+    --disabled: #52525B;
+    --disabled-bg: rgb(255 255 255 / 0.04);
+    --selection: #FAFAFA;
+    --selection-foreground: #18181B;
 
-    --success: oklch(0.62 0.17 155);
-    --warning: oklch(0.75 0.16 75);
-    --info: oklch(0.60 0.18 250);
+    --success: #4ADE80;
+    --success-foreground: #DCFCE7;
+    --success-muted: #052E16;
+    --success-border: rgb(74 222 128 / 0.30);
 
-    --border: oklch(1 0 0 / 12%);
-    --border-strong: oklch(1 0 0 / 20%);
-    --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.96 0 0);
+    --warning: #FBBF24;
+    --warning-foreground: #FEF3C7;
+    --warning-muted: #451A03;
+    --warning-border: rgb(251 191 36 / 0.30);
 
-    --surface-table-header: oklch(0.14 0 0);
-    --shell: oklch(0.10 0 0);
+    --destructive: #F87171;
+    --destructive-foreground: #FEE2E2;
+    --destructive-muted: #450A0A;
+    --destructive-border: rgb(248 113 113 / 0.30);
 
-    --sidebar-background: oklch(0.16 0 0);
-    --sidebar-foreground: oklch(0.96 0 0);
-    --sidebar-primary: oklch(0.96 0 0);
-    --sidebar-primary-foreground: oklch(0.16 0 0);
-    --sidebar-accent: oklch(0.22 0 0);
-    --sidebar-accent-foreground: oklch(0.96 0 0);
-    --sidebar-border: oklch(1 0 0 / 12%);
-    --sidebar-ring: oklch(0.96 0 0);
+    --info: #60A5FA;
+    --info-foreground: #DBEAFE;
+    --info-muted: #172554;
+    --info-border: rgb(96 165 250 / 0.30);
+
+    --neutral: #A1A1AA;
+    --neutral-muted: #1F1F21;
+    --neutral-border: rgb(255 255 255 / 0.10);
+
+    --surface-table-header: #111112;
+    --surface-inset: #0F0F10;
+
+    --chart-1: #FAFAFA;
+    --chart-2: #FCA5A5;
+    --chart-3: #60A5FA;
+    --chart-4: #C4B5FD;
+    --chart-5: #F9A8D4;
+    --chart-6: #FDBA74;
+    --chart-7: #6EE7B7;
+    --chart-8: #D6D3D1;
+    --chart-grid: #2A2A2D;
+    --chart-axis-label: #A1A1AA;
+
+    --shell: #111112;
+    --shell-foreground: #A1A1AA;
+    --shell-foreground-active: #FAFAFA;
+    --shell-accent: #1F1F21;
+    --shell-border: rgb(255 255 255 / 0.08);
+    --shell-ring: #FAFAFA;
+
+    --overlay-scrim: rgb(0 0 0 / 0.60);
+    --shadow-card: none;
+    --shadow-popover: 0 4px 16px -4px rgb(0 0 0 / 0.60);
+    --shadow-dialog: 0 16px 40px -8px rgb(0 0 0 / 0.70);
 }
 
 /* ── KDS Theme (Kitchen Display System Screens) ── */
@@ -192,6 +277,9 @@
     --color-accent: var(--accent);
     --color-accent-foreground: var(--accent-foreground);
 
+    --color-surface-inset: var(--surface-inset);
+    --color-surface-table-header: var(--surface-table-header);
+
     --color-destructive: var(--destructive);
     --color-destructive-foreground: var(--destructive-foreground);
 
@@ -199,12 +287,36 @@
     --color-border-strong: var(--border-strong);
     --color-input: var(--input);
     --color-ring: var(--ring);
+    --color-focus: var(--focus);
+    --color-disabled: var(--disabled);
+    --color-disabled-bg: var(--disabled-bg);
+    --color-selection: var(--selection);
+    --color-selection-foreground: var(--selection-foreground);
 
-    /* ── ERP-Specific Semantic Tokens ── */
-    --color-surface-table-header: var(--surface-table-header);
+    /* ── Charts (variables; consumed via getComputedStyle, not utilities) ── */
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+    --color-chart-6: var(--chart-6);
+    --color-chart-7: var(--chart-7);
+    --color-chart-8: var(--chart-8);
+    --color-chart-grid: var(--chart-grid);
+    --color-chart-axis-label: var(--chart-axis-label);
+
+    /* ── Shell ── */
     --color-shell: var(--shell);
+    --color-shell-foreground: var(--shell-foreground);
+    --color-shell-foreground-active: var(--shell-foreground-active);
+    --color-shell-accent: var(--shell-accent);
+    --color-shell-border: var(--shell-border);
+    --color-shell-ring: var(--shell-ring);
 
-    /* ── Sidebar Tokens ── */
+    /* ── Overlay ── */
+    --color-overlay-scrim: var(--overlay-scrim);
+
+    /* ── Sidebar aliases (04 §3; kept for one release) ── */
     --color-sidebar-background: var(--sidebar-background);
     --color-sidebar-foreground: var(--sidebar-foreground);
     --color-sidebar-primary: var(--sidebar-primary);
@@ -230,7 +342,6 @@
     --color-apeiron-bg: var(--card);
     --color-apeiron-ink: var(--foreground);
     --color-apeiron-muted: var(--muted-foreground);
-    --color-apeiron-muted-700: #4B5563;
     --color-apeiron-border: var(--border);
     --color-apeiron-surface: var(--secondary);
     --color-apeiron-sidebar: var(--shell);
@@ -242,6 +353,25 @@
     --color-status-error: var(--destructive);
     --color-status-info: var(--info);
     --color-status-draft: var(--muted-foreground);
+
+    /* ── Status Scale (P0) ── */
+    --color-success: var(--success);
+    --color-warning: var(--warning);
+    --color-info: var(--info);
+    --color-success-foreground: var(--success-foreground);
+    --color-success-muted: var(--success-muted);
+    --color-success-border: var(--success-border);
+    --color-warning-foreground: var(--warning-foreground);
+    --color-warning-muted: var(--warning-muted);
+    --color-warning-border: var(--warning-border);
+    --color-destructive-muted: var(--destructive-muted);
+    --color-destructive-border: var(--destructive-border);
+    --color-info-foreground: var(--info-foreground);
+    --color-info-muted: var(--info-muted);
+    --color-info-border: var(--info-border);
+    --color-neutral: var(--neutral);
+    --color-neutral-muted: var(--neutral-muted);
+    --color-neutral-border: var(--neutral-border);
 
     /* ── Breakpoints ── */
     --breakpoint-3xl: 1920px;

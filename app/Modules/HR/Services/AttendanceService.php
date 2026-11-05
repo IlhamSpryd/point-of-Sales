@@ -203,7 +203,7 @@ class AttendanceService
                 ]);
             }
 
-            return $openRecord->fresh();
+            return $openRecord->fresh() ?? $openRecord;
         });
     }
 
@@ -267,7 +267,7 @@ class AttendanceService
         $totalBreaks = (int) AttendanceBreak::where('attendance_record_id', $record->id)->sum('duration_minutes');
         $record->update(['total_break_minutes' => $totalBreaks]);
 
-        return $openBreak->fresh();
+        return $openBreak->fresh() ?? $openBreak;
     }
 
     /**

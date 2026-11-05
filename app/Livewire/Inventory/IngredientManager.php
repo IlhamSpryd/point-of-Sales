@@ -100,8 +100,8 @@ class IngredientManager extends Component
         $this->ingredient_code = $ingredient->ingredient_code;
         $this->name = $ingredient->name;
         $this->unit = $ingredient->unit;
-        $this->cost_per_unit = $ingredient->cost_per_unit;
-        $this->reorder_level = $ingredient->reorder_level;
+        $this->cost_per_unit = (float) $ingredient->cost_per_unit;
+        $this->reorder_level = (float) $ingredient->reorder_level;
         $this->is_active = $ingredient->is_active;
 
         $this->showModal = true;

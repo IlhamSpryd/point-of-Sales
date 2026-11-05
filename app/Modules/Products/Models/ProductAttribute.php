@@ -8,6 +8,7 @@ use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
 use App\Models\ProductAttributeValue;
 use App\Models\Tenant;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,7 +28,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class ProductAttribute extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToTenant;
     use SoftDeletes;
 
@@ -46,11 +50,17 @@ class ProductAttribute extends Model
         'is_active' => 'boolean',
     ];
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return HasMany<ProductAttributeValue, $this>
+     */
     public function values(): HasMany
     {
         return $this->hasMany(ProductAttributeValue::class, 'attribute_id')->orderBy('sort_order', 'asc');

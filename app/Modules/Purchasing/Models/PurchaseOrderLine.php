@@ -20,22 +20,22 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string $purchasable_type
  * @property int $purchasable_id
  * @property string $purchase_uom
- * @property string $uom_conversion_factor
- * @property string $ordered_qty
- * @property string $base_ordered_qty
- * @property string $received_qty
- * @property string $accepted_qty
- * @property string $rejected_qty
- * @property string $returned_qty
- * @property string $invoiced_qty
- * @property string $unit_price
- * @property string $discount_pct
- * @property string $discount_amount
- * @property string $tax_rate
+ * @property numeric-string $uom_conversion_factor
+ * @property numeric-string $ordered_qty
+ * @property numeric-string $base_ordered_qty
+ * @property numeric-string $received_qty
+ * @property numeric-string $accepted_qty
+ * @property numeric-string $rejected_qty
+ * @property numeric-string $returned_qty
+ * @property numeric-string $invoiced_qty
+ * @property numeric-string $unit_price
+ * @property numeric-string $discount_pct
+ * @property numeric-string $discount_amount
+ * @property numeric-string $tax_rate
  * @property bool $tax_inclusive
- * @property string $tax_amount
- * @property string $line_total
- * @property string $over_receipt_tolerance_pct
+ * @property numeric-string $tax_amount
+ * @property numeric-string $line_total
+ * @property numeric-string $over_receipt_tolerance_pct
  * @property string|null $notes
  * @property-read PurchaseOrder $purchaseOrder
  * @property-read Collection<int, PurchaseOrderLinePrAllocation> $prAllocations
@@ -73,6 +73,9 @@ class PurchaseOrderLine extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
@@ -86,6 +89,9 @@ class PurchaseOrderLine extends Model
         return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id');
     }
 
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function purchasable(): MorphTo
     {
         return $this->morphTo();
@@ -110,10 +116,12 @@ class PurchaseOrderLine extends Model
     /**
      * Sisa kuantitas PO yang masih terbuka untuk diterima:
      * Q_PO_rem_rec = max(0, Q_PO_ord - Q_GRN_acc)
+     *
+     * @return numeric-string
      */
     public function getRemainingReceivableQty(): string
     {
-        $remaining = bcsub((string) $this->ordered_qty, (string) $this->accepted_qty, 4);
+        $remaining = bcsub($this->ordered_qty, $this->accepted_qty, 4);
 
         return bccomp($remaining, '0', 4) > 0 ? $remaining : '0.0000';
     }
@@ -121,10 +129,12 @@ class PurchaseOrderLine extends Model
     /**
      * Kuantitas bersih efektif setelah retur:
      * Q_net_acc = Q_GRN_acc - Q_RET_post
+     *
+     * @return numeric-string
      */
     public function getNetAcceptedQty(): string
     {
-        $net = bcsub((string) $this->accepted_qty, (string) $this->returned_qty, 4);
+        $net = bcsub($this->accepted_qty, $this->returned_qty, 4);
 
         return bccomp($net, '0', 4) > 0 ? $net : '0.0000';
     }
@@ -132,11 +142,13 @@ class PurchaseOrderLine extends Model
     /**
      * Sisa kuantitas yang masih dapat ditagihkan (3-Way Match):
      * Q_rem_inv = max(0, Q_net_acc - Q_INV_net)
+     *
+     * @return numeric-string
      */
     public function getRemainingInvoiceableQty(): string
     {
         $netAccepted = $this->getNetAcceptedQty();
-        $remaining = bcsub($netAccepted, (string) $this->invoiced_qty, 4);
+        $remaining = bcsub($netAccepted, $this->invoiced_qty, 4);
 
         return bccomp($remaining, '0', 4) > 0 ? $remaining : '0.0000';
     }
@@ -144,13 +156,15 @@ class PurchaseOrderLine extends Model
     /**
      * Batas Maksimum Penerimaan dengan Toleransi Over-Receipt:
      * Q_max_receivable = max(0, Q_PO_ord * (1 + tau_over) - Q_GRN_acc)
+     *
+     * @return numeric-string
      */
     public function getMaxReceivableQty(): string
     {
-        $toleranceRate = bcdiv((string) $this->over_receipt_tolerance_pct, '100', 4);
+        $toleranceRate = bcdiv($this->over_receipt_tolerance_pct, '100', 4);
         $multiplier = bcadd('1', $toleranceRate, 4);
-        $maxAllowed = bcmul((string) $this->ordered_qty, $multiplier, 4);
-        $remaining = bcsub($maxAllowed, (string) $this->accepted_qty, 4);
+        $maxAllowed = bcmul($this->ordered_qty, $multiplier, 4);
+        $remaining = bcsub($maxAllowed, $this->accepted_qty, 4);
 
         return bccomp($remaining, '0', 4) > 0 ? $remaining : '0.0000';
     }

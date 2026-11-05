@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Core\Auth\TenantAwareUserProvider;
 use App\Http\Middleware\SetTenantContext;
 use App\Models\Ingredient;
 use App\Models\Product;
@@ -14,6 +15,7 @@ use App\Services\Context\TenantContext;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
@@ -47,8 +49,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \Illuminate\Support\Facades\Auth::provider('eloquent', function ($app, array $config) {
-            return new \App\Core\Auth\TenantAwareUserProvider($app['hash'], $config['model']);
+        Auth::provider('eloquent', function ($app, array $config) {
+            return new TenantAwareUserProvider($app['hash'], $config['model']);
         });
 
         Livewire::addPersistentMiddleware([

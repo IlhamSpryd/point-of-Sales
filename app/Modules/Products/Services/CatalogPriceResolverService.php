@@ -240,11 +240,17 @@ class CatalogPriceResolverService
         // 3b. Override Harga Cabang (store_product_assortments)
         if ($storeIdInt !== null) {
             if ($variantId !== null) {
-                $variantAssortment = StoreProductAssortment::withoutGlobalScopes()
-                    ->where('tenant_id', $tenantId)
-                    ->where('store_id', $storeIdInt)
-                    ->where('product_variant_id', $variantId)
-                    ->first();
+                if ($product !== null && $product->relationLoaded('storeAssortments')) {
+                    /** @var StoreProductAssortment|null $variantAssortment */
+                    $variantAssortment = $product->storeAssortments
+                        ->first(fn (StoreProductAssortment $a): bool => (int) $a->store_id === $storeIdInt && (int) $a->product_variant_id === $variantId);
+                } else {
+                    $variantAssortment = StoreProductAssortment::withoutGlobalScopes()
+                        ->where('tenant_id', $tenantId)
+                        ->where('store_id', $storeIdInt)
+                        ->where('product_variant_id', $variantId)
+                        ->first();
+                }
 
                 if ($variantAssortment && $variantAssortment->store_price_override !== null) {
                     return new ResolvedPriceDto(
@@ -256,12 +262,18 @@ class CatalogPriceResolverService
                 }
             }
 
-            $productAssortment = StoreProductAssortment::withoutGlobalScopes()
-                ->where('tenant_id', $tenantId)
-                ->where('store_id', $storeIdInt)
-                ->where('product_id', $productId)
-                ->whereNull('product_variant_id')
-                ->first();
+            if ($product !== null && $product->relationLoaded('storeAssortments')) {
+                /** @var StoreProductAssortment|null $productAssortment */
+                $productAssortment = $product->storeAssortments
+                    ->first(fn (StoreProductAssortment $a): bool => (int) $a->store_id === $storeIdInt && $a->product_variant_id === null);
+            } else {
+                $productAssortment = StoreProductAssortment::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->where('store_id', $storeIdInt)
+                    ->where('product_id', $productId)
+                    ->whereNull('product_variant_id')
+                    ->first();
+            }
 
             if ($productAssortment && $productAssortment->store_price_override !== null) {
                 return new ResolvedPriceDto(

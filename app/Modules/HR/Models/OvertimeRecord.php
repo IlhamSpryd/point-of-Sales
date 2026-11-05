@@ -28,9 +28,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonInterface $start_time
  * @property CarbonInterface $end_time
  * @property int $actual_duration_minutes
- * @property float $payable_hours
- * @property float $hourly_rate_basis
- * @property float $calculated_amount
+ * @property numeric-string $payable_hours
+ * @property numeric-string $hourly_rate_basis
+ * @property numeric-string $calculated_amount
  * @property OvertimeStatusEnum $status
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
@@ -120,7 +120,8 @@ class OvertimeRecord extends Model
     }
 
     /**
-     * @param  Builder<OvertimeRecord>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeApproved(Builder $query): Builder
     {
@@ -128,7 +129,8 @@ class OvertimeRecord extends Model
     }
 
     /**
-     * @param  Builder<OvertimeRecord>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeBetweenDates(Builder $query, CarbonInterface|string $start, CarbonInterface|string $end): Builder
     {

@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $policy_code
  * @property string $policy_name
  * @property bool $is_paid
- * @property float $default_days_per_year
+ * @property numeric-string $default_days_per_year
  * @property bool $is_gender_specific
  * @property string|null $applicable_gender
  * @property bool $requires_attachment
@@ -93,7 +93,8 @@ class LeavePolicy extends Model
     }
 
     /**
-     * @param  Builder<LeavePolicy>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeActive(Builder $query): Builder
     {

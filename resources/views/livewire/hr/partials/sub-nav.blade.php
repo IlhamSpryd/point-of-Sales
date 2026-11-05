@@ -1,20 +1,68 @@
-<nav class="flex items-center gap-1 overflow-x-auto pb-2 border-b border-border mb-6 text-sm font-medium">
-    <a href="{{ route('hr.employees.index') }}" class="px-3.5 py-1.5 rounded-lg {{ request()->routeIs('hr.employees.*') ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted' }}">
-        Karyawan
-    </a>
-    <a href="{{ route('hr.schedules.index') }}" class="px-3.5 py-1.5 rounded-lg {{ request()->routeIs('hr.schedules.*') ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted' }}">
-        Jadwal & Roster
-    </a>
-    <a href="{{ route('hr.attendance.index') }}" class="px-3.5 py-1.5 rounded-lg {{ request()->routeIs('hr.attendance.*') ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted' }}">
-        Absensi & Lembur
-    </a>
-    <a href="{{ route('hr.leaves.index') }}" class="px-3.5 py-1.5 rounded-lg {{ request()->routeIs('hr.leaves.*') ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted' }}">
-        Manajemen Cuti
-    </a>
-    <a href="{{ route('hr.commissions.index') }}" class="px-3.5 py-1.5 rounded-lg {{ request()->routeIs('hr.commissions.*') ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted' }}">
-        Komisi Penjualan
-    </a>
-    <a href="{{ route('hr.payroll.index') }}" class="px-3.5 py-1.5 rounded-lg {{ request()->routeIs('hr.payroll.*') ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground hover:bg-muted' }}">
-        Penggajian (Payroll)
-    </a>
-</nav>
+@php
+    $allHrTabs = [
+        [
+            'label' => 'Karyawan',
+            'route' => 'hr.employees.index',
+            'active' => 'hr.employees.*',
+            'icon' => 'badge',
+        ],
+        [
+            'label' => 'Jadwal & Roster',
+            'route' => 'hr.schedules.index',
+            'active' => 'hr.schedules.*',
+            'icon' => 'calendar_month',
+        ],
+        [
+            'label' => 'Absensi & Lembur',
+            'route' => 'hr.attendance.index',
+            'active' => 'hr.attendance.*',
+            'icon' => 'schedule',
+        ],
+        [
+            'label' => 'Manajemen Cuti',
+            'route' => 'hr.leaves.index',
+            'active' => 'hr.leaves.*',
+            'icon' => 'event_busy',
+        ],
+        [
+            'label' => 'Komisi Penjualan',
+            'route' => 'hr.commissions.index',
+            'active' => 'hr.commissions.*',
+            'icon' => 'payments',
+        ],
+        [
+            'label' => 'Penggajian (Payroll)',
+            'route' => 'hr.payroll.index',
+            'active' => 'hr.payroll.*',
+            'icon' => 'account_balance_wallet',
+        ],
+    ];
+@endphp
+
+<div class="w-full pb-3 mb-6 border-b border-border">
+    <nav aria-label="Navigasi SDM & Payroll"
+        x-data
+        x-init="$nextTick(() => {
+            const activeTab = $el.querySelector('[aria-current=page]');
+            if (activeTab) {
+                const offset = activeTab.offsetLeft - ($el.clientWidth / 2) + (activeTab.clientWidth / 2);
+                $el.scrollTo({ left: Math.max(0, offset), behavior: 'instant' });
+            }
+        })"
+        class="flex items-center gap-1.5 md:gap-2 overflow-x-auto scrollbar-hide py-1">
+        @foreach ($allHrTabs as $tab)
+            @php
+                $routeExists = \Illuminate\Support\Facades\Route::has($tab['route']);
+                $isActive = $routeExists && request()->routeIs($tab['active']);
+            @endphp
+            @if ($routeExists)
+                <a href="{{ route($tab['route']) }}" wire:navigate
+                    @if ($isActive) aria-current="page" @endif
+                    class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring {{ $isActive ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground hover:bg-muted' }}">
+                    <span class="material-symbols-rounded text-[18px] shrink-0 {{ $isActive ? 'text-primary-foreground' : 'text-muted-foreground' }}">{{ $tab['icon'] }}</span>
+                    <span>{{ $tab['label'] }}</span>
+                </a>
+            @endif
+        @endforeach
+    </nav>
+</div>

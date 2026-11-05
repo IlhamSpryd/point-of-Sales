@@ -15,10 +15,10 @@ use Illuminate\Support\Carbon;
  * @property int $id
  * @property int $tenant_id
  * @property int $ingredient_id
- * @property float|null $avg_daily_consumption
- * @property float|null $projected_days_remaining
+ * @property numeric-string $avg_daily_consumption
+ * @property numeric-string|null $projected_days_remaining
  * @property Carbon|null $projected_stockout_at
- * @property float|null $suggested_reorder_qty
+ * @property numeric-string $suggested_reorder_qty
  * @property string|null $trend
  * @property Carbon|null $computed_at
  * @property Carbon|null $created_at

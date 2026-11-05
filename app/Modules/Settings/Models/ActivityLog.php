@@ -59,7 +59,8 @@ class ActivityLog extends Model
         ];
     }
 
-    /** Relasi (BelongsTo): Pengguna yang melakukan aksi tercatat ini. */
+    /** Relasi (BelongsTo): Pengguna yang melakukan aksi tercatat ini.
+     * @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class)->withTrashed();

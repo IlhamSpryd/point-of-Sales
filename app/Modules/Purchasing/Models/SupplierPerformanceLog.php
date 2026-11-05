@@ -28,13 +28,13 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property int $purchasable_id
  * @property CarbonInterface $expected_delivery_date
  * @property CarbonInterface $received_at
- * @property string|null $order_to_first_receipt_days
- * @property string|null $order_to_full_receipt_days
- * @property string $variance_from_expected_days
- * @property string $ordered_qty
- * @property string $accepted_qty
- * @property string $unit_price
- * @property string $effective_unit_cost
+ * @property numeric-string|null $order_to_first_receipt_days
+ * @property numeric-string|null $order_to_full_receipt_days
+ * @property numeric-string $variance_from_expected_days
+ * @property numeric-string $ordered_qty
+ * @property numeric-string $accepted_qty
+ * @property numeric-string $unit_price
+ * @property numeric-string $effective_unit_cost
  * @property CarbonInterface $recorded_at
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
@@ -86,31 +86,49 @@ class SupplierPerformanceLog extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class, 'store_id');
     }
 
+    /**
+     * @return BelongsTo<Supplier, $this>
+     */
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class, 'supplier_id');
     }
 
+    /**
+     * @return BelongsTo<PurchaseOrder, $this>
+     */
     public function purchaseOrder(): BelongsTo
     {
         return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id');
     }
 
+    /**
+     * @return BelongsTo<GoodsReceivedNote, $this>
+     */
     public function goodsReceivedNote(): BelongsTo
     {
         return $this->belongsTo(GoodsReceivedNote::class, 'goods_received_note_id');
     }
 
+    /**
+     * @return BelongsTo<GoodsReceivedNoteLine, $this>
+     */
     public function goodsReceivedNoteLine(): BelongsTo
     {
         return $this->belongsTo(GoodsReceivedNoteLine::class, 'goods_received_note_line_id');
     }
 
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function purchasable(): MorphTo
     {
         return $this->morphTo();

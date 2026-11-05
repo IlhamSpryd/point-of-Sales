@@ -5,14 +5,12 @@ declare(strict_types=1);
 namespace App\Modules\Sales\Services;
 
 use App\Enums\OrderStatus;
-use App\Enums\ReturnDispositionEnum;
 use App\Models\Device;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\OrderReturn;
 use App\Models\Payment;
 use App\Models\Shift;
-use App\Models\User;
 use App\Services\AuditTrailService;
 use App\Services\Context\TenantContext;
 use DomainException;
@@ -42,7 +40,8 @@ class OrderReturnService
      *   ...
      * ]
      *
-     * @param array<int, array{order_item_id: int, quantity: int, disposition?: string, reason?: string}> $items
+     * @param  array<int, array{order_item_id: int, quantity: int, disposition?: string, reason?: string}>  $items
+     *
      * @throws DomainException|ValidationException
      */
     public function processReturn(
@@ -96,7 +95,7 @@ class OrderReturnService
             $deviceId = $device ? (int) $device->id : 1;
         }
 
-        $returnReason = $reason ?: 'Retur kasir pesanan ' . $order->order_code;
+        $returnReason = $reason ?: 'Retur kasir pesanan '.$order->order_code;
         $idempotency = $idempotencyKey ?: (string) Str::uuid();
 
         // 1. Validasi item pesanan dan hitung total estimasi refund

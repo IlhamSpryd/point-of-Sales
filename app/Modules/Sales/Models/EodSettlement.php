@@ -10,15 +10,36 @@ use App\Models\Concerns\ScopedToStore;
 use App\Models\Concerns\ScopedToTenant;
 use App\Models\Store;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property numeric-string $gross_sales
+ * @property numeric-string $total_discounts
+ * @property numeric-string $total_returns_refunds
+ * @property numeric-string $total_voids
+ * @property numeric-string $net_sales
+ * @property numeric-string $total_tax
+ * @property numeric-string $total_service_charge
+ * @property numeric-string $expected_cash_total
+ * @property numeric-string $counted_cash_total
+ * @property numeric-string $cash_discrepancy_total
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int $total_shifts_count
+ * @property int $closed_by_user_id
+ */
 class EodSettlement extends Model
 {
     use AssignsStore;
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToStore;
     use ScopedToTenant;
 
@@ -67,11 +88,17 @@ class EodSettlement extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function closedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'closed_by_user_id');

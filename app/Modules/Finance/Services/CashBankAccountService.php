@@ -69,7 +69,7 @@ class CashBankAccountService
                 ?? throw new DomainException("Tipe akun kas/bank '{$accountType}' tidak valid.");
         }
 
-        $openingBalance = bcadd((string) ($data['opening_balance'] ?? '0.00'), '0', 2);
+        $openingBalance = bcadd(bc_num($data['opening_balance'] ?? '0.00'), '0', 2);
         $currentBalance = $openingBalance;
 
         return CashBankAccount::withoutTenantScope()->create([
@@ -125,7 +125,7 @@ class CashBankAccountService
      */
     public function getAccountBalance(CashBankAccount $account): string
     {
-        return (string) $account->fresh()->current_balance;
+        return (string) ($account->fresh() ?? $account)->current_balance;
     }
 
     /**
@@ -134,7 +134,7 @@ class CashBankAccountService
     public function assertSufficientBalance(CashBankAccount $account, string $amount): void
     {
         $currentBalance = (string) $account->current_balance;
-        $normAmount = bcadd($amount, '0', 2);
+        $normAmount = bcadd(bc_num($amount), '0', 2);
 
         if (bccomp($currentBalance, $normAmount, 2) < 0) {
             throw new DomainException("Saldo akun kas/bank '{$account->account_name}' ({$currentBalance}) tidak mencukupi untuk pengeluaran sebesar {$normAmount}.");
@@ -158,7 +158,7 @@ class CashBankAccountService
             ->selectRaw('COALESCE(SUM(debit_amount), 0) as total_debit, COALESCE(SUM(credit_amount), 0) as total_credit')
             ->first();
 
-        $glBalance = bcsub((string) ($glLines->total_debit ?? '0.00'), (string) ($glLines->total_credit ?? '0.00'), 2);
+        $glBalance = bcsub(bc_num($glLines->total_debit ?? '0.00'), bc_num($glLines->total_credit ?? '0.00'), 2);
         $subledgerBalance = (string) $freshAccount->current_balance;
         $diff = bcsub($subledgerBalance, $glBalance, 2);
 

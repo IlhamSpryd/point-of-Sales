@@ -21,7 +21,7 @@
     <button
         type="button"
         @click="toggle(id)"
-        {{ $attributes->twMergeFor('title', 'flex w-full select-none items-center justify-between gap-3 px-3 py-4 text-left text-sm font-medium text-foreground/80 transition-colors group-hover/accordion-item:text-foreground') }}
+        {{ $attributes->twMergeFor('title', 'flex w-full select-none items-center justify-between gap-3 px-3 py-4 text-left text-sm font-medium text-foreground transition-colors group-hover/accordion-item:text-foreground') }}
     >
         <span>{{ $title }}</span>
         <span
@@ -43,7 +43,7 @@
         :style="isOpen(id) ? 'grid-template-rows: 1fr' : 'grid-template-rows: 0fr'"
     >
         <div class="min-h-0 overflow-hidden">
-            <div {{ $attributes->twMergeFor('content', 'px-3 pb-4 pt-0 text-sm text-foreground/70') }}>
+            <div {{ $attributes->twMergeFor('content', 'px-3 pb-4 pt-0 text-sm text-muted-foreground') }}>
                 {{ $slot }}
             </div>
         </div>

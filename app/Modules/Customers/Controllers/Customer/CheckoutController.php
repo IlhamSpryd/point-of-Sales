@@ -169,7 +169,9 @@ class CheckoutController extends Controller
             $transactionItems = array_map(function (array $item) use ($tenantId) {
                 // SECURITY: Hitung ulang extra_price dari database, jangan percaya
                 // nilai yang sudah dihitung di session (bisa dimanipulasi via devtools).
-                $modifierIds = collect($item['options'] ?? [])->pluck('modifier_id')->filter()->all();
+                /** @var array<int, array<string, mixed>> $rawOptions */
+                $rawOptions = is_array($item['options'] ?? null) ? array_values($item['options']) : [];
+                $modifierIds = collect($rawOptions)->pluck('modifier_id')->filter()->all();
                 $storeId = app(TenantContext::class)->getStoreId();
 
                 $serverExtraPrice = 0;
@@ -353,7 +355,7 @@ class CheckoutController extends Controller
         $prep = ['total' => $order->orderItems->count(), 'pending' => 0, 'brewing' => 0, 'ready' => 0];
         foreach ($order->orderItems as $i) {
             $key = $i->preparation_status->value;
-            $prep[$key]++;
+            $prep[$key] = ($prep[$key] ?? 0) + 1;
         }
 
         // PATCH FOR F-11: ETA Tracking

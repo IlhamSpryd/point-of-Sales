@@ -26,7 +26,7 @@ class AuditTrailService
      *
      * @param  int  $tenantId  ID tenant pemilik aktivitas (wajib)
      * @param  string  $action  Kode aksi terstruktur (mis: 'user.login', 'tenant.onboarding_completed')
-     * @param  int|null  $userId  ID pengguna pelaku (opsional, divalidasi harus milik tenantId)
+     * @param  int|string|null  $userId  ID pengguna pelaku (opsional, divalidasi harus milik tenantId)
      * @param  int|null  $storeId  ID cabang terkait (opsional, di-resolve otomatis jika null)
      * @param  string|null  $subjectType  Nama kelas model subjek (opsional)
      * @param  int|null  $subjectId  ID model subjek (opsional)
@@ -40,7 +40,7 @@ class AuditTrailService
     public function log(
         int $tenantId,
         string $action,
-        ?int $userId = null,
+        int|string|null $userId = null,
         ?int $storeId = null,
         ?string $subjectType = null,
         ?int $subjectId = null,
@@ -52,8 +52,9 @@ class AuditTrailService
         ?string $userAgent = null
     ): ?int {
         try {
+            $normalizedUserId = $userId !== null ? (int) $userId : null;
             // 1. Validasi & resolusi user_id terhadap tenant_id
-            $resolvedUserId = $this->resolveUserId($tenantId, $userId, $metadata);
+            $resolvedUserId = $this->resolveUserId($tenantId, $normalizedUserId, $metadata);
 
             // 2. Resolusi store_id yang valid untuk tenant_id
             $resolvedStoreId = $this->resolveStoreId($tenantId, $storeId, $resolvedUserId);
@@ -101,6 +102,8 @@ class AuditTrailService
     /**
      * Memastikan user_id benar-benar milik tenant_id untuk mencegah pelanggaran
      * foreign key komposit (tenant_id, user_id).
+     *
+     * @param  array<string, mixed>  $metadata
      */
     private function resolveUserId(int $tenantId, ?int $userId, ?array &$metadata): ?int
     {

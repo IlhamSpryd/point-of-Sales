@@ -15,7 +15,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $tenant_id
  * @property int $tax_code_id
- * @property string $rate_percent
+ * @property numeric-string $rate_percent
  * @property CarbonInterface $effective_from
  * @property CarbonInterface|null $effective_to
  * @property bool $is_active
@@ -41,11 +41,17 @@ class TaxRate extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<TaxCode, $this>
+     */
     public function taxCode(): BelongsTo
     {
         return $this->belongsTo(TaxCode::class, 'tax_code_id');

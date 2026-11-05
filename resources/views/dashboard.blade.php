@@ -38,7 +38,8 @@
         <section class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6" aria-label="Primary Orders Summary">
             {{-- Card 1: Today's Orders --}}
             <x-erp.stat-card
-                :label="'Today\'s Orders <span class=\"sr-only\">Total pendapatan</span>'"
+                label="Today's Orders"
+                hint="Total pendapatan hari ini"
                 :value="$displayTodayOrders"
                 delta="+1.9%"
                 delta-variant="positive"
@@ -47,7 +48,8 @@
 
             {{-- Card 2: This Week's Orders --}}
             <x-erp.stat-card
-                :label="'This Week\'s Orders <span class=\"sr-only\">Total transaksi</span>'"
+                label="This Week's Orders"
+                hint="Total transaksi minggu ini"
                 :value="$displayWeekOrders"
                 delta="-8.1%"
                 delta-variant="negative"
@@ -56,7 +58,8 @@
 
             {{-- Card 3: This Month's Orders --}}
             <x-erp.stat-card
-                :label="'This Month\'s Orders <span class=\"sr-only\">Terjual bulan ini</span>'"
+                label="This Month's Orders"
+                hint="Terjual bulan ini"
                 :value="number_format($displayMonthOrders, 0, ',', '.')"
                 delta="+24%"
                 delta-variant="positive"
@@ -144,6 +147,33 @@
 
                          const area = `${line} L ${pts[pts.length - 1].x.toFixed(1)} ${(height - paddingBottom).toFixed(1)} L ${pts[0].x.toFixed(1)} ${(height - paddingBottom).toFixed(1)} Z`;
                          return { line, area, points: pts };
+                     },
+                     renderDots(points) {
+                         const group = this.$refs.splineDots;
+                         if (!group) return;
+                         group.innerHTML = '';
+                         (points || []).forEach((pt, idx) => {
+                             const hit = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                             hit.setAttribute('cx', pt.x);
+                             hit.setAttribute('cy', pt.y);
+                             hit.setAttribute('r', 14);
+                             hit.setAttribute('fill', 'transparent');
+                             hit.setAttribute('class', 'cursor-pointer');
+                             hit.addEventListener('mouseenter', () => this.hoveredBar = idx);
+                             hit.addEventListener('mouseleave', () => this.hoveredBar = null);
+
+                             const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                             dot.setAttribute('cx', pt.x);
+                             dot.setAttribute('cy', pt.y);
+                             dot.setAttribute('r', this.activeIndex === idx ? 5 : 3);
+                             dot.setAttribute('fill', this.activeIndex === idx ? 'currentColor' : 'var(--card)');
+                             dot.setAttribute('stroke', 'currentColor');
+                             dot.setAttribute('stroke-width', this.activeIndex === idx ? 2.5 : 1.5);
+                             dot.setAttribute('class', 'text-primary transition-all duration-150 pointer-events-none');
+
+                             group.appendChild(hit);
+                             group.appendChild(dot);
+                         });
                      }
                  }">
             {{-- Header of Section --}}
@@ -158,7 +188,7 @@
                             <span class="material-symbols-rounded text-[15px]">trending_up</span> +1.9%
                         </span>
                     </div>
-                    <div class="text-xs text-muted-foreground mt-1 font-mono" x-text="periodVolumeText">
+                    <div class="text-xs text-muted-foreground mt-1 font-mono numeric" x-text="periodVolumeText">
                         {{ number_format($totalEarnings, 0, ',', '.') }} IDR · Real-Time Volume
                     </div>
                 </div>
@@ -177,7 +207,7 @@
                         <button type="button"
                             @click="chartType = 'spline'"
                             :class="chartType === 'spline' ? 'bg-card text-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'"
-                            class="w-8 h-8 rounded-md flex items-center justify-center cursor-pointer transition-all"
+                            class="size-8 rounded-md flex items-center justify-center cursor-pointer transition-all"
                             title="Spline Chart" aria-label="Switch to Spline Chart">
                             <span class="material-symbols-rounded text-[18px]">show_chart</span>
                         </button>
@@ -274,18 +304,12 @@
                             {{-- Spline Line Stroke --}}
                             <path :d="splinePaths.line" fill="none" stroke="currentColor" class="text-primary" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
 
-                            {{-- Interactive Data Dots --}}
-                            <template x-for="(pt, idx) in splinePaths.points" :key="idx">
-                                <g @mouseenter="hoveredBar = idx" @mouseleave="hoveredBar = null" class="cursor-pointer">
-                                    <circle :cx="pt.x" :cy="pt.y" r="14" fill="transparent" />
-                                    <circle :cx="pt.x" :cy="pt.y"
-                                            :r="activeIndex === idx ? 5 : 3"
-                                            :fill="activeIndex === idx ? 'currentColor' : 'var(--color-card, #ffffff)'"
-                                            stroke="currentColor"
-                                            :stroke-width="activeIndex === idx ? 2.5 : 1.5"
-                                            class="text-primary transition-all duration-150" />
-                                </g>
-                            </template>
+                            {{-- Interactive Data Dots.
+                                 Alpine tidak dapat mengoper x-for di dalam subtree SVG secara
+                                 andal (atribut binding tidak diproses), sehingga lingkaran
+                                 dirender server-side dan hanya reveal/hover yang Alpine.
+                                 Koordinat dihitung ulang oleh x-effect saat periode berubah. --}}
+                            <g x-ref="splineDots" x-effect="renderDots(splinePaths.points)"></g>
                         </svg>
                     </div>
 

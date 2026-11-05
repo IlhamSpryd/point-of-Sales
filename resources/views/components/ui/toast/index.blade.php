@@ -94,10 +94,10 @@
                 }
             },
             types: {
-                success: { icon: 'check_circle', colorClass: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
-                error:   { icon: 'error',        colorClass: 'text-rose-600 bg-rose-50 border-rose-200' },
-                warning: { icon: 'warning',      colorClass: 'text-amber-700 bg-amber-50 border-amber-200' },
-                info:    { icon: 'info',         colorClass: 'text-blue-600 bg-blue-50 border-blue-200' }
+                success: { icon: 'check_circle', colorClass: 'text-success bg-success-muted border-success-border' },
+                error:   { icon: 'error',        colorClass: 'text-destructive bg-destructive-muted border-destructive-border' },
+                warning: { icon: 'warning',      colorClass: 'text-warning bg-warning-muted border-warning-border' },
+                info:    { icon: 'info',         colorClass: 'text-info bg-info-muted border-info-border' }
             }
         }"
         x-init="(() => {
@@ -137,7 +137,7 @@
                     type="button"
                     @click="removeToast(toast.id)"
                     aria-label="Tutup notifikasi"
-                    class="inline-flex size-6 items-center justify-center rounded-md text-foreground/45 hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                    class="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                 >
                     <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                         <path d="M18 6 6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round" />
@@ -145,7 +145,7 @@
                 </button>
 
                 <div
-                    class="absolute bottom-0 left-0 h-0.5 bg-foreground/20 transition-all duration-150"
+                    class="absolute bottom-0 left-0 h-0.5 bg-secondary transition-all duration-150"
                     :style="`width: ${100 - (toastsProgress[toast.id] || 0)}%;`"
                     aria-hidden="true"
                 ></div>

@@ -45,26 +45,41 @@ class FixedAssetCategory extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<ChartOfAccount, $this>
+     */
     public function assetGlAccount(): BelongsTo
     {
         return $this->belongsTo(ChartOfAccount::class, 'asset_gl_account_id');
     }
 
+    /**
+     * @return BelongsTo<ChartOfAccount, $this>
+     */
     public function accumDeprGlAccount(): BelongsTo
     {
         return $this->belongsTo(ChartOfAccount::class, 'accum_depr_gl_account_id');
     }
 
+    /**
+     * @return BelongsTo<ChartOfAccount, $this>
+     */
     public function deprExpenseGlAccount(): BelongsTo
     {
         return $this->belongsTo(ChartOfAccount::class, 'depr_expense_gl_account_id');
     }
 
+    /**
+     * @return HasMany<FixedAsset, $this>
+     */
     public function assets(): HasMany
     {
         return $this->hasMany(FixedAsset::class, 'category_id');

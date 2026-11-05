@@ -26,7 +26,7 @@
         $previous = $page;
     }
 
-    $navClasses = 'inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-medium border border-foreground/10 bg-background px-3 text-sm font-medium text-foreground transition hover:bg-secondary';
+    $navClasses = 'inline-flex h-9 min-w-9 items-center justify-center gap-1 rounded-medium border border-border bg-background px-3 text-sm font-medium text-foreground transition hover:bg-secondary';
 @endphp
 
 <nav aria-label="Pagination" {{ $attributes->twMerge('flex items-center gap-1.5') }}>
@@ -42,11 +42,11 @@
 
     @foreach ($items as $item)
         @if ($item === '…')
-            <span class="inline-flex h-9 min-w-9 items-center justify-center text-sm text-foreground/40">…</span>
+            <span class="inline-flex h-9 min-w-9 items-center justify-center text-sm text-muted-foreground">…</span>
         @elseif ($item === $current)
             <span aria-current="page" class="inline-flex h-9 min-w-9 items-center justify-center rounded-medium bg-primary px-3 text-sm font-medium text-primary-foreground">{{ $item }}</span>
         @else
-            <a href="{{ $url($item) }}" class="inline-flex h-9 min-w-9 items-center justify-center rounded-medium px-3 text-sm font-medium text-foreground/70 transition hover:bg-secondary hover:text-foreground">{{ $item }}</a>
+            <a href="{{ $url($item) }}" class="inline-flex h-9 min-w-9 items-center justify-center rounded-medium px-3 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground">{{ $item }}</a>
         @endif
     @endforeach
 

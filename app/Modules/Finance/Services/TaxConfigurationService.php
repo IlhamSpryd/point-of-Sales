@@ -94,7 +94,7 @@ class TaxConfigurationService
         $fromStr = $effectiveFrom instanceof CarbonInterface ? $effectiveFrom->toDateString() : Carbon::parse($effectiveFrom)->toDateString();
         $toStr = $effectiveTo ? ($effectiveTo instanceof CarbonInterface ? $effectiveTo->toDateString() : Carbon::parse($effectiveTo)->toDateString()) : null;
 
-        $normRate = bcadd($ratePercent, '0', 4);
+        $normRate = bcadd(bc_num($ratePercent), '0', 4);
         if (bccomp($normRate, '0.0000', 4) < 0) {
             throw new DomainException('FIN-M7-03: Tarif persentase pajak tidak boleh bernilai negatif.');
         }
@@ -189,7 +189,7 @@ class TaxConfigurationService
     {
         $rate = $this->resolveEffectiveRate($code, $date);
         $ratePercent = $rate ? $rate->rate_percent : '0.0000';
-        $normAmount = bcadd($amount, '0', 2);
+        $normAmount = bcadd(bc_num($amount), '0', 2);
 
         // r = ratePercent / 100
         $r = bcdiv($ratePercent, '100', 6);
@@ -213,7 +213,7 @@ class TaxConfigurationService
             $divisor = bcadd('1.000000', $r, 6);
             $rawDpp = bcdiv($normAmount, $divisor, 6);
             $dpp = $this->roundAmount($rawDpp, 2);
-            $tax = bcsub($normAmount, $dpp, 2);
+            $tax = bcsub(bc_num($normAmount), bc_num($dpp), 2);
             $gross = $normAmount;
         } else {
             // EXCLUSIVE: amount = DPP
@@ -222,7 +222,7 @@ class TaxConfigurationService
             $dpp = $normAmount;
             $rawTax = bcmul($dpp, $r, 6);
             $tax = $this->roundAmount($rawTax, 2);
-            $gross = bcadd($dpp, $tax, 2);
+            $gross = bcadd(bc_num($dpp), bc_num($tax), 2);
         }
 
         return [
@@ -252,7 +252,7 @@ class TaxConfigurationService
         $count = 0;
         foreach ($taxClasses as $tc) {
             $codeStr = strtoupper(trim((string) ($tc->code ?? 'TAX-'.$tc->id)));
-            $ratePercent = bcadd((string) ($tc->rate ?? $tc->percentage ?? '11.0000'), '0', 4);
+            $ratePercent = bcadd(bc_num($tc->rate ?? $tc->percentage ?? '11.0000'), '0', 4);
 
             $taxCode = TaxCode::withoutTenantScope()->firstOrCreate(
                 [

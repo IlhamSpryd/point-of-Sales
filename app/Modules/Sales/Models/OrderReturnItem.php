@@ -16,6 +16,19 @@ use App\Models\StockMovement;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property numeric-string $unit_price_snapshot
+ * @property numeric-string $line_discount_reversed
+ * @property numeric-string $line_writeoff_or_refund_amount
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int $order_return_id
+ * @property int $order_item_id
+ * @property int $product_id
+ * @property int $quantity_returned
+ * @property int|null $stock_movement_id
+ */
 class OrderReturnItem extends Model
 {
     use AssignsStore, AssignsTenant;
@@ -48,21 +61,33 @@ class OrderReturnItem extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<OrderReturn, $this>
+     */
     public function orderReturn(): BelongsTo
     {
         return $this->belongsTo(OrderReturn::class);
     }
 
+    /**
+     * @return BelongsTo<OrderItem, $this>
+     */
     public function orderItem(): BelongsTo
     {
         return $this->belongsTo(OrderItem::class);
     }
 
+    /**
+     * @return BelongsTo<Product, $this>
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class)->withTrashed();
     }
 
+    /**
+     * @return BelongsTo<StockMovement, $this>
+     */
     public function stockMovement(): BelongsTo
     {
         return $this->belongsTo(StockMovement::class);

@@ -51,7 +51,7 @@ class ReceiptPrinterService
 
             // Jika cetak ulang lebih dari 2x, validasi PIN supervisor jika diberikan/dibutuhkan
             if ($isReprint && $newPrintSequence > 2 && $supervisorPin !== null) {
-                app(CashierPinService::class)->verifySupervisorPin($actorUserId, $supervisorPin, $lockedOrder->tenant_id);
+                app(CashierPinService::class)->verifySupervisorPin($actorUserId, $supervisorPin, (int) $lockedOrder->tenant_id);
             }
 
             // Naikkan counter cetak via forceFill karena mass assignment dibatasi
@@ -73,7 +73,7 @@ class ReceiptPrinterService
 
             // Audit Trail
             app(AuditTrailService::class)->log(
-                tenantId: $lockedOrder->tenant_id,
+                tenantId: (int) $lockedOrder->tenant_id,
                 action: $isReprint ? 'receipt.reprinted' : 'receipt.printed',
                 userId: $actorUserId,
                 storeId: $lockedOrder->store_id,
@@ -117,7 +117,7 @@ class ReceiptPrinterService
             $printer->setJustification(Printer::JUSTIFY_LEFT);
             $printer->text('Order : '.$lockedOrder->order_code."\n");
             $printer->text('Kasir : '.($lockedOrder->user->name ?? 'Kasir')."\n");
-            $printer->text('Waktu : '.$lockedOrder->created_at->format('d/m/Y H:i')."\n");
+            $printer->text('Waktu : '.($lockedOrder->created_at?->format('d/m/Y H:i') ?? '')."\n");
             $printer->text(str_repeat('-', 32)."\n");
 
             foreach ($lockedOrder->orderItems as $item) {

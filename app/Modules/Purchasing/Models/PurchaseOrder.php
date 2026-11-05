@@ -35,12 +35,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property CarbonInterface|null $expected_delivery_date
  * @property int $payment_terms_days
  * @property string $currency_code
- * @property string $exchange_rate
- * @property string $subtotal_amount
- * @property string $discount_amount
- * @property string $tax_amount
- * @property string $additional_cost_estimate
- * @property string $total_amount
+ * @property numeric-string $exchange_rate
+ * @property numeric-string $subtotal_amount
+ * @property numeric-string $discount_amount
+ * @property numeric-string $tax_amount
+ * @property numeric-string $additional_cost_estimate
+ * @property numeric-string $total_amount
  * @property PurchaseOrderStatusEnum $status
  * @property PoReceivingStatusEnum $receiving_status
  * @property PoInvoicingStatusEnum $invoicing_status
@@ -92,11 +92,17 @@ class PurchaseOrder extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
@@ -110,16 +116,25 @@ class PurchaseOrder extends Model
         return $this->belongsTo(Supplier::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function createdByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function approvedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function releasedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'released_by_user_id');

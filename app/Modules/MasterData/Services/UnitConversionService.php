@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Modules\MasterData\Services;
 
 use App\Models\ProductUnitConversion;
-use App\Models\UnitOfMeasure;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -95,6 +94,7 @@ class UnitConversionService
         if ($fromUomId === $toUomId) {
             /** @var numeric-string $formatted */
             $formatted = bcadd($qtyStr, '0', $scale);
+
             return $formatted;
         }
 
@@ -159,6 +159,7 @@ class UnitConversionService
         // Bulatkan/format hasil akhir ke skala presisi yang diminta
         /** @var numeric-string $finalQty */
         $finalQty = bcadd($currentQty, '0', $scale);
+
         return $finalQty;
     }
 
@@ -200,8 +201,8 @@ class UnitConversionService
     /**
      * Penjumlahan presisi tinggi (bcadd).
      *
-     * @param numeric-string $qty1
-     * @param numeric-string $qty2
+     * @param  numeric-string  $qty1
+     * @param  numeric-string  $qty2
      */
     public function add(string $qty1, string $qty2, int $scale = self::DEFAULT_SCALE): string
     {
@@ -211,8 +212,8 @@ class UnitConversionService
     /**
      * Pengurangan presisi tinggi (bcsub).
      *
-     * @param numeric-string $qty1
-     * @param numeric-string $qty2
+     * @param  numeric-string  $qty1
+     * @param  numeric-string  $qty2
      */
     public function subtract(string $qty1, string $qty2, int $scale = self::DEFAULT_SCALE): string
     {
@@ -223,8 +224,8 @@ class UnitConversionService
      * Perbandingan kuantitas presisi tinggi (bccomp):
      * Return: 0 jika sama, 1 jika qty1 > qty2, -1 jika qty1 < qty2.
      *
-     * @param numeric-string $qty1
-     * @param numeric-string $qty2
+     * @param  numeric-string  $qty1
+     * @param  numeric-string  $qty2
      */
     public function compare(string $qty1, string $qty2, int $scale = self::DEFAULT_SCALE): int
     {

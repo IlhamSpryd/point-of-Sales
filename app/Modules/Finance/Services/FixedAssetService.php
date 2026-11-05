@@ -50,8 +50,8 @@ class FixedAssetService
             if ($storeId <= 0) {
                 throw new DomainException('FIN-M7-01: Cabang (store_id) aktif wajib tersedia untuk tenant ini.');
             }
-            $cost = bcadd((string) ($data['acquisition_cost'] ?? '0.00'), '0', 2);
-            $salvage = bcadd((string) ($data['salvage_value'] ?? '0.00'), '0', 2);
+            $cost = bcadd(bc_num($data['acquisition_cost'] ?? '0.00'), '0', 2);
+            $salvage = bcadd(bc_num($data['salvage_value'] ?? '0.00'), '0', 2);
 
             if (bccomp($cost, '0.00', 2) <= 0) {
                 throw new DomainException('FIN-M7-01: Nilai perolehan aset tetap wajib lebih besar dari 0.00.');
@@ -138,7 +138,7 @@ class FixedAssetService
             $asset->acquisition_journal_id = $journal->id;
             $asset->save();
 
-            return $asset->fresh(['category', 'schedules', 'acquisitionJournal']);
+            return $asset->fresh(['category', 'schedules', 'acquisitionJournal']) ?? $asset;
         });
     }
 

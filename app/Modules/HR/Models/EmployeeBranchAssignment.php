@@ -82,7 +82,8 @@ class EmployeeBranchAssignment extends Model
     /**
      * Scope untuk penugasan aktif pada tanggal tertentu.
      *
-     * @param  Builder<EmployeeBranchAssignment>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeActiveOn(Builder $query, CarbonInterface|string $date): Builder
     {
@@ -98,7 +99,8 @@ class EmployeeBranchAssignment extends Model
     /**
      * Scope penugasan primer.
      *
-     * @param  Builder<EmployeeBranchAssignment>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopePrimary(Builder $query): Builder
     {

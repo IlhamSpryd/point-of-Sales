@@ -7,15 +7,28 @@ namespace App\Modules\Pricing\Models;
 use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
 use App\Models\Tenant;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property numeric-string $min_order_amount
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $campaign_id
+ * @property int $min_order_qty
+ * @property array<int|string>|null $trigger_product_ids
+ * @property array<int|string>|null $trigger_category_ids
+ */
 class PromotionRule extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToTenant;
 
     public const RULE_CART_TOTAL = 'CART_TOTAL';
@@ -46,16 +59,25 @@ class PromotionRule extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<PromotionCampaign, $this>
+     */
     public function campaign(): BelongsTo
     {
         return $this->belongsTo(PromotionCampaign::class, 'campaign_id');
     }
 
+    /**
+     * @return HasMany<PromotionReward, $this>
+     */
     public function rewards(): HasMany
     {
         return $this->hasMany(PromotionReward::class, 'rule_id');
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);

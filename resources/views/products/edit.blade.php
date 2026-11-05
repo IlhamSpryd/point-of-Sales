@@ -4,7 +4,7 @@
     <div class="flex items-center justify-between mb-6" data-gsap="page-enter">
         <div>
             <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Edit Product <span class="sr-only">Ubah Produk</span></h4>
-            <p class="text-sm font-medium text-[#787774] mt-1">Update details for product #{{ $product->id }}</p>
+            <p class="text-sm font-medium text-muted-foreground mt-1">Update details for product #{{ $product->id }}</p>
         </div>
         <a href="{{ route('products.index') }}" wire:navigate>
             <x-ui.button variant="outline" type="button" class="h-10">
@@ -13,7 +13,7 @@
         </a>
     </div>
 
-    <div class="bg-white border border-[#E5E7EB] rounded-xl shadow-sm overflow-hidden w-full shrink-0">
+    <div class="bg-white border border-border rounded-xl shadow-sm overflow-hidden w-full shrink-0">
         <form action="{{ route('products.update', $product->id) }}" method="POST" enctype="multipart/form-data" x-data="{ submitting: false }" @submit="submitting = true" class="p-6 md:p-8 space-y-6">
             @csrf
             @method('PUT')
@@ -61,7 +61,7 @@
                     <x-form-label for="category_id">Category</x-form-label>
                     <div class="relative">
                         <select id="category_id" name="category_id"
-                                class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E5E7EB] bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('category_id') ? 'input-error' : '' }}" required>
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('category_id') ? 'input-error' : '' }}" required>
                             <option value="">Select Category</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}" {{ old('category_id', $product->category_id) == $category->id ? 'selected' : '' }}>
@@ -82,7 +82,7 @@
                     <x-form-label for="brand_id">Brand</x-form-label>
                     <div class="relative">
                         <select id="brand_id" name="brand_id"
-                                class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E5E7EB] bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('brand_id') ? 'input-error' : '' }}">
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('brand_id') ? 'input-error' : '' }}">
                             <option value="">No Brand</option>
                             @if(isset($brands))
                                 @foreach($brands as $brand)
@@ -108,7 +108,7 @@
                     <x-form-label for="product_type">Product Type</x-form-label>
                     <div class="relative">
                         <select id="product_type" name="product_type"
-                                class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E5E7EB] bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('product_type') ? 'input-error' : '' }}">
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('product_type') ? 'input-error' : '' }}">
                             <option value="standard" {{ old('product_type', $product->product_type ?? 'standard') === 'standard' ? 'selected' : '' }}>Standard (Finished Goods)</option>
                             <option value="service" {{ old('product_type', $product->product_type) === 'service' ? 'selected' : '' }}>Service / Labor</option>
                             <option value="non_inventory" {{ old('product_type', $product->product_type) === 'non_inventory' ? 'selected' : '' }}>Non-Inventory</option>
@@ -127,7 +127,7 @@
                     <x-form-label for="status">Lifecycle Status</x-form-label>
                     <div class="relative">
                         <select id="status" name="status"
-                                class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E5E7EB] bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('status') ? 'input-error' : '' }}">
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('status') ? 'input-error' : '' }}">
                             <option value="active" {{ old('status', $product->status ?? 'active') === 'active' ? 'selected' : '' }}>Active (Ready for Sale)</option>
                             <option value="draft" {{ old('status', $product->status) === 'draft' ? 'selected' : '' }}>Draft</option>
                             <option value="inactive" {{ old('status', $product->status) === 'inactive' ? 'selected' : '' }}>Inactive</option>
@@ -149,7 +149,7 @@
                     <x-form-label for="base_uom_id">Base Unit of Measure (Base UoM)</x-form-label>
                     <div class="relative">
                         <select id="base_uom_id" name="base_uom_id"
-                                class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E5E7EB] bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('base_uom_id') ? 'input-error' : '' }}">
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('base_uom_id') ? 'input-error' : '' }}">
                             <option value="">Select Unit</option>
                             @if(isset($uoms))
                                 @foreach($uoms as $uom)
@@ -172,7 +172,7 @@
                     <x-form-label for="tax_class_id">Tax Class (Optional)</x-form-label>
                     <div class="relative">
                         <select id="tax_class_id" name="tax_class_id"
-                                class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E5E7EB] bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('tax_class_id') ? 'input-error' : '' }}">
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('tax_class_id') ? 'input-error' : '' }}">
                             <option value="">-- Standard / No Special Tax --</option>
                             @if(isset($taxClasses))
                                 @foreach($taxClasses as $tc)
@@ -209,7 +209,7 @@
                     <x-form-label for="costing_method">Costing Method</x-form-label>
                     <div class="relative">
                         <select id="costing_method" name="costing_method"
-                                class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E5E7EB] bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('costing_method') ? 'input-error' : '' }}">
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('costing_method') ? 'input-error' : '' }}">
                             <option value="fifo" {{ old('costing_method', $product->costing_method ?? 'fifo') === 'fifo' ? 'selected' : '' }}>FIFO (First In, First Out)</option>
                             <option value="average" {{ old('costing_method', $product->costing_method) === 'average' ? 'selected' : '' }}>Moving Average</option>
                             <option value="standard" {{ old('costing_method', $product->costing_method) === 'standard' ? 'selected' : '' }}>Standard Cost</option>
@@ -266,7 +266,7 @@
                     <x-form-label for="is_tax_inclusive">Tax Treatment</x-form-label>
                     <div class="flex items-center gap-3 mt-2">
                         <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" id="is_tax_inclusive" name="is_tax_inclusive" value="1" class="rounded border-[#E5E7EB] text-apeiron-ink focus:ring-[#37352F] h-4 w-4" {{ old('is_tax_inclusive', $product->is_tax_inclusive) ? 'checked' : '' }}>
+                            <input type="checkbox" id="is_tax_inclusive" name="is_tax_inclusive" value="1" class="rounded border-border text-apeiron-ink focus:ring-ring h-4 w-4" {{ old('is_tax_inclusive', $product->is_tax_inclusive) ? 'checked' : '' }}>
                             <span class="ml-2 text-sm font-medium text-apeiron-ink">Selling Price is Tax Inclusive</span>
                         </label>
                     </div>
@@ -298,7 +298,7 @@
             <div>
                 <x-form-label for="product_description">Description</x-form-label>
                 <textarea id="product_description" name="product_description" rows="3"
-                          class="form-input w-full px-4 py-2.5 rounded-xl border border-[#E5E7EB] bg-white text-apeiron-ink placeholder-primary-400 focus:outline-none focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('product_description') ? 'input-error' : '' }}" 
+                          class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-apeiron-ink placeholder-primary-400 focus:outline-none focus:ring-2 focus:ring-ring focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('product_description') ? 'input-error' : '' }}" 
                           placeholder="Enter product description (optional)">{{ old('product_description', $product->product_description) }}</textarea>
                 @error('product_description')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
@@ -323,13 +323,13 @@
                 removeItem(index) {
                     this.items.splice(index, 1);
                 }
-            }" class="pt-4 border-t border-[#E5E7EB]">
+            }" class="pt-4 border-t border-border">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h5 class="text-sm font-bold text-apeiron-ink">Bill of Materials (BOM)</h5>
-                        <p class="text-xs text-[#787774] mt-0.5">Specify raw ingredients that automatically deplete from inventory when this product is sold.</p>
+                        <p class="text-xs text-muted-foreground mt-0.5">Specify raw ingredients that automatically deplete from inventory when this product is sold.</p>
                     </div>
-                    <button type="button" @click="addItem" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-[#E5E7EB] rounded-xl hover:bg-[#F7F7F5] transition-colors shadow-sm">
+                    <button type="button" @click="addItem" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-border rounded-xl hover:bg-muted transition-colors shadow-sm">
                         <span class="material-symbols-rounded text-[16px]">add</span> Add Ingredient
                     </button>
                 </div>
@@ -338,7 +338,7 @@
                     <template x-for="(item, index) in items" :key="index">
                         <div class="flex items-start gap-3">
                             <div class="flex-1">
-                                <select x-model="item.id" :name="'ingredients['+index+'][id]'" class="form-select w-full px-3 py-2 rounded-xl border border-[#E5E7EB] bg-white text-apeiron-ink text-sm focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink shadow-sm" required>
+                                <select x-model="item.id" :name="'ingredients['+index+'][id]'" class="form-select w-full px-3 py-2 rounded-xl border border-border bg-white text-apeiron-ink text-sm focus:ring-2 focus:ring-ring focus:border-apeiron-ink shadow-sm" required>
                                     <option value="">-- Select Ingredient --</option>
                                     <template x-for="ing in ingredients" :key="ing.id">
                                         <option :value="ing.id" x-text="ing.name + ' (' + ing.unit + ')'" :selected="item.id == ing.id"></option>
@@ -346,7 +346,7 @@
                                 </select>
                             </div>
                             <div class="w-32">
-                                <input type="number" step="0.0001" x-model="item.quantity" :name="'ingredients['+index+'][quantity]'" placeholder="Quantity" class="form-input w-full px-3 py-2 rounded-xl border border-[#E5E7EB] bg-white text-apeiron-ink text-sm focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink shadow-sm" required>
+                                <input type="number" step="0.0001" x-model="item.quantity" :name="'ingredients['+index+'][quantity]'" placeholder="Quantity" class="form-input w-full px-3 py-2 rounded-xl border border-border bg-white text-apeiron-ink text-sm focus:ring-2 focus:ring-ring focus:border-apeiron-ink shadow-sm" required>
                             </div>
                             <button type="button" @click="removeItem(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors" title="Remove row">
                                 <span class="material-symbols-rounded text-[18px]">close</span>
@@ -354,7 +354,7 @@
                         </div>
                     </template>
                     
-                    <div x-show="items.length === 0" class="text-center py-6 bg-[#F7F7F5] rounded-xl border border-[#E5E7EB] border-dashed">
+                    <div x-show="items.length === 0" class="text-center py-6 bg-muted rounded-xl border border-border border-dashed">
                         <p class="text-sm text-primary-400">No ingredients configured. Click "Add Ingredient" to define a recipe.</p>
                     </div>
                 </div>
@@ -373,13 +373,13 @@
                 removeGroup(index) {
                     this.selectedGroups.splice(index, 1);
                 }
-            }" class="pt-4 border-t border-[#E5E7EB]">
+            }" class="pt-4 border-t border-border">
                 <div class="flex items-center justify-between mb-4">
                     <div>
                         <h5 class="text-sm font-bold text-apeiron-ink">Variant & Modifier Groups</h5>
-                        <p class="text-xs text-[#787774] mt-0.5">Link modifier groups (e.g., Milk Choice, Temperature) available for this item.</p>
+                        <p class="text-xs text-muted-foreground mt-0.5">Link modifier groups (e.g., Milk Choice, Temperature) available for this item.</p>
                     </div>
-                    <button type="button" @click="addGroup" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-[#E5E7EB] rounded-xl hover:bg-[#F7F7F5] transition-colors shadow-sm">
+                    <button type="button" @click="addGroup" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-border rounded-xl hover:bg-muted transition-colors shadow-sm">
                         <span class="material-symbols-rounded text-[16px]">add</span> Add Modifier Group
                     </button>
                 </div>
@@ -388,7 +388,7 @@
                     <template x-for="(groupId, index) in selectedGroups" :key="index">
                         <div class="flex items-start gap-3">
                             <div class="flex-1">
-                                <select x-model="selectedGroups[index]" :name="'modifier_groups['+index+']'" class="form-select w-full px-3 py-2 rounded-xl border border-[#E5E7EB] bg-white text-apeiron-ink text-sm focus:ring-2 focus:ring-[#37352F] focus:border-apeiron-ink shadow-sm" required>
+                                <select x-model="selectedGroups[index]" :name="'modifier_groups['+index+']'" class="form-select w-full px-3 py-2 rounded-xl border border-border bg-white text-apeiron-ink text-sm focus:ring-2 focus:ring-ring focus:border-apeiron-ink shadow-sm" required>
                                     <option value="">-- Select Modifier Group --</option>
                                     <template x-for="g in groups" :key="g.id">
                                         <option :value="g.id" x-text="g.name" :selected="groupId == g.id"></option>
@@ -401,7 +401,7 @@
                         </div>
                     </template>
                     
-                    <div x-show="selectedGroups.length === 0" class="text-center py-6 bg-[#F7F7F5] rounded-xl border border-[#E5E7EB] border-dashed">
+                    <div x-show="selectedGroups.length === 0" class="text-center py-6 bg-muted rounded-xl border border-border border-dashed">
                         <p class="text-sm text-primary-400">No modifier groups linked. Click "Add Modifier Group" if needed.</p>
                     </div>
                 </div>
@@ -412,15 +412,15 @@
                 <x-form-label for="product_photo">Product Photo</x-form-label>
                 @if($product->product_photo)
                     <div class="mb-3">
-                        <p class="text-xs text-[#787774] mb-2">Current Photo:</p>
-                        <img src="{{ asset('storage/' . $product->product_photo) }}" class="h-24 w-24 object-cover rounded-xl border border-[#E5E7EB] shadow-sm" alt="Existing photo">
+                        <p class="text-xs text-muted-foreground mb-2">Current Photo:</p>
+                        <img src="{{ asset('storage/' . $product->product_photo) }}" class="h-24 w-24 object-cover rounded-xl border border-border shadow-sm" alt="Existing photo">
                     </div>
                 @endif
-                <div class="mt-1 flex items-center justify-center px-6 pt-5 pb-6 border-2 border-[#E5E7EB] border-dashed rounded-xl transition-colors duration-200 hover:border-[#C4C3C0] bg-[#F7F7F5]">
+                <div class="mt-1 flex items-center justify-center px-6 pt-5 pb-6 border-2 border-border border-dashed rounded-xl transition-colors duration-200 hover:border-border-strong bg-muted">
                     <div class="space-y-1 text-center">
                         <span class="material-symbols-rounded text-[32px] text-primary-300">image</span>
-                        <div class="flex flex-col sm:flex-row text-sm text-[#787774] justify-center gap-1 mt-3">
-                            <label for="product_photo" class="relative cursor-pointer bg-white rounded-xl font-medium text-apeiron-ink hover:text-apeiron-ink focus-within:outline-none px-3 py-1 shadow-sm border border-[#E5E7EB] transition-all duration-200 active:scale-95">
+                        <div class="flex flex-col sm:flex-row text-sm text-muted-foreground justify-center gap-1 mt-3">
+                            <label for="product_photo" class="relative cursor-pointer bg-white rounded-xl font-medium text-apeiron-ink hover:text-apeiron-ink focus-within:outline-none px-3 py-1 shadow-sm border border-border transition-all duration-200 active:scale-95">
                                 <span>Upload replacement</span>
                                 <input id="product_photo" name="product_photo" type="file" class="sr-only" accept="image/jpeg,image/png,image/jpg,image/webp" onchange="document.getElementById('file-name').textContent = this.files[0].name">
                             </label>
@@ -434,7 +434,7 @@
                 @enderror
             </div>
 
-            <div class="pt-4 border-t border-[#E5E7EB] flex justify-end">
+            <div class="pt-4 border-t border-border flex justify-end">
                 <x-ui.button type="submit" variant="primary" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''" x-on:click="window.erpMotion?.pulseHighlight($el)">
                     <span x-show="!submitting" class="flex items-center gap-1.5">
                         <span class="material-symbols-rounded text-[18px]">save</span> Update Product
@@ -446,14 +446,14 @@
     </div>
 
     <!-- Media Gallery Section -->
-    <div class="mt-6 bg-white border border-[#E5E7EB] rounded-xl shadow-sm overflow-hidden p-6">
+    <div class="mt-6 bg-white border border-border rounded-xl shadow-sm overflow-hidden p-6">
         <h5 class="text-base font-bold text-apeiron-ink mb-1">Product Media Gallery <span class="sr-only">Galeri Media Produk</span></h5>
-        <p class="text-xs text-[#787774] mb-4">Manage supplementary photos and visual assets for this product.</p>
+        <p class="text-xs text-muted-foreground mb-4">Manage supplementary photos and visual assets for this product.</p>
 
         @if($product->media->isNotEmpty())
             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 @foreach($product->media as $m)
-                    <div class="relative group rounded-xl border border-[#E5E7EB] overflow-hidden bg-[#F7F7F5] aspect-square flex flex-col justify-between p-2">
+                    <div class="relative group rounded-xl border border-border overflow-hidden bg-muted aspect-square flex flex-col justify-between p-2">
                         <img src="{{ asset('storage/' . $m->file_path) }}" alt="{{ $m->alt_text ?? $product->product_name }}" class="w-full h-full object-cover rounded-lg absolute inset-0">
                         <div class="relative z-10 flex justify-between items-start">
                             @if($m->is_primary)
@@ -478,21 +478,21 @@
                 @endforeach
             </div>
         @else
-            <div class="text-center py-6 bg-[#F7F7F5] rounded-xl border border-[#E5E7EB] border-dashed">
+            <div class="text-center py-6 bg-muted rounded-xl border border-border border-dashed">
                 <p class="text-sm text-primary-400">No media assets currently in this product gallery.</p>
             </div>
         @endif
     </div>
 
     <!-- Cost History Section -->
-    <div class="mt-6 bg-white border border-[#E5E7EB] rounded-xl shadow-sm overflow-hidden p-6">
+    <div class="mt-6 bg-white border border-border rounded-xl shadow-sm overflow-hidden p-6">
         <h5 class="text-base font-bold text-apeiron-ink mb-1">COGS Change History <span class="sr-only">Riwayat Perubahan Biaya Pokok</span></h5>
-        <p class="text-xs text-[#787774] mb-4">Audit trail of unit cost adjustments and costing method revisions.</p>
+        <p class="text-xs text-muted-foreground mb-4">Audit trail of unit cost adjustments and costing method revisions.</p>
 
         @if($product->costHistories->isNotEmpty())
             <div class="overflow-x-auto">
                 <table class="table-standard w-full min-w-full text-left text-sm text-apeiron-ink">
-                    <thead class="bg-[#F7F7F5] text-xs uppercase font-semibold text-[#787774] border-b border-[#E5E7EB]">
+                    <thead class="bg-muted text-xs uppercase font-semibold text-muted-foreground border-b border-border">
                         <tr>
                             <th class="px-4 py-2.5">Effective Time</th>
                             <th class="px-4 py-2.5">Method</th>
@@ -501,21 +501,21 @@
                             <th class="px-4 py-2.5">Revision Reason</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-[#E5E7EB]">
+                    <tbody class="divide-y divide-border">
                         @foreach($product->costHistories as $ch)
-                            <tr class="hover:bg-[#F7F7F5]/50 transition-colors">
-                                <td class="px-4 py-2.5 text-xs text-[#787774]">{{ $ch->effective_at ? $ch->effective_at->format('d M Y H:i') : $ch->created_at->format('d M Y H:i') }}</td>
+                            <tr class="hover:bg-muted/50 transition-colors">
+                                <td class="px-4 py-2.5 text-xs text-muted-foreground">{{ $ch->effective_at ? $ch->effective_at->format('d M Y H:i') : $ch->created_at->format('d M Y H:i') }}</td>
                                 <td class="px-4 py-2.5 font-mono text-xs uppercase">{{ $ch->costing_method }}</td>
                                 <td class="px-4 py-2.5 text-right font-mono tabular-nums">Rp {{ number_format((float) $ch->old_cost, 2, ',', '.') }}</td>
                                 <td class="px-4 py-2.5 text-right font-mono font-semibold text-emerald-600 tabular-nums">Rp {{ number_format((float) $ch->new_cost, 2, ',', '.') }}</td>
-                                <td class="px-4 py-2.5 text-xs text-[#787774]">{{ $ch->reason ?? '-' }}</td>
+                                <td class="px-4 py-2.5 text-xs text-muted-foreground">{{ $ch->reason ?? '-' }}</td>
                             </tr>
                         @endforeach
                     </tbody>
                 </table>
             </div>
         @else
-            <div class="text-center py-6 bg-[#F7F7F5] rounded-xl border border-[#E5E7EB] border-dashed">
+            <div class="text-center py-6 bg-muted rounded-xl border border-border border-dashed">
                 <p class="text-sm text-primary-400">No cost adjustment history recorded for this product.</p>
             </div>
         @endif

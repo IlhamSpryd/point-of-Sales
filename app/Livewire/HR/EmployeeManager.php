@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire\HR;
 
+use App\Livewire\Concerns\InteractsWithToast;
 use App\Livewire\Concerns\RequiresTenantContext;
+use App\Livewire\Concerns\WithBulkActions;
 use App\Modules\HR\Enums\EmploymentStatusEnum;
 use App\Modules\HR\Enums\EmploymentTypeEnum;
 use App\Modules\HR\Enums\GenderEnum;
@@ -21,17 +23,27 @@ use Livewire\WithPagination;
 
 class EmployeeManager extends Component
 {
+    use InteractsWithToast;
     use RequiresTenantContext;
+    use WithBulkActions;
     use WithPagination;
 
     public string $search = '';
 
     public string $departmentFilter = '';
 
+    public string $employmentTypeFilter = '';
+
     public string $statusFilter = 'ALL';
 
     // Modal Form State
-    public bool $isCreateModalOpen = false;
+    public bool $isModalOpen = false;
+
+    public bool $isCreateModalOpen = false; // Kept for backward compatibility
+
+    public string $modalMode = 'create'; // 'create' | 'edit'
+
+    public ?int $editingEmployeeId = null;
 
     public string $employeeNumber = '';
 
@@ -83,28 +95,144 @@ class EmployeeManager extends Component
         $this->hireDate = now()->toDateString();
     }
 
+    public function updatedSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedDepartmentFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedEmploymentTypeFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedStatusFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function resetFilters(): void
+    {
+        $this->reset(['search', 'departmentFilter', 'employmentTypeFilter', 'statusFilter']);
+        $this->resetPage();
+    }
+
     public function openCreateModal(): void
     {
         $this->authorize('create', Employee::class);
 
-        $this->reset(['employeeNumber', 'fullName', 'email', 'phoneNumber', 'nationalIdNumber', 'departmentId', 'jobTitleId']);
+        $this->resetForm();
+        $this->modalMode = 'create';
+        $this->editingEmployeeId = null;
         $this->employeeNumber = 'EMP-'.strtoupper(bin2hex(random_bytes(3)));
         $this->hireDate = now()->toDateString();
+        $this->isModalOpen = true;
         $this->isCreateModalOpen = true;
+    }
+
+    public function openEditModal(int $employeeId): void
+    {
+        $tenantId = (int) app(TenantContext::class)->requireTenantId();
+
+        /** @var Employee|null $employee */
+        $employee = Employee::withoutTenantScope()
+            ->where('tenant_id', $tenantId)
+            ->where('id', $employeeId)
+            ->firstOrFail();
+
+        $this->authorize('update', $employee);
+
+        $this->editingEmployeeId = $employee->id;
+        $this->modalMode = 'edit';
+        $this->employeeNumber = $employee->employee_number;
+        $this->fullName = $employee->full_name;
+        $this->email = $employee->email ?? '';
+        $this->phoneNumber = $employee->phone_number ?? '';
+        $this->nationalIdNumber = $employee->national_id_number ?? '';
+        $this->gender = $employee->gender->value;
+        $this->maritalStatus = $employee->marital_status->value;
+        $this->religion = $employee->religion->value ?? 'ISLAM';
+        $this->employmentType = $employee->employment_type->value;
+        $this->departmentId = $employee->department_id;
+        $this->jobTitleId = $employee->job_title_id;
+        $this->hireDate = $employee->hire_date->toDateString();
+
+        $this->isModalOpen = true;
+        $this->isCreateModalOpen = true;
+    }
+
+    public function closeModal(): void
+    {
+        $this->isModalOpen = false;
+        $this->isCreateModalOpen = false;
+        $this->resetForm();
     }
 
     public function closeCreateModal(): void
     {
-        $this->isCreateModalOpen = false;
+        $this->closeModal();
+    }
+
+    private function resetForm(): void
+    {
+        $this->reset([
+            'employeeNumber',
+            'fullName',
+            'email',
+            'phoneNumber',
+            'nationalIdNumber',
+            'departmentId',
+            'jobTitleId',
+            'editingEmployeeId',
+        ]);
+        $this->gender = 'MALE';
+        $this->maritalStatus = 'SINGLE';
+        $this->religion = 'ISLAM';
+        $this->employmentType = 'PERMANENT';
+        $this->resetValidation();
     }
 
     public function saveEmployee(): void
     {
-        $this->authorize('create', Employee::class);
-
         $this->validate();
 
         $tenantId = (int) app(TenantContext::class)->requireTenantId();
+
+        if ($this->modalMode === 'edit' && $this->editingEmployeeId) {
+            /** @var Employee|null $employee */
+            $employee = Employee::withoutTenantScope()
+                ->where('tenant_id', $tenantId)
+                ->where('id', $this->editingEmployeeId)
+                ->firstOrFail();
+
+            $this->authorize('update', $employee);
+
+            $employee->update([
+                'department_id' => $this->departmentId,
+                'job_title_id' => $this->jobTitleId,
+                'employee_number' => $this->employeeNumber,
+                'full_name' => $this->fullName,
+                'email' => $this->email,
+                'phone_number' => $this->phoneNumber,
+                'national_id_number' => $this->nationalIdNumber,
+                'gender' => GenderEnum::from($this->gender),
+                'marital_status' => MaritalStatusEnum::from($this->maritalStatus),
+                'religion' => ReligionEnum::from($this->religion),
+                'employment_type' => EmploymentTypeEnum::from($this->employmentType),
+                'hire_date' => $this->hireDate,
+            ]);
+
+            $this->closeModal();
+            session()->flash('success', "Data karyawan [{$this->fullName}] berhasil diperbarui.");
+
+            return;
+        }
+
+        $this->authorize('create', Employee::class);
 
         Employee::create([
             'tenant_id' => $tenantId,
@@ -123,7 +251,7 @@ class EmployeeManager extends Component
             'hire_date' => $this->hireDate,
         ]);
 
-        $this->isCreateModalOpen = false;
+        $this->closeModal();
         session()->flash('success', "Karyawan [{$this->fullName}] berhasil didaftarkan.");
     }
 
@@ -144,7 +272,8 @@ class EmployeeManager extends Component
             $employee->employment_status = $isActive ? EmploymentStatusEnum::TERMINATED : EmploymentStatusEnum::ACTIVE;
             $employee->save();
 
-            session()->flash('success', "Status karyawan [{$employee->full_name}] diperbarui.");
+            $statusText = $employee->employment_status === EmploymentStatusEnum::ACTIVE ? 'diaktifkan' : 'dinonaktifkan';
+            session()->flash('success', "Status karyawan [{$employee->full_name}] berhasil {$statusText}.");
         }
     }
 
@@ -169,13 +298,17 @@ class EmployeeManager extends Component
             $query->where('department_id', (int) $this->departmentFilter);
         }
 
+        if (! empty($this->employmentTypeFilter)) {
+            $query->where('employment_type', $this->employmentTypeFilter);
+        }
+
         if ($this->statusFilter === 'ACTIVE') {
             $query->where('employment_status', EmploymentStatusEnum::ACTIVE);
         } elseif ($this->statusFilter === 'INACTIVE') {
             $query->where('employment_status', '!=', EmploymentStatusEnum::ACTIVE);
         }
 
-        $employees = $query->paginate(12);
+        $employees = $query->paginate(10);
 
         /** @var Collection<int, Department> $departments */
         $departments = Department::withoutTenantScope()
@@ -189,10 +322,32 @@ class EmployeeManager extends Component
             ->orderBy('name')
             ->get();
 
+        $totalEmployees = Employee::withoutTenantScope()
+            ->where('tenant_id', $tenantId)
+            ->count();
+
+        $activeEmployees = Employee::withoutTenantScope()
+            ->where('tenant_id', $tenantId)
+            ->where('employment_status', EmploymentStatusEnum::ACTIVE)
+            ->count();
+
+        $contractEmployees = Employee::withoutTenantScope()
+            ->where('tenant_id', $tenantId)
+            ->where('employment_type', EmploymentTypeEnum::CONTRACT_PKWT)
+            ->count();
+
+        $totalDepartments = Department::withoutTenantScope()
+            ->where('tenant_id', $tenantId)
+            ->count();
+
         return view('livewire.hr.employee-manager', [
             'employees' => $employees,
             'departments' => $departments,
             'jobTitles' => $jobTitles,
-        ])->layout('layouts.app', ['header' => 'Master Tenaga Kerja & Karyawan']);
+            'totalEmployees' => $totalEmployees,
+            'activeEmployees' => $activeEmployees,
+            'contractEmployees' => $contractEmployees,
+            'totalDepartments' => $totalDepartments,
+        ])->layout('layouts.app', ['title' => 'Master Karyawan & Tenaga Kerja — Apeiron']);
     }
 }

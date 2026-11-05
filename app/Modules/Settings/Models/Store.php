@@ -103,7 +103,7 @@ class Store extends Model
         'is_initial' => 'boolean',
     ];
 
-    public function setStatusAttribute($value): void
+    public function setStatusAttribute(mixed $value): void
     {
         $this->attributes['is_active'] = ($value === 'active' || $value === true || $value === 1);
     }
@@ -113,31 +113,49 @@ class Store extends Model
         return $this->is_active ? 'active' : 'inactive';
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsToMany<User, $this>
+     */
     public function users(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'user_stores');
     }
 
+    /**
+     * @return HasMany<Device, $this>
+     */
     public function devices(): HasMany
     {
         return $this->hasMany(Device::class);
     }
 
+    /**
+     * @return HasMany<Table, $this>
+     */
     public function tables(): HasMany
     {
         return $this->hasMany(Table::class);
     }
 
+    /**
+     * @return HasMany<EodSettlement, $this>
+     */
     public function eodSettlements(): HasMany
     {
         return $this->hasMany(EodSettlement::class);
     }
 
+    /**
+     * @return HasMany<StoreProductAssortment, $this>
+     */
     public function productAssortments(): HasMany
     {
         return $this->hasMany(StoreProductAssortment::class);

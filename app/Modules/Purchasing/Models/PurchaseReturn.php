@@ -28,9 +28,9 @@ use Illuminate\Support\Carbon;
  * @property string $return_number
  * @property PurchaseReturnStatusEnum $status
  * @property string $reason
- * @property string $subtotal_amount
- * @property string $tax_amount
- * @property string $total_amount
+ * @property numeric-string $subtotal_amount
+ * @property numeric-string $tax_amount
+ * @property numeric-string $total_amount
  * @property Carbon|null $returned_at
  * @property Carbon|null $posted_at
  * @property int $created_by

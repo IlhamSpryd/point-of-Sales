@@ -48,6 +48,8 @@ class TenantOnboardingService
 
     /**
      * Langkah 1: Simpan Profil Bisnis & Standar Operasional Tenant.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function saveBusinessProfile(Tenant $tenant, array $data): Tenant
     {
@@ -98,6 +100,8 @@ class TenantOnboardingService
     /**
      * Langkah 2: Konfigurasi Cabang Pertama & Selesaikan Onboarding Tenant.
      * Menggunakan update pada store awal secara idempoten (anti cabang duplikat).
+     *
+     * @param  array<string, mixed>  $data
      */
     public function saveInitialBranch(Tenant $tenant, array $data, ?User $owner = null): Store
     {

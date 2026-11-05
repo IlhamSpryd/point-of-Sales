@@ -118,14 +118,14 @@ class PurchaseOrderService
                 }
 
                 $allocQty = (string) $alloc['ordered_qty'];
-                if (bccomp($allocQty, '0', 4) <= 0) {
+                if (bccomp(bc_num($allocQty), '0', 4) <= 0) {
                     throw ValidationException::withMessages([
                         "allocations.{$index}.ordered_qty" => ['Kuantitas alokasi harus lebih besar dari 0.'],
                     ]);
                 }
 
                 $remQty = $prLine->remainingOrderableQty();
-                if (bccomp($allocQty, $remQty, 4) > 0) {
+                if (bccomp(bc_num($allocQty), bc_num($remQty), 4) > 0) {
                     throw ValidationException::withMessages([
                         "allocations.{$index}.ordered_qty" => [
                             "Kuantitas alokasi ({$allocQty}) melampaui sisa kuantitas yang dapat dipesan ({$remQty}) pada baris PR #{$prLineId}.",
@@ -147,6 +147,7 @@ class PurchaseOrderService
 
             $calculatedLines = [];
             foreach ($allocations as $alloc) {
+                /** @var PurchaseRequestLine $prLine */
                 $prLine = $lockedPrLines->get((int) $alloc['purchase_request_line_id']);
                 $financials = $this->calculateLineFinancials(
                     orderedQty: (string) $alloc['ordered_qty'],
@@ -174,7 +175,7 @@ class PurchaseOrderService
             }
 
             $additionalCost = isset($headerData['additional_cost_estimate']) ? (string) $headerData['additional_cost_estimate'] : '0.00';
-            $finalTotalAmount = bcadd($totalAmount, $additionalCost, 2);
+            $finalTotalAmount = bcadd(bc_num($totalAmount), bc_num($additionalCost), 2);
 
             // 5. Simpan PurchaseOrder
             /** @var PurchaseOrder $po */
@@ -244,7 +245,7 @@ class PurchaseOrderService
                 ]);
 
                 // Update converted_to_po_qty pada baris PR
-                $prLine->converted_to_po_qty = bcadd((string) $prLine->converted_to_po_qty, $item['alloc_qty'], 4);
+                $prLine->converted_to_po_qty = bcadd(bc_num($prLine->converted_to_po_qty), bc_num($item['alloc_qty']), 4);
                 $prLine->save();
 
                 $affectedPrIds[$prLine->purchase_request_id] = true;
@@ -361,7 +362,7 @@ class PurchaseOrderService
             $calculatedLines = [];
             foreach ($items as $index => $item) {
                 $orderedQty = (string) ($item['ordered_qty'] ?? '0');
-                if (bccomp($orderedQty, '0', 4) <= 0) {
+                if (bccomp(bc_num($orderedQty), '0', 4) <= 0) {
                     throw ValidationException::withMessages([
                         "items.{$index}.ordered_qty" => ['Kuantitas pesanan harus lebih besar dari 0.'],
                     ]);
@@ -393,7 +394,7 @@ class PurchaseOrderService
             }
 
             $additionalCost = isset($headerData['additional_cost_estimate']) ? (string) $headerData['additional_cost_estimate'] : '0.00';
-            $finalTotalAmount = bcadd($totalAmount, $additionalCost, 2);
+            $finalTotalAmount = bcadd(bc_num($totalAmount), bc_num($additionalCost), 2);
 
             /** @var PurchaseOrder $po */
             $po = PurchaseOrder::query()->create([
@@ -607,7 +608,7 @@ class PurchaseOrderService
                         ? (string) $line->accepted_qty
                         : (string) $line->invoiced_qty;
 
-                    if (bccomp($newQty, $minAllowed, 4) < 0) {
+                    if (bccomp(bc_num($newQty), bc_num($minAllowed), 4) < 0) {
                         throw ValidationException::withMessages([
                             'lines' => [
                                 "Kuantitas baru ({$newQty}) pada baris #{$lineId} tidak boleh lebih kecil dari kuantitas yang sudah diterima/ditagihkan ({$minAllowed}).",
@@ -786,18 +787,18 @@ class PurchaseOrderService
         bool $taxInclusive = false
     ): array {
         // Base Ordered Qty = Ordered Qty * Conversion Factor
-        $baseOrderedQty = bcmul($orderedQty, $conversionFactor, 4);
+        $baseOrderedQty = bcmul(bc_num($orderedQty), bc_num($conversionFactor), 4);
 
         // Gross Line = round(Q * P, 2)
-        $grossRaw = bcmul($orderedQty, $unitPrice, 4);
+        $grossRaw = bcmul(bc_num($orderedQty), bc_num($unitPrice), 4);
         $grossAmount = bcadd($grossRaw, '0', 2);
 
         // Discount
-        if (bccomp($discountPct, '0', 4) > 0) {
+        if (bccomp(bc_num($discountPct), '0', 4) > 0) {
             $discRate = bcdiv($discountPct, '100', 4);
             $effectiveDiscount = bcmul($grossAmount, $discRate, 2);
         } else {
-            $effectiveDiscount = bcadd($discountAmount, '0', 2);
+            $effectiveDiscount = bcadd(bc_num($discountAmount), '0', 2);
         }
 
         // Tax & Line Total
@@ -818,7 +819,7 @@ class PurchaseOrderService
                 $netTotal = '0.00';
             }
 
-            if (bccomp($taxRate, '0', 4) > 0) {
+            if (bccomp(bc_num($taxRate), '0', 4) > 0) {
                 $divisor = bcadd('1', bcdiv($taxRate, '100', 4), 4);
                 $taxableBase = bcdiv($netTotal, $divisor, 2);
                 $taxAmount = bcsub($netTotal, $taxableBase, 2);

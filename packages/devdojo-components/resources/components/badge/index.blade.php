@@ -18,10 +18,10 @@
         'bg-primary text-primary-foreground' => $variant === 'primary',
         'bg-secondary text-secondary-foreground' => $variant === 'secondary',
         'border border-foreground/15 text-foreground' => $variant === 'outline',
-        'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-300' => $variant === 'destructive',
-        'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-300' => $variant === 'info',
-        'bg-green-50 text-green-600 dark:bg-green-500/10 dark:text-green-300' => $variant === 'success',
-        'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300' => $variant === 'warning',
+        'bg-destructive-muted text-destructive' => $variant === 'destructive',
+        'bg-info-muted text-info' => $variant === 'info',
+        'bg-success-muted text-success' => $variant === 'success',
+        'bg-warning-muted text-warning' => $variant === 'warning',
     ]);
 @endphp
 

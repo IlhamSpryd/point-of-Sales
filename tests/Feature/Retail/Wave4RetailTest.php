@@ -9,7 +9,6 @@ use App\Enums\PaymentMethod;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\Payment;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Role;
@@ -34,12 +33,19 @@ class Wave4RetailTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private User $cashier;
+
     private Category $category;
+
     private RetailBarcodeService $barcodeService;
+
     private ShelfLabelBatchService $shelfLabelService;
+
     private RetailExchangeService $exchangeService;
+
     private InventoryLedgerService $inventoryLedgerService;
 
     protected function afterSubclassSetUp(): void
@@ -48,7 +54,7 @@ class Wave4RetailTest extends TestCase
 
         $this->tenant = Tenant::create([
             'name' => 'Wave 4 Retail Tenant',
-            'slug' => 'wave4-retail-' . uniqid(),
+            'slug' => 'wave4-retail-'.uniqid(),
             'status' => 'active',
             'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             'access_status' => Tenant::ACCESS_ACTIVE,
@@ -274,7 +280,7 @@ class Wave4RetailTest extends TestCase
             'user_id' => $this->cashier->id,
             'order_type' => 'retail',
             'origin_channel' => 'pos_cashier',
-            'order_code' => 'ORD-RTL-' . uniqid(),
+            'order_code' => 'ORD-RTL-'.uniqid(),
             'idempotency_key' => (string) Str::uuid(),
             'order_date' => now()->toDateString(),
             'subtotal_amount' => 200000,

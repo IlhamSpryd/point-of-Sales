@@ -24,7 +24,7 @@ class StoreService
     ) {}
 
     /**
-     * Membangun kueri daftar cabang yang terisolasi per tenant aktif.
+     * @return Builder<Store>
      */
     public function getFilteredQuery(Request $request): Builder
     {
@@ -53,6 +53,8 @@ class StoreService
 
     /**
      * Mendaftarkan cabang baru di bawah tenant aktif.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function store(array $data): Store
     {
@@ -99,6 +101,8 @@ class StoreService
 
     /**
      * Memperbarui informasi cabang.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function update(Store $store, array $data): Store
     {

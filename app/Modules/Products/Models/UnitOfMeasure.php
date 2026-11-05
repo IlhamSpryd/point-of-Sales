@@ -8,17 +8,24 @@ use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
 use App\Models\Product;
 use App\Models\ProductUnitConversion;
+use Database\Factories\UnitOfMeasureFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * UnitOfMeasure: Satuan ukur standar (PCS, KG, L, PACK, dll) terisolasi per tenant.
+ *
+ * @property int $id
+ * @property int $tenant_id
  */
 class UnitOfMeasure extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<UnitOfMeasureFactory> */
     use HasFactory;
+
     use ScopedToTenant;
 
     protected $table = 'units_of_measure';
@@ -39,16 +46,25 @@ class UnitOfMeasure extends Model
         ];
     }
 
+    /**
+     * @return HasMany<Product, $this>
+     */
     public function products(): HasMany
     {
         return $this->hasMany(Product::class, 'base_uom_id');
     }
 
+    /**
+     * @return HasMany<ProductUnitConversion, $this>
+     */
     public function conversionsFrom(): HasMany
     {
         return $this->hasMany(ProductUnitConversion::class, 'from_uom_id');
     }
 
+    /**
+     * @return HasMany<ProductUnitConversion, $this>
+     */
     public function conversionsTo(): HasMany
     {
         return $this->hasMany(ProductUnitConversion::class, 'to_uom_id');

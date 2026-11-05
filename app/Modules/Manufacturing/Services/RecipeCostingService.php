@@ -8,7 +8,6 @@ use App\Modules\Manufacturing\Models\Ingredient;
 use App\Modules\Manufacturing\Models\IngredientStockBalance;
 use App\Modules\Manufacturing\Models\ModifierIngredient;
 use App\Modules\Manufacturing\Models\ProductIngredient;
-use Illuminate\Support\Facades\DB;
 
 /**
  * RecipeCostingService — Layanan kalkulasi HPP resep makanan & minuman (BOM Costing)

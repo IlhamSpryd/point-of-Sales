@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Modules\Manufacturing\Services;
 
-use App\Modules\Manufacturing\Models\Ingredient;
 use App\Modules\Manufacturing\Models\IngredientStockBalance;
 use App\Modules\Manufacturing\Models\IngredientStockMovement;
 use App\Modules\Manufacturing\Models\ModifierIngredient;
@@ -74,7 +73,7 @@ class ProductFulfillmentResolverService
                 $newQuantity = bcsub($balanceBefore, $qtyNeeded, 4);
 
                 $unitCost = $balance ? (string) ($balance->average_unit_cost ?? '0.0000') : '0.0000';
-                $idempotencyKey = "jit_bom:{$tenantId}:{$storeId}:order:{$orderId}:ing:{$ingredientId}:" . Str::uuid()->toString();
+                $idempotencyKey = "jit_bom:{$tenantId}:{$storeId}:order:{$orderId}:ing:{$ingredientId}:".Str::uuid()->toString();
 
                 // Catat mutasi keluar di ingredient_stock_movements (SALE_CONSUMPTION)
                 $movement = IngredientStockMovement::withoutGlobalScopes()->create([
@@ -175,7 +174,7 @@ class ProductFulfillmentResolverService
                 $newQuantity = bcadd($balanceBefore, $qtyToRestore, 4);
 
                 $unitCost = $balance ? (string) ($balance->average_unit_cost ?? '0.0000') : '0.0000';
-                $idempotencyKey = "void_restore:{$tenantId}:{$storeId}:order:{$orderId}:ing:{$ingredientId}:" . Str::uuid()->toString();
+                $idempotencyKey = "void_restore:{$tenantId}:{$storeId}:order:{$orderId}:ing:{$ingredientId}:".Str::uuid()->toString();
 
                 // Catat mutasi kompensasi masuk di ingredient_stock_movements (VOID_RESTORE)
                 $movement = IngredientStockMovement::withoutGlobalScopes()->create([

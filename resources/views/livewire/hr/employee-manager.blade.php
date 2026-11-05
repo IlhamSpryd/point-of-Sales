@@ -1,237 +1,342 @@
-<div class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-    <!-- Sub Navigasi Modular -->
+<div class="space-y-6" data-gsap="page-enter">
+    <!-- Sub Navigasi Modular SDM & Payroll -->
     @include('livewire.hr.partials.sub-nav')
 
-    <!-- Header & Action -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-                <span class="material-symbols-rounded text-indigo-600 text-[28px]">badge</span>
-                Master Karyawan & Tenaga Kerja
-            </h1>
-            <p class="text-sm text-gray-500 mt-1">
-                Kelola data induk staf, struktur departemen, kontak, serta siklus hidup kepegawaian.
-            </p>
-        </div>
-        <div>
-            <button wire:click="openCreateModal"
-                class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors cursor-pointer">
-                <span class="material-symbols-rounded text-[18px]">person_add</span>
-                Tambah Karyawan Baru
-            </button>
-        </div>
-    </div>
+    <!-- Header & Action Halaman -->
+    <x-erp.page-header
+        title="Master Karyawan & Tenaga Kerja"
+        description="Kelola data induk staf, struktur departemen, jabatan organisasi, serta siklus hidup kepegawaian.">
+        <x-slot:breadcrumbs>
+            <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('hr.employees.index') }}">SDM & Payroll</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item active>Master Karyawan</x-ui.breadcrumbs.item>
+        </x-slot:breadcrumbs>
 
+        <x-slot:actions>
+            @can('create', \App\Modules\HR\Models\Employee::class)
+            <x-ui.button variant="primary" wire:click="openCreateModal" class="gap-2">
+                <span class="material-symbols-rounded text-base">person_add</span>
+                <span>Tambah Karyawan Baru</span>
+            </x-ui.button>
+            @endcan
+        </x-slot:actions>
+    </x-erp.page-header>
+
+    <!-- Flash Feedback Alerts -->
     @if (session()->has('success'))
-        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-emerald-800 text-sm font-medium">
-            <span class="material-symbols-rounded text-emerald-600 text-[20px]">check_circle</span>
+        <x-ui.alert type="success" title="Berhasil" class="rounded-2xl">
             {{ session('success') }}
-        </div>
+        </x-ui.alert>
     @endif
 
-    <!-- Filter & Search Bar -->
-    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
-        <div class="w-full sm:w-80 relative">
-            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                <span class="material-symbols-rounded text-[18px]">search</span>
-            </span>
-            <input type="text" wire:model.live.debounce.300ms="search"
-                placeholder="Cari nama, NIK, atau nomor karyawan..."
-                class="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-indigo-500 focus:ring-0 outline-none transition-colors" />
+    @if (session()->has('error'))
+        <x-ui.alert type="danger" title="Terjadi Kesalahan" class="rounded-2xl">
+            {{ session('error') }}
+        </x-ui.alert>
+    @endif
+
+    <!-- KPI & Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <x-erp.stat-card
+            title="Total Karyawan"
+            :value="$totalEmployees"
+            icon="groups"
+            trend-label="Terdaftar dalam database"
+        />
+        <x-erp.stat-card
+            title="Karyawan Aktif"
+            :value="$activeEmployees"
+            icon="verified_user"
+            trend-label="Status kerja aktif"
+            variant="success"
+        />
+        <x-erp.stat-card
+            title="Karyawan Kontrak (PKWT)"
+            :value="$contractEmployees"
+            icon="history_edu"
+            trend-label="Perjanjian kerja berjangka"
+        />
+        <x-erp.stat-card
+            title="Total Departemen"
+            :value="$totalDepartments"
+            icon="apartment"
+            trend-label="Struktur unit kerja aktif"
+        />
+    </div>
+
+    <!-- Filter & Toolbar -->
+    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-border">
+        <div class="flex-1 max-w-md">
+            <div class="relative">
+                <span class="material-symbols-rounded absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">search</span>
+                <input
+                    type="text"
+                    wire:model.live.debounce.300ms="search"
+                    placeholder="Cari nama, NIK, atau nomor karyawan..."
+                    class="w-full pl-10 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-input bg-background text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20 transition"
+                />
+            </div>
         </div>
 
-        <div class="flex items-center gap-2 w-full sm:w-auto">
-            <select wire:model.live="departmentFilter"
-                class="text-xs font-semibold px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 outline-none focus:bg-white focus:border-indigo-500">
+        <div class="flex flex-wrap items-center gap-2.5">
+            <x-ui.select wire:model.live="departmentFilter" class="w-auto text-xs sm:text-sm">
                 <option value="">Semua Departemen</option>
                 @foreach ($departments as $dept)
                     <option value="{{ $dept->id }}">{{ $dept->name }}</option>
                 @endforeach
-            </select>
+            </x-ui.select>
 
-            <select wire:model.live="statusFilter"
-                class="text-xs font-semibold px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 outline-none focus:bg-white focus:border-indigo-500">
+            <x-ui.select wire:model.live="employmentTypeFilter" class="w-auto text-xs sm:text-sm">
+                <option value="">Semua Tipe Kerja</option>
+                <option value="PERMANENT">Karyawan Tetap (PKWTT)</option>
+                <option value="CONTRACT_PKWT">Karyawan Kontrak (PKWT)</option>
+                <option value="PROBATION">Masa Percobaan (Probation)</option>
+                <option value="INTERN">Magang (Internship)</option>
+                <option value="DAILY_WORKER">Pekerja Harian Lepas</option>
+            </x-ui.select>
+
+            <x-ui.select wire:model.live="statusFilter" class="w-auto text-xs sm:text-sm">
                 <option value="ALL">Semua Status</option>
                 <option value="ACTIVE">Aktif Saja</option>
                 <option value="INACTIVE">Nonaktif Saja</option>
-            </select>
+            </x-ui.select>
+
+            @if ($search !== '' || $departmentFilter !== '' || $employmentTypeFilter !== '' || $statusFilter !== 'ALL')
+                <x-ui.button
+                    variant="secondary"
+                    size="sm"
+                    wire:click="resetFilters"
+                    title="Reset Filter"
+                    class="h-9 px-3 gap-1.5 border-border bg-card hover:bg-secondary text-muted-foreground hover:text-foreground">
+                    <span class="material-symbols-rounded text-base">restart_alt</span>
+                    <span>Reset</span>
+                </x-ui.button>
+            @endif
         </div>
     </div>
+
+    @php
+        $employeeColumns = [
+            ['key' => 'employee', 'label' => 'Karyawan', 'sortable' => false],
+            ['key' => 'department', 'label' => 'Departemen & Jabatan', 'sortable' => false],
+            ['key' => 'employment_type', 'label' => 'Tipe Hubungan Kerja', 'sortable' => false],
+            ['key' => 'employment_status', 'label' => 'Status', 'align' => 'center', 'sortable' => false],
+            ['key' => 'hire_date', 'label' => 'Tanggal Bergabung', 'sortable' => false],
+            ['key' => 'actions', 'label' => 'Aksi', 'align' => 'right', 'sortable' => false],
+        ];
+    @endphp
 
     <!-- Tabel Data Karyawan -->
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-700 divide-y divide-gray-200">
-                <thead class="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    <tr>
-                        <th class="px-6 py-3.5">Karyawan</th>
-                        <th class="px-6 py-3.5">Departemen & Jabatan</th>
-                        <th class="px-6 py-3.5">Tipe Hubungan Kerja</th>
-                        <th class="px-6 py-3.5">Status</th>
-                        <th class="px-6 py-3.5 text-right">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    @forelse ($employees as $emp)
-                        <tr class="hover:bg-gray-50/60 transition-colors">
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-9 h-9 rounded-full bg-indigo-50 text-indigo-700 font-bold flex items-center justify-center text-xs">
-                                        {{ strtoupper(substr($emp->full_name, 0, 2)) }}
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold text-gray-900">{{ $emp->full_name }}</div>
-                                        <div class="text-xs text-gray-500 font-mono">{{ $emp->employee_number }} • {{ $emp->email }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm font-medium text-gray-800">{{ $emp->department?->name ?? 'Belum Ditentukan' }}</div>
-                                <div class="text-xs text-gray-500">{{ $emp->jobTitle?->name ?? '-' }}</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                    {{ $emp->employment_type->value }}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4">
-                                @if ($emp->employment_status === \App\Modules\HR\Enums\EmploymentStatusEnum::ACTIVE)
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                        Aktif
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
-                                        Nonaktif
-                                    </span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <button wire:click="toggleActiveStatus({{ $emp->id }})"
-                                    class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 text-gray-700 transition-colors cursor-pointer">
-                                    {{ $emp->employment_status === \App\Modules\HR\Enums\EmploymentStatusEnum::ACTIVE ? 'Nonaktifkan' : 'Aktifkan' }}
-                                </button>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="5" class="px-6 py-12 text-center text-gray-400">
-                                <span class="material-symbols-rounded text-4xl block mb-2 text-gray-300">group_off</span>
-                                Tidak ada data karyawan yang cocok dengan kriteria pencarian.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
-        </div>
-        <div class="p-4 border-t border-gray-200">
-            {{ $employees->links() }}
-        </div>
+    <x-erp.data-table
+        :columns="$employeeColumns"
+        :rows="$employees"
+        loading-target="search, departmentFilter, employmentTypeFilter, statusFilter"
+        :is-empty="$employees->isEmpty()"
+        empty-title="Tidak ada data karyawan yang cocok"
+        empty-description="Coba ubah kata kunci pencarian atau daftarkan karyawan baru ke dalam sistem."
+        empty-icon="group_off"
+        :colspan="6"
+    >
+        @foreach ($employees as $emp)
+            <tr class="hover:bg-muted/30 transition-colors">
+                <td class="px-6 py-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-9 h-9 rounded-full bg-primary/10 text-primary font-bold flex items-center justify-center text-xs shrink-0 select-none">
+                            {{ strtoupper(substr($emp->full_name, 0, 2)) }}
+                        </div>
+                        <div class="min-w-0">
+                            <div class="font-semibold text-foreground truncate">{{ $emp->full_name }}</div>
+                            <div class="text-xs text-muted-foreground font-mono flex items-center gap-1.5 mt-0.5">
+                                <span>{{ $emp->employee_number }}</span>
+                                <span>•</span>
+                                <span class="truncate">{{ $emp->email }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="text-sm font-medium text-foreground">{{ $emp->department?->name ?? 'Belum Ditentukan' }}</div>
+                    <div class="text-xs text-muted-foreground">{{ $emp->jobTitle?->name ?? '-' }}</div>
+                </td>
+                <td class="px-6 py-4">
+                    <x-ui.badge variant="secondary" size="sm">
+                        {{ $emp->employment_type->label() }}
+                    </x-ui.badge>
+                </td>
+                <td class="px-6 py-4 text-center">
+                    @if ($emp->employment_status === \App\Modules\HR\Enums\EmploymentStatusEnum::ACTIVE)
+                        <x-ui.badge variant="success" size="sm">
+                            Aktif
+                        </x-ui.badge>
+                    @else
+                        <x-ui.badge variant="danger" size="sm">
+                            Nonaktif
+                        </x-ui.badge>
+                    @endif
+                </td>
+                <td class="px-6 py-4 font-mono text-xs text-muted-foreground">
+                    {{ $emp->hire_date ? $emp->hire_date->format('d M Y') : '-' }}
+                </td>
+                <td class="px-6 py-4 text-right">
+                    <div class="flex items-center justify-end gap-1.5">
+                        @can('update', $emp)
+                        <x-ui.button
+                            size="sm"
+                            variant="secondary"
+                            wire:click="openEditModal({{ $emp->id }})"
+                            title="Edit Data Karyawan"
+                            aria-label="Edit Karyawan"
+                            class="h-8 px-2.5 text-xs gap-1 border-border bg-card hover:bg-secondary text-foreground shadow-2xs">
+                            <span class="material-symbols-rounded text-sm">edit</span>
+                            <span>Edit</span>
+                        </x-ui.button>
+
+                        <x-ui.button
+                            size="sm"
+                            variant="{{ $emp->employment_status === \App\Modules\HR\Enums\EmploymentStatusEnum::ACTIVE ? 'secondary' : 'primary' }}"
+                            wire:click="toggleActiveStatus({{ $emp->id }})"
+                            title="{{ $emp->employment_status === \App\Modules\HR\Enums\EmploymentStatusEnum::ACTIVE ? 'Nonaktifkan Karyawan' : 'Aktifkan Karyawan' }}"
+                            aria-label="Ubah Status Karyawan"
+                            class="h-8 px-2.5 text-xs gap-1 border-border shadow-2xs">
+                            <span class="material-symbols-rounded text-sm">{{ $emp->employment_status === \App\Modules\HR\Enums\EmploymentStatusEnum::ACTIVE ? 'person_off' : 'check_circle' }}</span>
+                            <span>{{ $emp->employment_status === \App\Modules\HR\Enums\EmploymentStatusEnum::ACTIVE ? 'Nonaktifkan' : 'Aktifkan' }}</span>
+                        </x-ui.button>
+                        @endcan
+                    </div>
+                </td>
+            </tr>
+        @endforeach
+    </x-erp.data-table>
+
+    <div class="mt-4">
+        {{ $employees->links() }}
     </div>
 
-    <!-- Modal Tambah Karyawan -->
-    @if ($isCreateModalOpen)
-        <div class="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-6">
-                <div class="flex items-center justify-between border-b border-gray-100 pb-4">
-                    <h3 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-                        <span class="material-symbols-rounded text-indigo-600">person_add</span>
-                        Tambah Karyawan Baru
-                    </h3>
-                    <button wire:click="closeCreateModal" class="text-gray-400 hover:text-gray-600 cursor-pointer">
-                        <span class="material-symbols-rounded">close</span>
-                    </button>
-                </div>
+    <!-- Modal Form (Create & Edit Karyawan) -->
+    <x-ui.modal
+        wire:model="isModalOpen"
+        :title="$modalMode === 'edit' ? 'Edit Data Karyawan' : 'Tambah Karyawan Baru'"
+        :description="$modalMode === 'edit' ? 'Perbarui informasi data induk, departemen, kontak, dan status kepegawaian.' : 'Isi formulir data induk karyawan baru untuk didaftarkan dalam sistem.'"
+        max-width="2xl"
+    >
+        <form wire:submit="saveEmployee" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <x-erp.form-field label="Nomor Karyawan" name="employeeNumber" required error="{{ $errors->first('employeeNumber') }}">
+                    <input
+                        type="text"
+                        wire:model="employeeNumber"
+                        class="h-9 w-full rounded-medium border border-input bg-background px-3 text-xs sm:text-sm text-foreground font-mono focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-primary/10 outline-none"
+                    />
+                </x-erp.form-field>
 
-                <form wire:submit="saveEmployee" class="space-y-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Nomor Karyawan</label>
-                            <input type="text" wire:model="employeeNumber" class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:bg-white focus:border-indigo-500 font-mono" />
-                            @error('employeeNumber') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
-                        </div>
+                <x-erp.form-field label="Nama Lengkap" name="fullName" required error="{{ $errors->first('fullName') }}">
+                    <input
+                        type="text"
+                        wire:model="fullName"
+                        placeholder="mis. Budi Santoso"
+                        class="h-9 w-full rounded-medium border border-input bg-background px-3 text-xs sm:text-sm text-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-primary/10 outline-none"
+                    />
+                </x-erp.form-field>
 
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Nama Lengkap</label>
-                            <input type="text" wire:model="fullName" placeholder="mis. John Doe" class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:bg-white focus:border-indigo-500" />
-                            @error('fullName') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
-                        </div>
+                <x-erp.form-field label="Email Resmi" name="email" required error="{{ $errors->first('email') }}">
+                    <input
+                        type="email"
+                        wire:model="email"
+                        placeholder="nama@perusahaan.com"
+                        class="h-9 w-full rounded-medium border border-input bg-background px-3 text-xs sm:text-sm text-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-primary/10 outline-none"
+                    />
+                </x-erp.form-field>
 
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Email Resmi</label>
-                            <input type="email" wire:model="email" placeholder="john@perusahaan.com" class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:bg-white focus:border-indigo-500" />
-                            @error('email') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
-                        </div>
+                <x-erp.form-field label="Nomor Telepon" name="phoneNumber" required error="{{ $errors->first('phoneNumber') }}">
+                    <input
+                        type="text"
+                        wire:model="phoneNumber"
+                        placeholder="0812xxxxxxxx"
+                        class="h-9 w-full rounded-medium border border-input bg-background px-3 text-xs sm:text-sm text-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-primary/10 outline-none"
+                    />
+                </x-erp.form-field>
 
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Nomor Telepon</label>
-                            <input type="text" wire:model="phoneNumber" placeholder="0812xxxxxxxx" class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:bg-white focus:border-indigo-500" />
-                            @error('phoneNumber') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
-                        </div>
+                <x-erp.form-field label="Nomor Induk Kependudukan (NIK)" name="nationalIdNumber" required error="{{ $errors->first('nationalIdNumber') }}">
+                    <input
+                        type="text"
+                        wire:model="nationalIdNumber"
+                        placeholder="16 digit NIK KTP"
+                        class="h-9 w-full rounded-medium border border-input bg-background px-3 text-xs sm:text-sm text-foreground font-mono focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-primary/10 outline-none"
+                    />
+                </x-erp.form-field>
 
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Nomor Induk Kependudukan (NIK)</label>
-                            <input type="text" wire:model="nationalIdNumber" placeholder="16 digit NIK KTP" class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:bg-white focus:border-indigo-500 font-mono" />
-                            @error('nationalIdNumber') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
-                        </div>
+                <x-erp.form-field label="Tanggal Mulai Kerja" name="hireDate" required error="{{ $errors->first('hireDate') }}">
+                    <input
+                        type="date"
+                        wire:model="hireDate"
+                        class="h-9 w-full rounded-medium border border-input bg-background px-3 text-xs sm:text-sm text-foreground focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-primary/10 outline-none"
+                    />
+                </x-erp.form-field>
 
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Tanggal Mulai Kerja</label>
-                            <input type="date" wire:model="hireDate" class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:bg-white focus:border-indigo-500" />
-                            @error('hireDate') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
-                        </div>
+                <x-erp.form-field label="Departemen" name="departmentId" error="{{ $errors->first('departmentId') }}">
+                    <x-ui.select wire:model="departmentId" class="w-full text-xs sm:text-sm">
+                        <option value="">Pilih Departemen...</option>
+                        @foreach ($departments as $dept)
+                            <option value="{{ $dept->id }}">{{ $dept->name }}</option>
+                        @endforeach
+                    </x-ui.select>
+                </x-erp.form-field>
 
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Departemen</label>
-                            <select wire:model="departmentId" class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:bg-white focus:border-indigo-500">
-                                <option value="">Pilih Departemen...</option>
-                                @foreach ($departments as $dept)
-                                    <option value="{{ $dept->id }}">{{ $dept->name }}</option>
-                                @endforeach
-                            </select>
-                            @error('departmentId') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
-                        </div>
+                <x-erp.form-field label="Jabatan" name="jobTitleId" error="{{ $errors->first('jobTitleId') }}">
+                    <x-ui.select wire:model="jobTitleId" class="w-full text-xs sm:text-sm">
+                        <option value="">Pilih Jabatan...</option>
+                        @foreach ($jobTitles as $jt)
+                            <option value="{{ $jt->id }}">{{ $jt->name }}</option>
+                        @endforeach
+                    </x-ui.select>
+                </x-erp.form-field>
 
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Jabatan</label>
-                            <select wire:model="jobTitleId" class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:bg-white focus:border-indigo-500">
-                                <option value="">Pilih Jabatan...</option>
-                                @foreach ($jobTitles as $jt)
-                                    <option value="{{ $jt->id }}">{{ $jt->name }}</option>
-                                @endforeach
-                            </select>
-                            @error('jobTitleId') <span class="text-xs text-rose-500">{{ $message }}</span> @enderror
-                        </div>
+                <x-erp.form-field label="Jenis Kelamin" name="gender" required>
+                    <x-ui.select wire:model="gender" class="w-full text-xs sm:text-sm">
+                        <option value="MALE">Laki-laki</option>
+                        <option value="FEMALE">Perempuan</option>
+                    </x-ui.select>
+                </x-erp.form-field>
 
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Jenis Kelamin</label>
-                            <select wire:model="gender" class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:bg-white focus:border-indigo-500">
-                                <option value="MALE">Laki-laki</option>
-                                <option value="FEMALE">Perempuan</option>
-                            </select>
-                        </div>
+                <x-erp.form-field label="Tipe Kepegawaian" name="employmentType" required>
+                    <x-ui.select wire:model="employmentType" class="w-full text-xs sm:text-sm">
+                        <option value="PERMANENT">Karyawan Tetap (PKWTT)</option>
+                        <option value="CONTRACT_PKWT">Karyawan Kontrak (PKWT)</option>
+                        <option value="PROBATION">Masa Percobaan (Probation)</option>
+                        <option value="INTERN">Magang (Internship)</option>
+                        <option value="DAILY_WORKER">Pekerja Harian Lepas</option>
+                    </x-ui.select>
+                </x-erp.form-field>
 
-                        <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Tipe Kepegawaian</label>
-                            <select wire:model="employmentType" class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:bg-white focus:border-indigo-500">
-                                <option value="PERMANENT">Karyawan Tetap (PKWTT)</option>
-                                <option value="CONTRACT">Karyawan Kontrak (PKWT)</option>
-                                <option value="PROBATION">Masa Percobaan (Probation)</option>
-                                <option value="INTERN">Magang (Internship)</option>
-                                <option value="PART_TIME">Paruh Waktu (Part Time)</option>
-                            </select>
-                        </div>
-                    </div>
+                <x-erp.form-field label="Status Pernikahan" name="maritalStatus" required>
+                    <x-ui.select wire:model="maritalStatus" class="w-full text-xs sm:text-sm">
+                        <option value="SINGLE">Lajang (Single)</option>
+                        <option value="MARRIED">Menikah (Married)</option>
+                        <option value="WIDOWED">Duda / Janda (Widowed)</option>
+                    </x-ui.select>
+                </x-erp.form-field>
 
-                    <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
-                        <button type="button" wire:click="closeCreateModal" class="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-800 cursor-pointer">
-                            Batal
-                        </button>
-                        <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors cursor-pointer">
-                            Simpan Karyawan
-                        </button>
-                    </div>
-                </form>
+                <x-erp.form-field label="Agama" name="religion" required>
+                    <x-ui.select wire:model="religion" class="w-full text-xs sm:text-sm">
+                        <option value="ISLAM">Islam</option>
+                        <option value="PROTESTANT">Kristen Protestan</option>
+                        <option value="CATHOLIC">Katolik</option>
+                        <option value="HINDU">Hindu</option>
+                        <option value="BUDDHIST">Buddha</option>
+                        <option value="CONFUCIAN">Konghucu</option>
+                        <option value="OTHER">Lainnya</option>
+                    </x-ui.select>
+                </x-erp.form-field>
             </div>
-        </div>
-    @endif
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-border mt-6">
+                <x-ui.button type="button" variant="secondary" wire:click="closeModal">
+                    Batal
+                </x-ui.button>
+                <x-ui.button type="submit" variant="primary">
+                    {{ $modalMode === 'edit' ? 'Simpan Perubahan' : 'Simpan Karyawan' }}
+                </x-ui.button>
+            </div>
+        </form>
+    </x-ui.modal>
 </div>

@@ -21,6 +21,9 @@ use Illuminate\Support\Str;
  */
 class TableService
 {
+    /**
+     * @return Builder<Table>
+     */
     public function getFilteredQuery(Request $request): Builder
     {
         $query = Table::query()->latest('id');
@@ -34,6 +37,8 @@ class TableService
     /**
      * Membuat meja baru. qr_token & secure_token otomatis di-generate
      * oleh model event Table::booted().
+     *
+     * @param  array<string, mixed>  $data
      */
     public function store(array $data): Table
     {
@@ -58,6 +63,9 @@ class TableService
         });
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function update(Table $table, array $data): Table
     {
         return DB::transaction(function () use ($table, $data) {

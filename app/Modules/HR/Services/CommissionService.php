@@ -166,11 +166,11 @@ class CommissionService
                 }
 
                 $reversalAmount = 0.0;
-                if ($returnedSubtotal !== null && $standard->calculation_basis_amount > 0) {
-                    $ratio = min(1.0, $returnedSubtotal / $standard->calculation_basis_amount);
-                    $reversalAmount = -round($standard->commission_amount * $ratio, 2);
+                if ($returnedSubtotal !== null && (float) $standard->calculation_basis_amount > 0) {
+                    $ratio = min(1.0, $returnedSubtotal / (float) $standard->calculation_basis_amount);
+                    $reversalAmount = -round((float) $standard->commission_amount * $ratio, 2);
                 } else {
-                    $reversalAmount = -abs($standard->commission_amount);
+                    $reversalAmount = -abs((float) $standard->commission_amount);
                 }
 
                 $reversals[] = CommissionRecord::create([

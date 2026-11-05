@@ -18,6 +18,8 @@ class KitchenPrinterService
     /**
      * Menghasilkan struktur payload heksadesimal mentah (Raw ESC/POS) untuk dicetak via QZ Tray
      * ke printer dapur (biasanya printer thermal 80mm/58mm yang ditempatkan di area dapur/bar).
+     *
+     * @return list<string>
      */
     public function generatePayload(Order $order): array
     {
@@ -43,14 +45,14 @@ class KitchenPrinterService
 
         $payload[] = 'Order : '.$order->order_code."\n";
         $payload[] = 'Meja  : '.$place."\n";
-        $payload[] = 'Waktu : '.$order->created_at->format('d/m/Y H:i')."\n";
+        $payload[] = 'Waktu : '.($order->created_at?->format('d/m/Y H:i') ?? '')."\n";
         $payload[] = str_repeat('-', 32)."\n";
 
         // 4. Daftar Item (Hanya Qty, Nama, Modifier, Notes)
         foreach ($order->orderItems as $item) {
             // Qty & Nama Produk (Ditebalkan)
             $payload[] = "\x1B\x45\x01"; // Bold ON
-            $payload[] = "{$item->qty}x {$item->product->product_name}\n";
+            $payload[] = "{$item->qty}x ".($item->product->product_name ?? 'Produk')."\n";
             $payload[] = "\x1B\x45\x00"; // Bold OFF
 
             // Modifiers

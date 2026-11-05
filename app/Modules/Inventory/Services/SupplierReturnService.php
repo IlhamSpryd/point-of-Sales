@@ -194,7 +194,7 @@ class SupplierReturnService
                 ]
             );
 
-            return $locked->fresh(['items']);
+            return $locked->fresh(['items']) ?? $locked;
         });
     }
 
@@ -283,7 +283,7 @@ class SupplierReturnService
                         itemId: $rawItemId
                     );
                     $unitCost = $balance ? (string) ($balance->average_unit_cost ?? '0.0000') : '0.0000';
-                    $item->unit_cost = $unitCost;
+                    $item->unit_cost = bc_num($unitCost);
                     $item->save();
                 }
 
@@ -332,7 +332,7 @@ class SupplierReturnService
                 ]
             );
 
-            return $locked->fresh(['items.product', 'items.ingredient']);
+            return $locked->fresh(['items.product', 'items.ingredient']) ?? $locked;
         });
     }
 
@@ -412,7 +412,7 @@ class SupplierReturnService
                 ]
             );
 
-            return $locked->fresh(['items.product', 'items.ingredient']);
+            return $locked->fresh(['items.product', 'items.ingredient']) ?? $locked;
         });
     }
 
@@ -457,12 +457,12 @@ class SupplierReturnService
         }
 
         $qty = (string) ($itemData['quantity'] ?? '0');
-        if (bccomp($qty, '0', 4) <= 0) {
+        if (bccomp(bc_num($qty), '0', 4) <= 0) {
             throw new InvalidArgumentException("Kuantitas retur untuk {$itemType} harus lebih besar dari 0.");
         }
 
         $unitCost = isset($itemData['unit_cost']) ? (string) $itemData['unit_cost'] : '0.0000';
-        if (bccomp($unitCost, '0', 4) < 0) {
+        if (bccomp(bc_num($unitCost), '0', 4) < 0) {
             throw new InvalidArgumentException("Biaya per unit retur tidak boleh bernilai negatif: {$unitCost}.");
         }
 

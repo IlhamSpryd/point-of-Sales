@@ -34,6 +34,7 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
+        abort_unless($user !== null, 401);
         $user->name = $request->validated('name');
         $user->save();
 
@@ -50,6 +51,7 @@ class ProfileController extends Controller
         ]);
 
         $user = $request->user();
+        abort_unless($user !== null, 401);
 
         Auth::logout();
 

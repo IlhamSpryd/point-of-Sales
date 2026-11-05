@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Sales\Services;
 
 use App\Enums\OrderStatus;
-use App\Models\Device;
+use App\Enums\PaymentMethod;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Shift;
@@ -15,7 +15,6 @@ use App\Modules\Sales\Exceptions\ShiftClosedException;
 use App\Services\AuditTrailService;
 use App\Services\Context\TenantContext;
 use DomainException;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -49,7 +48,7 @@ class SplitPaymentService
      * - SUM(amount_tendered) - SUM(change_amount) == order.order_amount (T-POS-03 Parity)
      * - trg_payments_prevent_overpayment di tingkat basis data.
      *
-     * @param array<int, array{payment_method: string, amount: int|float|string, amount_tendered?: int|float|string|null, reference_number?: string|null}> $legs
+     * @param  array<int, array{payment_method: string, amount: int|float|string, amount_tendered?: int|float|string|null, reference_number?: string|null}>  $legs
      * @return array{order: Order, payments: array<int, Payment>, total_tendered: int, total_change: int, net_paid: int}
      *
      * @throws DomainException|ShiftClosedException|ValidationException
@@ -128,7 +127,7 @@ class SplitPaymentService
                     : $allocated;
 
                 if ($allocated <= 0) {
-                    throw new DomainException("Nominal alokasi pembayaran pada leg ke-" . ($idx + 1) . " harus lebih besar dari 0.");
+                    throw new DomainException('Nominal alokasi pembayaran pada leg ke-'.($idx + 1).' harus lebih besar dari 0.');
                 }
 
                 $change = 0;
@@ -160,8 +159,8 @@ class SplitPaymentService
             // Validasi Keseimbangan Total (T-POS-03)
             if ($sumAllocated !== $orderAmount) {
                 throw new DomainException(
-                    "Total pembayaran teralokasi (Rp " . number_format($sumAllocated, 0, ',', '.') . 
-                    ") tidak sesuai dengan total tagihan pesanan (Rp " . number_format($orderAmount, 0, ',', '.') . ")."
+                    'Total pembayaran teralokasi (Rp '.number_format($sumAllocated, 0, ',', '.').
+                    ') tidak sesuai dengan total tagihan pesanan (Rp '.number_format($orderAmount, 0, ',', '.').').'
                 );
             }
 
@@ -203,17 +202,17 @@ class SplitPaymentService
             $dominantLeg = collect($normalizedLegs)->sortByDesc('amount')->first();
             $dominantMethod = $dominantLeg['method'] ?? 'cash';
             $pmEnum = match ($dominantMethod) {
-                'qris' => \App\Enums\PaymentMethod::Qris,
-                'card', 'debit', 'credit' => \App\Enums\PaymentMethod::Card,
-                'ewallet' => \App\Enums\PaymentMethod::Ewallet,
-                'gift_card' => \App\Enums\PaymentMethod::GiftCard,
-                'store_credit' => \App\Enums\PaymentMethod::StoreCredit,
-                default => \App\Enums\PaymentMethod::Cash,
+                'qris' => PaymentMethod::Qris,
+                'card', 'debit', 'credit' => PaymentMethod::Card,
+                'ewallet' => PaymentMethod::Ewallet,
+                'gift_card' => PaymentMethod::GiftCard,
+                'store_credit' => PaymentMethod::StoreCredit,
+                default => PaymentMethod::Cash,
             };
 
             // 5. Perbarui Status Pesanan Menjadi Paid
             $lockedOrder->forceFill([
-                'order_status' => \App\Enums\OrderStatus::Paid,
+                'order_status' => OrderStatus::Paid,
                 'payment_method' => $pmEnum,
                 'cash_received' => $sumTendered,
                 'order_change' => $sumChange,
@@ -236,7 +235,7 @@ class SplitPaymentService
             try {
                 $this->financialOutboxDispatcher->dispatchPosOrderPaid($lockedOrder);
             } catch (\Throwable $e) {
-                Log::warning("[FINANCE OUTBOX] Gagal dispatch outbox order paid #{$lockedOrder->id}: " . $e->getMessage());
+                Log::warning("[FINANCE OUTBOX] Gagal dispatch outbox order paid #{$lockedOrder->id}: ".$e->getMessage());
             }
 
             $this->auditTrail->log(
@@ -246,7 +245,7 @@ class SplitPaymentService
                 storeId: $storeId,
                 subjectType: Order::class,
                 subjectId: $lockedOrder->id,
-                description: "Pembayaran split-tender pesanan {$lockedOrder->order_code} berhasil: Total Rp " . number_format($orderAmount, 0, ',', '.') . " ({$sumTendered} tendered - {$sumChange} change)",
+                description: "Pembayaran split-tender pesanan {$lockedOrder->order_code} berhasil: Total Rp ".number_format($orderAmount, 0, ',', '.')." ({$sumTendered} tendered - {$sumChange} change)",
                 metadata: [
                     'order_id' => $lockedOrder->id,
                     'order_code' => $lockedOrder->order_code,

@@ -138,7 +138,7 @@ class PromotionCombinationEngine
 
         if ($autoDiscount > 0 && $vDiscount <= 0) {
             return [
-                'appliedPromotions' => [$autoOrderPromo],
+                'appliedPromotions' => $autoOrderPromo !== null ? [$autoOrderPromo] : [],
                 'autoOrderDiscount' => $autoDiscount,
                 'voucherDiscount' => 0.0,
                 'winningSource' => 'AUTO_PROMOTION',
@@ -157,7 +157,7 @@ class PromotionCombinationEngine
         // Keduanya ada: periksa stacking
         if ($autoOrderIsStackable && $voucherIsStackable) {
             return [
-                'appliedPromotions' => [$autoOrderPromo],
+                'appliedPromotions' => $autoOrderPromo !== null ? [$autoOrderPromo] : [],
                 'autoOrderDiscount' => $autoDiscount,
                 'voucherDiscount' => $vDiscount,
                 'winningSource' => 'BOTH_STACKABLE',
@@ -176,7 +176,7 @@ class PromotionCombinationEngine
 
         // Promo otomatis lebih besar atau sama
         return [
-            'appliedPromotions' => [$autoOrderPromo],
+            'appliedPromotions' => $autoOrderPromo !== null ? [$autoOrderPromo] : [],
             'autoOrderDiscount' => $autoDiscount,
             'voucherDiscount' => 0.0, // Lepaskan voucher
             'winningSource' => 'AUTO_PROMOTION',

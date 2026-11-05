@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $order_item_id
  * @property StockMovementType|string $type
  * @property int $quantity
- * @property string|null $unit_cost
+ * @property numeric-string $unit_cost
  * @property string|null $reason
  * @property string $idempotency_key
  * @property Carbon|null $created_at
@@ -37,6 +37,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property-read Store|null $store
  * @property-read Order|null $order
  * @property-read OrderItem|null $orderItem
+ * @property numeric-string $balance_before
+ * @property numeric-string $balance_after
+ * @property int|null $variant_id
+ * @property int|null $reference_id
  */
 class StockMovement extends Model
 {
@@ -66,21 +70,33 @@ class StockMovement extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Product, $this>
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class)->withTrashed();
     }
 
+    /**
+     * @return BelongsTo<Order, $this>
+     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * @return BelongsTo<OrderItem, $this>
+     */
     public function orderItem(): BelongsTo
     {
         return $this->belongsTo(OrderItem::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);

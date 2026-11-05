@@ -24,9 +24,9 @@ use Illuminate\Support\Facades\DB;
  * @property string $name
  * @property string|null $code
  * @property string $unit
- * @property float|string $current_stock
- * @property float|string $reorder_level
- * @property float|string $cost_per_unit
+ * @property numeric-string $current_stock
+ * @property numeric-string $reorder_level
+ * @property numeric-string $cost_per_unit
  * @property bool $is_active
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -88,13 +88,12 @@ class Ingredient extends Model
                 $storeId = $context->getStoreId() ?? Store::where('tenant_id', $ingredient->tenant_id)->orderBy('id')->value('id');
 
                 if ($storeId) {
-                    $delta = $ingredient->current_stock - $ingredient->getOriginal('current_stock');
+                    $delta = (float) $ingredient->current_stock - (float) $ingredient->getOriginal('current_stock');
                     DB::table('ingredient_stock_balances')
                         ->where('tenant_id', $ingredient->tenant_id)
                         ->where('store_id', $storeId)
                         ->where('ingredient_id', $ingredient->id)
-                        ->update([
-                            'quantity' => DB::raw("quantity + ($delta)"),
+                        ->increment('quantity', $delta, [
                             'updated_at' => now(),
                         ]);
                 }
@@ -116,6 +115,8 @@ class Ingredient extends Model
 
     /**
      * FIX PRASYARAT BOM: Hapus 'unit_of_measurement' dari pivot.
+     *
+     * @return BelongsToMany<Product, $this, ProductIngredient>
      */
     public function products(): BelongsToMany
     {
@@ -129,7 +130,7 @@ class Ingredient extends Model
         return self::where('id', $id)->lockForUpdate()->first();
     }
 
-    public function setSkuAttribute($value): void
+    public function setSkuAttribute(mixed $value): void
     {
         if (empty($this->attributes['ingredient_code']) && ! empty($value)) {
             $this->attributes['ingredient_code'] = $value;
@@ -141,7 +142,7 @@ class Ingredient extends Model
         return isset($this->attributes['ingredient_code']) ? (string) $this->attributes['ingredient_code'] : null;
     }
 
-    public function setCodeAttribute($value): void
+    public function setCodeAttribute(mixed $value): void
     {
         if (empty($this->attributes['ingredient_code']) && ! empty($value)) {
             $this->attributes['ingredient_code'] = $value;
@@ -153,7 +154,7 @@ class Ingredient extends Model
         return isset($this->attributes['ingredient_code']) ? (string) $this->attributes['ingredient_code'] : null;
     }
 
-    public function setCurrentCostAttribute($value): void
+    public function setCurrentCostAttribute(mixed $value): void
     {
         $this->attributes['cost_per_unit'] = $value;
     }

@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * RoleService bertindak memisahkan keseluruhan kerumitan logika sistem
@@ -19,8 +20,7 @@ use Maatwebsite\Excel\Facades\Excel;
 class RoleService
 {
     /**
-     * Menyusun cetak biru kueri Eloquent dengan menempelkan agregat (withCount)
-     * dan injeksi klausul pencarian jika requested.
+     * @return Builder<Role>
      */
     public function getFilteredQuery(Request $request): Builder
     {
@@ -40,7 +40,7 @@ class RoleService
     /**
      * Menyiapkan file unduhan mentah .CSV.
      */
-    public function exportCsv(Request $request)
+    public function exportCsv(Request $request): BinaryFileResponse
     {
         $query = $this->getFilteredQuery($request);
         $fileName = 'roles_export_'.now()->format('Y-m-d_H-i-s').'.xlsx';
@@ -50,6 +50,8 @@ class RoleService
 
     /**
      * Mengamankan proses simpan data Peran baru.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function store(array $data): Role
     {
@@ -62,6 +64,8 @@ class RoleService
 
     /**
      * Modifikasi rincian satu spesifik entitas Peran yang sudah ada.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function update(Role $role, array $data): Role
     {
@@ -84,7 +88,7 @@ class RoleService
                 throw new Exception('Cannot delete role "'.$role->name.'" because '.$usersCount.' user(s) are assigned to it.');
             }
 
-            return $role->delete();
+            return (bool) $role->delete();
         });
     }
 

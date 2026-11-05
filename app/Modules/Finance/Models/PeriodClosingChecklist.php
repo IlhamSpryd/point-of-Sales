@@ -19,8 +19,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $gate_code
  * @property string $gate_name
  * @property string $status
- * @property string $discrepancy_amount
- * @property array|null $diagnostics_json
+ * @property numeric-string $discrepancy_amount
+ * @property array<string, mixed>|null $diagnostics_json
  * @property CarbonInterface|null $checked_at
  * @property int|null $checked_by_user_id
  * @property CarbonInterface $created_at
@@ -45,16 +45,25 @@ class PeriodClosingChecklist extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<AccountingPeriod, $this>
+     */
     public function accountingPeriod(): BelongsTo
     {
         return $this->belongsTo(AccountingPeriod::class, 'accounting_period_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function checkedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'checked_by_user_id');

@@ -4,7 +4,6 @@ namespace App\Modules\Products\Services;
 
 use App\Enums\StockMovementType;
 use App\Exports\ProductsExport;
-use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\ProductBundleItem;
@@ -27,6 +26,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * ProductService memberikan penanganan manipulasi Barang Dagang,
@@ -44,7 +44,7 @@ class ProductService
     }
 
     /**
-     * Menyusun urutan Kueri (Product Builder) sembari meramu join ringan "Category".
+     * @return Builder<Product>
      */
     public function getFilteredQuery(Request $request): Builder
     {
@@ -60,7 +60,7 @@ class ProductService
     /**
      * Mendownload spreadsheet format Excel profesional.
      */
-    public function exportCsv(Request $request)
+    public function exportCsv(Request $request): BinaryFileResponse
     {
         $query = $this->getFilteredQuery($request);
         $fileName = 'products_export_'.now()->format('Y-m-d_H-i-s').'.xlsx';
@@ -70,8 +70,10 @@ class ProductService
 
     /**
      * Insersi data item komersial. Mengendalikan operasi unggah gambar (Storage Publik) otomatis jika terlampir.
+     *
+     * @param  array<string, mixed>  $data
      */
-    public function store(array $data, $file = null): Product
+    public function store(array $data, mixed $file = null): Product
     {
         return DB::transaction(function () use ($data, $file) {
             // Sync status and is_active
@@ -130,7 +132,7 @@ class ProductService
                     'effective_at' => now(),
                 ]);
 
-                $this->auditTrail->log(
+                $this->auditTrail?->log(
                     tenantId: $tenantId,
                     action: 'product.cost_initialized',
                     userId: auth()->id(),
@@ -183,8 +185,10 @@ class ProductService
 
     /**
      * Perbarui entitas lama. Termasuk mengamati file lama untuk dihapus jika digantikan foto yang lebih baru.
+     *
+     * @param  array<string, mixed>  $data
      */
-    public function update(Product $product, array $data, $file = null): Product
+    public function update(Product $product, array $data, mixed $file = null): Product
     {
         return DB::transaction(function () use ($product, $data, $file) {
             // Sync status and is_active
@@ -260,7 +264,7 @@ class ProductService
                     'effective_at' => now(),
                 ]);
 
-                $this->auditTrail->log(
+                $this->auditTrail?->log(
                     tenantId: $tenantId,
                     action: 'product.cost_changed',
                     userId: auth()->id(),
@@ -338,7 +342,7 @@ class ProductService
                 Storage::disk('public')->delete($product->product_photo);
             }
 
-            $result = $product->delete();
+            $result = (bool) $product->delete();
             $storeId = app(TenantContext::class)->getStoreId();
             $this->menuCache->flush($product->tenant_id, $storeId);
 
@@ -384,17 +388,23 @@ class ProductService
         $product->save();
     }
 
-    public function createProduct(array $data, $file = null): Product
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public function createProduct(array $data, mixed $file = null): Product
     {
         return $this->store($data, $file);
     }
 
-    public function updateProduct(Product $product, array $data, $file = null): Product
+    /**
+     * @param  array<string, mixed>  $data
+     */
+    public function updateProduct(Product $product, array $data, mixed $file = null): Product
     {
         return $this->update($product, $data, $file);
     }
 
-    public function addMedia(Product $product, $file, bool $isPrimary = false, ?string $altText = null): ProductMedia
+    public function addMedia(Product $product, mixed $file, bool $isPrimary = false, ?string $altText = null): ProductMedia
     {
         $tenantId = app(TenantContext::class)->requireTenantId();
         $path = $file->store("products/{$tenantId}", 'public');
@@ -432,6 +442,8 @@ class ProductService
 
     /**
      * Mengatur ketersediaan dan override harga produk untuk cabang tertentu.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function setStoreAssortment(Product $product, int $storeId, array $data): StoreProductAssortment
     {
@@ -567,7 +579,7 @@ class ProductService
         }
 
         // Jalankan validasi DAG anti-siklik
-        $this->bundleExpander->validateDag($product->id, $componentProductIds);
+        $this->bundleExpander?->validateDag($product->id, $componentProductIds);
 
         // 2. Hapus komponen lama dan pasang komponen baru
         ProductBundleItem::withoutGlobalScopes()

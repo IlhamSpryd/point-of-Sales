@@ -25,7 +25,7 @@ class DeviceService
     ) {}
 
     /**
-     * Membangun kueri daftar perangkat fisik yang terisolasi per tenant aktif.
+     * @return Builder<Device>
      */
     public function getFilteredQuery(Request $request): Builder
     {
@@ -62,6 +62,8 @@ class DeviceService
 
     /**
      * Mendaftarkan entitas perangkat baru dan menerbitkan token pairing awal.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function registerDevice(Store $store, array $data): Device
     {
@@ -116,6 +118,8 @@ class DeviceService
 
     /**
      * Menghubungkan (pair) perangkat terminal fisik menggunakan pairing token dan device fingerprint.
+     *
+     * @param  array<string, mixed>  $metadata
      *
      * @throws DomainException jika token tidak valid atau kedaluwarsa.
      */
@@ -250,6 +254,8 @@ class DeviceService
 
     /**
      * Memperbarui informasi profil perangkat.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function update(Device $device, array $data): Device
     {

@@ -21,8 +21,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $tenant_id
  * @property int $customer_id
  * @property string $event_type
- * @property array|null $old_values_json
- * @property array|null $new_values_json
+ * @property array<string, mixed>|null $old_values_json
+ * @property array<string, mixed>|null $new_values_json
  * @property string|null $reference_type
  * @property int|null $reference_id
  * @property int|null $actor_user_id
@@ -59,11 +59,17 @@ class CustomerCreditLog extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_user_id');

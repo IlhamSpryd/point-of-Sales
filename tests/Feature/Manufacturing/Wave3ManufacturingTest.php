@@ -32,15 +32,18 @@ class Wave3ManufacturingTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private Category $category;
+
     private User $user;
 
     protected function afterSubclassSetUp(): void
     {
         $this->tenant = Tenant::create([
-            'name' => 'F&B Gourmet Group ' . uniqid(),
-            'code' => 'FBG-' . strtoupper(Str::random(4)),
+            'name' => 'F&B Gourmet Group '.uniqid(),
+            'code' => 'FBG-'.strtoupper(Str::random(4)),
             'status' => 'ACTIVE',
         ]);
 
@@ -51,7 +54,7 @@ class Wave3ManufacturingTest extends TestCase
 
         $this->store = Store::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'code' => 'KTC-' . uniqid(),
+            'code' => 'KTC-'.uniqid(),
             'name' => 'Resto Cabang Senopati',
             'is_active' => true,
         ]);
@@ -63,7 +66,7 @@ class Wave3ManufacturingTest extends TestCase
 
         $this->category = Category::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'category_code' => 'FNB-' . uniqid(),
+            'category_code' => 'FNB-'.uniqid(),
             'category_name' => 'Main Course F&B',
             'is_active' => true,
         ]);
@@ -71,7 +74,7 @@ class Wave3ManufacturingTest extends TestCase
         $this->user = User::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Chef Head Kitchen',
-            'email' => 'chef.' . uniqid() . '@example.com',
+            'email' => 'chef.'.uniqid().'@example.com',
             'password' => bcrypt('password'),
             'is_active' => true,
         ]);
@@ -87,7 +90,7 @@ class Wave3ManufacturingTest extends TestCase
         // 1. Buat master bahan mentah: Beras (kg), Telur (butir), Daging Ayam (kg), Minyak Goreng (ml)
         $beras = Ingredient::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'ingredient_code' => 'ING-BRS-' . uniqid(),
+            'ingredient_code' => 'ING-BRS-'.uniqid(),
             'name' => 'Beras Organik',
             'unit' => 'kg',
             'current_stock' => 50.0000,
@@ -97,7 +100,7 @@ class Wave3ManufacturingTest extends TestCase
 
         $telur = Ingredient::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'ingredient_code' => 'ING-TLR-' . uniqid(),
+            'ingredient_code' => 'ING-TLR-'.uniqid(),
             'name' => 'Telur Ayam',
             'unit' => 'butir',
             'current_stock' => 100.0000,
@@ -107,7 +110,7 @@ class Wave3ManufacturingTest extends TestCase
 
         $ayam = Ingredient::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'ingredient_code' => 'ING-AYM-' . uniqid(),
+            'ingredient_code' => 'ING-AYM-'.uniqid(),
             'name' => 'Daging Ayam Fillet',
             'unit' => 'kg',
             'current_stock' => 20.0000,
@@ -118,7 +121,7 @@ class Wave3ManufacturingTest extends TestCase
         // Bahan baku modifier: Extra Keju Mozzarella (gram)
         $keju = Ingredient::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'ingredient_code' => 'ING-KJU-' . uniqid(),
+            'ingredient_code' => 'ING-KJU-'.uniqid(),
             'name' => 'Keju Mozzarella',
             'unit' => 'gram',
             'current_stock' => 1000.0000,
@@ -137,7 +140,7 @@ class Wave3ManufacturingTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'category_id' => $this->category->id,
             'product_name' => 'Nasi Goreng Spesial',
-            'product_code' => 'NASGOR-SP-' . uniqid(),
+            'product_code' => 'NASGOR-SP-'.uniqid(),
             'product_price' => 45000.00,
             'is_active' => true,
         ]);
@@ -198,7 +201,7 @@ class Wave3ManufacturingTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'store_id' => $this->store->id,
             'user_id' => $this->user->id,
-            'order_code' => 'ORD-MFG-' . Str::upper(Str::random(8)),
+            'order_code' => 'ORD-MFG-'.Str::upper(Str::random(8)),
             'idempotency_key' => Str::uuid()->toString(),
             'order_date' => now()->toDateString(),
             'order_amount' => 125000,
@@ -261,7 +264,7 @@ class Wave3ManufacturingTest extends TestCase
     {
         $dagingSapi = Ingredient::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'ingredient_code' => 'ING-SPI-' . uniqid(),
+            'ingredient_code' => 'ING-SPI-'.uniqid(),
             'name' => 'Daging Sapi Sirloin',
             'unit' => 'kg',
             'current_stock' => 10.0000,
@@ -275,7 +278,7 @@ class Wave3ManufacturingTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'category_id' => $this->category->id,
             'product_name' => 'Sirloin Steak 200g',
-            'product_code' => 'STK-200-' . uniqid(),
+            'product_code' => 'STK-200-'.uniqid(),
             'product_price' => 150000.00,
             'is_active' => true,
         ]);
@@ -293,7 +296,7 @@ class Wave3ManufacturingTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'store_id' => $this->store->id,
             'user_id' => $this->user->id,
-            'order_code' => 'ORD-MFG-VOID-' . Str::upper(Str::random(8)),
+            'order_code' => 'ORD-MFG-VOID-'.Str::upper(Str::random(8)),
             'idempotency_key' => Str::uuid()->toString(),
             'order_date' => now()->toDateString(),
             'order_amount' => 300000,
@@ -357,7 +360,7 @@ class Wave3ManufacturingTest extends TestCase
 
         $kopi = Ingredient::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'ingredient_code' => 'ING-KPI-' . uniqid(),
+            'ingredient_code' => 'ING-KPI-'.uniqid(),
             'name' => 'Biji Kopi Arabika',
             'unit' => 'gram',
             'cost_per_unit' => 250.00, // Rp 250 / gram
@@ -366,7 +369,7 @@ class Wave3ManufacturingTest extends TestCase
 
         $susu = Ingredient::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'ingredient_code' => 'ING-SSU-' . uniqid(),
+            'ingredient_code' => 'ING-SSU-'.uniqid(),
             'name' => 'Fresh Milk',
             'unit' => 'ml',
             'cost_per_unit' => 20.00, // Rp 20 / ml
@@ -377,7 +380,7 @@ class Wave3ManufacturingTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'category_id' => $this->category->id,
             'product_name' => 'Hot Cappuccino',
-            'product_code' => 'HOT-CAP-' . uniqid(),
+            'product_code' => 'HOT-CAP-'.uniqid(),
             'product_price' => 35000.00,
             'is_active' => true,
         ]);
@@ -411,7 +414,7 @@ class Wave3ManufacturingTest extends TestCase
     {
         $telur = Ingredient::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'ingredient_code' => 'ING-TLR-WST-' . uniqid(),
+            'ingredient_code' => 'ING-TLR-WST-'.uniqid(),
             'name' => 'Telur Bebek',
             'unit' => 'butir',
             'current_stock' => 50.0000,

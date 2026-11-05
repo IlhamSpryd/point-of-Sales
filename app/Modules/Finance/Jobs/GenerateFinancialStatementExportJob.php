@@ -45,7 +45,7 @@ class GenerateFinancialStatementExportJob implements ShouldBeUnique, ShouldQueue
 
     public function uniqueId(): string
     {
-        return $this->exportTask->requested_by.'_'.md5(json_encode($this->exportTask->parameters));
+        return $this->exportTask->requested_by.'_'.md5((string) json_encode($this->exportTask->parameters));
     }
 
     public function handle(): void

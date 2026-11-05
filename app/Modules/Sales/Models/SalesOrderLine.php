@@ -11,14 +11,40 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Tenant;
 use App\Models\UnitOfMeasure;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property numeric-string $ordered_qty
+ * @property numeric-string $reserved_qty
+ * @property numeric-string $fulfilled_qty
+ * @property numeric-string $cancelled_qty
+ * @property numeric-string $invoiced_qty
+ * @property numeric-string $returned_qty
+ * @property numeric-string $base_unit_price
+ * @property numeric-string $unit_price
+ * @property numeric-string $discount_amount
+ * @property numeric-string $tax_rate
+ * @property numeric-string $tax_amount
+ * @property numeric-string $line_total
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $sales_order_id
+ * @property int $line_number
+ * @property int $product_id
+ * @property int|null $variant_id
+ * @property int|null $uom_id
+ * @property int|null $price_list_id
+ */
 class SalesOrderLine extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToTenant;
 
     protected $fillable = [
@@ -64,31 +90,49 @@ class SalesOrderLine extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<SalesOrder, $this>
+     */
     public function salesOrder(): BelongsTo
     {
         return $this->belongsTo(SalesOrder::class, 'sales_order_id');
     }
 
+    /**
+     * @return BelongsTo<Product, $this>
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
 
+    /**
+     * @return BelongsTo<ProductVariant, $this>
+     */
     public function variant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class, 'variant_id');
     }
 
+    /**
+     * @return BelongsTo<UnitOfMeasure, $this>
+     */
     public function uom(): BelongsTo
     {
         return $this->belongsTo(UnitOfMeasure::class, 'uom_id');
     }
 
+    /**
+     * @return BelongsTo<PriceList, $this>
+     */
     public function priceList(): BelongsTo
     {
         return $this->belongsTo(PriceList::class, 'price_list_id');

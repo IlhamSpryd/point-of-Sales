@@ -32,6 +32,7 @@ class Wave7FinancialAndCustomerAnalyticsTest extends TestCase
     use TwoTenantFixture;
 
     protected FinancialBiService $financialService;
+
     protected CustomerAnalyticsService $customerService;
 
     protected function afterSubclassSetUp(): void
@@ -77,7 +78,7 @@ class Wave7FinancialAndCustomerAnalyticsTest extends TestCase
             'account_type' => AccountTypeEnum::ASSET->value,
             'account_subtype' => AccountSubtypeEnum::CASH_BANK->value,
             'normal_balance' => NormalBalanceEnum::DEBIT->value,
-            'system_account_key' => 'CASH_MAIN_A_' . Str::random(5),
+            'system_account_key' => 'CASH_MAIN_A_'.Str::random(5),
         ]);
 
         $revAccA = ChartOfAccount::create([
@@ -87,7 +88,7 @@ class Wave7FinancialAndCustomerAnalyticsTest extends TestCase
             'account_type' => AccountTypeEnum::REVENUE->value,
             'account_subtype' => AccountSubtypeEnum::SALES_REVENUE->value,
             'normal_balance' => NormalBalanceEnum::CREDIT->value,
-            'system_account_key' => 'REV_RETAIL_A_' . Str::random(5),
+            'system_account_key' => 'REV_RETAIL_A_'.Str::random(5),
         ]);
 
         $cogsAccA = ChartOfAccount::create([
@@ -97,7 +98,7 @@ class Wave7FinancialAndCustomerAnalyticsTest extends TestCase
             'account_type' => AccountTypeEnum::COGS->value,
             'account_subtype' => AccountSubtypeEnum::COGS_RETAIL->value,
             'normal_balance' => NormalBalanceEnum::DEBIT->value,
-            'system_account_key' => 'COGS_RETAIL_A_' . Str::random(5),
+            'system_account_key' => 'COGS_RETAIL_A_'.Str::random(5),
         ]);
 
         $expAccA = ChartOfAccount::create([
@@ -107,7 +108,7 @@ class Wave7FinancialAndCustomerAnalyticsTest extends TestCase
             'account_type' => AccountTypeEnum::EXPENSE->value,
             'account_subtype' => AccountSubtypeEnum::OPERATING_EXPENSE->value,
             'normal_balance' => NormalBalanceEnum::DEBIT->value,
-            'system_account_key' => 'EXP_UTIL_A_' . Str::random(5),
+            'system_account_key' => 'EXP_UTIL_A_'.Str::random(5),
         ]);
 
         $otherIncAccA = ChartOfAccount::create([
@@ -117,7 +118,7 @@ class Wave7FinancialAndCustomerAnalyticsTest extends TestCase
             'account_type' => AccountTypeEnum::OTHER_INCOME->value,
             'account_subtype' => AccountSubtypeEnum::OTHER->value,
             'normal_balance' => NormalBalanceEnum::CREDIT->value,
-            'system_account_key' => 'INC_INT_A_' . Str::random(5),
+            'system_account_key' => 'INC_INT_A_'.Str::random(5),
         ]);
 
         // Journal Entry Tenant A: Posted
@@ -206,7 +207,7 @@ class Wave7FinancialAndCustomerAnalyticsTest extends TestCase
                 'account_type' => AccountTypeEnum::REVENUE->value,
                 'account_subtype' => AccountSubtypeEnum::SALES_REVENUE->value,
                 'normal_balance' => NormalBalanceEnum::CREDIT->value,
-                'system_account_key' => 'REV_TB_' . Str::random(5),
+                'system_account_key' => 'REV_TB_'.Str::random(5),
             ]);
             $jeB = JournalEntry::create([
                 'tenant_id' => $this->tenantB->id,

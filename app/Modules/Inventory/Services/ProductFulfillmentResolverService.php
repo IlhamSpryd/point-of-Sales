@@ -39,12 +39,12 @@ class ProductFulfillmentResolverService
             $missingIngredients = [];
 
             foreach ($ingredients as $ingredient) {
-                $required = (string) ($ingredient->pivot->quantity_required ?? '0');
-                if ($required === '' || (float) $required <= 0) {
+                $required = bc_num($ingredient->pivot->quantity_required ?? '0');
+                if ((float) $required <= 0) {
                     continue;
                 }
 
-                $available = (string) ($balances[$ingredient->id] ?? '0');
+                $available = bc_num($balances[$ingredient->id] ?? '0');
                 $portions = (int) floor((float) bcdiv($available, $required, 4));
 
                 if ($portions < 1) {
@@ -113,8 +113,11 @@ class ProductFulfillmentResolverService
             return;
         }
 
-        $allProducts = is_array($products) ? collect($products) : ($products instanceof Collection ? $products : collect($products));
-        if ($allProducts->isEmpty()) {
+        $allProducts = [];
+        foreach ($products as $p) {
+            $allProducts[] = $p;
+        }
+        if ($allProducts === []) {
             return;
         }
 
@@ -123,10 +126,6 @@ class ProductFulfillmentResolverService
         $bomProducts = [];
 
         foreach ($allProducts as $product) {
-            if (! $product instanceof Product) {
-                continue;
-            }
-
             $allProductIds[] = $product->id;
 
             if ($product->relationLoaded('ingredients') && $product->ingredients->isNotEmpty()) {
@@ -149,31 +148,25 @@ class ProductFulfillmentResolverService
                 ->pluck('quantity', 'ingredient_id');
 
         // 2. Fetch store product stock balances
-        $productBalances = empty($allProductIds)
-            ? collect()
-            : DB::table('product_stock_balances')
-                ->where('tenant_id', $tenantId)
-                ->where('store_id', $storeId)
-                ->whereIn('product_id', $allProductIds)
-                ->pluck('quantity', 'product_id');
+        $productBalances = DB::table('product_stock_balances')
+            ->where('tenant_id', $tenantId)
+            ->where('store_id', $storeId)
+            ->whereIn('product_id', $allProductIds)
+            ->pluck('quantity', 'product_id');
 
         // 3. Resolve each product in-memory
         foreach ($allProducts as $product) {
-            if (! $product instanceof Product) {
-                continue;
-            }
-
             if ($product->relationLoaded('ingredients') && $product->ingredients->isNotEmpty()) {
                 $minPortions = PHP_INT_MAX;
                 $missing = [];
 
                 foreach ($product->ingredients as $ingredient) {
-                    $required = (string) ($ingredient->pivot->quantity_required ?? '0');
-                    if ($required === '' || (float) $required <= 0) {
+                    $required = bc_num($ingredient->pivot->quantity_required ?? '0');
+                    if ((float) $required <= 0) {
                         continue;
                     }
 
-                    $available = (string) ($ingredientBalances[$ingredient->id] ?? '0');
+                    $available = bc_num($ingredientBalances[$ingredient->id] ?? '0');
                     $portions = (int) floor((float) bcdiv($available, $required, 4));
 
                     if ($portions < 1) {

@@ -80,7 +80,8 @@ class ShiftTemplate extends Model
     /**
      * Scope template shift aktif.
      *
-     * @param  Builder<ShiftTemplate>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeActive(Builder $query): Builder
     {

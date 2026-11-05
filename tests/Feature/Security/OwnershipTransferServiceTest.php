@@ -426,7 +426,7 @@ class OwnershipTransferServiceTest extends TestCase
         $this->assertEquals($this->managerRoleA->id, $this->candidateA->fresh()->role_id);
 
         // Invarian: Tepat 1 active user dengan ROL-OWNER di Tenant A
-        $activeOwnersCount = User::where('tenant_id', $this->tenantA->id)
+        $activeOwnersCount = User::withoutTenantScope()->where('tenant_id', $this->tenantA->id)
             ->where('role_id', $this->ownerRoleA->id)
             ->whereNull('deleted_at')
             ->count();
@@ -499,7 +499,7 @@ class OwnershipTransferServiceTest extends TestCase
         $this->assertEquals($this->ownerRoleA->id, $this->candidateA->fresh()->role_id);
 
         // Invarian: Tepat 1 user aktif memiliki ROL-OWNER
-        $activeOwnersCount = User::where('tenant_id', $this->tenantA->id)
+        $activeOwnersCount = User::withoutTenantScope()->where('tenant_id', $this->tenantA->id)
             ->where('role_id', $this->ownerRoleA->id)
             ->whereNull('deleted_at')
             ->count();
@@ -645,7 +645,7 @@ class OwnershipTransferServiceTest extends TestCase
         );
 
         // Pastikan invariant terpenuhi: tepat 1 user aktif memiliki ROL-OWNER
-        $activeOwnersCount = User::where('tenant_id', $this->tenantA->id)
+        $activeOwnersCount = User::withoutTenantScope()->where('tenant_id', $this->tenantA->id)
             ->where('role_id', $this->ownerRoleA->id)
             ->whereNull('deleted_at')
             ->count();

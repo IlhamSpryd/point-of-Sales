@@ -24,7 +24,9 @@ class CriticalScreensRenderTest extends TestCase
     use RefreshDatabase;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private User $ownerUser;
 
     protected function afterSubclassSetUp(): void

@@ -30,14 +30,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property CarbonInterface $invoice_date
  * @property CarbonInterface $due_date
  * @property string $currency_code
- * @property string $exchange_rate
- * @property string $subtotal_amount
- * @property string $discount_amount
- * @property string $tax_amount
- * @property string $additional_charges_amount
- * @property string $total_amount
- * @property string $debit_note_applied_amount
- * @property string $outstanding_amount
+ * @property numeric-string $exchange_rate
+ * @property numeric-string $subtotal_amount
+ * @property numeric-string $discount_amount
+ * @property numeric-string $tax_amount
+ * @property numeric-string $additional_charges_amount
+ * @property numeric-string $total_amount
+ * @property numeric-string $debit_note_applied_amount
+ * @property numeric-string $outstanding_amount
  * @property SupplierInvoiceStatusEnum $status
  * @property InvoiceMatchingStatusEnum $matching_status
  * @property InvoiceSettlementStatusEnum $settlement_status
@@ -59,6 +59,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property-read User|null $holdApprovedBy
  * @property-read Collection<int, SupplierInvoiceLine> $lines
  * @property-read Collection<int, SupplierInvoiceGrnMatch> $grnMatches
+ * @property numeric-string $paid_amount
+ * @property int|null $gl_journal_entry_id
  */
 class SupplierInvoice extends Model
 {
@@ -101,16 +103,25 @@ class SupplierInvoice extends Model
         return strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', $invoiceNumber));
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<Supplier, $this>
+     */
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
@@ -124,11 +135,17 @@ class SupplierInvoice extends Model
         return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function approvedPayableBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_payable_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function holdApprovedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'hold_approved_by_user_id');

@@ -20,9 +20,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $amended_by_user_id
  * @property CarbonInterface $amended_at
  * @property string $reason
- * @property array $snapshot_data
- * @property string $total_amount_before
- * @property string $total_amount_after
+ * @property array<string, mixed> $snapshot_data
+ * @property numeric-string $total_amount_before
+ * @property numeric-string $total_amount_after
  * @property CarbonInterface $created_at
  * @property-read PurchaseOrder $purchaseOrder
  * @property-read User $amendedByUser
@@ -50,6 +50,9 @@ class PurchaseOrderRevision extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
@@ -63,6 +66,9 @@ class PurchaseOrderRevision extends Model
         return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function amendedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'amended_by_user_id');

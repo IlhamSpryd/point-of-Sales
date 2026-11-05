@@ -113,7 +113,7 @@ class ShiftManagementService
                 storeId: $storeId,
                 subjectType: Shift::class,
                 subjectId: $shift->id,
-                description: "Shift #{$shift->id} berhasil dibuka oleh kasir {$user->name} dengan modal awal Rp " . number_format($openingBalance, 0, ',', '.'),
+                description: "Shift #{$shift->id} berhasil dibuka oleh kasir {$user->name} dengan modal awal Rp ".number_format($openingBalance, 0, ',', '.'),
                 metadata: [
                     'shift_id' => $shift->id,
                     'opening_balance' => $openingBalance,
@@ -202,7 +202,7 @@ class ShiftManagementService
                 storeId: $storeId,
                 subjectType: CashDrawerMovement::class,
                 subjectId: $movement->id,
-                description: "Pencatatan {$type} sebesar Rp " . number_format($cleanAmount, 0, ',', '.') . " pada shift #{$shift->id}. Alasan: {$reason}",
+                description: "Pencatatan {$type} sebesar Rp ".number_format($cleanAmount, 0, ',', '.')." pada shift #{$shift->id}. Alasan: {$reason}",
                 metadata: [
                     'shift_id' => $shift->id,
                     'type' => $type,
@@ -270,9 +270,9 @@ class ShiftManagementService
             if (! $isWithinTolerance) {
                 if (empty($supervisorPin)) {
                     throw new DomainException(
-                        "Selisih kas fisik (Rp " . number_format($absDiscrepancy, 2, ',', '.') . 
-                        ") melebihi batas toleransi (Rp " . number_format($toleranceAmount, 2, ',', '.') . 
-                        "). Diperlukan otorisasi PIN Supervisor untuk menutup shift."
+                        'Selisih kas fisik (Rp '.number_format($absDiscrepancy, 2, ',', '.').
+                        ') melebihi batas toleransi (Rp '.number_format($toleranceAmount, 2, ',', '.').
+                        '). Diperlukan otorisasi PIN Supervisor untuk menutup shift.'
                     );
                 }
 
@@ -314,7 +314,7 @@ class ShiftManagementService
             try {
                 $this->financialOutboxDispatcher->dispatchShiftClosed($shift);
             } catch (\Throwable $e) {
-                Log::warning("[FINANCE OUTBOX] Gagal dispatch outbox shift #{$shift->id}: " . $e->getMessage());
+                Log::warning("[FINANCE OUTBOX] Gagal dispatch outbox shift #{$shift->id}: ".$e->getMessage());
             }
 
             $this->auditTrail->log(
@@ -324,8 +324,8 @@ class ShiftManagementService
                 storeId: $storeId,
                 subjectType: Shift::class,
                 subjectId: $shift->id,
-                description: "Shift #{$shift->id} ditutup dengan hitungan fisik Rp " . number_format($counted, 0, ',', '.') . 
-                    " (Expected: Rp " . number_format($expectedCash, 0, ',', '.') . ", Selisih: Rp " . number_format($discrepancy, 0, ',', '.') . ")",
+                description: "Shift #{$shift->id} ditutup dengan hitungan fisik Rp ".number_format($counted, 0, ',', '.').
+                    ' (Expected: Rp '.number_format($expectedCash, 0, ',', '.').', Selisih: Rp '.number_format($discrepancy, 0, ',', '.').')',
                 metadata: [
                     'shift_id' => $shift->id,
                     'counted_cash' => $counted,

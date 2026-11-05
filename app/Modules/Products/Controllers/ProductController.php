@@ -101,7 +101,7 @@ class ProductController extends Controller
         $product = $this->productService->store($request->validated(), $request->file('product_photo'));
 
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $this->auditTrail->log(
+        $this->auditTrail?->log(
             tenantId: $tenantId,
             action: 'product.created',
             userId: auth()->id(),
@@ -154,7 +154,7 @@ class ProductController extends Controller
         $updated = $this->productService->update($product, $request->validated(), $request->file('product_photo'));
 
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $this->auditTrail->log(
+        $this->auditTrail?->log(
             tenantId: $tenantId,
             action: 'product.updated',
             userId: auth()->id(),
@@ -183,7 +183,7 @@ class ProductController extends Controller
 
             $this->productService->delete($product);
 
-            $this->auditTrail->log(
+            $this->auditTrail?->log(
                 tenantId: $tenantId,
                 action: 'product.deleted',
                 userId: auth()->id(),

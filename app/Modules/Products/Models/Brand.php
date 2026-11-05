@@ -7,6 +7,7 @@ namespace App\Modules\Products\Models;
 use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
 use App\Models\Product;
+use Database\Factories\BrandFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,11 +15,18 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Brand: Master merek dagang produk terisolasi per tenant.
+ *
+ * @property int $id
+ * @property int $tenant_id
+ * @property int|null $name_uniqueness_key
  */
 class Brand extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<BrandFactory> */
     use HasFactory;
+
     use ScopedToTenant;
     use SoftDeletes;
 
@@ -47,6 +55,9 @@ class Brand extends Model
         });
     }
 
+    /**
+     * @return HasMany<Product, $this>
+     */
     public function products(): HasMany
     {
         return $this->hasMany(Product::class);

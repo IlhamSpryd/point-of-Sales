@@ -22,14 +22,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property int $tenant_id
  * @property int $customer_id
- * @property string $credit_limit
+ * @property numeric-string $credit_limit
  * @property int $payment_terms_days
  * @property int $grace_period_days
  * @property CreditStatusEnum $credit_status
  * @property string $risk_rating
- * @property string $reserved_exposure
- * @property string $invoiced_exposure
- * @property string $unapplied_credit_balance
+ * @property numeric-string $reserved_exposure
+ * @property numeric-string $invoiced_exposure
+ * @property numeric-string $unapplied_credit_balance
  * @property Carbon|null $last_reconciled_at
  * @property int|null $updated_by_user_id
  */
@@ -68,16 +68,25 @@ class CustomerCreditAccount extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function updatedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by_user_id');
     }
 
+    /**
+     * @return HasMany<CustomerCreditLog, $this>
+     */
     public function logs(): HasMany
     {
         return $this->hasMany(CustomerCreditLog::class, 'customer_id', 'customer_id');

@@ -96,7 +96,7 @@ class ReturnRefundService
             throw new DomainException('Akses lintas tenant ditolak.');
         }
 
-        return $tenantContext->runAs($order->tenant_id, $order->store_id, function () use (
+        return $tenantContext->runAs((int) $order->tenant_id, $order->store_id, function () use (
             $order,
             $returnItemsWithDisposition,
             $refundAllocations,
@@ -320,6 +320,7 @@ class ReturnRefundService
 
                     // AC-3.3: Jika refund tunai, periksa kecukupan fisik kas di laci shift aktif
                     if ($targetMethod === 'cash') {
+                        /** @var Shift $lockedShift */
                         $opening = (float) $lockedShift->opening_balance;
                         $cashIn = (float) CashDrawerMovement::where('shift_id', $lockedShift->id)->where('type', 'cash_in')->sum('amount');
                         $cashPayments = (float) Payment::where('shift_id', $lockedShift->id)->where('payment_method', 'cash')->where('status', 'captured')->sum('amount');
@@ -450,6 +451,7 @@ class ReturnRefundService
 
                     // Refund tunai wajib memotong kas laci pada shift aktif (AC-3.3)
                     if ($targetMethod === 'cash') {
+                        /** @var Shift $lockedShift */
                         $cdm = CashDrawerMovement::forceCreate([
                             'tenant_id' => $lockedOrder->tenant_id,
                             'store_id' => $lockedOrder->store_id,
@@ -541,7 +543,7 @@ class ReturnRefundService
                         ->sum('points');
 
                     if ($earnedPoints > 0) {
-                        $alreadyReversed = (int) abs(DB::table('loyalty_ledger')
+                        $alreadyReversed = (int) abs((float) DB::table('loyalty_ledger')
                             ->where('tenant_id', $lockedOrder->tenant_id)
                             ->where('order_id', $lockedOrder->id)
                             ->where('type', LoyaltyLedgerTypeEnum::Reversal->value)
@@ -715,7 +717,7 @@ class ReturnRefundService
             throw new DomainException('Akses lintas tenant ditolak.');
         }
 
-        return $tenantContext->runAs($order->tenant_id, $order->store_id, function () use (
+        return $tenantContext->runAs((int) $order->tenant_id, $order->store_id, function () use (
             $order,
             $returnItemsWithDisposition,
             $actorUserId,
@@ -918,7 +920,7 @@ class ReturnRefundService
                 $taxReturned = '0.00';
                 $orderTotalAmount = (string) ($lockedOrder->order_amount ?? $lockedOrder->total_amount ?? '0.00');
                 $orderTaxAmount = (string) ($lockedOrder->tax_amount ?? '0.00');
-                if (bccomp($orderTotalAmount, '0.00', 2) > 0 && bccomp($orderTaxAmount, '0.00', 2) > 0) {
+                if (bccomp(bc_num($orderTotalAmount), '0.00', 2) > 0 && bccomp(bc_num($orderTaxAmount), '0.00', 2) > 0) {
                     $taxRatio = bcdiv($orderTaxAmount, $orderTotalAmount, 6);
                     $taxReturned = bcmul($subtotalReturned, $taxRatio, 2);
                 }
@@ -1148,7 +1150,7 @@ class ReturnRefundService
                     }
                 }
 
-                $cleanAmount = bcadd((string) $amount, '0.00', 2);
+                $cleanAmount = bcadd(bc_num($amount), '0.00', 2);
                 if (bccomp($cleanAmount, '0.00', 2) <= 0) {
                     throw new DomainException('Nominal nota kredit harus lebih dari nol.');
                 }
@@ -1236,7 +1238,7 @@ class ReturnRefundService
         int $actorUserId,
         ?string $idempotencyKey = null
     ): SalesCreditNoteApplication {
-        $amount = bcadd($amount, '0.00', 2);
+        $amount = bcadd(bc_num($amount), '0.00', 2);
         if (bccomp($amount, '0.00', 2) <= 0) {
             throw new DomainException('Nominal aplikasi nota kredit harus lebih dari nol.');
         }
@@ -1375,7 +1377,7 @@ class ReturnRefundService
             ],
         ]);
 
-        $this->auditTrail->log(
+        $this->auditTrail?->log(
             tenantId: (int) $lockedCreditNote->tenant_id,
             action: 'credit_note.applied',
             userId: $actorUserId,

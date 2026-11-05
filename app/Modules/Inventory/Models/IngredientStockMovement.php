@@ -22,14 +22,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $ingredient_id
  * @property int|null $order_id
  * @property IngredientStockMovementTypeEnum $type
- * @property string $quantity
- * @property string|null $unit_cost
+ * @property numeric-string $quantity
+ * @property numeric-string|null $unit_cost
  * @property string $balance_after
  * @property string|null $reason
  * @property string $idempotency_key
  * @property Carbon|null $created_at
  * @property-read Ingredient|null $ingredient
  * @property-read Store|null $store
+ * @property int|null $order_item_id
+ * @property int|null $created_by
  */
 class IngredientStockMovement extends Model
 {
@@ -48,11 +50,17 @@ class IngredientStockMovement extends Model
         'balance_after' => 'decimal:4',
     ];
 
+    /**
+     * @return BelongsTo<Ingredient, $this>
+     */
     public function ingredient(): BelongsTo
     {
         return $this->belongsTo(Ingredient::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);

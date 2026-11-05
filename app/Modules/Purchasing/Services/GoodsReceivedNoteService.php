@@ -127,14 +127,14 @@ class GoodsReceivedNoteService
                 $damagedQty = (string) ($lineItem['damaged_qty'] ?? '0.0000');
 
                 // Invariant chk_grnl_qtys & chk_grnl_qty_balance
-                if (bccomp($receivedQty, '0', 4) < 0 || bccomp($acceptedQty, '0', 4) < 0 || bccomp($rejectedQty, '0', 4) < 0 || bccomp($damagedQty, '0', 4) < 0) {
+                if (bccomp(bc_num($receivedQty), '0', 4) < 0 || bccomp(bc_num($acceptedQty), '0', 4) < 0 || bccomp(bc_num($rejectedQty), '0', 4) < 0 || bccomp(bc_num($damagedQty), '0', 4) < 0) {
                     throw ValidationException::withMessages([
                         "lines.{$index}" => ['Kuantitas pada baris penerimaan tidak boleh bernilai negatif.'],
                     ]);
                 }
 
-                $sumAccRej = bcadd($acceptedQty, $rejectedQty, 4);
-                if (bccomp($receivedQty, $sumAccRej, 4) !== 0) {
+                $sumAccRej = bcadd(bc_num($acceptedQty), bc_num($rejectedQty), 4);
+                if (bccomp(bc_num($receivedQty), bc_num($sumAccRej), 4) !== 0) {
                     throw ValidationException::withMessages([
                         "lines.{$index}.received_qty" => [
                             "Kuantitas diterima ({$receivedQty}) harus tepat sama dengan jumlah diterima baik ({$acceptedQty}) ditambah ditolak ({$rejectedQty}).",
@@ -146,7 +146,7 @@ class GoodsReceivedNoteService
                 $tolerancePct = $poLine->over_receipt_tolerance_pct ?? '0.00';
                 $toleranceRate = bcdiv((string) $tolerancePct, '100', 4);
                 $maxAllowed = bcmul((string) $poLine->ordered_qty, bcadd('1', $toleranceRate, 4), 4);
-                $projectedAccepted = bcadd((string) $poLine->accepted_qty, $acceptedQty, 4);
+                $projectedAccepted = bcadd(bc_num($poLine->accepted_qty), bc_num($acceptedQty), 4);
 
                 if (bccomp($projectedAccepted, $maxAllowed, 4) > 0) {
                     throw new OverReceiptToleranceExceededException(
@@ -155,14 +155,14 @@ class GoodsReceivedNoteService
                 }
 
                 $uomFactor = (string) ($lineItem['uom_conversion_factor'] ?? $poLine->uom_conversion_factor ?? '1.000000');
-                if (bccomp($uomFactor, '0', 6) <= 0) {
+                if (bccomp(bc_num($uomFactor), '0', 6) <= 0) {
                     throw ValidationException::withMessages([
                         "lines.{$index}.uom_conversion_factor" => ['Faktor konversi UoM harus lebih besar dari 0.'],
                     ]);
                 }
 
-                $baseAcceptedQty = bcmul($acceptedQty, $uomFactor, 4);
-                $unitCostSnapshot = bccomp($uomFactor, '1.000000', 6) === 0
+                $baseAcceptedQty = bcmul(bc_num($acceptedQty), bc_num($uomFactor), 4);
+                $unitCostSnapshot = bccomp(bc_num($uomFactor), '1.000000', 6) === 0
                     ? (string) $poLine->unit_price
                     : bcdiv((string) $poLine->unit_price, $uomFactor, 4);
 
@@ -210,7 +210,7 @@ class GoodsReceivedNoteService
                 ]
             );
 
-            return $grn->fresh(['lines']);
+            return $grn->fresh(['lines']) ?? $grn;
         });
     }
 
@@ -279,8 +279,8 @@ class GoodsReceivedNoteService
                 $rejectedQty = (string) ($lineItem['rejected_qty'] ?? '0.0000');
                 $damagedQty = (string) ($lineItem['damaged_qty'] ?? '0.0000');
 
-                $sumAccRej = bcadd($acceptedQty, $rejectedQty, 4);
-                if (bccomp($receivedQty, $sumAccRej, 4) !== 0) {
+                $sumAccRej = bcadd(bc_num($acceptedQty), bc_num($rejectedQty), 4);
+                if (bccomp(bc_num($receivedQty), bc_num($sumAccRej), 4) !== 0) {
                     throw ValidationException::withMessages([
                         "lines.{$index}.received_qty" => [
                             "Kuantitas diterima ({$receivedQty}) harus tepat sama dengan jumlah diterima baik ({$acceptedQty}) ditambah ditolak ({$rejectedQty}).",
@@ -291,7 +291,7 @@ class GoodsReceivedNoteService
                 $tolerancePct = $poLine->over_receipt_tolerance_pct ?? '0.00';
                 $toleranceRate = bcdiv((string) $tolerancePct, '100', 4);
                 $maxAllowed = bcmul((string) $poLine->ordered_qty, bcadd('1', $toleranceRate, 4), 4);
-                $projectedAccepted = bcadd((string) $poLine->accepted_qty, $acceptedQty, 4);
+                $projectedAccepted = bcadd(bc_num($poLine->accepted_qty), bc_num($acceptedQty), 4);
 
                 if (bccomp($projectedAccepted, $maxAllowed, 4) > 0) {
                     throw new OverReceiptToleranceExceededException(
@@ -300,8 +300,8 @@ class GoodsReceivedNoteService
                 }
 
                 $uomFactor = (string) ($lineItem['uom_conversion_factor'] ?? $poLine->uom_conversion_factor ?? '1.000000');
-                $baseAcceptedQty = bcmul($acceptedQty, $uomFactor, 4);
-                $unitCostSnapshot = bccomp($uomFactor, '1.000000', 6) === 0
+                $baseAcceptedQty = bcmul(bc_num($acceptedQty), bc_num($uomFactor), 4);
+                $unitCostSnapshot = bccomp(bc_num($uomFactor), '1.000000', 6) === 0
                     ? (string) $poLine->unit_price
                     : bcdiv((string) $poLine->unit_price, $uomFactor, 4);
 
@@ -345,7 +345,7 @@ class GoodsReceivedNoteService
                 metadata: ['lines_count' => count($linesData)]
             );
 
-            return $grn->fresh(['lines']);
+            return $grn->fresh(['lines']) ?? $grn;
         });
     }
 
@@ -517,7 +517,7 @@ class GoodsReceivedNoteService
             $lockedGrn->save();
 
             // Langkah 8: Catat analitik performa lead time & histori harga pemasok (Fase 8)
-            $this->performanceService->recordGrnReceipt($lockedGrn, $po);
+            $this->performanceService?->recordGrnReceipt($lockedGrn, $po);
 
             $this->auditTrailService->log(
                 tenantId: $tenantId,
@@ -536,7 +536,7 @@ class GoodsReceivedNoteService
             // Emisi outbox akuntansi ke Modul 7 (PR-PUR-01)
             app(InventoryAccountingService::class)->recordGrnPosted($lockedGrn);
 
-            return $lockedGrn->fresh(['lines', 'purchaseOrder']);
+            return $lockedGrn->fresh(['lines', 'purchaseOrder']) ?? $lockedGrn;
         }, attempts: 3);
     }
 
@@ -684,7 +684,7 @@ class GoodsReceivedNoteService
             // Emisi outbox akuntansi ke Modul 7 (PR-PUR-02)
             app(InventoryAccountingService::class)->recordGrnReversed($lockedGrn, $reversalReason);
 
-            return $lockedGrn->fresh(['lines', 'purchaseOrder']);
+            return $lockedGrn->fresh(['lines', 'purchaseOrder']) ?? $lockedGrn;
         }, attempts: 3);
     }
 

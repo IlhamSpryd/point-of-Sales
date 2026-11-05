@@ -105,6 +105,7 @@ class WorkforceSchedulingService
     public function batchSchedule(array $entries): Collection
     {
         return DB::transaction(function () use ($entries) {
+            /** @var Collection<int, WorkSchedule> $created */
             $created = new Collection;
             foreach ($entries as $entry) {
                 $created->push($this->scheduleShift(
@@ -185,8 +186,8 @@ class WorkforceSchedulingService
             }
 
             return [
-                'schedule_a' => $scheduleA->fresh(),
-                'schedule_b' => $scheduleB->fresh(),
+                'schedule_a' => $scheduleA->fresh() ?? $scheduleA,
+                'schedule_b' => $scheduleB->fresh() ?? $scheduleB,
             ];
         });
     }

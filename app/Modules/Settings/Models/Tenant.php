@@ -2,11 +2,17 @@
 
 namespace App\Modules\Settings\Models;
 
+use App\Models\Scopes\TenantScope;
 use App\Models\Store;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ */
 class Tenant extends Model
 {
     use SoftDeletes;
@@ -94,18 +100,27 @@ class Tenant extends Model
             || $this->status === 'suspended';
     }
 
-    public function owner()
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function owner(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'owner_user_id');
+        return $this->belongsTo(User::class, 'owner_user_id')->withoutGlobalScopes();
     }
 
-    public function stores()
+    /**
+     * @return HasMany<Store, $this>
+     */
+    public function stores(): HasMany
     {
-        return $this->hasMany(Store::class)->withoutGlobalScope(\App\Models\Scopes\TenantScope::class);
+        return $this->hasMany(Store::class)->withoutGlobalScope(TenantScope::class);
     }
 
-    public function users()
+    /**
+     * @return HasMany<User, $this>
+     */
+    public function users(): HasMany
     {
-        return $this->hasMany(User::class)->withoutGlobalScope(\App\Models\Scopes\TenantScope::class);
+        return $this->hasMany(User::class)->withoutGlobalScope(TenantScope::class);
     }
 }

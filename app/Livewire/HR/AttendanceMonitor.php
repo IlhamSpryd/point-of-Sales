@@ -142,6 +142,6 @@ class AttendanceMonitor extends Component
         return view('livewire.hr.attendance-monitor', [
             'stores' => $stores,
             'records' => $records,
-        ])->layout('layouts.app', ['header' => 'Pemantauan Absensi & Lembur']);
+        ])->layout('layouts.app', ['title' => 'Pemantauan Absensi & Lembur — Apeiron']);
     }
 }

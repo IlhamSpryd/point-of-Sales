@@ -121,13 +121,13 @@
                             removeIngredient(index) {
                                 this.ingredients.splice(index, 1);
                             }
-                        }" class="pt-4 border-t border-[#E5E7EB]">
+                        }" class="pt-4 border-t border-border">
                             <div class="flex items-center justify-between mb-4">
                                 <div>
                                     <h5 class="text-sm font-bold text-apeiron-ink">Additional Ingredients (Optional BOM)</h5>
-                                    <p class="text-xs text-[#787774] mt-0.5">Specify ingredients to automatically deduct from stock when this modifier is selected.</p>
+                                    <p class="text-xs text-muted-foreground mt-0.5">Specify ingredients to automatically deduct from stock when this modifier is selected.</p>
                                 </div>
-                                <button type="button" @click="addIngredient" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-[#E5E7EB] rounded-xl hover:bg-[#F7F7F5] transition-colors shadow-sm">
+                                <button type="button" @click="addIngredient" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-border rounded-xl hover:bg-muted transition-colors shadow-sm">
                                     <span class="material-symbols-rounded text-[16px]">add</span> Add Ingredient
                                 </button>
                             </div>
@@ -177,7 +177,7 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
                     <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Modifiers & Variations</h4>
-                    <p class="text-sm font-medium text-[#787774] mt-1">Manage modifier groups, flavor/size variations, and product add-ons</p>
+                    <p class="text-sm font-medium text-muted-foreground mt-1">Manage modifier groups, flavor/size variations, and product add-ons</p>
                 </div>
 
                 <x-list-toolbar>

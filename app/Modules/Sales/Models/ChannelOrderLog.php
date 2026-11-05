@@ -8,6 +8,11 @@ use App\Models\Order;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int|null $order_id
+ * @property int $tenant_id
+ */
 class ChannelOrderLog extends Model
 {
     use AssignsTenant;
@@ -21,6 +26,9 @@ class ChannelOrderLog extends Model
         'payload' => 'array',
     ];
 
+    /**
+     * @return BelongsTo<Order, $this>
+     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);

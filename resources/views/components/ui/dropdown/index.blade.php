@@ -106,7 +106,7 @@
         @if (isset($trigger))
             {{ $trigger }}
         @else
-            <div class="relative inline-flex items-center justify-center rounded-medium border border-foreground/10 bg-background p-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary focus:outline-none disabled:pointer-events-none disabled:opacity-50">
+            <div class="relative inline-flex items-center justify-center rounded-medium border border-border bg-background p-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary focus:outline-none disabled:pointer-events-none disabled:opacity-50">
                 Menu
             </div>
         @endif
@@ -137,7 +137,7 @@
             x-cloak
             class="w-max">
             @if (isset($menu))
-                <div {{ $menu->attributes->twMerge('min-w-44 overflow-hidden rounded-medium border border-foreground/10 bg-popover p-1 text-popover-foreground shadow-lg dark:border-foreground/15'.($matchWidth ? ' w-full' : '')) }}>
+                <div {{ $menu->attributes->twMerge('min-w-44 overflow-hidden rounded-medium border border-border bg-popover p-1 text-popover-foreground shadow-lg$matchWidth ? ' w-full' : '')) }}>
                     {{ $menu }}
                 </div>
             @else

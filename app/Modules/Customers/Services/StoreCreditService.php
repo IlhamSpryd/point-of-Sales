@@ -36,7 +36,7 @@ class StoreCreditService
         ?string $idempotencyKey = null
     ): StoreCreditLedger {
         $tenantId = (int) ($customer->tenant_id ?? $this->tenantContext->requireTenantId());
-        $issueAmount = bcadd($amount, '0', 2);
+        $issueAmount = bcadd(bc_num($amount), '0', 2);
 
         if (bccomp($issueAmount, '0.00', 2) <= 0) {
             throw new DomainException('Jumlah penambahan saldo Store Credit harus lebih besar dari 0.');
@@ -114,7 +114,7 @@ class StoreCreditService
         ?string $idempotencyKey = null
     ): StoreCreditLedger {
         $tenantId = (int) ($customer->tenant_id ?? $this->tenantContext->requireTenantId());
-        $redeemAmount = bcadd($amount, '0', 2);
+        $redeemAmount = bcadd(bc_num($amount), '0', 2);
 
         if (bccomp($redeemAmount, '0.00', 2) <= 0) {
             throw new DomainException('Jumlah pemotongan saldo Store Credit harus lebih besar dari 0.');

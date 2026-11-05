@@ -23,13 +23,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $asset_code
  * @property string $asset_name
  * @property CarbonInterface|string $acquisition_date
- * @property string $acquisition_cost
- * @property string $salvage_value
+ * @property numeric-string $acquisition_cost
+ * @property numeric-string $salvage_value
  * @property int $useful_life_months
  * @property DepreciationMethodEnum $depreciation_method
  * @property FixedAssetStatusEnum $status
- * @property string $accumulated_depreciation
- * @property string $net_book_value
+ * @property numeric-string $accumulated_depreciation
+ * @property numeric-string $net_book_value
  * @property int|null $acquisition_journal_id
  * @property int|null $supplier_id
  * @property string|null $location_note
@@ -59,31 +59,49 @@ class FixedAsset extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<FixedAssetCategory, $this>
+     */
     public function category(): BelongsTo
     {
         return $this->belongsTo(FixedAssetCategory::class, 'category_id');
     }
 
+    /**
+     * @return BelongsTo<JournalEntry, $this>
+     */
     public function acquisitionJournal(): BelongsTo
     {
         return $this->belongsTo(JournalEntry::class, 'acquisition_journal_id');
     }
 
+    /**
+     * @return HasMany<FixedAssetDepreciationSchedule, $this>
+     */
     public function schedules(): HasMany
     {
         return $this->hasMany(FixedAssetDepreciationSchedule::class, 'fixed_asset_id');
     }
 
+    /**
+     * @return HasMany<FixedAssetDisposal, $this>
+     */
     public function disposals(): HasMany
     {
         return $this->hasMany(FixedAssetDisposal::class, 'fixed_asset_id');

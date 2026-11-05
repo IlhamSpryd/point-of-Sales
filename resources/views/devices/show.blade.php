@@ -143,7 +143,7 @@
                 @endif
 
                 {{-- Cashier Setup Guide --}}
-                <div class="card-surface p-6 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 space-y-4 shadow-xs">
+                <div class="card-surface p-6 rounded-2xl border border-border dark:border-zinc-800 space-y-4 shadow-xs">
                     <h5 class="text-sm font-bold text-apeiron-ink dark:text-zinc-100 uppercase tracking-wider">Physical Cashier Setup Guide</h5>
                     <ol class="list-decimal list-inside text-sm text-zinc-500 space-y-2">
                         <li>Open the Apeiron application on your physical cashier terminal.</li>
@@ -156,7 +156,7 @@
 
             {{-- Specification Details Card --}}
             <div class="space-y-6">
-                <div class="card-surface p-6 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 space-y-4 shadow-xs">
+                <div class="card-surface p-6 rounded-2xl border border-border dark:border-zinc-800 space-y-4 shadow-xs">
                     <h5 class="text-sm font-bold text-apeiron-ink dark:text-zinc-100 uppercase tracking-wider">Device Details</h5>
                     
                     <div class="space-y-3 text-sm">

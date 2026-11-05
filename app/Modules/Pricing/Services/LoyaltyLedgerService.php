@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace App\Modules\Pricing\Services;
 
-use App\Modules\Customers\Models\CustomerLoyaltyAccount;
 use App\Modules\Customers\Models\LoyaltyLedger;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use RuntimeException;
 
 /**
  * LoyaltyLedgerService — Manajemen buku besar poin loyalitas append-only dengan verifikasi rantai hash SHA-256.
@@ -24,15 +21,8 @@ class LoyaltyLedgerService
     /**
      * Catat mutasi poin loyalitas pelanggan secara append-only.
      *
-     * @param  int  $tenantId
-     * @param  int  $customerId
      * @param  int  $points  Positif untuk perolehan (earn), negatif untuk penukaran (redeem)
      * @param  string  $type  earn | redeem | expire | adjustment | bonus | reversal
-     * @param  int|null  $orderId
-     * @param  string|null  $reference
-     * @param  int|null  $createdBy
-     * @param  int|null  $storeId
-     * @return LoyaltyLedger
      */
     public function recordPoints(
         int $tenantId,
@@ -66,7 +56,7 @@ class LoyaltyLedgerService
 
             if ($newBalance < 0) {
                 throw new InvalidArgumentException(
-                    "Saldo poin loyalitas ({$currentBalance}) tidak mencukupi untuk penukaran sejumlah " . abs($points) . " poin."
+                    "Saldo poin loyalitas ({$currentBalance}) tidak mencukupi untuk penukaran sejumlah ".abs($points).' poin.'
                 );
             }
 
@@ -98,7 +88,6 @@ class LoyaltyLedgerService
      * 3. Akumulasi saldo balance_after konsisten dengan points setiap mutasi.
      * 4. Setiap baris memiliki entry_hash valid 64 karakter heksadesimal.
      *
-     * @param  int  $customerId
      * @return bool True jika rantai utuh 100%, False jika terdeteksi manipulasi/tampering data historis.
      */
     public function assertHashChainValid(int $customerId): bool

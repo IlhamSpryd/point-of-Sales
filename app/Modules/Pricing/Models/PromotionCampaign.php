@@ -10,6 +10,8 @@ use App\Models\Concerns\ScopedToTenant;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
+/** @use HasFactory<Factory<static>> */
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -17,12 +19,27 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property int|null $store_id
+ * @property int $priority
+ * @property int|null $max_usage_limit
+ * @property int|null $max_usage_per_customer
+ * @property int $current_usage_count
+ * @property int|null $created_by_user_id
+ * @property int|null $approved_by_user_id
+ */
 class PromotionCampaign extends Model
 {
     use AssignsTenant;
-    use HasFactory, SoftDeletes;
+
+    /** @use HasFactory<Factory<static>> */
+    use HasFactory;
+
     use ScopedToStoreForDiscount;
     use ScopedToTenant;
+    use SoftDeletes;
 
     public const TYPE_AUTOMATIC_DISCOUNT = 'AUTOMATIC_DISCOUNT';
 
@@ -43,6 +60,34 @@ class PromotionCampaign extends Model
     public const STATUS_EXPIRED = 'EXPIRED';
 
     public const STATUS_ARCHIVED = 'ARCHIVED';
+
+    protected static function booted(): void
+    {
+        static::deleting(function (PromotionCampaign $campaign): void {
+            if ($campaign->isForceDeleting()) {
+                $ruleIds = PromotionRule::withoutGlobalScopes()
+                    ->where('tenant_id', $campaign->tenant_id)
+                    ->where('campaign_id', $campaign->id)
+                    ->pluck('id');
+
+                if ($ruleIds->isNotEmpty()) {
+                    PromotionReward::withoutGlobalScopes()
+                        ->where('tenant_id', $campaign->tenant_id)
+                        ->whereIn('rule_id', $ruleIds)
+                        ->delete();
+                    PromotionRule::withoutGlobalScopes()
+                        ->where('tenant_id', $campaign->tenant_id)
+                        ->whereIn('id', $ruleIds)
+                        ->delete();
+                }
+
+                PromotionStoreMapping::withoutGlobalScopes()
+                    ->where('tenant_id', $campaign->tenant_id)
+                    ->where('campaign_id', $campaign->id)
+                    ->delete();
+            }
+        });
+    }
 
     protected $fillable = [
         'tenant_id',
@@ -86,41 +131,65 @@ class PromotionCampaign extends Model
         ];
     }
 
+    /**
+     * @return HasMany<PromotionRule, $this>
+     */
     public function rules(): HasMany
     {
         return $this->hasMany(PromotionRule::class, 'campaign_id');
     }
 
+    /**
+     * @return HasManyThrough<PromotionReward, PromotionRule, $this>
+     */
     public function rewards(): HasManyThrough
     {
         return $this->hasManyThrough(PromotionReward::class, PromotionRule::class, 'campaign_id', 'rule_id');
     }
 
+    /**
+     * @return HasMany<PromotionStoreMapping, $this>
+     */
     public function storeMappings(): HasMany
     {
         return $this->hasMany(PromotionStoreMapping::class, 'campaign_id');
     }
 
+    /**
+     * @return HasMany<PromotionReservation, $this>
+     */
     public function reservations(): HasMany
     {
         return $this->hasMany(PromotionReservation::class, 'campaign_id');
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by_user_id');

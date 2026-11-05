@@ -24,7 +24,8 @@ use Illuminate\Support\Facades\DB;
  * @property int|null $tenant_id
  * @property int $product_id
  * @property int $ingredient_id
- * @property float|string $quantity_required
+ * @property numeric-string $quantity_required
+ * @property int $id
  */
 class ProductIngredient extends Pivot
 {
@@ -33,7 +34,14 @@ class ProductIngredient extends Pivot
 
     protected $table = 'product_ingredients';
 
-    protected $guarded = [];
+    protected $guarded = ['*'];
+
+    protected $fillable = [
+        'tenant_id',
+        'product_id',
+        'ingredient_id',
+        'quantity_required',
+    ];
 
     protected static function booted(): void
     {
@@ -62,11 +70,17 @@ class ProductIngredient extends Pivot
         });
     }
 
+    /**
+     * @return BelongsTo<Product, $this>
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
+    /**
+     * @return BelongsTo<Ingredient, $this>
+     */
     public function ingredient(): BelongsTo
     {
         return $this->belongsTo(Ingredient::class);

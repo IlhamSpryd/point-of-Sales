@@ -27,11 +27,11 @@ use Illuminate\Support\Carbon;
  * @property string $debit_note_number
  * @property Carbon $debit_note_date
  * @property string $currency_code
- * @property string $subtotal_amount
- * @property string $tax_amount
- * @property string $total_amount
- * @property string $applied_amount
- * @property string $remaining_amount
+ * @property numeric-string $subtotal_amount
+ * @property numeric-string $tax_amount
+ * @property numeric-string $total_amount
+ * @property numeric-string $applied_amount
+ * @property numeric-string $remaining_amount
  * @property DebitNoteStatusEnum $status
  * @property string|null $supplier_credit_note_number
  * @property string|null $reason

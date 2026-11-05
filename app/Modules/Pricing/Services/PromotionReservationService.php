@@ -126,8 +126,7 @@ class PromotionReservationService
     /**
      * Konfirmasi komit reservasi kuota setelah transaksi penjualan berhasil disahkan.
      *
-     * @param int $reservationId
-     * @param int<0, max> $orderId
+     * @param  int<0, max>  $orderId
      */
     public function commitReservation(int $reservationId, int $orderId): void
     {

@@ -85,7 +85,10 @@ class OwnerOnboardingController extends Controller
                 return 'consumed';
             }
 
-            $user = User::withTrashed()->find($lockedToken->user_id);
+            // Tenant-scoped lookup (FAIL-CLOSED): token tenant di-set ke konteks
+            // sementara agar query tetap difilter oleh TenantScope tanpa
+            // melemahkan isolasi lintas-tenant.
+            $user = $this->findTenantScopedUser((int) $lockedToken->tenant_id, (int) $lockedToken->user_id, includeTrashed: true);
 
             // Guard lintas-tenant: token yang dibuat untuk user tenant A tidak
             // boleh mengubah user tenant B.
@@ -135,7 +138,7 @@ class OwnerOnboardingController extends Controller
             if ($redirectToWizard) {
                 Auth::login($user);
                 $request->session()->regenerate();
-                app(TenantContext::class)->setTenantId($user->tenant_id);
+                app(TenantContext::class)->setTenantId((int) $user->tenant_id);
 
                 return redirect()->route('onboarding.business-profile')
                     ->with('success', 'Your password has been set. Let\'s configure your business profile.');
@@ -185,7 +188,7 @@ class OwnerOnboardingController extends Controller
             return null;
         }
 
-        $user = User::find($record->user_id);
+        $user = $this->findTenantScopedUser((int) $record->tenant_id, (int) $record->user_id);
 
         if ($user === null || ! $user->is_active) {
             return null;
@@ -197,6 +200,29 @@ class OwnerOnboardingController extends Controller
             return null;
         }
 
+        $record->setRelation('user', $user);
+
         return $record;
+    }
+
+    /**
+     * Ambil user milik tenant token yang tetap melewati TenantScope secara
+     * eksplisit tetapi SELALU terikat pada tenant_id token.
+     *
+     * Menggunakan withoutGlobalScopes() pada model saja tanpa filter tenant
+     * melemahkan lapis 1 pertahanan isolasi; karena itu filter tenant_id
+     * diwajibkan di sini agar relasi lintas-tenant tetap mustahil.
+     */
+    private function findTenantScopedUser(int $tenantId, int $userId, bool $includeTrashed = false): ?User
+    {
+        $query = User::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('id', $userId);
+
+        if ($includeTrashed) {
+            $query->withTrashed();
+        }
+
+        return $query->first();
     }
 }

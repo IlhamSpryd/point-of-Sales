@@ -118,7 +118,7 @@ class RetailExchangeService
                 quantityDelta: (float) $quantity,
                 type: StockMovementType::RestoreCompensation,
                 unitCost: $oldProductPrice,
-                reason: "Tukar guling varian lama (#{$oldVariant->id}) ke karantina" . ($reason ? ": {$reason}" : ''),
+                reason: "Tukar guling varian lama (#{$oldVariant->id}) ke karantina".($reason ? ": {$reason}" : ''),
                 orderId: $order->id,
                 userId: $userId
             );
@@ -132,7 +132,7 @@ class RetailExchangeService
                 quantityDelta: -((float) $quantity),
                 type: StockMovementType::SaleDeduction,
                 unitCost: $newProductPrice,
-                reason: "Tukar guling varian baru (#{$newVariant->id}) ke pelanggan" . ($reason ? ": {$reason}" : ''),
+                reason: "Tukar guling varian baru (#{$newVariant->id}) ke pelanggan".($reason ? ": {$reason}" : ''),
                 orderId: $order->id,
                 userId: $userId
             );
@@ -149,7 +149,7 @@ class RetailExchangeService
                 storeId: $storeId,
                 subjectType: Order::class,
                 subjectId: $order->id,
-                description: "Tukar guling varian: {$oldVariant->variant_name} -> {$newVariant->variant_name} ({$quantity} unit, selisih: Rp " . number_format($priceDiff, 2) . ")",
+                description: "Tukar guling varian: {$oldVariant->variant_name} -> {$newVariant->variant_name} ({$quantity} unit, selisih: Rp ".number_format($priceDiff, 2).')',
                 metadata: [
                     'order_id' => $order->id,
                     'old_variant_id' => $oldVariantId,

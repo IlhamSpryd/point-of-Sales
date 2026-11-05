@@ -9,17 +9,29 @@ use App\Models\Concerns\ScopedToTenant;
 use App\Models\Product;
 use App\Models\Store;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * ProductCostHistory: Catatan riwayat biaya standar append-only per produk.
+ *
+ * @property numeric-string $old_cost
+ * @property numeric-string $new_cost
+ * @property int $id
+ * @property int $tenant_id
+ * @property int|null $store_id
+ * @property int $product_id
+ * @property int|null $changed_by
  */
 class ProductCostHistory extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToTenant;
 
     public const UPDATED_AT = null;
@@ -92,16 +104,25 @@ class ProductCostHistory extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Product, $this>
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function changer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'changed_by');

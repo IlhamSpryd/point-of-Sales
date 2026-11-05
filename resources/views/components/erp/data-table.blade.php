@@ -24,7 +24,7 @@
 
 <div {{ $attributes->twMerge('card-surface flex flex-col overflow-hidden w-full') }}>
     @isset($toolbar)
-        <div class="px-4 py-3 border-b border-border bg-muted/20 flex flex-wrap items-center justify-between gap-3">
+        <div class="px-4 py-3 border-b border-border bg-muted flex flex-wrap items-center justify-between gap-3">
             {{ $toolbar }}
         </div>
     @endisset
@@ -58,7 +58,7 @@
                                             @if($isCurrentSort)
                                                 <x-ui.icon :name="$sortDirection === 'desc' ? 'arrow_downward' : 'arrow_upward'" size="xs" class="text-primary font-bold" />
                                             @else
-                                                <x-ui.icon name="unfold_more" size="xs" class="opacity-40 group-hover:opacity-100" />
+                                                <x-ui.icon name="unfold_more" size="xs" class="opacity-70 group-hover:opacity-100 text-muted-foreground" />
                                             @endif
                                         </span>
                                     </button>
@@ -81,12 +81,12 @@
                 @if($loadingTarget)
                     <tr wire:loading.table wire:target="{{ $loadingTarget }}">
                         <td colspan="{{ $columnCount }}" class="p-0">
-                            <div class="divide-y divide-border/60 bg-card/60">
+                            <div class="divide-y divide-border/60 bg-card">
                                 @for($s = 0; $s < $skeletonRows; $s++)
                                     <div class="flex items-center gap-4 px-4 py-3.5 animate-pulse">
-                                        <div class="h-4 bg-foreground/10 rounded-medium w-1/4"></div>
-                                        <div class="h-4 bg-foreground/10 rounded-medium w-1/3"></div>
-                                        <div class="h-4 bg-foreground/10 rounded-medium w-1/6 ml-auto"></div>
+                                        <div class="h-4 bg-secondary rounded-medium w-1/4"></div>
+                                        <div class="h-4 bg-secondary rounded-medium w-1/3"></div>
+                                        <div class="h-4 bg-secondary rounded-medium w-1/6 ml-auto"></div>
                                     </div>
                                 @endfor
                             </div>

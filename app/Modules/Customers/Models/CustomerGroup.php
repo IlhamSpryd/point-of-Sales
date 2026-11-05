@@ -14,6 +14,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property numeric-string $default_discount_rate
+ * @property int $id
+ * @property int $tenant_id
+ * @property int|null $default_price_list_id
+ */
 class CustomerGroup extends Model
 {
     use AssignsTenant;
@@ -31,16 +37,26 @@ class CustomerGroup extends Model
         ];
     }
 
+    /**
+     * @return HasMany<Customer, $this>
+     */
     public function customers(): HasMany
     {
         return $this->hasMany(Customer::class, 'customer_group_id');
     }
 
+    /**
+     * @return BelongsTo<PriceList, $this>
+     */
     public function defaultPriceList(): BelongsTo
     {
         return $this->belongsTo(PriceList::class, 'default_price_list_id');
     }
 
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);

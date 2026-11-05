@@ -1,5 +1,6 @@
 @props([
     'variant' => null,
+    'color' => null,
     'type' => null,
     'status' => null,
     'size' => 'sm',
@@ -11,7 +12,23 @@
 ])
 
 @php
-    $variant = $variant ?? $type;
+    if ($variant === 'dot') {
+        $dot = true;
+        $variant = null;
+    }
+
+    $colorMapped = $color ? match (strtolower((string) $color)) {
+        'error', 'danger' => 'destructive',
+        'brand' => 'primary',
+        'gray' => 'secondary',
+        default => strtolower((string) $color),
+    } : null;
+
+    $variant = $variant ?? $colorMapped ?? $type;
+
+    if ($colorMapped !== null) {
+        $asBadge = true;
+    }
 
     if ($status instanceof \BackedEnum) {
         if ($variant === null && method_exists($status, 'badgeType')) {
@@ -21,47 +38,34 @@
         $variant = $status;
     }
 
-    $variant = match (strtolower((string) $variant)) {
-        'danger', 'error', 'cancelled', 'void', 'rejected', 'overdue', 'destructive' => 'destructive',
-        'paid', 'completed', 'active', 'approved', 'posted', 'matched', 'success' => 'success',
-        'pending', 'draft_approval', 'partially_paid', 'partially_received', 'warning' => 'warning',
-        'issued', 'sent', 'confirmed', 'info' => 'info',
-        'neutral', 'draft', 'inactive', 'archived', 'secondary' => 'secondary',
-        'primary' => 'primary',
-        'outline' => 'outline',
-        default => 'secondary',
-    };
+    // `primary` and `outline` are structural variants, not statuses: they are
+    // resolved against semantic UI tokens rather than StatusPalette.
+    $areStructural = in_array(strtolower((string) $variant), ['primary', 'outline'], true);
+    $semantic = \App\Support\Color\StatusPalette::variant($variant ?? 'neutral');
 
-    $isBadge = $pill || $asBadge || $dot || ($variant !== null && $variant !== 'secondary');
+    $isBadge = $pill || $asBadge || $dot || $areStructural || $semantic !== \App\Support\Color\StatusVariant::Neutral;
+
+    $structure = 'border rounded-md px-2 py-0.5 text-xs';
 
     $classes = \Illuminate\Support\Arr::toCssClasses([
         'inline-flex items-center whitespace-nowrap font-medium tracking-normal transition-colors',
-        
-        // Explicit pill/chip tag style (when requested asBadge, pill, dot or specific variant)
-        'border rounded-md px-2 py-0.5 text-xs' => $isBadge,
-        'bg-green-50 text-green-600 border-green-200/80' => $isBadge && $variant === 'success',
-        'bg-rose-50 text-rose-800 border-rose-200/80' => $isBadge && $variant === 'destructive',
-        'bg-amber-50 text-amber-800 border-amber-200/80' => $isBadge && $variant === 'warning',
-        'bg-blue-50 text-blue-800 border-blue-200/80' => $isBadge && $variant === 'info',
-        'bg-zinc-100 text-zinc-700 border-zinc-200' => $isBadge && $variant === 'secondary',
-        'bg-zinc-900 text-white border-zinc-900' => $isBadge && $variant === 'primary',
-        'bg-transparent text-zinc-700 border-zinc-300' => $isBadge && $variant === 'outline',
 
-        // Standard Table & Status Display: ABSOLUTELY NO COLORED PILL BADGES
+        // ── Pill / chip form ──
+        $structure => $isBadge,
+        \App\Support\Color\StatusPalette::badgeClasses($semantic) => $isBadge && ! $areStructural,
+        'bg-primary text-primary-foreground border-primary' => $isBadge && strtolower((string) $variant) === 'primary',
+        'bg-transparent text-foreground border-border' => $isBadge && strtolower((string) $variant) === 'outline',
+
+        // ── Inline text form (no fill): used for ordinary status cells ──
         'bg-transparent border-0 p-0 text-xs sm:text-sm' => ! $isBadge,
-        'text-emerald-700 dark:text-emerald-400' => ! $isBadge && $variant === 'success',
-        'text-red-700 dark:text-red-400' => ! $isBadge && $variant === 'destructive',
-        'text-amber-700 dark:text-amber-400' => ! $isBadge && $variant === 'warning',
-        'text-blue-700 dark:text-blue-400' => ! $isBadge && $variant === 'info',
-        'text-gray-500 dark:text-gray-400' => ! $isBadge && $variant === 'secondary',
-        'text-gray-900 dark:text-gray-100' => ! $isBadge && $variant === 'primary',
-        'text-gray-600 dark:text-gray-400' => ! $isBadge && $variant === 'outline',
+        \App\Support\Color\StatusPalette::textClasses($semantic) => ! $isBadge && ! $areStructural,
+        'text-foreground' => ! $isBadge && $areStructural,
     ]);
 @endphp
 
 <span {{ $attributes->twMerge($classes) }}>
     @if($dot)
-        <span class="w-1.5 h-1.5 rounded-full shrink-0 mr-1.5 {{ $variant === 'destructive' ? 'bg-rose-500' : ($variant === 'warning' ? 'bg-amber-500' : 'bg-emerald-500') }}" aria-hidden="true"></span>
+        <span class="w-1.5 h-1.5 rounded-full shrink-0 mr-1.5 {{ \App\Support\Color\StatusPalette::dotClasses($semantic) }}" aria-hidden="true"></span>
     @endif
     @if ($icon && $iconPosition === 'before')
         @if (\Illuminate\Support\Facades\View::exists('components.'.str_replace('.', '/', $icon)))

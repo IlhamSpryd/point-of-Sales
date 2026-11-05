@@ -16,7 +16,7 @@
     :aria-controls="$id('dd-tabs') + '-panel-{{ $tabKey }}'"
     :aria-selected="activeTab === @js($tab) ? 'true' : 'false'"
     :tabindex="activeTab === @js($tab) ? 0 : -1"
-    :class="activeTab === @js($tab) ? 'bg-background text-foreground shadow-xs' : 'text-foreground/60 hover:text-foreground'"
+    :class="activeTab === @js($tab) ? 'bg-background text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground'"
     {{ $attributes->twMerge('inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-small px-3 py-1.5 text-sm font-medium outline-none transition focus-visible:ring-2 focus-visible:ring-ring') }}
 >
     {{ $slot }}

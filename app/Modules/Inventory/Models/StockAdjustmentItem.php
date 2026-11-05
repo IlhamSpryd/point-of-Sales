@@ -11,6 +11,7 @@ use App\Core\Traits\ScopedToTenant;
 use App\Models\Ingredient;
 use App\Models\Product;
 use App\Models\Store;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,8 +28,8 @@ use Illuminate\Support\Carbon;
  * @property ?int $product_id
  * @property ?int $ingredient_id
  * @property string $direction // 'IN' | 'OUT'
- * @property string $quantity
- * @property string $unit_cost_snapshot
+ * @property numeric-string $quantity
+ * @property numeric-string $unit_cost_snapshot
  * @property ?string $reason_note
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
@@ -37,7 +38,10 @@ class StockAdjustmentItem extends Model
 {
     use AssignsStore;
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToStore;
     use ScopedToTenant;
 
@@ -125,6 +129,8 @@ class StockAdjustmentItem extends Model
 
     /**
      * Menghitung subtotal nilai baris penyesuaian ini.
+     *
+     * @return numeric-string
      */
     public function getSubtotalAttribute(): string
     {

@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $employee_id
  * @property int $leave_policy_id
  * @property LeaveTransactionTypeEnum $transaction_type
- * @property float $days_delta
+ * @property numeric-string $days_delta
  * @property int|null $leave_request_id
  * @property string $reason
  * @property int $actor_user_id

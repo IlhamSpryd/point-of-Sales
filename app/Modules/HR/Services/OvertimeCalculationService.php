@@ -16,7 +16,22 @@ use Illuminate\Validation\ValidationException;
 class OvertimeCalculationService
 {
     /**
-     * Hitung faktor pengali jam lembur berbayar (payable hours) berdasarkan PP No. 35 Tahun 2021.
+     * Mengonversi input numerik menjadi numeric-string aman bagi BCMath.
+     *
+     * @return numeric-string
+     */
+    private function toNumericString(string|int|float $value, int $scale = 4): string
+    {
+        $raw = is_string($value) && is_numeric($value) ? $value : (string) $value;
+        /** @var numeric-string $safeRaw */
+        $safeRaw = is_numeric($raw) ? $raw : '0';
+
+        return bcadd($safeRaw, '0', $scale);
+    }
+
+    /**
+     * Hitung faktor pengali jam lembur berbayar (payable hours) berdasarkan PP No. 35 Tahun 2021
+     * menggunakan presisi desimal BCMath.
      *
      * 1. Hari Kerja Biasa (WORKDAY):
      *    - Jam ke-1: 1.5x upah sejam
@@ -31,85 +46,102 @@ class OvertimeCalculationService
      *      - Jam 1 s/d 8: 2.0x
      *      - Jam 9: 3.0x
      *      - Jam 10 s/d 12+: 4.0x
+     *
+     * @return numeric-string
      */
     public function calculatePayableHours(
-        float $actualHours,
+        string|int|float $actualHours,
         OvertimeDayTypeEnum $dayType = OvertimeDayTypeEnum::WORKDAY,
         int $workDaysPerWeek = 6
-    ): float {
-        if ($actualHours <= 0) {
-            return 0.0;
+    ): string {
+        $hours = $this->toNumericString($actualHours, 4);
+
+        if (bccomp($hours, '0.0000', 4) <= 0) {
+            return '0.00';
         }
 
         if ($dayType === OvertimeDayTypeEnum::WORKDAY) {
-            if ($actualHours <= 1.0) {
-                return round($actualHours * 1.5, 2);
+            if (bccomp($hours, '1.0000', 4) <= 0) {
+                return bcmul($hours, '1.5', 2);
             }
 
-            $firstHour = 1.0 * 1.5;
-            $remainingHours = ($actualHours - 1.0) * 2.0;
+            $firstHour = bcmul('1.0000', '1.5', 4);
+            $remainingHours = bcmul(bcsub($hours, '1.0000', 4), '2.0', 4);
 
-            return round($firstHour + $remainingHours, 2);
+            return bcadd($firstHour, $remainingHours, 2);
         }
 
         // Hari Istirahat Mingguan atau Hari Libur Resmi
         if ($workDaysPerWeek === 5) {
             // Sistem 5 hari kerja
-            if ($actualHours <= 8.0) {
-                return round($actualHours * 2.0, 2);
+            if (bccomp($hours, '8.0000', 4) <= 0) {
+                return bcmul($hours, '2.0', 2);
             }
 
-            if ($actualHours <= 9.0) {
-                $tier1 = 8.0 * 2.0;
-                $tier2 = ($actualHours - 8.0) * 3.0;
+            if (bccomp($hours, '9.0000', 4) <= 0) {
+                $tier1 = bcmul('8.0000', '2.0', 4);
+                $tier2 = bcmul(bcsub($hours, '8.0000', 4), '3.0', 4);
 
-                return round($tier1 + $tier2, 2);
+                return bcadd($tier1, $tier2, 2);
             }
 
-            $tier1 = 8.0 * 2.0;
-            $tier2 = 1.0 * 3.0;
-            $tier3 = ($actualHours - 9.0) * 4.0;
+            $tier1 = bcmul('8.0000', '2.0', 4);
+            $tier2 = bcmul('1.0000', '3.0', 4);
+            $tier3 = bcmul(bcsub($hours, '9.0000', 4), '4.0', 4);
 
-            return round($tier1 + $tier2 + $tier3, 2);
+            return bcadd(bcadd($tier1, $tier2, 4), $tier3, 2);
         }
 
         // Sistem 6 hari kerja (default)
-        if ($actualHours <= 7.0) {
-            return round($actualHours * 2.0, 2);
+        if (bccomp($hours, '7.0000', 4) <= 0) {
+            return bcmul($hours, '2.0', 2);
         }
 
-        if ($actualHours <= 8.0) {
-            $tier1 = 7.0 * 2.0;
-            $tier2 = ($actualHours - 7.0) * 3.0;
+        if (bccomp($hours, '8.0000', 4) <= 0) {
+            $tier1 = bcmul('7.0000', '2.0', 4);
+            $tier2 = bcmul(bcsub($hours, '7.0000', 4), '3.0', 4);
 
-            return round($tier1 + $tier2, 2);
+            return bcadd($tier1, $tier2, 2);
         }
 
-        $tier1 = 7.0 * 2.0;
-        $tier2 = 1.0 * 3.0;
-        $tier3 = ($actualHours - 8.0) * 4.0;
+        $tier1 = bcmul('7.0000', '2.0', 4);
+        $tier2 = bcmul('1.0000', '3.0', 4);
+        $tier3 = bcmul(bcsub($hours, '8.0000', 4), '4.0', 4);
 
-        return round($tier1 + $tier2 + $tier3, 2);
+        return bcadd(bcadd($tier1, $tier2, 4), $tier3, 2);
     }
 
     /**
      * Hitung upah sejam standar Indonesia: 1 / 173 x Upah Sebulan (Gaji Pokok + Tunjangan Tetap).
+     *
+     * @return numeric-string
      */
-    public function calculateHourlyRateBasis(float $monthlyFixedWage): float
+    public function calculateHourlyRateBasis(string|int|float $monthlyFixedWage): string
     {
-        if ($monthlyFixedWage <= 0) {
-            return 0.0;
+        $wage = $this->toNumericString($monthlyFixedWage, 4);
+
+        if (bccomp($wage, '0.0000', 4) <= 0) {
+            return '0.00';
         }
 
-        return round($monthlyFixedWage / 173, 2);
+        return bcdiv($wage, '173', 2);
     }
 
     /**
-     * Hitung total nominal uang lembur.
+     * Hitung total nominal uang lembur menggunakan BCMath.
+     *
+     * @return numeric-string
      */
-    public function calculateOvertimeAmount(float $payableHours, float $hourlyRateBasis): float
+    public function calculateOvertimeAmount(string|int|float $payableHours, string|int|float $hourlyRateBasis): string
     {
-        return round($payableHours * $hourlyRateBasis, 2);
+        $hours = $this->toNumericString($payableHours, 4);
+        $rate = $this->toNumericString($hourlyRateBasis, 4);
+
+        if (bccomp($hours, '0.0000', 4) <= 0 || bccomp($rate, '0.0000', 4) <= 0) {
+            return '0.00';
+        }
+
+        return bcmul($hours, $rate, 2);
     }
 
     /**
@@ -128,7 +160,7 @@ class OvertimeCalculationService
         CarbonInterface $startTime,
         CarbonInterface $endTime,
         OvertimeDayTypeEnum $dayType,
-        float $monthlyFixedWage,
+        string|int|float $monthlyFixedWage,
         int $workDaysPerWeek = 6
     ): OvertimeRecord {
         // 1. Verifikasi persetujuan SPKL (approvals)
@@ -155,17 +187,18 @@ class OvertimeCalculationService
 
         // 2. Hitung durasi aktual
         $durationMinutes = abs((int) $endTime->diffInMinutes($startTime));
-        $actualHours = round($durationMinutes / 60, 2);
-
         if ($durationMinutes <= 0) {
             throw ValidationException::withMessages([
                 'end_time' => 'Waktu selesai lembur harus setelah waktu mulai.',
             ]);
         }
 
+        $minutesStr = (string) $durationMinutes;
+        $actualHours = bcdiv($minutesStr, '60', 2);
+
         // 3. Validasi PP 35/2021: Lembur hari kerja maksimal 4 jam / hari & 18 jam / minggu
         if ($dayType === OvertimeDayTypeEnum::WORKDAY) {
-            if ($actualHours > 4.0) {
+            if ($durationMinutes > 240) {
                 throw ValidationException::withMessages([
                     'actual_duration_minutes' => "Waktu lembur hari kerja maksimal 4 jam (240 menit) per hari sesuai PP 35/2021. Ditemukan: {$actualHours} jam.",
                 ]);
@@ -173,14 +206,15 @@ class OvertimeCalculationService
 
             $weeklyMinutes = $this->getWeeklyWorkdayOvertimeMinutes($tenantId, $employeeId, $overtimeDate);
             if (($weeklyMinutes + $durationMinutes) > (18 * 60)) {
-                $totalWeeklyHours = round(($weeklyMinutes + $durationMinutes) / 60, 2);
+                $totalMinutesStr = (string) ($weeklyMinutes + $durationMinutes);
+                $totalWeeklyHours = bcdiv($totalMinutesStr, '60', 2);
                 throw ValidationException::withMessages([
                     'actual_duration_minutes' => "Akumulasi lembur hari kerja melebihi batas maksimal 18 jam per minggu sesuai PP 35/2021. Total minggu ini: {$totalWeeklyHours} jam.",
                 ]);
             }
         }
 
-        // 4. Hitung payable hours dan rate basis
+        // 4. Hitung payable hours dan rate basis secara presisi BCMath
         $payableHours = $this->calculatePayableHours($actualHours, $dayType, $workDaysPerWeek);
         $hourlyRateBasis = $this->calculateHourlyRateBasis($monthlyFixedWage);
         $calculatedAmount = $this->calculateOvertimeAmount($payableHours, $hourlyRateBasis);

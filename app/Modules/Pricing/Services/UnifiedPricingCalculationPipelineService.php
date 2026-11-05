@@ -59,6 +59,7 @@ class UnifiedPricingCalculationPipelineService
         }
 
         $products = Product::withoutGlobalScopes()
+            ->with('storeAssortments')
             ->where('tenant_id', $input->tenantId)
             ->whereIn('id', array_unique($productIds))
             ->get()

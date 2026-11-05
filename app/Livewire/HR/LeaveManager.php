@@ -124,6 +124,6 @@ class LeaveManager extends Component
         return view('livewire.hr.leave-manager', [
             'requests' => $requests,
             'balances' => $balances,
-        ])->layout('layouts.app', ['header' => 'Manajemen Cuti & Izin Karyawan']);
+        ])->layout('layouts.app', ['title' => 'Manajemen Cuti & Izin Karyawan — Apeiron']);
     }
 }

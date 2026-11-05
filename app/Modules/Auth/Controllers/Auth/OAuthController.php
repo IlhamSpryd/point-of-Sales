@@ -39,10 +39,11 @@ class OAuthController extends Controller
                 ->with('error', 'Silakan masuk terlebih dahulu untuk menautkan akun.');
         }
 
+        $authId = Auth::id();
         $url = $this->oauthService->getRedirectUrl(
             $provider,
             $intent,
-            Auth::id(),
+            $authId !== null ? (int) $authId : null,
             $request->query('invitation_token'),
             $request
         );
@@ -147,6 +148,9 @@ class OAuthController extends Controller
 
     /**
      * Alur Aktivasi Undangan Karyawan via Google/Apple OIDC.
+     *
+     * @param  array<string, mixed>  $cachedState
+     * @param  array<string, mixed>  $claims
      */
     protected function handleAcceptInvitation(string $provider, array $claims, array $cachedState, Request $request): Response
     {
@@ -162,7 +166,7 @@ class OAuthController extends Controller
 
             Auth::login($user);
             $request->session()->regenerate();
-            app(TenantContext::class)->setTenantId($user->tenant_id);
+            app(TenantContext::class)->setTenantId((int) $user->tenant_id);
 
             return redirect()->route('dashboard')
                 ->with('success', 'Selamat datang! Akun karyawan Anda telah aktif.');
@@ -177,6 +181,8 @@ class OAuthController extends Controller
 
     /**
      * Alur Login Standar (/login) — Menegakkan Zero Auto-Provisioning & Zero Auto-Linking.
+     *
+     * @param  array<string, mixed>  $claims
      */
     protected function handleLogin(string $provider, array $claims, Request $request): Response
     {
@@ -187,7 +193,11 @@ class OAuthController extends Controller
 
         // KASUS 1: Akun sosial SUDAH tertaut ke User
         if ($identity !== null) {
-            $user = $identity->user;
+            $user = User::withoutGlobalScopes()
+                ->withTrashed()
+                ->where('tenant_id', $identity->tenant_id)
+                ->where('id', $identity->user_id)
+                ->first();
 
             if ($user === null || $user->trashed() || ($user->status ?? 'active') === 'suspended' || ! $user->is_active) {
                 return redirect()->route('login')
@@ -198,7 +208,7 @@ class OAuthController extends Controller
 
             Auth::login($user);
             $request->session()->regenerate();
-            app(TenantContext::class)->setTenantId($user->tenant_id);
+            app(TenantContext::class)->setTenantId((int) $user->tenant_id);
 
             $tenant = $user->tenant;
             if ($tenant && ! $tenant->isOnboardingCompleted()) {
@@ -235,6 +245,8 @@ class OAuthController extends Controller
 
     /**
      * Alur Registrasi Owner Baru dari /register via Google/Apple OIDC.
+     *
+     * @param  array<string, mixed>  $claims
      */
     protected function handleRegisterOwner(string $provider, array $claims, Request $request): Response
     {
@@ -336,6 +348,9 @@ class OAuthController extends Controller
 
     /**
      * Alur Penautan Akun dari Halaman Profil (/profile).
+     *
+     * @param  array<string, mixed>  $cachedState
+     * @param  array<string, mixed>  $claims
      */
     protected function handleLinkAccount(string $provider, array $claims, array $cachedState): Response
     {
@@ -348,6 +363,7 @@ class OAuthController extends Controller
         }
 
         $user = Auth::user();
+        abort_unless($user !== null, 401);
 
         // 1. Pastikan provider_subject ini belum ditautkan ke akun mana pun
         $existingLink = UserOAuthIdentity::where('provider', $provider)

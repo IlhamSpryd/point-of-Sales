@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Modules\Catalog\Services;
 
 use App\Modules\Products\Models\Product;
-use App\Modules\Products\Models\ProductAttribute;
 use App\Modules\Products\Models\ProductAttributeValue;
 use App\Modules\Products\Models\ProductVariant;
 use App\Modules\Products\Models\ProductVariantAttributeValue;
@@ -28,12 +27,7 @@ class ProductVariantMatrixService
     /**
      * Generate matriks varian dari kumpulan opsi atribut untuk suatu produk.
      *
-     * @param  int  $tenantId
-     * @param  int  $productId
      * @param  array<int, array<int, int>>  $attributeOptions  [attribute_id => [attribute_value_id, ...]]
-     * @param  string|null  $skuPrefix
-     * @param  float|null  $priceOverride
-     * @param  float|null  $costPrice
      * @return Collection<int, ProductVariant>
      */
     public function generateMatrix(
@@ -41,8 +35,8 @@ class ProductVariantMatrixService
         int $productId,
         array $attributeOptions,
         ?string $skuPrefix = null,
-        ?float $priceOverride = null,
-        ?float $costPrice = null
+        string|int|float|null $priceOverride = null,
+        string|int|float|null $costPrice = null
     ): Collection {
         if (empty($attributeOptions)) {
             throw new InvalidArgumentException('Daftar opsi atribut varian tidak boleh kosong.');
@@ -97,8 +91,8 @@ class ProductVariantMatrixService
             // Hitung hasil Cartesian product permutasi
             $cartesianCombinations = $this->cartesianProduct($optionsLists);
 
-            $baseSku = $skuPrefix ?? (string) ($product->product_code ?? $product->sku ?? ('PRD-' . $productId));
-            $createdVariants = new Collection();
+            $baseSku = $skuPrefix ?? (string) ($product->product_code ?? $product->sku ?? ('PRD-'.$productId));
+            $createdVariants = new Collection;
 
             $counter = 1;
             foreach ($cartesianCombinations as $combination) {
@@ -112,12 +106,24 @@ class ProductVariantMatrixService
                     $skuParts[] = ! empty($val->code) ? strtoupper((string) $val->code) : strtoupper(Str::slug($val->value, ''));
                 }
 
-                $variantName = $product->name . ' - ' . implode(' / ', $nameParts);
-                $suggestedSku = strtoupper($baseSku) . '-' . implode('-', $skuParts);
+                $variantName = $product->name.' - '.implode(' / ', $nameParts);
+                $suggestedSku = strtoupper($baseSku).'-'.implode('-', $skuParts);
 
                 // Jamin keunikan SKU di tenant
                 $uniqueSku = $this->ensureUniqueSku($tenantId, $suggestedSku, $counter);
                 $uniqueBarcode = $this->generateUniqueBarcode($tenantId, $productId, $counter);
+
+                $resolvedPriceOverride = null;
+                if ($priceOverride !== null && is_numeric((string) $priceOverride)) {
+                    /** @var numeric-string $priceStr */
+                    $priceStr = (string) $priceOverride;
+                    $resolvedPriceOverride = bcadd($priceStr, '0', 2);
+                }
+
+                $rawCost = $costPrice ?? $product->standard_cost ?? '0.00';
+                /** @var numeric-string $costStr */
+                $costStr = is_numeric((string) $rawCost) ? (string) $rawCost : '0.00';
+                $resolvedStandardCost = bcadd($costStr, '0', 2);
 
                 $variant = ProductVariant::withoutGlobalScopes()->create([
                     'tenant_id' => $tenantId,
@@ -125,8 +131,8 @@ class ProductVariantMatrixService
                     'variant_name' => $variantName,
                     'sku' => $uniqueSku,
                     'barcode' => $uniqueBarcode,
-                    'price_override' => $priceOverride,
-                    'standard_cost' => $costPrice ?? (float) ($product->standard_cost ?? 0.0),
+                    'price_override' => $resolvedPriceOverride,
+                    'standard_cost' => $resolvedStandardCost,
                     'costing_method' => $product->costing_method ?? 'standard',
                     'is_active' => true,
                     'sort_order' => $counter,

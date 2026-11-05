@@ -21,9 +21,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $fixed_asset_id
  * @property CarbonInterface|string $disposal_date
  * @property FixedAssetDisposalTypeEnum $disposal_type
- * @property string $proceeds_amount
- * @property string $book_value_at_disposal
- * @property string $gain_loss_amount
+ * @property numeric-string $proceeds_amount
+ * @property numeric-string $book_value_at_disposal
+ * @property numeric-string $gain_loss_amount
  * @property int|null $journal_entry_id
  * @property int|null $cash_bank_account_id
  * @property string|null $reason
@@ -51,31 +51,49 @@ class FixedAssetDisposal extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<FixedAsset, $this>
+     */
     public function asset(): BelongsTo
     {
         return $this->belongsTo(FixedAsset::class, 'fixed_asset_id');
     }
 
+    /**
+     * @return BelongsTo<JournalEntry, $this>
+     */
     public function journalEntry(): BelongsTo
     {
         return $this->belongsTo(JournalEntry::class, 'journal_entry_id');
     }
 
+    /**
+     * @return BelongsTo<CashBankAccount, $this>
+     */
     public function cashBankAccount(): BelongsTo
     {
         return $this->belongsTo(CashBankAccount::class, 'cash_bank_account_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function approvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by_user_id');

@@ -10,6 +10,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property numeric-string $current_stock
+ * @property numeric-string $cost_per_unit
+ * @property numeric-string $reorder_level
+ * @property int $id
+ * @property int $tenant_id
+ */
 class Ingredient extends Model
 {
     use AssignsTenant, ScopedToTenant, SoftDeletes;

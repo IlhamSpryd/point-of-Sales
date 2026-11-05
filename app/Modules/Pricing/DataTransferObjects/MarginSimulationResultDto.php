@@ -40,6 +40,9 @@ class MarginSimulationResultDto
         public array $itemSimulations = []
     ) {}
 
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         return [

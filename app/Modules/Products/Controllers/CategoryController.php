@@ -81,7 +81,7 @@ class CategoryController extends Controller
         $category = $this->categoryService->store($request->validated());
 
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $this->auditTrail->log(
+        $this->auditTrail?->log(
             tenantId: $tenantId,
             action: 'category.created',
             userId: auth()->id(),
@@ -119,7 +119,7 @@ class CategoryController extends Controller
         $updated = $this->categoryService->update($category, $request->validated());
 
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $this->auditTrail->log(
+        $this->auditTrail?->log(
             tenantId: $tenantId,
             action: 'category.updated',
             userId: auth()->id(),
@@ -148,7 +148,7 @@ class CategoryController extends Controller
 
             $this->categoryService->delete($category);
 
-            $this->auditTrail->log(
+            $this->auditTrail?->log(
                 tenantId: $tenantId,
                 action: 'category.deleted',
                 userId: auth()->id(),

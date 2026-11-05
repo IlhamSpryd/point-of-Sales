@@ -11,6 +11,13 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $source_customer_id
+ * @property int $target_customer_id
+ * @property int|null $merged_by_user_id
+ */
 class CustomerMergeLog extends Model
 {
     use AssignsTenant;
@@ -28,16 +35,25 @@ class CustomerMergeLog extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function sourceCustomer(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'source_customer_id')->withTrashed();
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function targetCustomer(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'target_customer_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function mergedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'merged_by_user_id');

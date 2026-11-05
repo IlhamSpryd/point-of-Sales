@@ -2,16 +2,16 @@
     @section('title', 'Reset Password — Apeiron')
 
     <div class="mb-8">
-        <h1 class="text-2xl font-medium tracking-tight text-zinc-950">
+        <h1 class="text-2xl font-medium tracking-tight text-foreground">
             {{ __('Reset your password') }}
         </h1>
-        <p class="text-sm text-zinc-500 mt-1.5 leading-relaxed">
+        <p class="text-sm text-muted-foreground mt-1.5 leading-relaxed">
             {{ __('Set a new password for your account.') }}
         </p>
     </div>
 
     @if ($errors->any())
-        <div role="alert" aria-live="assertive" class="mb-6 pb-4 border-b border-red-200 text-xs text-red-600 leading-relaxed">
+        <div role="alert" aria-live="assertive" class="mb-6 pb-4 border-b border-destructive-border text-xs text-destructive leading-relaxed">
             {{ $errors->first() }}
         </div>
     @endif
@@ -24,7 +24,7 @@
 
         <!-- Email Address -->
         <div>
-            <label for="email" class="block text-[13px] font-medium text-zinc-800 mb-1.5">
+            <label for="email" class="block text-[13px] font-medium text-foreground mb-1.5">
                 {{ __('Email address') }}
             </label>
             <input
@@ -35,16 +35,16 @@
                 required
                 autofocus
                 autocomplete="username"
-                class="field-input w-full h-10 px-3 rounded-md border border-zinc-300 bg-white text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all {{ $errors->has('email') ? 'field-input-error' : '' }}"
+                class="field-input w-full h-10 px-3 rounded-md border border-input bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground transition-all {{ $errors->has('email') ? 'field-input-error' : '' }}"
             />
             @error('email')
-                <p class="mt-1.5 text-xs text-red-600" role="alert">{{ $message }}</p>
+                <p class="mt-1.5 text-xs text-destructive" role="alert">{{ $message }}</p>
             @enderror
         </div>
 
         <!-- Password -->
         <div>
-            <label for="password" class="block text-[13px] font-medium text-zinc-800 mb-1.5">
+            <label for="password" class="block text-[13px] font-medium text-foreground mb-1.5">
                 {{ __('New password') }}
             </label>
             <div class="relative">
@@ -55,12 +55,12 @@
                     required
                     autocomplete="new-password"
                     placeholder="{{ __('At least 10 characters') }}"
-                    class="field-input w-full h-10 pl-3 pr-10 rounded-md border border-zinc-300 bg-white text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all {{ $errors->has('password') ? 'field-input-error' : '' }}"
+                    class="field-input w-full h-10 pl-3 pr-10 rounded-md border border-input bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground transition-all {{ $errors->has('password') ? 'field-input-error' : '' }}"
                 />
                 <button
                     type="button"
                     @click="showPass = !showPass"
-                    class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-zinc-400 hover:text-zinc-600 focus:outline-none focus:text-zinc-900 rounded-md transition-colors cursor-pointer flex items-center justify-center"
+                    class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-muted-foreground focus:outline-none focus:text-foreground rounded-md transition-colors cursor-pointer flex items-center justify-center"
                     :aria-label="showPass ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
                     :title="showPass ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
                 >
@@ -77,13 +77,13 @@
                 </button>
             </div>
             @error('password')
-                <p class="mt-1.5 text-xs text-red-600" role="alert">{{ $message }}</p>
+                <p class="mt-1.5 text-xs text-destructive" role="alert">{{ $message }}</p>
             @enderror
         </div>
 
         <!-- Confirm Password -->
         <div>
-            <label for="password_confirmation" class="block text-[13px] font-medium text-zinc-800 mb-1.5">
+            <label for="password_confirmation" class="block text-[13px] font-medium text-foreground mb-1.5">
                 {{ __('Confirm new password') }}
             </label>
             <div class="relative">
@@ -94,12 +94,12 @@
                     required
                     autocomplete="new-password"
                     placeholder="{{ __('Re-enter your new password') }}"
-                    class="field-input w-full h-10 pl-3 pr-10 rounded-md border border-zinc-300 bg-white text-sm text-zinc-950 placeholder:text-zinc-400 focus:outline-none focus:border-zinc-950 focus:ring-1 focus:ring-zinc-950 transition-all {{ $errors->has('password_confirmation') ? 'field-input-error' : '' }}"
+                    class="field-input w-full h-10 pl-3 pr-10 rounded-md border border-input bg-card text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-foreground focus:ring-1 focus:ring-foreground transition-all {{ $errors->has('password_confirmation') ? 'field-input-error' : '' }}"
                 />
                 <button
                     type="button"
                     @click="showConfirm = !showConfirm"
-                    class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-zinc-400 hover:text-zinc-600 focus:outline-none focus:text-zinc-900 rounded-md transition-colors cursor-pointer flex items-center justify-center"
+                    class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-muted-foreground focus:outline-none focus:text-foreground rounded-md transition-colors cursor-pointer flex items-center justify-center"
                     :aria-label="showConfirm ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
                     :title="showConfirm ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
                 >
@@ -116,22 +116,22 @@
                 </button>
             </div>
             @error('password_confirmation')
-                <p class="mt-1.5 text-xs text-red-600" role="alert">{{ $message }}</p>
+                <p class="mt-1.5 text-xs text-destructive" role="alert">{{ $message }}</p>
             @enderror
         </div>
 
         <div class="pt-2">
             <button
                 type="submit"
-                class="w-full h-10 px-4 rounded-md font-medium transition-colors flex items-center justify-center gap-2 bg-apeiron-ink hover:bg-[#111111] text-white text-sm cursor-pointer shadow-xs active:scale-[0.99]"
+                class="w-full h-10 px-4 rounded-md font-medium transition-colors flex items-center justify-center gap-2 bg-primary hover:bg-foreground text-primary-foreground text-sm cursor-pointer shadow-xs active:scale-[0.99]"
             >
                 {{ __('Reset password') }}
             </button>
         </div>
     </form>
 
-    <div class="mt-8 pt-6 border-t border-zinc-100 text-xs text-zinc-500 leading-relaxed">
-        <a href="{{ route('login') }}" class="text-zinc-950 font-medium hover:underline underline-offset-4">
+    <div class="mt-8 pt-6 border-t border-border text-xs text-muted-foreground leading-relaxed">
+        <a href="{{ route('login') }}" class="text-foreground font-medium underline-offset-4 hover:underline">
             {{ __('Back to sign in') }}
         </a>
     </div>

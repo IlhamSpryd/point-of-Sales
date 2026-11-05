@@ -14,7 +14,6 @@ use App\Models\User;
 use App\Modules\Subscription\Exceptions\PlanLimitExceededException;
 use App\Modules\Subscription\Services\EntitlementEnforcementService;
 use App\Modules\Subscription\Services\SubscriptionLifecycleService;
-use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Sanctum\Sanctum;

@@ -54,7 +54,7 @@ class FixedAssetDisposalService
             }
 
             $bookValue = (string) $asset->net_book_value;
-            $proceeds = bcadd((string) ($data['proceeds_amount'] ?? '0.00'), '0', 2);
+            $proceeds = bcadd(bc_num($data['proceeds_amount'] ?? '0.00'), '0', 2);
             $gainLoss = bcsub($proceeds, $bookValue, 2);
 
             $gainAmount = '0.00';

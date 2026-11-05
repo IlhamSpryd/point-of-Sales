@@ -212,7 +212,7 @@ class StockOpnameService
                 ]
             );
 
-            return $lockedOpname->fresh(['items']);
+            return $lockedOpname->fresh(['items']) ?? $lockedOpname;
         });
     }
 
@@ -260,11 +260,11 @@ class StockOpnameService
                 $input = $normalizedCounts[$item->id];
                 $countedQty = $input['counted_quantity'];
 
-                if (bccomp($countedQty, '0', 4) < 0) {
+                if (bccomp(bc_num($countedQty), '0', 4) < 0) {
                     throw new InvalidArgumentException("Hasil hitung fisik untuk item #{$item->id} tidak boleh bernilai negatif.");
                 }
 
-                $variance = bcsub($countedQty, (string) $item->snapshot_on_hand, 4);
+                $variance = bcsub(bc_num($countedQty), bc_num($item->snapshot_on_hand), 4);
 
                 $updateData = [
                     'counted_quantity' => $countedQty,
@@ -281,7 +281,7 @@ class StockOpnameService
                 $item->update($updateData);
             }
 
-            return $lockedOpname->fresh(['items']);
+            return $lockedOpname->fresh(['items']) ?? $lockedOpname;
         });
     }
 
@@ -313,7 +313,7 @@ class StockOpnameService
             $now = now();
 
             foreach ($items as $item) {
-                $variance = bcsub((string) $item->counted_quantity, (string) $item->snapshot_on_hand, 4);
+                $variance = bcsub(bc_num($item->counted_quantity), bc_num($item->snapshot_on_hand), 4);
                 $item->update([
                     'variance_quantity' => $variance,
                 ]);
@@ -340,7 +340,7 @@ class StockOpnameService
                 ]
             );
 
-            return $lockedOpname->fresh(['items']);
+            return $lockedOpname->fresh(['items']) ?? $lockedOpname;
         });
     }
 
@@ -430,7 +430,7 @@ class StockOpnameService
                 );
             }
 
-            return $item->fresh();
+            return $item->fresh() ?? $item;
         });
     }
 
@@ -517,7 +517,7 @@ class StockOpnameService
                 $lockedBalances[$key] = $balance;
 
                 // Evaluasi apakah saldo atau urutan mutasi berubah sejak snapshot diambil
-                $qtyChanged = bccomp($currentQty, (string) $item->snapshot_on_hand, 4) !== 0;
+                $qtyChanged = bccomp(bc_num($currentQty), bc_num($item->snapshot_on_hand), 4) !== 0;
                 $movementChanged = (int) $currentMovementId !== (int) $item->snapshot_last_movement_id;
 
                 if ($qtyChanged || $movementChanged) {
@@ -537,11 +537,11 @@ class StockOpnameService
                             'current_on_hand' => $currentQty,
                             'snapshot_last_movement_id' => $item->snapshot_last_movement_id,
                             'current_last_movement_id' => $currentMovementId,
-                            'drift_delta' => bcsub($currentQty, (string) $item->snapshot_on_hand, 4),
+                            'drift_delta' => bcsub(bc_num($currentQty), bc_num($item->snapshot_on_hand), 4),
                         ];
                     } elseif ($item->drift_resolution_mode === StockOpnameDriftResolutionEnum::RebaseOverride) {
                         // Rebase terhadap saldo terkini
-                        $rebasedVariance = bcsub((string) $item->counted_quantity, $currentQty, 4);
+                        $rebasedVariance = bcsub(bc_num($item->counted_quantity), bc_num($currentQty), 4);
                         $item->update([
                             'variance_quantity' => $rebasedVariance,
                         ]);
@@ -569,7 +569,7 @@ class StockOpnameService
 
                 $variance = (string) $item->variance_quantity;
 
-                if (bccomp($variance, '0', 4) !== 0) {
+                if (bccomp(bc_num($variance), '0', 4) !== 0) {
                     $rawItemId = (int) ($item->item_type === 'product' ? $item->product_id : $item->ingredient_id);
 
                     $movementsToRecord[] = [
@@ -621,7 +621,7 @@ class StockOpnameService
             // Emisi outbox akuntansi ke Modul 7
             app(InventoryAccountingService::class)->recordStockOpnameApproved($lockedOpname);
 
-            return $lockedOpname->fresh(['items.product', 'items.ingredient']);
+            return $lockedOpname->fresh(['items.product', 'items.ingredient']) ?? $lockedOpname;
         });
     }
 
@@ -662,7 +662,7 @@ class StockOpnameService
                 ]
             );
 
-            return $lockedOpname->fresh();
+            return $lockedOpname->fresh() ?? $lockedOpname;
         });
     }
 
@@ -732,6 +732,8 @@ class StockOpnameService
 
     /**
      * Pastikan baris saldo ada di database dan ambil objek saldonya.
+     *
+     * @return object{quantity: string|float|int, last_movement_id: int|null}|null
      */
     protected function getOrCreateBalanceRow(int $tenantId, int $storeId, string $itemType, int $itemId): ?object
     {
@@ -755,27 +757,35 @@ class StockOpnameService
             'updated_at' => now(),
         ]);
 
-        return DB::table($table)
+        /** @var object{quantity: string|float|int, last_movement_id: int|null}|null $row */
+        $row = DB::table($table)
             ->where('tenant_id', $tenantId)
             ->where('store_id', $storeId)
             ->where($column, $itemId)
             ->first();
+
+        return $row;
     }
 
     /**
      * Kunci baris saldo dengan SELECT ... FOR UPDATE.
+     *
+     * @return object{quantity: string|float|int, last_movement_id: int|null}|null
      */
     protected function lockBalanceRow(int $tenantId, int $storeId, string $itemType, int $itemId): ?object
     {
         $table = $itemType === 'product' ? 'product_stock_balances' : 'ingredient_stock_balances';
         $column = $itemType === 'product' ? 'product_id' : 'ingredient_id';
 
-        return DB::table($table)
+        /** @var object{quantity: string|float|int, last_movement_id: int|null}|null $row */
+        $row = DB::table($table)
             ->where('tenant_id', $tenantId)
             ->where('store_id', $storeId)
             ->where($column, $itemId)
             ->lockForUpdate()
             ->first();
+
+        return $row;
     }
 
     /**

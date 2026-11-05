@@ -164,7 +164,7 @@ class QuotationService
 
                 $variantId = isset($itemData['variant_id']) ? (int) $itemData['variant_id'] : null;
                 $uomId = isset($itemData['uom_id']) ? (int) $itemData['uom_id'] : null;
-                $qty = bcadd((string) ($itemData['quantity'] ?? '1'), '0', 4);
+                $qty = bcadd(bc_num($itemData['quantity'] ?? '1'), '0', 4);
 
                 $unitPrice = null;
                 $basePrice = null;
@@ -172,9 +172,9 @@ class QuotationService
                 $pricingSource = 'MANUAL';
 
                 if (isset($itemData['unit_price'])) {
-                    $unitPrice = bcadd((string) $itemData['unit_price'], '0', 2);
+                    $unitPrice = bcadd(bc_num($itemData['unit_price']), '0', 2);
                     $basePrice = isset($itemData['base_unit_price'])
-                        ? bcadd((string) $itemData['base_unit_price'], '0', 2)
+                        ? bcadd(bc_num($itemData['base_unit_price']), '0', 2)
                         : $unitPrice;
                     $priceListId = isset($itemData['price_list_id']) ? (int) $itemData['price_list_id'] : null;
                     $pricingSource = (string) ($itemData['pricing_source'] ?? 'MANUAL');
@@ -200,16 +200,16 @@ class QuotationService
 
                 $lineSubtotal = bcmul($qty, $unitPrice, 2);
                 $lineDiscount = isset($itemData['discount_amount'])
-                    ? bcadd((string) $itemData['discount_amount'], '0', 2)
+                    ? bcadd(bc_num($itemData['discount_amount']), '0', 2)
                     : '0.00';
 
                 $taxRate = isset($itemData['tax_rate'])
-                    ? bcadd((string) $itemData['tax_rate'], '0', 2)
+                    ? bcadd(bc_num($itemData['tax_rate']), '0', 2)
                     : '0.00';
 
                 $netLine = bcsub($lineSubtotal, $lineDiscount, 2);
                 $lineTax = isset($itemData['tax_amount'])
-                    ? bcadd((string) $itemData['tax_amount'], '0', 2)
+                    ? bcadd(bc_num($itemData['tax_amount']), '0', 2)
                     : bcdiv(bcmul($netLine, $taxRate, 4), '100', 2);
 
                 $lineTotal = bcadd($netLine, $lineTax, 2);
@@ -273,7 +273,7 @@ class QuotationService
                 newValues: $quotation->toArray()
             );
 
-            return $quotation->fresh(['lines', 'customer']);
+            return $quotation->fresh(['lines', 'customer']) ?? $quotation;
         });
     }
 

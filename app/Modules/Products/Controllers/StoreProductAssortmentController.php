@@ -95,7 +95,7 @@ class StoreProductAssortmentController extends Controller
             ]);
         }
 
-        $this->auditTrail->log(
+        $this->auditTrail?->log(
             tenantId: $tenantId,
             action: 'store_assortment.updated',
             userId: auth()->id(),

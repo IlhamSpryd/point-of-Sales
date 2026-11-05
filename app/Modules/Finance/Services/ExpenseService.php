@@ -67,7 +67,7 @@ class ExpenseService
 
             $lineNumber = 1;
             foreach ($linesData as $lineItem) {
-                $lineAmount = bcadd((string) ($lineItem['amount'] ?? '0.00'), '0', 2);
+                $lineAmount = bcadd(bc_num($lineItem['amount'] ?? '0.00'), '0', 2);
                 if (bccomp($lineAmount, '0.00', 2) <= 0) {
                     throw new DomainException("FIN-M7-01: Baris #{$lineNumber} nominal wajib lebih besar dari 0.00.");
                 }
@@ -84,7 +84,7 @@ class ExpenseService
                 }
 
                 $subtotal = bcadd($subtotal, $lineAmount, 2);
-                $totalTax = bcadd($totalTax, $lineTaxAmount, 2);
+                $totalTax = bcadd(bc_num($totalTax), bc_num($lineTaxAmount), 2);
 
                 $processedLines[] = [
                     'line_number' => $lineNumber++,
@@ -171,7 +171,7 @@ class ExpenseService
 
                 $lineNumber = 1;
                 foreach ($data['lines'] as $lineItem) {
-                    $lineAmount = bcadd((string) ($lineItem['amount'] ?? '0.00'), '0', 2);
+                    $lineAmount = bcadd(bc_num($lineItem['amount'] ?? '0.00'), '0', 2);
                     $taxCodeId = ! empty($lineItem['tax_code_id']) ? (int) $lineItem['tax_code_id'] : null;
                     $lineTaxAmount = '0.00';
 
@@ -184,7 +184,7 @@ class ExpenseService
                     }
 
                     $subtotal = bcadd($subtotal, $lineAmount, 2);
-                    $totalTax = bcadd($totalTax, $lineTaxAmount, 2);
+                    $totalTax = bcadd(bc_num($totalTax), bc_num($lineTaxAmount), 2);
 
                     ExpenseLine::withoutTenantScope()->create([
                         'tenant_id' => $tenantId,
@@ -204,7 +204,7 @@ class ExpenseService
 
             $expense->save();
 
-            return $expense->fresh(['lines', 'category']);
+            return $expense->fresh(['lines', 'category']) ?? $expense;
         });
     }
 
@@ -327,7 +327,7 @@ class ExpenseService
             $expense->accrual_journal_id = $journal->id;
             $expense->save();
 
-            return $expense->fresh(['lines', 'category', 'accrualJournal']);
+            return $expense->fresh(['lines', 'category', 'accrualJournal']) ?? $expense;
         });
     }
 
@@ -456,7 +456,7 @@ class ExpenseService
             $expense->paid_at = Carbon::parse($dateStr);
             $expense->save();
 
-            return $expense->fresh(['lines', 'category', 'cashBankAccount', 'cashBankTransaction', 'paymentJournal']);
+            return $expense->fresh(['lines', 'category', 'cashBankAccount', 'cashBankTransaction', 'paymentJournal']) ?? $expense;
         });
     }
 
@@ -534,7 +534,7 @@ class ExpenseService
             $expense->rejection_reason = $reason;
             $expense->save();
 
-            return $expense->fresh();
+            return $expense->fresh() ?? $expense;
         });
     }
 

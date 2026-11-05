@@ -23,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $approval_id
  * @property CarbonInterface $start_date
  * @property CarbonInterface $end_date
- * @property float $total_days
+ * @property numeric-string $total_days
  * @property string $reason
  * @property string|null $attachment_path
  * @property LeaveRequestStatusEnum $status
@@ -105,7 +105,8 @@ class LeaveRequest extends Model
     }
 
     /**
-     * @param  Builder<LeaveRequest>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeApproved(Builder $query): Builder
     {

@@ -22,12 +22,12 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property int $line_number
  * @property string $purchasable_type
  * @property int $purchasable_id
- * @property string $invoiced_qty
- * @property string $unit_price
- * @property string $discount_amount
- * @property string $tax_rate
- * @property string $tax_amount
- * @property string $line_total
+ * @property numeric-string $invoiced_qty
+ * @property numeric-string $unit_price
+ * @property numeric-string $discount_amount
+ * @property numeric-string $tax_rate
+ * @property numeric-string $tax_amount
+ * @property numeric-string $line_total
  * @property string|null $notes
  * @property CarbonInterface $created_at
  * @property CarbonInterface $updated_at
@@ -60,6 +60,9 @@ class SupplierInvoiceLine extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
@@ -81,6 +84,9 @@ class SupplierInvoiceLine extends Model
         return $this->belongsTo(PurchaseOrderLine::class, 'purchase_order_line_id');
     }
 
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function purchasable(): MorphTo
     {
         return $this->morphTo();

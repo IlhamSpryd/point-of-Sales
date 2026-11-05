@@ -34,7 +34,7 @@ trait WithBulkActions
     }
 
     /**
-     * @param array<int|string> $pageIds
+     * @param  array<int|string>  $pageIds
      */
     public function selectPage(array $pageIds): void
     {

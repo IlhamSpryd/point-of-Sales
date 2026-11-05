@@ -3,7 +3,6 @@
     'for' => '',
 ])
 
-{{-- Deprecated: use <x-ui.label> or <x-erp.form-field> instead --}}
-<x-ui.label :for="$for ?: (string) $attributes->get('for')" {{ $attributes }}>
+<label for="{{ $for ?: (string) $attributes->get('for') }}" {{ $attributes->merge(['class' => 'block text-sm font-medium text-foreground text-apeiron-ink mb-1']) }}>
     {{ $value ?? $slot }}
-</x-ui.label>
+</label>

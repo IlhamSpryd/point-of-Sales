@@ -19,9 +19,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $tenant_id
  * @property int $purchase_additional_cost_id
  * @property int $goods_received_note_line_id
- * @property string $allocated_amount
- * @property string $allocated_cost_per_unit
- * @property string $weight_ratio
+ * @property numeric-string $allocated_amount
+ * @property numeric-string $allocated_cost_per_unit
+ * @property numeric-string $weight_ratio
  * @property bool $is_residual_line
  * @property bool $is_post_receipt_adjustment
  * @property CarbonInterface|null $created_at

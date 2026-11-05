@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Purchasing;
 
 use App\Livewire\Concerns\RequiresTenantContext;
+use App\Livewire\Concerns\WithSorting;
 use App\Modules\Purchasing\Models\GoodsReceivedNote;
 use App\Modules\Purchasing\Models\PurchaseOrder;
 use App\Modules\Purchasing\Services\GoodsReceivedNoteService;
@@ -22,7 +23,7 @@ class GoodsReceivedNoteManager extends Component
 {
     use RequiresTenantContext;
     use WithPagination;
-    use \App\Livewire\Concerns\WithSorting;
+    use WithSorting;
 
     #[Url(history: true)]
     public string $search = '';

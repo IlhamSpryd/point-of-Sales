@@ -48,20 +48,20 @@
 
     switch ($variant ?? 'primary') {
         case 'primary':
-            $typeClasses = 'border-transparent no-underline bg-primary bg-linear-to-b text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
+            $typeClasses = 'border-transparent no-underline bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
             break;
         case 'secondary':
-            $typeClasses = 'border-border no-underline text-secondary-foreground bg-card hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
+            $typeClasses = 'border-border no-underline text-foreground bg-card hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
             break;
         case 'destructive':
         case 'danger':
             $typeClasses = 'border-transparent no-underline bg-destructive text-destructive-foreground hover:bg-destructive/90 focus-visible:ring-2 focus-visible:ring-destructive/40 focus-visible:ring-offset-1';
             break;
         case 'outline':
-            $typeClasses = 'no-underline text-foreground bg-background hover:bg-secondary border-border focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
+            $typeClasses = 'no-underline text-foreground bg-transparent hover:bg-secondary border-border focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
             break;
         case 'ghost':
-            $typeClasses = 'border-transparent no-underline text-foreground hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
+            $typeClasses = 'border-transparent no-underline text-foreground hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1';
             break;
         case 'link':
             $typeClasses = 'border-transparent no-underline text-foreground hover:underline px-0 h-auto';
@@ -77,7 +77,7 @@
 
 @if ($tag === 'a')
     <a href="{{ $href }}"
-        {{ $attributes->twMerge($sizeClasses.' '.$typeClasses.' relative cursor-pointer border inline-flex items-center justify-center font-semibold whitespace-nowrap select-none transition-all duration-150 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60') }}
+        {{ $attributes->twMerge($sizeClasses.' '.$typeClasses.' relative cursor-pointer border inline-flex items-center justify-center font-semibold whitespace-nowrap select-none transition-all duration-150 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50') }}
     >
         @if ($icon)
             <span class="material-symbols-rounded text-[18px] leading-none shrink-0" aria-hidden="true">{{ $icon }}</span>
@@ -90,7 +90,7 @@
 @else
     <button
         type="{{ $type ?? 'button' }}"
-        {{ $attributes->twMerge($sizeClasses.' '.$typeClasses.' relative cursor-pointer border inline-flex items-center justify-center font-semibold whitespace-nowrap select-none transition-all duration-150 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-60') }}
+        {{ $attributes->twMerge($sizeClasses.' '.$typeClasses.' relative cursor-pointer border inline-flex items-center justify-center font-semibold whitespace-nowrap select-none transition-all duration-150 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50') }}
     >
         @if ($loading ?? false)
             <span class="absolute flex h-full w-full items-center justify-center">

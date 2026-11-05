@@ -27,21 +27,21 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $tax_calculation_method_snapshot
  * @property string $bank_name_snapshot
  * @property string $bank_account_number_snapshot
- * @property float $basic_salary_amount
- * @property float $fixed_allowances_amount
- * @property float $variable_allowances_amount
- * @property float $overtime_amount
- * @property float $commissions_amount
- * @property float $gross_earnings_amount
- * @property float $taxable_gross_amount
- * @property float $tax_pph21_amount
- * @property float $tax_pph21_dtp_amount
- * @property float $bpjs_ks_employer_amount
- * @property float $bpjs_ks_employee_amount
- * @property float $bpjs_tk_employer_amount
- * @property float $bpjs_tk_employee_amount
- * @property float $other_deductions_amount
- * @property float $net_pay_amount
+ * @property numeric-string $basic_salary_amount
+ * @property numeric-string $fixed_allowances_amount
+ * @property numeric-string $variable_allowances_amount
+ * @property numeric-string $overtime_amount
+ * @property numeric-string $commissions_amount
+ * @property numeric-string $gross_earnings_amount
+ * @property numeric-string $taxable_gross_amount
+ * @property numeric-string $tax_pph21_amount
+ * @property numeric-string $tax_pph21_dtp_amount
+ * @property numeric-string $bpjs_ks_employer_amount
+ * @property numeric-string $bpjs_ks_employee_amount
+ * @property numeric-string $bpjs_tk_employer_amount
+ * @property numeric-string $bpjs_tk_employee_amount
+ * @property numeric-string $other_deductions_amount
+ * @property numeric-string $net_pay_amount
  * @property string $payslip_token
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at

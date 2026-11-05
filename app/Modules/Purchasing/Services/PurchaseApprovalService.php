@@ -36,14 +36,14 @@ class PurchaseApprovalService
         $tenantId = (int) ($actor ? $actor->tenant_id : $this->tenantContext->requireTenantId());
 
         $minAmount = (string) ($data['min_amount'] ?? '0.00');
-        if (bccomp($minAmount, '0', 2) < 0) {
+        if (bccomp(bc_num($minAmount), '0', 2) < 0) {
             throw ValidationException::withMessages([
                 'min_amount' => ['Batas minimal nominal persetujuan tidak boleh negatif.'],
             ]);
         }
 
         $maxAmount = isset($data['max_amount']) && $data['max_amount'] !== '' ? (string) $data['max_amount'] : null;
-        if ($maxAmount !== null && bccomp($maxAmount, $minAmount, 2) < 0) {
+        if ($maxAmount !== null && bccomp(bc_num($maxAmount), bc_num($minAmount), 2) < 0) {
             throw ValidationException::withMessages([
                 'max_amount' => ['Batas maksimal nominal harus lebih besar atau sama dengan minimal nominal.'],
             ]);
@@ -212,6 +212,7 @@ class PurchaseApprovalService
             ]);
 
             // Cek apakah ada langkah persetujuan selanjutnya
+            /** @var Model $approvable */
             $approvable = $lockedRequest->approvable;
             $documentType = $this->resolveDocumentType($approvable);
             $amount = (string) ($approvable->getAttribute('estimated_total_amount') ?? $approvable->getAttribute('total_amount') ?? '0.00');

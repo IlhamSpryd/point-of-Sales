@@ -29,7 +29,7 @@ class KdsService
         return DB::transaction(function () use ($orderItemId, $staffId) {
             $item = OrderItem::with('order')->lockForUpdate()->findOrFail($orderItemId);
 
-            if ($item->order->order_status !== OrderStatus::Paid) {
+            if ($item->order?->order_status !== OrderStatus::Paid) {
                 throw ValidationException::withMessages([
                     'kds' => 'Hanya pesanan LUNAS yang boleh diproses di dapur.',
                 ]);
@@ -60,7 +60,7 @@ class KdsService
         return DB::transaction(function () use ($orderItemId, $staffId) {
             $item = OrderItem::with('order')->lockForUpdate()->findOrFail($orderItemId);
 
-            if ($item->order->order_status !== OrderStatus::Paid) {
+            if ($item->order?->order_status !== OrderStatus::Paid) {
                 throw ValidationException::withMessages([
                     'kds' => 'Hanya pesanan LUNAS yang boleh diproses di dapur.',
                 ]);
@@ -94,7 +94,7 @@ class KdsService
         return DB::transaction(function () use ($orderItemId, $staffId, $canManage) {
             $item = OrderItem::with('order')->lockForUpdate()->findOrFail($orderItemId);
 
-            if ($item->order->order_status !== OrderStatus::Paid) {
+            if ($item->order?->order_status !== OrderStatus::Paid) {
                 throw ValidationException::withMessages([
                     'kds' => 'Hanya pesanan LUNAS yang boleh diproses di dapur.',
                 ]);
@@ -124,7 +124,7 @@ class KdsService
         return DB::transaction(function () use ($orderItemId, $staffId, $canManage) {
             $item = OrderItem::with('order')->lockForUpdate()->findOrFail($orderItemId);
 
-            if ($item->order->order_status !== OrderStatus::Paid) {
+            if ($item->order?->order_status !== OrderStatus::Paid) {
                 throw ValidationException::withMessages([
                     'kds' => 'Hanya pesanan LUNAS yang boleh diproses di dapur.',
                 ]);
@@ -171,4 +171,3 @@ class KdsService
         });
     }
 }
-

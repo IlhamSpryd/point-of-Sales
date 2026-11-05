@@ -10,6 +10,7 @@ use App\Models\ProductAttribute;
 use App\Models\ProductAttributeValue;
 use App\Models\ProductVariant;
 use App\Models\Tenant;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -26,7 +27,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class ProductVariantAttributeValue extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToTenant;
 
     protected $table = 'product_variant_attribute_values';
@@ -44,21 +48,33 @@ class ProductVariantAttributeValue extends Model
         'attribute_value_id' => 'integer',
     ];
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<ProductVariant, $this>
+     */
     public function variant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class, 'variant_id');
     }
 
+    /**
+     * @return BelongsTo<ProductAttribute, $this>
+     */
     public function attribute(): BelongsTo
     {
         return $this->belongsTo(ProductAttribute::class, 'attribute_id');
     }
 
+    /**
+     * @return BelongsTo<ProductAttributeValue, $this>
+     */
     public function attributeValue(): BelongsTo
     {
         return $this->belongsTo(ProductAttributeValue::class, 'attribute_value_id');

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace App\Modules\FNB\Services;
 
 use App\Models\Order;
+use App\Models\Product;
 use App\Models\Table;
-use App\Models\User;
 use App\Services\AuditTrailService;
 use App\Services\Context\TenantContext;
 use DomainException;
@@ -162,13 +162,14 @@ class TableManagementService
     /**
      * Gabung meja (Table Merge): Menggabungkan meja-meja sekunder ke dalam satu meja utama.
      *
-     * @param array<int> $secondaryTableIds
+     * @param  array<int>  $secondaryTableIds
      * @return array{primary_table: Table, merged_table_ids: array<int>, orders_consolidated: int}
+     *
      * @throws DomainException
      */
     public function mergeTables(int $tenantId, int $storeId, int $primaryTableId, array $secondaryTableIds, int $userId): array
     {
-        $filteredSecondary = array_values(array_filter(array_unique($secondaryTableIds), fn($id) => $id !== $primaryTableId));
+        $filteredSecondary = array_values(array_filter(array_unique($secondaryTableIds), fn ($id) => $id !== $primaryTableId));
         if (empty($filteredSecondary)) {
             throw new InvalidArgumentException('Daftar meja sekunder harus menyediakan minimal satu meja selain meja utama.');
         }
@@ -278,7 +279,7 @@ class TableManagementService
         $items = [];
         foreach ($activeOrder->orderItems as $item) {
             $product = $item->product;
-            $productName = $item->product_name_snapshot ?: ($product instanceof \App\Models\Product ? $product->product_name : 'Item');
+            $productName = $item->product_name_snapshot ?: ($product instanceof Product ? $product->product_name : 'Item');
             $items[] = [
                 'product_name' => (string) $productName,
                 'quantity' => (int) $item->qty,

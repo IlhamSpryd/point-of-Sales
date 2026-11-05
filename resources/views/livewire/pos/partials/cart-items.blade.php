@@ -32,24 +32,24 @@
 
     @if (count($this->cartLines) === 0)
         <div class="h-full min-h-[140px] flex flex-col justify-center items-center text-center py-6 px-3 space-y-1.5 select-none">
-            <div class="w-10 h-10 rounded-xl bg-[#F4F4F5] flex items-center justify-center text-gray-400 border border-[#E5E5E5]">
+            <div class="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-gray-400 border border-border">
                 <span class="material-symbols-rounded text-[22px]">shopping_cart</span>
             </div>
-            <p class="font-headline-sm text-[13px] font-semibold text-[#111827]">Keranjang Kosong</p>
-            <p class="font-body-sm text-[11px] text-[#6B7280] max-w-[200px] leading-tight">Pilih produk dari menu di sebelah kiri untuk memulai pesanan.</p>
+            <p class="font-headline-sm text-[13px] font-semibold text-foreground">Keranjang Kosong</p>
+            <p class="font-body-sm text-[11px] text-muted-foreground max-w-[200px] leading-tight">Pilih produk dari menu di sebelah kiri untuk memulai pesanan.</p>
         </div>
     @else
         @foreach ($this->cartLines as $line)
             <div wire:key="cart-line-{{ $line['product_id'] }}-{{ implode('-', $line['modifier_ids'] ?? []) }}-{{ md5((string) ($line['notes'] ?? '')) }}-{{ $line['index'] }}"
-                class="p-2.5 rounded-lg bg-[#F9FAFB] border border-[#E5E5E5] hover:border-[#171717] flex flex-col gap-2 transition-all group">
+                class="p-2.5 rounded-lg bg-muted border border-border hover:border-foreground flex flex-col gap-2 transition-all group">
 
                 <div class="flex items-start justify-between gap-2">
                     <div class="flex flex-col min-w-0">
-                        <span class="font-headline-sm text-[13px] font-medium text-[#111827] truncate">
+                        <span class="font-headline-sm text-[13px] font-medium text-foreground truncate">
                             {{ $line['product_name'] }}
                         </span>
                         @if (count($line['options']) > 0 || $line['notes'])
-                            <span class="font-body-sm text-[11px] text-[#6B7280] leading-tight mt-0.5">
+                            <span class="font-body-sm text-[11px] text-muted-foreground leading-tight mt-0.5">
                                 {{ collect($line['options'])->pluck('name')->join(', ') }}
                                 @if ($line['notes'])
                                     <span class="block text-gray-400 italic">{{ $line['notes'] }}</span>
@@ -60,33 +60,33 @@
                     @unless ($pendingOrderId)
                         <button type="button" wire:click="removeFromCart({{ $line['index'] }})"
                             aria-label="Hapus {{ $line['product_name'] }} dari keranjang"
-                            class="text-[#9CA3AF] hover:text-rose-600 transition-colors p-0.5 shrink-0" title="Hapus">
+                            class="text-muted-foreground hover:text-rose-600 transition-colors p-0.5 shrink-0" title="Hapus">
                             <span class="material-symbols-rounded text-[15px]">close</span>
                         </button>
                     @endunless
                 </div>
 
-                <div class="flex items-center justify-between pt-1 border-t border-[#E5E5E5]">
+                <div class="flex items-center justify-between pt-1 border-t border-border">
                     <!-- Stepper Quantity -->
-                    <div class="flex items-center gap-1 bg-white border border-[#E5E5E5] rounded-md p-0.5 h-8">
+                    <div class="flex items-center gap-1 bg-white border border-border rounded-md p-0.5 h-8">
                         @if ($pendingOrderId)
-                            <span class="font-numeric-currency text-[13px] font-semibold text-[#111827] px-2 min-w-[20px] text-center font-mono">
+                            <span class="font-numeric-currency text-[13px] font-semibold text-foreground px-2 min-w-[20px] text-center font-mono">
                                 {{ $line['qty'] }}
                             </span>
                         @else
                             <button type="button"
                                 wire:click="updateCartQty({{ $line['index'] }}, -1)"
                                 aria-label="Kurangi kuantitas {{ $line['product_name'] }}"
-                                class="w-7 h-7 rounded flex items-center justify-center text-[#6B7280] hover:bg-[#F4F4F5] hover:text-[#111827] active:scale-95 transition-colors">
+                                class="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-colors">
                                 <span class="material-symbols-rounded text-[14px]">remove</span>
                             </button>
-                            <span class="font-numeric-currency text-[13px] font-semibold text-[#111827] px-2 min-w-[20px] text-center font-mono">
+                            <span class="font-numeric-currency text-[13px] font-semibold text-foreground px-2 min-w-[20px] text-center font-mono">
                                 {{ $line['qty'] }}
                             </span>
                             <button type="button"
                                 wire:click="updateCartQty({{ $line['index'] }}, 1)"
                                 aria-label="Tambah kuantitas {{ $line['product_name'] }}"
-                                class="w-7 h-7 rounded flex items-center justify-center text-[#6B7280] hover:bg-[#F4F4F5] hover:text-[#111827] active:scale-95 transition-colors">
+                                class="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-colors">
                                 <span class="material-symbols-rounded text-[14px]">add</span>
                             </button>
                         @endif
@@ -94,7 +94,7 @@
 
                     <!-- Line Subtotal & Item Discount -->
                     <div class="flex flex-col items-end">
-                        <span class="font-numeric-currency text-[13px] font-semibold text-[#111827] font-mono">
+                        <span class="font-numeric-currency text-[13px] font-semibold text-foreground font-mono">
                             Rp {{ number_format($line['order_price'], 0, ',', '.') }}
                         </span>
                         @if (!$pendingOrderId && isset($this->cart[$line['index']]['item_discount_amount']) && $this->cart[$line['index']]['item_discount_amount'] > 0)

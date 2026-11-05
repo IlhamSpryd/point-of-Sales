@@ -27,7 +27,7 @@
             min="{{ $min }}"
             step="{{ $step }}"
             @if ($hasError) aria-invalid="true" @endif
-            {{ $attributes->twMerge('h-9 w-full rounded-medium border border-input bg-background pl-9 pr-3 text-right font-mono tabular-nums text-xs sm:text-sm text-foreground shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-primary/10 disabled:cursor-not-allowed disabled:opacity-50 '.($hasError ? 'border-destructive ring-destructive/20' : '')) }}
+            {{ $attributes->twMerge('h-9 w-full rounded-medium border border-input bg-background pl-9 pr-3 text-right font-mono tabular-nums text-xs sm:text-sm text-foreground shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 '.($hasError ? 'border-destructive ring-destructive-border' : '')) }}
         />
     </div>
 

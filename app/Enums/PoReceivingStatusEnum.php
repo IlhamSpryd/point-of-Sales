@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use App\Support\Color\StatusPalette;
+
 enum PoReceivingStatusEnum: string
 {
     case NotReceived = 'not_received';
@@ -21,13 +23,20 @@ enum PoReceivingStatusEnum: string
         };
     }
 
-    public function badgeClass(): string
+    /**
+     * Semantic variant for x-badge / x-ui.badge.
+     *
+     * Resolved centrally so this status renders identically everywhere.
+     * Replaces the former badgeClass(), which hardcoded a raw Tailwind palette
+     * (and 8 dark: utilities) that could not follow the theme.
+     */
+    public function badgeType(): string
     {
         return match ($this) {
-            self::NotReceived => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-            self::PartiallyReceived => 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
-            self::FullyReceived => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
-            self::OverReceived => 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/40 dark:text-indigo-300',
+            self::NotReceived => StatusPalette::variant('draft')->value,
+            self::PartiallyReceived => StatusPalette::variant('partially_received')->value,
+            self::FullyReceived => StatusPalette::variant('received')->value,
+            self::OverReceived => StatusPalette::variant('overstock')->value,
         };
     }
 }

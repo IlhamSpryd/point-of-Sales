@@ -39,8 +39,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $corrected_by_user_id
  * @property int|null $approval_id
  * @property string|null $snapshot_url
- * @property float|null $latitude
- * @property float|null $longitude
+ * @property numeric-string|null $latitude
+ * @property numeric-string|null $longitude
  * @property string|null $notes
  * @property CarbonInterface|null $created_at
  * @property CarbonInterface|null $updated_at
@@ -157,7 +157,8 @@ class AttendanceRecord extends Model
     }
 
     /**
-     * @param  Builder<AttendanceRecord>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeOpen(Builder $query): Builder
     {
@@ -165,7 +166,8 @@ class AttendanceRecord extends Model
     }
 
     /**
-     * @param  Builder<AttendanceRecord>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeCompleted(Builder $query): Builder
     {

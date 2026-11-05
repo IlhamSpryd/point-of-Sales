@@ -249,7 +249,7 @@ class ArOutboxConsumerService
                     ->find($cashBankAccountId);
 
                 if ($account) {
-                    $account->current_balance = bcadd((string) $account->current_balance, $totalReceived, 2);
+                    $account->current_balance = bcadd(bc_num($account->current_balance), bc_num($totalReceived), 2);
                     $account->save();
 
                     $cbt = CashBankTransaction::create([
@@ -305,7 +305,7 @@ class ArOutboxConsumerService
         DB::transaction(function () use ($outbox, $tenantId, $payload) {
             $appliedAmount = $this->formatDecimal($payload['applied_amount'] ?? '0.00');
             $taxAmount = $this->formatDecimal($payload['tax_amount'] ?? '0.00');
-            $subtotalAmount = bcsub($appliedAmount, $taxAmount, 2);
+            $subtotalAmount = bcsub(bc_num($appliedAmount), bc_num($taxAmount), 2);
             if (bccomp($subtotalAmount, '0.00', 2) < 0) {
                 $subtotalAmount = $appliedAmount;
                 $taxAmount = '0.00';

@@ -17,6 +17,7 @@ use App\Models\ShiftHandover;
 use App\Models\Store;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -50,7 +51,10 @@ class Device extends Model
 {
     use AssignsStore;
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToStore;
     use ScopedToTenant;
     use SoftDeletes;
@@ -104,36 +108,57 @@ class Device extends Model
         });
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return HasMany<Shift, $this>
+     */
     public function shifts(): HasMany
     {
         return $this->hasMany(Shift::class);
     }
 
+    /**
+     * @return HasMany<Order, $this>
+     */
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class, 'created_by_device_id');
     }
 
+    /**
+     * @return HasMany<Payment, $this>
+     */
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);
     }
 
+    /**
+     * @return HasMany<CashDrawerMovement, $this>
+     */
     public function cashDrawerMovements(): HasMany
     {
         return $this->hasMany(CashDrawerMovement::class);
     }
 
+    /**
+     * @return HasMany<ShiftHandover, $this>
+     */
     public function handovers(): HasMany
     {
         return $this->hasMany(ShiftHandover::class);
@@ -149,10 +174,10 @@ class Device extends Model
      * Mengabaikan StoreScope agar resource dapat ditemukan untuk evaluasi
      * hak akses lintas-cabang oleh DevicePolicy, namun tetap mempertahankan TenantScope.
      *
-     * @param  Builder  $query
+     * @param  Builder<static>  $query
      * @param  mixed  $value
      * @param  string|null  $field
-     * @return Builder
+     * @return Builder<static>
      */
     public function resolveRouteBindingQuery($query, $value, $field = null)
     {

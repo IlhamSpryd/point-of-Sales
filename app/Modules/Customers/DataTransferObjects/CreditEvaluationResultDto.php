@@ -8,6 +8,9 @@ use App\Modules\Customers\Enums\CreditEvaluationStatusEnum;
 
 final class CreditEvaluationResultDto
 {
+    /**
+     * @param  array<string, mixed>  $meta
+     */
     public function __construct(
         public readonly CreditEvaluationStatusEnum $status,
         public readonly bool $allowed,

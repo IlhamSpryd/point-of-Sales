@@ -34,14 +34,14 @@
         @endif
 
         <!-- Filter & Search Toolbar -->
-        <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-[#E5E7EB] dark:border-zinc-800">
+        <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-border dark:border-zinc-800">
             <form method="GET" action="{{ route('roles.index') }}" class="relative w-full sm:w-80">
                 <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Search role name or code..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
             </form>
         </div>
 
-        <div class="card-surface flex flex-col flex-1 min-h-0 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 overflow-hidden shadow-xs">
+        <div class="card-surface flex flex-col flex-1 min-h-0 rounded-2xl border border-border dark:border-zinc-800 overflow-hidden shadow-xs">
             {{-- Desktop/tablet-landscape: existing table --}}
             <x-erp.data-table
                 :hideOnMobile="true"
@@ -146,7 +146,7 @@
                     </div>
                 @endforelse
             </div>
-            <div class="p-4 border-t border-[#E5E7EB] dark:border-zinc-800 shrink-0">
+            <div class="p-4 border-t border-border dark:border-zinc-800 shrink-0">
                 {{ $roles->links() }}
             </div>
         </div>

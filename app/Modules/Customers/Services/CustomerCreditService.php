@@ -63,7 +63,7 @@ class CustomerCreditService
         $currentExposure = $account->getTotalExposure();
         $available = $account->getAvailableCredit();
 
-        $addAmount = bcadd((string) $additionalAmount, '0', 2);
+        $addAmount = bcadd(bc_num($additionalAmount), '0', 2);
         $projectedTotal = bcadd($currentExposure, $addAmount, 2);
 
         // 1. Cek status kredit (ON_HOLD / SUSPENDED)
@@ -240,7 +240,7 @@ class CustomerCreditService
                 $salesOrder->credit_override_approved_by = $actor->id;
                 $salesOrder->credit_override_reason = $overrideReason ?: "Disetujui override kredit manual oleh {$actor->name}";
             } else {
-                throw new DomainException($eval->reason);
+                throw new DomainException((string) $eval->reason);
             }
         }
 
@@ -358,7 +358,7 @@ class CustomerCreditService
                 ->firstOrFail();
 
             $oldLimit = (string) $locked->credit_limit;
-            $formattedNewLimit = bcadd((string) $newLimit, '0', 2);
+            $formattedNewLimit = bcadd(bc_num($newLimit), '0', 2);
 
             $locked->credit_limit = $formattedNewLimit;
             $locked->updated_by_user_id = $actor->id;

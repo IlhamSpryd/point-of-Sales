@@ -2,16 +2,16 @@
 <x-ui.modal wire:model="isParkedListOpen" maxWidth="lg">
     <x-slot:header>
         <div class="flex items-center gap-2">
-            <span class="material-symbols-rounded text-[#111827] text-[20px]">pause_circle</span>
-            <h3 class="font-headline-sm text-[16px] font-semibold text-[#111827]">Daftar Hold Pesanan (Antrean)</h3>
-            <span class="px-1.5 py-0.5 rounded-[5px] bg-[#171717] text-white font-label-sm text-[11px] font-mono">
+            <span class="material-symbols-rounded text-foreground text-[20px]">pause_circle</span>
+            <h3 class="font-headline-sm text-[16px] font-semibold text-foreground">Daftar Hold Pesanan (Antrean)</h3>
+            <span class="px-1.5 py-0.5 rounded-[5px] bg-primary text-white font-label-sm text-[11px] font-mono">
                 {{ $this->parkedCarts->count() }}
             </span>
         </div>
     </x-slot:header>
 
     <div class="space-y-3">
-        <p class="text-[12px] text-[#6B7280]">
+        <p class="text-[12px] text-muted-foreground">
             Daftar transaksi pesanan pelanggan yang sedang ditahan di cabang kasir ini.
         </p>
 
@@ -25,38 +25,38 @@
                         ? ($pc->parked_at->format('H:i') . ' WIB')
                         : ($pc->created_at ? ($pc->created_at->format('H:i') . ' WIB') : '-');
                 @endphp
-                <div class="p-3 rounded-xl border border-[#E5E5E5] hover:border-[#171717] bg-[#F9FAFB] flex items-center justify-between transition-all">
+                <div class="p-3 rounded-xl border border-border hover:border-foreground bg-muted flex items-center justify-between transition-all">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="font-mono font-semibold text-[13px] text-[#111827]">{{ $pc->hold_reference }}</span>
-                            <span class="px-1.5 py-0.2 rounded bg-white text-[10px] border border-[#E5E5E5] font-medium uppercase text-[#111827]">
+                            <span class="font-mono font-semibold text-[13px] text-foreground">{{ $pc->hold_reference }}</span>
+                            <span class="px-1.5 py-0.2 rounded bg-white text-[10px] border border-border font-medium uppercase text-foreground">
                                 {{ $pc->order_type }}
                             </span>
                         </div>
-                        <span class="text-[11px] text-[#6B7280] block mt-0.5">
+                        <span class="text-[11px] text-muted-foreground block mt-0.5">
                             {{ $pCount }} Item &bull; Ditahan jam {{ $parkedTime }}
                         </span>
                         @if($pc->notes)
-                            <p class="text-[11px] text-[#9CA3AF] italic mt-0.5">{{ $pc->notes }}</p>
+                            <p class="text-[11px] text-muted-foreground italic mt-0.5">{{ $pc->notes }}</p>
                         @endif
                     </div>
 
                     <div class="flex items-center gap-2 shrink-0">
                         <button type="button" wire:click="resumeCart({{ $pc->id }})"
-                            class="px-3 py-1.5 rounded-lg bg-white border border-[#E5E5E5] hover:bg-[#171717] hover:text-white font-medium text-[11px] transition-colors shadow-xs">
+                            class="px-3 py-1.5 rounded-lg bg-white border border-border hover:bg-primary hover:text-white font-medium text-[11px] transition-colors shadow-xs">
                             Muat Pesanan
                         </button>
                         <button type="button" wire:click="discardHeldCart({{ $pc->id }})"
-                            class="p-1.5 rounded-lg text-[#9CA3AF] hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus Antrean">
+                            class="p-1.5 rounded-lg text-muted-foreground hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Hapus Antrean">
                             <span class="material-symbols-rounded text-[16px] block">close</span>
                         </button>
                     </div>
                 </div>
             @empty
-                <div class="py-10 text-center text-[#9CA3AF] space-y-1">
+                <div class="py-10 text-center text-muted-foreground space-y-1">
                     <span class="material-symbols-rounded text-[36px] text-gray-300 block mb-1">inbox</span>
-                    <p class="text-xs font-semibold text-[#111827]">Tidak ada antrean pesanan yang ditahan.</p>
-                    <p class="text-[11px] text-[#6B7280]">Pesanan aktif dapat ditahan menggunakan tombol "Tahan Pesanan (F8)".</p>
+                    <p class="text-xs font-semibold text-foreground">Tidak ada antrean pesanan yang ditahan.</p>
+                    <p class="text-[11px] text-muted-foreground">Pesanan aktif dapat ditahan menggunakan tombol "Tahan Pesanan (F8)".</p>
                 </div>
             @endforelse
         </div>
@@ -65,12 +65,12 @@
     <x-slot:footer>
         <div class="flex justify-between items-center w-full">
             <button type="button" wire:click="$set('isParkModalOpen', true)"
-                class="px-3.5 py-2 rounded-lg bg-[#171717] text-white text-[12px] font-medium hover:bg-[#262626] flex items-center gap-1.5 shadow-xs transition-all">
+                class="px-3.5 py-2 rounded-lg bg-primary text-white text-[12px] font-medium hover:bg-primary/90 flex items-center gap-1.5 shadow-xs transition-all">
                 <span class="material-symbols-rounded text-[15px]">archive</span>
                 <span>Tahan Pesanan Aktif Ini</span>
             </button>
             <button type="button" wire:click="$set('isParkedListOpen', false)"
-                class="px-4 py-2 rounded-lg border border-[#E5E5E5] text-[12px] font-medium text-[#111827] hover:bg-[#F9FAFB] transition-colors">
+                class="px-4 py-2 rounded-lg border border-border text-[12px] font-medium text-foreground hover:bg-muted transition-colors">
                 Tutup
             </button>
         </div>

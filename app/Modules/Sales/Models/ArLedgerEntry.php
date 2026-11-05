@@ -13,16 +13,32 @@ use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Sales\Enums\ArLedgerEntryTypeEnum;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+/**
+ * @property numeric-string $debit_amount
+ * @property numeric-string $credit_amount
+ * @property numeric-string $running_balance_snapshot
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int $customer_id
+ * @property int|null $customer_invoice_id
+ * @property int $reference_id
+ * @property int|null $actor_user_id
+ */
 class ArLedgerEntry extends Model
 {
     use AssignsStore;
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToStore;
     use ScopedToTenant;
 
@@ -57,31 +73,49 @@ class ArLedgerEntry extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return BelongsTo<CustomerInvoice, $this>
+     */
     public function invoice(): BelongsTo
     {
         return $this->belongsTo(CustomerInvoice::class, 'customer_invoice_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_user_id');
     }
 
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function reference(): MorphTo
     {
         return $this->morphTo();

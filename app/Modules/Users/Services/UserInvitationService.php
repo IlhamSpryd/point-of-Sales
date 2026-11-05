@@ -28,12 +28,12 @@ class UserInvitationService
     /**
      * Menerbitkan undangan karyawan baru dengan Privacy-Preserving Cross-Tenant Guard [4B].
      *
-     * @param  array{name: string, email: string, role_id: int, store_ids: array<int>}  $data
+     * @param  array<string, mixed>  $data
      */
     public function issueInvitation(User $inviter, array $data): UserInvitation
     {
         $tenantId = (int) $inviter->tenant_id;
-        $this->entitlementService->assertCanInviteEmployee($tenantId);
+        $this->entitlementService?->assertCanInviteEmployee($tenantId);
 
         $name = trim($data['name']);
         $email = trim($data['email']);
@@ -340,6 +340,8 @@ class UserInvitationService
 
     /**
      * Aktivasi undangan via OAuth (Google/Apple) dengan intent 'accept_invitation'.
+     *
+     * @param  array<string, mixed>  $claims
      */
     public function acceptInvitationViaOAuth(string $plaintextToken, string $provider, array $claims): User
     {

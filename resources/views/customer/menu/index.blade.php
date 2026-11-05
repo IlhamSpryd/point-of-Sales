@@ -116,8 +116,8 @@
                 <button type="button" @click="activeCategory = 'all'"
                     :aria-pressed="(activeCategory === 'all').toString()"
                     :class="activeCategory === 'all' ? 'bg-apeiron-ink text-white border-apeiron-ink shadow-sm' :
-                        'bg-white text-gray-500 border-[#E5E7EB] hover:bg-gray-50'"
-                    class="shrink-0 flex items-center justify-center h-10 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
+                        'bg-white text-gray-500 border-border hover:bg-gray-50'"
+                    class="shrink-0 flex items-center justify-center h-10 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     Semua Menu
                 </button>
                 @foreach ($visibleCategories as $cat)
@@ -125,8 +125,8 @@
                         :aria-pressed="(activeCategory === '{{ $cat->id }}').toString()"
                         :class="activeCategory === '{{ $cat->id }}' ?
                             'bg-apeiron-ink text-white border-apeiron-ink shadow-sm' :
-                            'bg-white text-gray-500 border-[#E5E7EB] hover:bg-gray-50'"
-                        class="shrink-0 flex items-center justify-center h-10 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#37352F]">
+                            'bg-white text-gray-500 border-border hover:bg-gray-50'"
+                        class="shrink-0 flex items-center justify-center h-10 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                         {{ $cat->category_name }}
                     </button>
                 @endforeach
@@ -195,7 +195,7 @@
                                         {{ number_format($product->product_price, 0, ',', '.') }}</span>
                                     @unless ($soldOut)
                                         <span
-                                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-apeiron-ink text-white shadow-sm transition-colors group-hover:bg-[#111111]">
+                                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-apeiron-ink text-white shadow-sm transition-colors group-hover:bg-primary/90">
                                             <span class="material-symbols-rounded text-[18px]">add</span>
                                         </span>
                                     @endunless
@@ -225,7 +225,7 @@
             x-transition:leave-end="translate-y-full opacity-0"
             class="fixed inset-x-4 bottom-[calc(env(safe-area-inset-bottom,0px)+1rem)] z-40 mx-auto max-w-md">
             <a href="{{ route('customer.cart.index') }}"
-                class="flex min-h-14 w-full items-center justify-between rounded-2xl bg-apeiron-ink px-5 font-semibold text-white shadow-xl transition-all hover:bg-[#111111] active:scale-[0.98]"
+                class="flex min-h-14 w-full items-center justify-between rounded-2xl bg-apeiron-ink px-5 font-semibold text-white shadow-xl transition-all hover:bg-primary/90 active:scale-[0.98]"
                 wire:navigate>
                 <span class="rounded-lg bg-white/20 px-3 py-1 text-sm" x-text="count + ' Item'"></span>
                 <span>Lihat Keranjang</span>

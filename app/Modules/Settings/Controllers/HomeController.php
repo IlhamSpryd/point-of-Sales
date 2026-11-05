@@ -24,6 +24,7 @@ class HomeController extends Controller
     public function index(): View|RedirectResponse
     {
         $user = auth()->user();
+        abort_unless($user !== null, 401);
         $roleName = $user->role?->name;
 
         // Jika Owner belum menyelesaikan wizard onboarding, arahkan ke wizard step yang aktif

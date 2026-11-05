@@ -68,7 +68,11 @@ class PayrollBatchService
 
         return DB::transaction(function () use ($batch) {
             // Bersihkan data kalkulasi sebelumnya jika ada
-            PayrollRecord::where('payroll_batch_id', $batch->id)->delete();
+            $existingRecordIds = PayrollRecord::where('payroll_batch_id', $batch->id)->pluck('id');
+            if ($existingRecordIds->isNotEmpty()) {
+                PayrollItem::whereIn('payroll_record_id', $existingRecordIds)->delete();
+                PayrollRecord::whereIn('id', $existingRecordIds)->delete();
+            }
 
             $employees = Employee::where('tenant_id', $batch->tenant_id)
                 ->whereIn('employment_status', [EmploymentStatusEnum::ACTIVE, EmploymentStatusEnum::ON_PROBATION])

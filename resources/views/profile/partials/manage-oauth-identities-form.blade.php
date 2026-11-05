@@ -4,7 +4,7 @@
             {{ __('Linked Accounts (Google & Apple SSO)') }}
         </h2>
 
-        <p class="mt-1 text-sm text-[#787774]">
+        <p class="mt-1 text-sm text-muted-foreground">
             {{ __('Link your Google or Apple accounts for secure one-click sign-in without needing passwords.') }}
         </p>
     </header>

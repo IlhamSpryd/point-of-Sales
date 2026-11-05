@@ -11,7 +11,11 @@ final class GenericChannelOrderNormalizer implements ChannelOrderNormalizer
 {
     public function normalize(array $payload): NormalizedChannelOrder
     {
-        $items = collect($payload['items'] ?? $payload['order_items'] ?? $payload['lines'] ?? [])
+        /** @var array<int, array<string, mixed>> $rawItems */
+        $rawItems = is_array($payload['items'] ?? $payload['order_items'] ?? $payload['lines'] ?? null)
+            ? array_values($payload['items'] ?? $payload['order_items'] ?? $payload['lines'])
+            : [];
+        $items = collect($rawItems)
             ->map(fn (array $item) => new NormalizedChannelOrderItem(
                 externalProductId: (string) ($item['external_product_id'] ?? $item['item_id'] ?? $item['sku'] ?? $item['product_id'] ?? ''),
                 name: (string) ($item['name'] ?? $item['item_name'] ?? 'Item Kanal'),

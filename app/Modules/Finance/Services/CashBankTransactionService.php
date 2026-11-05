@@ -35,7 +35,7 @@ class CashBankTransactionService
     public function recordReceipt(CashBankAccount $account, array $data, User $actor): CashBankTransaction
     {
         $tenantId = $account->tenant_id;
-        $amount = bcadd((string) ($data['amount'] ?? '0.00'), '0', 2);
+        $amount = bcadd(bc_num($data['amount'] ?? '0.00'), '0', 2);
 
         if (bccomp($amount, '0.00', 2) <= 0) {
             throw new DomainException('FIN-M7-03: Nominal penerimaan kas/bank wajib lebih besar dari 0.');
@@ -122,7 +122,7 @@ class CashBankTransactionService
     public function recordDisbursement(CashBankAccount $account, array $data, User $actor): CashBankTransaction
     {
         $tenantId = $account->tenant_id;
-        $amount = bcadd((string) ($data['amount'] ?? '0.00'), '0', 2);
+        $amount = bcadd(bc_num($data['amount'] ?? '0.00'), '0', 2);
 
         if (bccomp($amount, '0.00', 2) <= 0) {
             throw new DomainException('FIN-M7-03: Nominal pengeluaran kas/bank wajib lebih besar dari 0.');
@@ -229,7 +229,7 @@ class CashBankTransactionService
         }
 
         $tenantId = $sourceAccount->tenant_id;
-        $normAmount = bcadd($amount, '0', 2);
+        $normAmount = bcadd(bc_num($amount), '0', 2);
 
         if (bccomp($normAmount, '0.00', 2) <= 0) {
             throw new DomainException('FIN-M7-03: Nominal transfer kas/bank wajib lebih besar dari 0.');
@@ -370,7 +370,7 @@ class CashBankTransactionService
         }
 
         $tenantId = $drawerAccount->tenant_id;
-        $normAmount = bcadd($amount, '0', 2);
+        $normAmount = bcadd(bc_num($amount), '0', 2);
 
         if (bccomp($normAmount, '0.00', 2) <= 0) {
             throw new DomainException('FIN-M7-03: Nominal setoran kasir wajib lebih besar dari 0.');
@@ -506,9 +506,9 @@ class CashBankTransactionService
         }
 
         $tenantId = $pgClearingAccount->tenant_id;
-        $normGross = bcadd($grossAmount, '0', 2);
-        $normMdr = bcadd($mdrFeeAmount, '0', 2);
-        $normNet = bcadd($netAmount, '0', 2);
+        $normGross = bcadd(bc_num($grossAmount), '0', 2);
+        $normMdr = bcadd(bc_num($mdrFeeAmount), '0', 2);
+        $normNet = bcadd(bc_num($netAmount), '0', 2);
 
         // Invarian FIN-M7-01: Gross === Net + MDR Fee
         $calculatedGross = bcadd($normNet, $normMdr, 2);
@@ -661,7 +661,7 @@ class CashBankTransactionService
         }
 
         $tenantId = $account->tenant_id;
-        $normAmount = bcadd($amount, '0', 2);
+        $normAmount = bcadd(bc_num($amount), '0', 2);
 
         if (bccomp($normAmount, '0.00', 2) <= 0) {
             throw new DomainException('FIN-M7-03: Nominal penyesuaian bank wajib lebih besar dari 0.');

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Modules\Manufacturing\Services;
 
-use App\Modules\Manufacturing\Models\Ingredient;
 use App\Modules\Manufacturing\Models\IngredientStockBalance;
 use App\Modules\Manufacturing\Models\IngredientStockMovement;
 use App\Modules\Manufacturing\Models\KitchenWasteLog;
@@ -69,7 +68,7 @@ class KitchenWasteService
             $balanceBefore = $balance ? (string) $balance->quantity : '0.0000';
             $newQuantity = bcsub($balanceBefore, $qtyStr, 4);
 
-            $idempotencyKey = "waste:{$tenantId}:{$storeId}:ing:{$ingredientId}:" . Str::uuid()->toString();
+            $idempotencyKey = "waste:{$tenantId}:{$storeId}:ing:{$ingredientId}:".Str::uuid()->toString();
             $effectiveDate = $wasteDate ?? Carbon::now();
 
             // 2. Rekam mutasi keluar di ingredient_stock_movements bertipe 'waste'

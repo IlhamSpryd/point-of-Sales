@@ -42,8 +42,8 @@ class OpeningBalanceService
         $lines = [];
 
         foreach ($balances as $b) {
-            $dr = bcadd((string) ($b['debit'] ?? '0.00'), '0', 2);
-            $cr = bcadd((string) ($b['credit'] ?? '0.00'), '0', 2);
+            $dr = bcadd(bc_num($b['debit'] ?? '0.00'), '0', 2);
+            $cr = bcadd(bc_num($b['credit'] ?? '0.00'), '0', 2);
 
             if (bccomp($dr, '0.00', 2) === 0 && bccomp($cr, '0.00', 2) === 0) {
                 continue;
@@ -103,6 +103,9 @@ class OpeningBalanceService
         return $this->postingEngine->postManualJournal($dto, $actor);
     }
 
+    /**
+     * @param  array<string, mixed>  $balances
+     */
     protected function validateOpeningBalanceReconciliations(int $tenantId, array $balances): void
     {
         $accounts = ChartOfAccount::withoutTenantScope()
@@ -118,7 +121,7 @@ class OpeningBalanceService
             }
 
             $key = $account->system_account_key;
-            $balanceAmount = bccomp((string) ($b['debit'] ?? '0'), '0', 2) > 0 ? (string) $b['debit'] : (string) ($b['credit'] ?? '0');
+            $balanceAmount = bccomp(bc_num($b['debit'] ?? '0'), '0', 2) > 0 ? (string) $b['debit'] : (string) ($b['credit'] ?? '0');
 
             // (a) AR Control Check
             if ($key === 'AR_CONTROL' && DB::getSchemaBuilder()->hasTable('customer_invoices')) {
@@ -126,7 +129,7 @@ class OpeningBalanceService
                     ->where('tenant_id', $tenantId)
                     ->whereIn('status', ['POSTED', 'PARTIALLY_PAID'])
                     ->sum('balance_due');
-                if (bccomp($balanceAmount, (string) $actualAr, 2) !== 0) {
+                if (bccomp(bc_num($balanceAmount), bc_num($actualAr), 2) !== 0) {
                     throw new DomainException("FIN-M7-09: Saldo awal AR Control ({$balanceAmount}) tidak cocok dengan total piutang invoice terbuka ({$actualAr}).");
                 }
             }
@@ -137,7 +140,7 @@ class OpeningBalanceService
                     ->where('tenant_id', $tenantId)
                     ->whereIn('status', ['approved', 'posted'])
                     ->sum('outstanding_amount');
-                if (bccomp($balanceAmount, (string) $actualAp, 2) !== 0) {
+                if (bccomp(bc_num($balanceAmount), bc_num($actualAp), 2) !== 0) {
                     throw new DomainException("FIN-M7-09: Saldo awal AP Control ({$balanceAmount}) tidak cocok dengan total utang faktur supplier terbuka ({$actualAp}).");
                 }
             }

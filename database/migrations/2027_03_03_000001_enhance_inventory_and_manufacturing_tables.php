@@ -98,10 +98,10 @@ return new class extends Migration
     {
         try {
             DB::statement("ALTER TABLE {$table} DROP CONSTRAINT {$name}");
-        } catch (\Throwable) {
+        } catch (Throwable) {
             try {
                 DB::statement("ALTER TABLE {$table} DROP CHECK {$name}");
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 // Ignore if not exists
             }
         }

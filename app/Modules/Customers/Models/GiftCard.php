@@ -11,15 +11,28 @@ use App\Models\Store;
 use App\Models\Tenant;
 use App\Modules\Customers\Enums\GiftCardStatusEnum;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property numeric-string $initial_balance
+ * @property numeric-string $current_balance
+ * @property int $id
+ * @property int $tenant_id
+ * @property int|null $issued_store_id
+ * @property int|null $customer_id
+ * @property int|null $issued_by_order_id
+ */
 class GiftCard extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToTenant;
 
     protected $fillable = [
@@ -45,21 +58,33 @@ class GiftCard extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class, 'issued_store_id');
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return HasMany<GiftCardLedger, $this>
+     */
     public function ledgers(): HasMany
     {
         return $this->hasMany(GiftCardLedger::class);

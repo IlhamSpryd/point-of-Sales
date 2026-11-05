@@ -14,6 +14,7 @@ use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -39,11 +40,16 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $valid_until
  * @property bool $is_active
  * @property string|null $description
+ * @property int|null $customer_group_id
+ * @property int|null $approved_by_user_id
  */
 class PriceList extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToTenant;
     use SoftDeletes;
 
@@ -93,36 +99,57 @@ class PriceList extends Model
         'allow_promo_stacking' => 'boolean',
     ];
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<CustomerGroup, $this>
+     */
     public function customerGroup(): BelongsTo
     {
         return $this->belongsTo(CustomerGroup::class, 'customer_group_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function approvedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return BelongsTo<LoyaltyTier, $this>
+     */
     public function loyaltyTier(): BelongsTo
     {
         return $this->belongsTo(LoyaltyTier::class);
     }
 
+    /**
+     * @return HasMany<PriceListItem, $this>
+     */
     public function items(): HasMany
     {
         return $this->hasMany(PriceListItem::class, 'price_list_id');
@@ -130,6 +157,9 @@ class PriceList extends Model
 
     /**
      * Scope untuk mengambil price list yang aktif dan dalam masa berlaku saat ini.
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeActive(Builder $query): Builder
     {

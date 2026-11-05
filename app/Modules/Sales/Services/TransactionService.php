@@ -37,7 +37,6 @@ use App\Models\PaymentAttempt;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\Shift;
-use App\Modules\Sales\Exceptions\ShiftClosedException;
 use App\Models\Store;
 use App\Models\Table;
 use App\Models\User;
@@ -51,6 +50,7 @@ use App\Modules\Inventory\Services\InventoryLedgerService;
 use App\Modules\Pricing\Models\PromotionReservation;
 use App\Modules\Pricing\Services\DiscountAllocationService;
 use App\Modules\Pricing\Services\DiscountApprovalService;
+use App\Modules\Sales\Exceptions\ShiftClosedException;
 use App\Services\CatalogPriceResolverService;
 use App\Services\Context\TenantContext;
 use App\Services\EntitlementService;
@@ -98,6 +98,8 @@ class TransactionService
      * (ingredients.current_stock) yang dipotong & dikunci sebagai
      * gantinya. Produk TANPA resep tetap memakai model lama
      * (products.stock) untuk kompatibilitas mundur penuh.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function createTransaction(array $data, int $userId): Order
     {
@@ -179,7 +181,7 @@ class TransactionService
                 // Shift-lock guard (UNCHANGED).
                 $shift = null;
                 if (! empty($data['shift_id'])) {
-                    $shift = Shift::lockForUpdate()->find($data['shift_id']);
+                    $shift = Shift::lockForUpdate()->find((int) $data['shift_id']);
 
                     if (! $shift || $shift->status !== 'open') {
                         throw new ShiftClosedException('Shift Anda baru saja ditutup. Transaksi ini dibatalkan, silakan buka shift baru sebelum melanjutkan.');
@@ -230,7 +232,8 @@ class TransactionService
                 // Akumulator kebutuhan bahan baku lintas SELURUH baris order,
                 // keyed by ingredient_id => total qty (string bcmath, skala 4).
                 $ingredientRequirements = [];
-                $items = $data['items'] ?? [];
+                /** @var array<int, array<string, mixed>> $items */
+                $items = is_array($data['items'] ?? null) ? array_values($data['items']) : [];
 
                 // Merge items yang sama agar stok tidak double-decrement (UNCHANGED).
                 $mergedItems = collect($items)
@@ -250,15 +253,18 @@ class TransactionService
                             ]);
                         }
 
+                        /** @var array<string, mixed> $firstItem */
+                        $firstItem = $group->first();
+
                         return [
-                            'product_id' => $group->first()['product_id'],
-                            'product_variant_id' => $group->first()['product_variant_id'] ?? null,
-                            'custom_price' => $group->first()['custom_price'] ?? null,
+                            'product_id' => $firstItem['product_id'],
+                            'product_variant_id' => $firstItem['product_variant_id'] ?? null,
+                            'custom_price' => $firstItem['custom_price'] ?? null,
                             'quantity' => $qty,
-                            'extra_price' => $group->first()['extra_price'] ?? 0,
-                            'options' => $group->first()['options'] ?? null,
-                            'notes' => $group->first()['notes'] ?? null,
-                            'item_discount_id' => $group->first()['item_discount_id'] ?? null,
+                            'extra_price' => $firstItem['extra_price'] ?? 0,
+                            'options' => $firstItem['options'] ?? null,
+                            'notes' => $firstItem['notes'] ?? null,
+                            'item_discount_id' => $firstItem['item_discount_id'] ?? null,
                             'item_discount_amount' => $group->sum(function ($it) {
                                 return (float) ($it['item_discount_amount'] ?? 0);
                             }),
@@ -309,7 +315,7 @@ class TransactionService
                 $catalogPriceResolver = app(CatalogPriceResolverService::class);
 
                 foreach ($mergedItems as $item) {
-                    $product = $products->find($item['product_id']);
+                    $product = $products->firstWhere('id', (int) $item['product_id']);
 
                     if (! $product) {
                         throw ValidationException::withMessages([
@@ -400,7 +406,7 @@ class TransactionService
                     // Hitung diskon level item jika ada
                     $itemDiscountAmount = (float) ($item['item_discount_amount'] ?? 0);
                     if (! empty($item['item_discount_id']) && $itemDiscountAmount <= 0) {
-                        $itemDiscount = Discount::find($item['item_discount_id']);
+                        $itemDiscount = Discount::find((int) $item['item_discount_id']);
                         if ($itemDiscount && $itemDiscount->is_active) {
                             if ($itemDiscount->type === 'percentage') {
                                 $calc = (int) round($itemSubtotal * ($itemDiscount->value / 100));
@@ -437,7 +443,7 @@ class TransactionService
 
                     if ($hasBom) {
                         foreach ($product->ingredients as $ingredient) {
-                            $qtyNeeded = bcmul((string) $ingredient->pivot->quantity_required, (string) $item['quantity'], 4);
+                            $qtyNeeded = bcmul(bc_num($ingredient->pivot->quantity_required), bc_num($item['quantity']), 4);
                             $ingredientRequirements[$ingredient->id] = bcadd(
                                 $ingredientRequirements[$ingredient->id] ?? '0',
                                 $qtyNeeded,
@@ -453,10 +459,11 @@ class TransactionService
                     if (! empty($item['options'])) {
                         foreach ($item['options'] as $opt) {
                             if (isset($opt['modifier_id'])) {
+                                /** @var Modifier|null $mod */
                                 $mod = $modifiersWithBom->get($opt['modifier_id']);
                                 if ($mod && $mod->ingredients->isNotEmpty()) {
                                     foreach ($mod->ingredients as $ingredient) {
-                                        $qtyNeeded = bcmul((string) $ingredient->pivot->quantity_required, (string) $item['quantity'], 4);
+                                        $qtyNeeded = bcmul(bc_num($ingredient->pivot->quantity_required), bc_num($item['quantity']), 4);
                                         $ingredientRequirements[$ingredient->id] = bcadd(
                                             $ingredientRequirements[$ingredient->id] ?? '0',
                                             $qtyNeeded,
@@ -632,7 +639,9 @@ class TransactionService
                     // tabel `payments`. PERLU TINDAK LANJUT: satukan
                     // App\Enums\PaymentMethod dengan App\Enums\PaymentMethod.
                     $legsByAmountDesc = collect($finalPaymentLegs)->sortByDesc('amount');
-                    $dominantPaymentMethod = $legsByAmountDesc->first()['method']->value;
+                    /** @var array{method: PaymentMethod, amount: int, reference_number: string|null, idempotency_key: string|null} $firstLeg */
+                    $firstLeg = $legsByAmountDesc->first();
+                    $dominantPaymentMethod = $firstLeg['method']->value;
 
                     $cashLegTotal = collect($finalPaymentLegs)->where('method', PaymentMethod::Cash)->sum('amount');
                     $cashReceivedForReceipt = $cashLegTotal > 0 ? $cashLegTotal : null;
@@ -758,14 +767,12 @@ class TransactionService
                     if (! empty($line['options'])) {
                         $modifierSync = [];
                         foreach ($line['options'] as $opt) {
-                            if (isset($opt['modifier_id'])) {
-                                $modifierSync[$opt['modifier_id']] = [
-                                    'price_at_time' => $opt['extra_price'] ?? 0,
-                                    'qty' => $line['qty'],
-                                    'tenant_id' => $order->tenant_id,
-                                    'store_id' => $order->store_id,
-                                ];
-                            }
+                            $modifierSync[$opt['modifier_id']] = [
+                                'price_at_time' => $opt['extra_price'],
+                                'qty' => $line['qty'],
+                                'tenant_id' => $order->tenant_id,
+                                'store_id' => $order->store_id,
+                            ];
                         }
                         if (! empty($modifierSync)) {
                             $orderItem->modifiers()->sync($modifierSync);
@@ -997,6 +1004,7 @@ class TransactionService
      * (bentuk, enum, nominal positif) -- TIDAK memvalidasi jumlah total
      * (butuh totalAmount yang belum diketahui saat method ini dipanggil).
      *
+     * @param  array<int|string, mixed>  $rawLegs
      * @return array<int, array{method: PaymentMethod, amount: int, reference_number: ?string, idempotency_key: ?string}>
      */
     private function parsePaymentLegs(array $rawLegs): array
@@ -1048,6 +1056,8 @@ class TransactionService
     /**
      * Memproses pemotongan saldo tender stored-value (Gift Card & Store Credit)
      * dengan penguncian baris akun FOR UPDATE pada buku besar masing-masing.
+     *
+     * @param  array<int|string, array<string, mixed>>  $legs
      */
     private function processPaymentLegTenders(Order $order, array $legs, ?int $userId): void
     {
@@ -1147,6 +1157,8 @@ class TransactionService
     /**
      * Method ini adalah SATU-SATUNYA tempat menghitung total transaksi.
      * (UNCHANGED)
+     *
+     * @return array<string, mixed>
      */
     public function calculateOrderTotals(float $subtotalAmount, float $discountAmount = 0): array
     {
@@ -1181,6 +1193,8 @@ class TransactionService
 
     /**
      * Mengambil metrik transaksi hari ini. (UNCHANGED)
+     *
+     * @return array<string, mixed>
      */
     public function getTodayMetrics(): array
     {
@@ -1191,8 +1205,8 @@ class TransactionService
             ->first();
 
         return [
-            'omzet' => (float) $metricsQuery->omzet,
-            'jumlah' => (int) $metricsQuery->jumlah,
+            'omzet' => (float) ($metricsQuery->omzet ?? 0),
+            'jumlah' => (int) ($metricsQuery->jumlah ?? 0),
         ];
     }
 
@@ -1215,6 +1229,10 @@ class TransactionService
     }
 
     // PUBLIC -- dipanggil dari Livewire computed property untuk preview. (UNCHANGED)
+    /**
+     * @param  array<string, mixed>  $modifierIds
+     * @return array<string, mixed>
+     */
     public function resolveOrderItemLine(
         Product $product,
         array $modifierIds,
@@ -1300,6 +1318,8 @@ class TransactionService
      * (UNCHANGED -- restoreStockForOrder() masih hanya mengembalikan
      * products.stock, BELUM ingredients.current_stock. Lihat Fase 1.1
      * finding CRITICAL/Backlog.)
+     *
+     * @param  array<int|string, mixed>  $rawPaymentLegs
      */
     public function payPendingOrder(Order $order, array $rawPaymentLegs, ?int $userId = null, ?int $shiftId = null, ?int $deviceId = null): Order
     {
@@ -1337,7 +1357,9 @@ class TransactionService
             }
 
             $legsByAmountDesc = collect($parsedPaymentLegs)->sortByDesc('amount');
-            $dominantPaymentMethod = $legsByAmountDesc->first()['method']->value;
+            /** @var array{method: PaymentMethod, amount: int, reference_number: string|null, idempotency_key: string|null} $firstPendingLeg */
+            $firstPendingLeg = $legsByAmountDesc->first();
+            $dominantPaymentMethod = $firstPendingLeg['method']->value;
 
             $cashLegTotal = collect($parsedPaymentLegs)->where('method', PaymentMethod::Cash)->sum('amount');
             $cashReceivedForReceipt = $cashLegTotal > 0 ? $cashLegTotal : null;
@@ -1533,6 +1555,9 @@ class TransactionService
         });
     }
 
+    /**
+     * @param  array<string, mixed>  $providerMeta
+     */
     public function settlePaymentAttempt(PaymentAttempt $attempt, array $providerMeta = []): Payment
     {
         $tenantContext = app(TenantContext::class);
@@ -1630,6 +1655,9 @@ class TransactionService
         });
     }
 
+    /**
+     * @param  array<string, mixed>  $verifiedPayload
+     */
     public function handleMidtransWebhook(array $verifiedPayload): void
     {
         $orderId = (string) ($verifiedPayload['order_id'] ?? '');
@@ -1657,7 +1685,7 @@ class TransactionService
         }
 
         $tenantContext = app(TenantContext::class);
-        $tenantContext->runAs($order->tenant_id, $order->store_id, function () use ($order, $attempt, $transactionStatus, $fraudStatus, $grossAmount, $verifiedPayload) {
+        $tenantContext->runAs((int) $order->tenant_id, $order->store_id, function () use ($order, $attempt, $transactionStatus, $fraudStatus, $grossAmount, $verifiedPayload) {
             DB::transaction(function () use ($order, $attempt, $transactionStatus, $fraudStatus, $grossAmount, $verifiedPayload) {
                 $lockedOrder = Order::withoutGlobalScopes()->where('id', $order->id)->lockForUpdate()->firstOrFail();
 
@@ -1743,7 +1771,7 @@ class TransactionService
             throw new \DomainException('Unauthorized cross-tenant void attempt.');
         }
 
-        $tenantContext->runAs($order->tenant_id, $order->store_id, function () use ($order, $reason, $userId) {
+        $tenantContext->runAs((int) $order->tenant_id, $order->store_id, function () use ($order, $reason, $userId) {
             // AC-2.4: Periksa apakah ada PaymentAttempt berstatus unknown_timeout atau pending_provider
             $timeoutAttempts = PaymentAttempt::withoutGlobalScopes()
                 ->where('order_id', $order->id)
@@ -2124,7 +2152,7 @@ class TransactionService
             throw new \RuntimeException('Store aktif tidak tersedia untuk pembaruan balance stok produk.');
         }
 
-        $type = bccomp($delta, '0', 4) >= 0 ? StockMovementType::RestoreCompensation : StockMovementType::SaleDeduction;
+        $type = bccomp(bc_num($delta), '0', 4) >= 0 ? StockMovementType::RestoreCompensation : StockMovementType::SaleDeduction;
 
         app(InventoryLedgerService::class)->recordMovement(
             tenantId: $tenantId,
@@ -2151,7 +2179,7 @@ class TransactionService
             throw new \RuntimeException('Store aktif tidak tersedia untuk pembaruan balance stok bahan baku.');
         }
 
-        $type = bccomp($delta, '0', 4) >= 0 ? IngredientStockMovementTypeEnum::RestoreCompensation : IngredientStockMovementTypeEnum::SaleDeduction;
+        $type = bccomp(bc_num($delta), '0', 4) >= 0 ? IngredientStockMovementTypeEnum::RestoreCompensation : IngredientStockMovementTypeEnum::SaleDeduction;
 
         app(InventoryLedgerService::class)->recordMovement(
             tenantId: $tenantId,

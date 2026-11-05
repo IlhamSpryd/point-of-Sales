@@ -12,6 +12,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $customer_id
+ */
 class CustomerAddress extends Model
 {
     use AssignsTenant;
@@ -28,6 +33,9 @@ class CustomerAddress extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
@@ -47,11 +55,19 @@ class CustomerAddress extends Model
         return implode(', ', $parts);
     }
 
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
     public function scopeBilling(Builder $query): Builder
     {
         return $query->whereIn('address_type', ['BILLING', 'BOTH']);
     }
 
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
     public function scopeShipping(Builder $query): Builder
     {
         return $query->whereIn('address_type', ['SHIPPING', 'BOTH']);

@@ -26,12 +26,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property CarbonInterface $payment_scheduled_date
  * @property PayrollBatchStatusEnum $status
  * @property int $total_employees
- * @property float $total_gross_amount
- * @property float $total_tax_amount
- * @property float $total_bpjs_employer
- * @property float $total_bpjs_employee
- * @property float $total_other_deductions
- * @property float $total_net_amount
+ * @property float|numeric-string $total_gross_amount
+ * @property float|numeric-string $total_tax_amount
+ * @property float|numeric-string $total_bpjs_employer
+ * @property float|numeric-string $total_bpjs_employee
+ * @property float|numeric-string $total_other_deductions
+ * @property float|numeric-string $total_net_amount
  * @property int|null $gl_accrual_journal_id
  * @property int|null $gl_payment_journal_id
  * @property int $created_by_user_id
@@ -137,7 +137,8 @@ class PayrollBatch extends Model
     }
 
     /**
-     * @param  Builder<PayrollBatch>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeFinalized(Builder $query): Builder
     {

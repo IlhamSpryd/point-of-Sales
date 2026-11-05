@@ -160,43 +160,43 @@ class Module3NavigationTest extends TestCase
         $response->assertOk();
         $response->assertSee('Product Catalog Navigation');
         $response->assertSee('aria-current="page"', false);
-        $response->assertSee('before:bg-[#202020]', false); // Sidebar active accent
+        $response->assertSee('before:bg-shell-foreground-active', false); // Sidebar active accent
 
         // 2. Visit Brands index -> Sidebar 'Produk' is active, Sub-nav 'Merek' is active
         $response = $this->get(route('brands.index'));
         $response->assertOk();
         $response->assertSee('Product Catalog Navigation');
-        $response->assertSee('before:bg-[#202020]', false); // Sidebar active accent on parent section
+        $response->assertSee('before:bg-shell-foreground-active', false); // Sidebar active accent on parent section
 
         // 3. Visit Units of Measure index -> Sidebar 'Produk' is active, Sub-nav 'Satuan Ukur' is active
         $response = $this->get(route('units-of-measure.index'));
         $response->assertOk();
         $response->assertSee('Product Catalog Navigation');
-        $response->assertSee('before:bg-[#202020]', false);
+        $response->assertSee('before:bg-shell-foreground-active', false);
 
         // 4. Visit Tax Classes index -> Sidebar 'Produk' is active, Sub-nav 'Kelas Pajak' is active
         $response = $this->get(route('tax-classes.index'));
         $response->assertOk();
         $response->assertSee('Product Catalog Navigation');
-        $response->assertSee('before:bg-[#202020]', false);
+        $response->assertSee('before:bg-shell-foreground-active', false);
 
         // 5. Visit Assortments index -> Sidebar 'Produk' is active, Sub-nav 'Asortimen Cabang' is active
         $response = $this->get(route('assortments.index'));
         $response->assertOk();
         $response->assertSee('Product Catalog Navigation');
-        $response->assertSee('before:bg-[#202020]', false);
+        $response->assertSee('before:bg-shell-foreground-active', false);
 
         // 6. Visit Price Lists index -> Sidebar 'Produk' is active, Sub-nav 'Daftar Harga' is active
         $response = $this->get(route('price-lists.index'));
         $response->assertOk();
         $response->assertSee('Product Catalog Navigation');
-        $response->assertSee('before:bg-[#202020]', false);
+        $response->assertSee('before:bg-shell-foreground-active', false);
 
         // 7. Visit Categories index -> Sidebar 'Kategori' is active, Sub-nav 'Kategori' is active
         $response = $this->get(route('categories.index'));
         $response->assertOk();
         $response->assertSee('Product Catalog Navigation');
-        $response->assertSee('before:bg-[#202020]', false);
+        $response->assertSee('before:bg-shell-foreground-active', false);
 
         // 8. Visit Modifiers manager -> Sidebar 'Varian & Modifier' is active, Sub-nav is present
         $response = $this->get(route('inventory.modifiers'));

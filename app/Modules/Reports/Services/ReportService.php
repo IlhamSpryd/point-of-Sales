@@ -47,18 +47,20 @@ class ReportService
         );
         $orderQuery = $isAll ? Order::allStores() : Order::query();
 
-        return (clone $orderQuery)->whereBetween('order_date', [$start, $end])
+        $summary = (clone $orderQuery)->whereBetween('order_date', [$start, $end])
             ->where('order_status', OrderStatus::Paid->value)
             ->selectRaw('COALESCE(SUM(order_amount), 0) as total, COUNT(*) as count')
             ->first();
+
+        return $summary ?? (object) ['total' => 0, 'count' => 0];
     }
 
     /**
      * Mengambil daftar pesanan berstatus paid terbaru dalam rentang tanggal tertentu.
      *
-     * @return LengthAwarePaginator
+     * @return LengthAwarePaginator<int, Order>
      */
-    public function getRecentPaidOrders(Carbon $start, Carbon $end, int $perPage = 15, ?bool $allStores = null)
+    public function getRecentPaidOrders(Carbon $start, Carbon $end, int $perPage = 15, ?bool $allStores = null): LengthAwarePaginator
     {
         $isAll = $allStores ?? (
             (auth()->user()?->role?->name === 'Owner' || (bool) (auth()->user()?->role?->is_admin ?? false)) &&
@@ -66,11 +68,14 @@ class ReportService
         );
         $orderQuery = $isAll ? Order::allStores() : Order::query();
 
-        return (clone $orderQuery)->with(['user', 'store'])
+        /** @var LengthAwarePaginator<int, Order> $paginator */
+        $paginator = (clone $orderQuery)->with(['user', 'store'])
             ->whereBetween('order_date', [$start, $end])
             ->where('order_status', OrderStatus::Paid->value)
             ->orderBy('created_at', 'desc')
             ->paginate($perPage);
+
+        return $paginator;
     }
 
     /**

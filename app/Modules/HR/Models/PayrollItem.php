@@ -19,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $component_code
  * @property string $component_name
  * @property SalaryComponentTypeEnum $type
- * @property float $amount
+ * @property numeric-string $amount
  * @property bool $is_taxable
  * @property int|null $statutory_rule_version_id
  * @property string|null $notes

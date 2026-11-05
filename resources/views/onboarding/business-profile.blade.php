@@ -147,7 +147,7 @@
                         {{-- Submit Button --}}
                         <div class="pt-2">
                             <button type="submit"
-                                class="w-full flex items-center justify-center rounded-xl bg-[#141413] px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 transition-all cursor-pointer">
+                                class="w-full flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 transition-all cursor-pointer">
                                 <span>Save & continue to initial branch</span>
                             </button>
                         </div>

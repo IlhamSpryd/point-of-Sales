@@ -78,6 +78,18 @@ class Employee extends Model
 
     protected $guarded = ['id'];
 
+    protected static function booted(): void
+    {
+        static::deleting(function (Employee $employee): void {
+            if ($employee->isForceDeleting()) {
+                static::withoutGlobalScopes()
+                    ->where('tenant_id', $employee->tenant_id)
+                    ->where('manager_id', $employee->id)
+                    ->update(['manager_id' => null]);
+            }
+        });
+    }
+
     /**
      * @return array<string, string>
      */

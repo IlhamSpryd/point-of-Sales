@@ -123,7 +123,7 @@ class PurchaseReturnService
                 $grnLineId = (int) $lineData['goods_received_note_line_id'];
                 $returnQty = (string) $lineData['return_qty'];
 
-                if (bccomp($returnQty, '0', 4) <= 0) {
+                if (bccomp(bc_num($returnQty), '0', 4) <= 0) {
                     throw ValidationException::withMessages([
                         "lines.{$lineNumber}.return_qty" => ["Kuantitas retur pada baris {$lineNumber} harus lebih besar dari 0."],
                     ]);
@@ -146,7 +146,7 @@ class PurchaseReturnService
                     ->sum('return_qty');
 
                 $maxReturnable = bcsub((string) $grnLine->accepted_qty, $alreadyReturned, 4);
-                if (bccomp($returnQty, $maxReturnable, 4) > 0) {
+                if (bccomp(bc_num($returnQty), bc_num($maxReturnable), 4) > 0) {
                     throw ValidationException::withMessages([
                         "lines.{$lineNumber}.return_qty" => [
                             "Kuantitas retur ({$returnQty}) melebihi sisa yang dapat diretur ({$maxReturnable}) untuk baris GRN #{$grnLine->id}.",
@@ -155,10 +155,10 @@ class PurchaseReturnService
                 }
 
                 $unitCost = (string) $grnLine->effective_unit_cost;
-                $lineSubtotal = bcmul($returnQty, $unitCost, 2);
+                $lineSubtotal = bcmul(bc_num($returnQty), bc_num($unitCost), 2);
 
                 $taxRate = isset($lineData['tax_rate']) ? (string) $lineData['tax_rate'] : '0.0000';
-                $lineTax = bcmul($lineSubtotal, $taxRate, 2);
+                $lineTax = bcmul(bc_num($lineSubtotal), bc_num($taxRate), 2);
                 $lineTotal = bcadd($lineSubtotal, $lineTax, 2);
 
                 $returnLine = new PurchaseReturnLine;
@@ -169,10 +169,10 @@ class PurchaseReturnService
                 $returnLine->line_number = $lineNumber++;
                 $returnLine->purchasable_type = $grnLine->purchasable_type;
                 $returnLine->purchasable_id = $grnLine->purchasable_id;
-                $returnLine->return_qty = $returnQty;
+                $returnLine->return_qty = bc_num($returnQty);
                 $returnLine->unit_cost = $unitCost;
                 $returnLine->subtotal = $lineSubtotal;
-                $returnLine->tax_rate = $taxRate;
+                $returnLine->tax_rate = bc_num($taxRate);
                 $returnLine->tax_amount = $lineTax;
                 $returnLine->total_amount = $lineTotal;
                 $returnLine->reason = $lineData['reason'] ?? $header['reason'];
@@ -377,7 +377,7 @@ class PurchaseReturnService
             $debitNote->save();
 
             return [
-                'purchase_return' => $lockedReturn->fresh(['lines']),
+                'purchase_return' => $lockedReturn->fresh(['lines']) ?? $lockedReturn,
                 'debit_note' => $debitNote,
             ];
         });
@@ -405,7 +405,7 @@ class PurchaseReturnService
             throw new DomainException('TenantContext tidak valid.');
         }
 
-        if (bccomp($appliedAmount, '0', 2) <= 0) {
+        if (bccomp(bc_num($appliedAmount), '0', 2) <= 0) {
             throw ValidationException::withMessages([
                 'applied_amount' => ['Nominal aplikasi nota debit harus lebih besar dari 0.'],
             ]);
@@ -424,7 +424,7 @@ class PurchaseReturnService
                 ]);
             }
 
-            if (bccomp($appliedAmount, (string) $lockedDebitNote->remaining_amount, 2) > 0) {
+            if (bccomp(bc_num($appliedAmount), bc_num($lockedDebitNote->remaining_amount), 2) > 0) {
                 throw ValidationException::withMessages([
                     'applied_amount' => [
                         "Nominal yang diaplikasikan ({$appliedAmount}) melebihi sisa nilai nota debit ({$lockedDebitNote->remaining_amount}).",
@@ -452,7 +452,7 @@ class PurchaseReturnService
                 ]);
             }
 
-            if (bccomp($appliedAmount, (string) $lockedInvoice->outstanding_amount, 2) > 0) {
+            if (bccomp(bc_num($appliedAmount), bc_num($lockedInvoice->outstanding_amount), 2) > 0) {
                 throw ValidationException::withMessages([
                     'applied_amount' => [
                         "Nominal yang diaplikasikan ({$appliedAmount}) melebihi sisa tagihan faktur pemasok ({$lockedInvoice->outstanding_amount}).",
@@ -465,15 +465,15 @@ class PurchaseReturnService
             $application->tenant_id = $tenantId;
             $application->purchase_debit_note_id = $lockedDebitNote->id;
             $application->supplier_invoice_id = $lockedInvoice->id;
-            $application->applied_amount = $appliedAmount;
+            $application->applied_amount = bc_num($appliedAmount);
             $application->applied_at = now();
             $application->applied_by = $actor->id;
             $application->notes = $notes;
             $application->save();
 
             // 2. Perbarui PurchaseDebitNote
-            $newDnApplied = bcadd((string) $lockedDebitNote->applied_amount, $appliedAmount, 2);
-            $newDnRemaining = bcsub((string) $lockedDebitNote->remaining_amount, $appliedAmount, 2);
+            $newDnApplied = bcadd(bc_num($lockedDebitNote->applied_amount), bc_num($appliedAmount), 2);
+            $newDnRemaining = bcsub(bc_num($lockedDebitNote->remaining_amount), bc_num($appliedAmount), 2);
 
             $lockedDebitNote->applied_amount = $newDnApplied;
             $lockedDebitNote->remaining_amount = $newDnRemaining;
@@ -483,8 +483,8 @@ class PurchaseReturnService
             $lockedDebitNote->save();
 
             // 3. Perbarui SupplierInvoice
-            $newInvApplied = bcadd((string) $lockedInvoice->debit_note_applied_amount, $appliedAmount, 2);
-            $newInvOutstanding = bcsub((string) $lockedInvoice->outstanding_amount, $appliedAmount, 2);
+            $newInvApplied = bcadd(bc_num($lockedInvoice->debit_note_applied_amount), bc_num($appliedAmount), 2);
+            $newInvOutstanding = bcsub(bc_num($lockedInvoice->outstanding_amount), bc_num($appliedAmount), 2);
 
             $lockedInvoice->debit_note_applied_amount = $newInvApplied;
             $lockedInvoice->outstanding_amount = $newInvOutstanding;

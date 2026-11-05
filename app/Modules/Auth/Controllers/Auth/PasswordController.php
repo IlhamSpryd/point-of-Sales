@@ -28,6 +28,7 @@ class PasswordController extends Controller
         ]);
 
         $user = $request->user();
+        abort_unless($user !== null, 401);
         $user->forceFill([
             'password_hash' => Hash::make($validated['password']),
             'password_changed_at' => now(),

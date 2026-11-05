@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Modules\Integration\Services;
 
-use DomainException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 

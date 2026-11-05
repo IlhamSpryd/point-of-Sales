@@ -37,6 +37,7 @@ class OwnershipTransferService
      *                          - 'reconcile_legacy_owners' (bool): Jika true, mendemosi anomali user lama ber-role ROL-OWNER
      *                          - 'idempotent' (bool): Jika true, transfer ke owner yang sama dianggap no-op sukses
      *                          - 'simulate_audit_failure' (bool): Untuk uji integritas rollback audit trail
+     * @param  array<string, mixed>  $options
      *
      * @throws OwnershipTransferException
      */
@@ -70,7 +71,8 @@ class OwnershipTransferService
 
             // 2. Actor row (mencegah perubahan status/role aktor selama transfer berjalan)
             /** @var User|null $lockedActor */
-            $lockedActor = User::withTrashed()
+            $lockedActor = User::withoutTenantScope()
+                ->withTrashed()
                 ->where('id', $actor->id)
                 ->lockForUpdate()
                 ->first();
@@ -80,7 +82,8 @@ class OwnershipTransferService
 
             // 3. Candidate New Owner row (termasuk soft-deleted untuk verifikasi integritas status)
             /** @var User|null $lockedNewOwner */
-            $lockedNewOwner = User::withTrashed()
+            $lockedNewOwner = User::withoutTenantScope()
+                ->withTrashed()
                 ->where('id', $newOwner->id)
                 ->where('tenant_id', $lockedTenant->id)
                 ->lockForUpdate()
@@ -96,7 +99,8 @@ class OwnershipTransferService
             $oldOwnerId = $lockedTenant->owner_user_id !== null ? (int) $lockedTenant->owner_user_id : null;
             $lockedOldOwner = null;
             if ($oldOwnerId !== null) {
-                $lockedOldOwner = User::where('id', $oldOwnerId)
+                $lockedOldOwner = User::withoutTenantScope()
+                    ->where('id', $oldOwnerId)
                     ->where('tenant_id', $lockedTenant->id)
                     ->lockForUpdate()
                     ->first();
@@ -161,7 +165,7 @@ class OwnershipTransferService
             $roleTransitions = [];
 
             // 10. Penegakan Invarian "Tepat Satu ROL-OWNER" terhadap Anomali Legacy
-            $legacyOtherOwners = User::where('tenant_id', $lockedTenant->id)
+            $legacyOtherOwners = User::withoutTenantScope()->where('tenant_id', $lockedTenant->id)
                 ->where('role_id', $ownerRole->id)
                 ->where('id', '!=', $lockedNewOwner->id)
                 ->whereNull('deleted_at')
@@ -195,7 +199,7 @@ class OwnershipTransferService
                         'type' => ((int) $legacyOwnerUser->id === $oldOwnerId) ? 'previous_owner_demotion' : 'legacy_anomaly_reconciliation',
                     ];
                 }
-            } elseif ($lockedOldOwner !== null && (int) $lockedOldOwner->id !== (int) $lockedNewOwner->id) {
+            } elseif ($lockedOldOwner !== null && $demoteRole !== null && (int) $lockedOldOwner->id !== (int) $lockedNewOwner->id) {
                 $lockedOldOwner->role_id = $demoteRole->id;
                 $lockedOldOwner->save();
 
@@ -227,7 +231,7 @@ class OwnershipTransferService
             $lockedTenant->save();
 
             // 13. Verifikasi Post-Condition Invarian: Tepat 1 User Aktif dengan ROL-OWNER
-            $finalOwnersCount = User::where('tenant_id', $lockedTenant->id)
+            $finalOwnersCount = User::withoutTenantScope()->where('tenant_id', $lockedTenant->id)
                 ->where('role_id', $ownerRole->id)
                 ->whereNull('deleted_at')
                 ->count();
@@ -333,6 +337,9 @@ class OwnershipTransferService
     /**
      * Mencatat entri audit trail ke activity_logs yang terlindungi trigger.
      * Mematuhi skema fisik store_id NOT NULL tanpa mengasumsikan representasi semantik sewenang-wenang.
+     *
+     * @param  array<string, mixed>  $options
+     * @param  array<int, array<string, mixed>>  $roleTransitions
      *
      * @throws OwnershipTransferException
      */

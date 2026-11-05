@@ -75,7 +75,7 @@
         @if ($canProcess)
             <button type="button" wire:click="claim({{ $item->id }})" wire:loading.attr="disabled" wire:target="claim({{ $item->id }})"
                     x-on:click="window.erpMotion?.pulseHighlight($el)"
-                    class="mt-3.5 flex min-h-10 w-full items-center justify-center rounded-xl bg-apeiron-ink text-xs font-bold text-white shadow-sm transition-all duration-200 hover:bg-[#111111] active:scale-[0.98] disabled:cursor-wait disabled:opacity-60">
+                    class="mt-3.5 flex min-h-10 w-full items-center justify-center rounded-xl bg-apeiron-ink text-xs font-bold text-white shadow-sm transition-all duration-200 hover:bg-primary/90 active:scale-[0.98] disabled:cursor-wait disabled:opacity-60">
                 <span wire:loading.remove wire:target="claim({{ $item->id }})" class="flex items-center gap-1.5">
                     <span class="material-symbols-rounded text-[16px]">skillet</span> Start Prep
                 </span>

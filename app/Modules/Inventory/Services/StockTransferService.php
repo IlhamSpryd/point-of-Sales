@@ -189,7 +189,7 @@ class StockTransferService
                 ]
             );
 
-            return $lockedTransfer->fresh(['items']);
+            return $lockedTransfer->fresh(['items']) ?? $lockedTransfer;
         });
     }
 
@@ -223,10 +223,10 @@ class StockTransferService
                 foreach ($items as $item) {
                     if (isset($shippedQuantities[$item->id])) {
                         $qty = (string) $shippedQuantities[$item->id];
-                        if (bccomp($qty, '0', 4) < 0) {
+                        if (bccomp(bc_num($qty), '0', 4) < 0) {
                             throw new InvalidArgumentException("Kuantitas kirim untuk item #{$item->id} tidak boleh negatif.");
                         }
-                        $item->quantity_shipped = $qty;
+                        $item->quantity_shipped = bc_num($qty);
                         $item->save();
                     }
                 }
@@ -259,7 +259,7 @@ class StockTransferService
                 );
 
                 $carryingCost = $balance ? (string) ($balance->average_unit_cost ?? '0.0000') : '0.0000';
-                $item->carrying_unit_cost = $carryingCost;
+                $item->carrying_unit_cost = bc_num($carryingCost);
                 $item->save();
 
                 // Mutasi keluar cabang asal (TRANSFER_OUT, negatif)
@@ -315,7 +315,7 @@ class StockTransferService
             // Emisi outbox akuntansi ke Modul 7 (PR-INV-02)
             app(InventoryAccountingService::class)->recordStockTransferShipped($lockedTransfer);
 
-            return $lockedTransfer->fresh(['items']);
+            return $lockedTransfer->fresh(['items']) ?? $lockedTransfer;
         });
     }
 
@@ -389,20 +389,20 @@ class StockTransferService
                 $qtyReceived = (string) $input['quantity_received'];
                 $qtyShipped = (string) $item->quantity_shipped;
 
-                if (bccomp($qtyReceived, '0', 4) < 0) {
+                if (bccomp(bc_num($qtyReceived), '0', 4) < 0) {
                     throw ValidationException::withMessages([
                         'items' => "Kuantitas yang diterima untuk item #{$item->id} tidak boleh negatif.",
                     ]);
                 }
 
                 // HARD ANTI-OVER-RECEIPT CONSTRAINT (INV-M4-06 & OD-03)
-                if (bccomp($qtyReceived, $qtyShipped, 4) > 0) {
+                if (bccomp(bc_num($qtyReceived), bc_num($qtyShipped), 4) > 0) {
                     throw ValidationException::withMessages([
                         'items' => "Kuantitas yang diterima ({$qtyReceived}) melebihi kuantitas yang dikirim ({$qtyShipped}). Over-receipt dilarang keras.",
                     ]);
                 }
 
-                $discrepancy = bcsub($qtyShipped, $qtyReceived, 4);
+                $discrepancy = bcsub(bc_num($qtyShipped), bc_num($qtyReceived), 4);
                 $resolution = StockTransferDiscrepancyResolutionEnum::None;
                 $reasonCode = null;
 
@@ -433,7 +433,7 @@ class StockTransferService
                 $rawItemId = (int) ($item->item_type === 'product' ? $item->product_id : $item->ingredient_id);
 
                 // 1. Mutasi masuk ke cabang tujuan (TRANSFER_IN, positif)
-                if (bccomp($qtyReceived, '0', 4) > 0) {
+                if (bccomp(bc_num($qtyReceived), '0', 4) > 0) {
                     $allMovements[] = [
                         'store_id' => (int) $lockedTransfer->to_store_id,
                         'item_type' => $item->item_type,
@@ -513,7 +513,7 @@ class StockTransferService
             // Emisi outbox akuntansi ke Modul 7 (PR-INV-02)
             app(InventoryAccountingService::class)->recordStockTransferReceived($lockedTransfer);
 
-            return $lockedTransfer->fresh(['items.product', 'items.ingredient']);
+            return $lockedTransfer->fresh(['items.product', 'items.ingredient']) ?? $lockedTransfer;
         });
     }
 
@@ -592,7 +592,7 @@ class StockTransferService
                 ]
             );
 
-            return $lockedTransfer->fresh(['items']);
+            return $lockedTransfer->fresh(['items']) ?? $lockedTransfer;
         });
     }
 
@@ -644,12 +644,12 @@ class StockTransferService
         }
 
         $qtyRequested = (string) ($itemData['quantity_requested'] ?? '0');
-        if (bccomp($qtyRequested, '0', 4) <= 0) {
+        if (bccomp(bc_num($qtyRequested), '0', 4) <= 0) {
             throw new InvalidArgumentException('quantity_requested harus bernilai lebih besar dari 0.');
         }
 
         $qtyShipped = isset($itemData['quantity_shipped']) ? (string) $itemData['quantity_shipped'] : '0.0000';
-        if (bccomp($qtyShipped, '0', 4) < 0) {
+        if (bccomp(bc_num($qtyShipped), '0', 4) < 0) {
             throw new InvalidArgumentException('quantity_shipped tidak boleh negatif.');
         }
 

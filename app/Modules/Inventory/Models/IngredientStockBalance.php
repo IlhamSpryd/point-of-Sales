@@ -16,6 +16,20 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * Saldo stok bahan baku per (tenant_id, store_id, ingredient_id):
  * ingredient_stock_balances. Primary key komposit.
+ *
+ * @property numeric-string $quantity
+ * @property numeric-string $reserved_quantity
+ * @property numeric-string $baseline_quantity
+ * @property numeric-string $min_stock_level
+ * @property numeric-string $reorder_point
+ * @property numeric-string|null $max_stock_level
+ * @property numeric-string $average_unit_cost
+ * @property numeric-string $last_unit_cost
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int $ingredient_id
+ * @property int $baseline_movement_id
+ * @property int|null $last_movement_id
  */
 class IngredientStockBalance extends Model
 {
@@ -30,7 +44,21 @@ class IngredientStockBalance extends Model
 
     protected $primaryKey = null;
 
-    protected $guarded = [];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'ingredient_id',
+        'quantity',
+        'reserved_quantity',
+        'baseline_quantity',
+        'baseline_movement_id',
+        'min_stock_level',
+        'reorder_point',
+        'max_stock_level',
+        'average_unit_cost',
+        'last_unit_cost',
+        'last_movement_id',
+    ];
 
     protected function casts(): array
     {
@@ -47,11 +75,17 @@ class IngredientStockBalance extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Ingredient, $this>
+     */
     public function ingredient(): BelongsTo
     {
         return $this->belongsTo(Ingredient::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);

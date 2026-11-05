@@ -7,7 +7,6 @@ namespace App\Modules\FNB\Services;
 use App\Enums\OrderStatus;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\User;
 use App\Services\AuditTrailService;
 use App\Services\Context\TenantContext;
 use DomainException;
@@ -25,7 +24,7 @@ class SplitBillService
     /**
      * Pemecahan tagihan meja aktif menjadi sub-order terpisah berdasarkan pembagian item (Split By Item).
      *
-     * @param array<int, array{sub_order_label?: string, items: array<int, array{order_item_id: int, quantity: int}>}> $splits
+     * @param  array<int, array{sub_order_label?: string, items: array<int, array{order_item_id: int, quantity: int}>}>  $splits
      * @return array<int, Order>
      *
      * @throws DomainException|InvalidArgumentException
@@ -79,7 +78,7 @@ class SplitBillService
                 $requestedQty = $consumedQtyPerItem[$itemId] ?? 0;
                 if ($requestedQty !== (int) $item->qty) {
                     throw new DomainException(
-                        "Kuantitas item \"{$item->product_name_snapshot}\" yang dialokasikan ({$requestedQty}) " .
+                        "Kuantitas item \"{$item->product_name_snapshot}\" yang dialokasikan ({$requestedQty}) ".
                         "tidak sama dengan total pada pesanan ({$item->qty}). Seluruh item harus dialokasikan secara lengkap."
                     );
                 }
@@ -92,7 +91,7 @@ class SplitBillService
 
             foreach ($splits as $idx => $split) {
                 $isLast = ($idx === count($splits) - 1);
-                $splitLabel = $split['sub_order_label'] ?? "Sub-Order #" . ($idx + 1);
+                $splitLabel = $split['sub_order_label'] ?? 'Sub-Order #'.($idx + 1);
 
                 $splitSubtotal = 0;
                 $splitItemsData = [];
@@ -126,7 +125,7 @@ class SplitBillService
                     $accumulatedTotalAllocated += $splitOrderAmount;
                 }
 
-                $subOrderCode = $lockedOrder->order_code . '-S' . ($idx + 1);
+                $subOrderCode = $lockedOrder->order_code.'-S'.($idx + 1);
 
                 $subOrder = Order::create([
                     'tenant_id' => $lockedOrder->tenant_id,
@@ -167,7 +166,7 @@ class SplitBillService
 
             // Tandai pesanan induk sebagai cancelled karena telah dipecah
             $lockedOrder->forceFill([
-                'order_status' => \App\Enums\OrderStatus::Cancelled,
+                'order_status' => OrderStatus::Cancelled,
             ])->save();
 
             $this->auditTrail->log(
@@ -177,7 +176,7 @@ class SplitBillService
                 storeId: (int) $lockedOrder->store_id,
                 subjectType: Order::class,
                 subjectId: $lockedOrder->id,
-                description: "Pesanan {$lockedOrder->order_code} dipecah (split by item) menjadi " . count($createdSubOrders) . " sub-pesanan.",
+                description: "Pesanan {$lockedOrder->order_code} dipecah (split by item) menjadi ".count($createdSubOrders).' sub-pesanan.',
                 metadata: [
                     'parent_order_id' => $lockedOrder->id,
                     'parent_order_amount' => $parentTotal,
@@ -192,7 +191,7 @@ class SplitBillService
     /**
      * Pemecahan tagihan meja aktif menjadi sub-order terpisah berdasarkan nominal (Split By Amount / Equal Split).
      *
-     * @param array<int, int|float|string> $amounts
+     * @param  array<int, int|float|string>  $amounts
      * @return array<int, Order>
      *
      * @throws DomainException|InvalidArgumentException
@@ -234,14 +233,14 @@ class SplitBillService
             // Penegakan Paritas Total (T-FNB-02)
             if ($sumSplit !== $parentTotal) {
                 throw new DomainException(
-                    "Total nominal pemecahan tagihan (Rp " . number_format($sumSplit, 0, ',', '.') . 
-                    ") tidak sama dengan total pesanan (Rp " . number_format($parentTotal, 0, ',', '.') . ")."
+                    'Total nominal pemecahan tagihan (Rp '.number_format($sumSplit, 0, ',', '.').
+                    ') tidak sama dengan total pesanan (Rp '.number_format($parentTotal, 0, ',', '.').').'
                 );
             }
 
             $createdSubOrders = [];
             foreach ($intAmounts as $idx => $amt) {
-                $subOrderCode = $lockedOrder->order_code . '-A' . ($idx + 1);
+                $subOrderCode = $lockedOrder->order_code.'-A'.($idx + 1);
 
                 $subOrder = Order::create([
                     'tenant_id' => $lockedOrder->tenant_id,
@@ -265,7 +264,7 @@ class SplitBillService
             }
 
             $lockedOrder->forceFill([
-                'order_status' => \App\Enums\OrderStatus::Cancelled,
+                'order_status' => OrderStatus::Cancelled,
             ])->save();
 
             $this->auditTrail->log(
@@ -275,7 +274,7 @@ class SplitBillService
                 storeId: (int) $lockedOrder->store_id,
                 subjectType: Order::class,
                 subjectId: $lockedOrder->id,
-                description: "Pesanan {$lockedOrder->order_code} dipecah (split by amount) menjadi " . count($createdSubOrders) . " sub-pesanan.",
+                description: "Pesanan {$lockedOrder->order_code} dipecah (split by amount) menjadi ".count($createdSubOrders).' sub-pesanan.',
                 metadata: [
                     'parent_order_id' => $lockedOrder->id,
                     'parent_order_amount' => $parentTotal,

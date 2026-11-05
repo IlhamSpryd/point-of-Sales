@@ -12,9 +12,11 @@
         variant: 'destructive',
         onConfirmCallback: null,
         formToSubmit: null,
+        wireMethod: null,
+        wireArgs: [],
         init() {
             window.confirmSubmit = (formId, itemName, options = {}) => {
-                const title = itemName ? `Hapus \"${itemName}\"?` : (options.title || 'Konfirmasi Tindakan');
+                const title = itemName ? 'Hapus “' + itemName + '”?' : (options.title || 'Konfirmasi Tindakan');
                 const message = options.message || options.text || 'Data yang dihapus tidak dapat dikembalikan!';
                 window.dispatchEvent(new CustomEvent('erp-confirm', {
                     detail: {
@@ -33,13 +35,16 @@
         },
         openConfirm(detail = {}) {
             const payload = Array.isArray(detail) ? detail[0] : detail;
-            this.title = payload.title || 'Konfirmasi Tindakan';
-            this.message = payload.message || payload.text || 'Apakah Anda yakin ingin melanjutkan tindakan ini?';
-            this.confirmText = payload.confirmText || payload.confirmButtonText || 'Ya, Lanjutkan';
-            this.cancelText = payload.cancelText || payload.cancelButtonText || 'Batal';
-            this.variant = payload.variant || 'destructive';
-            this.onConfirmCallback = payload.onConfirm || null;
-            this.formToSubmit = payload.formId || null;
+            const opts = payload || {};
+            this.title = opts.title || 'Konfirmasi Tindakan';
+            this.message = opts.message || opts.text || 'Apakah Anda yakin ingin melanjutkan tindakan ini?';
+            this.confirmText = opts.confirmText || opts.confirmButtonText || 'Ya, Lanjutkan';
+            this.cancelText = opts.cancelText || opts.cancelButtonText || 'Batal';
+            this.variant = opts.variant || 'destructive';
+            this.onConfirmCallback = opts.onConfirm || null;
+            this.formToSubmit = opts.formId || null;
+            this.wireMethod = opts.wireMethod || null;
+            this.wireArgs = Array.isArray(opts.wireArgs) ? opts.wireArgs : [];
             this.open = true;
         },
         confirm() {
@@ -54,6 +59,10 @@
             const cb = this.onConfirmCallback;
             if (typeof cb === 'function') {
                 cb();
+                return;
+            }
+            if (this.wireMethod && this.$wire) {
+                this.$wire.call(this.wireMethod, ...this.wireArgs);
             }
         }
     }"

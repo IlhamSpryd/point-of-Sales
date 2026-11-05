@@ -19,13 +19,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $account_id
  * @property int|null $store_id
  * @property int $store_scope_key
- * @property string $opening_debit
- * @property string $opening_credit
- * @property string $period_debit
- * @property string $period_credit
- * @property string $closing_debit
- * @property string $closing_credit
- * @property string $net_movement
+ * @property numeric-string $opening_debit
+ * @property numeric-string $opening_credit
+ * @property numeric-string $period_debit
+ * @property numeric-string $period_credit
+ * @property numeric-string $closing_debit
+ * @property numeric-string $closing_credit
+ * @property numeric-string $net_movement
  * @property CarbonInterface $created_at
  * @property CarbonInterface $updated_at
  */
@@ -47,21 +47,33 @@ class AccountPeriodBalance extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<AccountingPeriod, $this>
+     */
     public function period(): BelongsTo
     {
         return $this->belongsTo(AccountingPeriod::class, 'accounting_period_id');
     }
 
+    /**
+     * @return BelongsTo<ChartOfAccount, $this>
+     */
     public function account(): BelongsTo
     {
         return $this->belongsTo(ChartOfAccount::class, 'account_id');
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);

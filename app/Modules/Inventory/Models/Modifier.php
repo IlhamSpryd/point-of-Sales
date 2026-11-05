@@ -9,6 +9,7 @@ use App\Models\ModifierGroup;
 use App\Models\ModifierIngredient;
 use App\Models\OrderItem;
 use App\Models\OrderItemModifier;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -19,6 +20,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * Contoh: "Ice", "Hot", "Less Sugar", "Oat Milk" (+Rp5.000).
  */
 // PATCH FOR M-02 (lihat ModifierGroup.php untuk alasan penuh). | 2026-09-24
+/**
+ * @property int $id
+ * @property int $modifier_group_id
+ * @property int $extra_price
+ * @property int $tenant_id
+ * @property-read Collection<int, Ingredient> $ingredients
+ */
 class Modifier extends Model
 {
     use AssignsTenant;
@@ -38,6 +46,8 @@ class Modifier extends Model
 
     /**
      * Relasi (BelongsTo): Setiap opsi pasti tergabung ke satu grup varian induknya.
+     *
+     * @return BelongsTo<ModifierGroup, $this>
      */
     public function modifierGroup(): BelongsTo
     {
@@ -46,6 +56,8 @@ class Modifier extends Model
 
     /**
      * Relasi (BelongsToMany): Bahan baku ekstra (BOM) untuk modifier ini.
+     *
+     * @return BelongsToMany<Ingredient, $this, ModifierIngredient>
      */
     public function ingredients(): BelongsToMany
     {
@@ -57,6 +69,8 @@ class Modifier extends Model
 
     /**
      * Relasi (BelongsToMany): Rincian pesanan yang menggunakan modifier ini.
+     *
+     * @return BelongsToMany<OrderItem, $this, OrderItemModifier>
      */
     public function orderItems(): BelongsToMany
     {

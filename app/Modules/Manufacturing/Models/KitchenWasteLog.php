@@ -11,6 +11,16 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property numeric-string $quantity
+ * @property numeric-string $cost_price
+ * @property numeric-string $total_loss_amount
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int $ingredient_id
+ * @property int|null $logged_by_user_id
+ */
 class KitchenWasteLog extends Model
 {
     use AssignsTenant, ScopedToTenant;

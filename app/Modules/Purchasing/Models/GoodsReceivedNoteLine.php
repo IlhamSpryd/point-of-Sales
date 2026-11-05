@@ -22,17 +22,17 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string $purchasable_type
  * @property int $purchasable_id
  * @property string $uom
- * @property string $uom_conversion_factor
- * @property string $received_qty
- * @property string $accepted_qty
- * @property string $rejected_qty
- * @property string $damaged_qty
+ * @property numeric-string $uom_conversion_factor
+ * @property numeric-string $received_qty
+ * @property numeric-string $accepted_qty
+ * @property numeric-string $rejected_qty
+ * @property numeric-string $damaged_qty
  * @property DamageDispositionEnum|null $damage_disposition
  * @property string|null $rejection_reason
- * @property string $base_accepted_qty
- * @property string $unit_cost_snapshot
- * @property string $allocated_landed_cost_per_unit
- * @property string $effective_unit_cost
+ * @property numeric-string $base_accepted_qty
+ * @property numeric-string $unit_cost_snapshot
+ * @property numeric-string $allocated_landed_cost_per_unit
+ * @property numeric-string $effective_unit_cost
  * @property string|null $batch_number
  * @property CarbonInterface|null $expiry_date
  * @property string|null $storage_location
@@ -74,6 +74,9 @@ class GoodsReceivedNoteLine extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
@@ -95,6 +98,9 @@ class GoodsReceivedNoteLine extends Model
         return $this->belongsTo(PurchaseOrderLine::class, 'purchase_order_line_id');
     }
 
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function purchasable(): MorphTo
     {
         return $this->morphTo();

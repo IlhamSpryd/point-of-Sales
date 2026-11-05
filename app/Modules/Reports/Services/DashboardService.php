@@ -26,6 +26,8 @@ class DashboardService
     /**
      * Mengumpulkan ringkasan metrics untuk dashboard.
      * OPTIMASI: di-cache 90 detik per tenant & store scope.
+     *
+     * @return array<string, mixed>
      */
     public function getDashboardMetrics(): array
     {
@@ -89,15 +91,29 @@ class DashboardService
                 ", [$thisMonth, $thisYear, $lastMonth, $lastYear, $thisMonth, $thisYear, $lastMonth, $lastYear])
                 ->first();
 
+            /** @var object{total_earnings: float|int|string, total_orders: int, this_month_earnings: float|int|string, last_month_earnings: float|int|string, this_month_orders: int, last_month_orders: int, cash_orders: int, qris_orders: int, ewallet_orders: int, card_orders: int} $kpi */
+            $kpi = $kpi ?? (object) [
+                'total_earnings' => 0,
+                'total_orders' => 0,
+                'this_month_earnings' => 0,
+                'last_month_earnings' => 0,
+                'this_month_orders' => 0,
+                'last_month_orders' => 0,
+                'cash_orders' => 0,
+                'qris_orders' => 0,
+                'ewallet_orders' => 0,
+                'card_orders' => 0,
+            ];
+
             $totalEarnings = (float) $kpi->total_earnings;
             $totalOrders = (int) $kpi->total_orders;
             $productsCount = Product::where('is_active', true)->count();
 
-            $earningsDeltaPercent = $kpi->last_month_earnings > 0
-                ? round((($kpi->this_month_earnings - $kpi->last_month_earnings) / $kpi->last_month_earnings) * 100, 1)
+            $earningsDeltaPercent = (float) $kpi->last_month_earnings > 0
+                ? round((((float) $kpi->this_month_earnings - (float) $kpi->last_month_earnings) / (float) $kpi->last_month_earnings) * 100, 1)
                 : null;
-            $ordersDeltaPercent = $kpi->last_month_orders > 0
-                ? round((($kpi->this_month_orders - $kpi->last_month_orders) / $kpi->last_month_orders) * 100, 1)
+            $ordersDeltaPercent = (int) $kpi->last_month_orders > 0
+                ? round((((int) $kpi->this_month_orders - (int) $kpi->last_month_orders) / (int) $kpi->last_month_orders) * 100, 1)
                 : null;
 
             $lowStockCount = Product::where('is_active', true)->where('stock', '<=', 10)->count();
@@ -135,7 +151,8 @@ class DashboardService
                 ->keyBy('hari');
 
             $hasRealMonthData = $monthlySalesQuery->isNotEmpty();
-            $maxDaily = $hasRealMonthData ? (float) max($monthlySalesQuery->pluck('total')->toArray()) : 0.0;
+            $monthlyTotals = $monthlySalesQuery->pluck('total')->map(fn ($v) => (float) $v)->all();
+            $maxDaily = $monthlyTotals !== [] ? max($monthlyTotals) : 0.0;
             if ($maxDaily <= 0) {
                 $maxDaily = 1.0;
             }
@@ -157,7 +174,9 @@ class DashboardService
 
                 $isHighlighted = ($d === $activeDay);
                 $dClamped = min($daysInMonth, $d);
-                $dayDate = Carbon::create($now->year, $now->month, $dClamped)->locale('id')->isoFormat('dddd, D MMMM Y');
+                $dayCarbon = Carbon::create($now->year, $now->month, $dClamped) ?? $now;
+                $dayCarbon->locale('id');
+                $dayDate = $dayCarbon->isoFormat('dddd, D MMMM Y');
                 $monthlyHistogram[] = [
                     'day' => (string) $d,
                     'label' => (string) $d,
@@ -212,10 +231,11 @@ class DashboardService
                 $dayName = $weekDaysMap[$d->dayOfWeekIso] ?? $d->format('D');
                 $isHighlighted = ($daysAgo === 0);
 
+                $d->locale('id');
                 $weeklyHistogram[] = [
                     'day' => $dayName,
                     'label' => $dayName.' ('.$d->format('d/m').')',
-                    'date' => $d->locale('id')->isoFormat('dddd, D MMMM Y'),
+                    'date' => $d->isoFormat('dddd, D MMMM Y'),
                     'height' => $height,
                     'total' => $val,
                     'count' => $count,
@@ -270,7 +290,9 @@ class DashboardService
             $activeDayTotal = $activeItem ? (float) $activeItem['total'] : 0.0;
             $activeDayFormatted = 'Rp '.number_format($activeDayTotal, 0, ',', '.');
             $activeDayClamped = min($daysInMonth, (int) $activeDay);
-            $activeDayDate = Carbon::create($now->year, $now->month, $activeDayClamped)->locale('id')->isoFormat('dddd, D MMMM Y');
+            $activeCarbon = Carbon::create($now->year, $now->month, $activeDayClamped) ?? $now;
+            $activeCarbon->locale('id');
+            $activeDayDate = $activeCarbon->isoFormat('dddd, D MMMM Y');
 
             // 3.2 Quarterly Statistics (DEMURE Bottom Card 1)
             $currentQuarter = $now->quarter;
@@ -499,10 +521,14 @@ class DashboardService
 
     /**
      * Generate path SVG Bezier Curve halus untuk grafik 7-hari.
+     *
+     * @param  array<int, float>  $revenueData
+     * @param  array<int, string>  $chartDates
+     * @return array<string, mixed>
      */
     private function buildChartSvg(array $revenueData, array $chartDates): array
     {
-        $maxVal = max($revenueData) ?: 10000000.0;
+        $maxVal = ($revenueData !== [] ? max($revenueData) : 0.0) ?: 10000000.0;
         $ceil = $maxVal * 1.18;
         if ($ceil <= 0) {
             $ceil = 10000000.0;
@@ -596,6 +622,8 @@ class DashboardService
 
     /**
      * Hitung cubic bezier Catmull-Rom path string.
+     *
+     * @param  array<int, array{x: float, y: float, val?: float, date?: string, formatted?: string}>  $points
      */
     private function calculateBezierPath(array $points): string
     {

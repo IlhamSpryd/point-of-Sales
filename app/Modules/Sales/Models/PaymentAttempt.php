@@ -14,15 +14,31 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Shift;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int $order_id
+ * @property int|null $payment_id
+ * @property int|null $device_id
+ * @property int|null $shift_id
+ * @property int $amount
+ * @property int|null $initiated_by_user_id
+ * @property array<int|string, mixed>|string|null $raw_response_meta
+ */
 class PaymentAttempt extends Model
 {
     use AssignsStore;
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToStore;
     use ScopedToTenant;
 
@@ -58,26 +74,41 @@ class PaymentAttempt extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Order, $this>
+     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * @return BelongsTo<Payment, $this>
+     */
     public function payment(): BelongsTo
     {
         return $this->belongsTo(Payment::class);
     }
 
+    /**
+     * @return BelongsTo<Device, $this>
+     */
     public function device(): BelongsTo
     {
         return $this->belongsTo(Device::class);
     }
 
+    /**
+     * @return BelongsTo<Shift, $this>
+     */
     public function shift(): BelongsTo
     {
         return $this->belongsTo(Shift::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function initiatedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'initiated_by_user_id');

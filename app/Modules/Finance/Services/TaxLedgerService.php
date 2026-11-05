@@ -48,12 +48,12 @@ class TaxLedgerService
         $date = $data['transaction_date'] ?? now()->toDateString();
         $dateStr = $date instanceof CarbonInterface ? $date->toDateString() : Carbon::parse($date)->toDateString();
 
-        $taxBaseAmount = bcadd((string) ($data['tax_base_amount'] ?? '0.00'), '0', 2);
-        $taxAmount = bcadd((string) ($data['tax_amount'] ?? '0.00'), '0', 2);
+        $taxBaseAmount = bcadd(bc_num($data['tax_base_amount'] ?? '0.00'), '0', 2);
+        $taxAmount = bcadd(bc_num($data['tax_amount'] ?? '0.00'), '0', 2);
 
         // Ambil tarif efektif jika tidak diberikan
         $ratePercent = isset($data['applied_rate'])
-            ? bcadd((string) $data['applied_rate'], '0', 4)
+            ? bcadd(bc_num($data['applied_rate']), '0', 4)
             : ($this->taxConfigService->resolveEffectiveRate($taxCode, $dateStr)?->rate_percent ?? '0.0000');
 
         $taxRateId = $data['tax_rate_id'] ?? $this->taxConfigService->resolveEffectiveRate($taxCode, $dateStr)?->id;
@@ -149,7 +149,7 @@ class TaxLedgerService
             }
 
             $sums = $glLines->selectRaw('COALESCE(SUM(credit_amount), 0) as total_cr, COALESCE(SUM(debit_amount), 0) as total_db')->first();
-            $outputGl = bcsub((string) ($sums->total_cr ?? '0.00'), (string) ($sums->total_db ?? '0.00'), 2);
+            $outputGl = bcsub(bc_num($sums->total_cr ?? '0.00'), bc_num($sums->total_db ?? '0.00'), 2);
         }
 
         $outputDiff = bcsub($outputSubledger, $outputGl, 2);
@@ -185,7 +185,7 @@ class TaxLedgerService
             }
 
             $sums = $glLines->selectRaw('COALESCE(SUM(debit_amount), 0) as total_db, COALESCE(SUM(credit_amount), 0) as total_cr')->first();
-            $inputGl = bcsub((string) ($sums->total_db ?? '0.00'), (string) ($sums->total_cr ?? '0.00'), 2);
+            $inputGl = bcsub(bc_num($sums->total_db ?? '0.00'), bc_num($sums->total_cr ?? '0.00'), 2);
         }
 
         $inputDiff = bcsub($inputSubledger, $inputGl, 2);

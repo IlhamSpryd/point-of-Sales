@@ -26,6 +26,7 @@ class OnboardingWizardController extends Controller
     public function businessProfile(Request $request): View|RedirectResponse
     {
         $user = $request->user();
+        abort_unless($user !== null, 401);
         $tenant = $user->tenant;
 
         if ($tenant === null) {
@@ -74,7 +75,9 @@ class OnboardingWizardController extends Controller
      */
     public function storeBusinessProfile(StoreBusinessProfileRequest $request): RedirectResponse
     {
-        $tenant = $request->user()->tenant;
+        $user = $request->user();
+        abort_unless($user !== null && $user->tenant !== null, 403);
+        $tenant = $user->tenant;
 
         $this->onboardingService->saveBusinessProfile($tenant, $request->validated());
 
@@ -88,6 +91,7 @@ class OnboardingWizardController extends Controller
     public function initialBranch(Request $request): View|RedirectResponse
     {
         $user = $request->user();
+        abort_unless($user !== null, 401);
         $tenant = $user->tenant;
 
         if ($tenant === null) {
@@ -124,6 +128,7 @@ class OnboardingWizardController extends Controller
     public function storeInitialBranch(StoreInitialBranchRequest $request): RedirectResponse
     {
         $user = $request->user();
+        abort_unless($user !== null && $user->tenant !== null, 403);
         $tenant = $user->tenant;
 
         $store = $this->onboardingService->saveInitialBranch($tenant, $request->validated(), $user);

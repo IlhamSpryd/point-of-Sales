@@ -46,21 +46,33 @@ class PostingRuleVersion extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<PostingRule, $this>
+     */
     public function rule(): BelongsTo
     {
         return $this->belongsTo(PostingRule::class, 'posting_rule_id');
     }
 
+    /**
+     * @return HasMany<PostingRuleLine, $this>
+     */
     public function lines(): HasMany
     {
         return $this->hasMany(PostingRuleLine::class, 'posting_rule_version_id')->orderBy('line_sequence');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function createdByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');

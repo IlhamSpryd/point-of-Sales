@@ -5,8 +5,11 @@ namespace App\Modules\Users\Models;
 use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
 use App\Models\User;
+/** @use HasFactory<Factory<static>> */
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -27,8 +30,12 @@ use Illuminate\Support\Str;
 class Role extends Model
 {
     use AssignsTenant;
-    use HasFactory, SoftDeletes;
+
+    /** @use HasFactory<Factory<static>> */
+    use HasFactory;
+
     use ScopedToTenant;
+    use SoftDeletes;
 
     protected $fillable = [
         'tenant_id',
@@ -53,7 +60,7 @@ class Role extends Model
     {
         static::creating(function ($model) {
             if (empty($model->role_code)) {
-                $slug = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', (string) $model->name), 0, 8));
+                $slug = strtoupper(substr((string) preg_replace('/[^A-Za-z0-9]/', '', (string) $model->name), 0, 8));
                 if ($slug !== '') {
                     $candidate = 'ROL-'.$slug;
                     $exists = static::withoutTenantScope()
@@ -72,8 +79,12 @@ class Role extends Model
         });
     }
 
-    // Relasi ke tabel Users
-    public function users()
+    /**
+     * Relasi ke tabel Users
+     *
+     * @return HasMany<User, $this>
+     */
+    public function users(): HasMany
     {
         return $this->hasMany(User::class);
     }
@@ -98,7 +109,7 @@ class Role extends Model
         return false;
     }
 
-    public function setIsAdminAttribute($value): void
+    public function setIsAdminAttribute(mixed $value): void
     {
         // Virtual attribute; ignored during database insertion
     }
@@ -108,7 +119,7 @@ class Role extends Model
         return strtolower($this->name) === 'admin' || strtolower($this->name) === 'superadmin';
     }
 
-    public function setDisplayNameAttribute($value): void
+    public function setDisplayNameAttribute(mixed $value): void
     {
         if (empty($this->attributes['description']) && is_string($value)) {
             $this->attributes['description'] = $value;

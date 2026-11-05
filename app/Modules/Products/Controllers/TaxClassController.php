@@ -49,7 +49,7 @@ class TaxClassController extends Controller
         $tenantId = app(TenantContext::class)->requireTenantId();
         $taxClass = TaxClass::create($request->validated());
 
-        $this->auditTrail->log(
+        $this->auditTrail?->log(
             tenantId: $tenantId,
             action: 'tax_class.created',
             userId: auth()->id(),
@@ -73,7 +73,7 @@ class TaxClassController extends Controller
 
         $taxClass->update($request->validated());
 
-        $this->auditTrail->log(
+        $this->auditTrail?->log(
             tenantId: $tenantId,
             action: 'tax_class.updated',
             userId: auth()->id(),
@@ -99,7 +99,7 @@ class TaxClassController extends Controller
 
             $taxClass->delete();
 
-            $this->auditTrail->log(
+            $this->auditTrail?->log(
                 tenantId: $tenantId,
                 action: 'tax_class.deleted',
                 userId: auth()->id(),

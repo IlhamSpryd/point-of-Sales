@@ -20,8 +20,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $store_id
  * @property int $ap_payment_id
  * @property int $supplier_invoice_id
- * @property string $allocated_amount
- * @property string $discount_taken_amount
+ * @property numeric-string $allocated_amount
+ * @property numeric-string $discount_taken_amount
  * @property ApPaymentAllocationStatusEnum $status
  * @property string $idempotency_key
  * @property CarbonInterface $created_at
@@ -45,21 +45,33 @@ class ApPaymentAllocation extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<ApPayment, $this>
+     */
     public function payment(): BelongsTo
     {
         return $this->belongsTo(ApPayment::class, 'ap_payment_id');
     }
 
+    /**
+     * @return BelongsTo<SupplierInvoice, $this>
+     */
     public function supplierInvoice(): BelongsTo
     {
         return $this->belongsTo(SupplierInvoice::class, 'supplier_invoice_id');

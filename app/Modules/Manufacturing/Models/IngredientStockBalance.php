@@ -9,6 +9,21 @@ use App\Models\Concerns\ScopedToTenant;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property float|numeric-string $quantity
+ * @property numeric-string $reserved_quantity
+ * @property numeric-string $baseline_quantity
+ * @property numeric-string $min_stock_level
+ * @property numeric-string $reorder_point
+ * @property numeric-string|null $max_stock_level
+ * @property numeric-string $average_unit_cost
+ * @property numeric-string $last_unit_cost
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int $ingredient_id
+ * @property int $baseline_movement_id
+ * @property int|null $last_movement_id
+ */
 class IngredientStockBalance extends Model
 {
     use AssignsTenant, ScopedToTenant;

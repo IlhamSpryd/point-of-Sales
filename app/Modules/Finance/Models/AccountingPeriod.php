@@ -57,36 +57,57 @@ class AccountingPeriod extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function closedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'closed_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function reopenedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reopened_by_user_id');
     }
 
+    /**
+     * @return HasMany<JournalEntry, $this>
+     */
     public function journalEntries(): HasMany
     {
         return $this->hasMany(JournalEntry::class, 'accounting_period_id');
     }
 
+    /**
+     * @return HasMany<AccountPeriodBalance, $this>
+     */
     public function balances(): HasMany
     {
         return $this->hasMany(AccountPeriodBalance::class, 'accounting_period_id');
     }
 
+    /**
+     * @return HasMany<PeriodClosingChecklist, $this>
+     */
     public function checklists(): HasMany
     {
         return $this->hasMany(PeriodClosingChecklist::class, 'accounting_period_id');
     }
 
+    /**
+     * @return HasMany<PeriodClosingLog, $this>
+     */
     public function closingLogs(): HasMany
     {
         return $this->hasMany(PeriodClosingLog::class, 'accounting_period_id');

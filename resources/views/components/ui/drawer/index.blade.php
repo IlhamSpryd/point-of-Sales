@@ -69,7 +69,7 @@
                 x-transition:leave-start="opacity-100"
                 x-transition:leave-end="opacity-0"
                 @click="open = false"
-                class="fixed inset-0 z-40 bg-black/45 backdrop-blur-[2px]"
+                class="fixed inset-0 z-40 bg-overlay-scrim backdrop-blur-[2px]"
                 aria-hidden="true"
             ></div>
 
@@ -107,7 +107,7 @@
                         @click="open = false"
                         type="button"
                         aria-label="Tutup panel"
-                        class="inline-flex size-8 items-center justify-center rounded-lg text-foreground/50 hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                        class="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                     >
                         <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
                             <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"></path>
@@ -120,7 +120,7 @@
                 </div>
 
                 @isset($footer)
-                    <div class="px-6 py-4 border-t border-border bg-secondary/40 shrink-0 flex items-center justify-end gap-2.5">
+                    <div class="px-6 py-4 border-t border-border bg-secondary shrink-0 flex items-center justify-end gap-2.5">
                         {{ $footer }}
                     </div>
                 @endisset

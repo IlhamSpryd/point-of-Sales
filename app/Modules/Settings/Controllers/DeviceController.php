@@ -58,7 +58,7 @@ class DeviceController extends Controller
     public function store(StoreDeviceRequest $request): RedirectResponse
     {
         $validated = $request->validated();
-        $store = Store::withoutTenantScope()->findOrFail($validated['store_id']);
+        $store = Store::withoutTenantScope()->findOrFail((int) $validated['store_id']);
 
         try {
             $device = $this->deviceService->registerDevice($store, $validated);

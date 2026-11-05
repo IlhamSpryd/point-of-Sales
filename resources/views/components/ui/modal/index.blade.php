@@ -82,7 +82,7 @@
                 x-transition:leave="ease-in duration-150"
                 x-transition:leave-start="opacity-100"
                 x-transition:leave-end="opacity-0"
-                class="absolute inset-0 h-full w-full bg-black/50 backdrop-blur-[2px]"
+                class="absolute inset-0 h-full w-full bg-overlay-scrim backdrop-blur-[2px]"
                 @click="modalOpen = false"
                 aria-hidden="true"
             ></div>
@@ -130,7 +130,7 @@
                     @if ($closeButton ?? true)
                         <div class="absolute right-3.5 top-3.5 z-50">
                             <button
-                                class="inline-flex size-8 items-center justify-center rounded-lg bg-transparent text-foreground/45 transition hover:bg-secondary hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+                                class="inline-flex size-8 items-center justify-center rounded-lg bg-transparent text-muted-foreground transition hover:bg-secondary hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                                 @click="modalOpen = false"
                                 type="button"
                                 aria-label="Tutup dialog"

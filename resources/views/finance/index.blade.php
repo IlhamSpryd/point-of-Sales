@@ -45,7 +45,7 @@
         </div>
 
         <!-- Section Info Card -->
-        <div class="card-surface p-6 rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 space-y-4 shadow-xs">
+        <div class="card-surface p-6 rounded-2xl border border-border dark:border-zinc-800 space-y-4 shadow-xs">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-900 dark:text-zinc-100">
                     <span class="material-symbols-rounded text-xl">account_balance_wallet</span>
@@ -75,7 +75,7 @@
                     <span class="text-xs text-zinc-400 font-mono">{{ $postedJournalsCount }} Posted Journals</span>
                 </div>
 
-                <div class="card-surface rounded-2xl overflow-hidden border border-[#E5E7EB] dark:border-zinc-800 shadow-xs">
+                <div class="card-surface rounded-2xl overflow-hidden border border-border dark:border-zinc-800 shadow-xs">
                     @if($recentJournals->isEmpty())
                         <div class="p-8 text-center space-y-2">
                             <span class="material-symbols-rounded text-3xl text-zinc-300 dark:text-zinc-600">hourglass_empty</span>
@@ -137,7 +137,7 @@
                     <span class="text-xs text-zinc-400 font-mono">{{ $cashBankAccounts->count() }} Accounts</span>
                 </div>
 
-                <div class="card-surface rounded-2xl p-5 border border-[#E5E7EB] dark:border-zinc-800 space-y-3 shadow-xs">
+                <div class="card-surface rounded-2xl p-5 border border-border dark:border-zinc-800 space-y-3 shadow-xs">
                     @if($cashBankAccounts->isEmpty())
                         <div class="text-center py-6 space-y-2">
                             <span class="material-symbols-rounded text-2xl text-zinc-300 dark:text-zinc-600">account_balance</span>

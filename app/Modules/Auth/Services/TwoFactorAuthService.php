@@ -78,7 +78,11 @@ class TwoFactorAuthService
             $hmac = hash_hmac('sha1', $timeBytes, $binarySecret, true);
 
             $offsetByte = ord($hmac[19]) & 0x0F;
-            $binaryCode = (unpack('N', substr($hmac, $offsetByte, 4))[1] & 0x7FFFFFFF) % 1000000;
+            $unpacked = unpack('N', substr($hmac, $offsetByte, 4));
+            if ($unpacked === false || ! isset($unpacked[1])) {
+                continue;
+            }
+            $binaryCode = ($unpacked[1] & 0x7FFFFFFF) % 1000000;
             $calculatedCode = str_pad((string) $binaryCode, 6, '0', STR_PAD_LEFT);
 
             if (hash_equals($calculatedCode, $code)) {
@@ -120,7 +124,7 @@ class TwoFactorAuthService
      */
     public function verifyRecoveryCode(User $user, string $code): bool
     {
-        $recoveryCodes = $user->two_factor_recovery_codes ?? [];
+        $recoveryCodes = is_array($user->two_factor_recovery_codes) ? $user->two_factor_recovery_codes : [];
         if (empty($recoveryCodes)) {
             return false;
         }

@@ -12,6 +12,7 @@ use App\Models\ProductAttributeValue;
 use App\Models\ProductVariantAttributeValue;
 use App\Models\StoreProductAssortment;
 use App\Models\Tenant;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,16 +29,19 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $variant_name
  * @property string|null $sku
  * @property string|null $barcode
- * @property float|null $price_override
+ * @property float|numeric-string|null $price_override
  * @property string $costing_method
- * @property float $standard_cost
+ * @property float|numeric-string $standard_cost
  * @property bool $is_active
  * @property int $sort_order
  */
 class ProductVariant extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToTenant;
     use SoftDeletes;
 
@@ -66,16 +70,25 @@ class ProductVariant extends Model
         'is_open_price' => 'boolean',
     ];
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Product, $this>
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'product_id');
     }
 
+    /**
+     * @return BelongsToMany<ProductAttributeValue, $this>
+     */
     public function attributeValues(): BelongsToMany
     {
         return $this->belongsToMany(
@@ -86,16 +99,25 @@ class ProductVariant extends Model
         )->withPivot('attribute_id')->withTimestamps();
     }
 
+    /**
+     * @return HasMany<ProductVariantAttributeValue, $this>
+     */
     public function variantAttributeValues(): HasMany
     {
         return $this->hasMany(ProductVariantAttributeValue::class, 'variant_id');
     }
 
+    /**
+     * @return HasMany<StoreProductAssortment, $this>
+     */
     public function storeAssortments(): HasMany
     {
         return $this->hasMany(StoreProductAssortment::class, 'product_variant_id');
     }
 
+    /**
+     * @return HasMany<OrderItem, $this>
+     */
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class, 'product_variant_id');

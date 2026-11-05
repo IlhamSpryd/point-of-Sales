@@ -5,6 +5,7 @@ namespace App\Modules\Auth\Models;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -29,6 +30,11 @@ use Illuminate\Support\Str;
  * Konsumsi (menukar token dengan password) WAJIB atomik — lihat
  * {@see consume()} — karena token yang dipakai dua request konkuren tidak
  * boleh menghasilkan dua perubahan password.
+ *
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $user_id
+ * @property int $send_attempts
  */
 class OwnerOnboardingToken extends Model
 {
@@ -47,12 +53,18 @@ class OwnerOnboardingToken extends Model
         'send_attempts' => 'integer',
     ];
 
-    public function tenant()
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
+    public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
-    public function user()
+    /**
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

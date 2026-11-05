@@ -7,10 +7,8 @@ namespace Tests\Feature\Inventory;
 use App\Enums\StockMovementType;
 use App\Models\Tenant;
 use App\Modules\Inventory\Exceptions\InsufficientStockException;
-use App\Modules\Inventory\Exceptions\StockOpnameDriftException;
 use App\Modules\Inventory\Services\InventoryCostingService;
 use App\Modules\Inventory\Services\InventoryLedgerService;
-use App\Modules\Inventory\Services\StockOpnameService;
 use App\Modules\Inventory\Services\StockTransferService;
 use App\Modules\Products\Models\Category;
 use App\Modules\Products\Models\Product;
@@ -29,9 +27,13 @@ class Wave3InventoryTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private Store $storeA;
+
     private Store $storeB;
+
     private Category $category;
+
     private User $user;
 
     protected function afterSubclassSetUp(): void
@@ -39,8 +41,8 @@ class Wave3InventoryTest extends TestCase
         parent::afterSubclassSetUp();
 
         $this->tenant = Tenant::create([
-            'name' => 'Resto & Retail Corp ' . uniqid(),
-            'code' => 'RRC-' . strtoupper(Str::random(4)),
+            'name' => 'Resto & Retail Corp '.uniqid(),
+            'code' => 'RRC-'.strtoupper(Str::random(4)),
             'status' => 'ACTIVE',
         ]);
 
@@ -48,21 +50,21 @@ class Wave3InventoryTest extends TestCase
 
         $this->storeA = Store::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'store_code' => 'STR-A-' . uniqid(),
+            'store_code' => 'STR-A-'.uniqid(),
             'name' => 'Cabang Sudirman',
             'is_active' => true,
         ]);
 
         $this->storeB = Store::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'store_code' => 'STR-B-' . uniqid(),
+            'store_code' => 'STR-B-'.uniqid(),
             'name' => 'Cabang Thamrin',
             'is_active' => true,
         ]);
 
         $this->category = Category::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
-            'category_code' => 'CAT-' . uniqid(),
+            'category_code' => 'CAT-'.uniqid(),
             'category_name' => 'Retail General',
             'is_active' => true,
         ]);
@@ -70,7 +72,7 @@ class Wave3InventoryTest extends TestCase
         $this->user = User::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Kasir Inventory',
-            'email' => 'cashier.' . uniqid() . '@example.com',
+            'email' => 'cashier.'.uniqid().'@example.com',
             'password' => bcrypt('password'),
             'is_active' => true,
         ]);
@@ -86,7 +88,7 @@ class Wave3InventoryTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'category_id' => $this->category->id,
             'product_name' => 'Kopi Kemasan 250g',
-            'product_code' => 'KOP-250-' . uniqid(),
+            'product_code' => 'KOP-250-'.uniqid(),
             'product_price' => 50000.00,
             'standard_cost' => 30000.00,
             'stock' => 10,
@@ -145,7 +147,7 @@ class Wave3InventoryTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'category_id' => $this->category->id,
             'product_name' => 'Jaket Limited Edition',
-            'product_code' => 'JKT-LTD-' . uniqid(),
+            'product_code' => 'JKT-LTD-'.uniqid(),
             'product_price' => 750000.00,
             'standard_cost' => 400000.00,
             'stock' => 0,
@@ -226,7 +228,7 @@ class Wave3InventoryTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'category_id' => $this->category->id,
             'product_name' => 'Buku Ensiklopedia',
-            'product_code' => 'BK-ENS-' . uniqid(),
+            'product_code' => 'BK-ENS-'.uniqid(),
             'product_price' => 120000.00,
             'standard_cost' => 80000.00,
             'stock' => 0,
@@ -309,7 +311,7 @@ class Wave3InventoryTest extends TestCase
             'tenant_id' => $this->tenant->id,
             'category_id' => $this->category->id,
             'product_name' => 'Sepatu Sneakers Canvas',
-            'product_code' => 'SPT-CAN-' . uniqid(),
+            'product_code' => 'SPT-CAN-'.uniqid(),
             'product_price' => 350000.00,
             'standard_cost' => 200000.00,
             'stock' => 0,

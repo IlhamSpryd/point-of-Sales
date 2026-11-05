@@ -9,6 +9,7 @@ use App\Core\Traits\ScopedToTenant;
 use App\Enums\StockTransferDiscrepancyResolutionEnum;
 use App\Models\Ingredient;
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,13 +24,13 @@ use Illuminate\Support\Carbon;
  * @property string $item_type // 'product' | 'ingredient'
  * @property ?int $product_id
  * @property ?int $ingredient_id
- * @property string $quantity_requested
- * @property string $quantity_shipped
+ * @property numeric-string $quantity_requested
+ * @property numeric-string $quantity_shipped
  * @property ?string $quantity_received
- * @property string $discrepancy_quantity
+ * @property numeric-string $discrepancy_quantity
  * @property StockTransferDiscrepancyResolutionEnum $discrepancy_resolution
  * @property ?string $discrepancy_reason_code
- * @property string $carrying_unit_cost
+ * @property numeric-string $carrying_unit_cost
  * @property ?string $notes
  * @property ?Carbon $created_at
  * @property ?Carbon $updated_at
@@ -37,7 +38,10 @@ use Illuminate\Support\Carbon;
 class StockTransferItem extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToTenant;
 
     protected $table = 'stock_transfer_items';

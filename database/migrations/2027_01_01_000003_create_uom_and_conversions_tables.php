@@ -42,6 +42,10 @@ return new class extends Migration
             $table->string('barcode', 100)->nullable();
             $table->timestamps();
 
+            $table->index(['tenant_id', 'product_id'], 'puc_tenant_product_idx');
+            $table->index(['tenant_id', 'from_uom_id'], 'puc_tenant_from_uom_idx');
+            $table->index(['tenant_id', 'to_uom_id'], 'puc_tenant_to_uom_idx');
+
             $table->foreign('tenant_id', 'puc_tenant_id_foreign')
                 ->references('id')->on('tenants')
                 ->onDelete('CASCADE');

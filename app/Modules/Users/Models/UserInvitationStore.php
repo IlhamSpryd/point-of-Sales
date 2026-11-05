@@ -5,6 +5,7 @@ namespace App\Modules\Users\Models;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\UserInvitation;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -20,6 +21,7 @@ use Illuminate\Support\Carbon;
  */
 class UserInvitationStore extends Model
 {
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
     protected $table = 'user_invitation_stores';
@@ -30,16 +32,25 @@ class UserInvitationStore extends Model
         'store_id',
     ];
 
+    /**
+     * @return BelongsTo<UserInvitation, $this>
+     */
     public function invitation(): BelongsTo
     {
         return $this->belongsTo(UserInvitation::class, 'user_invitation_id');
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);

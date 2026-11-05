@@ -23,9 +23,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $rule_name
  * @property int|null $target_role_id
  * @property CommissionBasisTypeEnum $basis_type
- * @property float $rate_percent
- * @property float $rate_amount
- * @property float $min_sales_threshold
+ * @property numeric-string $rate_percent
+ * @property numeric-string $rate_amount
+ * @property numeric-string $min_sales_threshold
  * @property int|null $product_id
  * @property bool $is_active
  * @property CarbonInterface $valid_from
@@ -104,7 +104,8 @@ class CommissionRule extends Model
     }
 
     /**
-     * @param  Builder<CommissionRule>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeActiveOn(Builder $query, CarbonInterface|string $date): Builder
     {

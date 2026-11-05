@@ -186,6 +186,7 @@ class ProfileEmailChangeController extends Controller
     public function cancelChange(Request $request): RedirectResponse
     {
         $user = $request->user();
+        abort_unless($user !== null, 401);
         $user->forceFill([
             'pending_email' => null,
             'pending_email_normalized' => null,

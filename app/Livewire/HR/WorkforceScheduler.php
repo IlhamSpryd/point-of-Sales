@@ -149,6 +149,6 @@ class WorkforceScheduler extends Component
             'employees' => $employees,
             'schedules' => $schedules,
             'shiftTemplates' => $shiftTemplates,
-        ])->layout('layouts.app', ['header' => 'Penyusunan Roster & Jadwal Shift']);
+        ])->layout('layouts.app', ['title' => 'Penyusunan Roster & Jadwal Shift — Apeiron']);
     }
 }

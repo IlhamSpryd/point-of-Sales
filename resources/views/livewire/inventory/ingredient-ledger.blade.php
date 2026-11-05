@@ -11,7 +11,7 @@
             </x-ui.button>
 
             <div class="relative w-full sm:w-48">
-                <select wire:model.live="ingredient_id" class="form-input w-full pl-3.5 pr-8 py-2 rounded-lg border border-[#E5E7EB] bg-white text-xs font-medium text-apeiron-ink focus:outline-none focus:ring-1 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all shadow-xs appearance-none">
+                <select wire:model.live="ingredient_id" class="form-input w-full pl-3.5 pr-8 py-2 rounded-lg border border-border bg-white text-xs font-medium text-apeiron-ink focus:outline-none focus:ring-1 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all shadow-xs appearance-none">
                     <option value="">All Raw Materials</option>
                     @foreach($ingredients as $ing)
                         <option value="{{ $ing->id }}">{{ $ing->name }}</option>
@@ -23,7 +23,7 @@
             </div>
             
             <div class="relative w-full sm:w-48">
-                <select wire:model.live="type" class="form-input w-full pl-3.5 pr-8 py-2 rounded-lg border border-[#E5E7EB] bg-white text-xs font-medium text-apeiron-ink focus:outline-none focus:ring-1 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all shadow-xs appearance-none">
+                <select wire:model.live="type" class="form-input w-full pl-3.5 pr-8 py-2 rounded-lg border border-border bg-white text-xs font-medium text-apeiron-ink focus:outline-none focus:ring-1 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all shadow-xs appearance-none">
                     <option value="">All Movement Types</option>
                     <option value="sale_deduction">Sales Deduction (Out)</option>
                     <option value="purchase_receipt">Purchase Receipt (In)</option>

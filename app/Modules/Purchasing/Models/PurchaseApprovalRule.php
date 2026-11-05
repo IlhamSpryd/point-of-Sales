@@ -18,8 +18,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $store_id
  * @property string $document_type
  * @property string $currency_code
- * @property string $min_amount
- * @property string|null $max_amount
+ * @property numeric-string $min_amount
+ * @property numeric-string|null $max_amount
  * @property int $step_order
  * @property int|null $approver_role_id
  * @property string|null $approver_permission
@@ -46,16 +46,25 @@ class PurchaseApprovalRule extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<Role, $this>
+     */
     public function approverRole(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'approver_role_id');
@@ -69,12 +78,12 @@ class PurchaseApprovalRule extends Model
         $amountStr = (string) $amount;
 
         // BaseAmount >= min_amount (inklusif)
-        if (bccomp($amountStr, (string) $this->min_amount, 2) < 0) {
+        if (bccomp(bc_num($amountStr), bc_num($this->min_amount), 2) < 0) {
             return false;
         }
 
         // Jika max_amount ada, BaseAmount <= max_amount (inklusif)
-        if ($this->max_amount !== null && bccomp($amountStr, (string) $this->max_amount, 2) > 0) {
+        if ($this->max_amount !== null && bccomp(bc_num($amountStr), bc_num($this->max_amount), 2) > 0) {
             return false;
         }
 

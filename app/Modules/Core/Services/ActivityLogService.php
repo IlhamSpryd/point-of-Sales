@@ -134,7 +134,7 @@ class ActivityLogService
     /**
      * Cegah update log audit (append-only enforcement).
      *
-     * @param array<string, mixed> $attributes
+     * @param  array<string, mixed>  $attributes
      */
     public function updateLog(int $logId, array $attributes): never
     {

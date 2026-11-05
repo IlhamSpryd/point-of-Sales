@@ -18,6 +18,11 @@ use Illuminate\Database\Eloquent\Model;
  * dapat dipakai ulang. Body email yang tersimpan setelah pengiriman adalah
  * versi yang tautannya sudah disunting (hash token disematkan), sehingga dump
  * database tidak pernah mengembalikan token onboarding yang valid.
+ *
+ * @property int $id
+ * @property int|null $tenant_id
+ * @property int|null $user_id
+ * @property int $attempts
  */
 class EmailOutbox extends Model
 {

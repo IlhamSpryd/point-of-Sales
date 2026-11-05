@@ -2,8 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Livewire\Concerns\InteractsWithToast;
+use App\Livewire\Concerns\WithBulkActions;
+use App\Livewire\Concerns\WithSorting;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\View\ComponentAttributeBag;
+use Livewire\Component;
 use Tests\TestCase;
 
 class DevDojoComponentsIntegrationTest extends TestCase
@@ -14,7 +18,7 @@ class DevDojoComponentsIntegrationTest extends TestCase
 
         $this->assertStringContainsString('Simpan', $html);
         $this->assertStringContainsString('type="button"', $html);
-        $this->assertStringContainsString('bg-linear-to-b', $html);
+        $this->assertStringNotContainsString('bg-linear-to-b', $html);
     }
 
     public function test_can_render_button_with_icon_touch_size(): void
@@ -41,8 +45,11 @@ class DevDojoComponentsIntegrationTest extends TestCase
         $html = Blade::render('<x-ui.badge variant="success">Selesai</x-ui.badge>');
 
         $this->assertStringContainsString('Selesai', $html);
-        $this->assertStringContainsString('bg-green-50', $html);
-        $this->assertStringContainsString('text-green-600', $html);
+        // Status colours come from StatusPalette (semantic tokens), never raw palettes.
+        $this->assertStringContainsString('bg-success-muted', $html);
+        $this->assertStringContainsString('text-success', $html);
+        $this->assertStringContainsString('border-success-border', $html);
+        $this->assertStringNotContainsString('bg-green-50', $html);
     }
 
     public function test_can_render_devdojo_ui_input_with_label_component(): void
@@ -61,7 +68,7 @@ class DevDojoComponentsIntegrationTest extends TestCase
         $this->assertStringContainsString('Gagal', $html);
         $this->assertStringContainsString('Terjadi kesalahan sistem.', $html);
         $this->assertStringContainsString('role="alert"', $html);
-        $this->assertStringContainsString('bg-rose-50', $html);
+        $this->assertStringContainsString('bg-destructive-muted', $html);
     }
 
     public function test_can_render_devdojo_ui_modal_component(): void
@@ -105,13 +112,14 @@ class DevDojoComponentsIntegrationTest extends TestCase
     {
         $html = Blade::render('<x-ui.badge type="danger" :dot="true">Batal</x-ui.badge>');
         $this->assertStringContainsString('Batal', $html);
-        $this->assertStringContainsString('bg-rose-50', $html);
-        $this->assertStringContainsString('bg-rose-500', $html); // dot color
+        $this->assertStringContainsString('bg-destructive-muted', $html);
+        $this->assertStringContainsString('bg-destructive', $html); // dot color
+        $this->assertStringNotContainsString('bg-rose-50', $html);
 
         $paidHtml = Blade::render('<x-ui.badge status="paid" :dot="true">Lunas</x-ui.badge>');
         $this->assertStringContainsString('Lunas', $paidHtml);
-        $this->assertStringContainsString('bg-green-50', $paidHtml);
-        $this->assertStringContainsString('bg-emerald-500', $paidHtml); // dot color
+        $this->assertStringContainsString('bg-success-muted', $paidHtml);
+        $this->assertStringContainsString('bg-success', $paidHtml); // dot color
     }
 
     public function test_can_render_ui_button_with_danger_variant_and_href(): void
@@ -319,9 +327,10 @@ class DevDojoComponentsIntegrationTest extends TestCase
 
     public function test_livewire_concerns_with_sorting_and_bulk_actions(): void
     {
-        $component = new class {
-            use \App\Livewire\Concerns\WithSorting;
-            use \App\Livewire\Concerns\WithBulkActions;
+        $component = new class
+        {
+            use WithBulkActions;
+            use WithSorting;
 
             public int $resetPageCalled = 0;
 
@@ -363,9 +372,10 @@ class DevDojoComponentsIntegrationTest extends TestCase
         $this->assertSame(0, $component->getSelectedCountProperty());
 
         // Test plain component without resetPage or getSelectableIds
-        $plainComponent = new class {
-            use \App\Livewire\Concerns\WithSorting;
-            use \App\Livewire\Concerns\WithBulkActions;
+        $plainComponent = new class
+        {
+            use WithBulkActions;
+            use WithSorting;
         };
         $plainComponent->sortBy('title');
         $this->assertSame('title', $plainComponent->sortField);
@@ -396,19 +406,21 @@ class DevDojoComponentsIntegrationTest extends TestCase
 
     public function test_livewire_interacts_with_toast_concern(): void
     {
-        $toastComponent = new class extends \Livewire\Component {
-            use \App\Livewire\Concerns\InteractsWithToast;
+        $toastComponent = new class extends Component
+        {
+            use InteractsWithToast;
 
             /** @var array<int, array{0: string, 1: array<string, mixed>}> */
             public array $dispatchedEvents = [];
 
             /**
-             * @param string $event
-             * @param mixed ...$params
+             * @param  string  $event
+             * @param  mixed  ...$params
              */
             public function dispatch($event, ...$params): self
             {
                 $this->dispatchedEvents[] = [$event, $params[0] ?? []];
+
                 return $this;
             }
 
@@ -452,5 +464,3 @@ class DevDojoComponentsIntegrationTest extends TestCase
         $this->assertSame('info', $toastComponent->dispatchedEvents[3][1]['type']);
     }
 }
-
-

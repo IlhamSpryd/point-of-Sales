@@ -6,6 +6,9 @@ namespace App\Modules\Pricing\DataTransferObjects;
 
 final readonly class AppliedPromotionDto
 {
+    /**
+     * @param  array<string, mixed>  $meta
+     */
     public function __construct(
         public int $campaignId,
         public int $ruleId,
@@ -17,6 +20,9 @@ final readonly class AppliedPromotionDto
         public array $meta = [],
     ) {}
 
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         return [

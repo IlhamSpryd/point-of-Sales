@@ -21,10 +21,10 @@
         'relative w-full rounded-xl border p-4 text-xs sm:text-sm flex items-start gap-3',
         'bg-card text-card-foreground border-border' => $resolvedVariant === 'primary',
         'bg-secondary text-secondary-foreground border-border' => $resolvedVariant === 'secondary',
-        'bg-rose-50 text-rose-700 border-rose-200' => $resolvedVariant === 'destructive',
-        'bg-blue-50 text-blue-700 border-blue-200' => $resolvedVariant === 'info',
-        'bg-emerald-50 text-emerald-700 border-emerald-200' => $resolvedVariant === 'success',
-        'bg-amber-50 text-amber-700 border-amber-200' => $resolvedVariant === 'warning',
+        'bg-destructive-muted text-destructive border-destructive-border' => $resolvedVariant === 'destructive',
+        'bg-info-muted text-info border-info-border' => $resolvedVariant === 'info',
+        'bg-success-muted text-success border-success-border' => $resolvedVariant === 'success',
+        'bg-warning-muted text-warning border-warning-border' => $resolvedVariant === 'warning',
     ]);
 
     $defaultIconNames = [
@@ -64,7 +64,7 @@
             type="button"
             @click="shown = false"
             aria-label="Tutup peringatan"
-            class="inline-flex size-6 shrink-0 items-center justify-center rounded-md opacity-60 hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
+            class="inline-flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
         >
             <span class="material-symbols-rounded text-base leading-none" aria-hidden="true">close</span>
         </button>

@@ -13,28 +13,28 @@
     @enderror
 
     {{-- Station Filter Bar (FINDING-P2-05) --}}
-    <div class="flex items-center justify-between bg-white border border-gray-200 rounded-2xl px-5 py-3 shadow-xs">
+    <div class="flex items-center justify-between card-surface bg-card border border-border rounded-2xl px-5 py-3 shadow-xs">
         <div class="flex items-center gap-2">
-            <span class="material-symbols-rounded text-gray-400 text-lg">tune</span>
-            <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Stasiun:</span>
+            <span class="material-symbols-rounded text-muted-foreground text-lg">tune</span>
+            <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">Stasiun:</span>
         </div>
         <div class="flex items-center gap-2">
             <button
                 type="button"
                 wire:click="setStationFilter('all')"
-                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all {{ $stationFilter === 'all' ? 'bg-apeiron-ink text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer {{ $stationFilter === 'all' ? 'bg-primary text-primary-foreground shadow-xs' : 'bg-muted text-muted-foreground hover:text-foreground' }}">
                 Semua Stasiun
             </button>
             <button
                 type="button"
                 wire:click="setStationFilter('kitchen')"
-                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all {{ $stationFilter === 'kitchen' ? 'bg-amber-600 text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer {{ $stationFilter === 'kitchen' ? 'bg-amber-600 text-white shadow-xs' : 'bg-muted text-muted-foreground hover:text-foreground' }}">
                 Kitchen (Food)
             </button>
             <button
                 type="button"
                 wire:click="setStationFilter('bar')"
-                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all {{ $stationFilter === 'bar' ? 'bg-sky-600 text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200' }}">
+                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer {{ $stationFilter === 'bar' ? 'bg-sky-600 text-white shadow-xs' : 'bg-muted text-muted-foreground hover:text-foreground' }}">
                 Bar (Drinks)
             </button>
         </div>

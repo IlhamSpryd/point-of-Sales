@@ -48,26 +48,41 @@ class PurchaseApprovalLog extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<PurchaseApprovalRequest, $this>
+     */
     public function approvalRequest(): BelongsTo
     {
         return $this->belongsTo(PurchaseApprovalRequest::class, 'approval_request_id');
     }
 
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function approvable(): MorphTo
     {
         return $this->morphTo();
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function actor(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_id');
     }
 
+    /**
+     * @return BelongsTo<Role, $this>
+     */
     public function actorRole(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'actor_role_id');

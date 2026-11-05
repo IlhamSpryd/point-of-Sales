@@ -157,7 +157,7 @@ class StockAdjustmentService
                 description: "Draft penyesuaian stok #{$adjustment->adjustment_number} diperbarui",
             );
 
-            return $adjustment->fresh(['items']);
+            return $adjustment->fresh(['items']) ?? $adjustment;
         });
     }
 
@@ -184,7 +184,7 @@ class StockAdjustmentService
             description: "Draft penyesuaian stok #{$adjustment->adjustment_number} dibatalkan",
         );
 
-        return $adjustment->fresh(['items']);
+        return $adjustment->fresh(['items']) ?? $adjustment;
     }
 
     /**
@@ -225,7 +225,7 @@ class StockAdjustmentService
 
                 // Pastikan unit_cost_snapshot terisi dari WAC cabang saat ini jika masih 0
                 $unitCost = (string) $item->unit_cost_snapshot;
-                if (bccomp($unitCost, '0', 4) === 0 && $balance && bccomp((string) $balance->average_unit_cost, '0', 4) > 0) {
+                if (bccomp(bc_num($unitCost), '0', 4) === 0 && $balance && bccomp(bc_num($balance->average_unit_cost), '0', 4) > 0) {
                     $unitCost = (string) $balance->average_unit_cost;
                     $item->update(['unit_cost_snapshot' => $unitCost]);
                 }
@@ -235,7 +235,7 @@ class StockAdjustmentService
                     $currentQty = (string) ($balance->quantity ?? '0.0000');
                     $qtyToDeduct = (string) $item->quantity;
 
-                    if (bccomp($currentQty, $qtyToDeduct, 4) < 0) {
+                    if (bccomp(bc_num($currentQty), bc_num($qtyToDeduct), 4) < 0) {
                         throw new DomainException(
                             "Penyesuaian stok ditolak (OD-05): Saldo cabang untuk {$item->item_name} tersedia {$currentQty}, "
                             ."tidak mencukupi untuk pengurangan keluar sebesar {$qtyToDeduct}."
@@ -301,7 +301,7 @@ class StockAdjustmentService
             // Emisi outbox akuntansi ke Modul 7 (PR-INV-01)
             app(InventoryAccountingService::class)->recordStockAdjustmentPosted($locked);
 
-            return $locked->fresh(['items']);
+            return $locked->fresh(['items']) ?? $locked;
         });
     }
 
@@ -345,13 +345,13 @@ class StockAdjustmentService
         }
 
         $qty = (string) ($itemData['quantity'] ?? '0');
-        if (bccomp($qty, '0', 4) <= 0) {
+        if (bccomp(bc_num($qty), '0', 4) <= 0) {
             throw new InvalidArgumentException("quantity harus lebih besar dari 0. Diberikan: {$qty}");
         }
 
         // Resolusi unit cost snapshot
         $unitCostSnapshot = '0.0000';
-        if (isset($itemData['unit_cost_snapshot']) && bccomp((string) $itemData['unit_cost_snapshot'], '0', 4) >= 0) {
+        if (isset($itemData['unit_cost_snapshot']) && bccomp(bc_num($itemData['unit_cost_snapshot']), '0', 4) >= 0) {
             $unitCostSnapshot = (string) $itemData['unit_cost_snapshot'];
         }
 
@@ -369,9 +369,9 @@ class StockAdjustmentService
                 throw new InvalidArgumentException("Product ID {$productId} tidak ditemukan pada tenant {$adjustment->tenant_id}.");
             }
 
-            if (bccomp($unitCostSnapshot, '0', 4) === 0) {
+            if (bccomp(bc_num($unitCostSnapshot), '0', 4) === 0) {
                 $balance = $this->ledgerService->getBalance((int) $adjustment->tenant_id, (int) $adjustment->store_id, 'product', $productId);
-                $unitCostSnapshot = $balance && bccomp((string) $balance->average_unit_cost, '0', 4) > 0
+                $unitCostSnapshot = $balance && bccomp(bc_num($balance->average_unit_cost), '0', 4) > 0
                     ? (string) $balance->average_unit_cost
                     : (string) ($product->standard_cost ?? '0.0000');
             }
@@ -389,9 +389,9 @@ class StockAdjustmentService
                 throw new InvalidArgumentException("Ingredient ID {$ingredientId} tidak ditemukan pada tenant {$adjustment->tenant_id}.");
             }
 
-            if (bccomp($unitCostSnapshot, '0', 4) === 0) {
+            if (bccomp(bc_num($unitCostSnapshot), '0', 4) === 0) {
                 $balance = $this->ledgerService->getBalance((int) $adjustment->tenant_id, (int) $adjustment->store_id, 'ingredient', $ingredientId);
-                $unitCostSnapshot = $balance && bccomp((string) $balance->average_unit_cost, '0', 4) > 0
+                $unitCostSnapshot = $balance && bccomp(bc_num($balance->average_unit_cost), '0', 4) > 0
                     ? (string) $balance->average_unit_cost
                     : (string) ($ingredient->cost_per_unit ?? '0.0000');
             }

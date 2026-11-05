@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $tenant_id
  * @property int $employee_id
  * @property int $salary_component_id
- * @property float $amount
+ * @property numeric-string $amount
  * @property CarbonInterface $effective_date
  * @property CarbonInterface|null $end_date
  * @property bool $is_active
@@ -91,7 +91,8 @@ class EmployeeCompensation extends Model
     }
 
     /**
-     * @param  Builder<EmployeeCompensation>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeActiveOn(Builder $query, CarbonInterface|string $date): Builder
     {

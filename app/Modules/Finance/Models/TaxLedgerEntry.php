@@ -22,9 +22,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $entry_number
  * @property CarbonInterface $transaction_date
  * @property TaxDirectionEnum $tax_direction
- * @property string $tax_base_amount
- * @property string $applied_rate
- * @property string $tax_amount
+ * @property numeric-string $tax_base_amount
+ * @property numeric-string $applied_rate
+ * @property numeric-string $tax_amount
  * @property string|null $counterparty_type
  * @property int|null $counterparty_id
  * @property string|null $counterparty_name
@@ -55,26 +55,41 @@ class TaxLedgerEntry extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<TaxCode, $this>
+     */
     public function taxCode(): BelongsTo
     {
         return $this->belongsTo(TaxCode::class, 'tax_code_id');
     }
 
+    /**
+     * @return BelongsTo<TaxRate, $this>
+     */
     public function taxRate(): BelongsTo
     {
         return $this->belongsTo(TaxRate::class, 'tax_rate_id');
     }
 
+    /**
+     * @return BelongsTo<JournalEntry, $this>
+     */
     public function journalEntry(): BelongsTo
     {
         return $this->belongsTo(JournalEntry::class, 'journal_entry_id');
     }
 
+    /**
+     * @return BelongsTo<JournalLine, $this>
+     */
     public function journalLine(): BelongsTo
     {
         return $this->belongsTo(JournalLine::class, 'journal_line_id');

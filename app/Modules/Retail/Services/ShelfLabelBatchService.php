@@ -77,7 +77,7 @@ class ShelfLabelBatchService
                 storeId: $storeId,
                 subjectType: ShelfLabel::class,
                 subjectId: $label->id,
-                description: "Label rak produk #{$productId} masuk antrean cetak harga (Rp " . number_format($resolvedNewPrice, 0, ',', '.') . ").",
+                description: "Label rak produk #{$productId} masuk antrean cetak harga (Rp ".number_format($resolvedNewPrice, 0, ',', '.').').',
                 metadata: [
                     'label_id' => $label->id,
                     'old_price' => $resolvedOldPrice,
@@ -110,7 +110,7 @@ class ShelfLabelBatchService
 
             $productName = $product instanceof Product ? $product->product_name : 'Produk';
             if ($variant instanceof ProductVariant && ! empty($variant->variant_name)) {
-                $productName .= ' - ' . $variant->variant_name;
+                $productName .= ' - '.$variant->variant_name;
             }
 
             $sku = ($variant instanceof ProductVariant && $variant->sku)
@@ -137,12 +137,12 @@ class ShelfLabelBatchService
     /**
      * Menghasilkan batch cetak label harga dan mengembalikan data yang siap dikirim ke printer label rak.
      *
-     * @param array<int>|null $labelIds
+     * @param  array<int>|null  $labelIds
      * @return array{batch_number: string, count: int, labels: array<int, array<string, mixed>>}
      */
     public function generatePrintBatch(int $tenantId, int $storeId, ?array $labelIds = null, ?int $userId = null): array
     {
-        $batchNumber = 'LBL-' . date('Ymd') . '-' . strtoupper(Str::random(6));
+        $batchNumber = 'LBL-'.date('Ymd').'-'.strtoupper(Str::random(6));
 
         /** @var array{batch_number: string, count: int, labels: array<int, array<string, mixed>>} $result */
         $result = DB::transaction(function () use ($tenantId, $storeId, $labelIds, $userId, $batchNumber): array {
@@ -175,7 +175,7 @@ class ShelfLabelBatchService
 
                 $productName = $product instanceof Product ? $product->product_name : 'Produk';
                 if ($variant instanceof ProductVariant && ! empty($variant->variant_name)) {
-                    $productName .= ' - ' . $variant->variant_name;
+                    $productName .= ' - '.$variant->variant_name;
                 }
 
                 $sku = ($variant instanceof ProductVariant && $variant->sku)
@@ -222,7 +222,7 @@ class ShelfLabelBatchService
     /**
      * Menandai sejumlah label rak telah selesai dicetak secara manual.
      *
-     * @param array<int> $labelIds
+     * @param  array<int>  $labelIds
      */
     public function markLabelsPrinted(int $tenantId, int $storeId, array $labelIds, int $userId): void
     {

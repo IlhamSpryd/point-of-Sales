@@ -56,7 +56,7 @@ class PostingEngineService implements PostingEngineContract
         foreach ($ruleVersion->lines as $ruleLine) {
             $amountKey = $ruleLine->amount_source_key;
             $amount = $event->payload[$amountKey] ?? '0.00';
-            $amountDec = bcadd((string) $amount, '0', 2);
+            $amountDec = bcadd(bc_num($amount), '0', 2);
 
             // Lewati baris 0 jika zero_amount_behavior = SKIP_LINE
             if (bccomp($amountDec, '0.00', 2) === 0) {
@@ -100,8 +100,8 @@ class PostingEngineService implements PostingEngineContract
             $maxAmount = '0.00';
 
             foreach ($lines as $i => $l) {
-                $cur = bccomp($l->debitAmount, '0.00', 2) > 0 ? $l->debitAmount : $l->creditAmount;
-                if (bccomp($cur, $maxAmount, 2) > 0) {
+                $cur = bccomp(bc_num($l->debitAmount), '0.00', 2) > 0 ? $l->debitAmount : $l->creditAmount;
+                if (bccomp(bc_num($cur), bc_num($maxAmount), 2) > 0) {
                     $maxAmount = $cur;
                     $maxIndex = $i;
                 }
@@ -114,7 +114,7 @@ class PostingEngineService implements PostingEngineContract
                         $adjustedLines[] = new JournalLineDto(
                             accountId: $l->accountId,
                             debitAmount: $l->debitAmount,
-                            creditAmount: bccomp($l->creditAmount, '0.00', 2) > 0 ? bcadd($l->creditAmount, $diff, 2) : $l->creditAmount,
+                            creditAmount: bccomp(bc_num($l->creditAmount), '0.00', 2) > 0 ? bcadd(bc_num($l->creditAmount), bc_num($diff), 2) : $l->creditAmount,
                             description: $l->description,
                             storeId: $l->storeId,
                             customerId: $l->customerId,
@@ -126,7 +126,7 @@ class PostingEngineService implements PostingEngineContract
                         $absDiff = bcmul($diff, '-1', 2);
                         $adjustedLines[] = new JournalLineDto(
                             accountId: $l->accountId,
-                            debitAmount: bccomp($l->debitAmount, '0.00', 2) > 0 ? bcadd($l->debitAmount, $absDiff, 2) : $l->debitAmount,
+                            debitAmount: bccomp(bc_num($l->debitAmount), '0.00', 2) > 0 ? bcadd(bc_num($l->debitAmount), bc_num($absDiff), 2) : $l->debitAmount,
                             creditAmount: $l->creditAmount,
                             description: $l->description,
                             storeId: $l->storeId,
@@ -185,7 +185,7 @@ class PostingEngineService implements PostingEngineContract
             idempotencyKey: $outbox->idempotency_key,
             occurredAt: $outbox->occurred_at,
             accountingDate: $accountingDate,
-            payload: is_array($outbox->payload) ? $outbox->payload : json_decode((string) $outbox->payload, true) ?? []
+            payload: $outbox->payload
         );
 
         $journal = $this->postEvent($eventDto);

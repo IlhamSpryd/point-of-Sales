@@ -39,7 +39,7 @@
     @endif
 
     <!-- Filter & Toolbar -->
-    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-[#E5E7EB] dark:border-zinc-800">
+    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-border dark:border-zinc-800">
         <div class="flex-1 max-w-md">
             <div class="relative">
                 <span class="material-symbols-rounded absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
@@ -578,7 +578,7 @@
                 </div>
 
                 <!-- Date Filter Bar & Export -->
-                <div class="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-[#E5E7EB] dark:border-zinc-800">
+                <div class="flex flex-wrap items-center justify-between gap-3 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-border dark:border-zinc-800">
                     <div class="flex flex-wrap items-center gap-3">
                         <div>
                             <x-ui.label for="statementStartDate">From Date</x-ui.label>
@@ -606,7 +606,7 @@
                 <!-- Balance Summary Cards -->
                 @if($statementPreview)
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="p-4 rounded-xl bg-zinc-100/70 dark:bg-zinc-800/40 border border-[#E5E7EB] dark:border-zinc-800">
+                    <div class="p-4 rounded-xl bg-zinc-100/70 dark:bg-zinc-800/40 border border-border dark:border-zinc-800">
                         <div class="text-xs font-medium text-zinc-500 uppercase tracking-wider">Opening Balance (Period)</div>
                         <div class="text-xl font-bold font-mono text-apeiron-ink dark:text-white mt-1">
                             Rp {{ number_format((float) $statementPreview['opening_balance'], 2, ',', '.') }}
@@ -621,7 +621,7 @@
                 </div>
 
                 <!-- Transactions Table -->
-                <div class="rounded-xl border border-[#E5E7EB] dark:border-zinc-800 overflow-hidden max-h-80 overflow-y-auto">
+                <div class="rounded-xl border border-border dark:border-zinc-800 overflow-hidden max-h-80 overflow-y-auto">
                     <table class="table-standard w-full min-w-full text-left text-xs text-zinc-600 dark:text-zinc-300">
                         <thead class="bg-zinc-50 dark:bg-zinc-900/80 text-[11px] font-semibold uppercase text-zinc-500 sticky top-0 border-b border-zinc-200 dark:border-zinc-800">
                             <tr>
@@ -634,7 +634,7 @@
                                 <th class="px-3 py-2.5 text-right">Running Balance</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800">
+                        <tbody class="divide-y divide-border dark:divide-zinc-800">
                             @forelse($statementPreview['transactions'] as $tx)
                             <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
                                 <td class="px-3 py-2 whitespace-nowrap">{{ \Carbon\Carbon::parse($tx['entry_date'])->format('d/m/Y H:i') }}</td>

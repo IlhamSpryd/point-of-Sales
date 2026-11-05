@@ -120,9 +120,9 @@
             x-model="value"
             @click="openCalendar()"
             placeholder="{{ $placeholder }}"
-            class="h-9 w-full cursor-pointer rounded-medium border border-input bg-background pl-3 pr-9 text-base text-foreground shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-primary/10 md:text-sm dark:bg-input/30"
+            class="h-9 w-full cursor-pointer rounded-medium border border-input bg-background pl-3 pr-9 text-base text-foreground shadow-xs outline-none transition-[color,box-shadow] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring md:text-sm"
         />
-        <button type="button" @click="openCalendar()" tabindex="-1" class="absolute right-0 top-0 flex h-9 w-9 items-center justify-center text-foreground/50 transition-colors hover:text-foreground">
+        <button type="button" @click="openCalendar()" tabindex="-1" class="absolute right-0 top-0 flex h-9 w-9 items-center justify-center text-muted-foreground transition-colors hover:text-foreground">
             <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4M16 2v4M3 10h18" /><rect x="3" y="4" width="18" height="18" rx="2" /></svg>
         </button>
     </div>
@@ -138,18 +138,18 @@
             @click.outside="open = false"
             @keydown.escape.window="open = false"
             :style="styles()"
-            class="rounded-large border border-foreground/10 bg-popover p-4 text-popover-foreground shadow-lg dark:border-foreground/15"
+            class="rounded-large border border-border bg-popover p-4 text-popover-foreground shadow-lg"
         >
             <div class="mb-3 flex items-center justify-between">
                 <div class="text-sm font-semibold text-foreground">
                     <span x-text="monthNames[month]"></span>
-                    <span class="text-foreground/50" x-text="year"></span>
+                    <span class="text-muted-foreground" x-text="year"></span>
                 </div>
                 <div class="flex items-center gap-1">
-                    <button type="button" @click="previousMonth()" class="inline-flex size-7 items-center justify-center rounded-medium text-foreground/60 transition-colors hover:bg-secondary hover:text-foreground">
+                    <button type="button" @click="previousMonth()" class="inline-flex size-7 items-center justify-center rounded-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6" /></svg>
                     </button>
-                    <button type="button" @click="nextMonth()" class="inline-flex size-7 items-center justify-center rounded-medium text-foreground/60 transition-colors hover:bg-secondary hover:text-foreground">
+                    <button type="button" @click="nextMonth()" class="inline-flex size-7 items-center justify-center rounded-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground">
                         <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6" /></svg>
                     </button>
                 </div>
@@ -157,7 +157,7 @@
 
             <div class="mb-1 grid grid-cols-7">
                 <template x-for="day in dayNames" :key="day">
-                    <div class="flex h-8 items-center justify-center text-xs font-medium text-foreground/40" x-text="day"></div>
+                    <div class="flex h-8 items-center justify-center text-xs font-medium text-muted-foreground" x-text="day"></div>
                 </template>
             </div>
 
@@ -173,9 +173,9 @@
                             x-text="day"
                             class="flex size-9 items-center justify-center rounded-medium text-sm transition-colors"
                             :class="{
-                                'bg-primary text-primary-foreground hover:bg-primary/90': isSelected(day),
+                                'bg-primary text-primary-foreground hover:bg-primary': isSelected(day),
                                 'bg-secondary text-foreground': isToday(day) && ! isSelected(day),
-                                'text-foreground/70 hover:bg-secondary': ! isToday(day) && ! isSelected(day),
+                                'text-muted-foreground hover:bg-secondary': ! isToday(day) && ! isSelected(day),
                             }"
                         ></button>
                     </div>

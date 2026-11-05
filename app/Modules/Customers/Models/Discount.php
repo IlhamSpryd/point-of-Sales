@@ -9,17 +9,32 @@ use App\Models\Concerns\ScopedToStoreForDiscount;
 use App\Models\Concerns\ScopedToTenant;
 use App\Models\DiscountRedemption;
 use App\Models\Order;
+/** @use HasFactory<Factory<static>> */
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property int $value
+ * @property int|null $max_discount_amount
+ * @property int $min_purchase_amount
+ * @property int|null $usage_limit
+ * @property int $tenant_id
+ * @property int|null $store_id
+ */
 class Discount extends Model
 {
     use AssignsTenant;
-    use HasFactory, SoftDeletes;
+
+    /** @use HasFactory<Factory<static>> */
+    use HasFactory;
+
     use ScopedToStoreForDiscount;
     use ScopedToTenant;
+    use SoftDeletes;
 
     protected $fillable = [
         'code', 'name', 'type', 'value', 'max_discount_amount',
@@ -38,13 +53,15 @@ class Discount extends Model
         ];
     }
 
-    /** Relasi (HasMany): Satu master diskon bisa dipakai oleh banyak transaksi. */
+    /** Relasi (HasMany): Satu master diskon bisa dipakai oleh banyak transaksi.
+     * @return HasMany<Order, $this> */
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }
 
-    /** Relasi (HasMany): Catatan riwayat penggunaan kuota voucher. */
+    /** Relasi (HasMany): Catatan riwayat penggunaan kuota voucher.
+     * @return HasMany<DiscountRedemption, $this> */
     public function redemptions(): HasMany
     {
         return $this->hasMany(DiscountRedemption::class);

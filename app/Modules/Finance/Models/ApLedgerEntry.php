@@ -29,9 +29,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $entry_number
  * @property CarbonInterface $effective_date
  * @property ApEntryTypeEnum $entry_type
- * @property string $debit_amount
- * @property string $credit_amount
- * @property string $running_balance
+ * @property numeric-string $debit_amount
+ * @property numeric-string $credit_amount
+ * @property numeric-string $running_balance
  * @property string $idempotency_key
  * @property string|null $description
  * @property int|null $created_by_user_id
@@ -58,41 +58,65 @@ class ApLedgerEntry extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<Supplier, $this>
+     */
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
     }
 
+    /**
+     * @return BelongsTo<SupplierInvoice, $this>
+     */
     public function supplierInvoice(): BelongsTo
     {
         return $this->belongsTo(SupplierInvoice::class, 'supplier_invoice_id');
     }
 
+    /**
+     * @return BelongsTo<ApPayment, $this>
+     */
     public function payment(): BelongsTo
     {
         return $this->belongsTo(ApPayment::class, 'ap_payment_id');
     }
 
+    /**
+     * @return BelongsTo<PurchaseDebitNote, $this>
+     */
     public function debitNote(): BelongsTo
     {
         return $this->belongsTo(PurchaseDebitNote::class, 'purchase_debit_note_id');
     }
 
+    /**
+     * @return BelongsTo<JournalEntry, $this>
+     */
     public function journalEntry(): BelongsTo
     {
         return $this->belongsTo(JournalEntry::class, 'journal_entry_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function createdByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');

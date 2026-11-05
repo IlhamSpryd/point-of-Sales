@@ -158,7 +158,7 @@
                         </a>
 
                         <button type="submit"
-                            class="flex-1 flex items-center justify-center rounded-xl bg-[#141413] px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 transition-all cursor-pointer">
+                            class="flex-1 flex items-center justify-center rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-zinc-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-900 transition-all cursor-pointer">
                             <span>Complete setup & open POS dashboard</span>
                         </button>
                     </div>

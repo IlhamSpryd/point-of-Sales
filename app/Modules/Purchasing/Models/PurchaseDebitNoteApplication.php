@@ -20,7 +20,7 @@ use Illuminate\Support\Carbon;
  * @property int $tenant_id
  * @property int $purchase_debit_note_id
  * @property int $supplier_invoice_id
- * @property string $applied_amount
+ * @property numeric-string $applied_amount
  * @property Carbon $applied_at
  * @property int $applied_by
  * @property string|null $notes

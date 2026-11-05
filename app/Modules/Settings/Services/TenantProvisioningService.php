@@ -113,6 +113,9 @@ class TenantProvisioningService
         return $kind === 'channel_order' ? 'Channel Order System' : 'Self Order System';
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function evaluateReadiness(Tenant $tenant): array
     {
         $missing = $this->tenantContext->runAs($tenant->id, null, function () use ($tenant) {
@@ -157,6 +160,8 @@ class TenantProvisioningService
      * transaksi bisnis commit — kegagalannya TIDAK membatalkan tenant
      * (tenant tetap ada; statusnya 'pending' dan dapat diperbaiki
      * `tenant:provision-system-users`).
+     *
+     * @return array<string, mixed>
      */
     public function refreshReadiness(Tenant $tenant): array
     {

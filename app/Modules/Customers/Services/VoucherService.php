@@ -49,7 +49,7 @@ class VoucherService
             ? $data['discount_type']
             : VoucherDiscountTypeEnum::from((string) ($data['discount_type'] ?? 'PERCENTAGE'));
 
-        $discountValue = bcadd((string) ($data['discount_value'] ?? '0'), '0', 2);
+        $discountValue = bcadd(bc_num($data['discount_value'] ?? '0'), '0', 2);
         if (bccomp($discountValue, '0.00', 2) <= 0) {
             throw ValidationException::withMessages(['discount_value' => ['Nilai diskon voucher harus lebih besar dari 0.']]);
         }
@@ -67,8 +67,8 @@ class VoucherService
             'customer_group_id' => ! empty($data['customer_group_id']) ? (int) $data['customer_group_id'] : null,
             'discount_type' => $discountType,
             'discount_value' => $discountValue,
-            'max_discount_amount' => ! empty($data['max_discount_amount']) ? bcadd((string) $data['max_discount_amount'], '0', 2) : null,
-            'min_order_amount' => bcadd((string) ($data['min_order_amount'] ?? '0'), '0', 2),
+            'max_discount_amount' => ! empty($data['max_discount_amount']) ? bcadd(bc_num($data['max_discount_amount']), '0', 2) : null,
+            'min_order_amount' => bcadd(bc_num($data['min_order_amount'] ?? '0'), '0', 2),
             'max_uses' => (int) ($data['max_uses'] ?? $data['max_uses_global'] ?? 1),
             'max_uses_per_customer' => (int) ($data['max_uses_per_customer'] ?? 1),
             'used_count' => 0,
@@ -132,7 +132,7 @@ class VoucherService
         }
 
         // Cek syarat minimum transaksi
-        if (bccomp($orderAmount, (string) $voucher->min_order_amount, 2) < 0) {
+        if (bccomp(bc_num($orderAmount), bc_num($voucher->min_order_amount), 2) < 0) {
             $formattedMin = number_format((float) $voucher->min_order_amount, 0, ',', '.');
             throw new DomainException("Total transaksi belanja belum memenuhi syarat minimum voucher (Rp {$formattedMin}).");
         }
@@ -154,7 +154,7 @@ class VoucherService
         // Hitung diskon yang diperoleh
         $discountAmount = '0.00';
         if ($voucher->discount_type === VoucherDiscountTypeEnum::PERCENTAGE) {
-            $rawDiscount = bcdiv(bcmul($orderAmount, (string) $voucher->discount_value, 4), '100', 2);
+            $rawDiscount = bcdiv(bcmul(bc_num($orderAmount), bc_num($voucher->discount_value), 4), '100', 2);
             if ($voucher->max_discount_amount && bccomp($rawDiscount, (string) $voucher->max_discount_amount, 2) > 0) {
                 $discountAmount = (string) $voucher->max_discount_amount;
             } else {
@@ -162,7 +162,7 @@ class VoucherService
             }
         } else {
             // FIXED_AMOUNT
-            $discountAmount = bccomp((string) $voucher->discount_value, $orderAmount, 2) > 0
+            $discountAmount = bccomp(bc_num($voucher->discount_value), bc_num($orderAmount), 2) > 0
                 ? $orderAmount
                 : (string) $voucher->discount_value;
         }

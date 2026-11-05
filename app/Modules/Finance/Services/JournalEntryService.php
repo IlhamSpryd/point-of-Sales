@@ -79,8 +79,8 @@ class JournalEntryService
         $accountIds = [];
 
         foreach ($lines as $index => $line) {
-            $debit = bcadd((string) $line->debitAmount, '0', 2);
-            $credit = bcadd((string) $line->creditAmount, '0', 2);
+            $debit = bcadd(bc_num($line->debitAmount), '0', 2);
+            $credit = bcadd(bc_num($line->creditAmount), '0', 2);
 
             if (bccomp($debit, '0.00', 2) < 0 || bccomp($credit, '0.00', 2) < 0) {
                 throw new DomainException("FIN-M7-03: Baris jurnal #{$index} memiliki nominal negatif. Nilai debit dan credit wajib >= 0.00.");
@@ -177,8 +177,8 @@ class JournalEntryService
 
             // Insert Lines & Update Account Period Balances
             foreach ($lines as $index => $line) {
-                $lineDebit = bcadd((string) $line->debitAmount, '0', 2);
-                $lineCredit = bcadd((string) $line->creditAmount, '0', 2);
+                $lineDebit = bcadd(bc_num($line->debitAmount), '0', 2);
+                $lineCredit = bcadd(bc_num($line->creditAmount), '0', 2);
 
                 JournalLine::create([
                     'tenant_id' => $tenantId,
@@ -194,6 +194,9 @@ class JournalEntryService
                     'tax_code_id' => $line->taxCodeId,
                 ]);
 
+                /** @var ChartOfAccount $account */
+                $account = $accounts[$line->accountId];
+
                 // Update saldo teragregasi account_period_balances
                 $this->applyBalanceMovement(
                     $tenantId,
@@ -202,7 +205,7 @@ class JournalEntryService
                     $line->storeId ?? $storeId,
                     $lineDebit,
                     $lineCredit,
-                    $accounts[$line->accountId]->normal_balance
+                    $account->normal_balance
                 );
             }
 
@@ -240,13 +243,13 @@ class JournalEntryService
             ]
         );
 
-        $newPeriodDebit = bcadd((string) $balance->period_debit, $debitAmount, 2);
-        $newPeriodCredit = bcadd((string) $balance->period_credit, $creditAmount, 2);
+        $newPeriodDebit = bcadd(bc_num($balance->period_debit), bc_num($debitAmount), 2);
+        $newPeriodCredit = bcadd(bc_num($balance->period_credit), bc_num($creditAmount), 2);
 
         // Net movement disesuaikan dengan saldo normal
         $movement = ($normalBalance === NormalBalanceEnum::DEBIT)
-            ? bcsub($debitAmount, $creditAmount, 2)
-            : bcsub($creditAmount, $debitAmount, 2);
+            ? bcsub(bc_num($debitAmount), bc_num($creditAmount), 2)
+            : bcsub(bc_num($creditAmount), bc_num($debitAmount), 2);
 
         $newNetMovement = bcadd((string) $balance->net_movement, $movement, 2);
 

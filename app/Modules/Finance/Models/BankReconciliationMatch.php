@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $bank_statement_line_id
  * @property int $cash_bank_transaction_id
  * @property string $match_type
- * @property string $matched_amount
+ * @property numeric-string $matched_amount
  * @property int $matched_by_user_id
  * @property CarbonInterface $created_at
  * @property CarbonInterface $updated_at
@@ -43,26 +43,41 @@ class BankReconciliationMatch extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<BankReconciliationSession, $this>
+     */
     public function session(): BelongsTo
     {
         return $this->belongsTo(BankReconciliationSession::class, 'reconciliation_session_id');
     }
 
+    /**
+     * @return BelongsTo<BankStatementLine, $this>
+     */
     public function statementLine(): BelongsTo
     {
         return $this->belongsTo(BankStatementLine::class, 'bank_statement_line_id');
     }
 
+    /**
+     * @return BelongsTo<CashBankTransaction, $this>
+     */
     public function transaction(): BelongsTo
     {
         return $this->belongsTo(CashBankTransaction::class, 'cash_bank_transaction_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function matchedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'matched_by_user_id');

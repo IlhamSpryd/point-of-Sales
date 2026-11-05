@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property CarbonInterface $required_by_date
  * @property PurchaseRequestStatusEnum $status
  * @property PurchaseRequestFulfillmentStatusEnum $fulfillment_status
- * @property string $estimated_total_amount
+ * @property numeric-string $estimated_total_amount
  * @property string $currency_code
  * @property string|null $notes
  * @property string|null $rejection_reason
@@ -62,21 +62,33 @@ class PurchaseRequest extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function requestedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requested_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function approvedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by_user_id');

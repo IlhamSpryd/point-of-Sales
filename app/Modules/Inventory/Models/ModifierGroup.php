@@ -20,6 +20,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 // UPDATE deleted_at, BUKAN DELETE fisik -- sehingga FK CASCADE di
 // modifiers.modifier_group_id tidak pernah terpicu lagi dari jalur admin
 // biasa (ModifierManager::deleteGroup()). | 2026-09-24
+/**
+ * @property int $id
+ * @property int $min_select
+ * @property int|null $max_select
+ * @property int $tenant_id
+ */
 class ModifierGroup extends Model
 {
     use AssignsTenant;
@@ -50,6 +56,8 @@ class ModifierGroup extends Model
     /**
      * Relasi (HasMany): Satu grup varian punya banyak pilihan opsi di dalamnya.
      * Contoh: grup "Pilihan Suhu" punya opsi "Ice" dan "Hot".
+     *
+     * @return HasMany<Modifier, $this>
      */
     public function modifiers(): HasMany
     {
@@ -58,6 +66,8 @@ class ModifierGroup extends Model
 
     /**
      * Relasi (BelongsToMany): Grup varian ini dipakai oleh produk-produk mana saja.
+     *
+     * @return BelongsToMany<Product, $this>
      */
     public function products(): BelongsToMany
     {

@@ -106,7 +106,7 @@
             aria-label="Command palette"
             @keydown.escape.window="open = false"
         >
-            <div x-show="open" x-transition.opacity class="absolute inset-0 bg-black/50" @click="open = false"></div>
+            <div x-show="open" x-transition.opacity class="absolute inset-0 bg-overlay-scrim" @click="open = false"></div>
 
             <div
                 x-show="open"
@@ -120,10 +120,10 @@
                 @keydown.down.prevent="move(1)"
                 @keydown.up.prevent="move(-1)"
                 @keydown.enter.prevent="select(filtered[active])"
-                class="relative z-10 flex w-full max-w-xl flex-col overflow-hidden rounded-large border border-foreground/10 bg-popover text-popover-foreground shadow-lg dark:border-foreground/15"
+                class="relative z-10 flex w-full max-w-xl flex-col overflow-hidden rounded-large border border-border bg-popover text-popover-foreground shadow-lg"
             >
-                <div class="flex items-center gap-2 border-b border-foreground/10 px-3">
-                    <svg class="size-4 shrink-0 text-foreground/40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
+                <div class="flex items-center gap-2 border-b border-border px-3">
+                    <svg class="size-4 shrink-0 text-muted-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></svg>
                     <input
                         x-ref="search"
                         x-model="search"
@@ -138,7 +138,7 @@
                         aria-autocomplete="list"
                         :aria-controls="$id('dd-command')"
                         :aria-activedescendant="filtered.length ? $id('dd-command') + '-option-' + active : null"
-                        class="h-12 w-full bg-transparent text-sm text-foreground outline-none placeholder:text-foreground/40"
+                        class="h-12 w-full bg-transparent text-sm text-foreground outline-none placeholder:text-muted-foreground"
                     />
                 </div>
 
@@ -146,7 +146,7 @@
                     <template x-for="(item, index) in filtered" :key="item.value">
                         <div>
                             <template x-if="showGroup(item, index)">
-                                <div class="px-2 pb-1 pt-2 text-xs font-medium text-foreground/40" x-text="item.group"></div>
+                                <div class="px-2 pb-1 pt-2 text-xs font-medium text-muted-foreground" x-text="item.group"></div>
                             </template>
                             <div
                                 :id="$id('dd-command') + '-option-' + index"
@@ -155,31 +155,31 @@
                                 :data-active="active === index"
                                 @click="select(item)"
                                 @mousemove="active = index"
-                                class="flex cursor-pointer items-center gap-2.5 rounded-medium px-2.5 py-2 text-sm text-foreground/80"
+                                class="flex cursor-pointer items-center gap-2.5 rounded-medium px-2.5 py-2 text-sm text-foreground"
                                 :class="active === index ? 'bg-secondary text-foreground' : ''"
                             >
-                                <template x-if="item.icon"><span class="flex size-4 shrink-0 items-center justify-center text-foreground/60" x-html="item.icon"></span></template>
+                                <template x-if="item.icon"><span class="flex size-4 shrink-0 items-center justify-center text-muted-foreground" x-html="item.icon"></span></template>
                                 <span x-text="item.title"></span>
-                                <template x-if="item.shortcut"><span class="ml-auto font-mono text-xs tracking-widest text-foreground/40" x-text="item.shortcut"></span></template>
+                                <template x-if="item.shortcut"><span class="ml-auto font-mono text-xs tracking-widest text-muted-foreground" x-text="item.shortcut"></span></template>
                             </div>
                         </div>
                     </template>
 
-                    <div x-show="filtered.length === 0" class="px-3 py-8 text-center text-sm text-foreground/50">No results found.</div>
+                    <div x-show="filtered.length === 0" class="px-3 py-8 text-center text-sm text-muted-foreground">No results found.</div>
                 </div>
 
-                <div class="flex items-center gap-4 border-t border-foreground/10 px-3.5 py-2 text-[11px] text-foreground/40">
+                <div class="flex items-center gap-4 border-t border-border px-3.5 py-2 text-[11px] text-muted-foreground">
                     <span class="flex items-center gap-1.5">
-                        <kbd class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-small border border-foreground/10 bg-secondary px-1 font-sans text-[10px] text-foreground/55">↑</kbd>
-                        <kbd class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-small border border-foreground/10 bg-secondary px-1 font-sans text-[10px] text-foreground/55">↓</kbd>
+                        <kbd class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-small border border-border bg-secondary px-1 font-sans text-[10px] text-muted-foreground">↑</kbd>
+                        <kbd class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-small border border-border bg-secondary px-1 font-sans text-[10px] text-muted-foreground">↓</kbd>
                         Navigate
                     </span>
                     <span class="flex items-center gap-1.5">
-                        <kbd class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-small border border-foreground/10 bg-secondary px-1 font-sans text-[10px] text-foreground/55">↵</kbd>
+                        <kbd class="inline-flex h-[18px] min-w-[18px] items-center justify-center rounded-small border border-border bg-secondary px-1 font-sans text-[10px] text-muted-foreground">↵</kbd>
                         Select
                     </span>
                     <span class="flex items-center gap-1.5">
-                        <kbd class="inline-flex h-[18px] items-center justify-center rounded-small border border-foreground/10 bg-secondary px-1 font-sans text-[10px] text-foreground/55">esc</kbd>
+                        <kbd class="inline-flex h-[18px] items-center justify-center rounded-small border border-border bg-secondary px-1 font-sans text-[10px] text-muted-foreground">esc</kbd>
                         Close
                     </span>
                 </div>

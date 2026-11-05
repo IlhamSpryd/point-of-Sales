@@ -14,7 +14,6 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Purchasing\Models\PurchaseApprovalLog;
 use App\Modules\Purchasing\Models\PurchaseApprovalRequest;
-use App\Modules\Purchasing\Models\PurchaseRequest;
 use App\Modules\Purchasing\Services\PurchaseRequestService;
 use App\Modules\Workflow\Exceptions\SelfApprovalForbiddenException;
 use App\Modules\Workflow\Services\ApprovalEngineService;

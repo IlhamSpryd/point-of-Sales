@@ -34,6 +34,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property int|null $processed_by
  * @property int|null $tenant_id
  * @property int|null $store_id
+ * @property numeric-string $hpp_snapshot
+ * @property numeric-string $item_discount_amount
+ * @property numeric-string $allocated_order_discount_amount
+ * @property numeric-string $net_line_total
+ * @property int|null $product_variant_id
+ * @property int|null $item_discount_id
  */
 class OrderItem extends Model
 {
@@ -87,6 +93,8 @@ class OrderItem extends Model
 
     /**
      * Relasi (BelongsTo): Setiap Rincian selalu tertaut dengan Induk tagihannya (Pesanan).
+     *
+     * @return BelongsTo<Order, $this>
      */
     public function order(): BelongsTo
     {
@@ -95,6 +103,8 @@ class OrderItem extends Model
 
     /**
      * Relasi (BelongsTo): Diskon spesifik per baris produk jika ada.
+     *
+     * @return BelongsTo<Discount, $this>
      */
     public function itemDiscount(): BelongsTo
     {
@@ -103,6 +113,8 @@ class OrderItem extends Model
 
     /**
      * Relasi (BelongsTo): Setiap baris rincian bertindak untuk mengambil acuan satu barang komoditas.
+     *
+     * @return BelongsTo<Product, $this>
      */
     public function product(): BelongsTo
     {
@@ -111,6 +123,8 @@ class OrderItem extends Model
 
     /**
      * Relasi (BelongsTo): Varian produk spesifik (jika ada) (ADR-01).
+     *
+     * @return BelongsTo<ProductVariant, $this>
      */
     public function productVariant(): BelongsTo
     {
@@ -119,6 +133,8 @@ class OrderItem extends Model
 
     /**
      * Relasi (BelongsToMany): Modifier/Add-ons yang dipilih untuk item pesanan ini.
+     *
+     * @return BelongsToMany<Modifier, $this, OrderItemModifier>
      */
     public function modifiers(): BelongsToMany
     {
@@ -130,6 +146,8 @@ class OrderItem extends Model
 
     /**
      * Relasi (BelongsTo): Pengguna (barista/dapur) yang memproses pesanan ini.
+     *
+     * @return BelongsTo<User, $this>
      */
     public function processedBy(): BelongsTo
     {
@@ -141,7 +159,7 @@ class OrderItem extends Model
      */
     public function slaMinutesElapsed(): int
     {
-        return (int) $this->created_at->diffInMinutes(now());
+        return (int) ($this->created_at?->diffInMinutes(now()) ?? 0);
     }
 
     /**

@@ -4,7 +4,7 @@
             {{ __('Profile Information') }}
         </h2>
 
-        <p class="mt-1 text-sm text-[#787774]">
+        <p class="mt-1 text-sm text-muted-foreground">
             {{ __('Update your profile display name and account email address.') }}
         </p>
     </header>
@@ -38,8 +38,8 @@
 
         <div>
             <x-form-label for="current_email_display">{{ __('Active Email Address') }}</x-form-label>
-            <x-form-input id="current_email_display" type="email" class="mt-1 block w-full md:w-2/3 bg-[#F7F7F5] cursor-not-allowed" :value="$user->email" disabled />
-            <p class="text-xs text-[#787774] mt-1.5">To update your email address, use the verification form below.</p>
+            <x-form-input id="current_email_display" type="email" class="mt-1 block w-full md:w-2/3 bg-muted cursor-not-allowed" :value="$user->email" disabled />
+            <p class="text-xs text-muted-foreground mt-1.5">To update your email address, use the verification form below.</p>
         </div>
 
         <div class="flex items-center gap-4">
@@ -66,11 +66,11 @@
         </div>
     </form>
 
-    <div class="mt-8 pt-8 border-t border-[#E5E7EB]">
+    <div class="mt-8 pt-8 border-t border-border">
         <h3 class="text-md font-bold text-apeiron-ink">
             {{ __('Email Address Update (Verify-Before-Swap)') }}
         </h3>
-        <p class="mt-1 text-sm text-[#787774]">
+        <p class="mt-1 text-sm text-muted-foreground">
             {{ __('Your current email remains active and secure until the verification code sent to your new email is confirmed.') }}
         </p>
 

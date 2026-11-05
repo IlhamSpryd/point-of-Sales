@@ -12,7 +12,6 @@ use App\Services\Context\TenantContext;
 use App\Services\TransactionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class PaymentNotificationController extends Controller
 {

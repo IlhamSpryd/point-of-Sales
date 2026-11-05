@@ -11,9 +11,7 @@ trait InteractsWithToast
     /**
      * Dispatch a standard toast notification.
      *
-     * @param  string  $message
      * @param  string  $type  'success'|'error'|'warning'|'info'
-     * @param  string  $description
      * @param  array{href: string, label: string}|null  $action
      */
     protected function toast(string $message, string $type = 'success', string $description = '', ?array $action = null): void

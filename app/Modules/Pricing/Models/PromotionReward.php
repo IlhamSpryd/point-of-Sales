@@ -8,14 +8,28 @@ use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
 use App\Models\Product;
 use App\Models\Tenant;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property numeric-string|null $discount_percentage
+ * @property numeric-string|null $discount_fixed_amount
+ * @property numeric-string|null $max_discount_amount
+ * @property numeric-string|null $reward_product_discount_percent
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $rule_id
+ * @property int|null $reward_product_id
+ */
 class PromotionReward extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToTenant;
 
     public const REWARD_PERCENTAGE_DISCOUNT = 'PERCENTAGE_DISCOUNT';
@@ -48,16 +62,25 @@ class PromotionReward extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<PromotionRule, $this>
+     */
     public function rule(): BelongsTo
     {
         return $this->belongsTo(PromotionRule::class, 'rule_id');
     }
 
+    /**
+     * @return BelongsTo<Product, $this>
+     */
     public function rewardProduct(): BelongsTo
     {
         return $this->belongsTo(Product::class, 'reward_product_id');
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);

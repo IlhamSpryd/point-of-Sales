@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Modules\Inventory\Services;
 
-use App\Models\Concerns\ScopedToTenant;
 use App\Modules\Products\Models\ProductCostHistory;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -74,7 +73,7 @@ class InventoryCostingService
     /**
      * Catat pembaruan biaya rata-rata bergerak pada saat penerimaan barang (Goods Receipt).
      *
-     * @param 'product'|'ingredient' $itemType
+     * @param  'product'|'ingredient'  $itemType
      * @return array{
      *     old_average_cost: string,
      *     new_average_cost: string,

@@ -255,7 +255,7 @@
                 x-model.debounce.300ms="search"
                 placeholder="{{ $searchPlaceholder }}"
                 aria-label="{{ $searchPlaceholder }}"
-                class="w-full h-8 pl-8 pr-3 text-xs bg-muted/40 border border-border rounded-control text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                class="w-full h-8 pl-8 pr-3 text-xs bg-muted border border-border rounded-control text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />
             <template x-if="loading">
                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground animate-spin">

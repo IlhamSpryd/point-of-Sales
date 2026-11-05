@@ -8,11 +8,11 @@ use App\Models\Tenant;
 use App\Modules\Catalog\Services\ProductCostHistoryService;
 use App\Modules\Catalog\Services\ProductVariantMatrixService;
 use App\Modules\Catalog\Services\StoreAssortmentService;
+use App\Modules\Products\Models\Category;
 use App\Modules\Products\Models\Product;
 use App\Modules\Products\Models\ProductAttribute;
 use App\Modules\Products\Models\ProductAttributeValue;
 use App\Modules\Products\Models\ProductVariant;
-use App\Modules\Products\Models\StoreProductAssortment;
 use App\Modules\Settings\Models\Store;
 use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
@@ -23,9 +23,12 @@ class Wave2CatalogTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private Store $storeA;
+
     private Store $storeB;
-    private \App\Modules\Products\Models\Category $category;
+
+    private Category $category;
 
     protected function afterSubclassSetUp(): void
     {
@@ -48,7 +51,7 @@ class Wave2CatalogTest extends TestCase
             'code' => 'BR-B',
         ]);
 
-        $this->category = \App\Modules\Products\Models\Category::withoutGlobalScopes()->create([
+        $this->category = Category::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
             'category_name' => 'Apparel & Drinks',
             'category_code' => 'APP-DRK',

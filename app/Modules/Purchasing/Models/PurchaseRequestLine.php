@@ -20,12 +20,12 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property int $purchase_request_id
  * @property string $purchasable_type
  * @property int $purchasable_id
- * @property string $requested_qty
- * @property string $approved_qty
- * @property string $converted_to_po_qty
+ * @property numeric-string $requested_qty
+ * @property numeric-string $approved_qty
+ * @property numeric-string $converted_to_po_qty
  * @property string $uom
- * @property string $estimated_unit_price
- * @property string $estimated_subtotal
+ * @property numeric-string $estimated_unit_price
+ * @property numeric-string $estimated_subtotal
  * @property int|null $preferred_supplier_id
  * @property string|null $notes
  * @property-read PurchaseRequest $purchaseRequest
@@ -53,6 +53,9 @@ class PurchaseRequestLine extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
@@ -66,11 +69,17 @@ class PurchaseRequestLine extends Model
         return $this->belongsTo(PurchaseRequest::class, 'purchase_request_id');
     }
 
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function purchasable(): MorphTo
     {
         return $this->morphTo();
     }
 
+    /**
+     * @return BelongsTo<Supplier, $this>
+     */
     public function preferredSupplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class, 'preferred_supplier_id');

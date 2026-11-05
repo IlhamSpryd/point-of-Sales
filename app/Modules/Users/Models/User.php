@@ -15,7 +15,10 @@ use App\Models\UserOAuthIdentity;
 use App\Services\Context\TenantContext;
 use App\Services\EmployeeIdGenerator;
 use App\Support\EmailNormalizer;
+use Database\Factories\UserFactory;
+/** @use HasFactory<Factory<static>> */
 use Illuminate\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -25,7 +28,6 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Hash;
-
 use Laravel\Sanctum\HasApiTokens;
 
 /**
@@ -54,13 +56,19 @@ use Laravel\Sanctum\HasApiTokens;
  * @property Carbon|null $deleted_at
  * @property-read Tenant|null $tenant
  * @property-read Role|null $role
+ * @property int|null $email_uniqueness_key
+ * @property array<int|string, mixed>|string|null $two_factor_recovery_codes
  */
 class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVerifyEmail
 {
     use AssignsTenant;
     use HasApiTokens;
-    use HasFactory, Notifiable, SoftDeletes;
+
+    /** @use HasFactory<UserFactory> */
+    use HasFactory;
+
     use MustVerifyEmail;
+    use Notifiable, SoftDeletes;
     use ScopedToTenant;
 
     protected $fillable = [
@@ -121,7 +129,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         return ! empty($this->two_factor_secret) && $this->two_factor_confirmed_at !== null;
     }
 
-    public function setStoreIdAttribute($value): void
+    public function setStoreIdAttribute(mixed $value): void
     {
         // Table users does not have a store_id column; user-store relations are linked via user_stores pivot.
         // Capturing this mutator prevents SQLSTATE[42S22] Unknown column 'store_id' when Model::unguard() is active.
@@ -146,14 +154,14 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         $this->attributes['pending_email_normalized'] = $value !== null ? EmailNormalizer::normalize($value) : null;
     }
 
-    public function setPasswordAttribute($value): void
+    public function setPasswordAttribute(mixed $value): void
     {
         $hash = $value !== null ? (Hash::needsRehash($value) ? Hash::make($value) : $value) : null;
         $this->attributes['password'] = $hash;
         $this->attributes['password_hash'] = $hash;
     }
 
-    public function setPasswordHashAttribute($value): void
+    public function setPasswordHashAttribute(mixed $value): void
     {
         $hash = $value !== null ? (Hash::needsRehash($value) ? Hash::make($value) : $value) : null;
         $this->attributes['password_hash'] = $hash;
@@ -205,9 +213,9 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         }
     }
 
-    public function getAuthPassword()
+    public function getAuthPassword(): string
     {
-        return $this->password_hash ?? $this->password;
+        return (string) ($this->password_hash ?? $this->password ?? '');
     }
 
     // Otomatis buat Employee ID saat user baru ditambahkan.
@@ -223,9 +231,9 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
     // tidak ditimpa. Bila tenant_id belum terisi, AssignsTenant mengisinya
     // lebih dulu pada event `creating` yang sama, sehingga urutan listener
     // tetap benar.
-    protected static function booted()
+    protected static function booted(): void
     {
-        static::creating(function ($model) {
+        static::creating(function (self $model) {
             if (! empty($model->employee_id)) {
                 return;
             }
@@ -239,7 +247,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
             $model->employee_id = EmployeeIdGenerator::next((int) $model->tenant_id);
         });
 
-        static::saving(function ($model) {
+        static::saving(function (self $model) {
             if (! empty($model->email) && empty($model->email_normalized)) {
                 $model->email_normalized = EmailNormalizer::normalize($model->email);
             }
@@ -270,21 +278,33 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsToMany<Store, $this>
+     */
     public function stores(): BelongsToMany
     {
         return $this->belongsToMany(Store::class, 'user_stores');
     }
 
+    /**
+     * @return HasMany<EmailVerificationOtp, $this>
+     */
     public function emailVerificationOtps(): HasMany
     {
         return $this->hasMany(EmailVerificationOtp::class);
     }
 
+    /**
+     * @return HasMany<UserOAuthIdentity, $this>
+     */
     public function oauthIdentities(): HasMany
     {
         return $this->hasMany(UserOAuthIdentity::class);
     }
 
+    /**
+     * @return HasMany<UserInvitation, $this>
+     */
     public function sentInvitations(): HasMany
     {
         return $this->hasMany(UserInvitation::class, 'invited_by_user_id');

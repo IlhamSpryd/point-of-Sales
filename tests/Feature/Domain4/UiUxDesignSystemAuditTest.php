@@ -133,30 +133,30 @@ class UiUxDesignSystemAuditTest extends TestCase
     {
         // 1. Canonical Button Variants
         $btnPrimary = Blade::render('<x-button variant="primary">Simpan</x-button>');
-        $this->assertStringContainsString('bg-apeiron-ink', $btnPrimary);
-        $this->assertStringContainsString('focus-visible:ring-apeiron-ink', $btnPrimary);
+        $this->assertStringContainsString('bg-primary', $btnPrimary);
+        $this->assertStringContainsString('focus-visible:ring-ring', $btnPrimary);
         $this->assertStringContainsString('disabled:opacity-50', $btnPrimary);
 
         $btnSecondary = Blade::render('<x-button variant="secondary">Batal</x-button>');
-        $this->assertStringContainsString('border-apeiron-border', $btnSecondary);
-        $this->assertStringContainsString('focus-visible:ring-apeiron-ink', $btnSecondary);
+        $this->assertStringContainsString('border-border', $btnSecondary);
+        $this->assertStringContainsString('focus-visible:ring-ring', $btnSecondary);
 
         $btnDanger = Blade::render('<x-button variant="danger">Hapus</x-button>');
-        $this->assertStringContainsString('bg-rose-600', $btnDanger);
-        $this->assertStringContainsString('focus-visible:ring-rose-500', $btnDanger);
+        $this->assertStringContainsString('bg-destructive', $btnDanger);
+        $this->assertStringContainsString('focus-visible:ring-destructive', $btnDanger);
 
         // 2. Button Primitive Delegation Parity
         $primBtn = Blade::render('<x-primary-button>Aksi Utama</x-primary-button>');
-        $this->assertStringContainsString('bg-apeiron-ink', $primBtn);
-        $this->assertStringContainsString('focus-visible:ring-apeiron-ink', $primBtn);
+        $this->assertStringContainsString('bg-primary', $primBtn);
+        $this->assertStringContainsString('focus-visible:ring-ring', $primBtn);
 
         $secBtn = Blade::render('<x-secondary-button>Aksi Kedua</x-secondary-button>');
-        $this->assertStringContainsString('border-apeiron-border', $secBtn);
-        $this->assertStringContainsString('focus-visible:ring-apeiron-ink', $secBtn);
+        $this->assertStringContainsString('border-border', $secBtn);
+        $this->assertStringContainsString('focus-visible:ring-ring', $secBtn);
 
         $danBtn = Blade::render('<x-danger-button>Aksi Hapus</x-danger-button>');
-        $this->assertStringContainsString('bg-rose-600', $danBtn);
-        $this->assertStringContainsString('focus-visible:ring-rose-500', $danBtn);
+        $this->assertStringContainsString('bg-destructive', $danBtn);
+        $this->assertStringContainsString('focus-visible:ring-destructive', $danBtn);
 
         // 3. Form Input Primitives Parity
         $formInput = Blade::render('<x-form-input name="test_field" placeholder="Ketik disini" />');
@@ -258,15 +258,15 @@ class UiUxDesignSystemAuditTest extends TestCase
 
         // x-badge Blade component rendering with Enum instance
         $renderedPaid = Blade::render('<x-badge :status="\App\Enums\OrderStatus::Paid" />');
-        $this->assertStringContainsString('bg-success-50', $renderedPaid);
+        $this->assertStringContainsString('bg-success-muted', $renderedPaid);
         $this->assertStringContainsString('Paid', $renderedPaid);
 
         $renderedPending = Blade::render('<x-badge :status="\App\Enums\OrderStatus::Pending" />');
-        $this->assertStringContainsString('bg-warning-50', $renderedPending);
+        $this->assertStringContainsString('bg-warning-muted', $renderedPending);
         $this->assertStringContainsString('Pending Payment', $renderedPending);
 
         $renderedVoid = Blade::render('<x-badge :status="\App\Enums\OrderStatus::Void" />');
-        $this->assertStringContainsString('bg-danger-50', $renderedVoid);
+        $this->assertStringContainsString('bg-destructive-muted', $renderedVoid);
         $this->assertStringContainsString('Voided', $renderedVoid);
     }
 
@@ -340,5 +340,23 @@ class UiUxDesignSystemAuditTest extends TestCase
         $this->assertStringContainsString('role="dialog"', $orderHistoryView);
         $this->assertStringContainsString('id="void-reason-input"', $orderHistoryView);
         $this->assertStringContainsString('@keydown.escape.stop.prevent=', $orderHistoryView);
+    }
+
+    public function test_blade_views_enforce_zero_arbitrary_hex_classes(): void
+    {
+        $bladeFiles = File::allFiles(resource_path('views'));
+        $violations = [];
+
+        foreach ($bladeFiles as $file) {
+            if (! str_ends_with($file->getFilename(), '.blade.php')) {
+                continue;
+            }
+            $content = File::get($file->getPathname());
+            if (preg_match('/(?:[a-z0-9-]+:)*(?:bg|text|border|ring|from|to|via|fill|stroke|divide|placeholder|outline)-\[#[0-9a-fA-F]{3,8}\]/', $content, $matches)) {
+                $violations[] = $file->getRelativePathname().': '.$matches[0];
+            }
+        }
+
+        $this->assertSame([], $violations, 'Ditemukan arbitrary hex classes pada Blade views: '.implode(', ', array_slice($violations, 0, 10)));
     }
 }

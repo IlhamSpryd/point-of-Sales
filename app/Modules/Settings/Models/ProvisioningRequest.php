@@ -4,6 +4,7 @@ namespace App\Modules\Settings\Models;
 
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Domain 1 — idempotency ledger untuk request provisioning S2S.
@@ -22,6 +23,11 @@ use Illuminate\Database\Eloquent\Model;
  *  - `completed` bersifat terminal: tidak ada jalur kode yang menurunkannya.
  *  - `failed` dengan `error_message = 'email_already_in_use'` adalah
  *    kegagalan bisnis PERMANEN (409), bukan transient (boleh diretry).
+ *
+ * @property int $id
+ * @property int|null $result_tenant_id
+ * @property int|null $result_user_id
+ * @property int $attempt_count
  */
 class ProvisioningRequest extends Model
 {
@@ -58,7 +64,10 @@ class ProvisioningRequest extends Model
         'attempt_count' => 'integer',
     ];
 
-    public function tenant()
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
+    public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class, 'result_tenant_id');
     }

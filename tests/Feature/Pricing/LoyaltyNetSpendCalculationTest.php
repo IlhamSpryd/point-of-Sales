@@ -154,8 +154,15 @@ class LoyaltyNetSpendCalculationTest extends TestCase
         // 1 Poin = Rp100
         $discountAmount = $this->loyaltyService->calculateRedeemValue(50);
         $this->assertEquals(5000.00, $discountAmount);
+        $this->assertSame('5000.00', $discountAmount);
 
         $requiredPoints = $this->loyaltyService->calculatePointsForDiscount(7500.00);
         $this->assertEquals(75, $requiredPoints);
+
+        // Boundary 1-cent test: Rp 7.500,01 requires 76 points (ceil)
+        $this->assertSame(75, $this->loyaltyService->calculatePointsForDiscount('7500.00'));
+        $this->assertSame(76, $this->loyaltyService->calculatePointsForDiscount('7500.01'));
+        $this->assertSame(0, $this->loyaltyService->calculateEarnablePoints($this->customer, '9999.99'));
+        $this->assertSame(1, $this->loyaltyService->calculateEarnablePoints($this->customer, '10000.00'));
     }
 }

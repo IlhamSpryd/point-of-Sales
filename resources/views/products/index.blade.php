@@ -21,8 +21,8 @@
     }">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Products <span class="text-sm font-normal text-[#787774]">(Katalog Produk)</span></h4>
-                <p class="text-sm font-medium text-[#787774] mt-1">Manage master catalog, product types, pricing, and inventory</p>
+                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Products <span class="text-sm font-normal text-muted-foreground">(Katalog Produk)</span></h4>
+                <p class="text-sm font-medium text-muted-foreground mt-1">Manage master catalog, product types, pricing, and inventory</p>
             </div>
 
             <x-list-toolbar search-action="{{ route('products.index') }}" search-placeholder="Search by name, SKU, or barcode...">
@@ -202,8 +202,8 @@
                     <div>
                         <x-form-label for="csv_file">Select CSV File (.csv) <span class="text-danger-600">*</span></x-form-label>
                         <input type="file" id="csv_file" name="file" accept=".csv,text/csv" required
-                            class="w-full text-sm text-[#787774] file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-[#F7F7F5] file:text-apeiron-ink hover:file:bg-[#E9E9E7]">
-                        <p class="text-xs text-[#787774] mt-2">Max 1,000 rows per file. Required columns: <code>product_name, category_id, product_price</code>. Includes automated CSV formula sanitization.</p>
+                            class="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-muted file:text-apeiron-ink hover:file:bg-accent">
+                        <p class="text-xs text-muted-foreground mt-2">Max 1,000 rows per file. Required columns: <code>product_name, category_id, product_price</code>. Includes automated CSV formula sanitization.</p>
                     </div>
 
                     <div class="flex items-center gap-2 pt-2">
@@ -212,7 +212,7 @@
                         <label for="strict_mode" class="text-xs text-apeiron-ink font-medium">Strict Mode (Roll back entire batch if any row fails)</label>
                     </div>
 
-                    <div class="flex justify-end gap-2 pt-4 border-t border-[#E5E7EB]">
+                    <div class="flex justify-end gap-2 pt-4 border-t border-border">
                         <x-ui.button variant="secondary" type="button" @click="showImportModal = false">Cancel</x-ui.button>
                         <x-ui.button variant="primary" type="submit" x-on:click="window.erpMotion?.pulseHighlight($el)">Upload & Process</x-ui.button>
                     </div>
@@ -233,7 +233,7 @@
                     <div>
                         <x-form-label for="bulk_action">Select Bulk Action <span class="text-danger-600">*</span></x-form-label>
                         <select id="bulk_action" name="action" x-model="bulkAction" required
-                            class="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                            class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
                             <option value="update_status">Update Product Lifecycle Status</option>
                             <option value="update_category">Move to Another Category</option>
                             <option value="update_price">Adjust Selling Price</option>
@@ -245,7 +245,7 @@
                     <div x-show="bulkAction === 'update_status'" x-cloak>
                         <x-form-label for="bulk_status">Select New Status</x-form-label>
                         <select id="bulk_status" name="status"
-                            class="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                            class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
                             <option value="active">Active (Available in POS & Menu)</option>
                             <option value="inactive">Inactive</option>
                             <option value="draft">Draft</option>
@@ -257,7 +257,7 @@
                     <div x-show="bulkAction === 'update_category'" x-cloak>
                         <x-form-label for="bulk_category">Select New Category</x-form-label>
                         <select id="bulk_category" name="category_id"
-                            class="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                            class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
                             <option value="">-- No Category --</option>
                             @foreach ($categories as $cat)
                                 <option value="{{ $cat->id }}">{{ $cat->category_name }}</option>
@@ -270,7 +270,7 @@
                         <div>
                             <x-form-label for="bulk_price_mode">Adjustment Mode</x-form-label>
                             <select id="bulk_price_mode" name="price_mode"
-                                class="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                                class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
                                 <option value="fixed">Set Fixed Price (Rp)</option>
                                 <option value="percentage_increase">Increase by (%)</option>
                                 <option value="percentage_decrease">Decrease by (%)</option>
@@ -279,7 +279,7 @@
                         <div>
                             <x-form-label for="bulk_price_value">Adjustment Value</x-form-label>
                             <input type="number" id="bulk_price_value" name="price_value" step="0.01" min="0" value="0"
-                                class="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                                class="w-full h-10 px-3 rounded-xl border border-border text-sm focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
                         </div>
                     </div>
 
@@ -288,7 +288,7 @@
                         <div>
                             <x-form-label for="bulk_store_id">Select Branch</x-form-label>
                             <select id="bulk_store_id" name="store_id"
-                                class="w-full h-10 px-3 rounded-xl border border-[#E5E7EB] text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                                class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
                                 @foreach ($stores as $st)
                                     <option value="{{ $st->id }}">{{ $st->name }}</option>
                                 @endforeach
@@ -301,7 +301,7 @@
                         </div>
                     </div>
 
-                    <div class="flex justify-end gap-2 pt-4 border-t border-[#E5E7EB]">
+                    <div class="flex justify-end gap-2 pt-4 border-t border-border">
                         <x-ui.button variant="secondary" type="button" @click="showBulkModal = false">Cancel</x-ui.button>
                         <x-ui.button variant="primary" type="submit" x-on:click="window.erpMotion?.pulseHighlight($el)">Apply Bulk Changes</x-ui.button>
                     </div>

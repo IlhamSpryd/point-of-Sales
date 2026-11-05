@@ -9,6 +9,8 @@ use App\Models\Concerns\ScopedToTenant;
 use App\Models\Order;
 use App\Models\Store;
 use App\Models\Tenant;
+/** @use HasFactory<Factory<static>> */
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -35,13 +37,19 @@ use Illuminate\Support\Str;
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
+ * @property int $qr_token_version
+ * @property int|null $table_name_uniqueness_key
  */
 class Table extends Model
 {
     use AssignsStore, AssignsTenant;
-    use HasFactory, SoftDeletes;
+
+    /** @use HasFactory<Factory<static>> */
+    use HasFactory;
+
     use ScopedToStore;
     use ScopedToTenant;
+    use SoftDeletes;
 
     protected $table = 'tables'; // eksplisit, agar tidak ambigu dengan nama class 'Table'
 
@@ -99,11 +107,17 @@ class Table extends Model
         });
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
@@ -112,6 +126,8 @@ class Table extends Model
     /**
      * Relasi (HasMany): Satu meja bisa memiliki banyak riwayat pesanan
      * dari waktu ke waktu (setiap pelanggan yang duduk & scan QR di sana).
+     *
+     * @return HasMany<Order, $this>
      */
     public function orders(): HasMany
     {
@@ -120,6 +136,8 @@ class Table extends Model
 
     /**
      * Relasi (HasMany): Pesanan aktif yang saat ini menempati meja ini di cabang tersebut.
+     *
+     * @return HasMany<Order, $this>
      */
     public function activeOrders(): HasMany
     {

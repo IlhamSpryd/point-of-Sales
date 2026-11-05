@@ -14,6 +14,7 @@ use App\Models\Tenant;
 use App\Models\TenantEntitlementOverride;
 use App\Models\TenantSubscription;
 use App\Models\User;
+use App\Modules\Subscription\Exceptions\PlanLimitExceededException;
 use DomainException;
 use Illuminate\Support\Facades\Cache;
 
@@ -134,7 +135,7 @@ class EntitlementService
             ->count();
 
         if ($currentCount >= $quota) {
-            throw \App\Modules\Subscription\Exceptions\PlanLimitExceededException::forQuota('cabang / store', $quota);
+            throw PlanLimitExceededException::forQuota('cabang', $quota);
         }
     }
 

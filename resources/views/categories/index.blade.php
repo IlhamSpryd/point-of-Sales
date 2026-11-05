@@ -154,9 +154,9 @@
                         @endif
                     </div>
                 @empty
-                    <div class="py-8 text-center text-[#9B9A97] text-sm flex flex-col items-center justify-center">
-                        <div class="w-12 h-12 rounded-2xl bg-[#F1F1EF] flex items-center justify-center mb-3">
-                            <span class="material-symbols-rounded text-[24px] text-[#C4C3C0]">category</span>
+                    <div class="py-8 text-center text-muted-foreground text-sm flex flex-col items-center justify-center">
+                        <div class="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mb-3">
+                            <span class="material-symbols-rounded text-[24px] text-muted-foreground">category</span>
                         </div>
                         <p class="font-medium">No categories found.</p>
                     </div>
@@ -181,18 +181,18 @@
                 <input type="hidden" name="_form_action" :value="actionUrl">
 
                 <div>
-                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Category Code (Optional)</label>
-                    <input type="text" name="category_code" x-model="form.category_code" placeholder="e.g. BEV, FOOD" class="w-full rounded-xl border border-[#E5E7EB] px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Category Code (Optional)</label>
+                    <input type="text" name="category_code" x-model="form.category_code" placeholder="e.g. BEV, FOOD" class="w-full rounded-xl border border-border px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Category Name <span class="text-rose-500">*</span></label>
-                    <input type="text" name="category_name" x-model="form.category_name" required placeholder="Enter category name" class="w-full rounded-xl border border-[#E5E7EB] px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Category Name <span class="text-rose-500">*</span></label>
+                    <input type="text" name="category_name" x-model="form.category_name" required placeholder="Enter category name" class="w-full rounded-xl border border-border px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Parent Category</label>
-                    <select name="parent_id" x-model="form.parent_id" class="w-full rounded-xl border border-[#E5E7EB] bg-white px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Parent Category</label>
+                    <select name="parent_id" x-model="form.parent_id" class="w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
                         <option value="">-- No Parent (Primary Category) --</option>
                         @foreach($parentCategories as $parent)
                             <option value="{{ $parent->id }}">{{ $parent->category_name }} ({{ $parent->category_code }})</option>
@@ -201,17 +201,17 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Display Order</label>
-                    <input type="number" name="sort_order" x-model="form.sort_order" min="0" class="w-full rounded-xl border border-[#E5E7EB] px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Display Order</label>
+                    <input type="number" name="sort_order" x-model="form.sort_order" min="0" class="w-full rounded-xl border border-border px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-[#787774] uppercase tracking-wider mb-1">Description</label>
-                    <textarea name="description" x-model="form.description" rows="3" placeholder="Optional description..." class="w-full rounded-xl border border-[#E5E7EB] px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none"></textarea>
+                    <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Description</label>
+                    <textarea name="description" x-model="form.description" rows="3" placeholder="Optional description..." class="w-full rounded-xl border border-border px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none"></textarea>
                 </div>
 
                 <div class="flex items-center gap-2 pt-2">
-                    <input type="checkbox" id="drawer_is_active" name="is_active" value="1" x-model="form.is_active" class="rounded border-[#E5E7EB] text-primary-600 focus:ring-primary-500">
+                    <input type="checkbox" id="drawer_is_active" name="is_active" value="1" x-model="form.is_active" class="rounded border-border text-primary-600 focus:ring-primary-500">
                     <label for="drawer_is_active" class="text-sm font-medium text-apeiron-ink">Active Status</label>
                 </div>
             </form>

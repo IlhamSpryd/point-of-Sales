@@ -77,7 +77,8 @@ class SalaryComponent extends Model
     }
 
     /**
-     * @param  Builder<SalaryComponent>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeActive(Builder $query): Builder
     {

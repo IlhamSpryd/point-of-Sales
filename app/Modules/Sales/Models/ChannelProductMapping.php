@@ -10,6 +10,12 @@ use App\Models\Product;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $product_id
+ * @property int|null $product_variant_id
+ * @property int $tenant_id
+ */
 class ChannelProductMapping extends Model
 {
     use AssignsTenant;
@@ -17,6 +23,9 @@ class ChannelProductMapping extends Model
 
     protected $fillable = ['provider', 'external_product_id', 'product_id'];
 
+    /**
+     * @return BelongsTo<Product, $this>
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);

@@ -48,11 +48,17 @@ class CustomerLoyaltyAccount extends Model
         });
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return BelongsTo<LoyaltyTier, $this>
+     */
     public function currentTier(): BelongsTo
     {
         return $this->belongsTo(LoyaltyTier::class, 'current_tier_id');

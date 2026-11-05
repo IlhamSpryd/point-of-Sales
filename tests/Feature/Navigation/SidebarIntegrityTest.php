@@ -233,11 +233,48 @@ class SidebarIntegrityTest extends TestCase
         $response->assertSee('aria-label="Close navigation menu"', false);
 
         // WCAG Active visual accent indicator token & active page
-        $response->assertSee('before:bg-[#202020]', false);
+        $response->assertSee('before:bg-shell-foreground-active', false);
         $response->assertSee('aria-current="page"', false);
 
         // Navigation items
         $response->assertSee('POS Terminal', false);
+
+        // Product Vision & Roadmap is fully removed
+        $response->assertDontSee('Product Vision & Roadmap', false);
+        $response->assertDontSee('investor-demo', false);
+    }
+
+    public function test_product_vision_and_roadmap_route_is_removed_and_returns_404(): void
+    {
+        $tenant = Tenant::create([
+            'name' => 'Vision Test Tenant',
+            'slug' => 'vision-test-tenant',
+            'status' => 'active',
+            'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
+            'access_status' => Tenant::ACCESS_ACTIVE,
+        ]);
+        app(TenantContext::class)->setTenantId($tenant->id);
+
+        $store = Store::create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Vision Test Store',
+            'is_active' => true,
+        ]);
+        app(TenantContext::class)->setStoreId($store->id);
+
+        $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Owner', 'permissions' => ['*']]);
+        $owner = User::factory()->create(['tenant_id' => $tenant->id, 'role_id' => $role->id]);
+
+        DB::table('user_stores')->insert([
+            'tenant_id' => $tenant->id,
+            'user_id' => $owner->id,
+            'store_id' => $store->id,
+        ]);
+
+        $this->assertFalse(Route::has('investor.demo'));
+
+        $response = $this->actingAs($owner)->get('/investor-demo');
+        $response->assertNotFound();
     }
 
     public function test_policies_enforce_tenant_scoping_and_role_authorization(): void
@@ -319,5 +356,51 @@ class SidebarIntegrityTest extends TestCase
         $posView = File::get(resource_path('views/livewire/kasir/create-order.blade.php'));
         $this->assertStringContainsString('window.apeironPosCartDirty', $posView);
         $this->assertStringContainsString('beforeunload', $posView);
+    }
+
+    public function test_branch_switcher_is_moved_from_sidebar_to_top_navbar(): void
+    {
+        $navigationView = File::get(resource_path('views/layouts/navigation.blade.php'));
+        $this->assertStringNotContainsString('<x-branch-switcher', $navigationView);
+        $this->assertStringNotContainsString('Active Branch (Click to change)', $navigationView);
+
+        $appView = File::get(resource_path('views/layouts/app.blade.php'));
+        $this->assertStringContainsString('<x-branch-switcher :dark="true" align="left" />', $appView);
+
+        $tenant = Tenant::create([
+            'name' => 'Navbar Switcher Tenant',
+            'slug' => 'navbar-switcher-tenant',
+            'status' => 'active',
+            'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
+            'access_status' => Tenant::ACCESS_ACTIVE,
+        ]);
+        app(TenantContext::class)->setTenantId($tenant->id);
+
+        $store1 = Store::create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Branch Central',
+            'is_active' => true,
+        ]);
+        $store2 = Store::create([
+            'tenant_id' => $tenant->id,
+            'name' => 'Branch Mall',
+            'is_active' => true,
+        ]);
+        app(TenantContext::class)->setStoreId($store1->id);
+
+        $role = Role::create(['tenant_id' => $tenant->id, 'name' => 'Owner', 'permissions' => ['*']]);
+        $owner = User::factory()->create(['tenant_id' => $tenant->id, 'role_id' => $role->id]);
+
+        DB::table('user_stores')->insert([
+            ['tenant_id' => $tenant->id, 'user_id' => $owner->id, 'store_id' => $store1->id],
+            ['tenant_id' => $tenant->id, 'user_id' => $owner->id, 'store_id' => $store2->id],
+        ]);
+
+        $response = $this->actingAs($owner)->get(route('dashboard'));
+        $response->assertOk();
+        $response->assertSee('Select active branch');
+        $response->assertSee('Select Branch Scope');
+        $response->assertSee('Branch Central');
+        $response->assertSee('Branch Mall');
     }
 }

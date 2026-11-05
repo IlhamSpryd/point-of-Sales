@@ -104,5 +104,5 @@
         </div>
     </div>
 </aside>
-<div class="fixed inset-0 bg-black/80 z-30 lg:hidden block" x-show="isOpen" @click="close()"></div>
+<div class="fixed inset-0 bg-overlay-scrim z-30 lg:hidden block" x-show="isOpen" @click="close()"></div>
 </div>

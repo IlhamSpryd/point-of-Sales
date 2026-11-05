@@ -25,8 +25,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $transaction_number
  * @property CashBankTransactionTypeEnum $transaction_type
  * @property CarbonInterface $transaction_date
- * @property string $amount
- * @property string $running_balance_after
+ * @property numeric-string $amount
+ * @property numeric-string $running_balance_after
  * @property string|null $description
  * @property string|null $reference_number
  * @property string $idempotency_key
@@ -64,41 +64,65 @@ class CashBankTransaction extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<CashBankAccount, $this>
+     */
     public function account(): BelongsTo
     {
         return $this->belongsTo(CashBankAccount::class, 'cash_bank_account_id');
     }
 
+    /**
+     * @return BelongsTo<CashBankAccount, $this>
+     */
     public function counterpartAccount(): BelongsTo
     {
         return $this->belongsTo(CashBankAccount::class, 'transfer_pair_account_id');
     }
 
+    /**
+     * @return BelongsTo<JournalEntry, $this>
+     */
     public function journalEntry(): BelongsTo
     {
         return $this->belongsTo(JournalEntry::class, 'journal_entry_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function createdByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function postedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'posted_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function reversedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reversed_by_user_id');

@@ -12,15 +12,7 @@ final readonly class CartEvaluationContextDto
     public CarbonInterface $now;
 
     /**
-     * @param  array<int, array{
-     *     productId: int,
-     *     categoryId?: int|null,
-     *     variantId?: int|null,
-     *     quantity: int|float,
-     *     unitPrice: float,
-     *     options?: array,
-     *     lineIndex: int
-     * }>  $items
+     * @param  array<int, array<string, mixed>>  $items
      */
     public function __construct(
         public int $tenantId,

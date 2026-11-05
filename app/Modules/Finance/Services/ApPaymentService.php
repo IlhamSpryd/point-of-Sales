@@ -45,7 +45,7 @@ class ApPaymentService
         $totalPaymentAmount = (string) $data['total_payment_amount'];
         $paymentDate = $data['payment_date'] ?? now()->toDateString();
 
-        if (bccomp($totalPaymentAmount, '0.00', 2) <= 0) {
+        if (bccomp(bc_num($totalPaymentAmount), '0.00', 2) <= 0) {
             throw ValidationException::withMessages([
                 'total_payment_amount' => ['FIN-M7-01: Total pembayaran harus lebih besar dari 0.00.'],
             ]);
@@ -165,7 +165,7 @@ class ApPaymentService
                 $allocAmount = (string) $alloc['allocated_amount'];
                 $discountTaken = (string) ($alloc['discount_taken_amount'] ?? '0.00');
 
-                if (bccomp($allocAmount, '0.00', 2) <= 0) {
+                if (bccomp(bc_num($allocAmount), '0.00', 2) <= 0) {
                     throw ValidationException::withMessages([
                         'allocations' => ['FIN-M7-01: Jumlah alokasi pada setiap faktur harus lebih besar dari 0.00.'],
                     ]);
@@ -178,7 +178,7 @@ class ApPaymentService
                 }
 
                 // Cek overpayment terhadap sisa tagihan faktur pemasok (FIN-M7-11)
-                if (bccomp($allocAmount, (string) $invoice->outstanding_amount, 2) > 0) {
+                if (bccomp(bc_num($allocAmount), bc_num($invoice->outstanding_amount), 2) > 0) {
                     throw ValidationException::withMessages([
                         'allocations' => [
                             "FIN-M7-11: Alokasi pembayaran ({$allocAmount}) melebihi sisa tagihan faktur #{$invoice->internal_invoice_number} ({$invoice->outstanding_amount}).",
@@ -187,8 +187,8 @@ class ApPaymentService
                 }
 
                 // Perbarui akumulator faktur
-                $newPaid = bcadd((string) $invoice->paid_amount, $allocAmount, 2);
-                $newOutstanding = bcsub((string) $invoice->outstanding_amount, $allocAmount, 2);
+                $newPaid = bcadd(bc_num($invoice->paid_amount), bc_num($allocAmount), 2);
+                $newOutstanding = bcsub(bc_num($invoice->outstanding_amount), bc_num($allocAmount), 2);
 
                 $invoice->paid_amount = $newPaid;
                 $invoice->outstanding_amount = $newOutstanding;
@@ -209,7 +209,7 @@ class ApPaymentService
                     'idempotency_key' => "appa:alloc:{$tenantId}:{$lockedPayment->id}:{$invoice->id}",
                 ]);
 
-                $totalAllocated = bcadd($totalAllocated, $allocAmount, 2);
+                $totalAllocated = bcadd(bc_num($totalAllocated), bc_num($allocAmount), 2);
             }
 
             // 4. Hitung porsi prepayment / kelebihan bayar
@@ -317,7 +317,7 @@ class ApPaymentService
             $cashBankTxn->journal_entry_id = $journal->id;
             $cashBankTxn->save();
 
-            return $lockedPayment->fresh(['allocations', 'journalEntry']);
+            return $lockedPayment->fresh(['allocations', 'journalEntry']) ?? $lockedPayment;
         });
     }
 
@@ -440,7 +440,7 @@ class ApPaymentService
             $lockedPayment->void_reason = $reason;
             $lockedPayment->save();
 
-            return $lockedPayment->fresh();
+            return $lockedPayment->fresh() ?? $lockedPayment;
         });
     }
 }

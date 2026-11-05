@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use App\Support\Color\StatusPalette;
+
 enum PoInvoicingStatusEnum: string
 {
     case NotInvoiced = 'not_invoiced';
@@ -19,12 +21,19 @@ enum PoInvoicingStatusEnum: string
         };
     }
 
-    public function badgeClass(): string
+    /**
+     * Semantic variant for x-badge / x-ui.badge.
+     *
+     * Resolved centrally so this status renders identically everywhere.
+     * Replaces the former badgeClass(), which hardcoded a raw Tailwind palette
+     * (and 4 dark: utilities) that could not follow the theme.
+     */
+    public function badgeType(): string
     {
         return match ($this) {
-            self::NotInvoiced => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-            self::PartiallyInvoiced => 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
-            self::FullyInvoiced => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
+            self::NotInvoiced => StatusPalette::variant('draft')->value,
+            self::PartiallyInvoiced => StatusPalette::variant('partially_paid')->value,
+            self::FullyInvoiced => StatusPalette::variant('paid')->value,
         };
     }
 }

@@ -21,6 +21,7 @@ use App\Support\Traits\RequiresActiveStoreContext;
 use Illuminate\Contracts\Cache\LockTimeoutException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -50,7 +51,7 @@ class TransactionController extends Controller
     /**
      * Memproses pesanan dari UI Kasir
      */
-    public function store(StoreTransactionRequest $request)
+    public function store(StoreTransactionRequest $request): JsonResponse|RedirectResponse
     {
         Gate::authorize('create', Order::class);
 
@@ -86,7 +87,7 @@ class TransactionController extends Controller
             }
 
             try {
-                $order = $this->transactionService->createTransaction($validated, $userId);
+                $order = $this->transactionService->createTransaction($validated, (int) $userId);
             } finally {
                 if (isset($lock)) {
                     $lock->release();
@@ -196,7 +197,7 @@ class TransactionController extends Controller
             }
 
             try {
-                app(CashierPinService::class)->verifySupervisorPin((int) $user->id, (string) $pin, (int) $order->tenant_id);
+                app(CashierPinService::class)->verifySupervisorPin((int) ($user->id ?? 0), (string) $pin, (int) $order->tenant_id);
             } catch (\Throwable $e) {
                 return response()->json([
                     'success' => false,

@@ -29,21 +29,33 @@ class TaxAccountMapping extends Model
 
     protected $guarded = ['id'];
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<TaxCode, $this>
+     */
     public function taxCode(): BelongsTo
     {
         return $this->belongsTo(TaxCode::class, 'tax_code_id');
     }
 
+    /**
+     * @return BelongsTo<ChartOfAccount, $this>
+     */
     public function salesTaxAccount(): BelongsTo
     {
         return $this->belongsTo(ChartOfAccount::class, 'sales_tax_account_id');
     }
 
+    /**
+     * @return BelongsTo<ChartOfAccount, $this>
+     */
     public function purchaseTaxAccount(): BelongsTo
     {
         return $this->belongsTo(ChartOfAccount::class, 'purchase_tax_account_id');

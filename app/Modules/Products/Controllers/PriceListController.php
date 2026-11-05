@@ -97,7 +97,7 @@ class PriceListController extends Controller
                 ]);
             }
 
-            $this->auditTrail->log(
+            $this->auditTrail?->log(
                 tenantId: $tenantId,
                 action: 'price_list.created',
                 userId: auth()->id(),
@@ -156,7 +156,7 @@ class PriceListController extends Controller
                 }
             }
 
-            $this->auditTrail->log(
+            $this->auditTrail?->log(
                 tenantId: $tenantId,
                 action: 'price_list.updated',
                 userId: auth()->id(),
@@ -187,7 +187,7 @@ class PriceListController extends Controller
             $priceList->items()->delete();
             $priceList->delete();
 
-            $this->auditTrail->log(
+            $this->auditTrail?->log(
                 tenantId: $tenantId,
                 action: 'price_list.deleted',
                 userId: auth()->id(),

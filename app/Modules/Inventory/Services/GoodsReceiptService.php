@@ -142,7 +142,7 @@ class GoodsReceiptService
                 }
             }
 
-            return $receipt->fresh(['items']);
+            return $receipt->fresh(['items']) ?? $receipt;
         });
     }
 
@@ -159,7 +159,7 @@ class GoodsReceiptService
             'status' => GoodsReceiptStatusEnum::Cancelled,
         ]);
 
-        return $receipt->fresh(['items']);
+        return $receipt->fresh(['items']) ?? $receipt;
     }
 
     /**
@@ -231,7 +231,7 @@ class GoodsReceiptService
                 'posted_by' => $userId,
             ]);
 
-            return $lockedReceipt->fresh(['items']);
+            return $lockedReceipt->fresh(['items']) ?? $lockedReceipt;
         });
     }
 
@@ -281,7 +281,7 @@ class GoodsReceiptService
                 $currentQty = (string) ($balance->quantity ?? '0.0000');
                 $requiredQty = (string) $item->quantity_received;
 
-                if (bccomp($currentQty, $requiredQty, 4) < 0) {
+                if (bccomp(bc_num($currentQty), bc_num($requiredQty), 4) < 0) {
                     throw new DomainException(
                         "Reversal dibatalkan (OD-05): Saldo on-hand untuk item '{$item->item_name}' di cabang ini "
                         ."tersedia {$currentQty}, tidak mencukupi untuk membalikkan kuantitas penerimaan {$requiredQty}."
@@ -321,7 +321,7 @@ class GoodsReceiptService
                 'reversal_reason' => $reason,
             ]);
 
-            return $lockedReceipt->fresh(['items']);
+            return $lockedReceipt->fresh(['items']) ?? $lockedReceipt;
         });
     }
 
@@ -370,12 +370,12 @@ class GoodsReceiptService
         }
 
         $qty = (string) $itemData['quantity_received'];
-        if (bccomp($qty, '0', 4) <= 0) {
+        if (bccomp(bc_num($qty), '0', 4) <= 0) {
             throw new InvalidArgumentException("quantity_received harus lebih besar dari 0. Diberikan: {$qty}");
         }
 
         $unitCost = (string) ($itemData['unit_cost'] ?? '0.0000');
-        if (bccomp($unitCost, '0', 4) < 0) {
+        if (bccomp(bc_num($unitCost), '0', 4) < 0) {
             throw new InvalidArgumentException("unit_cost tidak boleh negatif. Diberikan: {$unitCost}");
         }
 

@@ -63,7 +63,7 @@ class CartController extends Controller
     public function store(AddToCartRequest $request): JsonResponse
     {
         $validated = $request->validated();
-        $product = Product::findOrFail($validated['product_id']);
+        $product = Product::findOrFail((int) $validated['product_id']);
 
         $item = $this->cartService->addItem(
             $product,

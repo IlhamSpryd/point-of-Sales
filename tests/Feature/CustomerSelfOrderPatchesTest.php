@@ -48,7 +48,6 @@ class CustomerSelfOrderPatchesTest extends TestCase
             'current_table_name' => $table->table_name,
         ])->postJson(route('customer.waiter.call'));
 
-        $response1->dump();
         $response1->assertStatus(200);
         $response1->assertJson(['message' => "Panggilan terkirim. Staf sedang menuju {$table->table_name}."]);
 

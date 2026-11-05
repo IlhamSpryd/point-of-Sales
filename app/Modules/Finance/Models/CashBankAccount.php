@@ -26,8 +26,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $bank_account_number
  * @property string|null $bank_account_holder
  * @property string $currency_code
- * @property string $opening_balance
- * @property string $current_balance
+ * @property numeric-string $opening_balance
+ * @property numeric-string $current_balance
  * @property bool $is_active
  * @property CarbonInterface $created_at
  * @property CarbonInterface $updated_at
@@ -51,26 +51,41 @@ class CashBankAccount extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<ChartOfAccount, $this>
+     */
     public function glAccount(): BelongsTo
     {
         return $this->belongsTo(ChartOfAccount::class, 'gl_account_id');
     }
 
+    /**
+     * @return HasMany<CashBankTransaction, $this>
+     */
     public function transactions(): HasMany
     {
         return $this->hasMany(CashBankTransaction::class, 'cash_bank_account_id');
     }
 
+    /**
+     * @return HasMany<BankStatement, $this>
+     */
     public function statements(): HasMany
     {
         return $this->hasMany(BankStatement::class, 'cash_bank_account_id');

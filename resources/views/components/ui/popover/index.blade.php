@@ -105,7 +105,7 @@ x-modelable="popoverOpen"
         @if (isset($trigger))
             {{ $trigger }}
         @else
-            <div class="relative inline-flex items-center justify-center rounded-medium border border-foreground/10 bg-background p-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary focus:outline-none disabled:pointer-events-none disabled:opacity-50">
+            <div class="relative inline-flex items-center justify-center rounded-medium border border-border bg-background p-2 text-sm font-medium text-foreground transition-colors hover:bg-secondary focus:outline-none disabled:pointer-events-none disabled:opacity-50">
                 Popover
             </div>
         @endif
@@ -135,7 +135,7 @@ x-modelable="popoverOpen"
             x-cloak
             class="w-max max-w-sm">
             @if (isset($content))
-                <div {{ $content->attributes->twMerge('overflow-hidden rounded-medium border border-foreground/10 bg-popover p-4 text-popover-foreground shadow-lg dark:border-foreground/15') }}>
+                <div {{ $content->attributes->twMerge('overflow-hidden rounded-medium border border-border bg-popover p-4 text-popover-foreground shadow-lg }}>
                     {{ $content }}
                 </div>
             @else

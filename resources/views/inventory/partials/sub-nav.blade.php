@@ -58,7 +58,7 @@
     });
 @endphp
 
-<div class="w-full pb-3 mb-6 border-b border-[#E5E7EB]">
+<div class="w-full pb-3 mb-6 border-b border-border">
     <nav aria-label="Inventory Management Navigation"
         x-data
         x-init="$nextTick(() => {
@@ -77,7 +77,7 @@
                 @click="if (window.apeironPosCartDirty && !confirm('You have an active order in the POS terminal. Navigating away will discard the active cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }"
                 @if ($isActive) aria-current="page" @endif
                 style="{{ $isActive ? 'background-color: #202020; color: #ffffff;' : '' }}"
-                class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink {{ $isActive ? 'inventory-nav-tab-active bg-apeiron-ink text-white shadow-sm' : 'inventory-nav-tab-inactive text-[#787774] hover:text-apeiron-ink hover:bg-[#F7F7F5]' }}">
+                class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink {{ $isActive ? 'inventory-nav-tab-active bg-apeiron-ink text-white shadow-sm' : 'inventory-nav-tab-inactive text-muted-foreground hover:text-apeiron-ink hover:bg-muted' }}">
                 <span class="material-symbols-rounded text-[18px] shrink-0 {{ $isActive ? 'text-white' : '' }}">{{ $tab['icon'] }}</span>
                 <span class="{{ $isActive ? 'text-white' : '' }}">{{ $tab['label'] }}</span>
             </a>

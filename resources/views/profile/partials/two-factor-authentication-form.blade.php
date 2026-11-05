@@ -4,7 +4,7 @@
             {{ __('Two-Factor Authentication (2FA / TOTP)') }}
         </h2>
 
-        <p class="mt-1 text-sm text-[#787774]">
+        <p class="mt-1 text-sm text-muted-foreground">
             {{ __('Add an extra layer of security to your account using standard authenticator apps (Google Authenticator, Microsoft Authenticator, or 1Password).') }}
         </p>
     </header>

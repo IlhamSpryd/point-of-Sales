@@ -79,7 +79,7 @@ $panelEnterEndClasses = $sheet
     {{-- Overlay --}}
     <div
         x-show="show"
-        class="fixed inset-0 transform transition-all bg-black/40 backdrop-blur-xs"
+        class="fixed inset-0 transform transition-all bg-overlay-scrim backdrop-blur-xs"
         x-on:click="show = false"
         x-transition:enter="ease-out duration-300"
         x-transition:enter-start="opacity-0"
@@ -95,7 +95,7 @@ $panelEnterEndClasses = $sheet
         role="dialog"
         aria-modal="true"
         {{ $attributes->whereStartsWith('aria-') }}
-        class="relative bg-white {{ $panelShapeClasses }} overflow-hidden shadow-[0_-12px_40px_-10px_rgba(0,0,0,0.12)] sm:shadow-xl border border-apeiron-border transform transition-all w-full sm:w-full {{ $maxWidth }} mx-auto"
+        class="relative bg-card {{ $panelShapeClasses }} overflow-hidden shadow-[var(--shadow-dialog)] border border-border transform transition-all w-full sm:w-full {{ $maxWidth }} mx-auto"
         x-transition:enter="ease-[cubic-bezier(0.16,1,0.3,1)] duration-300"
         x-transition:enter-start="{{ $panelEnterClasses }}"
         x-transition:enter-end="{{ $panelEnterEndClasses }}"

@@ -3,6 +3,10 @@
 use App\Http\Controllers\Api\ProvisioningController;
 use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\DeviceController;
+use App\Http\Controllers\HealthCheckController;
+use App\Modules\Integration\Controllers\PaymentNotificationController;
+use App\Modules\Integration\Services\SanctumScopeGuardService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // throttle:120,1 sebelum verify.webhook -- pola identik
@@ -28,13 +32,17 @@ Route::post('/devices/pair', [DeviceController::class, 'pair'])
     ->middleware('throttle:10,1')
     ->name('api.devices.pair');
 
+// Health check probes
+Route::get('/health/live', [HealthCheckController::class, 'live'])->name('api.health.live');
+Route::get('/health/ready', [HealthCheckController::class, 'ready'])->name('api.health.ready');
+
 // Midtrans Payment Webhook Notification
-Route::post('/payment/notification', [\App\Modules\Integration\Controllers\PaymentNotificationController::class, 'handle'])
+Route::post('/payment/notification', [PaymentNotificationController::class, 'handle'])
     ->name('api.payment.notification');
 
 // Scoped Sanctum REST API for external integrations (e.g. n8n)
 Route::middleware(['auth:sanctum', 'tenant.context'])->group(function () {
-    Route::get('/v1/orders', function (\Illuminate\Http\Request $request, \App\Modules\Integration\Services\SanctumScopeGuardService $guard) {
+    Route::get('/v1/orders', function (Request $request, SanctumScopeGuardService $guard) {
         $guard->authorize($request, 'orders:read');
 
         return response()->json([

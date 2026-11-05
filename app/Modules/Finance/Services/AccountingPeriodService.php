@@ -33,6 +33,9 @@ class AccountingPeriodService
         protected TenantContext $tenantContext
     ) {}
 
+    /**
+     * @return Collection<int, AccountingPeriod>
+     */
     public function createFiscalYearPeriods(int $fiscalYear, int $startMonth = 1, ?int $tenantId = null): Collection
     {
         $tenantId = $tenantId ?? $this->tenantContext->getTenantId();
@@ -41,6 +44,7 @@ class AccountingPeriodService
         }
 
         return DB::transaction(function () use ($fiscalYear, $startMonth, $tenantId) {
+            /** @var Collection<int, AccountingPeriod> $periods */
             $periods = new Collection;
 
             for ($i = 0; $i < 12; $i++) {
@@ -209,7 +213,7 @@ class AccountingPeriodService
 
         $tbDebit = (string) ($tbTotals->total_debit ?? '0.00');
         $tbCredit = (string) ($tbTotals->total_credit ?? '0.00');
-        $tbDiff = bcsub($tbDebit, $tbCredit, 2);
+        $tbDiff = bcsub(bc_num($tbDebit), bc_num($tbCredit), 2);
         $gate3Passed = bccomp($tbDiff, '0.00', 2) === 0;
 
         $results['GATE_3_TRIAL_BALANCE'] = [
@@ -237,7 +241,7 @@ class AccountingPeriodService
             })
             ->selectRaw('COALESCE(SUM(journal_lines.debit_amount - journal_lines.credit_amount), 0) as net_ar')
             ->value('net_ar') ?? '0.00';
-        $glArBalance = bcadd((string) $glArRaw, '0', 2);
+        $glArBalance = bcadd(bc_num($glArRaw), '0', 2);
 
         $subledgerAr = '0.00';
         if (Schema::hasTable('customer_invoices')) {
@@ -277,7 +281,7 @@ class AccountingPeriodService
             })
             ->selectRaw('COALESCE(SUM(journal_lines.credit_amount - journal_lines.debit_amount), 0) as net_ap')
             ->value('net_ap') ?? '0.00';
-        $glApBalance = bcadd((string) $glApRaw, '0', 2);
+        $glApBalance = bcadd(bc_num($glApRaw), '0', 2);
 
         $subledgerAp = '0.00';
         if (Schema::hasTable('supplier_invoices')) {
@@ -314,7 +318,7 @@ class AccountingPeriodService
             ->whereIn('chart_of_accounts.account_code', ['1140', '1141'])
             ->selectRaw('COALESCE(SUM(journal_lines.debit_amount - journal_lines.credit_amount), 0) as net_inv')
             ->value('net_inv') ?? '0.00';
-        $glInvBalance = bcadd((string) $glInvRaw, '0', 2);
+        $glInvBalance = bcadd(bc_num($glInvRaw), '0', 2);
 
         $subledgerInv = '0.00';
         if (Schema::hasTable('inventory_valuation_snapshots')) {
@@ -333,14 +337,14 @@ class AccountingPeriodService
                     ->where('tenant_id', $tenantId)
                     ->selectRaw('COALESCE(SUM(quantity * average_unit_cost), 0) as total')
                     ->value('total') ?? '0.00';
-                $subledgerInv = bcadd($subledgerInv, (string) $prodSum, 2);
+                $subledgerInv = bcadd(bc_num($subledgerInv), bc_num($prodSum), 2);
             }
             if (Schema::hasTable('ingredient_stock_balances')) {
                 $ingSum = DB::table('ingredient_stock_balances')
                     ->where('tenant_id', $tenantId)
                     ->selectRaw('COALESCE(SUM(quantity * average_unit_cost), 0) as total')
                     ->value('total') ?? '0.00';
-                $subledgerInv = bcadd($subledgerInv, (string) $ingSum, 2);
+                $subledgerInv = bcadd(bc_num($subledgerInv), bc_num($ingSum), 2);
             }
         }
 
@@ -549,6 +553,9 @@ class AccountingPeriodService
                 }
             }
 
+            /** @var AccountingPeriod $firstPeriod */
+            $firstPeriod = $periods->first();
+            /** @var AccountingPeriod $lastPeriod */
             $lastPeriod = $periods->last();
             $idempotencyKey = "year_end_close:{$tenantId}:{$fiscalYear}";
 
@@ -593,7 +600,7 @@ class AccountingPeriodService
                 ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_lines.account_id')
                 ->where('journal_entries.tenant_id', $tenantId)
                 ->where('journal_entries.status', 'POSTED')
-                ->where('journal_entries.posting_date', '>=', $periods->first()->start_date->toDateString())
+                ->where('journal_entries.posting_date', '>=', $firstPeriod->start_date->toDateString())
                 ->where('journal_entries.posting_date', '<=', $lastPeriod->end_date->toDateString())
                 ->whereIn('chart_of_accounts.account_type', $nominalTypes)
                 ->groupBy('journal_lines.account_id', 'chart_of_accounts.account_code', 'chart_of_accounts.normal_balance')
@@ -616,7 +623,7 @@ class AccountingPeriodService
                 $normalBalance = $mov->normal_balance;
 
                 if ($normalBalance === NormalBalanceEnum::DEBIT->value) {
-                    $net = bcsub($deb, $cred, 2);
+                    $net = bcsub(bc_num($deb), bc_num($cred), 2);
                     if (bccomp($net, '0.00', 2) > 0) {
                         // Credit to zero out
                         $closingLines[] = new JournalLineDto(
@@ -637,7 +644,7 @@ class AccountingPeriodService
                         $totalClosingDebits = bcadd($totalClosingDebits, $absNet, 2);
                     }
                 } else {
-                    $net = bcsub($cred, $deb, 2);
+                    $net = bcsub(bc_num($cred), bc_num($deb), 2);
                     if (bccomp($net, '0.00', 2) > 0) {
                         // Debit to zero out
                         $closingLines[] = new JournalLineDto(
@@ -716,6 +723,7 @@ class AccountingPeriodService
             // Roll-forward saldo akun permanen ke periode 1 tahun fiskal berikutnya
             $nextFiscalYear = $fiscalYear + 1;
             $nextPeriods = $this->createFiscalYearPeriods($nextFiscalYear, 1, $tenantId);
+            /** @var AccountingPeriod $nextPeriod1 */
             $nextPeriod1 = $nextPeriods->firstWhere('period_number', 1);
 
             $this->rollForwardPermanentAccounts($lastPeriod, $nextPeriod1);
@@ -796,10 +804,10 @@ class AccountingPeriodService
 
             $periodDebit = (string) ($movements->period_debit ?? '0.00');
             $periodCredit = (string) ($movements->period_credit ?? '0.00');
-            $netMovement = bcsub($periodDebit, $periodCredit, 2);
+            $netMovement = bcsub(bc_num($periodDebit), bc_num($periodCredit), 2);
 
             if ($account->normal_balance === NormalBalanceEnum::DEBIT) {
-                $net = bcsub(bcadd($openingDebit, $periodDebit, 2), bcadd($openingCredit, $periodCredit, 2), 2);
+                $net = bcsub(bcadd(bc_num($openingDebit), bc_num($periodDebit), 2), bcadd(bc_num($openingCredit), bc_num($periodCredit), 2), 2);
                 if (bccomp($net, '0.00', 2) >= 0) {
                     $closingDebit = $net;
                     $closingCredit = '0.00';
@@ -808,7 +816,7 @@ class AccountingPeriodService
                     $closingCredit = bcmul($net, '-1', 2);
                 }
             } else {
-                $net = bcsub(bcadd($openingCredit, $periodCredit, 2), bcadd($openingDebit, $periodDebit, 2), 2);
+                $net = bcsub(bcadd(bc_num($openingCredit), bc_num($periodCredit), 2), bcadd(bc_num($openingDebit), bc_num($periodDebit), 2), 2);
                 if (bccomp($net, '0.00', 2) >= 0) {
                     $closingCredit = $net;
                     $closingDebit = '0.00';
@@ -869,7 +877,7 @@ class AccountingPeriodService
             foreach ($productBalances as $pb) {
                 $unitCost = (string) ($pb->average_unit_cost ?? '0.0000');
                 $qty = (string) $pb->quantity;
-                $totalValuation = bcmul($qty, $unitCost, 2);
+                $totalValuation = bcmul(bc_num($qty), bc_num($unitCost), 2);
 
                 DB::table('inventory_valuation_snapshots')->insert([
                     'tenant_id' => $tenantId,

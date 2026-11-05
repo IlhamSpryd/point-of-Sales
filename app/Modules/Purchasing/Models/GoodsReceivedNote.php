@@ -68,16 +68,25 @@ class GoodsReceivedNote extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<Supplier, $this>
+     */
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
@@ -91,16 +100,25 @@ class GoodsReceivedNote extends Model
         return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function receivedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'received_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function postedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'posted_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function reversedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reversed_by_user_id');

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Feature\CRM;
 
 use App\Models\Tenant;
-use App\Modules\CRM\Services\CustomerCreditLimitService;
 use App\Modules\CRM\Services\CustomerMergeService;
 use App\Modules\CRM\Services\CustomerRegistrationService;
 use App\Modules\Customers\Models\Customer;
@@ -13,6 +12,7 @@ use App\Modules\Customers\Models\CustomerMergeLog;
 use App\Modules\Pricing\Services\LoyaltyLedgerService;
 use App\Modules\Sales\Models\Order;
 use App\Modules\Settings\Models\Store;
+use App\Modules\Users\Models\User;
 use App\Services\Context\TenantContext;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Str;
@@ -24,8 +24,10 @@ class Wave2CrmTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private Store $store;
-    private \App\Modules\Users\Models\User $user;
+
+    private User $user;
 
     protected function afterSubclassSetUp(): void
     {
@@ -42,10 +44,10 @@ class Wave2CrmTest extends TestCase
             'code' => 'OUT-01',
         ]);
 
-        $this->user = \App\Modules\Users\Models\User::withoutGlobalScopes()->create([
+        $this->user = User::withoutGlobalScopes()->create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Cashier One',
-            'email' => 'cashier.crm.' . uniqid() . '@example.com',
+            'email' => 'cashier.crm.'.uniqid().'@example.com',
             'password' => bcrypt('password'),
         ]);
 

@@ -29,9 +29,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $cost_code
  * @property PurchaseCostCategoryEnum $category
  * @property string $description
- * @property string $amount
+ * @property numeric-string $amount
  * @property string $currency_code
- * @property string $exchange_rate
+ * @property numeric-string $exchange_rate
  * @property CostAllocationMethodEnum $allocation_method
  * @property string|null $vendor_name
  * @property string|null $invoice_reference

@@ -26,6 +26,7 @@ use App\Services\Context\TenantContext;
 use App\Services\MenuCacheService;
 use App\Services\ProductService;
 use App\Services\TransactionService;
+use Database\Factories\ProductFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -52,7 +53,7 @@ use Illuminate\Support\Facades\DB;
  * @property string $product_type
  * @property int|float $product_price
  * @property string $costing_method
- * @property float|null $standard_cost
+ * @property float|numeric-string $standard_cost
  * @property int|null $tax_class_id
  * @property bool $is_tax_inclusive
  * @property bool $track_inventory
@@ -72,7 +73,10 @@ use Illuminate\Support\Facades\DB;
 class Product extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<ProductFactory> */
     use HasFactory;
+
     use ScopedToTenant;
     use SoftDeletes;
 
@@ -115,7 +119,7 @@ class Product extends Model
         'is_open_price',
     ];
 
-    public function setNameAttribute($value): void
+    public function setNameAttribute(mixed $value): void
     {
         $this->attributes['product_name'] = $value;
     }
@@ -125,7 +129,7 @@ class Product extends Model
         return $this->attributes['product_name'] ?? null;
     }
 
-    public function setDisplayNameAttribute($value): void
+    public function setDisplayNameAttribute(mixed $value): void
     {
         if (empty($this->attributes['product_name'])) {
             $this->attributes['product_name'] = $value;
@@ -137,7 +141,7 @@ class Product extends Model
         return $this->attributes['product_name'] ?? null;
     }
 
-    public function setPriceAttribute($value): void
+    public function setPriceAttribute(mixed $value): void
     {
         $this->attributes['product_price'] = $value;
     }
@@ -147,7 +151,7 @@ class Product extends Model
         return $this->attributes['product_price'] ?? null;
     }
 
-    public function setBasePriceAttribute($value): void
+    public function setBasePriceAttribute(mixed $value): void
     {
         $this->attributes['product_price'] = $value;
     }
@@ -157,7 +161,7 @@ class Product extends Model
         return $this->attributes['product_price'] ?? null;
     }
 
-    public function setCostPriceAttribute($value): void
+    public function setCostPriceAttribute(mixed $value): void
     {
         $this->attributes['standard_cost'] = $value;
     }
@@ -167,7 +171,7 @@ class Product extends Model
         return $this->attributes['standard_cost'] ?? 0;
     }
 
-    public function setSkuAttribute($value): void
+    public function setSkuAttribute(mixed $value): void
     {
         if (empty($this->attributes['product_code']) && ! empty($value)) {
             $this->attributes['product_code'] = $value;
@@ -236,13 +240,12 @@ class Product extends Model
                 $storeId = $context->getStoreId() ?? Store::where('tenant_id', $product->tenant_id)->orderBy('id')->value('id');
 
                 if ($storeId) {
-                    $delta = $product->stock - $product->getOriginal('stock');
+                    $delta = (int) $product->stock - (int) $product->getOriginal('stock');
                     DB::table('product_stock_balances')
                         ->where('tenant_id', $product->tenant_id)
                         ->where('store_id', $storeId)
                         ->where('product_id', $product->id)
-                        ->update([
-                            'quantity' => DB::raw("quantity + ($delta)"),
+                        ->increment('quantity', $delta, [
                             'updated_at' => now(),
                         ]);
                 }
@@ -293,37 +296,57 @@ class Product extends Model
 
     /**
      * Relasi (BelongsTo): Setiap Entitas Produk harus masuk ke dalam suatu entitas kategori tertentu.
+     *
+     * @return BelongsTo<Category, $this>
      */
     public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
+    /**
+     * @return BelongsTo<Brand, $this>
+     */
     public function brand(): BelongsTo
     {
         return $this->belongsTo(Brand::class);
     }
 
+    /**
+     * @return BelongsTo<UnitOfMeasure, $this>
+     */
     public function baseUom(): BelongsTo
     {
         return $this->belongsTo(UnitOfMeasure::class, 'base_uom_id');
     }
 
+    /**
+     * @return HasMany<ProductUnitConversion, $this>
+     */
     public function unitConversions(): HasMany
     {
         return $this->hasMany(ProductUnitConversion::class);
     }
 
+    /**
+     * @return BelongsTo<TaxClass, $this>
+     */
     public function taxClass(): BelongsTo
     {
         return $this->belongsTo(TaxClass::class, 'tax_class_id');
     }
 
+    /**
+     * @return HasMany<ProductCostHistory, $this>
+     */
     public function costHistories(): HasMany
     {
         return $this->hasMany(ProductCostHistory::class)->orderBy('effective_at', 'desc');
     }
 
+    /**
+     * @return HasMany<ProductMedia, $this>
+     */
     public function media(): HasMany
     {
         return $this->hasMany(ProductMedia::class)->orderBy('is_primary', 'desc')->orderBy('sort_order', 'asc');
@@ -339,6 +362,8 @@ class Product extends Model
 
     /**
      * Relasi (HasMany): Produk terkait sering dilampirkan dalam ragam deretan bon rincian pesanan.
+     *
+     * @return HasMany<OrderItem, $this>
      */
     public function orderItems(): HasMany
     {
@@ -348,6 +373,8 @@ class Product extends Model
     /**
      * Relasi (BelongsToMany): Produk ini memakai grup varian apa saja.
      * Contoh: Produk "Kopi Susu Gula Aren" memakai grup "Pilihan Suhu" dan "Tingkat Gula".
+     *
+     * @return BelongsToMany<ModifierGroup, $this>
      */
     public function modifierGroups(): BelongsToMany
     {
@@ -357,22 +384,22 @@ class Product extends Model
     /**
      * KUNCI INTEGRASI: menu self-order & kasir HANYA boleh menampilkan produk
      * yang benar-benar bisa dijual -- aktif, tidak di-soft-delete, stok ada.
-     *
      * CATATAN AUDIT: untuk produk ber-BOM, `stock` di sini TIDAK LAGI dipotong
      * oleh TransactionService::createTransaction().
-     *
      * KETERBATASAN DIKETAHUI (di luar cakupan audit ini):
      * untuk produk ber-BOM, ketersediaan sesungguhnya ditentukan oleh
      * `ingredients.current_stock`, BUKAN kolom `stock` di tabel ini --
      * kolom `stock` produk ber-BOM tidak lagi dimutakhirkan sama sekali
      * (lihat catatan Node 1 di atas).
-     *
      * [F-07 RESOLVED] Cache invalidation untuk produk ber-BOM kini
      * ditangani oleh Ingredient::booted()::saved() -- saat current_stock
      * melewati ambang nol, menu cache di-flush otomatis via
      * DB::afterCommit(), pola identik dengan Product::booted()::saved().
+     *
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
-    public function scopeAvailableForOrder($query)
+    public function scopeAvailableForOrder(Builder $query): Builder
     {
         return $query->where('is_active', true)
             ->where('status', 'active')
@@ -384,6 +411,10 @@ class Product extends Model
             });
     }
 
+    /**
+     * @param  Builder<static>  $query
+     * @return Builder<static>
+     */
     public function scopeSellable(Builder $query): Builder
     {
         return $query->where('is_active', true)->where('status', 'active');
@@ -416,6 +447,8 @@ class Product extends Model
 
     /**
      * Relasi ke varian-varian spesifik (ADR-01).
+     *
+     * @return HasMany<ProductVariant, $this>
      */
     public function variants(): HasMany
     {
@@ -424,6 +457,8 @@ class Product extends Model
 
     /**
      * Relasi ke komponen penyusun bundel/kit jika produk bertipe bundle (ADR-04).
+     *
+     * @return HasMany<ProductBundleItem, $this>
      */
     public function bundleItems(): HasMany
     {
@@ -432,6 +467,8 @@ class Product extends Model
 
     /**
      * Relasi ke bundel-bundel di mana produk ini menjadi salah satu komponennya.
+     *
+     * @return HasMany<ProductBundleItem, $this>
      */
     public function bundleComponentOf(): HasMany
     {
@@ -440,6 +477,8 @@ class Product extends Model
 
     /**
      * FIX PRASYARAT BOM: Hapus 'unit_of_measurement' karena tidak ada di tabel pivot.
+     *
+     * @return BelongsToMany<Ingredient, $this, ProductIngredient>
      */
     public function ingredients(): BelongsToMany
     {

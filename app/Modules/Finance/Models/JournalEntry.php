@@ -34,8 +34,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $reversal_of_journal_id
  * @property int|null $reversed_by_journal_id
  * @property string $currency_code
- * @property string $total_debit
- * @property string $total_credit
+ * @property numeric-string $total_debit
+ * @property numeric-string $total_credit
  * @property string|null $notes
  * @property string|null $reversal_reason
  * @property int|null $created_by_user_id
@@ -68,51 +68,81 @@ class JournalEntry extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<AccountingPeriod, $this>
+     */
     public function period(): BelongsTo
     {
         return $this->belongsTo(AccountingPeriod::class, 'accounting_period_id');
     }
 
+    /**
+     * @return BelongsTo<PostingRuleVersion, $this>
+     */
     public function postingRuleVersion(): BelongsTo
     {
         return $this->belongsTo(PostingRuleVersion::class, 'posting_rule_version_id');
     }
 
+    /**
+     * @return BelongsTo<self, $this>
+     */
     public function reversalOfJournal(): BelongsTo
     {
         return $this->belongsTo(self::class, 'reversal_of_journal_id');
     }
 
+    /**
+     * @return BelongsTo<self, $this>
+     */
     public function reversedByJournal(): BelongsTo
     {
         return $this->belongsTo(self::class, 'reversed_by_journal_id');
     }
 
+    /**
+     * @return HasMany<JournalLine, $this>
+     */
     public function lines(): HasMany
     {
         return $this->hasMany(JournalLine::class, 'journal_entry_id')->orderBy('line_number');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function createdByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function approvedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function postedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'posted_by_user_id');

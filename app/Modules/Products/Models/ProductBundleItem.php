@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Tenant;
 use App\Models\UnitOfMeasure;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -22,15 +23,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $bundle_product_id
  * @property int $component_product_id
  * @property int|null $component_variant_id
- * @property float $quantity
+ * @property float|numeric-string $quantity
  * @property int|null $uom_id
- * @property float|null $cost_allocation_ratio
+ * @property float|numeric-string|null $cost_allocation_ratio
  * @property int $sort_order
  */
 class ProductBundleItem extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToTenant;
 
     protected $table = 'product_bundle_items';
@@ -56,6 +60,9 @@ class ProductBundleItem extends Model
         'sort_order' => 'integer',
     ];
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
@@ -77,11 +84,17 @@ class ProductBundleItem extends Model
         return $this->belongsTo(Product::class, 'component_product_id');
     }
 
+    /**
+     * @return BelongsTo<ProductVariant, $this>
+     */
     public function componentVariant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class, 'component_variant_id');
     }
 
+    /**
+     * @return BelongsTo<UnitOfMeasure, $this>
+     */
     public function uom(): BelongsTo
     {
         return $this->belongsTo(UnitOfMeasure::class, 'uom_id');

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
+use App\Support\Color\StatusPalette;
+
 enum PurchaseOrderStatusEnum: string
 {
     case Draft = 'draft';
@@ -29,17 +31,25 @@ enum PurchaseOrderStatusEnum: string
         };
     }
 
-    public function badgeClass(): string
+    /**
+     * Semantic variant for x-badge / x-ui.badge.
+     *
+     * Resolved centrally so this status renders identically everywhere.
+     * Replaces the former badgeClass(), which hardcoded a raw Tailwind palette
+     * (and 8 dark: utilities) and disagreed with every other status authority:
+     * it painted `Approved` blue while the rest of the app treated approval as success.
+     */
+    public function badgeType(): string
     {
         return match ($this) {
-            self::Draft => 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300',
-            self::PendingApproval => 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
-            self::Approved => 'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
-            self::Rejected => 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
-            self::Released => 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
-            self::Amended => 'bg-purple-100 text-purple-800 dark:bg-purple-900/40 dark:text-purple-300',
-            self::Closed => 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300',
-            self::Cancelled => 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300',
+            self::Draft => StatusPalette::variant('draft')->value,
+            self::PendingApproval => StatusPalette::variant('pending_approval')->value,
+            self::Approved => StatusPalette::variant('approved')->value,
+            self::Rejected => StatusPalette::variant('rejected')->value,
+            self::Released => StatusPalette::variant('released')->value,
+            self::Amended => StatusPalette::variant('amended')->value,
+            self::Closed => StatusPalette::variant('closed')->value,
+            self::Cancelled => StatusPalette::variant('cancelled')->value,
         };
     }
 

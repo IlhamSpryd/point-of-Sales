@@ -44,16 +44,25 @@ class PostingRuleLine extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<PostingRuleVersion, $this>
+     */
     public function version(): BelongsTo
     {
         return $this->belongsTo(PostingRuleVersion::class, 'posting_rule_version_id');
     }
 
+    /**
+     * @return BelongsTo<ChartOfAccount, $this>
+     */
     public function account(): BelongsTo
     {
         return $this->belongsTo(ChartOfAccount::class, 'account_id');

@@ -38,6 +38,27 @@ class Department extends Model
 
     protected $guarded = ['id'];
 
+    protected static function booted(): void
+    {
+        static::deleting(function (Department $department): void {
+            $hasJobTitles = JobTitle::withoutGlobalScopes()
+                ->where('tenant_id', $department->tenant_id)
+                ->where('department_id', $department->id)
+                ->exists();
+            $hasEmployees = Employee::withoutGlobalScopes()
+                ->where('tenant_id', $department->tenant_id)
+                ->where('department_id', $department->id)
+                ->exists();
+
+            if (! $hasJobTitles && ! $hasEmployees) {
+                static::withoutGlobalScopes()
+                    ->where('tenant_id', $department->tenant_id)
+                    ->where('parent_id', $department->id)
+                    ->update(['parent_id' => null]);
+            }
+        });
+    }
+
     /**
      * @return array<string, string>
      */

@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $source_id
  * @property string|null $source_number
  * @property string $idempotency_key
- * @property array $payload
+ * @property array<string, mixed> $payload
  * @property OutboxStatusEnum $status
  * @property CarbonInterface $occurred_at
  * @property CarbonInterface|null $processed_at
@@ -58,16 +58,25 @@ class FinancialEventOutbox extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<JournalEntry, $this>
+     */
     public function journalEntry(): BelongsTo
     {
         return $this->belongsTo(JournalEntry::class, 'journal_entry_id');

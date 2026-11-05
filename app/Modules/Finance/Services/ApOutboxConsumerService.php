@@ -246,7 +246,7 @@ class ApOutboxConsumerService
                 ->first();
 
             $prevBalance = $latestEntry ? (string) $latestEntry->running_balance : '0.00';
-            $newBalance = bcsub($prevBalance, $appliedAmount, 2);
+            $newBalance = bcsub(bc_num($prevBalance), bc_num($appliedAmount), 2);
 
             // 2. Catat DEBIT_NOTE_APPLIED di ap_ledger_entries
             $idempotencyKey = "aple:dn_apply:{$tenantId}:{$outbox->id}";

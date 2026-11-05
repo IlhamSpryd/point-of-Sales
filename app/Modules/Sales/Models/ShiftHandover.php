@@ -11,14 +11,31 @@ use App\Models\Concerns\ScopedToTenant;
 use App\Models\Device;
 use App\Models\Shift;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int $shift_id
+ * @property int $device_id
+ * @property int $from_user_id
+ * @property int $to_user_id
+ * @property int|null $approved_by_user_id
+ * @property int $expected_cash_at_handover
+ * @property int $counted_cash_at_handover
+ * @property int $discrepancy_amount
+ */
 class ShiftHandover extends Model
 {
     use AssignsStore, AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToStore, ScopedToTenant;
 
     protected $fillable = [
@@ -49,26 +66,41 @@ class ShiftHandover extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Shift, $this>
+     */
     public function shift(): BelongsTo
     {
         return $this->belongsTo(Shift::class);
     }
 
+    /**
+     * @return BelongsTo<Device, $this>
+     */
     public function device(): BelongsTo
     {
         return $this->belongsTo(Device::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function fromUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'from_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function toUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'to_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function approvedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by_user_id');

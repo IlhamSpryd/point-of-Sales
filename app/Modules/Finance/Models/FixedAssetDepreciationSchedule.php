@@ -20,9 +20,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $accounting_period_id
  * @property int $period_year
  * @property int $period_month
- * @property string $depreciation_amount
- * @property string $accumulated_depreciation_after
- * @property string $net_book_value_after
+ * @property numeric-string $depreciation_amount
+ * @property numeric-string $accumulated_depreciation_after
+ * @property numeric-string $net_book_value_after
  * @property DepreciationScheduleStatusEnum $status
  * @property int|null $journal_entry_id
  * @property CarbonInterface|null $posted_at
@@ -51,21 +51,33 @@ class FixedAssetDepreciationSchedule extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<FixedAsset, $this>
+     */
     public function asset(): BelongsTo
     {
         return $this->belongsTo(FixedAsset::class, 'fixed_asset_id');
     }
 
+    /**
+     * @return BelongsTo<AccountingPeriod, $this>
+     */
     public function accountingPeriod(): BelongsTo
     {
         return $this->belongsTo(AccountingPeriod::class, 'accounting_period_id');
     }
 
+    /**
+     * @return BelongsTo<JournalEntry, $this>
+     */
     public function journalEntry(): BelongsTo
     {
         return $this->belongsTo(JournalEntry::class, 'journal_entry_id');

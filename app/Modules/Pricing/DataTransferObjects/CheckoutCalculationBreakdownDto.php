@@ -27,6 +27,9 @@ class CheckoutCalculationBreakdownDto
         public array $appliedPromotionsSummary = []
     ) {}
 
+    /**
+     * @return array<string, mixed>
+     */
     public function toArray(): array
     {
         return [

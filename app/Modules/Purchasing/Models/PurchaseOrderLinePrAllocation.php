@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $tenant_id
  * @property int $purchase_order_line_id
  * @property int $purchase_request_line_id
- * @property string $allocated_qty
+ * @property numeric-string $allocated_qty
  * @property CarbonInterface $created_at
  * @property-read PurchaseOrderLine $purchaseOrderLine
  * @property-read PurchaseRequestLine $purchaseRequestLine
@@ -40,6 +40,9 @@ class PurchaseOrderLinePrAllocation extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Sales;
 
+use App\Enums\OrderStatus;
 use App\Models\Category;
 use App\Models\Device;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Role;
@@ -15,19 +15,19 @@ use App\Models\Shift;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
-use App\Modules\Inventory\Services\InventoryLedgerService;
 use App\Modules\Sales\Exceptions\ShiftClosedException;
 use App\Modules\Sales\Services\OrderReturnService;
 use App\Modules\Sales\Services\ShiftManagementService;
 use App\Modules\Sales\Services\SplitPaymentService;
 use App\Modules\Sales\Services\TransactionService;
+use App\Services\CashierPinService;
 use App\Services\Context\TenantContext;
 use DomainException;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class Wave4PosTest extends TestCase
@@ -35,14 +35,23 @@ class Wave4PosTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private User $cashier;
+
     private User $supervisor;
+
     private Device $device;
+
     private Category $category;
+
     private ShiftManagementService $shiftManagementService;
+
     private SplitPaymentService $splitPaymentService;
+
     private OrderReturnService $orderReturnService;
+
     private TransactionService $transactionService;
 
     protected function afterSubclassSetUp(): void
@@ -51,7 +60,7 @@ class Wave4PosTest extends TestCase
 
         $this->tenant = Tenant::create([
             'name' => 'Wave 4 POS Tenant',
-            'slug' => 'wave4-pos-' . uniqid(),
+            'slug' => 'wave4-pos-'.uniqid(),
             'status' => 'active',
             'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             'access_status' => Tenant::ACCESS_ACTIVE,
@@ -98,7 +107,7 @@ class Wave4PosTest extends TestCase
         ]);
 
         // Berikan PIN Kasir & PIN Supervisor via CashierPinService
-        $pinService = app(\App\Services\CashierPinService::class);
+        $pinService = app(CashierPinService::class);
         $pinService->setPin($this->cashier, '123456');
         $pinService->setPin($this->supervisor, '654321');
 
@@ -266,8 +275,8 @@ class Wave4PosTest extends TestCase
             'user_id' => $this->cashier->id,
             'shift_id' => $shift->id,
             'created_by_device_id' => $this->device->id,
-            'order_code' => 'ORD-SPLIT-' . uniqid(),
-            'idempotency_key' => (string) \Illuminate\Support\Str::uuid(),
+            'order_code' => 'ORD-SPLIT-'.uniqid(),
+            'idempotency_key' => (string) Str::uuid(),
             'order_date' => now()->toDateString(),
             'subtotal_amount' => $totalOrderAmount,
             'order_amount' => $totalOrderAmount,
@@ -307,7 +316,7 @@ class Wave4PosTest extends TestCase
             deviceId: $this->device->id
         );
 
-        $orderStatusValue = $result['order']->order_status instanceof \App\Enums\OrderStatus ? $result['order']->order_status->value : (string) $result['order']->order_status;
+        $orderStatusValue = $result['order']->order_status instanceof OrderStatus ? $result['order']->order_status->value : (string) $result['order']->order_status;
         $this->assertEquals('paid', $orderStatusValue);
         $this->assertEquals(110000, $result['total_tendered']);
         $this->assertEquals(10000, $result['total_change']);

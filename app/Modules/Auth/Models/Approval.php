@@ -10,14 +10,28 @@ use App\Models\Order;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property numeric-string $amount
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int $requester_user_id
+ * @property int $approver_user_id
+ * @property int|null $target_entity_id
+ * @property int|null $consumed_by_order_id
+ */
 class Approval extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToTenant;
 
     public const STATUS_APPROVED = 'APPROVED';
@@ -57,26 +71,41 @@ class Approval extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function requester(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requester_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function approver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approver_user_id');
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Order, $this>
+     */
     public function consumedByOrder(): BelongsTo
     {
         return $this->belongsTo(Order::class, 'consumed_by_order_id');

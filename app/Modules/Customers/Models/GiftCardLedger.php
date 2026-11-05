@@ -13,6 +13,16 @@ use App\Modules\Customers\Enums\GiftCardLedgerTypeEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property numeric-string $amount
+ * @property numeric-string $balance_after
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $gift_card_id
+ * @property int $store_id
+ * @property int|null $reference_id
+ * @property int|null $actor_user_id
+ */
 class GiftCardLedger extends Model
 {
     use AssignsTenant;
@@ -44,21 +54,33 @@ class GiftCardLedger extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<GiftCard, $this>
+     */
     public function giftCard(): BelongsTo
     {
         return $this->belongsTo(GiftCard::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function actorUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_user_id');

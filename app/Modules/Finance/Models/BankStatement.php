@@ -19,8 +19,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $cash_bank_account_id
  * @property string $statement_number
  * @property CarbonInterface $statement_date
- * @property string $opening_balance
- * @property string $closing_balance
+ * @property numeric-string $opening_balance
+ * @property numeric-string $closing_balance
  * @property string|null $imported_file_path
  * @property int|null $imported_by_user_id
  * @property string $status
@@ -45,21 +45,33 @@ class BankStatement extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<CashBankAccount, $this>
+     */
     public function account(): BelongsTo
     {
         return $this->belongsTo(CashBankAccount::class, 'cash_bank_account_id');
     }
 
+    /**
+     * @return HasMany<BankStatementLine, $this>
+     */
     public function lines(): HasMany
     {
         return $this->hasMany(BankStatementLine::class, 'bank_statement_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function importedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'imported_by_user_id');

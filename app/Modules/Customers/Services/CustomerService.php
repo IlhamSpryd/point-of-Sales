@@ -501,6 +501,8 @@ class CustomerService
 
     /**
      * Tambah alamat pelanggan.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function addAddress(Customer $customer, array $data): CustomerAddress
     {
@@ -545,6 +547,8 @@ class CustomerService
 
     /**
      * Perbarui alamat pelanggan.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function updateAddress(CustomerAddress $address, array $data): CustomerAddress
     {
@@ -620,6 +624,8 @@ class CustomerService
 
     /**
      * Tambah kontak narahubung pelanggan (B2B).
+     *
+     * @param  array<string, mixed>  $data
      */
     public function addContact(Customer $customer, array $data): CustomerContact
     {
@@ -649,6 +655,8 @@ class CustomerService
 
     /**
      * Perbarui kontak narahubung.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function updateContact(CustomerContact $contact, array $data): CustomerContact
     {

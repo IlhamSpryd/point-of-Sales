@@ -17,9 +17,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $expense_id
  * @property int $line_number
  * @property string $description
- * @property string $amount
+ * @property numeric-string $amount
  * @property int|null $tax_code_id
- * @property string $tax_amount
+ * @property numeric-string $tax_amount
  * @property CarbonInterface $created_at
  * @property CarbonInterface $updated_at
  */
@@ -41,16 +41,25 @@ class ExpenseLine extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Expense, $this>
+     */
     public function expense(): BelongsTo
     {
         return $this->belongsTo(Expense::class, 'expense_id');
     }
 
+    /**
+     * @return BelongsTo<TaxCode, $this>
+     */
     public function taxCode(): BelongsTo
     {
         return $this->belongsTo(TaxCode::class, 'tax_code_id');

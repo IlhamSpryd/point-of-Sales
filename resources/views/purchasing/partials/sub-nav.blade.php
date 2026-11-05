@@ -49,7 +49,7 @@
     });
 @endphp
 
-<div class="w-full pb-3 mb-6 border-b border-[#E5E7EB]">
+<div class="w-full pb-3 mb-6 border-b border-border">
     <nav aria-label="Purchasing Navigation"
         x-data
         x-init="$nextTick(() => {
@@ -69,16 +69,16 @@
                 <a href="{{ route($tab['route']) }}" wire:navigate
                     @if ($isActive) aria-current="page" @endif
                     style="{{ $isActive ? 'background-color: #202020; color: #ffffff;' : '' }}"
-                    class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink {{ $isActive ? 'bg-apeiron-ink text-white shadow-sm' : 'text-[#787774] hover:text-apeiron-ink hover:bg-[#F7F7F5]' }}">
+                    class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink {{ $isActive ? 'bg-apeiron-ink text-white shadow-sm' : 'text-muted-foreground hover:text-apeiron-ink hover:bg-muted' }}">
                     <span class="material-symbols-rounded text-[18px] shrink-0 {{ $isActive ? 'text-white' : '' }}">{{ $tab['icon'] }}</span>
                     <span class="{{ $isActive ? 'text-white' : '' }}">{{ $tab['label'] }} @if(!empty($tab['alias']))<span class="sr-only">({{ $tab['alias'] }})</span>@endif</span>
                 </a>
             @else
                 <div aria-disabled="true" title="{{ $tab['label'] }} — Coming in Phase 6"
-                    class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-medium whitespace-nowrap text-[#C4C3C0] cursor-not-allowed">
-                    <span class="material-symbols-rounded text-[18px] shrink-0 text-[#C4C3C0]">{{ $tab['icon'] }}</span>
+                    class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-medium whitespace-nowrap text-muted-foreground cursor-not-allowed">
+                    <span class="material-symbols-rounded text-[18px] shrink-0 text-muted-foreground">{{ $tab['icon'] }}</span>
                     <span>{{ $tab['label'] }} @if(!empty($tab['alias']))<span class="sr-only">({{ $tab['alias'] }})</span>@endif</span>
-                    <span class="text-[9px] font-bold uppercase tracking-wider text-[#9B9A97] bg-[#F1F1EF] border border-[#E5E7EB] rounded px-1.5 py-0.5">Soon</span>
+                    <span class="text-[9px] font-bold uppercase tracking-wider text-muted-foreground bg-muted border border-border rounded px-1.5 py-0.5">Soon</span>
                 </div>
             @endif
         @endforeach

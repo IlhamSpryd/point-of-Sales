@@ -110,7 +110,7 @@ class StoreAssortmentService
             });
 
         if ($search !== null && trim($search) !== '') {
-            $term = '%' . trim($search) . '%';
+            $term = '%'.trim($search).'%';
             $query->where(function ($q) use ($term) {
                 $q->where('product_name', 'like', $term)
                     ->orWhere('product_code', 'like', $term)

@@ -155,35 +155,35 @@ class SupplierInvoiceMatchingService
                 $lineDisc = (string) ($item['discount_amount'] ?? '0.00');
                 $taxRate = (string) ($item['tax_rate'] ?? '0.0000');
 
-                if (bccomp($qty, '0', 4) <= 0) {
+                if (bccomp(bc_num($qty), '0', 4) <= 0) {
                     throw ValidationException::withMessages([
                         "lines.{$index}.invoiced_qty" => ['Kuantitas tagihan harus lebih besar dari 0.'],
                     ]);
                 }
 
-                if (bccomp($price, '0', 4) < 0) {
+                if (bccomp(bc_num($price), '0', 4) < 0) {
                     throw ValidationException::withMessages([
                         "lines.{$index}.unit_price" => ['Harga satuan tidak boleh negatif.'],
                     ]);
                 }
 
                 // Kalkulasi per baris
-                $gross = bcmul($qty, $price, 2);
-                $netBeforeTax = bcsub($gross, $lineDisc, 2);
+                $gross = bcmul(bc_num($qty), bc_num($price), 2);
+                $netBeforeTax = bcsub(bc_num($gross), bc_num($lineDisc), 2);
                 if (bccomp($netBeforeTax, '0.00', 2) < 0) {
                     $netBeforeTax = '0.00';
                 }
 
                 $lineTax = (string) ($item['tax_amount'] ?? '0.00');
-                if (bccomp($lineTax, '0.00', 2) === 0 && bccomp($taxRate, '0.0000', 4) > 0) {
+                if (bccomp(bc_num($lineTax), '0.00', 2) === 0 && bccomp(bc_num($taxRate), '0.0000', 4) > 0) {
                     $lineTax = bcmul($netBeforeTax, bcdiv($taxRate, '100', 4), 2);
                 }
 
-                $lineTotal = bcadd($netBeforeTax, $lineTax, 2);
+                $lineTotal = bcadd(bc_num($netBeforeTax), bc_num($lineTax), 2);
 
                 $subtotalSum = bcadd($subtotalSum, $gross, 2);
-                $discountSum = bcadd($discountSum, $lineDisc, 2);
-                $taxSum = bcadd($taxSum, $lineTax, 2);
+                $discountSum = bcadd(bc_num($discountSum), bc_num($lineDisc), 2);
+                $taxSum = bcadd(bc_num($taxSum), bc_num($lineTax), 2);
 
                 SupplierInvoiceLine::query()->create([
                     'tenant_id' => $tenantId,
@@ -203,7 +203,7 @@ class SupplierInvoiceMatchingService
             }
 
             // Total Moneter Akhir
-            $totalAmount = bcadd(bcsub(bcadd($subtotalSum, $taxSum, 2), $discountSum, 2), $additionalCharges, 2);
+            $totalAmount = bcadd(bcsub(bcadd(bc_num($subtotalSum), bc_num($taxSum), 2), bc_num($discountSum), 2), bc_num($additionalCharges), 2);
 
             $invoice->update([
                 'subtotal_amount' => $subtotalSum,
@@ -227,7 +227,7 @@ class SupplierInvoiceMatchingService
                 ]
             );
 
-            return $invoice->fresh(['lines']);
+            return $invoice->fresh(['lines']) ?? $invoice;
         });
     }
 
@@ -311,8 +311,8 @@ class SupplierInvoiceMatchingService
 
                 $qtyVariance = '0.0000';
                 $hasQtyVariance = false;
-                if (bccomp($matchedQty, $availableFromGrn, 4) > 0) {
-                    $qtyVariance = bcsub($matchedQty, $availableFromGrn, 4);
+                if (bccomp(bc_num($matchedQty), bc_num($availableFromGrn), 4) > 0) {
+                    $qtyVariance = bcsub(bc_num($matchedQty), bc_num($availableFromGrn), 4);
                     $hasQtyVariance = true;
                 }
 
@@ -324,9 +324,9 @@ class SupplierInvoiceMatchingService
                 if (bccomp($priceDiff, '0', 4) > 0) {
                     // Cek ambang toleransi
                     $variancePct = bcmul(bcdiv($priceDiff, $poUnitPrice !== '0.0000' ? $poUnitPrice : '1.0000', 6), '100', 4);
-                    $diffAmount = bcmul($priceDiff, $matchedQty, 2);
+                    $diffAmount = bcmul(bc_num($priceDiff), bc_num($matchedQty), 2);
 
-                    if (bccomp($variancePct, $tolerancePct, 4) > 0 && bccomp($diffAmount, $toleranceAmt, 2) > 0) {
+                    if (bccomp(bc_num($variancePct), bc_num($tolerancePct), 4) > 0 && bccomp(bc_num($diffAmount), bc_num($toleranceAmt), 2) > 0) {
                         $hasPriceVariance = true;
                         $priceVarianceAmount = $diffAmount;
                     }
@@ -386,7 +386,7 @@ class SupplierInvoiceMatchingService
                 ]
             );
 
-            return $lockedInvoice->fresh(['lines.grnMatches', 'grnMatches']);
+            return $lockedInvoice->fresh(['lines.grnMatches', 'grnMatches']) ?? $lockedInvoice;
         });
     }
 
@@ -442,7 +442,7 @@ class SupplierInvoiceMatchingService
                 metadata: ['approval_notes' => $approvalNotes]
             );
 
-            return $lockedInvoice->fresh(['lines', 'grnMatches']);
+            return $lockedInvoice->fresh(['lines', 'grnMatches']) ?? $lockedInvoice;
         });
     }
 
@@ -592,7 +592,7 @@ class SupplierInvoiceMatchingService
                 ]
             );
 
-            return $lockedInvoice->fresh(['lines', 'grnMatches', 'purchaseOrder']);
+            return $lockedInvoice->fresh(['lines', 'grnMatches', 'purchaseOrder']) ?? $lockedInvoice;
         }, attempts: 3);
     }
 

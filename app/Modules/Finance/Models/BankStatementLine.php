@@ -20,9 +20,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $line_number
  * @property CarbonInterface $value_date
  * @property string|null $external_reference
- * @property string $debit_amount
- * @property string $credit_amount
- * @property string $running_balance
+ * @property numeric-string $debit_amount
+ * @property numeric-string $credit_amount
+ * @property numeric-string $running_balance
  * @property string|null $description
  * @property string $line_fingerprint_hash
  * @property BankStatementLineMatchStatusEnum $match_status
@@ -49,16 +49,25 @@ class BankStatementLine extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<BankStatement, $this>
+     */
     public function statement(): BelongsTo
     {
         return $this->belongsTo(BankStatement::class, 'bank_statement_id');
     }
 
+    /**
+     * @return BelongsTo<CashBankAccount, $this>
+     */
     public function account(): BelongsTo
     {
         return $this->belongsTo(CashBankAccount::class, 'cash_bank_account_id');

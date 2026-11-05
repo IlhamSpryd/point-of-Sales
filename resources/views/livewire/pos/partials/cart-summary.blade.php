@@ -1,5 +1,5 @@
 <!-- AREA KALKULASI & PEMBAYARAN KASIR -->
-<div class="pt-3 border-t border-[#E5E5E5] bg-white shrink-0 z-10 flex flex-col gap-2.5">
+<div class="pt-3 border-t border-border bg-white shrink-0 z-10 flex flex-col gap-2.5">
     {{-- Promo & Voucher Banner --}}
     @php
         $pipelineBreakdown = $this->getCalculationBreakdown();
@@ -32,9 +32,9 @@
         <div class="flex items-center gap-2">
             <input type="text" wire:model="voucherInput" wire:keydown.enter.prevent="applyVoucher"
                 placeholder="Kode kupon / voucher..."
-                class="flex-1 h-8 px-2.5 text-xs bg-white border border-[#E5E5E5] rounded-lg text-[#111827] placeholder-[#9CA3AF] focus:border-[#171717] focus:outline-none uppercase font-mono transition-colors" />
+                class="flex-1 h-8 px-2.5 text-xs bg-white border border-border rounded-lg text-foreground placeholder-muted-foreground focus:border-foreground focus:outline-none uppercase font-mono transition-colors" />
             <button type="button" wire:click="applyVoucher"
-                class="h-8 px-3 text-xs font-medium text-white bg-[#171717] hover:bg-[#262626] rounded-lg transition-colors shadow-xs">
+                class="h-8 px-3 text-xs font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors shadow-xs">
                 Pakai
             </button>
         </div>
@@ -48,7 +48,7 @@
         <div class="relative">
             <select wire:model.live="selectedDiscountId"
                 @disabled((bool) $pendingOrderId)
-                class="w-full h-8 pl-3 pr-8 bg-white border border-[#E5E5E5] rounded-lg outline-none text-xs font-medium text-[#111827] focus:border-[#171717] appearance-none transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
+                class="w-full h-8 pl-3 pr-8 bg-white border border-border rounded-lg outline-none text-xs font-medium text-foreground focus:border-foreground appearance-none transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
                 <option value="">+ Pilih Diskon / Promo</option>
                 @foreach ($this->activeDiscounts as $d)
                     <option value="{{ $d->id }}">{{ $d->name }}
@@ -75,42 +75,42 @@
     @endif
 
     {{-- Detail Subtotal & Diskon --}}
-    <div class="pt-2 pb-1 space-y-1.5 font-label-md text-[13px] border-t border-[#E5E5E5]">
-        <div class="flex justify-between text-[#6B7280]">
+    <div class="pt-2 pb-1 space-y-1.5 font-label-md text-[13px] border-t border-border">
+        <div class="flex justify-between text-muted-foreground">
             <span>Subtotal</span>
-            <span class="text-[#374151] font-medium font-mono">Rp {{ number_format($this->subtotal, 0, ',', '.') }}</span>
+            <span class="text-foreground font-medium font-mono">Rp {{ number_format($this->subtotal, 0, ',', '.') }}</span>
         </div>
 
         {{-- Diskon Member / Override Diskon --}}
-        <div class="flex justify-between items-center text-[#6B7280] cursor-pointer hover:bg-[#F9FAFB] p-1 rounded-md transition-colors"
+        <div class="flex justify-between items-center text-muted-foreground cursor-pointer hover:bg-muted p-1 rounded-md transition-colors"
             wire:click="$set('isManualDiscountModalOpen', true)" title="Klik untuk atur diskon / otorisasi supervisor">
             <div class="flex items-center gap-1.5">
                 <span class="material-symbols-rounded text-[14px] text-amber-500">sell</span>
                 <span>Diskon / Promo</span>
                 @if ($this->discountAmount > 0)
-                    <span class="px-1.5 py-0.2 rounded-[4px] bg-[#F1F1F1] border border-[#E5E5E5] text-[#525252] font-label-sm text-[10px] font-mono">
+                    <span class="px-1.5 py-0.2 rounded-[4px] bg-muted border border-border text-muted-foreground font-label-sm text-[10px] font-mono">
                         Aktif
                     </span>
                 @endif
             </div>
-            <span class="text-[#111827] font-medium font-mono">
+            <span class="text-foreground font-medium font-mono">
                 {{ $this->discountAmount > 0 ? '-Rp ' . number_format($this->discountAmount, 0, ',', '.') : 'Rp 0' }}
             </span>
         </div>
 
         {{-- Pajak PB1 & Service --}}
-        <div class="flex justify-between text-[#6B7280]">
+        <div class="flex justify-between text-muted-foreground">
             <span>PB1 / Pajak Restoran ({{ $this->taxRatePercent }}%)</span>
-            <span class="text-[#374151] font-medium font-mono">Rp {{ number_format($this->taxAmount, 0, ',', '.') }}</span>
+            <span class="text-foreground font-medium font-mono">Rp {{ number_format($this->taxAmount, 0, ',', '.') }}</span>
         </div>
 
         {{-- Total Akhir --}}
-        <div class="pt-2 mt-1 border-t border-[#E5E5E5] flex justify-between items-baseline">
+        <div class="pt-2 mt-1 border-t border-border flex justify-between items-baseline">
             <div class="flex flex-col">
-                <span class="font-headline-md text-[15px] font-semibold text-[#111827] tracking-tight">Total Akhir</span>
-                <span class="font-label-sm text-[11px] text-[#6B7280]">Termasuk seluruh pajak</span>
+                <span class="font-headline-md text-[15px] font-semibold text-foreground tracking-tight">Total Akhir</span>
+                <span class="font-label-sm text-[11px] text-muted-foreground">Termasuk seluruh pajak</span>
             </div>
-            <span class="font-numeric-metric text-[#111827] font-semibold tracking-tight font-mono text-[16px]">
+            <span class="font-numeric-metric text-foreground font-semibold tracking-tight font-mono text-[16px]">
                 Rp {{ number_format($this->totalAmount, 0, ',', '.') }}
             </span>
         </div>
@@ -119,25 +119,25 @@
     {{-- Fast Payment Method Bar (Tunai, QRIS, EDC Kartu, Transfer) --}}
     @unless ($pendingOrderId)
         <div class="grid grid-cols-4 gap-1.5 py-1">
-            <button class="h-9 px-1 rounded-md bg-[#171717] text-white font-label-sm text-[11px] text-center font-medium shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            <button class="h-9 px-1 rounded-md bg-primary text-white font-label-sm text-[11px] text-center font-medium shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 type="button"
                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }}, method: 'cash' }); $dispatch('open-modal', 'checkout-payment')"
                 @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
                 Tunai
             </button>
-            <button class="h-9 px-1 rounded-md bg-white border border-[#E5E5E5] hover:bg-[#F4F4F5] text-[#111827] font-label-sm text-[11px] text-center font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            <button class="h-9 px-1 rounded-md bg-white border border-border hover:bg-muted text-foreground font-label-sm text-[11px] text-center font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 type="button"
                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }}, method: 'qris' }); $dispatch('open-modal', 'checkout-payment')"
                 @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
                 QRIS
             </button>
-            <button class="h-9 px-1 rounded-md bg-white border border-[#E5E5E5] hover:bg-[#F4F4F5] text-[#111827] font-label-sm text-[11px] text-center font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            <button class="h-9 px-1 rounded-md bg-white border border-border hover:bg-muted text-foreground font-label-sm text-[11px] text-center font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 type="button"
                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }}, method: 'card' }); $dispatch('open-modal', 'checkout-payment')"
                 @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
                 EDC Kartu
             </button>
-            <button class="h-9 px-1 rounded-md bg-white border border-[#E5E5E5] hover:bg-[#F4F4F5] text-[#111827] font-label-sm text-[11px] text-center font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
+            <button class="h-9 px-1 rounded-md bg-white border border-border hover:bg-muted text-foreground font-label-sm text-[11px] text-center font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 type="button"
                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }}, method: 'store_credit' }); $dispatch('open-modal', 'checkout-payment')"
                 @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
@@ -165,7 +165,7 @@
         @if ($pendingOrderId)
             <button wire:click="submitOrder" id="btn-bayar"
                 wire:loading.attr="disabled" wire:target="submitOrder"
-                class="w-full h-11 px-4 rounded-lg bg-[#171717] hover:bg-[#262626] text-white transition-all flex items-center justify-between shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                class="w-full h-11 px-4 rounded-lg bg-primary hover:bg-primary/90 text-white transition-all flex items-center justify-between shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
                 <div class="flex items-center gap-2">
                     <span wire:loading wire:target="submitOrder" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
@@ -180,7 +180,7 @@
         @else
             <button type="button" id="btn-proses-bayar"
                 wire:loading.attr="disabled" wire:target="submitOrder"
-                class="w-full h-11 px-4 rounded-lg bg-[#171717] hover:bg-[#262626] text-white transition-all flex items-center justify-between shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                class="w-full h-11 px-4 rounded-lg bg-primary hover:bg-primary/90 text-white transition-all flex items-center justify-between shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }} }); $dispatch('open-modal', 'checkout-payment')"
                 @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
                 <div class="flex items-center gap-2">
@@ -193,14 +193,14 @@
             </button>
         @endif
 
-        <div class="flex items-center justify-between px-1 text-[#6B7280] font-label-sm text-[11px] pt-0.5">
+        <div class="flex items-center justify-between px-1 text-muted-foreground font-label-sm text-[11px] pt-0.5">
             <button type="button"
                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }}, method: 'cash' }); $dispatch('open-modal', 'checkout-payment')"
-                class="flex items-center gap-1 hover:text-[#111827] transition-colors">
+                class="flex items-center gap-1 hover:text-foreground transition-colors">
                 <span class="material-symbols-rounded text-[13px]">call_split</span>
                 <span>Split Bill Didukung</span>
             </button>
-            <a href="{{ route('shifts.index') }}" class="flex items-center gap-1 hover:text-[#111827] transition-colors">
+            <a href="{{ route('shifts.index') }}" class="flex items-center gap-1 hover:text-foreground transition-colors">
                 <span class="material-symbols-rounded text-[13px]">print</span>
                 <span>Struk Otomatis (USB/LAN)</span>
             </a>

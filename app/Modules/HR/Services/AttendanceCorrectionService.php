@@ -166,7 +166,7 @@ class AttendanceCorrectionService
                 'consumed_at' => now(),
             ]);
 
-            return $record->fresh();
+            return $record->fresh() ?? $record;
         });
     }
 
@@ -196,7 +196,7 @@ class AttendanceCorrectionService
             'reason' => trim(($approval->reason ?? '')." [Ditolak: {$rejectionReason}]"),
         ]);
 
-        return $approval->fresh();
+        return $approval->fresh() ?? $approval;
     }
 
     /**

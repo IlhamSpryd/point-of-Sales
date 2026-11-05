@@ -187,7 +187,11 @@ class OAuthController extends Controller
 
         // KASUS 1: Akun sosial SUDAH tertaut ke User
         if ($identity !== null) {
-            $user = $identity->user;
+            $user = User::withoutGlobalScopes()
+                ->withTrashed()
+                ->where('tenant_id', $identity->tenant_id)
+                ->where('id', $identity->user_id)
+                ->first();
 
             if ($user === null || $user->trashed() || ($user->status ?? 'active') === 'suspended' || ! $user->is_active) {
                 return redirect()->route('login')

@@ -20,6 +20,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
+/**
+ * @property int $id
+ * @property int $order_id
+ * @property int|null $shift_id
+ * @property int $amount
+ * @property int|null $amount_tendered
+ * @property int $change_amount
+ * @property int|null $processed_by
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int|null $device_id
+ */
 class Payment extends Model
 {
     use AssignsStore, AssignsTenant;
@@ -38,26 +50,41 @@ class Payment extends Model
         'status' => PaymentStatusEnum::class,
     ];
 
+    /**
+     * @return HasOne<PaymentAttempt, $this>
+     */
     public function paymentAttempt(): HasOne
     {
         return $this->hasOne(PaymentAttempt::class);
     }
 
+    /**
+     * @return BelongsTo<Order, $this>
+     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * @return BelongsTo<Device, $this>
+     */
     public function device(): BelongsTo
     {
         return $this->belongsTo(Device::class);
     }
 
+    /**
+     * @return BelongsTo<Shift, $this>
+     */
     public function shift(): BelongsTo
     {
         return $this->belongsTo(Shift::class);
     }
 
+    /**
+     * @return HasMany<PaymentRefund, $this>
+     */
     public function refunds(): HasMany
     {
         return $this->hasMany(PaymentRefund::class);

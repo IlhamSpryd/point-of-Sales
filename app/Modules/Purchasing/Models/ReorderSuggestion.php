@@ -24,23 +24,23 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string $purchasable_type
  * @property int $purchasable_id
  * @property int|null $preferred_supplier_id
- * @property string $current_stock
- * @property string $on_order_po_qty
- * @property string $open_pr_qty
- * @property string $net_inventory_position
- * @property string $daily_consumption_rate
- * @property string $lead_time_days
- * @property string $safety_stock
- * @property string $reorder_point
- * @property string $target_max_stock
- * @property string $raw_deficit_qty
- * @property string $moq
- * @property string $order_multiple
- * @property string $suggested_quantity
+ * @property numeric-string $current_stock
+ * @property numeric-string $on_order_po_qty
+ * @property numeric-string $open_pr_qty
+ * @property numeric-string $net_inventory_position
+ * @property numeric-string $daily_consumption_rate
+ * @property numeric-string $lead_time_days
+ * @property numeric-string $safety_stock
+ * @property numeric-string $reorder_point
+ * @property numeric-string $target_max_stock
+ * @property numeric-string $raw_deficit_qty
+ * @property numeric-string $moq
+ * @property numeric-string $order_multiple
+ * @property numeric-string $suggested_quantity
  * @property string $purchase_uom
- * @property string $estimated_unit_price
- * @property string $estimated_total_cost
- * @property string $priority_score
+ * @property numeric-string $estimated_unit_price
+ * @property numeric-string $estimated_total_cost
+ * @property numeric-string $priority_score
  * @property ReorderSuggestionStatusEnum $status
  * @property int|null $converted_purchase_request_id
  * @property string|null $dismissed_reason
@@ -111,21 +111,33 @@ class ReorderSuggestion extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class, 'store_id');
     }
 
+    /**
+     * @return BelongsTo<Supplier, $this>
+     */
     public function preferredSupplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class, 'preferred_supplier_id');
     }
 
+    /**
+     * @return BelongsTo<PurchaseRequest, $this>
+     */
     public function convertedPurchaseRequest(): BelongsTo
     {
         return $this->belongsTo(PurchaseRequest::class, 'converted_purchase_request_id');
     }
 
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function purchasable(): MorphTo
     {
         return $this->morphTo();

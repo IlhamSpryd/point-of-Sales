@@ -54,6 +54,7 @@ class ProvisioningService
     /**
      * Entry point provisioning. Mengembalikan array response contract.
      *
+     * @param  array<string, mixed>  $data
      * @return array{status: int, body: array<string, mixed>}
      */
     public function provision(array $data, string $idempotencyKey, string $fingerprint): array
@@ -393,6 +394,8 @@ class ProvisioningService
      * Idempoten & tahan retry: hasil yang sudah tercatat tidak pernah ditimpa
      * (fakta commit), dan baris yang sudah `completed` tidak pernah diturunkan
      * statusnya.
+     *
+     * @param  array<string, mixed>  $attributes
      */
     private function finaliseLedger(string $idempotencyKey, int $fencingToken, array $attributes): bool
     {
@@ -422,6 +425,7 @@ class ProvisioningService
      * Transaksi utama (TX-001): Validasi fencing token, business writes, dan finalisasi
      * ledger disatukan ke dalam SATU batas transaksi InnoDB atomik.
      *
+     * @param  array<string, mixed>  $data
      * @return array{tenant: Tenant, owner: User, store: Store, outbox_id: int, onboarding_token: string}
      */
     private function provisionWithinTransaction(array $data, string $idempotencyKey, int $fencingToken): array
@@ -516,6 +520,8 @@ class ProvisioningService
 
             // 3i. Audit record dalam transaksi yang sama.
             ActivityLog::create([
+                'tenant_id' => $tenant->id,
+                'store_id' => $store->id,
                 'user_id' => $owner->id,
                 'action' => 'provisioning.completed',
                 'subject_type' => 'tenant',
@@ -656,6 +662,9 @@ class ProvisioningService
         return ['tenant' => $tenant, 'owner' => $owner];
     }
 
+    /**
+     * @return array{status: int, body: array<string, mixed>}
+     */
     private function pendingResponse(): array
     {
         return [
@@ -669,6 +678,9 @@ class ProvisioningService
         ];
     }
 
+    /**
+     * @return array{status: int, body: array<string, mixed>}
+     */
     private function emailConflictResponse(): array
     {
         return [

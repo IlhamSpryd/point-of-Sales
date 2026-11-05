@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Domain 1 — baris anti-replay nonce. Lihat migration untuk rationale.
+ *
+ * @property int $expires_at_epoch
  */
 class ProvisioningNonce extends Model
 {

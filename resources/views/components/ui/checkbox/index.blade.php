@@ -45,7 +45,7 @@
 
     @if (! $hideCheckbox)
         <span @if (! $clickable && ! $disabled) @click="$refs.checkbox.checked = !$refs.checkbox.checked; $refs.checkbox.dispatchEvent(new Event('change')); $refs.checkbox.focus()" @endif
-            {{ $attributes->twMergeFor('checkbox', 'h-5 w-5 flex-shrink-0 cursor-pointer rounded-small border border-foreground/20 bg-background text-primary-foreground flex items-center justify-center transition group-data-checked:border-primary group-data-checked:bg-primary peer-disabled:cursor-not-allowed peer-disabled:opacity-60 peer-focus-visible:ring-2 peer-focus-visible:ring-primary/20') }}>
+            {{ $attributes->twMergeFor('checkbox', 'h-5 w-5 flex-shrink-0 cursor-pointer rounded-small border border-input bg-background text-primary-foreground flex items-center justify-center transition group-data-checked:border-primary group-data-checked:bg-primary group-data-checked:text-primary-foreground peer-disabled:cursor-not-allowed peer-disabled:opacity-60 peer-focus-visible:ring-2 peer-focus-visible:ring-ring') }}>
             @if ($icon)
                 <x-dynamic-component :component="$icon" {{ $attributes->twMergeFor('checkmark', 'h-3.5 w-3.5 stroke-current duration-150 ease-out opacity-0 scale-50 group-data-checked:opacity-100 group-data-checked:scale-100') }} />
             @else
@@ -61,13 +61,13 @@
     @if ($label || $description)
         <span class="flex flex-col peer-disabled:opacity-60">
             @if ($label)
-                <{!! $innerLabelAttribute !!} {{ $attributes->twMergeFor('label', 'text-sm font-medium select-none text-foreground/90 cursor-pointer') }}>
+                <{!! $innerLabelAttribute !!} {{ $attributes->twMergeFor('label', 'text-sm font-medium select-none text-foreground cursor-pointer') }}>
                     {{ $label }}
                 </{!! $innerLabelAttribute !!}>
             @endif
 
             @if ($description)
-                <span {{ $attributes->twMergeFor('description', 'text-sm text-foreground/50') }}>
+                <span {{ $attributes->twMergeFor('description', 'text-sm text-muted-foreground') }}>
                     {{ $description }}
                 </span>
             @endif

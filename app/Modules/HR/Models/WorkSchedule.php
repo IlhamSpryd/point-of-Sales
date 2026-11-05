@@ -108,7 +108,8 @@ class WorkSchedule extends Model
     }
 
     /**
-     * @param  Builder<WorkSchedule>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeScheduled(Builder $query): Builder
     {
@@ -116,7 +117,8 @@ class WorkSchedule extends Model
     }
 
     /**
-     * @param  Builder<WorkSchedule>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeForDate(Builder $query, CarbonInterface|string $date): Builder
     {
@@ -126,7 +128,8 @@ class WorkSchedule extends Model
     }
 
     /**
-     * @param  Builder<WorkSchedule>  $query
+     * @param  Builder<static>  $query
+     * @return Builder<static>
      */
     public function scopeBetweenDates(Builder $query, CarbonInterface|string $start, CarbonInterface|string $end): Builder
     {

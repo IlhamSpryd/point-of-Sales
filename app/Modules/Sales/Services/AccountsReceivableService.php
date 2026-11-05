@@ -204,7 +204,7 @@ class AccountsReceivableService
                 description: "Faktur penjualan {$lockedInvoice->invoice_number} berhasil diposting senilai Rp ".number_format((float) $invoiceTotal, 2, ',', '.')
             );
 
-            return $lockedInvoice->fresh(['lines', 'customer']);
+            return $lockedInvoice->fresh(['lines', 'customer']) ?? $lockedInvoice;
         });
     }
 
@@ -225,7 +225,7 @@ class AccountsReceivableService
         return DB::transaction(function () use ($customerId, $paymentData, $invoiceAllocations, $actor, $idempotencyKey) {
             $tenantId = (int) ($actor->tenant_id ?: $this->tenantContext->requireTenantId());
 
-            $totalPayment = bcadd((string) ($paymentData['amount'] ?? '0.00'), '0', 2);
+            $totalPayment = bcadd(bc_num($paymentData['amount'] ?? '0.00'), '0', 2);
             if (bccomp($totalPayment, '0.00', 2) <= 0) {
                 throw new DomainException('Jumlah pembayaran yang diterima harus lebih besar dari 0.');
             }
@@ -286,7 +286,7 @@ class AccountsReceivableService
 
             foreach ($invoiceAllocations as $alloc) {
                 $invId = (int) $alloc['invoice_id'];
-                $allocAmount = bcadd((string) $alloc['amount'], '0', 2);
+                $allocAmount = bcadd(bc_num($alloc['amount']), '0', 2);
 
                 if (bccomp($allocAmount, '0.00', 2) <= 0) {
                     continue;
@@ -296,6 +296,7 @@ class AccountsReceivableService
                     throw new DomainException("Faktur ID {$invId} tidak ditemukan atau bukan milik pelanggan ini.");
                 }
 
+                /** @var CustomerInvoice $invoice */
                 $invoice = $invoices->get($invId);
 
                 if (! in_array($invoice->status, [CustomerInvoiceStatusEnum::POSTED, CustomerInvoiceStatusEnum::PARTIALLY_PAID], true)) {
@@ -501,8 +502,9 @@ class AccountsReceivableService
             $creditAccount->save();
 
             // 5. Tandai alokasi sebagai reversed
+            $reversedAt = Carbon::now();
             $lockedAlloc->is_reversed = true;
-            $lockedAlloc->reversed_at = Carbon::now();
+            $lockedAlloc->reversed_at = $reversedAt;
             $lockedAlloc->reversed_by_user_id = $actor->id;
             $lockedAlloc->reversal_reason = $reason;
             $lockedAlloc->save();
@@ -544,7 +546,7 @@ class AccountsReceivableService
                     'amount' => $amount,
                     'reason' => $reason,
                     'reversed_by' => $actor->id,
-                    'reversed_at' => $lockedAlloc->reversed_at->toIso8601String(),
+                    'reversed_at' => $reversedAt->toIso8601String(),
                 ],
             ]);
 
@@ -615,10 +617,11 @@ class AccountsReceivableService
             $creditAccount->save();
 
             // 3. Update Invoice Status
+            $voidedAt = Carbon::now();
             $lockedInvoice->status = CustomerInvoiceStatusEnum::VOIDED;
             $lockedInvoice->balance_due = '0.00';
             $lockedInvoice->voided_by_user_id = $actor->id;
-            $lockedInvoice->voided_at = Carbon::now();
+            $lockedInvoice->voided_at = $voidedAt;
             $lockedInvoice->void_reason = $reason;
             $lockedInvoice->save();
 
@@ -659,7 +662,7 @@ class AccountsReceivableService
                     'amount' => $amount,
                     'reason' => $reason,
                     'voided_by' => $actor->id,
-                    'voided_at' => $lockedInvoice->voided_at->toIso8601String(),
+                    'voided_at' => $voidedAt->toIso8601String(),
                 ],
             ]);
 
@@ -822,13 +825,13 @@ class AccountsReceivableService
 
         $customer = $salesOrder->customer;
         $snapshot = [
-            'customer_id' => $customer->id,
-            'customer_code' => $customer->customer_code,
-            'name' => $customer->name,
-            'company_name' => $customer->company_name,
-            'tax_id' => $customer->tax_id,
-            'phone' => $customer->phone,
-            'email' => $customer->email,
+            'customer_id' => $customer?->id,
+            'customer_code' => $customer?->customer_code,
+            'name' => $customer?->name,
+            'company_name' => $customer?->company_name,
+            'tax_id' => $customer?->tax_id,
+            'phone' => $customer?->phone,
+            'email' => $customer?->email,
         ];
 
         $invoice = CustomerInvoice::create([
@@ -941,10 +944,10 @@ class AccountsReceivableService
         $lineNum = 1;
 
         foreach ($items as $item) {
-            $qty = bcadd((string) ($item['quantity'] ?? '1'), '0', 4);
-            $price = bcadd((string) ($item['unit_price'] ?? '0'), '0', 2);
-            $lineDisc = bcadd((string) ($item['discount_amount'] ?? '0'), '0', 2);
-            $taxRate = bcadd((string) ($item['tax_rate'] ?? '0'), '0', 2);
+            $qty = bcadd(bc_num($item['quantity'] ?? '1'), '0', 4);
+            $price = bcadd(bc_num($item['unit_price'] ?? '0'), '0', 2);
+            $lineDisc = bcadd(bc_num($item['discount_amount'] ?? '0'), '0', 2);
+            $taxRate = bcadd(bc_num($item['tax_rate'] ?? '0'), '0', 2);
 
             $gross = bcmul($qty, $price, 2);
             $net = bcsub($gross, $lineDisc, 2);
@@ -978,7 +981,7 @@ class AccountsReceivableService
             ];
         }
 
-        $shippingAmount = bcadd((string) ($source['shipping_amount'] ?? '0.00'), '0', 2);
+        $shippingAmount = bcadd(bc_num($source['shipping_amount'] ?? '0.00'), '0', 2);
         $totalAmount = bcadd($totalAmount, $shippingAmount, 2);
 
         $snapshot = [

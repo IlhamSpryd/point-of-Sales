@@ -37,7 +37,7 @@ class WaiterCallController extends Controller
 
         Log::channel('stack')->info("[WAITER-CALL] Pelanggan di {$tableName} (ID:{$tableId}) memanggil staf.");
 
-        $table = Table::find($tableId);
+        $table = Table::find((int) $tableId);
         $tenantId = $table ? $table->tenant_id : app(TenantContext::class)->getTenantId();
         $storeId = $table ? $table->store_id : app(TenantContext::class)->getStoreId();
 

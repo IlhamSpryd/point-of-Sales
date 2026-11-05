@@ -12,9 +12,20 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property numeric-string $old_price
+ * @property numeric-string $new_price
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int $product_id
+ * @property int|null $product_variant_id
+ * @property int|null $printed_by_user_id
+ */
 class ShelfLabel extends Model
 {
     public const STATUS_PENDING = 'SHELF_LABEL_PENDING_PRINT';
+
     public const STATUS_PRINTED = 'PRINTED';
 
     protected $table = 'shelf_labels';
@@ -38,26 +49,41 @@ class ShelfLabel extends Model
         'printed_at' => 'datetime',
     ];
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<Product, $this>
+     */
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
 
+    /**
+     * @return BelongsTo<ProductVariant, $this>
+     */
     public function variant(): BelongsTo
     {
         return $this->belongsTo(ProductVariant::class, 'product_variant_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function printedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'printed_by_user_id');

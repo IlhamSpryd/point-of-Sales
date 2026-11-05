@@ -7,7 +7,9 @@ namespace App\Modules\Inventory\Services;
 use App\Enums\IngredientStockMovementTypeEnum;
 use App\Enums\StockMovementType;
 use App\Models\Ingredient;
+use App\Models\IngredientStockBalance;
 use App\Models\Product;
+use App\Models\StockBalance;
 use App\Modules\Inventory\Exceptions\InsufficientStockException;
 use App\Services\AuditTrailService;
 use App\Services\MenuCacheService;
@@ -42,8 +44,7 @@ class InventoryLedgerService
     /**
      * Catat satu mutasi pergerakan stok dan sinkronisasi saldo.
      *
-     * @param  'product'|'ingredient'  $itemType
-     * @return array{movement: object, balance: object, previous_quantity: string, new_quantity: string}
+     * @return array{movement: object{id: int}, balance: object|null, previous_quantity: string, new_quantity: string}
      */
     public function recordMovement(
         int $tenantId,
@@ -57,7 +58,7 @@ class InventoryLedgerService
         ?string $idempotencyKey = null,
         ?int $orderId = null,
         ?int $orderItemId = null,
-        ?int $userId = null,
+        int|string|null $userId = null,
         ?int $storageLocationId = null // Forward-compatible parameter (OD-01)
     ): array {
         $movementItem = [
@@ -71,7 +72,7 @@ class InventoryLedgerService
             'idempotency_key' => $idempotencyKey,
             'order_id' => $orderId,
             'order_item_id' => $orderItemId,
-            'user_id' => $userId,
+            'user_id' => $userId !== null ? (int) $userId : null,
             'storage_location_id' => $storageLocationId,
         ];
 
@@ -85,7 +86,7 @@ class InventoryLedgerService
      *
      * @param  array<int, array{
      *     store_id: int,
-     *     item_type: 'product'|'ingredient',
+     *     item_type: string,
      *     item_id: int,
      *     quantity_delta: float|string,
      *     type: StockMovementType|IngredientStockMovementTypeEnum|string,
@@ -95,9 +96,12 @@ class InventoryLedgerService
      *     order_id?: ?int,
      *     order_item_id?: ?int,
      *     user_id?: ?int,
+     *     variant_id?: ?int,
+     *     reference_type?: ?string,
+     *     reference_id?: ?int,
      *     storage_location_id?: ?int
      * }>  $movements
-     * @return array<int, array{movement: object, balance: object, previous_quantity: string, new_quantity: string}>
+     * @return array<int, array{movement: object{id: int}, balance: object|null, previous_quantity: string, new_quantity: string}>
      *
      * @throws ValidationException|DomainException
      */
@@ -139,7 +143,7 @@ class InventoryLedgerService
                 }
                 $uniqueTargets[$key]['net_delta'] = bcadd(
                     $uniqueTargets[$key]['net_delta'],
-                    (string) $m['quantity_delta'],
+                    bc_num($m['quantity_delta']),
                     6
                 );
             }
@@ -175,7 +179,7 @@ class InventoryLedgerService
                 }
 
                 // 5. Evaluasi Invariant Non-Negatif (INV-M4-05)
-                $projectedQty = bcadd((string) $balanceRow->quantity, $target['net_delta'], 6);
+                $projectedQty = bcadd(bc_num($balanceRow->quantity), bc_num($target['net_delta']), 6);
                 if (bccomp($projectedQty, '0', 4) < 0) {
                     $itemName = $this->resolveItemName($tenantId, $target['item_type'], $target['item_id']);
                     throw new InsufficientStockException(
@@ -203,7 +207,7 @@ class InventoryLedgerService
 
                 $currentBalance = $lockedBalances[$key];
                 $previousQty = (string) $currentBalance->quantity;
-                $newQty = bcadd($previousQty, $delta, 6);
+                $newQty = bcadd(bc_num($previousQty), bc_num($delta), 6);
 
                 $rawType = $m['type'] instanceof \BackedEnum ? $m['type']->value : (string) $m['type'];
                 $reason = $m['reason'] ?? '';
@@ -219,7 +223,7 @@ class InventoryLedgerService
 
                 $inputUnitCost = $m['unit_cost'] ?? null;
 
-                if (bccomp($delta, '0', 6) > 0) {
+                if (bccomp(bc_num($delta), '0', 6) > 0) {
                     // Inbound mutation: gunakan unit cost input jika ada, lalu perbarui WAC
                     $inboundCost = $inputUnitCost !== null ? (string) $inputUnitCost : $currentAvgCost;
                     $movementUnitCost = $inboundCost;
@@ -268,9 +272,9 @@ class InventoryLedgerService
                 $this->syncLegacyMirrorColumn($tenantId, $itemType, $itemId, $delta);
 
                 // Update memori balance untuk item berikutnya dalam batch yang sama
-                $currentBalance->quantity = $newQty;
-                $currentBalance->average_unit_cost = $newAvgCost;
-                $currentBalance->last_unit_cost = $newLastCost;
+                $currentBalance->quantity = bc_num($newQty);
+                $currentBalance->average_unit_cost = bc_num($newAvgCost);
+                $currentBalance->last_unit_cost = bc_num($newLastCost);
                 $currentBalance->last_movement_id = $movementId;
 
                 $results[] = [
@@ -320,18 +324,18 @@ class InventoryLedgerService
         $qIn = (string) $incomingQty;
         $cIn = (string) $incomingCost;
 
-        if (bccomp($qIn, '0', 6) <= 0) {
-            return bcadd($cOld, '0', 4);
+        if (bccomp(bc_num($qIn), '0', 6) <= 0) {
+            return bcadd(bc_num($cOld), '0', 4);
         }
 
-        if (bccomp($qOld, '0', 6) <= 0) {
-            return bcadd($cIn, '0', 4);
+        if (bccomp(bc_num($qOld), '0', 6) <= 0) {
+            return bcadd(bc_num($cIn), '0', 4);
         }
 
-        $oldVal = bcmul($qOld, $cOld, 6);
-        $inVal = bcmul($qIn, $cIn, 6);
+        $oldVal = bcmul(bc_num($qOld), bc_num($cOld), 6);
+        $inVal = bcmul(bc_num($qIn), bc_num($cIn), 6);
         $totalVal = bcadd($oldVal, $inVal, 6);
-        $totalQty = bcadd($qOld, $qIn, 6);
+        $totalQty = bcadd(bc_num($qOld), bc_num($qIn), 6);
 
         if (bccomp($totalQty, '0', 6) === 0) {
             return '0.0000';
@@ -342,17 +346,22 @@ class InventoryLedgerService
 
     /**
      * Ambil data saldo saat ini untuk suatu item di cabang tertentu.
+     *
+     * @return StockBalance|IngredientStockBalance|null
      */
     public function getBalance(int $tenantId, int $storeId, string $itemType, int $itemId, ?int $storageLocationId = null): ?object
     {
         $table = $itemType === 'product' ? 'product_stock_balances' : 'ingredient_stock_balances';
         $column = $itemType === 'product' ? 'product_id' : 'ingredient_id';
 
-        return DB::table($table)
+        /** @var StockBalance|IngredientStockBalance|null $row */
+        $row = DB::table($table)
             ->where('tenant_id', $tenantId)
             ->where('store_id', $storeId)
             ->where($column, $itemId)
             ->first();
+
+        return $row;
     }
 
     /**
@@ -381,15 +390,15 @@ class InventoryLedgerService
         $reorder = (string) $reorderPoint;
         $max = $maxStock !== null ? (string) $maxStock : null;
 
-        if (bccomp($min, '0', 4) < 0) {
+        if (bccomp(bc_num($min), '0', 4) < 0) {
             throw new DomainException('min_stock_level tidak boleh bernilai negatif.');
         }
 
-        if (bccomp($reorder, '0', 4) < 0) {
+        if (bccomp(bc_num($reorder), '0', 4) < 0) {
             throw new DomainException('reorder_point tidak boleh bernilai negatif.');
         }
 
-        if ($max !== null && bccomp($max, $reorder, 4) < 0) {
+        if ($max !== null && bccomp(bc_num($max), bc_num($reorder), 4) < 0) {
             throw new DomainException('max_stock_level tidak boleh lebih kecil dari reorder_point.');
         }
 
@@ -414,14 +423,20 @@ class InventoryLedgerService
     // HELPER INTERNAL METHODS
     // =========================================================================
 
+    /**
+     * @return object{id: int}|null
+     */
     private function findExistingMovement(int $tenantId, string $itemType, string $idempotencyKey): ?object
     {
         $table = $itemType === 'product' ? 'stock_movements' : 'ingredient_stock_movements';
 
-        return DB::table($table)
+        /** @var object{id: int}|null $row */
+        $row = DB::table($table)
             ->where('tenant_id', $tenantId)
             ->where('idempotency_key', $idempotencyKey)
             ->first();
+
+        return $row;
     }
 
     private function ensureBalanceRowExists(int $tenantId, int $storeId, string $itemType, int $itemId): void
@@ -456,17 +471,23 @@ class InventoryLedgerService
         ]);
     }
 
+    /**
+     * @return StockBalance|IngredientStockBalance|null
+     */
     private function lockBalanceRow(int $tenantId, int $storeId, string $itemType, int $itemId): ?object
     {
         $table = $itemType === 'product' ? 'product_stock_balances' : 'ingredient_stock_balances';
         $column = $itemType === 'product' ? 'product_id' : 'ingredient_id';
 
-        return DB::table($table)
+        /** @var StockBalance|IngredientStockBalance|null $row */
+        $row = DB::table($table)
             ->where('tenant_id', $tenantId)
             ->where('store_id', $storeId)
             ->where($column, $itemId)
             ->lockForUpdate()
             ->first();
+
+        return $row;
     }
 
     private function insertLedgerMovement(
@@ -556,19 +577,28 @@ class InventoryLedgerService
     {
         if ($itemType === 'product') {
             $intDelta = (int) round((float) $delta);
+            $currentStock = (int) (DB::table('products')
+                ->where('tenant_id', $tenantId)
+                ->where('id', $itemId)
+                ->value('stock') ?? 0);
             DB::table('products')
                 ->where('tenant_id', $tenantId)
                 ->where('id', $itemId)
                 ->update([
-                    'stock' => DB::raw("GREATEST(0, CAST(stock AS SIGNED) + ({$intDelta}))"),
+                    'stock' => max(0, $currentStock + $intDelta),
                     'updated_at' => now(),
                 ]);
         } else {
+            $currentStock = bc_num(DB::table('ingredients')
+                ->where('tenant_id', $tenantId)
+                ->where('id', $itemId)
+                ->value('current_stock') ?? '0.0000');
+            $nextStock = bcadd($currentStock, bc_num($delta), 4);
             DB::table('ingredients')
                 ->where('tenant_id', $tenantId)
                 ->where('id', $itemId)
                 ->update([
-                    'current_stock' => DB::raw("GREATEST(0, CAST(current_stock AS DECIMAL(15, 4)) + ({$delta}))"),
+                    'current_stock' => bccomp($nextStock, '0', 4) > 0 ? $nextStock : '0.0000',
                     'updated_at' => now(),
                 ]);
         }

@@ -14,6 +14,8 @@ use App\Modules\Inventory\Services\ProductFulfillmentResolverService;
 use App\Services\CatalogPriceResolverService;
 use App\Services\Context\TenantContext;
 use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
@@ -36,7 +38,7 @@ class MenuCacheService
 
     private const REBUILD_LOCK_WAIT_SECONDS = 5;
 
-    private function getCache(?int $tenantId = null)
+    private function getCache(?int $tenantId = null): Repository
     {
         $tenantId = $tenantId ?? app(TenantContext::class)->getTenantId();
 
@@ -48,7 +50,10 @@ class MenuCacheService
         return Cache::supportsTags() ? Cache::tags(["menu:tenant_{$tenantId}"]) : Cache::store();
     }
 
-    public function getCatalog()
+    /**
+     * @return Collection<int, Category>
+     */
+    public function getCatalog(): Collection
     {
         $key = $this->getTenantKey(self::KEY_CATALOG);
 
@@ -74,10 +79,8 @@ class MenuCacheService
 
                 foreach ($categories as $cat) {
                     foreach ($cat->products as $prod) {
-                        if ($prod instanceof Product) {
-                            $prod->product_price = (int) round($resolver->resolvePrice($prod, $storeId));
-                            $allProducts->push($prod);
-                        }
+                        $prod->product_price = (int) round($resolver->resolvePrice($prod, $storeId));
+                        $allProducts->push($prod);
                     }
                 }
 
@@ -88,7 +91,10 @@ class MenuCacheService
         });
     }
 
-    public function getAllCategories()
+    /**
+     * @return Collection<int, Category>
+     */
+    public function getAllCategories(): Collection
     {
         $key = $this->getTenantKey(self::KEY_CATEGORIES);
 
@@ -97,7 +103,10 @@ class MenuCacheService
         });
     }
 
-    public function getActiveProductsWithCategory()
+    /**
+     * @return Collection<int, Product>
+     */
+    public function getActiveProductsWithCategory(): Collection
     {
         $key = $this->getTenantKey(self::KEY_ACTIVE_PRODUCTS);
 
@@ -106,6 +115,9 @@ class MenuCacheService
         });
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     public function getMenuDisplayData(): array
     {
         $key = $this->getTenantKey(self::KEY_MENU_DISPLAY);
@@ -131,6 +143,9 @@ class MenuCacheService
         }
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function buildMenuDisplayData(): array
     {
         $context = app(TenantContext::class);

@@ -12,6 +12,7 @@ use App\Models\Tenant;
 use App\Modules\Customers\Enums\VoucherDiscountTypeEnum;
 use App\Modules\Customers\Enums\VoucherStatusEnum;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -23,16 +24,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $name
  * @property VoucherStatusEnum|string $status
  * @property VoucherDiscountTypeEnum|string $discount_type
- * @property string|float $discount_value
- * @property string|float|null $max_discount_amount
- * @property string|float|null $min_order_amount
+ * @property numeric-string $discount_value
+ * @property numeric-string|null $max_discount_amount
+ * @property numeric-string $min_order_amount
  * @property int $max_uses
  * @property int $used_count
+ * @property int|null $discount_id
+ * @property int|null $customer_id
+ * @property int|null $customer_group_id
+ * @property int $max_uses_per_customer
  */
 class Voucher extends Model
 {
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToTenant;
 
     protected $fillable = [
@@ -72,16 +80,25 @@ class Voucher extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return BelongsTo<CustomerGroup, $this>
+     */
     public function customerGroup(): BelongsTo
     {
         return $this->belongsTo(CustomerGroup::class);

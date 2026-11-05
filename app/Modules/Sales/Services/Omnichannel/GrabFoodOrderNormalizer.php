@@ -18,7 +18,11 @@ final class GrabFoodOrderNormalizer implements ChannelOrderNormalizer
 {
     public function normalize(array $payload): NormalizedChannelOrder
     {
-        $items = collect($payload['items'] ?? [])
+        /** @var array<int, array<string, mixed>> $rawItems */
+        $rawItems = is_array($payload['items'] ?? null)
+            ? array_values($payload['items'])
+            : [];
+        $items = collect($rawItems)
             ->map(fn (array $item) => new NormalizedChannelOrderItem(
                 externalProductId: (string) ($item['id'] ?? $item['sku'] ?? ''),
                 name: (string) ($item['name'] ?? 'Item GrabFood'),

@@ -67,7 +67,7 @@ class Wave7InventoryAnalyticsTest extends TestCase
         $category = Category::create([
             'tenant_id' => $this->tenantA->id,
             'name' => 'Fast Goods',
-            'slug' => 'fast-goods-' . Str::random(5),
+            'slug' => 'fast-goods-'.Str::random(5),
             'status' => 'ACTIVE',
         ]);
 
@@ -115,7 +115,7 @@ class Wave7InventoryAnalyticsTest extends TestCase
             $catB = Category::create([
                 'tenant_id' => $this->tenantB->id,
                 'name' => 'Goods B',
-                'slug' => 'goods-b-' . Str::random(5),
+                'slug' => 'goods-b-'.Str::random(5),
                 'status' => 'ACTIVE',
             ]);
             $prodB = Product::forceCreate([
@@ -185,7 +185,7 @@ class Wave7InventoryAnalyticsTest extends TestCase
         $category = Category::create([
             'tenant_id' => $this->tenantA->id,
             'name' => 'Aging Category',
-            'slug' => 'aging-cat-' . Str::random(5),
+            'slug' => 'aging-cat-'.Str::random(5),
             'status' => 'ACTIVE',
         ]);
 
@@ -285,7 +285,7 @@ class Wave7InventoryAnalyticsTest extends TestCase
         $category = Category::create([
             'tenant_id' => $this->tenantA->id,
             'name' => 'Dead Stock Test Category',
-            'slug' => 'dead-stock-cat-' . Str::random(5),
+            'slug' => 'dead-stock-cat-'.Str::random(5),
             'status' => 'ACTIVE',
         ]);
 

@@ -49,7 +49,7 @@
             'lg:pr-2': !isOpen && '{{ $variant }}' == 'inset' && '{{ $side }}' == 'right'
         }">
         <main @class([
-            'w-full h-full bg-white flex flex-col justify-stretch',
+            'w-full h-full bg-background flex flex-col justify-stretch',
             'shadow rounded-large' => $variant == 'inset',
         ])>
             @if($contentHeader)

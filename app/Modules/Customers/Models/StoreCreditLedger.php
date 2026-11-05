@@ -14,6 +14,17 @@ use App\Modules\Customers\Enums\StoreCreditLedgerTypeEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property numeric-string $amount
+ * @property numeric-string $balance_after
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $store_credit_account_id
+ * @property int $customer_id
+ * @property int|null $store_id
+ * @property int|null $reference_id
+ * @property int|null $actor_user_id
+ */
 class StoreCreditLedger extends Model
 {
     use AssignsTenant;
@@ -48,26 +59,41 @@ class StoreCreditLedger extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<StoreCreditAccount, $this>
+     */
     public function account(): BelongsTo
     {
         return $this->belongsTo(StoreCreditAccount::class, 'store_credit_account_id');
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function actorUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'actor_user_id');

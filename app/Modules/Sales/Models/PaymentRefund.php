@@ -18,6 +18,20 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property numeric-string $amount
+ * @property int $id
+ * @property int $tenant_id
+ * @property int $store_id
+ * @property int $order_id
+ * @property int $payment_id
+ * @property int|null $order_return_id
+ * @property int $shift_id
+ * @property int $device_id
+ * @property int|null $cash_drawer_movement_id
+ * @property int $requested_by_user_id
+ * @property int $approved_by_user_id
+ */
 class PaymentRefund extends Model
 {
     use AssignsStore, AssignsTenant;
@@ -88,41 +102,65 @@ class PaymentRefund extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Payment, $this>
+     */
     public function payment(): BelongsTo
     {
         return $this->belongsTo(Payment::class);
     }
 
+    /**
+     * @return BelongsTo<Order, $this>
+     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
     }
 
+    /**
+     * @return BelongsTo<OrderReturn, $this>
+     */
     public function orderReturn(): BelongsTo
     {
         return $this->belongsTo(OrderReturn::class);
     }
 
+    /**
+     * @return BelongsTo<Shift, $this>
+     */
     public function shift(): BelongsTo
     {
         return $this->belongsTo(Shift::class);
     }
 
+    /**
+     * @return BelongsTo<Device, $this>
+     */
     public function device(): BelongsTo
     {
         return $this->belongsTo(Device::class);
     }
 
+    /**
+     * @return BelongsTo<CashDrawerMovement, $this>
+     */
     public function cashDrawerMovement(): BelongsTo
     {
         return $this->belongsTo(CashDrawerMovement::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function requestedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requested_by_user_id')->withTrashed();
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function approvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by_user_id')->withTrashed();

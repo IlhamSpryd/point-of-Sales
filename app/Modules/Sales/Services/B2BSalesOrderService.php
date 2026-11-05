@@ -4,13 +4,10 @@ declare(strict_types=1);
 
 namespace App\Modules\Sales\Services;
 
-use App\Models\Customer;
 use App\Models\Order;
-use App\Models\Product;
 use App\Models\User;
 use App\Modules\Customers\Services\CustomerCreditService;
 use App\Modules\Inventory\Services\InventoryLedgerService;
-use App\Modules\Sales\Enums\SalesOrderStatusEnum;
 use App\Modules\Sales\Models\CustomerInvoice;
 use App\Modules\Sales\Models\Quotation;
 use App\Modules\Sales\Models\SalesOrder;
@@ -18,8 +15,8 @@ use App\Modules\Sales\Models\SalesOrderLine;
 use App\Services\AuditTrailService;
 use App\Services\Context\TenantContext;
 use DomainException;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Validation\ValidationException;
 
 class B2BSalesOrderService
 {
@@ -35,7 +32,8 @@ class B2BSalesOrderService
     /**
      * Membuat Sales Order B2B baru dengan validasi plafon kredit pelanggan (T-SLS-02).
      *
-     * @param array<string, mixed> $payload
+     * @param  array<string, mixed>  $payload
+     *
      * @throws DomainException
      */
     public function createOrder(
@@ -73,9 +71,9 @@ class B2BSalesOrderService
         $creditEval = $this->customerCreditService->evaluateCreditExposure($tenantId, $customerId, $estimatedTotal);
         if (! $creditEval->allowed && ! $allowOverride) {
             throw new DomainException(
-                "Pelanggan telah melampaui batas plafon kredit (Limit: Rp " . number_format((float) $creditEval->creditLimit, 2, ',', '.') . 
-                ", Proyeksi: Rp " . number_format((float) $creditEval->projectedTotalExposure, 2, ',', '.') . 
-                "). Pembuatan Sales Order baru ditolak kecuali di-override."
+                'Pelanggan telah melampaui batas plafon kredit (Limit: Rp '.number_format((float) $creditEval->creditLimit, 2, ',', '.').
+                ', Proyeksi: Rp '.number_format((float) $creditEval->projectedTotalExposure, 2, ',', '.').
+                '). Pembuatan Sales Order baru ditolak kecuali di-override.'
             );
         }
 
@@ -107,9 +105,9 @@ class B2BSalesOrderService
         $creditEval = $this->customerCreditService->evaluateCreditExposure($tenantId, $customerId, $totalAmount);
         if (! $creditEval->allowed && ! $allowOverride) {
             throw new DomainException(
-                "Pelanggan telah melampaui batas plafon kredit (Limit: Rp " . number_format((float) $creditEval->creditLimit, 2, ',', '.') . 
-                ", Proyeksi: Rp " . number_format((float) $creditEval->projectedTotalExposure, 2, ',', '.') . 
-                "). Pembuatan Sales Order dari penawaran ditolak kecuali di-override."
+                'Pelanggan telah melampaui batas plafon kredit (Limit: Rp '.number_format((float) $creditEval->creditLimit, 2, ',', '.').
+                ', Proyeksi: Rp '.number_format((float) $creditEval->projectedTotalExposure, 2, ',', '.').
+                '). Pembuatan Sales Order dari penawaran ditolak kecuali di-override.'
             );
         }
 
@@ -153,9 +151,9 @@ class B2BSalesOrderService
 
             if (! $creditEval->allowed && ! $allowOverride) {
                 throw new DomainException(
-                    "Pelanggan telah melampaui batas plafon kredit (Limit: Rp " . number_format((float) $creditEval->creditLimit, 2, ',', '.') . 
-                    ", Proyeksi: Rp " . number_format((float) $creditEval->projectedTotalExposure, 2, ',', '.') . 
-                    "). Konfirmasi Sales Order ditolak kecuali di-override."
+                    'Pelanggan telah melampaui batas plafon kredit (Limit: Rp '.number_format((float) $creditEval->creditLimit, 2, ',', '.').
+                    ', Proyeksi: Rp '.number_format((float) $creditEval->projectedTotalExposure, 2, ',', '.').
+                    '). Konfirmasi Sales Order ditolak kecuali di-override.'
                 );
             }
 
@@ -164,7 +162,7 @@ class B2BSalesOrderService
 
             // Reservasi Stok Gudang (T-SLS-01): Tambah reserved_quantity tanpa mengurangi stok fisik (quantity)
             $confirmedSO->loadMissing('lines');
-            /** @var \Illuminate\Database\Eloquent\Collection<int, SalesOrderLine> $soLines */
+            /** @var Collection<int, SalesOrderLine> $soLines */
             $soLines = $confirmedSO->lines;
             foreach ($soLines as $line) {
                 $prodId = (int) $line->product_id;
@@ -225,7 +223,7 @@ class B2BSalesOrderService
      * - Mengurangi reserved_quantity pada product_stock_balances.
      * - Memotong stok aktual secara riil melalui InventoryLedgerService.
      *
-     * @param array<int, array{line_id: int, quantity: float|string}> $fulfillmentLines
+     * @param  array<int, array{line_id: int, quantity: float|string}>  $fulfillmentLines
      */
     public function fulfillOrder(
         SalesOrder $salesOrder,

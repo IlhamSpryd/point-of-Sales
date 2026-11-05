@@ -13,8 +13,8 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\TwoFactorAuthenticationController;
 use App\Http\Controllers\Auth\VerifyEmailController;
+use App\Http\Controllers\HealthCheckController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\InvestorDemoController;
 use App\Http\Controllers\OwnerOnboardingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProfileEmailChangeController;
@@ -106,9 +106,6 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 
     Route::get('/home', [HomeController::class, 'index'])->name('home');
-    Route::get('/investor-demo', [InvestorDemoController::class, 'index'])
-        ->middleware(['ensure.onboarding.completed', 'role:Owner,Manager'])
-        ->name('investor.demo');
 
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])->name('password.confirm');
     Route::post('confirm-password', [ConfirmablePasswordController::class, 'store']);
@@ -146,6 +143,10 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
     Route::delete('/profile/oauth/{provider}', [OAuthController::class, 'unlink'])
         ->name('profile.oauth.unlink');
 });
+
+// Infra & Operations — Health Check Endpoints (Kubernetes & Load Balancer probes)
+Route::get('/health/live', [HealthCheckController::class, 'live'])->name('health.live');
+Route::get('/health/ready', [HealthCheckController::class, 'ready'])->name('health.ready');
 
 /*
 |--------------------------------------------------------------------------

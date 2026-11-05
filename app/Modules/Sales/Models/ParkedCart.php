@@ -16,6 +16,7 @@ use App\Models\Shift;
 use App\Models\Store;
 use App\Models\Table;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,14 +28,24 @@ use Illuminate\Support\Carbon;
  * @property int $store_id
  * @property int|null $discount_id
  * @property string $status
- * @property array $cart_payload
+ * @property array<string, mixed> $cart_payload
  * @property Carbon|null $expires_at
+ * @property int $device_id
+ * @property int $shift_id
+ * @property int $parked_by_user_id
+ * @property int|null $customer_id
+ * @property int|null $table_id
+ * @property int|null $resumed_by_user_id
+ * @property int|null $converted_order_id
  */
 class ParkedCart extends Model
 {
     use AssignsStore;
     use AssignsTenant;
+
+    /** @use HasFactory<Factory<static>> */
     use HasFactory;
+
     use ScopedToStore;
     use ScopedToTenant;
 
@@ -76,46 +87,73 @@ class ParkedCart extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<Device, $this>
+     */
     public function device(): BelongsTo
     {
         return $this->belongsTo(Device::class);
     }
 
+    /**
+     * @return BelongsTo<Shift, $this>
+     */
     public function shift(): BelongsTo
     {
         return $this->belongsTo(Shift::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function parkedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'parked_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function resumedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'resumed_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return BelongsTo<Table, $this>
+     */
     public function table(): BelongsTo
     {
         return $this->belongsTo(Table::class);
     }
 
+    /**
+     * @return BelongsTo<Discount, $this>
+     */
     public function discount(): BelongsTo
     {
         return $this->belongsTo(Discount::class);
     }
 
+    /**
+     * @return BelongsTo<Order, $this>
+     */
     public function convertedOrder(): BelongsTo
     {
         return $this->belongsTo(Order::class, 'converted_order_id');

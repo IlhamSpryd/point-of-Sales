@@ -47,21 +47,33 @@ class PostingRule extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function approvedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by_user_id');
     }
 
+    /**
+     * @return HasMany<PostingRuleVersion, $this>
+     */
     public function versions(): HasMany
     {
         return $this->hasMany(PostingRuleVersion::class, 'posting_rule_id');
     }
 
+    /**
+     * @return HasOne<PostingRuleVersion, $this>
+     */
     public function activeVersion(): HasOne
     {
         return $this->hasOne(PostingRuleVersion::class, 'posting_rule_id')

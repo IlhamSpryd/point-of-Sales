@@ -6,8 +6,43 @@
 // presisi floating-point pada skala desimal POS & BOM/resep (hingga 4-8 desimal).
 // Polyfill ini HANYA aktif bila ekstensi bcmath benar-benar tidak tersedia.
 
+if (! function_exists('bc_num')) {
+    /**
+     * Normalize an arbitrary numeric input into a guaranteed numeric-string for BCMath operations.
+     *
+     * @return numeric-string
+     */
+    function bc_num(mixed $value, string $default = '0.00'): string
+    {
+        if (is_int($value)) {
+            return (string) $value;
+        }
+
+        if (is_float($value)) {
+            $formatted = sprintf('%.8F', $value);
+            $trimmed = rtrim(rtrim($formatted, '0'), '.');
+
+            return ($trimmed !== '' && is_numeric($trimmed)) ? $trimmed : '0.00';
+        }
+
+        if (is_string($value)) {
+            $trimmed = trim($value);
+            if ($trimmed !== '' && is_numeric($trimmed)) {
+                return $trimmed;
+            }
+        }
+
+        $def = trim($default);
+
+        return ($def !== '' && is_numeric($def)) ? $def : '0.00';
+    }
+}
+
 if (! extension_loaded('bcmath')) {
     if (! function_exists('_bc_parse')) {
+        /**
+         * @return array{0: int, 1: string, 2: string}
+         */
         function _bc_parse(string $number): array
         {
             $number = trim($number);
@@ -24,6 +59,9 @@ if (! extension_loaded('bcmath')) {
             return [$sign, $int, $frac];
         }
 
+        /**
+         * @return numeric-string
+         */
         function _bc_format(int $sign, string $digits, int $dec, int $scale): string
         {
             $scale = max(0, $scale);
@@ -75,7 +113,9 @@ if (! extension_loaded('bcmath')) {
                     return '0';
                 }
 
-                return ($sign === -1 ? '-' : '').$clean;
+                $out = ($sign === -1 ? '-' : '').$clean;
+
+                return is_numeric($out) ? $out : '0';
             }
 
             $len = strlen($digits);
@@ -96,7 +136,9 @@ if (! extension_loaded('bcmath')) {
                 $sign = 1;
             }
 
-            return ($sign === -1 ? '-' : '').$intClean.'.'.$fracPart;
+            $out = ($sign === -1 ? '-' : '').$intClean.'.'.$fracPart;
+
+            return is_numeric($out) ? $out : '0.00';
         }
 
         function _bc_str_mul(string $n1, string $n2): string
@@ -119,6 +161,9 @@ if (! extension_loaded('bcmath')) {
     }
 
     if (! function_exists('bcadd')) {
+        /**
+         * @return numeric-string
+         */
         function bcadd(string $num1, string $num2, ?int $scale = null): string
         {
             $s = max(0, $scale ?? 0);
@@ -148,6 +193,9 @@ if (! extension_loaded('bcmath')) {
     }
 
     if (! function_exists('bcsub')) {
+        /**
+         * @return numeric-string
+         */
         function bcsub(string $num1, string $num2, ?int $scale = null): string
         {
             $s = max(0, $scale ?? 0);
@@ -176,6 +224,9 @@ if (! extension_loaded('bcmath')) {
     }
 
     if (! function_exists('bcmul')) {
+        /**
+         * @return numeric-string
+         */
         function bcmul(string $num1, string $num2, ?int $scale = null): string
         {
             $s = max(0, $scale ?? 0);
@@ -199,6 +250,9 @@ if (! extension_loaded('bcmath')) {
     }
 
     if (! function_exists('bcdiv')) {
+        /**
+         * @return numeric-string
+         */
         function bcdiv(string $num1, string $num2, ?int $scale = null): string
         {
             $s = max(0, $scale ?? 0);
@@ -222,7 +276,7 @@ if (! extension_loaded('bcmath')) {
                 $num = (int) $d1;
                 $denom = (int) $d2 * (10 ** (-$shift));
             }
-            $q = (is_int($num) && is_int($denom)) ? intdiv($num, $denom) : (int) floor((float) $num / (float) $denom);
+            $q = intdiv((int) $num, (int) $denom);
             $sign = ($s1 * $s2 === -1) ? -1 : 1;
 
             return _bc_format($sign, (string) abs($q), $s + 1, $s);
@@ -233,7 +287,7 @@ if (! extension_loaded('bcmath')) {
         function bccomp(string $num1, string $num2, ?int $scale = null): int
         {
             $s = max(0, $scale ?? 0);
-            $diff = bcsub($num1, $num2, $s);
+            $diff = bcsub(bc_num($num1), bc_num($num2), $s);
             if ($diff === '0' || preg_match('/^0(?:\.0*)?$/', $diff)) {
                 return 0;
             }

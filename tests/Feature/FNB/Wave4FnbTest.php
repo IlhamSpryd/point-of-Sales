@@ -31,16 +31,27 @@ class Wave4FnbTest extends TestCase
     use DatabaseTransactions;
 
     private Tenant $tenant;
+
     private Store $store;
+
     private User $waiter;
+
     private User $cook;
+
     private Table $table1;
+
     private Table $table2;
+
     private Table $table3;
+
     private Category $kitchenCategory;
+
     private Category $barCategory;
+
     private TableManagementService $tableManagementService;
+
     private SplitBillService $splitBillService;
+
     private KdsService $kdsService;
 
     protected function afterSubclassSetUp(): void
@@ -49,7 +60,7 @@ class Wave4FnbTest extends TestCase
 
         $this->tenant = Tenant::create([
             'name' => 'Wave 4 FNB Tenant',
-            'slug' => 'wave4-fnb-' . uniqid(),
+            'slug' => 'wave4-fnb-'.uniqid(),
             'status' => 'active',
             'onboarding_status' => Tenant::ONBOARDING_COMPLETED,
             'access_status' => Tenant::ACCESS_ACTIVE,
@@ -188,7 +199,7 @@ class Wave4FnbTest extends TestCase
             'table_number' => $this->table1->table_name,
             'order_type' => 'dine_in',
             'origin_channel' => 'qr_table',
-            'order_code' => 'ORD-FNB-' . uniqid(),
+            'order_code' => 'ORD-FNB-'.uniqid(),
             'idempotency_key' => (string) Str::uuid(),
             'order_date' => now()->toDateString(),
             'subtotal_amount' => 285000,
@@ -269,7 +280,7 @@ class Wave4FnbTest extends TestCase
             'table_id' => $this->table1->id,
             'table_number' => $this->table1->table_name,
             'order_type' => 'dine_in',
-            'order_code' => 'ORD-PARENT-' . uniqid(),
+            'order_code' => 'ORD-PARENT-'.uniqid(),
             'idempotency_key' => (string) Str::uuid(),
             'order_date' => now()->toDateString(),
             'subtotal_amount' => $parentTotal,
@@ -327,7 +338,7 @@ class Wave4FnbTest extends TestCase
         $this->assertCount(2, $subOrders);
 
         // PARITAS TOTAL (T-FNB-02): Sum sub-orders wajib sama persis dengan total pesanan asal
-        $sumSubOrders = array_sum(array_map(fn($o) => (int) $o->order_amount, $subOrders));
+        $sumSubOrders = array_sum(array_map(fn ($o) => (int) $o->order_amount, $subOrders));
         $this->assertEquals($parentTotal, $sumSubOrders);
 
         // Status pesanan induk berubah menjadi cancelled (split)
@@ -343,7 +354,7 @@ class Wave4FnbTest extends TestCase
             'table_id' => $this->table2->id,
             'table_number' => $this->table2->table_name,
             'order_type' => 'dine_in',
-            'order_code' => 'ORD-AMOUNT-' . uniqid(),
+            'order_code' => 'ORD-AMOUNT-'.uniqid(),
             'idempotency_key' => (string) Str::uuid(),
             'order_date' => now()->toDateString(),
             'subtotal_amount' => $order2Total,
@@ -358,7 +369,7 @@ class Wave4FnbTest extends TestCase
         );
 
         $this->assertCount(2, $subOrdersAmount);
-        $sumAmountSplit = array_sum(array_map(fn($o) => (int) $o->order_amount, $subOrdersAmount));
+        $sumAmountSplit = array_sum(array_map(fn ($o) => (int) $o->order_amount, $subOrdersAmount));
         $this->assertEquals($order2Total, $sumAmountSplit);
     }
 
@@ -385,7 +396,7 @@ class Wave4FnbTest extends TestCase
             'table_id' => $table1->id,
             'table_number' => $table1->table_name,
             'order_type' => 'dine_in',
-            'order_code' => 'ORD-TBL1-' . uniqid(),
+            'order_code' => 'ORD-TBL1-'.uniqid(),
             'idempotency_key' => (string) Str::uuid(),
             'order_date' => now()->toDateString(),
             'subtotal_amount' => 150000,

@@ -18,12 +18,15 @@ class VerifyEmailController extends Controller
      */
     public function __invoke(EmailVerificationRequest $request): RedirectResponse
     {
-        if ($request->user()->hasVerifiedEmail()) {
+        $user = $request->user();
+        abort_unless($user !== null, 401);
+
+        if ($user->hasVerifiedEmail()) {
             return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
         }
 
-        if ($request->user()->markEmailAsVerified()) {
-            event(new Verified($request->user()));
+        if ($user->markEmailAsVerified()) {
+            event(new Verified($user));
         }
 
         return redirect()->intended(route('dashboard', absolute: false).'?verified=1');
@@ -71,7 +74,7 @@ class VerifyEmailController extends Controller
         // Rotasi sesi untuk mencegah session fixation
         $request->session()->regenerate();
 
-        $freshUser = $user->fresh();
+        $freshUser = $user->fresh() ?? $user;
         $tenant = $freshUser->tenant;
 
         if ($tenant && ! $tenant->isOnboardingCompleted()) {

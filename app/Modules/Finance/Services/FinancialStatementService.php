@@ -89,7 +89,7 @@ class FinancialStatementService
             $rawOpenCredit = (string) ($openingTotals->credits ?? '0.00');
 
             if ($acc->normal_balance === NormalBalanceEnum::DEBIT) {
-                $netOpen = bcsub($rawOpenDebit, $rawOpenCredit, 2);
+                $netOpen = bcsub(bc_num($rawOpenDebit), bc_num($rawOpenCredit), 2);
                 if (bccomp($netOpen, '0.00', 2) >= 0) {
                     $openDebit = $netOpen;
                     $openCredit = '0.00';
@@ -98,7 +98,7 @@ class FinancialStatementService
                     $openCredit = bcmul($netOpen, '-1', 2);
                 }
             } else {
-                $netOpen = bcsub($rawOpenCredit, $rawOpenDebit, 2);
+                $netOpen = bcsub(bc_num($rawOpenCredit), bc_num($rawOpenDebit), 2);
                 if (bccomp($netOpen, '0.00', 2) >= 0) {
                     $openCredit = $netOpen;
                     $openDebit = '0.00';
@@ -126,8 +126,8 @@ class FinancialStatementService
             $periodCredit = (string) ($periodTotals->credits ?? '0.00');
 
             // 3. Saldo Akhir
-            $cumDebit = bcadd($openDebit, $periodDebit, 2);
-            $cumCredit = bcadd($openCredit, $periodCredit, 2);
+            $cumDebit = bcadd(bc_num($openDebit), bc_num($periodDebit), 2);
+            $cumCredit = bcadd(bc_num($openCredit), bc_num($periodCredit), 2);
 
             if ($acc->normal_balance === NormalBalanceEnum::DEBIT) {
                 $netClose = bcsub($cumDebit, $cumCredit, 2);
@@ -152,8 +152,8 @@ class FinancialStatementService
             // Akumulasi total
             $totalOpeningDebit = bcadd($totalOpeningDebit, $openDebit, 2);
             $totalOpeningCredit = bcadd($totalOpeningCredit, $openCredit, 2);
-            $totalPeriodDebit = bcadd($totalPeriodDebit, $periodDebit, 2);
-            $totalPeriodCredit = bcadd($totalPeriodCredit, $periodCredit, 2);
+            $totalPeriodDebit = bcadd(bc_num($totalPeriodDebit), bc_num($periodDebit), 2);
+            $totalPeriodCredit = bcadd(bc_num($totalPeriodCredit), bc_num($periodCredit), 2);
             $totalClosingDebit = bcadd($totalClosingDebit, $closingDebit, 2);
             $totalClosingCredit = bcadd($totalClosingCredit, $closingCredit, 2);
 
@@ -272,7 +272,7 @@ class FinancialStatementService
             $credits = (string) ($totals->credits ?? '0.00');
 
             if ($acc->account_type === AccountTypeEnum::REVENUE) {
-                $net = bcsub($credits, $debits, 2);
+                $net = bcsub(bc_num($credits), bc_num($debits), 2);
                 $totalRevenue = bcadd($totalRevenue, $net, 2);
                 $revenueItems[] = [
                     'account_id' => $acc->id,
@@ -281,7 +281,7 @@ class FinancialStatementService
                     'amount' => $net,
                 ];
             } elseif ($acc->account_type === AccountTypeEnum::COGS) {
-                $net = bcsub($debits, $credits, 2);
+                $net = bcsub(bc_num($debits), bc_num($credits), 2);
                 $totalCogs = bcadd($totalCogs, $net, 2);
                 $cogsItems[] = [
                     'account_id' => $acc->id,
@@ -290,7 +290,7 @@ class FinancialStatementService
                     'amount' => $net,
                 ];
             } elseif ($acc->account_type === AccountTypeEnum::EXPENSE) {
-                $net = bcsub($debits, $credits, 2);
+                $net = bcsub(bc_num($debits), bc_num($credits), 2);
                 $totalExpense = bcadd($totalExpense, $net, 2);
                 $expenseItems[] = [
                     'account_id' => $acc->id,
@@ -299,7 +299,7 @@ class FinancialStatementService
                     'amount' => $net,
                 ];
             } elseif ($acc->account_type === AccountTypeEnum::OTHER_INCOME) {
-                $net = bcsub($credits, $debits, 2);
+                $net = bcsub(bc_num($credits), bc_num($debits), 2);
                 $totalOtherIncome = bcadd($totalOtherIncome, $net, 2);
                 $otherIncomeItems[] = [
                     'account_id' => $acc->id,
@@ -308,7 +308,7 @@ class FinancialStatementService
                     'amount' => $net,
                 ];
             } elseif ($acc->account_type === AccountTypeEnum::OTHER_EXPENSE) {
-                $net = bcsub($debits, $credits, 2);
+                $net = bcsub(bc_num($debits), bc_num($credits), 2);
                 $totalOtherExpense = bcadd($totalOtherExpense, $net, 2);
                 $otherExpenseItems[] = [
                     'account_id' => $acc->id,
@@ -444,9 +444,9 @@ class FinancialStatementService
 
             if ($acc->account_type === AccountTypeEnum::ASSET) {
                 if ($acc->normal_balance === NormalBalanceEnum::DEBIT) {
-                    $net = bcsub($debits, $credits, 2);
+                    $net = bcsub(bc_num($debits), bc_num($credits), 2);
                 } else {
-                    $net = bcmul(bcsub($credits, $debits, 2), '-1', 2);
+                    $net = bcmul(bcsub(bc_num($credits), bc_num($debits), 2), '-1', 2);
                 }
 
                 $isNonCurrent = in_array($acc->account_subtype, [
@@ -470,9 +470,9 @@ class FinancialStatementService
                 }
             } elseif ($acc->account_type === AccountTypeEnum::LIABILITY) {
                 if ($acc->normal_balance === NormalBalanceEnum::CREDIT) {
-                    $net = bcsub($credits, $debits, 2);
+                    $net = bcsub(bc_num($credits), bc_num($debits), 2);
                 } else {
-                    $net = bcmul(bcsub($debits, $credits, 2), '-1', 2);
+                    $net = bcmul(bcsub(bc_num($debits), bc_num($credits), 2), '-1', 2);
                 }
 
                 $isNonCurrent = str_starts_with($acc->account_code, '25') || str_starts_with($acc->account_code, '26');
@@ -493,9 +493,9 @@ class FinancialStatementService
                 }
             } elseif ($acc->account_type === AccountTypeEnum::EQUITY) {
                 if ($acc->normal_balance === NormalBalanceEnum::CREDIT) {
-                    $net = bcsub($credits, $debits, 2);
+                    $net = bcsub(bc_num($credits), bc_num($debits), 2);
                 } else {
-                    $net = bcmul(bcsub($debits, $credits, 2), '-1', 2);
+                    $net = bcmul(bcsub(bc_num($debits), bc_num($credits), 2), '-1', 2);
                 }
 
                 $totalBaseEquity = bcadd($totalBaseEquity, $net, 2);
@@ -517,7 +517,7 @@ class FinancialStatementService
         $currentYearNetIncome = $pnl['net_income'];
 
         // Total Ekuitas = Ekuitas Pokok + Laba Tahun Berjalan
-        $totalEquity = bcadd($totalBaseEquity, $currentYearNetIncome, 2);
+        $totalEquity = bcadd(bc_num($totalBaseEquity), bc_num($currentYearNetIncome), 2);
 
         $totalLiabilitiesAndEquity = bcadd($totalLiabilities, $totalEquity, 2);
 
@@ -636,7 +636,7 @@ class FinancialStatementService
         $dayBeforeStart = $period->start_date->copy()->subDay()->toDateString();
         $beginningCash = $calcCash($dayBeforeStart);
         $endingCash = $calcCash($endDate);
-        $actualNetChange = bcsub($endingCash, $beginningCash, 2);
+        $actualNetChange = bcsub(bc_num($endingCash), bc_num($beginningCash), 2);
 
         // 3. Analisis mutasi jurnal kas selama periode ini
         $journalIds = DB::table('journal_lines')
@@ -677,11 +677,11 @@ class FinancialStatementService
                 $cashDebit = '0.00';
                 $cashCredit = '0.00';
 
-                /** @var Collection $entryLines */
+                /** @var Collection<int, object{account_id: int, debit_amount: string, credit_amount: string, account_type: mixed, account_subtype: mixed, account_code: string}> $entryLines */
                 foreach ($entryLines as $l) {
                     if (in_array($l->account_id, $cashAccounts, true)) {
-                        $cashDebit = bcadd($cashDebit, (string) $l->debit_amount, 2);
-                        $cashCredit = bcadd($cashCredit, (string) $l->credit_amount, 2);
+                        $cashDebit = bcadd(bc_num($cashDebit), bc_num($l->debit_amount), 2);
+                        $cashCredit = bcadd(bc_num($cashCredit), bc_num($l->credit_amount), 2);
                     }
                 }
 
@@ -704,24 +704,24 @@ class FinancialStatementService
                     $accCode = $l->account_code;
 
                     // Arus Kas Masuk (Lawan akun berada di sisi Kredit)
-                    if (bccomp($credit, '0.00', 2) > 0) {
+                    if (bccomp(bc_num($credit), '0.00', 2) > 0) {
                         if ($accType === 'EQUITY') {
-                            $financingInflow = bcadd($financingInflow, $credit, 2);
+                            $financingInflow = bcadd(bc_num($financingInflow), bc_num($credit), 2);
                         } elseif ($accSubtype === 'FIXED_ASSET' || str_starts_with($accCode, '15')) {
-                            $investingInflow = bcadd($investingInflow, $credit, 2);
+                            $investingInflow = bcadd(bc_num($investingInflow), bc_num($credit), 2);
                         } else {
-                            $operatingInflow = bcadd($operatingInflow, $credit, 2);
+                            $operatingInflow = bcadd(bc_num($operatingInflow), bc_num($credit), 2);
                         }
                     }
 
                     // Arus Kas Keluar (Lawan akun berada di sisi Debit)
-                    if (bccomp($debit, '0.00', 2) > 0) {
+                    if (bccomp(bc_num($debit), '0.00', 2) > 0) {
                         if ($accType === 'EQUITY') {
-                            $financingOutflow = bcadd($financingOutflow, $debit, 2);
+                            $financingOutflow = bcadd(bc_num($financingOutflow), bc_num($debit), 2);
                         } elseif ($accSubtype === 'FIXED_ASSET' || str_starts_with($accCode, '15')) {
-                            $investingOutflow = bcadd($investingOutflow, $debit, 2);
+                            $investingOutflow = bcadd(bc_num($investingOutflow), bc_num($debit), 2);
                         } else {
-                            $operatingOutflow = bcadd($operatingOutflow, $debit, 2);
+                            $operatingOutflow = bcadd(bc_num($operatingOutflow), bc_num($debit), 2);
                         }
                     }
                 }
@@ -837,10 +837,10 @@ class FinancialStatementService
 
             $periodDebit = (string) ($movements->period_debit ?? '0.00');
             $periodCredit = (string) ($movements->period_credit ?? '0.00');
-            $netMovement = bcsub($periodDebit, $periodCredit, 2);
+            $netMovement = bcsub(bc_num($periodDebit), bc_num($periodCredit), 2);
 
             if ($account->normal_balance === NormalBalanceEnum::DEBIT) {
-                $net = bcsub(bcadd($openingDebit, $periodDebit, 2), bcadd($openingCredit, $periodCredit, 2), 2);
+                $net = bcsub(bcadd(bc_num($openingDebit), bc_num($periodDebit), 2), bcadd(bc_num($openingCredit), bc_num($periodCredit), 2), 2);
                 if (bccomp($net, '0.00', 2) >= 0) {
                     $closingDebit = $net;
                     $closingCredit = '0.00';
@@ -849,7 +849,7 @@ class FinancialStatementService
                     $closingCredit = bcmul($net, '-1', 2);
                 }
             } else {
-                $net = bcsub(bcadd($openingCredit, $periodCredit, 2), bcadd($openingDebit, $periodDebit, 2), 2);
+                $net = bcsub(bcadd(bc_num($openingCredit), bc_num($periodCredit), 2), bcadd(bc_num($openingDebit), bc_num($periodDebit), 2), 2);
                 if (bccomp($net, '0.00', 2) >= 0) {
                     $closingCredit = $net;
                     $closingDebit = '0.00';

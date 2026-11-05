@@ -51,11 +51,17 @@ class PurchaseApprovalRequest extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return MorphTo<Model, $this>
+     */
     public function approvable(): MorphTo
     {
         return $this->morphTo();
@@ -69,11 +75,17 @@ class PurchaseApprovalRequest extends Model
         return $this->belongsTo(PurchaseApprovalRule::class, 'rule_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function submittedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'submitted_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function approvedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by_user_id');

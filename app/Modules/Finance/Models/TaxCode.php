@@ -44,21 +44,33 @@ class TaxCode extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return HasMany<TaxRate, $this>
+     */
     public function rates(): HasMany
     {
         return $this->hasMany(TaxRate::class, 'tax_code_id');
     }
 
+    /**
+     * @return HasOne<TaxAccountMapping, $this>
+     */
     public function accountMapping(): HasOne
     {
         return $this->hasOne(TaxAccountMapping::class, 'tax_code_id');
     }
 
+    /**
+     * @return HasMany<TaxLedgerEntry, $this>
+     */
     public function ledgerEntries(): HasMany
     {
         return $this->hasMany(TaxLedgerEntry::class, 'tax_code_id');

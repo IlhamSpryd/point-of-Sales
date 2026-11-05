@@ -8,7 +8,7 @@
 }" data-gsap="page-enter">
     @if(!$activeShift)
         {{-- Form Open Shift --}}
-        <div class="bg-white rounded-3xl p-8 border border-[#E5E7EB] shadow-sm max-w-lg mx-auto text-center" data-gsap="kpi-card">
+        <div class="bg-white rounded-3xl p-8 border border-border shadow-sm max-w-lg mx-auto text-center" data-gsap="kpi-card">
             <div class="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mx-auto mb-5 border border-gray-100">
                 <span class="material-symbols-rounded text-[32px] text-apeiron-ink">lock_open</span>
             </div>
@@ -53,7 +53,7 @@
 
                 <button type="submit" wire:loading.attr="disabled" wire:target="openShift"
                     x-on:click="window.erpMotion?.pulseHighlight($el)"
-                    class="w-full disabled:opacity-60 disabled:cursor-wait bg-apeiron-ink hover:bg-[#111111] text-white font-bold py-3.5 rounded-xl shadow-md active:scale-[0.98] transition-all flex justify-center items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink">
+                    class="w-full disabled:opacity-60 disabled:cursor-wait bg-apeiron-ink hover:bg-primary/90 text-white font-bold py-3.5 rounded-xl shadow-md active:scale-[0.98] transition-all flex justify-center items-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink">
                     <span wire:loading wire:target="openShift" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
                     <span>Start Shift Session</span>
                 </button>
@@ -107,7 +107,7 @@
                         <span class="material-symbols-rounded text-[18px]">swap_horiz</span> Handover
                     </button>
                     <button type="button" x-on:click="openCloseModal = true; window.erpMotion?.pulseHighlight($el)"
-                        class="px-4 py-2 rounded-xl bg-apeiron-ink text-white text-xs font-bold hover:bg-[#111111] active:scale-95 transition-all shadow-sm flex items-center gap-1.5">
+                        class="px-4 py-2 rounded-xl bg-apeiron-ink text-white text-xs font-bold hover:bg-primary/90 active:scale-95 transition-all shadow-sm flex items-center gap-1.5">
                         <span class="material-symbols-rounded text-[18px]">lock</span> Close Shift
                     </button>
                     @if(auth()->user()?->role?->is_admin || in_array(auth()->user()?->role?->name, ['Owner', 'Manager', 'Supervisor'], true))
@@ -365,7 +365,7 @@
                     </button>
                     <button type="submit" form="cash-movement-form"
                         x-on:click="window.erpMotion?.pulseHighlight($el)"
-                        class="px-4 py-2 rounded-xl bg-apeiron-ink text-white text-xs font-bold hover:bg-[#111111] shadow-sm active:scale-95 transition-all">
+                        class="px-4 py-2 rounded-xl bg-apeiron-ink text-white text-xs font-bold hover:bg-primary/90 shadow-sm active:scale-95 transition-all">
                         Save Movement
                     </button>
                 </div>
@@ -422,7 +422,7 @@
                     </button>
                     <button type="submit" form="handover-form"
                         x-on:click="window.erpMotion?.pulseHighlight($el)"
-                        class="px-4 py-2 rounded-xl bg-apeiron-ink text-white text-xs font-bold hover:bg-[#111111] shadow-sm active:scale-95 transition-all">
+                        class="px-4 py-2 rounded-xl bg-apeiron-ink text-white text-xs font-bold hover:bg-primary/90 shadow-sm active:scale-95 transition-all">
                         Submit Handover
                     </button>
                 </div>
@@ -485,7 +485,7 @@
                         </button>
                         <button type="submit"
                             x-on:click="window.erpMotion?.pulseHighlight($el)"
-                            class="px-4 py-2 rounded-xl bg-apeiron-ink text-white text-xs font-bold hover:bg-[#111111] shadow-sm active:scale-95 transition-all">
+                            class="px-4 py-2 rounded-xl bg-apeiron-ink text-white text-xs font-bold hover:bg-primary/90 shadow-sm active:scale-95 transition-all">
                             Confirm Close Shift
                         </button>
                     </div>

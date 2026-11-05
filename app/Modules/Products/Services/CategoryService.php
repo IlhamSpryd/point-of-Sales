@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * CategoryService mengisolasi interaksi database kategori produk.
@@ -22,6 +23,9 @@ class CategoryService
 {
     public function __construct(protected MenuCacheService $menuCache) {}
 
+    /**
+     * @return Builder<Category>
+     */
     public function getFilteredQuery(Request $request): Builder
     {
         $query = Category::query()->with('parent')->latest('id');
@@ -36,7 +40,7 @@ class CategoryService
         return $query;
     }
 
-    public function exportCsv(Request $request)
+    public function exportCsv(Request $request): BinaryFileResponse
     {
         $query = $this->getFilteredQuery($request);
         $fileName = 'categories_export_'.now()->format('Y-m-d_H-i-s').'.xlsx';
@@ -44,6 +48,9 @@ class CategoryService
         return Excel::download(new CategoriesExport($query), $fileName);
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function store(array $data): Category
     {
         return DB::transaction(function () use ($data) {
@@ -56,6 +63,9 @@ class CategoryService
         });
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function update(Category $category, array $data): Category
     {
         return DB::transaction(function () use ($category, $data) {
@@ -87,11 +97,17 @@ class CategoryService
         });
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function createCategory(array $data): Category
     {
         return $this->store($data);
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function updateCategory(Category $category, array $data): Category
     {
         return $this->update($category, $data);
@@ -106,7 +122,7 @@ class CategoryService
             if ($category->products()->exists()) {
                 throw new Exception('Tidak dapat menghapus kategori "'.$category->category_name.'" karena masih memiliki '.$category->products()->count().' produk.');
             }
-            $result = $category->delete();
+            $result = (bool) $category->delete();
             $storeId = app(TenantContext::class)->getStoreId();
             $this->menuCache->flush((int) $category->tenant_id, $storeId);
 

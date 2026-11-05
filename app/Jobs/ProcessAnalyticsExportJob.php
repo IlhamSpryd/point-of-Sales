@@ -25,10 +25,13 @@ class ProcessAnalyticsExportJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $tries = 2;
+
     public int $timeout = 600;
+
     public int $backoff = 10;
 
     public int $tenantId;
+
     public ?int $storeId = null;
 
     public function __construct(
@@ -143,7 +146,7 @@ class ProcessAnalyticsExportJob implements ShouldQueue
             }
 
             $dir = "exports/tenant-{$this->tenantId}";
-            $filename = "analytics-{$type}-" . Carbon::now()->format('YmdHis') . '.csv';
+            $filename = "analytics-{$type}-".Carbon::now()->format('YmdHis').'.csv';
             $filePath = "{$dir}/{$filename}";
 
             Storage::disk('local')->put($filePath, $csvContent);

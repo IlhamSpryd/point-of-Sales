@@ -21,12 +21,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property CarbonInterface|string $snapshot_date
  * @property string $item_type
  * @property int $item_id
- * @property string $closing_qty
- * @property string $average_unit_cost
- * @property string $total_valuation_amount
+ * @property numeric-string $closing_qty
+ * @property numeric-string $average_unit_cost
+ * @property numeric-string $total_valuation_amount
  * @property int|null $gl_account_id
- * @property string $gl_balance_amount
- * @property string $variance_amount
+ * @property numeric-string $gl_balance_amount
+ * @property numeric-string $variance_amount
  * @property string $reconciliation_status
  * @property CarbonInterface $created_at
  * @property CarbonInterface $updated_at
@@ -52,21 +52,33 @@ class InventoryValuationSnapshot extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<AccountingPeriod, $this>
+     */
     public function accountingPeriod(): BelongsTo
     {
         return $this->belongsTo(AccountingPeriod::class, 'accounting_period_id');
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<ChartOfAccount, $this>
+     */
     public function glAccount(): BelongsTo
     {
         return $this->belongsTo(ChartOfAccount::class, 'gl_account_id');

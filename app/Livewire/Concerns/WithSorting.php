@@ -11,6 +11,7 @@ namespace App\Livewire\Concerns;
 trait WithSorting
 {
     public string $sortField = 'created_at';
+
     public string $sortDirection = 'desc';
 
     public function sortBy(string $field): void
@@ -22,7 +23,7 @@ trait WithSorting
             $this->sortDirection = 'asc';
         }
 
-        if (method_exists($this, 'resetPage')) {
+        if (in_array('resetPage', get_class_methods($this), true)) {
             $this->resetPage();
         }
     }

@@ -39,6 +39,7 @@ class CartService
      * qty-nya akan bertambah (merge), bukan membuat baris baru.
      *
      * @param  array<int>  $modifierIds  ID modifier yang dipilih pelanggan (bisa lebih dari satu grup)
+     * @return array<string, mixed>
      */
     public function addItem(Product $product, array $modifierIds, int $qty, ?string $notes = null, ?int $customerId = null): array
     {
@@ -113,7 +114,7 @@ class CartService
                 'notes' => $notes ? mb_substr($notes, 0, 255) : null,
                 'options' => $modifiers->map(fn (Modifier $m) => [
                     'modifier_id' => $m->id,
-                    'group_name' => $m->modifierGroup->name,
+                    'group_name' => $m->modifierGroup->name ?? '',
                     'modifier_name' => $m->name,
                     'extra_price' => $m->extra_price,
                 ])->values()->all(),
@@ -208,6 +209,8 @@ class CartService
     /**
      * Mengembalikan semua baris keranjang beserta subtotal per baris,
      * siap ditampilkan di halaman keranjang/checkout.
+     *
+     * @return array<string, mixed>
      */
     public function getItems(): array
     {
@@ -250,7 +253,7 @@ class CartService
         $priceResolver = app(CatalogPriceResolverService::class);
 
         foreach ($cart as $lineId => $item) {
-            $product = Product::find($item['product_id']);
+            $product = Product::find((int) $item['product_id']);
             if (! $product || ! $product->is_active) {
                 // Produk dihapus atau nonaktif, hapus dari keranjang.
                 unset($cart[$lineId]);
@@ -278,7 +281,7 @@ class CartService
             // Perbarui juga data options agar sesuai
             $cart[$lineId]['options'] = $modifiers->map(fn (Modifier $m) => [
                 'modifier_id' => $m->id,
-                'group_name' => $m->modifierGroup->name,
+                'group_name' => $m->modifierGroup->name ?? '',
                 'modifier_name' => $m->name,
                 'extra_price' => $m->extra_price,
             ])->values()->all();
@@ -300,13 +303,17 @@ class CartService
         return self::SESSION_KEY;
     }
 
-    /** Helper internal: ambil array keranjang mentah dari session. */
+    /** Helper internal: ambil array keranjang mentah dari session.
+     * @return array<string, mixed>
+     */
     private function getCartArray(): array
     {
         return Session::get($this->getSessionKey(), []);
     }
 
-    /** Helper internal: simpan array keranjang kembali ke session. */
+    /** Helper internal: simpan array keranjang kembali ke session.
+     * @param  array<string, mixed>  $cart
+     */
     private function saveCartArray(array $cart): void
     {
         Session::put($this->getSessionKey(), $cart);
@@ -400,7 +407,7 @@ class CartService
     /**
      * Melanjutkan kembali (resume) keranjang yang ditahan dengan validasi ulang server.
      *
-     * @return array{parked_cart: ParkedCart, cart: array, warnings: array<string>, has_blocking_issues: bool}
+     * @return array{parked_cart: ParkedCart, cart: array<string, mixed>, warnings: array<string>, has_blocking_issues: bool}
      */
     public function resumeParkedCart(
         int $parkedCartId,
@@ -455,7 +462,7 @@ class CartService
 
             foreach ($items as $key => $item) {
                 $productId = $item['product_id'] ?? null;
-                $product = Product::withTrashed()->find($productId);
+                $product = $productId !== null ? Product::withTrashed()->find((int) $productId) : null;
 
                 if (! $product || $product->trashed() || ! $product->is_active || $product->status !== 'active') {
                     $warnings[] = "Produk '".($item['product_name'] ?? 'ID: '.$productId)."' sudah tidak aktif atau dihapus.";
@@ -536,7 +543,7 @@ class CartService
             // Re-validasi voucher/diskon
             $discountId = $payload['discount_id'] ?? $parkedCart->discount_id;
             if ($discountId) {
-                $discount = Discount::find($discountId);
+                $discount = Discount::find((int) $discountId);
                 $now = now();
                 $isDiscountValid = $discount && $discount->is_active;
 

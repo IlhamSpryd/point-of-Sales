@@ -48,6 +48,9 @@ class ExportTask extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function requestedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'requested_by')->withTrashed();

@@ -4,7 +4,7 @@
             {{ __('Delete Account') }}
         </h2>
 
-        <p class="mt-1 text-sm text-[#787774]">
+        <p class="mt-1 text-sm text-muted-foreground">
             {{ __('Once your account is deleted, all of its resources and data will be permanently deleted. Please download any data or information that you wish to retain.') }}
         </p>
     </header>

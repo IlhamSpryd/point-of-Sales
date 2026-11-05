@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $employee_id
  * @property int|null $payroll_batch_id
  * @property PayrollAdjustmentTypeEnum $adjustment_type
- * @property float $amount
+ * @property numeric-string $amount
  * @property string $reason
  * @property int|null $approval_id
  * @property int $created_by_user_id

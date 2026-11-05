@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\MasterData;
 
 use App\Core\Context\TenantContext;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\ProductUnitConversion;
 use App\Models\Store;
@@ -116,7 +117,7 @@ class Wave1MasterDataTest extends TestCase
                 'precision_scale' => 0,
             ]);
 
-            $category = \App\Models\Category::create([
+            $category = Category::create([
                 'tenant_id' => $tenant->id,
                 'name' => 'Bahan Baku',
             ]);

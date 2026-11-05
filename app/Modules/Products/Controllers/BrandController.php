@@ -49,7 +49,7 @@ class BrandController extends Controller
         $tenantId = app(TenantContext::class)->requireTenantId();
         $brand = Brand::create($request->validated());
 
-        $this->auditTrail->log(
+        $this->auditTrail?->log(
             tenantId: $tenantId,
             action: 'brand.created',
             userId: auth()->id(),
@@ -73,7 +73,7 @@ class BrandController extends Controller
 
         $brand->update($request->validated());
 
-        $this->auditTrail->log(
+        $this->auditTrail?->log(
             tenantId: $tenantId,
             action: 'brand.updated',
             userId: auth()->id(),
@@ -103,7 +103,7 @@ class BrandController extends Controller
 
             $brand->delete();
 
-            $this->auditTrail->log(
+            $this->auditTrail?->log(
                 tenantId: $tenantId,
                 action: 'brand.deleted',
                 userId: auth()->id(),

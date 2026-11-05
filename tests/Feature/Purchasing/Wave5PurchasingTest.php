@@ -9,7 +9,6 @@ use App\Enums\CostAllocationMethodEnum;
 use App\Enums\InvoiceMatchingStatusEnum;
 use App\Enums\PurchaseCostCategoryEnum;
 use App\Enums\PurchaseCostStatusEnum;
-use App\Enums\StockMovementType;
 use App\Enums\SupplierInvoiceStatusEnum;
 use App\Enums\SupplierStatusEnum;
 use App\Models\Category;
@@ -18,6 +17,8 @@ use App\Models\Role;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Modules\Purchasing\Models\GoodsReceivedNoteLine;
+use App\Modules\Purchasing\Models\PurchaseOrderLine;
 use App\Modules\Purchasing\Models\Supplier;
 use App\Modules\Purchasing\Services\GoodsReceivedNoteService;
 use App\Modules\Purchasing\Services\LandedCostService;
@@ -403,12 +404,12 @@ class Wave5PurchasingTest extends TestCase
         $po = $this->poService->releasePurchaseOrder($po, $this->ownerUser);
 
         $poLines = $po->lines()->orderBy('id', 'asc')->get();
-        /** @var \App\Modules\Purchasing\Models\PurchaseOrderLine $poLine1 */
+        /** @var PurchaseOrderLine $poLine1 */
         $poLine1 = $poLines->get(0);
-        /** @var \App\Modules\Purchasing\Models\PurchaseOrderLine $poLine2 */
+        /** @var PurchaseOrderLine $poLine2 */
         $poLine2 = $poLines->get(1);
-        $this->assertInstanceOf(\App\Modules\Purchasing\Models\PurchaseOrderLine::class, $poLine1);
-        $this->assertInstanceOf(\App\Modules\Purchasing\Models\PurchaseOrderLine::class, $poLine2);
+        $this->assertInstanceOf(PurchaseOrderLine::class, $poLine1);
+        $this->assertInstanceOf(PurchaseOrderLine::class, $poLine2);
 
         // Buat & posting GRN
         $grn = $this->grnService->createGoodsReceivedNote(
@@ -433,12 +434,12 @@ class Wave5PurchasingTest extends TestCase
 
         $postedGrn = $this->grnService->postGrn($grn, $this->ownerUser);
         $grnLines = $postedGrn->lines()->orderBy('id', 'asc')->get();
-        /** @var \App\Modules\Purchasing\Models\GoodsReceivedNoteLine $grnLine1 */
+        /** @var GoodsReceivedNoteLine $grnLine1 */
         $grnLine1 = $grnLines->get(0);
-        /** @var \App\Modules\Purchasing\Models\GoodsReceivedNoteLine $grnLine2 */
+        /** @var GoodsReceivedNoteLine $grnLine2 */
         $grnLine2 = $grnLines->get(1);
-        $this->assertInstanceOf(\App\Modules\Purchasing\Models\GoodsReceivedNoteLine::class, $grnLine1);
-        $this->assertInstanceOf(\App\Modules\Purchasing\Models\GoodsReceivedNoteLine::class, $grnLine2);
+        $this->assertInstanceOf(GoodsReceivedNoteLine::class, $grnLine1);
+        $this->assertInstanceOf(GoodsReceivedNoteLine::class, $grnLine2);
 
         // Catat biaya kirim tambahan (Freight) Rp 100.000
         $freightCost = $this->landedCostService->recordAdditionalCost(

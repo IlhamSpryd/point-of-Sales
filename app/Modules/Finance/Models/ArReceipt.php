@@ -24,10 +24,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $cash_bank_account_id
  * @property string $receipt_number
  * @property CarbonInterface $receipt_date
- * @property string $total_received_amount
- * @property string $total_allocated_amount
- * @property string $unapplied_credit_amount
- * @property string $bank_fee_amount
+ * @property numeric-string $total_received_amount
+ * @property numeric-string $total_allocated_amount
+ * @property numeric-string $unapplied_credit_amount
+ * @property numeric-string $bank_fee_amount
  * @property string $payment_method
  * @property string|null $payment_reference
  * @property string $status
@@ -64,51 +64,81 @@ class ArReceipt extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<Store, $this>
+     */
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
     }
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return BelongsTo<CashBankAccount, $this>
+     */
     public function cashBankAccount(): BelongsTo
     {
         return $this->belongsTo(CashBankAccount::class);
     }
 
+    /**
+     * @return BelongsTo<JournalEntry, $this>
+     */
     public function journalEntry(): BelongsTo
     {
         return $this->belongsTo(JournalEntry::class);
     }
 
+    /**
+     * @return BelongsTo<CashBankTransaction, $this>
+     */
     public function cashBankTransaction(): BelongsTo
     {
         return $this->belongsTo(CashBankTransaction::class);
     }
 
+    /**
+     * @return HasMany<ArPaymentAllocation, $this>
+     */
     public function allocations(): HasMany
     {
         return $this->hasMany(ArPaymentAllocation::class, 'ar_receipt_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function createdByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function postedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'posted_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function voidedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'voided_by_user_id');

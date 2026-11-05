@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * UserService adalah otak pemrosesan di balik layar yang berkaitan erat
@@ -20,8 +21,7 @@ use Maatwebsite\Excel\Facades\Excel;
 class UserService
 {
     /**
-     * Meracik Kueri tabel Users. Memuat relasi peran (Eager Loading target 'role')
-     * serta filter grup pencarian Nama dan Email.
+     * @return Builder<User>
      */
     public function getFilteredQuery(Request $request): Builder
     {
@@ -44,7 +44,7 @@ class UserService
     /**
      * Mencetak daftar Akun secara format Excel.
      */
-    public function exportCsv(Request $request)
+    public function exportCsv(Request $request): BinaryFileResponse
     {
         $query = $this->getFilteredQuery($request);
         $fileName = 'users_export_'.now()->format('Y-m-d_H-i-s').'.xlsx';
@@ -54,6 +54,8 @@ class UserService
 
     /**
      * Mendaftarkan Pengguna baru.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function store(array $data): User
     {
@@ -77,6 +79,8 @@ class UserService
 
     /**
      * Mengatur ulang rincian spesifik dari Pengguna.
+     *
+     * @param  array<string, mixed>  $data
      */
     public function update(User $user, array $data): User
     {
@@ -150,7 +154,7 @@ class UserService
             } catch (\Throwable) {
             }
 
-            return $user->delete();
+            return (bool) $user->delete();
         });
     }
 

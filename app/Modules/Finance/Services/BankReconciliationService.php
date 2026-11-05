@@ -40,8 +40,8 @@ class BankReconciliationService
         ?string $description
     ): string {
         $dateStr = $valueDate instanceof CarbonInterface ? $valueDate->toDateString() : Carbon::parse($valueDate)->toDateString();
-        $normDebit = bcadd($debitAmount, '0', 2);
-        $normCredit = bcadd($creditAmount, '0', 2);
+        $normDebit = bcadd(bc_num($debitAmount), '0', 2);
+        $normCredit = bcadd(bc_num($creditAmount), '0', 2);
         $normRef = trim((string) $reference);
         $normDesc = trim((string) $description);
 
@@ -90,11 +90,11 @@ class BankReconciliationService
             foreach ($lines as $index => $row) {
                 $lineDate = $row['value_date'] ?? $dateStr;
                 $lineDateStr = $lineDate instanceof CarbonInterface ? $lineDate->toDateString() : Carbon::parse($lineDate)->toDateString();
-                $debit = bcadd((string) ($row['debit_amount'] ?? '0.00'), '0', 2);
-                $credit = bcadd((string) ($row['credit_amount'] ?? '0.00'), '0', 2);
+                $debit = bcadd(bc_num($row['debit_amount'] ?? '0.00'), '0', 2);
+                $credit = bcadd(bc_num($row['credit_amount'] ?? '0.00'), '0', 2);
                 $ref = $row['external_reference'] ?? null;
                 $desc = $row['description'] ?? null;
-                $balance = bcadd((string) ($row['running_balance'] ?? '0.00'), '0', 2);
+                $balance = bcadd(bc_num($row['running_balance'] ?? '0.00'), '0', 2);
 
                 $fingerprint = $this->computeFingerprintHash($account->id, $lineDateStr, $debit, $credit, $ref, $desc);
 
@@ -138,8 +138,8 @@ class BankReconciliationService
                 'cash_bank_account_id' => $account->id,
                 'statement_number' => $statementNumber,
                 'statement_date' => $dateStr,
-                'opening_balance' => bcadd($resolvedOpening, '0', 2),
-                'closing_balance' => bcadd($resolvedClosing, '0', 2),
+                'opening_balance' => bcadd(bc_num($resolvedOpening), '0', 2),
+                'closing_balance' => bcadd(bc_num($resolvedClosing), '0', 2),
                 'imported_file_path' => $filePath,
                 'imported_by_user_id' => $actor->id,
                 'status' => 'OPEN',
@@ -233,14 +233,14 @@ class BankReconciliationService
         $endDateStr = $endDate instanceof CarbonInterface ? $endDate->toDateString() : Carbon::parse($endDate)->toDateString();
 
         $sessionNumber = 'BRS-'.$account->id.'-'.date('Ymd').'-'.Str::upper(Str::random(4));
-        $bookBalance = (string) $account->fresh()->current_balance;
+        $bookBalance = (string) ($account->fresh() ?? $account)->current_balance;
 
         $session = BankReconciliationSession::withoutTenantScope()->create([
             'tenant_id' => $tenantId,
             'cash_bank_account_id' => $account->id,
             'session_number' => $sessionNumber,
             'statement_end_date' => $endDateStr,
-            'statement_ending_balance' => bcadd($statementEndingBalance, '0', 2),
+            'statement_ending_balance' => bcadd(bc_num($statementEndingBalance), '0', 2),
             'book_ending_balance' => $bookBalance,
             'unreconciled_difference' => '0.00',
             'status' => BankReconciliationSessionStatusEnum::IN_PROGRESS,
@@ -250,7 +250,7 @@ class BankReconciliationService
 
         $this->calculateUnreconciledDifference($session);
 
-        return $session->fresh();
+        return $session->fresh() ?? $session;
     }
 
     /**
@@ -262,10 +262,11 @@ class BankReconciliationService
     {
         $account = $session->account;
         if (! $account) {
-            $account = CashBankAccount::withoutTenantScope()->find($session->cash_bank_account_id);
+            /** @var CashBankAccount $account */
+            $account = CashBankAccount::withoutTenantScope()->findOrFail($session->cash_bank_account_id);
         }
 
-        $session->book_ending_balance = (string) $account->fresh()->current_balance;
+        $session->book_ending_balance = (string) ($account->fresh() ?? $account)->current_balance;
 
         // Tentukan saldo awal sesi
         $prevSession = BankReconciliationSession::withoutTenantScope()
@@ -492,6 +493,7 @@ class BankReconciliationService
      */
     public function unmatch(BankReconciliationMatch $match, User $actor): void
     {
+        /** @var BankReconciliationSession $session */
         $session = $match->session;
         if ($session->status !== BankReconciliationSessionStatusEnum::IN_PROGRESS) {
             throw new DomainException("Pencocokan hanya dapat dibatalkan pada sesi IN_PROGRESS. Status saat ini: {$session->status->value}.");
@@ -542,7 +544,8 @@ class BankReconciliationService
             : (string) $statementLine->credit_amount;
 
         return DB::transaction(function () use ($session, $statementLine, $typeEnum, $amount, $description, $actor) {
-            $account = $session->account;
+            /** @var CashBankAccount $account */
+            $account = $session->account ?? CashBankAccount::withoutTenantScope()->findOrFail($session->cash_bank_account_id);
 
             // Catat mutasi penyesuaian kas/bank dan posting jurnal GL
             $adjTxn = $this->transactionService->recordBankAdjustment(
@@ -588,7 +591,7 @@ class BankReconciliationService
     {
         $diff = $this->calculateUnreconciledDifference($session);
 
-        if (bccomp($diff, '0.00', 2) !== 0) {
+        if (bccomp(bc_num($diff), '0.00', 2) !== 0) {
             throw new DomainException("FIN-M7-11: Sesi rekonsiliasi tidak dapat diselesaikan karena masih terdapat selisih sebesar {$diff}. Selisih wajib 0.00.");
         }
 

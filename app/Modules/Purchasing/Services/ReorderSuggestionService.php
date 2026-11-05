@@ -128,13 +128,13 @@ class ReorderSuggestionService
             $remQty = bcsub((string) $prl->approved_qty, (string) $prl->converted_to_po_qty, 4);
             if (bccomp($remQty, '0.0000', 4) > 0) {
                 $uomFactor = (string) ($prl->uom_conversion_factor ?? '1.000000');
-                $baseRem = bcmul($remQty, $uomFactor, 4);
+                $baseRem = bcmul(bc_num($remQty), bc_num($uomFactor), 4);
                 $openPr = bcadd($openPr, $baseRem, 4);
             }
         }
 
         // 4. NetPosition = Q_on_hand + Q_on_order_po + Q_open_approved_pr
-        $netPosition = bcadd(bcadd($onHand, $onOrderPo, 4), $openPr, 4);
+        $netPosition = bcadd(bcadd(bc_num($onHand), bc_num($onOrderPo), 4), bc_num($openPr), 4);
 
         return [
             'current_stock' => $onHand,
@@ -190,7 +190,7 @@ class ReorderSuggestionService
 
         // Konsumsi harian rata-rata
         $dailyConsumption = (string) ($overrides['daily_consumption_rate'] ?? '0.0000');
-        if (bccomp($dailyConsumption, '0.0000', 4) === 0) {
+        if (bccomp(bc_num($dailyConsumption), '0.0000', 4) === 0) {
             if ($purchasableType === 'ingredient') {
                 $forecast = DB::table('ingredient_restock_forecasts')
                     ->where('tenant_id', $tenantId)
@@ -223,7 +223,7 @@ class ReorderSuggestionService
         }
 
         $safetyStock = (string) ($overrides['safety_stock'] ?? '0.0000');
-        $dynamicRop = bcadd(bcmul($dailyConsumption, $leadTimeDays, 4), $safetyStock, 4);
+        $dynamicRop = bcadd(bcmul(bc_num($dailyConsumption), bc_num($leadTimeDays), 4), bc_num($safetyStock), 4);
 
         $effectiveRop = bccomp($configuredMin, $dynamicRop, 4) > 0 ? $configuredMin : $dynamicRop;
         if (isset($overrides['reorder_point'])) {
@@ -232,21 +232,21 @@ class ReorderSuggestionService
 
         // Target Max Stock
         $targetMaxStock = (string) ($overrides['target_max_stock'] ?? $configuredMax);
-        if (bccomp($targetMaxStock, $effectiveRop, 4) <= 0) {
+        if (bccomp(bc_num($targetMaxStock), bc_num($effectiveRop), 4) <= 0) {
             // Jika max stock belum disetel atau <= ROP, pasang default aman: ROP + (MOQ * uomFactor) atau ROP * 2
-            $defaultBuffer = bcmul($moq, $uomFactor, 4);
+            $defaultBuffer = bcmul(bc_num($moq), bc_num($uomFactor), 4);
             if (bccomp($defaultBuffer, '0.0000', 4) === 0) {
                 $defaultBuffer = '10.0000';
             }
-            $targetMaxStock = bcadd($effectiveRop, $defaultBuffer, 4);
+            $targetMaxStock = bcadd(bc_num($effectiveRop), bc_num($defaultBuffer), 4);
         }
 
         // Pemicu Reorder: NetPosition <= EffectiveROP
-        if (bccomp($netPosition, $effectiveRop, 4) > 0) {
+        if (bccomp(bc_num($netPosition), bc_num($effectiveRop), 4) > 0) {
             return null; // Stok masih berada di atas ambang batas
         }
 
-        $rawDeficit = bcsub($targetMaxStock, $netPosition, 4);
+        $rawDeficit = bcsub(bc_num($targetMaxStock), bc_num($netPosition), 4);
         if (bccomp($rawDeficit, '0.0000', 4) <= 0) {
             return null;
         }
@@ -271,7 +271,7 @@ class ReorderSuggestionService
         $suggestedPurch = max($moqVal, ceil($rawPurchQty / $multVal) * $multVal);
         $suggestedQuantity = number_format($suggestedPurch, 4, '.', '');
 
-        $estimatedTotalCost = bcmul($suggestedQuantity, $estimatedUnitPrice, 2);
+        $estimatedTotalCost = bcmul(bc_num($suggestedQuantity), bc_num($estimatedUnitPrice), 2);
 
         $ropFloat = max(1.0, (float) $effectiveRop);
         $priorityScore = round(((float) $effectiveRop - (float) $netPosition) / $ropFloat * 100.0, 2);
@@ -319,6 +319,7 @@ class ReorderSuggestionService
      */
     public function generateStoreSuggestions(int $tenantId, int $storeId, ?string $purchasableType = null): Collection
     {
+        /** @var Collection<int, ReorderSuggestion> $suggestions */
         $suggestions = new Collection;
 
         if ($purchasableType === null || $purchasableType === 'product') {

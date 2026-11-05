@@ -29,7 +29,7 @@
         @endif
 
         {{-- Filter Bar --}}
-        <div class="card-surface p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 border border-[#E5E7EB] dark:border-zinc-800">
+        <div class="card-surface p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 border border-border dark:border-zinc-800">
             <form method="GET" action="{{ route('devices.index') }}" class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                 <div class="w-48">
                     <select name="store_id" onchange="this.form.submit()" class="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-xs focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
@@ -66,11 +66,11 @@
             </form>
         </div>
 
-        <div class="card-surface overflow-hidden rounded-2xl border border-[#E5E7EB] dark:border-zinc-800 shadow-xs">
+        <div class="card-surface overflow-hidden rounded-2xl border border-border dark:border-zinc-800 shadow-xs">
             <div class="overflow-x-auto">
                 <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="border-b border-[#E5E7EB] dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+                        <tr class="border-b border-border dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
                             <th class="px-6 py-4">Code</th>
                             <th class="px-6 py-4">Device &amp; Branch</th>
                             <th class="px-6 py-4">Type</th>
@@ -79,7 +79,7 @@
                             <th class="px-6 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-[#E5E7EB] dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-border dark:divide-zinc-800/70">
                         @forelse($devices as $device)
                             <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
                                 <td class="px-6 py-4 font-mono font-medium text-apeiron-ink dark:text-white text-sm whitespace-nowrap">
@@ -155,7 +155,7 @@
                 </table>
             </div>
             @if($devices->hasPages())
-                <div class="p-4 border-t border-[#E5E7EB] dark:border-zinc-800">
+                <div class="p-4 border-t border-border dark:border-zinc-800">
                     {{ $devices->links() }}
                 </div>
             @endif

@@ -45,6 +45,7 @@ class ExportTaskController extends Controller
         Gate::authorize('download', $exportTask);
 
         $user = $request->user();
+        abort_unless($user !== null, 401);
 
         // Validasi direktori penyimpanan terisolasi per tenant (mencegah path traversal dan kebocoran lintas tenant)
         if ($exportTask->file_path) {

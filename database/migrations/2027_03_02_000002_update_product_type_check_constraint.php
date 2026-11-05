@@ -15,16 +15,16 @@ return new class extends Migration
 
         try {
             DB::statement('ALTER TABLE `products` DROP CONSTRAINT `products_product_type_check`');
-        } catch (\Throwable) {
+        } catch (Throwable) {
             try {
                 DB::statement('ALTER TABLE `products` DROP CHECK `products_product_type_check`');
-            } catch (\Throwable) {
+            } catch (Throwable) {
             }
         }
 
         try {
             DB::statement("ALTER TABLE `products` ADD CONSTRAINT `products_product_type_check` CHECK (LOWER(`product_type`) IN ('standard','variant_parent','bundle','service','non_inventory'))");
-        } catch (\Throwable) {
+        } catch (Throwable) {
         }
     }
 
@@ -36,12 +36,12 @@ return new class extends Migration
 
         try {
             DB::statement('ALTER TABLE `products` DROP CONSTRAINT `products_product_type_check`');
-        } catch (\Throwable) {
+        } catch (Throwable) {
         }
 
         try {
             DB::statement("ALTER TABLE `products` ADD CONSTRAINT `products_product_type_check` CHECK (`product_type` IN ('standard','service','non_inventory','bundle'))");
-        } catch (\Throwable) {
+        } catch (Throwable) {
         }
     }
 };

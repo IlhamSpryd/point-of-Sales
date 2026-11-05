@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('pin_code');
-        });
+        if (Schema::hasColumn('users', 'pin_code')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->dropColumn('pin_code');
+            });
+        }
     }
 
     /**
@@ -21,8 +23,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->string('pin_code', 255)->nullable()->after('password_hash');
-        });
+        if (! Schema::hasColumn('users', 'pin_code')) {
+            Schema::table('users', function (Blueprint $table) {
+                $table->string('pin_code', 255)->nullable()->after('password_hash');
+            });
+        }
     }
 };

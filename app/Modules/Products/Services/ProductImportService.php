@@ -35,7 +35,7 @@ class ProductImportService
      *
      * @param  UploadedFile|string  $file
      * @param  bool  $strictMode  Jika true, rollback jika ada satu baris gagal
-     * @return array{total_rows: int, imported_count: int, failed_count: int, errors: array, products: array}
+     * @return array{total_rows: int, imported_count: int, failed_count: int, errors: array<int, mixed>, products: array<int, mixed>}
      */
     public function importCsv($file, ?int $tenantId = null, bool $strictMode = false): array
     {
@@ -60,7 +60,7 @@ class ProductImportService
         // Normalisasi header (lowercase, trim, snake_case)
         $normalizedHeader = array_map(function ($col) {
             $cleaned = trim((string) $col);
-            $cleaned = preg_replace('/[\x{FEFF}]/u', '', $cleaned); // Hapus BOM UTF-8
+            $cleaned = (string) preg_replace('/[\x{FEFF}]/u', '', $cleaned); // Hapus BOM UTF-8
 
             return strtolower(str_replace([' ', '-'], '_', $cleaned));
         }, $header);
@@ -96,7 +96,7 @@ class ProductImportService
      * Memproses sekumpulan baris impor secara tervalidasi dan aman.
      *
      * @param  array<array<string, mixed>>  $rows
-     * @return array{total_rows: int, imported_count: int, failed_count: int, errors: array, products: array}
+     * @return array{total_rows: int, imported_count: int, failed_count: int, errors: array<int, mixed>, products: array<int, mixed>}
      */
     public function importRows(array $rows, int $tenantId, bool $strictMode = false): array
     {
@@ -393,7 +393,7 @@ class ProductImportService
 
         if (count($importedProducts) > 0) {
             $this->menuCache->flush($tenantId);
-            $this->auditTrail->log(
+            $this->auditTrail?->log(
                 tenantId: $tenantId,
                 action: 'catalog.import',
                 description: 'Mengimpor '.count($importedProducts).' produk ke katalog.',

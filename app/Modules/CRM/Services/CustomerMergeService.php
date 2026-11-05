@@ -7,10 +7,7 @@ namespace App\Modules\CRM\Services;
 use App\Modules\Customers\Models\Customer;
 use App\Modules\Customers\Models\CustomerAddress;
 use App\Modules\Customers\Models\CustomerContact;
-use App\Modules\Customers\Models\CustomerCreditAccount;
-use App\Modules\Customers\Models\CustomerLoyaltyAccount;
 use App\Modules\Customers\Models\CustomerMergeLog;
-use App\Modules\Customers\Models\LoyaltyLedger;
 use App\Modules\Customers\Models\Voucher;
 use App\Modules\Pricing\Services\LoyaltyLedgerService;
 use App\Modules\Sales\Models\Order;
@@ -36,12 +33,8 @@ class CustomerMergeService
     /**
      * Gabungkan profil pelanggan duplikat ke profil pelanggan tujuan secara atomik.
      *
-     * @param  int  $tenantId
      * @param  int  $targetCustomerId  ID profil pelanggan utama yang dipertahankan
      * @param  int  $duplicateCustomerId  ID profil duplikat yang akan dilebur & dinonaktifkan
-     * @param  int|null  $mergedByUserId
-     * @param  string|null  $reason
-     * @return CustomerMergeLog
      */
     public function merge(
         int $tenantId,

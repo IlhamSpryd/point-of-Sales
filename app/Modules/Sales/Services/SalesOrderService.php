@@ -138,7 +138,7 @@ class SalesOrderService
                 : 0;
 
             $shippingAmount = isset($payload['shipping_amount'])
-                ? bcadd((string) $payload['shipping_amount'], '0', 2)
+                ? bcadd(bc_num($payload['shipping_amount']), '0', 2)
                 : '0.00';
 
             $salesOrder = new SalesOrder;
@@ -192,11 +192,11 @@ class SalesOrderService
 
                 $variantId = isset($itemData['variant_id']) ? (int) $itemData['variant_id'] : null;
                 $uomId = isset($itemData['uom_id']) ? (int) $itemData['uom_id'] : null;
-                $qty = bcadd((string) ($itemData['quantity'] ?? $itemData['ordered_qty'] ?? '1'), '0', 4);
+                $qty = bcadd(bc_num($itemData['quantity'] ?? $itemData['ordered_qty'] ?? '1'), '0', 4);
 
                 // Validasi B2B Wholesale MOQ (Minimum Order Quantity)
                 $moq = isset($itemData['moq']) ? (string) $itemData['moq'] : (isset($itemData['min_order_qty']) ? (string) $itemData['min_order_qty'] : null);
-                if ($moq !== null && bccomp($qty, $moq, 4) < 0) {
+                if ($moq !== null && bccomp(bc_num($qty), bc_num($moq), 4) < 0) {
                     throw ValidationException::withMessages([
                         'items' => ["Kuantitas produk '{$product->product_name}' ({$qty}) tidak memenuhi batas Minimum Order Quantity (MOQ: {$moq})."],
                     ]);
@@ -208,9 +208,9 @@ class SalesOrderService
                 $pricingSource = 'MANUAL';
 
                 if (isset($itemData['unit_price'])) {
-                    $unitPrice = bcadd((string) $itemData['unit_price'], '0', 2);
+                    $unitPrice = bcadd(bc_num($itemData['unit_price']), '0', 2);
                     $basePrice = isset($itemData['base_unit_price'])
-                        ? bcadd((string) $itemData['base_unit_price'], '0', 2)
+                        ? bcadd(bc_num($itemData['base_unit_price']), '0', 2)
                         : $unitPrice;
                     $priceListId = isset($itemData['price_list_id']) ? (int) $itemData['price_list_id'] : null;
                     $pricingSource = (string) ($itemData['pricing_source'] ?? 'MANUAL');
@@ -236,16 +236,16 @@ class SalesOrderService
 
                 $lineSubtotal = bcmul($qty, $unitPrice, 2);
                 $lineDiscount = isset($itemData['discount_amount'])
-                    ? bcadd((string) $itemData['discount_amount'], '0', 2)
+                    ? bcadd(bc_num($itemData['discount_amount']), '0', 2)
                     : '0.00';
 
                 $taxRate = isset($itemData['tax_rate'])
-                    ? bcadd((string) $itemData['tax_rate'], '0', 2)
+                    ? bcadd(bc_num($itemData['tax_rate']), '0', 2)
                     : '0.00';
 
                 $netLine = bcsub($lineSubtotal, $lineDiscount, 2);
                 $lineTax = isset($itemData['tax_amount'])
-                    ? bcadd((string) $itemData['tax_amount'], '0', 2)
+                    ? bcadd(bc_num($itemData['tax_amount']), '0', 2)
                     : bcdiv(bcmul($netLine, $taxRate, 4), '100', 2);
 
                 $lineTotal = bcadd($netLine, $lineTax, 2);
@@ -299,7 +299,7 @@ class SalesOrderService
                 newValues: $salesOrder->toArray()
             );
 
-            return $salesOrder->fresh(['lines', 'customer']);
+            return $salesOrder->fresh(['lines', 'customer']) ?? $salesOrder;
         });
     }
 
@@ -389,7 +389,7 @@ class SalesOrderService
                 newValues: $salesOrder->toArray()
             );
 
-            return $salesOrder->fresh(['lines', 'customer']);
+            return $salesOrder->fresh(['lines', 'customer']) ?? $salesOrder;
         });
     }
 
@@ -443,7 +443,7 @@ class SalesOrderService
                 newValues: ['status' => $locked->status->value, 'confirmed_by' => $actor->id]
             );
 
-            return $locked->fresh(['lines', 'customer']);
+            return $locked->fresh(['lines', 'customer']) ?? $locked;
         });
     }
 
@@ -663,7 +663,7 @@ class SalesOrderService
                 ]
             );
 
-            return $order->fresh(['orderItems']);
+            return $order->fresh(['orderItems']) ?? $order;
         });
     }
 
@@ -691,8 +691,8 @@ class SalesOrderService
 
             foreach ($locked->lines as $line) {
                 $remaining = $line->getRemainingQty();
-                if (bccomp($remaining, '0', 4) > 0) {
-                    $line->cancelled_qty = bcadd((string) $line->cancelled_qty, $remaining, 4);
+                if (bccomp(bc_num($remaining), '0', 4) > 0) {
+                    $line->cancelled_qty = bcadd(bc_num($line->cancelled_qty), bc_num($remaining), 4);
                     $line->reserved_qty = '0.0000';
                     $line->save();
                 }
@@ -730,7 +730,7 @@ class SalesOrderService
                 ]
             );
 
-            return $locked->fresh(['lines', 'customer']);
+            return $locked->fresh(['lines', 'customer']) ?? $locked;
         });
     }
 

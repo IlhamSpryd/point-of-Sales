@@ -20,9 +20,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $cash_bank_account_id
  * @property string $session_number
  * @property CarbonInterface $statement_end_date
- * @property string $statement_ending_balance
- * @property string $book_ending_balance
- * @property string $unreconciled_difference
+ * @property numeric-string $statement_ending_balance
+ * @property numeric-string $book_ending_balance
+ * @property numeric-string $unreconciled_difference
  * @property BankReconciliationSessionStatusEnum $status
  * @property int $started_by_user_id
  * @property int|null $completed_by_user_id
@@ -52,26 +52,41 @@ class BankReconciliationSession extends Model
         ];
     }
 
+    /**
+     * @return BelongsTo<Tenant, $this>
+     */
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
     }
 
+    /**
+     * @return BelongsTo<CashBankAccount, $this>
+     */
     public function account(): BelongsTo
     {
         return $this->belongsTo(CashBankAccount::class, 'cash_bank_account_id');
     }
 
+    /**
+     * @return HasMany<BankReconciliationMatch, $this>
+     */
     public function matches(): HasMany
     {
         return $this->hasMany(BankReconciliationMatch::class, 'reconciliation_session_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function startedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'started_by_user_id');
     }
 
+    /**
+     * @return BelongsTo<User, $this>
+     */
     public function completedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'completed_by_user_id');

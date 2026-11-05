@@ -31,7 +31,7 @@ class InventoryAccountingService
         foreach ($lines as $line) {
             $qty = (string) ($line->accepted_qty ?? $line->base_accepted_qty ?? $line->accepted_quantity ?? $line->received_quantity ?? 0);
             $cost = (string) ($line->effective_unit_cost ?? $line->unit_cost_snapshot ?? $line->unit_price ?? $line->unit_cost ?? 0);
-            $lineTotal = bcmul($qty, $cost, 2);
+            $lineTotal = bcmul(bc_num($qty), bc_num($cost), 2);
             $totalValuation = bcadd($totalValuation, $lineTotal, 2);
 
             $isIngredient = ($line->purchasable_type === 'ingredient' || $line->item_type === 'ingredient' || ! empty($line->ingredient_id));
@@ -82,7 +82,7 @@ class InventoryAccountingService
         foreach ($lines as $line) {
             $qty = (string) ($line->accepted_qty ?? $line->base_accepted_qty ?? $line->accepted_quantity ?? $line->received_quantity ?? 0);
             $cost = (string) ($line->effective_unit_cost ?? $line->unit_cost_snapshot ?? $line->unit_price ?? $line->unit_cost ?? 0);
-            $lineTotal = bcmul($qty, $cost, 2);
+            $lineTotal = bcmul(bc_num($qty), bc_num($cost), 2);
             $totalValuation = bcadd($totalValuation, $lineTotal, 2);
 
             $isIngredient = ($line->purchasable_type === 'ingredient' || $line->item_type === 'ingredient' || ! empty($line->ingredient_id));
@@ -137,12 +137,12 @@ class InventoryAccountingService
         foreach ($items as $item) {
             $qty = (string) ($item->quantity ?? $item->adjusted_quantity ?? 0);
             $cost = (string) ($item->unit_cost_snapshot ?? $item->unit_cost ?? 0);
-            $lineVal = bcmul(bcadd((string) abs((float) $qty), '0', 4), $cost, 2);
+            $lineVal = bcmul(bcadd(bc_num(abs((float) $qty)), '0', 4), bc_num($cost), 2);
 
             $direction = strtoupper((string) ($item->direction ?? 'OUT'));
             $isIngredient = ($item->item_type === 'ingredient' || ! empty($item->ingredient_id));
 
-            if ($direction === 'IN' || (isset($item->adjusted_quantity) && bccomp((string) $item->adjusted_quantity, '0', 4) > 0)) {
+            if ($direction === 'IN' || (isset($item->adjusted_quantity) && bccomp(bc_num($item->adjusted_quantity), '0', 4) > 0)) {
                 if ($isIngredient) {
                     $positiveIngredientAmount = bcadd($positiveIngredientAmount, $lineVal, 2);
                 } else {
@@ -206,18 +206,18 @@ class InventoryAccountingService
         foreach ($items as $item) {
             $diffQty = (string) ($item->discrepancy_quantity ?? 0);
             $cost = (string) ($item->unit_cost ?? $item->unit_cost_snapshot ?? 0);
-            $lineVal = bcmul(bcadd((string) abs((float) $diffQty), '0', 4), $cost, 2);
+            $lineVal = bcmul(bcadd(bc_num(abs((float) $diffQty)), '0', 4), bc_num($cost), 2);
 
             $isIngredient = ($item->item_type === 'ingredient' || ! empty($item->ingredient_id));
 
-            if (bccomp($diffQty, '0.00', 4) > 0) {
+            if (bccomp(bc_num($diffQty), '0.00', 4) > 0) {
                 if ($isIngredient) {
                     $positiveIngredientAmount = bcadd($positiveIngredientAmount, $lineVal, 2);
                 } else {
                     $positiveRetailAmount = bcadd($positiveRetailAmount, $lineVal, 2);
                 }
                 $totalPositiveAmount = bcadd($totalPositiveAmount, $lineVal, 2);
-            } elseif (bccomp($diffQty, '0.00', 4) < 0) {
+            } elseif (bccomp(bc_num($diffQty), '0.00', 4) < 0) {
                 if ($isIngredient) {
                     $negativeIngredientAmount = bcadd($negativeIngredientAmount, $lineVal, 2);
                 } else {
@@ -269,7 +269,7 @@ class InventoryAccountingService
         foreach ($items as $item) {
             $qty = (string) ($item->quantity_transferred ?? $item->quantity_shipped ?? $item->quantity ?? 0);
             $cost = (string) ($item->carrying_unit_cost ?? $item->unit_cost ?? 0);
-            $lineTotal = bcmul($qty, $cost, 2);
+            $lineTotal = bcmul(bc_num($qty), bc_num($cost), 2);
             $totalTransferValue = bcadd($totalTransferValue, $lineTotal, 2);
 
             if ($item->item_type === 'ingredient' || ! empty($item->ingredient_id)) {
@@ -319,7 +319,7 @@ class InventoryAccountingService
         foreach ($items as $item) {
             $qty = (string) ($item->quantity_received ?? $item->quantity_transferred ?? $item->quantity ?? 0);
             $cost = (string) ($item->carrying_unit_cost ?? $item->unit_cost ?? 0);
-            $lineTotal = bcmul($qty, $cost, 2);
+            $lineTotal = bcmul(bc_num($qty), bc_num($cost), 2);
             $totalReceivedValue = bcadd($totalReceivedValue, $lineTotal, 2);
 
             if ($item->item_type === 'ingredient' || ! empty($item->ingredient_id)) {

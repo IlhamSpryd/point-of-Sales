@@ -21,6 +21,9 @@ class ChartOfAccountService
         protected TenantContext $tenantContext
     ) {}
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function createAccount(array $data, ?User $actor = null): ChartOfAccount
     {
         $tenantId = $this->tenantContext->getTenantId();
@@ -64,6 +67,9 @@ class ChartOfAccountService
         });
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     */
     public function updateAccount(int $id, array $data, ?User $actor = null): ChartOfAccount
     {
         $tenantId = $this->tenantContext->getTenantId();
@@ -155,6 +161,9 @@ class ChartOfAccountService
         return $account;
     }
 
+    /**
+     * @return Collection<int, ChartOfAccount>
+     */
     public function getAccountTree(?int $tenantId = null): Collection
     {
         $tenantId = $tenantId ?? $this->tenantContext->getTenantId();

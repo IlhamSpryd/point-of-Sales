@@ -81,7 +81,7 @@ class LandedCostService
         }
 
         $amount = (string) $data['amount'];
-        if (bccomp($amount, '0.00', 2) <= 0) {
+        if (bccomp(bc_num($amount), '0.00', 2) <= 0) {
             throw ValidationException::withMessages([
                 'amount' => ['Nominal biaya tambahan harus lebih besar dari 0.'],
             ]);
@@ -114,9 +114,9 @@ class LandedCostService
             $cost->cost_code = $costCode;
             $cost->category = $category;
             $cost->description = $data['description'];
-            $cost->amount = $amount;
+            $cost->amount = bc_num($amount);
             $cost->currency_code = $data['currency_code'] ?? 'IDR';
-            $cost->exchange_rate = (string) ($data['exchange_rate'] ?? '1.000000');
+            $cost->exchange_rate = bc_num((string) ($data['exchange_rate'] ?? '1.000000'));
             $cost->allocation_method = $allocationMethod;
             $cost->vendor_name = $data['vendor_name'] ?? null;
             $cost->invoice_reference = $data['invoice_reference'] ?? null;
@@ -200,13 +200,13 @@ class LandedCostService
                     }
 
                     $allocAmt = (string) $manualAmounts[$line->id];
-                    if (bccomp($allocAmt, '0.00', 2) < 0) {
+                    if (bccomp(bc_num($allocAmt), '0.00', 2) < 0) {
                         throw ValidationException::withMessages([
                             'manual_amounts' => ["Nominal alokasi baris GRN #{$line->id} tidak boleh negatif."],
                         ]);
                     }
 
-                    $manualSum = bcadd($manualSum, $allocAmt, 2);
+                    $manualSum = bcadd(bc_num($manualSum), bc_num($allocAmt), 2);
                     $allocationsData[$line->id] = [
                         'amount' => $allocAmt,
                         'weight_ratio' => bcdiv($allocAmt, $totalCost, 8),
@@ -301,7 +301,7 @@ class LandedCostService
                 $allocation->tenant_id = $tenantId;
                 $allocation->purchase_additional_cost_id = $lockedCost->id;
                 $allocation->goods_received_note_line_id = $line->id;
-                $allocation->allocated_amount = $allocAmt;
+                $allocation->allocated_amount = bc_num($allocAmt);
                 $allocation->allocated_cost_per_unit = $costPerUnit;
                 $allocation->weight_ratio = $allocInfo['weight_ratio'];
                 $allocation->is_residual_line = $allocInfo['is_residual'];
@@ -365,7 +365,7 @@ class LandedCostService
                 'retry_count' => 0,
             ]);
 
-            return $lockedCost->fresh(['allocations']);
+            return $lockedCost->fresh(['allocations']) ?? $lockedCost;
         });
     }
 }

@@ -197,6 +197,6 @@ class PayrollBatchManager extends Component
         return view('livewire.hr.payroll-batch-manager', [
             'batches' => $batches,
             'detailRecords' => $records,
-        ])->layout('layouts.app', ['header' => 'Pengelolaan Penggajian (Payroll)']);
+        ])->layout('layouts.app', ['title' => 'Pengelolaan Penggajian (Payroll) — Apeiron']);
     }
 }

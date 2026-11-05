@@ -12,6 +12,16 @@ use App\Models\Order;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property int $id
+ * @property int $customer_id
+ * @property int|null $order_id
+ * @property int $points
+ * @property int $balance_after
+ * @property int|null $created_by
+ * @property int $tenant_id
+ * @property int|null $store_id
+ */
 class LoyaltyLedger extends Model
 {
     use AssignsTenant;
@@ -27,11 +37,17 @@ class LoyaltyLedger extends Model
         'type' => LoyaltyLedgerTypeEnum::class,
     ];
 
+    /**
+     * @return BelongsTo<Customer, $this>
+     */
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }
 
+    /**
+     * @return BelongsTo<Order, $this>
+     */
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);

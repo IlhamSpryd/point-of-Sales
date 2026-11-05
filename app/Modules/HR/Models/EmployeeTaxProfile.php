@@ -77,7 +77,7 @@ class EmployeeTaxProfile extends Model
             return '-';
         }
 
-        $digits = preg_replace('/[^0-9]/', '', $npwp);
+        $digits = (string) preg_replace('/[^0-9]/', '', $npwp);
         $len = strlen($digits);
 
         if ($len < 8) {

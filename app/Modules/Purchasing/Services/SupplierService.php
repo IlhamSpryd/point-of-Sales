@@ -392,28 +392,28 @@ class SupplierService
         }
 
         $conversionFactor = (string) ($productData['uom_conversion_factor'] ?? '1.000000');
-        if (bccomp($conversionFactor, '0', 6) <= 0) {
+        if (bccomp(bc_num($conversionFactor), '0', 6) <= 0) {
             throw ValidationException::withMessages([
                 'uom_conversion_factor' => ['Faktor konversi UoM harus lebih besar dari 0.'],
             ]);
         }
 
         $standardPrice = (string) ($productData['standard_price'] ?? '0.0000');
-        if (bccomp($standardPrice, '0', 4) < 0) {
+        if (bccomp(bc_num($standardPrice), '0', 4) < 0) {
             throw ValidationException::withMessages([
                 'standard_price' => ['Harga standar tidak boleh negatif.'],
             ]);
         }
 
         $minOrderQty = (string) ($productData['min_order_qty'] ?? '1.0000');
-        if (bccomp($minOrderQty, '0', 4) <= 0) {
+        if (bccomp(bc_num($minOrderQty), '0', 4) <= 0) {
             throw ValidationException::withMessages([
                 'min_order_qty' => ['Minimal order kuantitas harus lebih besar dari 0.'],
             ]);
         }
 
         $orderMultipleQty = (string) ($productData['order_multiple_qty'] ?? '1.0000');
-        if (bccomp($orderMultipleQty, '0', 4) <= 0) {
+        if (bccomp(bc_num($orderMultipleQty), '0', 4) <= 0) {
             throw ValidationException::withMessages([
                 'order_multiple_qty' => ['Kelipatan order harus lebih besar dari 0.'],
             ]);
