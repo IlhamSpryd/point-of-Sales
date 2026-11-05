@@ -5,27 +5,38 @@ declare(strict_types=1);
 namespace App\Modules\Reports\Services\Analytics;
 
 use App\Enums\OrderStatus;
-use App\Models\Order;
-use App\Models\OrderItem;
+use App\Modules\Finance\Enums\AccountTypeEnum;
+use App\Modules\Finance\Enums\JournalStatusEnum;
+use App\Modules\Reports\Services\MetricRegistry;
 use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class SalesAnalyticsService
 {
+    protected MetricRegistry $metricRegistry;
+
     public function __construct(
-        protected TenantContext $tenantContext
-    ) {}
+        protected TenantContext $tenantContext,
+        ?MetricRegistry $metricRegistry = null,
+    ) {
+        $this->metricRegistry = $metricRegistry ?? app(MetricRegistry::class);
+    }
 
     /**
      * Mengambil tren penjualan per interval (day, week, month) dalam rentang tanggal.
+     * Net Sales direkonsiliasi terhadap General Ledger akun pendapatan (4-10000 / REVENUE)
+     * apabila jurnal buku besar tersedia pada periode tersebut, atau dihitung melalui
+     * formula kanonikal MetricRegistry (Gross Sales - Discounts - Returns).
      *
      * @return array<int, array{
      *     period_key: string,
      *     period_label: string,
      *     gross_sales: string,
      *     net_sales: string,
+     *     gl_net_sales: string,
      *     discount_amount: string,
+     *     return_amount: string,
      *     tax_amount: string,
      *     order_count: int,
      *     average_order_value: string
@@ -34,51 +45,158 @@ class SalesAnalyticsService
     public function getSalesTrend(Carbon $start, Carbon $end, string $interval = 'day', ?int $storeId = null): array
     {
         $tenantId = $this->tenantContext->requireTenantId();
+        $startStr = $start->toDateString();
+        $endStr = $end->toDateString();
 
         $groupByFormat = match ($interval) {
-            'month' => '%Y-%m',
-            'week' => '%x-W%v',
+            'month', 'monthly' => '%Y-%m',
+            'week', 'weekly' => '%x-W%v',
             default => '%Y-%m-%d',
         };
 
-        $query = DB::table('orders')
+        // 1. Agregasi operasional dari tabel orders
+        $orderQuery = DB::table('orders')
             ->where('tenant_id', $tenantId)
-            ->whereBetween('order_date', [$start->toDateString(), $end->toDateString()])
+            ->whereBetween('order_date', [$startStr, $endStr])
             ->where('order_status', OrderStatus::Paid->value);
 
         if ($storeId !== null) {
-            $query->where('store_id', $storeId);
+            $orderQuery->where('store_id', $storeId);
         }
 
-        $records = $query->selectRaw("
+        $orderRecords = $orderQuery->selectRaw("
                 DATE_FORMAT(order_date, '{$groupByFormat}') as period_key,
                 MIN(order_date) as sample_date,
-                COALESCE(SUM(order_amount), 0) as gross_sales,
-                COALESCE(SUM(subtotal_amount), 0) as net_sales,
+                COALESCE(SUM(CASE WHEN subtotal_amount > 0 THEN subtotal_amount ELSE order_amount END), 0) as gross_sales,
                 COALESCE(SUM(discount_amount), 0) as total_discount,
                 COALESCE(SUM(tax_amount), 0) as total_tax,
                 COUNT(id) as total_orders
             ")
             ->groupBy('period_key')
             ->orderBy('period_key', 'asc')
-            ->get();
+            ->get()
+            ->keyBy('period_key');
+
+        // 2. Agregasi retur penjualan yang telah selesai (completed)
+        $returnQuery = DB::table('order_returns')
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'completed')
+            ->whereBetween(DB::raw('DATE(COALESCE(completed_at, created_at))'), [$startStr, $endStr]);
+
+        if ($storeId !== null) {
+            $returnQuery->where('store_id', $storeId);
+        }
+
+        $returnRecords = $returnQuery->selectRaw("
+                DATE_FORMAT(DATE(COALESCE(completed_at, created_at)), '{$groupByFormat}') as period_key,
+                MIN(DATE(COALESCE(completed_at, created_at))) as sample_date,
+                COALESCE(SUM(subtotal_returned), 0) as total_returned
+            ")
+            ->groupBy('period_key')
+            ->get()
+            ->keyBy('period_key');
+
+        // 3. Agregasi otoritatif General Ledger (akun 4-10000 / REVENUE) per interval
+        $glQuery = DB::table('journal_lines as jl')
+            ->join('journal_entries as je', function ($join): void {
+                $join->on('jl.journal_entry_id', '=', 'je.id')
+                    ->on('jl.tenant_id', '=', 'je.tenant_id');
+            })
+            ->join('chart_of_accounts as coa', function ($join): void {
+                $join->on('jl.account_id', '=', 'coa.id')
+                    ->on('coa.tenant_id', '=', 'je.tenant_id');
+            })
+            ->leftJoin('accounting_periods as ap', function ($join): void {
+                $join->on('je.accounting_period_id', '=', 'ap.id')
+                    ->on('ap.tenant_id', '=', 'je.tenant_id');
+            })
+            ->where('je.tenant_id', $tenantId)
+            ->whereBetween('je.posting_date', [$startStr, $endStr])
+            ->where(function ($q): void {
+                $q->whereNull('ap.id')
+                    ->orWhereRaw('je.posting_date BETWEEN ap.start_date AND ap.end_date');
+            })
+            ->where(function ($q): void {
+                $q->where('je.status', JournalStatusEnum::POSTED->value)
+                    ->orWhere(function ($sub): void {
+                        $sub->where('je.status', JournalStatusEnum::REVERSED->value)
+                            ->where(function ($revCheck): void {
+                                $revCheck->whereNotNull('je.reversed_by_journal_id')
+                                    ->orWhereExists(function ($exists): void {
+                                        $exists->select(DB::raw(1))
+                                            ->from('journal_entries as rev_je')
+                                            ->whereColumn('rev_je.tenant_id', 'je.tenant_id')
+                                            ->whereColumn('rev_je.reversal_of_journal_id', 'je.id')
+                                            ->where('rev_je.status', JournalStatusEnum::POSTED->value);
+                                    });
+                            });
+                    });
+            })
+            ->where(function ($q): void {
+                $q->where('coa.account_type', AccountTypeEnum::REVENUE->value)
+                    ->orWhere('coa.account_code', '4-10000')
+                    ->orWhere('coa.account_code', 'like', '4-1%');
+            });
+
+        if ($storeId !== null) {
+            $glQuery->whereRaw('COALESCE(jl.store_id, je.store_id) = ?', [$storeId]);
+        }
+
+        $glRecords = $glQuery->selectRaw("
+                DATE_FORMAT(je.posting_date, '{$groupByFormat}') as period_key,
+                MIN(je.posting_date) as sample_date,
+                COALESCE(SUM(jl.credit_amount - jl.debit_amount), 0) as gl_net_sales,
+                COUNT(DISTINCT je.id) as journal_count
+            ")
+            ->groupBy('period_key')
+            ->get()
+            ->keyBy('period_key');
+
+        $allPeriodKeys = collect($orderRecords->keys())
+            ->merge($returnRecords->keys())
+            ->merge($glRecords->keys())
+            ->unique()
+            ->sort()
+            ->values();
 
         $result = [];
-        foreach ($records as $record) {
-            $gross = bcadd($this->toNumericString($record->gross_sales), '0', 2);
-            $net = bcadd($this->toNumericString($record->net_sales), '0', 2);
-            $disc = bcadd($this->toNumericString($record->total_discount), '0', 2);
-            $tax = bcadd($this->toNumericString($record->total_tax), '0', 2);
-            $count = (int) $record->total_orders;
+        foreach ($allPeriodKeys as $periodKey) {
+            $keyStr = (string) $periodKey;
+            $ordRow = $orderRecords->get($keyStr);
+            $retRow = $returnRecords->get($keyStr);
+            $glRow = $glRecords->get($keyStr);
 
-            $aov = $count > 0 ? bcdiv($gross, (string) $count, 2) : '0.00';
+            $sampleDate = (string) ($ordRow->sample_date ?? $glRow->sample_date ?? $retRow->sample_date ?? $startStr);
+            $gross = $this->metricRegistry->toNumericString($ordRow->gross_sales ?? '0.00', 2);
+            $disc = $this->metricRegistry->toNumericString($ordRow->total_discount ?? '0.00', 2);
+            $ret = $this->metricRegistry->toNumericString($retRow->total_returned ?? '0.00', 2);
+            $tax = $this->metricRegistry->toNumericString($ordRow->total_tax ?? '0.00', 2);
+            $count = (int) ($ordRow->total_orders ?? 0);
+
+            $operationalNet = $this->metricRegistry->calculateNetSales($gross, $disc, $ret);
+            $hasGlJournals = $glRow !== null && ((int) $glRow->journal_count) > 0;
+            $glNet = $hasGlJournals
+                ? $this->metricRegistry->toNumericString($glRow->gl_net_sales, 2)
+                : $operationalNet;
+
+            // Jika jurnal GL terposting untuk periode ini, Net Sales menggunakan angka otoritatif GL
+            $net = $hasGlJournals ? $glNet : $operationalNet;
+
+            // Jika hanya jurnal GL yang ada tanpa baris orders operasional, sinkronkan gross_sales
+            if ($ordRow === null && $hasGlJournals) {
+                $gross = $glNet;
+            }
+
+            $aov = $this->metricRegistry->calculateAverageOrderValue($net, $count);
 
             $result[] = [
-                'period_key' => (string) $record->period_key,
-                'period_label' => $this->formatPeriodLabel((string) $record->period_key, $interval, (string) $record->sample_date),
+                'period_key' => $keyStr,
+                'period_label' => $this->formatPeriodLabel($keyStr, $interval, $sampleDate),
                 'gross_sales' => $gross,
                 'net_sales' => $net,
+                'gl_net_sales' => $glNet,
                 'discount_amount' => $disc,
+                'return_amount' => $ret,
                 'tax_amount' => $tax,
                 'order_count' => $count,
                 'average_order_value' => $aov,
@@ -86,6 +204,123 @@ class SalesAnalyticsService
         }
 
         return $result;
+    }
+
+    /**
+     * Mengambil angka Net Sales otoritatif dari General Ledger (akun 4-10000 / REVENUE).
+     */
+    public function getGlNetSales(
+        Carbon $start,
+        Carbon $end,
+        ?int $storeId = null,
+        ?string $accountCode = null
+    ): string {
+        $tenantId = $this->tenantContext->requireTenantId();
+
+        return $this->metricRegistry->computeGlNetSales($start, $end, $storeId, $tenantId, $accountCode);
+    }
+
+    /**
+     * Mengambil rincian komponen pendapatan penjualan pada General Ledger.
+     *
+     * @return array{
+     *     gross_revenue: string,
+     *     sales_discounts: string,
+     *     sales_returns: string,
+     *     net_sales: string,
+     *     journal_count: int
+     * }
+     */
+    public function getGlSalesBreakdown(
+        Carbon $start,
+        Carbon $end,
+        ?int $storeId = null,
+        ?string $accountCode = null
+    ): array {
+        $tenantId = $this->tenantContext->requireTenantId();
+
+        return $this->metricRegistry->computeGlRevenueBreakdown($start, $end, $storeId, $tenantId, $accountCode);
+    }
+
+    /**
+     * Merekonsiliasi Net Sales operasional (orders & order_returns) dengan General Ledger (akun 4-10000 / REVENUE).
+     *
+     * @return array{
+     *     start_date: string,
+     *     end_date: string,
+     *     store_id: int|null,
+     *     operational_gross_sales: string,
+     *     operational_discounts: string,
+     *     operational_returns: string,
+     *     operational_net_sales: string,
+     *     gl_gross_revenue: string,
+     *     gl_discounts: string,
+     *     gl_returns: string,
+     *     gl_net_sales: string,
+     *     variance: string,
+     *     is_reconciled: bool
+     * }
+     */
+    public function reconcileNetSalesWithGl(
+        Carbon $start,
+        Carbon $end,
+        ?int $storeId = null,
+        ?string $accountCode = null
+    ): array {
+        $tenantId = $this->tenantContext->requireTenantId();
+        $startStr = $start->toDateString();
+        $endStr = $end->toDateString();
+
+        $orderQuery = DB::table('orders')
+            ->where('tenant_id', $tenantId)
+            ->whereBetween('order_date', [$startStr, $endStr])
+            ->where('order_status', OrderStatus::Paid->value);
+
+        if ($storeId !== null) {
+            $orderQuery->where('store_id', $storeId);
+        }
+
+        $ordTotals = $orderQuery->selectRaw('
+            COALESCE(SUM(CASE WHEN subtotal_amount > 0 THEN subtotal_amount ELSE order_amount END), 0) as gross_sales,
+            COALESCE(SUM(discount_amount), 0) as total_discounts
+        ')->first();
+
+        $returnQuery = DB::table('order_returns')
+            ->where('tenant_id', $tenantId)
+            ->where('status', 'completed')
+            ->whereBetween(DB::raw('DATE(COALESCE(completed_at, created_at))'), [$startStr, $endStr]);
+
+        if ($storeId !== null) {
+            $returnQuery->where('store_id', $storeId);
+        }
+
+        $rawReturns = $returnQuery->sum('subtotal_returned');
+
+        $opGross = $this->metricRegistry->toNumericString($ordTotals->gross_sales ?? '0.00', 2);
+        $opDiscounts = $this->metricRegistry->toNumericString($ordTotals->total_discounts ?? '0.00', 2);
+        $opReturns = $this->metricRegistry->toNumericString($rawReturns, 2);
+        $opNet = $this->metricRegistry->calculateNetSales($opGross, $opDiscounts, $opReturns);
+
+        $glBreakdown = $this->metricRegistry->computeGlRevenueBreakdown($start, $end, $storeId, $tenantId, $accountCode);
+        $glNet = $glBreakdown['net_sales'];
+
+        $variance = bcsub(bc_num($opNet), bc_num($glNet), 2);
+
+        return [
+            'start_date' => $startStr,
+            'end_date' => $endStr,
+            'store_id' => $storeId,
+            'operational_gross_sales' => $opGross,
+            'operational_discounts' => $opDiscounts,
+            'operational_returns' => $opReturns,
+            'operational_net_sales' => $opNet,
+            'gl_gross_revenue' => $glBreakdown['gross_revenue'],
+            'gl_discounts' => $glBreakdown['sales_discounts'],
+            'gl_returns' => $glBreakdown['sales_returns'],
+            'gl_net_sales' => $glNet,
+            'variance' => $variance,
+            'is_reconciled' => bccomp($variance, '0.00', 2) === 0,
+        ];
     }
 
     /**
@@ -120,7 +355,7 @@ class SalesAnalyticsService
 
         // Ambil total pendapatan seluruh produk dalam rentang untuk hitung kontribusi %
         $totalRevenueAll = (clone $baseQuery)->sum('oi.order_subtotal');
-        $totalRevenueAllStr = bcadd($this->toNumericString($totalRevenueAll), '0', 2);
+        $totalRevenueAllStr = $this->metricRegistry->toNumericString($totalRevenueAll, 2);
 
         $records = $baseQuery->selectRaw('
                 oi.product_id,
@@ -137,11 +372,8 @@ class SalesAnalyticsService
 
         $result = [];
         foreach ($records as $row) {
-            $revenue = bcadd($this->toNumericString($row->total_revenue), '0', 2);
-            $pct = '0.00';
-            if (bccomp($totalRevenueAllStr, '0.00', 2) > 0) {
-                $pct = bcmul(bcdiv($revenue, $totalRevenueAllStr, 4), '100', 2);
-            }
+            $revenue = $this->metricRegistry->toNumericString($row->total_revenue, 2);
+            $pct = $this->metricRegistry->calculateContributionPct($revenue, $totalRevenueAllStr);
 
             $result[] = [
                 'product_id' => (int) $row->product_id,
@@ -186,7 +418,7 @@ class SalesAnalyticsService
         }
 
         $totalRevenueAll = (clone $query)->sum('oi.order_subtotal');
-        $totalRevenueAllStr = bcadd($this->toNumericString($totalRevenueAll), '0', 2);
+        $totalRevenueAllStr = $this->metricRegistry->toNumericString($totalRevenueAll, 2);
 
         $records = $query->selectRaw('
                 p.category_id,
@@ -200,11 +432,8 @@ class SalesAnalyticsService
 
         $result = [];
         foreach ($records as $row) {
-            $revenue = bcadd($this->toNumericString($row->total_revenue), '0', 2);
-            $pct = '0.00';
-            if (bccomp($totalRevenueAllStr, '0.00', 2) > 0) {
-                $pct = bcmul(bcdiv($revenue, $totalRevenueAllStr, 4), '100', 2);
-            }
+            $revenue = $this->metricRegistry->toNumericString($row->total_revenue, 2);
+            $pct = $this->metricRegistry->calculateContributionPct($revenue, $totalRevenueAllStr);
 
             $result[] = [
                 'category_id' => $row->category_id !== null ? (int) $row->category_id : null,
@@ -257,7 +486,7 @@ class SalesAnalyticsService
 
         // Query co-occurrence pasangan item dalam 1 order
         $pairsQuery = DB::table('order_items as a')
-            ->join('order_items as b', function ($join) {
+            ->join('order_items as b', function ($join): void {
                 $join->on('a.order_id', '=', 'b.order_id')
                     ->whereColumn('a.product_id', '<', 'b.product_id');
             })
@@ -309,8 +538,10 @@ class SalesAnalyticsService
             $pairCount = (int) $pair->pair_count;
             $countA = (int) ($productAFrequencies[$pair->product_a_id] ?? $pairCount);
 
-            $supportPct = bcmul(bcdiv((string) $pairCount, (string) $totalOrders, 4), '100', 2);
-            $confidencePct = $countA > 0 ? bcmul(bcdiv((string) $pairCount, (string) $countA, 4), '100', 2) : '0.00';
+            $supportPct = $this->metricRegistry->calculateContributionPct($pairCount, $totalOrders);
+            $confidencePct = $countA > 0
+                ? $this->metricRegistry->calculateContributionPct($pairCount, $countA)
+                : '0.00';
 
             $result[] = [
                 'product_a_id' => (int) $pair->product_a_id,
@@ -368,7 +599,7 @@ class SalesAnalyticsService
             $key = "{$row->day_index}_{$row->hour_of_day}";
             $lookup[$key] = [
                 'count' => (int) $row->total_orders,
-                'sales' => bcadd($this->toNumericString($row->total_sales), '0', 2),
+                'sales' => $this->metricRegistry->toNumericString($row->total_sales, 2),
             ];
         }
 
@@ -514,11 +745,34 @@ class SalesAnalyticsService
                 $q->where('store_id', $storeId);
             }
 
-            $row = $q->selectRaw('COALESCE(SUM(order_amount), 0) as rev, COUNT(id) as cnt')->first();
+            $row = $q->selectRaw('
+                COALESCE(SUM(CASE WHEN subtotal_amount > 0 THEN subtotal_amount ELSE order_amount END), 0) as gross,
+                COALESCE(SUM(discount_amount), 0) as disc,
+                COUNT(id) as cnt
+            ')->first();
 
-            $rev = bcadd($this->toNumericString($row->rev ?? '0'), '0', 2);
+            $returnQuery = DB::table('order_returns')
+                ->where('tenant_id', $tenantId)
+                ->where('status', 'completed')
+                ->whereBetween(DB::raw('DATE(COALESCE(completed_at, created_at))'), [$start->toDateString(), $end->toDateString()]);
+
+            if ($storeId !== null) {
+                $returnQuery->where('store_id', $storeId);
+            }
+
+            $returned = $returnQuery->sum('subtotal_returned');
+
+            $opNet = $this->metricRegistry->calculateNetSales(
+                $row->gross ?? '0.00',
+                $row->disc ?? '0.00',
+                $returned
+            );
+
+            $glBreakdown = $this->metricRegistry->computeGlRevenueBreakdown($start, $end, $storeId, $tenantId);
+            $rev = $glBreakdown['journal_count'] > 0 ? $glBreakdown['net_sales'] : $opNet;
+
             $cnt = (int) ($row->cnt ?? 0);
-            $aov = $cnt > 0 ? bcdiv($rev, (string) $cnt, 2) : '0.00';
+            $aov = $this->metricRegistry->calculateAverageOrderValue($rev, $cnt);
 
             return ['revenue' => $rev, 'orders' => $cnt, 'aov' => $aov];
         };
@@ -526,63 +780,27 @@ class SalesAnalyticsService
         $current = $fetchSummary($curStart, $curEnd);
         $previous = $fetchSummary($prevStart, $prevEnd);
 
-        $calcGrowth = function (string $cur, string $prev): string {
-            $curNum = $this->toNumericString($cur);
-            $prevNum = $this->toNumericString($prev);
-
-            if (bccomp($prevNum, '0.00', 2) === 0) {
-                return bccomp($curNum, '0.00', 2) > 0 ? '100.00' : '0.00';
-            }
-            $diff = bcsub($curNum, $prevNum, 2);
-
-            return bcmul(bcdiv($diff, $prevNum, 4), '100', 2);
-        };
-
-        $ordersGrowth = '0.00';
-        if ($previous['orders'] === 0) {
-            $ordersGrowth = $current['orders'] > 0 ? '100.00' : '0.00';
-        } else {
-            $diffOrders = $current['orders'] - $previous['orders'];
-            $ordersGrowth = bcmul(bcdiv((string) $diffOrders, (string) $previous['orders'], 4), '100', 2);
-        }
-
         return [
             'current_period' => $curLabel,
             'previous_period' => $prevLabel,
             'current_revenue' => $current['revenue'],
             'previous_revenue' => $previous['revenue'],
-            'revenue_growth_pct' => $calcGrowth($current['revenue'], $previous['revenue']),
+            'revenue_growth_pct' => $this->metricRegistry->calculateGrowthPct($current['revenue'], $previous['revenue']),
             'current_orders' => $current['orders'],
             'previous_orders' => $previous['orders'],
-            'orders_growth_pct' => $ordersGrowth,
+            'orders_growth_pct' => $this->metricRegistry->calculateGrowthPct($current['orders'], $previous['orders']),
             'current_aov' => $current['aov'],
             'previous_aov' => $previous['aov'],
-            'aov_growth_pct' => $calcGrowth($current['aov'], $previous['aov']),
+            'aov_growth_pct' => $this->metricRegistry->calculateGrowthPct($current['aov'], $previous['aov']),
         ];
     }
 
     private function formatPeriodLabel(string $key, string $interval, string $sampleDate): string
     {
         return match ($interval) {
-            'month' => Carbon::parse($sampleDate)->translatedFormat('F Y'),
-            'week' => "Pekan {$key}",
+            'month', 'monthly' => Carbon::parse($sampleDate)->translatedFormat('F Y'),
+            'week', 'weekly' => "Pekan {$key}",
             default => Carbon::parse($sampleDate)->translatedFormat('d M Y'),
         };
-    }
-
-    /**
-     * Mengonversi nilai arbitrary menjadi numeric-string yang valid untuk fungsi bcmath.
-     *
-     * @return numeric-string
-     */
-    private function toNumericString(mixed $value, string $default = '0.00'): string
-    {
-        if ($value === null) {
-            return '0.00';
-        }
-
-        $str = (string) $value;
-
-        return is_numeric($str) ? $str : '0.00';
     }
 }

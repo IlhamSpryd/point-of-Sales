@@ -25,6 +25,10 @@ class DatabaseSeeder extends Seeder
         if (! app()->environment(['local', 'testing'])) {
             throw new \RuntimeException('Seeders cannot run in production. Use migrate:fresh.');
         }
+
+        // 0. Seed Statutory Rule Versions (BPJS, PPh 21, PTKP dll) - Global / Idempotent
+        $this->call(StatutoryRuleVersionsSeeder::class);
+
         // 1. Seed Roles untuk tenant pertama (peran kini per tenant)
         $firstTenant = Tenant::firstOrCreate(['name' => 'Default Tenant']);
         $firstTenantId = $firstTenant->id;

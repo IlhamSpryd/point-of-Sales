@@ -5,15 +5,21 @@ declare(strict_types=1);
 namespace App\Modules\Reports\Services\Analytics;
 
 use App\Enums\OrderStatus;
+use App\Modules\Reports\Services\MetricRegistry;
 use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class CustomerAnalyticsService
 {
+    protected MetricRegistry $metricRegistry;
+
     public function __construct(
         protected TenantContext $tenantContext,
-    ) {}
+        ?MetricRegistry $metricRegistry = null,
+    ) {
+        $this->metricRegistry = $metricRegistry ?? app(MetricRegistry::class);
+    }
 
     /**
      * Helper untuk konversi aman ke numeric-string bagi bcmath.
@@ -77,9 +83,9 @@ class CustomerAnalyticsService
             MIN(o.order_date) as first_order,
             MAX(o.order_date) as last_order
         ')
-        ->groupBy('c.id', 'c.name', 'c.phone')
-        ->orderByDesc('total_spend')
-        ->get();
+            ->groupBy('c.id', 'c.name', 'c.phone')
+            ->orderByDesc('total_spend')
+            ->get();
 
         $totalCustomers = count($records);
         $totalRev = '0.00';
@@ -93,7 +99,7 @@ class CustomerAnalyticsService
             $totalOrders += $orders;
 
             if ($index < $topLimit) {
-                $aov = $orders > 0 ? bcdiv($spend, (string) $orders, 2) : '0.00';
+                $aov = $this->metricRegistry->calculateAverageOrderValue($spend, $orders);
                 $topCustomers[] = [
                     'customer_id' => (int) $row->customer_id,
                     'name' => (string) $row->customer_name,
@@ -107,9 +113,9 @@ class CustomerAnalyticsService
             }
         }
 
-        $avgClv = $totalCustomers > 0 ? bcdiv($totalRev, (string) $totalCustomers, 2) : '0.00';
+        $avgClv = $this->metricRegistry->calculateClv($totalRev, $totalCustomers);
         $avgFreq = $totalCustomers > 0 ? bcdiv((string) $totalOrders, (string) $totalCustomers, 2) : '0.00';
-        $overallAov = $totalOrders > 0 ? bcdiv($totalRev, (string) $totalOrders, 2) : '0.00';
+        $overallAov = $this->metricRegistry->calculateAverageOrderValue($totalRev, $totalOrders);
 
         return [
             'total_tracked_customers' => $totalCustomers,
@@ -164,8 +170,8 @@ class CustomerAnalyticsService
             SUM(o.order_amount) as monetary,
             MAX(o.order_date) as last_order_date
         ')
-        ->groupBy('c.id')
-        ->get();
+            ->groupBy('c.id')
+            ->get();
 
         $segments = [
             'CHAMPIONS' => ['segment_name' => 'Juara (Champions)', 'customer_count' => 0, 'percentage' => '0.00', 'total_revenue' => '0.00'],

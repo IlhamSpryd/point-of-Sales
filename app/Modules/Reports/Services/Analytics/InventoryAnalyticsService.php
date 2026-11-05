@@ -5,20 +5,21 @@ declare(strict_types=1);
 namespace App\Modules\Reports\Services\Analytics;
 
 use App\Enums\OrderStatus;
-use App\Models\Ingredient;
-use App\Models\InventoryValuationSnapshot;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Product;
+use App\Modules\Reports\Services\MetricRegistry;
 use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class InventoryAnalyticsService
 {
+    protected MetricRegistry $metricRegistry;
+
     public function __construct(
-        protected TenantContext $tenantContext
-    ) {}
+        protected TenantContext $tenantContext,
+        ?MetricRegistry $metricRegistry = null,
+    ) {
+        $this->metricRegistry = $metricRegistry ?? app(MetricRegistry::class);
+    }
 
     /**
      * Mengambil ringkasan valuasi aset persediaan historis atau berjalan.
@@ -84,7 +85,7 @@ class InventoryAnalyticsService
                     'item_type' => (string) $snap->item_type,
                     'item_id' => (int) $snap->item_id,
                     'item_name' => "Item #{$snap->item_id}",
-                    'sku' => "-",
+                    'sku' => '-',
                     'closing_qty' => bcadd($this->toNumericString($snap->closing_qty), '0', 4),
                     'average_unit_cost' => bcadd($this->toNumericString($snap->average_unit_cost), '0', 4),
                     'total_valuation' => $val,
@@ -191,25 +192,16 @@ class InventoryAnalyticsService
         $startVal = $this->getValuationSummary($start, $storeId)['total_valuation'];
         $endVal = $this->getValuationSummary($end, $storeId)['total_valuation'];
 
-        $sumVal = bcadd($this->toNumericString($startVal), $this->toNumericString($endVal), 2);
-        $avgInv = bcdiv($sumVal, '2', 2);
+        $avgInv = $this->metricRegistry->calculateAverageInventoryValue($startVal, $endVal);
 
-        // 3. Turnover Ratio = COGS / Avg Inventory
-        $turnoverRatio = '0.00';
-        $dsi = '0.00';
+        // 3. Turnover Ratio = COGS / Avg Inventory & DSI = Period Days / Turnover Ratio
+        $turnoverRatio = $this->metricRegistry->calculateInventoryTurnover($cogs, $avgInv, 4);
+        $dsi = $this->metricRegistry->calculateDaysSalesOfInventory($turnoverRatio, $periodDays);
 
-        if (bccomp($avgInv, '0.00', 2) > 0) {
-            $turnoverRatio = bcdiv($cogs, $avgInv, 4);
-
-            if (bccomp($turnoverRatio, '0.0000', 4) > 0) {
-                $dsi = bcdiv((string) $periodDays, $turnoverRatio, 2);
-            }
-        }
-
-        $turnoverFloat = (float) $turnoverRatio;
+        $turnoverScaled = $this->metricRegistry->toNumericString($turnoverRatio, 4);
         $category = match (true) {
-            $turnoverFloat >= 6.0 => 'FAST_MOVING',
-            $turnoverFloat >= 2.5 => 'HEALTHY',
+            bccomp($turnoverScaled, '6.0000', 4) >= 0 => 'FAST_MOVING',
+            bccomp($turnoverScaled, '2.5000', 4) >= 0 => 'HEALTHY',
             default => 'SLOW_MOVING',
         };
 
@@ -217,7 +209,7 @@ class InventoryAnalyticsService
             'period_days' => $periodDays,
             'cogs_amount' => $cogs,
             'average_inventory_value' => $avgInv,
-            'turnover_ratio' => bcadd($turnoverRatio, '0', 2),
+            'turnover_ratio' => $this->metricRegistry->toNumericString($turnoverRatio, 2),
             'days_sales_of_inventory' => $dsi,
             'velocity_category' => $category,
         ];
