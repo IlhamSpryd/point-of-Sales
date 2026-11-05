@@ -27,7 +27,6 @@ use App\Models\Table;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Context\TenantContext;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -663,15 +662,10 @@ class FrontendArchitectureAuditTest extends TestCase
         $context->setTenantId($this->tenant->id);
         $context->setStoreId($this->store->id);
 
-        try {
-            Livewire::actingAs($this->cashierUser)
-                ->test(OrderHistory::class)
-                ->call('voidOrder', $rivalOrder->id, 'Mencoba sabotase pesanan tenant lain');
-
-            $this->fail('Expected ModelNotFoundException was not thrown.');
-        } catch (ModelNotFoundException) {
-            $this->assertTrue(true);
-        }
+        Livewire::actingAs($this->cashierUser)
+            ->test(OrderHistory::class)
+            ->call('voidOrder', $rivalOrder->id, 'Mencoba sabotase pesanan tenant lain')
+            ->assertStatus(404);
 
         $fresh = Order::withoutGlobalScopes()->find($rivalOrder->id);
         $this->assertEquals(OrderStatus::Paid, $fresh->order_status);
@@ -717,15 +711,10 @@ class FrontendArchitectureAuditTest extends TestCase
         // Restore context to test cashier's active store
         $context->setStoreId($this->store->id);
 
-        try {
-            Livewire::actingAs($this->cashierUser)
-                ->test(OrderHistory::class)
-                ->call('voidOrder', $otherStoreOrder->id, 'Mencoba void pesanan cabang lain');
-
-            $this->fail('Expected ModelNotFoundException was not thrown.');
-        } catch (ModelNotFoundException) {
-            $this->assertTrue(true);
-        }
+        Livewire::actingAs($this->cashierUser)
+            ->test(OrderHistory::class)
+            ->call('voidOrder', $otherStoreOrder->id, 'Mencoba void pesanan cabang lain')
+            ->assertStatus(404);
 
         $fresh = Order::withoutGlobalScopes()->find($otherStoreOrder->id);
         $this->assertEquals(OrderStatus::Paid, $fresh->order_status);

@@ -9,7 +9,6 @@ use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Services\Context\TenantContext;
 use App\Services\DashboardService;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -38,10 +37,12 @@ class BaselineTest extends TestCase
     // T1: OrderHistory::viewDetail with a tenant-B order id as a tenant-A user shows nothing/denied.
     public function test_t1_order_history_view_detail_cross_tenant_denied()
     {
-        $this->expectException(ModelNotFoundException::class);
-        Livewire::actingAs($this->userAOwner)
+        $component = Livewire::actingAs($this->userAOwner)
             ->test(OrderHistory::class)
             ->call('viewDetail', $this->orderB->id);
+
+        $component->assertStatus(404);
+        $this->assertNull($component->get('selectedOrderId'));
     }
 
     // T2: UserController index/edit/update across tenants.
@@ -111,7 +112,6 @@ class BaselineTest extends TestCase
         $context = app(TenantContext::class);
         $context->setTenantId($this->tenantA->id);
         $context->setStoreId($this->storeA->id);
-        dump("T7 Start. tenantA->id: {$this->tenantA->id}, context_tenant: ".$context->getTenantId());
 
         app(TenantContext::class)->runWithoutTenant(function () {
             $this->orderA->forceFill([
@@ -135,10 +135,6 @@ class BaselineTest extends TestCase
             ->test(OrderHistory::class)
             ->call('voidOrder', $this->orderA->id, 'Test void')
             ->assertHasNoErrors();
-
-        if (session()->has('error')) {
-            dump('Session error: '.session('error'));
-        }
 
         $this->assertDatabaseHas('payments', [
             'order_id' => $this->orderA->id,
@@ -167,13 +163,6 @@ class BaselineTest extends TestCase
             'product_price' => 1000,
             'stock' => 0,
         ]);
-
-        if ($response->status() !== 302 && $response->status() !== 200) {
-            $response->dump();
-        }
-        if (session('errors')) {
-            dump(session('errors')->getBag('default')->getMessages());
-        }
 
         $this->assertDatabaseHas('products', [
             'product_name' => 'New Product',

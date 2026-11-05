@@ -120,7 +120,7 @@ class ProvisioningDomainTest extends TestCase
         $this->assertSame($response->json('store_id'), $store->id);
 
         // User Owner: verified NULL (D4), password NULL (D5)
-        $owner = User::where('email', $payload['owner_email'])->first();
+        $owner = User::withoutGlobalScopes()->where('email', $payload['owner_email'])->first();
         $this->assertNotNull($owner);
         $this->assertSame($tenant->id, $owner->tenant_id);
         $this->assertNull($owner->email_verified_at);
@@ -168,7 +168,7 @@ class ProvisioningDomainTest extends TestCase
         $payload = $this->validPayload();
         $this->postProvision($payload, $this->signedHeaders($payload))->assertStatus(201);
         $tenant = Tenant::firstOrFail();
-        $owner = User::where('tenant_id', $tenant->id)->where('email', $payload['owner_email'])->firstOrFail();
+        $owner = User::withoutGlobalScopes()->where('tenant_id', $tenant->id)->where('email', $payload['owner_email'])->firstOrFail();
 
         $secondUser = app(TenantContext::class)->runAs($tenant->id, null, fn () => User::create([
             'name' => 'Kasir',
@@ -496,7 +496,7 @@ class ProvisioningDomainTest extends TestCase
 
         return [
             'tenant' => Tenant::first(),
-            'owner' => User::where('email', $payload['owner_email'])->first(),
+            'owner' => User::withoutGlobalScopes()->where('email', $payload['owner_email'])->first(),
         ];
     }
 
@@ -633,7 +633,7 @@ class ProvisioningDomainTest extends TestCase
         $response->assertStatus(201);
         $tenant = Tenant::first();
         $this->assertNotSame(999, $tenant->id);
-        $owner = User::first();
+        $owner = User::withoutGlobalScopes()->first();
         $this->assertNull($owner->email_verified_at); // TIDAK bisa di-set pemanggil
         $this->assertTrue((bool) $owner->is_active);
     }
