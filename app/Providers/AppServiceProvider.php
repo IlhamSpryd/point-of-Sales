@@ -7,6 +7,8 @@ use App\Http\Middleware\SetTenantContext;
 use App\Models\Ingredient;
 use App\Models\Product;
 use App\Modules\Finance\Contracts\PostingEngineContract;
+use App\Modules\Finance\Contracts\TaxIntegrationGatewayInterface;
+use App\Modules\Finance\Services\CoreTaxDjpGateway;
 use App\Modules\Finance\Services\PostingEngineService;
 use App\Policies\CustomerPolicy;
 use App\Policies\GrnPolicy;
@@ -41,6 +43,16 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(
             PostingEngineContract::class,
             PostingEngineService::class
+        );
+
+        $this->app->bind(
+            TaxIntegrationGatewayInterface::class,
+            CoreTaxDjpGateway::class
+        );
+
+        $this->app->bind(
+            \App\Modules\Integration\Contracts\WhatsAppGatewayInterface::class,
+            \App\Modules\Integration\Services\Adapters\QiscusWhatsAppAdapter::class
         );
     }
 

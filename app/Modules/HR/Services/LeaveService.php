@@ -29,11 +29,11 @@ class LeaveService
         int $year,
         float $days,
         int $actorUserId,
-        string $reason = 'Hak Cuti Tahunan'
+        string $reason = 'Annual Leave Entitlement'
     ): LeaveBalance {
         if ($days <= 0) {
             throw ValidationException::withMessages([
-                'days' => 'Jumlah hari cuti yang di-akrual harus lebih besar dari 0.',
+                'days' => 'Accrued leave days must be greater than 0.',
             ]);
         }
 
@@ -97,13 +97,13 @@ class LeaveService
     ): LeaveRequest {
         if ($endDate->lt($startDate)) {
             throw ValidationException::withMessages([
-                'end_date' => 'Tanggal akhir cuti tidak boleh sebelum tanggal mulai.',
+                'end_date' => 'Leave end date cannot be earlier than start date.',
             ]);
         }
 
         if ($totalDays <= 0) {
             throw ValidationException::withMessages([
-                'total_days' => 'Jumlah hari cuti harus lebih besar dari 0.',
+                'total_days' => 'Total leave days must be greater than 0.',
             ]);
         }
 
@@ -113,12 +113,12 @@ class LeaveService
             ->firstOrFail();
 
         if (! $policy->is_active) {
-            throw new DomainException("Kebijakan cuti [{$policy->policy_name}] sedang tidak aktif.");
+            throw new DomainException("Leave policy [{$policy->policy_name}] is currently inactive.");
         }
 
         if ($policy->requires_attachment && empty($attachmentPath)) {
             throw ValidationException::withMessages([
-                'attachment_path' => "Dokumen pendukung (surat dokter/keterangan) wajib diunggah untuk cuti [{$policy->policy_name}].",
+                'attachment_path' => "Supporting documentation (medical certificate/statement) is required for leave [{$policy->policy_name}].",
             ]);
         }
 
@@ -128,7 +128,7 @@ class LeaveService
         if ($policy->is_gender_specific && $policy->applicable_gender !== null) {
             if ($employee->gender->value !== $policy->applicable_gender) {
                 throw ValidationException::withMessages([
-                    'leave_policy_id' => "Kebijakan cuti [{$policy->policy_name}] hanya berlaku untuk karyawan bergender {$policy->applicable_gender}.",
+                    'leave_policy_id' => "Leave policy [{$policy->policy_name}] only applies to {$policy->applicable_gender} employees.",
                 ]);
             }
         }
@@ -159,7 +159,7 @@ class LeaveService
 
                 if ($available < $totalDays) {
                     throw ValidationException::withMessages([
-                        'total_days' => "Saldo cuti tidak mencukupi. Sisa saldo tersedia: {$available} hari, pengajuan: {$totalDays} hari.",
+                        'total_days' => "Insufficient leave balance. Available balance: {$available} days, requested: {$totalDays} days.",
                     ]);
                 }
             }
@@ -197,18 +197,18 @@ class LeaveService
             ->first();
 
         if (! $approval) {
-            throw new DomainException("Dokumen Approval [ID: {$approvalId}] tidak ditemukan.");
+            throw new DomainException("Approval document [ID: {$approvalId}] not found.");
         }
 
         if ($approval->action_code !== 'LEAVE_REQUEST') {
             throw ValidationException::withMessages([
-                'approval_id' => "Aksi persetujuan harus bertipe 'LEAVE_REQUEST', ditemukan: {$approval->action_code}.",
+                'approval_id' => "Approval action must be of type 'LEAVE_REQUEST', found: {$approval->action_code}.",
             ]);
         }
 
         if ($approval->status !== 'APPROVED') {
             throw ValidationException::withMessages([
-                'approval_id' => "Persetujuan cuti belum berstatus APPROVED (status saat ini: {$approval->status}).",
+                'approval_id' => "Leave approval is not yet in APPROVED status (current: {$approval->status}).",
             ]);
         }
 
@@ -220,7 +220,7 @@ class LeaveService
                 ->firstOrFail();
 
             if ($request->status !== LeaveRequestStatusEnum::PENDING) {
-                throw new DomainException("Pengajuan cuti tidak dalam status PENDING (status: {$request->status->value}).");
+                throw new DomainException("Leave request is not in PENDING status (current: {$request->status->value}).");
             }
 
             /** @var LeavePolicy $policy */
@@ -242,7 +242,7 @@ class LeaveService
                 if (! $balance || $balance->remaining_days < $request->total_days) {
                     $available = $balance !== null ? $balance->remaining_days : 0.00;
                     throw ValidationException::withMessages([
-                        'leave_balance' => "Saldo cuti tidak mencukupi saat persetujuan. Sisa: {$available} hari, pengajuan: {$request->total_days} hari.",
+                        'leave_balance' => "Insufficient leave balance at approval time. Available: {$available} days, requested: {$request->total_days} days.",
                     ]);
                 }
 
@@ -257,7 +257,7 @@ class LeaveService
                     'transaction_type' => LeaveTransactionTypeEnum::USAGE,
                     'days_delta' => -$request->total_days,
                     'leave_request_id' => $request->id,
-                    'reason' => "Pemakaian cuti disetujui (Approval #{$approvalId})",
+                    'reason' => "Approved leave utilization (Approval #{$approvalId})",
                     'actor_user_id' => $approverUserId,
                 ]);
             }
@@ -287,7 +287,7 @@ class LeaveService
                 ->firstOrFail();
 
             if ($request->status === LeaveRequestStatusEnum::CANCELLED) {
-                throw new DomainException('Pengajuan cuti sudah dibatalkan sebelumnya.');
+                throw new DomainException('Leave request has already been cancelled.');
             }
 
             if ($request->status === LeaveRequestStatusEnum::APPROVED) {
@@ -318,7 +318,7 @@ class LeaveService
                         'transaction_type' => LeaveTransactionTypeEnum::REVERSAL,
                         'days_delta' => $request->total_days,
                         'leave_request_id' => $request->id,
-                        'reason' => "Pembatalan cuti: {$reason}",
+                        'reason' => "Leave cancellation: {$reason}",
                         'actor_user_id' => $actorUserId,
                     ]);
                 }
@@ -393,7 +393,7 @@ class LeaveService
         int $tenantId,
         int $requestId,
         int $approverUserId,
-        string $rejectionReason = 'Ditolak'
+        string $rejectionReason = 'Rejected'
     ): LeaveRequest {
         return DB::transaction(function () use ($tenantId, $requestId, $rejectionReason) {
             /** @var LeaveRequest $request */
@@ -403,11 +403,11 @@ class LeaveService
                 ->firstOrFail();
 
             if ($request->status !== LeaveRequestStatusEnum::PENDING) {
-                throw new DomainException("Hanya pengajuan cuti berstatus PENDING yang dapat ditolak (status saat ini: {$request->status->value}).");
+                throw new DomainException("Only PENDING leave requests can be rejected (current status: {$request->status->value}).");
             }
 
             $request->status = LeaveRequestStatusEnum::REJECTED;
-            $request->reason = $request->reason ? $request->reason.' | Penolakan: '.$rejectionReason : $rejectionReason;
+            $request->reason = $request->reason ? $request->reason.' | Rejection: '.$rejectionReason : $rejectionReason;
             $request->save();
 
             return $request;

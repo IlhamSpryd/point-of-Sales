@@ -62,12 +62,12 @@ class SplitPaymentService
         ?string $idempotencyKey = null
     ): array {
         if (empty($legs)) {
-            throw new DomainException('Daftar metode pembayaran (legs) tidak boleh kosong.');
+            throw new DomainException('Payment legs cannot be empty.');
         }
 
         $user = User::withoutGlobalScopes()->find($userId);
         if (! $user) {
-            throw new DomainException('Kasir pemroses tidak ditemukan.');
+            throw new DomainException('Processing cashier was not found.');
         }
 
         $tenantId = (int) ($order->tenant_id ?? $this->tenantContext->getTenantId() ?? $user->tenant_id);
@@ -83,15 +83,15 @@ class SplitPaymentService
                 ->first();
 
             if (! $lockedOrder) {
-                throw new DomainException('Pesanan tidak ditemukan.');
+                throw new DomainException('Order not found.');
             }
 
             if (in_array($lockedOrder->order_status, [OrderStatus::Paid, OrderStatus::Completed], true)) {
-                throw new DomainException("Pesanan #{$lockedOrder->order_code} sudah lunas sebelumnya (immutable).");
+                throw new DomainException("Order #{$lockedOrder->order_code} is already fully paid (immutable).");
             }
 
             if (in_array($lockedOrder->order_status, [OrderStatus::Void, OrderStatus::Cancelled], true)) {
-                throw new DomainException("Pesanan #{$lockedOrder->order_code} telah dibatalkan/void.");
+                throw new DomainException("Order #{$lockedOrder->order_code} has been cancelled/voided.");
             }
 
             // 2. Validasi Sesi Shift Kasir Aktif (T-POS-01)
@@ -106,7 +106,7 @@ class SplitPaymentService
             }
 
             if (! $activeShift || $activeShift->status !== 'open') {
-                throw new ShiftClosedException('Kasir tidak dapat bertransaksi di luar sesi shift aktif. Silakan buka shift baru sebelum melanjutkan.');
+                throw new ShiftClosedException('Cashier cannot transact outside an active register shift. Please open a shift before continuing.');
             }
 
             $resolvedShiftId = $activeShift->id;
@@ -127,13 +127,13 @@ class SplitPaymentService
                     : $allocated;
 
                 if ($allocated <= 0) {
-                    throw new DomainException('Nominal alokasi pembayaran pada leg ke-'.($idx + 1).' harus lebih besar dari 0.');
+                    throw new DomainException('Payment allocation amount on leg #'.($idx + 1).' must be greater than 0.');
                 }
 
                 $change = 0;
                 if ($method === 'cash') {
                     if ($tendered < $allocated) {
-                        throw new DomainException("Uang tunai yang diterima (tendered: Rp {$tendered}) kurang dari tagihan kasir (Rp {$allocated}).");
+                        throw new DomainException("Cash tendered ({$tendered}) is less than the allocated amount ({$allocated}).");
                     }
                     $change = $tendered - $allocated;
                 } else {
@@ -159,15 +159,15 @@ class SplitPaymentService
             // Validasi Keseimbangan Total (T-POS-03)
             if ($sumAllocated !== $orderAmount) {
                 throw new DomainException(
-                    'Total pembayaran teralokasi (Rp '.number_format($sumAllocated, 0, ',', '.').
-                    ') tidak sesuai dengan total tagihan pesanan (Rp '.number_format($orderAmount, 0, ',', '.').').'
+                    'Total allocated payment ('.number_format($sumAllocated, 2).
+                    ') does not match order total amount ('.number_format($orderAmount, 2).').'
                 );
             }
 
             $netTenderBalance = $sumTendered - $sumChange;
             if ($netTenderBalance !== $orderAmount) {
                 throw new DomainException(
-                    "Keseimbangan tender gagal: Total tender (Rp {$sumTendered}) dikurangi kembalian (Rp {$sumChange}) = Rp {$netTenderBalance}, tidak sama dengan total pesanan Rp {$orderAmount}."
+                    "Tender balance failure: Total tendered ({$sumTendered}) minus change ({$sumChange}) = {$netTenderBalance}, does not equal order total {$orderAmount}."
                 );
             }
 
@@ -245,7 +245,7 @@ class SplitPaymentService
                 storeId: $storeId,
                 subjectType: Order::class,
                 subjectId: $lockedOrder->id,
-                description: "Pembayaran split-tender pesanan {$lockedOrder->order_code} berhasil: Total Rp ".number_format($orderAmount, 0, ',', '.')." ({$sumTendered} tendered - {$sumChange} change)",
+                description: "Split-tender payment for order {$lockedOrder->order_code} completed: Total ".number_format($orderAmount, 2)." ({$sumTendered} tendered - {$sumChange} change)",
                 metadata: [
                     'order_id' => $lockedOrder->id,
                     'order_code' => $lockedOrder->order_code,

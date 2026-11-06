@@ -39,7 +39,7 @@ class TailAdminPhaseFourAdoptionTest extends TestCase
         $balancedHtml = Blade::render(
             '<x-erp.finance.journal-balance-banner :total-debit="1500000" :total-credit="1500000" />'
         );
-        $this->assertStringContainsString('Jurnal Seimbang', $balancedHtml);
+        $this->assertStringContainsString('Journal Balanced', $balancedHtml);
         $this->assertStringContainsString('check_circle', $balancedHtml);
         $this->assertStringContainsString('Rp 1.500.000', $balancedHtml);
 
@@ -47,9 +47,9 @@ class TailAdminPhaseFourAdoptionTest extends TestCase
         $unbalancedHtml = Blade::render(
             '<x-erp.finance.journal-balance-banner :total-debit="2000000" :total-credit="1850000" />'
         );
-        $this->assertStringContainsString('Jurnal Tidak Seimbang', $unbalancedHtml);
+        $this->assertStringContainsString('Journal Unbalanced', $unbalancedHtml);
         $this->assertStringContainsString('error', $unbalancedHtml);
-        $this->assertStringContainsString('Selisih', $unbalancedHtml);
+        $this->assertStringContainsString('Difference', $unbalancedHtml);
         $this->assertStringContainsString('Rp 150.000', $unbalancedHtml);
     }
 
@@ -74,10 +74,10 @@ class TailAdminPhaseFourAdoptionTest extends TestCase
             '<x-erp.hr.payroll-stepper :current-step="3" />'
         );
 
-        $this->assertStringContainsString('Kehadiran &amp; Lembur', $html);
-        $this->assertStringContainsString('Komisi &amp; Tunjangan', $html);
-        $this->assertStringContainsString('PPh 21 TER &amp; BPJS', $html);
-        $this->assertStringContainsString('Pengesahan &amp; Posting', $html);
+        $this->assertStringContainsString('Attendance &amp; Overtime', $html);
+        $this->assertStringContainsString('Commissions &amp; Allowances', $html);
+        $this->assertStringContainsString('Tax &amp; Statutory Deductions', $html);
+        $this->assertStringContainsString('Approval &amp; GL Posting', $html);
     }
 
     public function test_payslip_renders_earnings_deductions_and_take_home_pay(): void

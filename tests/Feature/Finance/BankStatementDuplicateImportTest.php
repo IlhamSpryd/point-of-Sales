@@ -177,9 +177,9 @@ class BankStatementDuplicateImportTest extends TestCase
             actor: $this->user
         );
 
-        // Impor kedua dengan nomor dokumen berbeda tetapi memuat baris transaksi yang sama persis
+        // Second import with different document number but containing identical lines
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Baris rekening koran duplikat terdeteksi');
+        $this->expectExceptionMessage('Duplicate bank statement line detected');
 
         $this->reconService->importStatement(
             account: $this->bankAccount,
@@ -213,7 +213,7 @@ class BankStatementDuplicateImportTest extends TestCase
         ];
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Terdapat baris mutasi ganda di dalam dokumen impor yang sama');
+        $this->expectExceptionMessage('Duplicate transaction row detected in the import file');
 
         $this->reconService->importStatement(
             account: $this->bankAccount,

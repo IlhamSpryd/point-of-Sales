@@ -10,16 +10,18 @@
 | Branch | `chore/refactor-modular-architecture` |
 | HEAD | `a069ff6 fix(database): remediate schema invariants DB-001 through DB-021` |
 | Stack terverifikasi | Laravel Framework **13.31.0**, PHP `^8.3`, Livewire 4.x, MySQL/MariaDB **13.0.2** |
-| Status keseluruhan | **PHASE 3 COMPLETE — menunggu keputusan pemilik project untuk Phase 4** |
-| Terakhir diperbarui | 2026-10-22 |
+| Status keseluruhan | **FASE 1–3 LULUS (119 TABEL) & RENCANA EKSTENSI GELOMBANG 4–7 TERDEFINISI (212 TABEL)** |
+| Terakhir diperbarui | 2026-11-06 |
 
 ---
 
-## 0. Ringkasan Eksekutif (Phase 1)
+## 0. Ringkasan Eksekutif (Phase 1 & Catatan Pembaruan Skema 212 Tabel)
 
-- Skema database aktual **119 tabel** (semua `BASE TABLE`, 0 view) — **sesuai** dengan
-  target 119 tabel pada brief. Ini lebih baru dari dokumen audit (`117` tabel) dan
-  konsisten dengan commit remidiasi `a069ff6`.
+- **Pembaruan Arsitektur (06 November 2026):** Skema database MariaDB aktif telah berkembang dari 119 tabel menjadi **212 tabel** (`BASE TABLE`, 0 view) seiring implementasi Gelombang 4–7 (Modul Akuntansi & Keuangan, Manufaktur, Manajemen SDM & Penggajian, Penjualan Enterprise, dan Kepatuhan Pajak CoreTax DJP).
+- **Hasil Fase 1–3 (Historis):** Eksekusi 12 bulan dataset pada 119 tabel dasar telah selesai 100% dan terverifikasi pada DB runtime `point_of_sales` (lihat Bagian 24).
+- **Perencanaan Ekstensi 93 Tabel Baru:** Seluruh pemetaan entitas dan aturan seeding non-destruktif untuk 93 tabel tambahan diatur pada **Bagian 25** dokumen ini dengan prinsip *Zero Truncate*, jaminan foreign key komposit `(tenant_id, id)`, dan kepatuhan penuh multi-tenancy fail-closed.
+- Skema database awal (fase 1): **119 tabel** (semua `BASE TABLE`, 0 view) — **sesuai** dengan
+  target 119 tabel pada brief historis. Ini konsisten dengan commit remidiasi `a069ff6`.
 - Database runtime `point_of_sales` **kosong** pada semua tabel bisnis (hanya
   `migrations`, `permissions`, `plans`, `plan_entitlements`, `sessions`, `cache`
   yang berisi baris). **Tidak ada tenant, store, user, maupun role.**
@@ -3285,4 +3287,74 @@ Semua 13 pemeriksaan database lulus 100% (PASS):
 11. Saldo stok non-negatif: **PASS** (ingredient = 0, product = 0)
 12. Saldo ingredient == Σ ledger: **PASS** (selisih = 0)
 13. Shift aktif unik per kasir per cabang: **PASS** (duplikat = 0)
+
+---
+
+## 25. Ekstensi Dataset Gelombang 4–7 Menuju Skema Penuh 212 Tabel Enterprise ERP
+
+### 25.1 Latar Belakang & Inventarisasi 93 Tabel Tambahan
+Ekspansi arsitektur Apeiron Systems dari versi POS inti (119 tabel) menuju Enterprise ERP terpadu (212 tabel) menambahkan 93 tabel baru yang mencakup 4 modul strategis utama:
+1. **Modul 08 — Akuntansi & Keuangan (ACC):** 32 tabel.
+2. **Modul 14 — Manajemen SDM & Penggajian (HRM):** 28 tabel.
+3. **Modul 03/07 — Penjualan B2B, Piutang (AR) & Promosi Lanjutan:** 21 tabel.
+4. **Modul 04/05/09 — Biaya Pembelian, Valuasi Stok, dan Manufaktur/Dapur:** 12 tabel.
+
+Total tabel keseluruhan pada MariaDB: **212 tabel (179 tabel tenant/store-scoped, 33 tabel platform/infrastruktur)**.
+
+### 25.2 Distribusi & Pemetaan 93 Tabel Baru per Domain
+
+#### A. Domain Akuntansi & Buku Besar (Modul 08 ACC — 32 Tabel)
+- **Bagan Akun & Periode:** `chart_of_accounts`, `accounting_periods`, `account_period_balances`.
+- **Jurnal Umum & Aturan Posting:** `journal_entries`, `journal_lines`, `posting_rules`, `posting_rule_lines`, `posting_rule_versions`.
+- **Kas & Bank:** `cash_bank_accounts`, `cash_bank_transactions`, `bank_statements`, `bank_statement_lines`, `bank_reconciliation_sessions`, `bank_reconciliation_matches`.
+- **Buku Besar Pembantu Hutang & Piutang (AP/AR):** `ap_ledger_entries`, `ap_payments`, `ap_payment_allocations`, `ar_ledger_entries`, `ar_payment_allocations`, `ar_receipts`, `accounting_receivable_outboxes`, `financial_event_outboxes`.
+- **Perpajakan & CoreTax DJP:** `tax_codes`, `tax_rates`, `tax_account_mappings`, `tax_ledger_entries`.
+- **Biaya Operasional (Expenses):** `expenses`, `expense_approvals`, `expense_attachments`, `expense_categories`, `expense_lines`.
+- **Aset Tetap & Penyusutan:** `fixed_assets`, `fixed_asset_categories`, `fixed_asset_depreciation_schedules`, `fixed_asset_disposals`.
+- **Penutupan Periode (Closing):** `period_closing_checklists`, `period_closing_logs`.
+
+#### B. Domain Manajemen SDM & Penggajian (Modul 14 HRM — 28 Tabel)
+- **Struktur Organisasi & Master Pegawai:** `departments`, `job_titles`, `work_schedules`, `shift_templates`.
+- **Profil Pegawai Terpadu:** `employees`, `employee_bank_accounts`, `employee_bpjs_profiles`, `employee_tax_profiles`, `employee_branch_assignments`, `employee_compensations`, `employee_employment_histories`.
+- **Kehadiran, Jam Kerja & Lembur:** `attendance_records`, `attendance_breaks`, `overtime_records`.
+- **Manajemen Cuti:** `leave_policies`, `leave_balances`, `leave_requests`, `leave_transactions`.
+- **Penggajian & Kepatuhan Statutori Indonesia:** `salary_components`, `payroll_periods`, `payroll_batches`, `payroll_records`, `payroll_items`, `payroll_adjustments`, `statutory_rule_versions` (PPh 21 TER PMK 168/2023, BPJS TK, BPJS Kesehatan).
+
+#### C. Domain Penjualan Enterprise, Piutang & Promosi (Modul 03 SLS & 07 CRM — 21 Tabel)
+- **Pelanggan B2B & Manajemen Kredit:** `customer_groups`, `customer_addresses`, `customer_contacts`, `customer_merge_logs`, `customer_credit_accounts`, `customer_credit_logs`, `store_credit_accounts`, `store_credit_ledgers`.
+- **Dokumen Penjualan B2B (Order to Cash):** `quotations`, `quotation_lines`, `sales_orders`, `sales_order_lines`, `customer_invoices`, `customer_invoice_lines`, `sales_credit_notes`, `sales_credit_note_applications`.
+- **Kampanye Promosi Multi-Store:** `promotion_campaigns`, `promotion_rules`, `promotion_rewards`, `promotion_reservations`, `promotion_store_mappings`.
+- **Voucher, Gift Card & Komisi:** `vouchers`, `gift_cards`, `gift_card_ledgers`, `commission_rules`, `commission_records`, `shelf_labels`.
+
+#### D. Domain Pengadaan Lanjutan & Dapur / Valuasi (Modul 04 INV, 05 PUR, 09 MFG — 12 Tabel)
+- **Alokasi Biaya Pengadaan & Debit Note:** `purchase_additional_costs`, `purchase_cost_allocations`, `purchase_debit_notes`, `purchase_debit_note_applications`, `purchase_order_revisions`.
+- **Valuasi Inventori & Dapur:** `inventory_valuation_snapshots`, `kitchen_waste_logs`.
+- **Tabel Otentikasi & Persetujuan Universal:** `personal_access_tokens`, `approvals`, `tables`.
+
+### 25.3 Prinsip Eksekusi Seeder Non-Destruktif (Zero Truncate)
+1. **Dilarang Keras Melakukan `TRUNCATE` atau `migrate:fresh`:** Database operasional `point_of_sales` yang sudah memiliki 194.224 order transaksi 12 bulan tidak boleh di-reset.
+2. **Operasi Berbasis Idempotensi (Upsert/FirstOrCreate):** Seluruh seeder untuk 93 tabel baru wajib memeriksa keberadaan data berdasarkan natural key unik atau hash record sebelum melakukan INSERT.
+3. **Penyelarasan Foreign Key Komposit `(tenant_id, id)`:**
+   - Setiap tabel baru yang berelasi dengan `tenants`, `stores`, `users`, `departments`, `employees`, `orders`, atau `purchase_orders` wajib menyertakan pasangan FK komposit yang valid.
+   - Skenario Seeder tetap mempertahankan 2 Tenant Demo:
+     - Tenant #2: **Apeiron Coffee & Kitchen** (6 Cabang)
+     - Tenant #3: **Sagara Bakehouse** (5 Cabang)
+4. **Kepatuhan Finansial & Ledger Immutability:**
+   - Jurnal Akuntansi (`journal_entries` & `journal_lines`) wajib memenuhi syarat Debit == Credit (`bccomp() == 0`).
+   - Trigger proteksi jurnal `trg_journal_entries_before_update` dan `trg_journal_entries_before_delete` tidak boleh dinonaktifkan.
+   - Setiap transaksi penggajian (`payroll_records`) harus menghasilkan jurnal akuntansi otomatis (Biaya Gaji di Debit, Hutang PPh 21 & Kas/Bank di Kredit).
+5. **Integritas Aturan Statutori Ketenagakerjaan Indonesia:**
+   - Seeder `statutory_rule_versions` mengisi tarif resmi TER 2024 (Kategori A, B, C per PMK 168/2023).
+   - Perhitungan lembur wajib mengacu rumus PP 35/2021 dengan pembagi 173 per jam.
+
+### 25.4 Invariant Verifikasi Tambahan (Tahap Verifikasi 212 Tabel)
+Setelah ekstensi seeder dijalankan pada Phase 6, suite verifikasi diperluas dari 13 invariant menjadi **20 invariant**:
+14. **Keseimbangan Neraca Saldo (Trial Balance):** Σ Debit == Σ Kredit di seluruh `journal_lines` per tenant.
+15. **Integritas Rekonsiliasi Bank:** Seluruh transaksi `cash_bank_transactions` cocok dengan mutasi kas/bank di buku besar.
+16. **Validitas Tarif PPh 21 TER:** Komponen potongan PPh 21 pada `payslip_lines` presisi terhadap tabel TER statutori.
+17. **Isolasi Multi-Tenancy HR & Payroll:** Seluruh entitas `employees`, `attendance_records`, dan `payslips` terisolasi ketat per `tenant_id`.
+18. **Validitas Limit Kredit Pelanggan:** `customer_credit_accounts.current_balance <= credit_limit`.
+19. **Sinkronisasi Saldo Piutang/Hutang:** Saldo pada `ap_ledger_entries` dan `ar_ledger_entries` konsisten dengan invoice dan pembayaran terkait.
+20. **Cakupan Skema 212 Tabel:** Seluruh 212 tabel pada `information_schema.tables` memiliki data valid dan 0 tabel orphan.
+
 

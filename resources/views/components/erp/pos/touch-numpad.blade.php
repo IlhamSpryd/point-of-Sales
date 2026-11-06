@@ -54,15 +54,15 @@
     {{-- Amount Display Screen --}}
     <div class="card-surface p-4 rounded-2xl border border-border bg-card shadow-xs text-right">
         <span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
-            Uang Diterima
+            Amount Received
         </span>
-        <div class="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight numeric font-mono" x-text="formatRupiah(amount)">
+        <div class="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight numeric tabular-nums" x-text="formatRupiah(amount)">
             Rp 0
         </div>
         <template x-if="totalRequired > 0">
             <div class="mt-2 pt-2 border-t border-border flex items-center justify-between text-xs">
-                <span class="text-muted-foreground">Kembalian:</span>
-                <span class="font-bold numeric font-mono text-sm"
+                <span class="text-muted-foreground">Change Due:</span>
+                <span class="font-bold numeric tabular-nums text-sm"
                     :class="changeAmount >= 0 ? 'text-success' : 'text-destructive'"
                     x-text="changeAmount >= 0 ? formatRupiah(changeAmount) : '- ' + formatRupiah(Math.abs(changeAmount))">
                 </span>
@@ -75,7 +75,7 @@
         <button type="button" @click="setExact()"
             class="h-11 min-h-[44px] px-3 py-2 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary/90 active:scale-95 transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1">
             <span class="material-symbols-rounded text-sm">payments</span>
-            <span>Uang Pas</span>
+            <span>Exact Amount</span>
         </button>
         @foreach ($quickDenominations as $denom)
             <button type="button" @click="setQuick({{ $denom }})"
@@ -102,7 +102,7 @@
             0
         </button>
         <button type="button" @click="backspace()"
-            aria-label="Hapus digit terakhir"
+            aria-label="Delete last digit"
             class="h-13 min-h-[44px] rounded-xl bg-destructive-muted hover:bg-destructive-muted border border-destructive-border text-destructive active:scale-95 transition-all shadow-xs cursor-pointer select-none flex items-center justify-center">
             <span class="material-symbols-rounded text-2xl">backspace</span>
         </button>

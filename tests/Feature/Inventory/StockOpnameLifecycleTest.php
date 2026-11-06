@@ -257,7 +257,7 @@ class StockOpnameLifecycleTest extends TestCase
         ], (int) $this->userAOwner->id);
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Seluruh item wajib diisi hasil hitung fisik sebelum diajukan ke manajer');
+        $this->expectExceptionMessage('All items must have physical counts recorded before submitting to manager');
 
         $this->service->submitForApproval($opname, (int) $this->userAOwner->id);
     }

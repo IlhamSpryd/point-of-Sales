@@ -18,12 +18,12 @@ enum EmploymentStatusEnum: string
     {
         return match ($this) {
             self::DRAFT => 'Draft',
-            self::ACTIVE => 'Aktif',
-            self::ON_PROBATION => 'Masa Percobaan',
-            self::SUSPENDED => 'Ditangguhkan',
-            self::RESIGNED => 'Mengundurkan Diri',
-            self::TERMINATED => 'Diberhentikan',
-            self::ARCHIVED => 'Diarsipkan',
+            self::ACTIVE => 'Active',
+            self::ON_PROBATION => 'On Probation',
+            self::SUSPENDED => 'Suspended',
+            self::RESIGNED => 'Resigned',
+            self::TERMINATED => 'Terminated',
+            self::ARCHIVED => 'Archived',
         };
     }
 

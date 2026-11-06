@@ -28,6 +28,14 @@ class ErpSidebarReachabilityTest extends TestCase
 
     private User $kasirUser;
 
+    private User $salesUser;
+
+    private User $financeUser;
+
+    private User $cookUser;
+
+    private User $baristaUser;
+
     protected function afterSubclassSetUp(): void
     {
         $context = app(TenantContext::class);
@@ -51,12 +59,20 @@ class ErpSidebarReachabilityTest extends TestCase
         $ownerRole = Role::create(['tenant_id' => $this->tenant->id, 'name' => 'Owner', 'permissions' => ['*']]);
         $managerRole = Role::create(['tenant_id' => $this->tenant->id, 'name' => 'Manager', 'permissions' => ['*']]);
         $kasirRole = Role::create(['tenant_id' => $this->tenant->id, 'name' => 'Kasir', 'permissions' => ['*']]);
+        $salesRole = Role::create(['tenant_id' => $this->tenant->id, 'name' => 'Sales', 'permissions' => ['*']]);
+        $financeRole = Role::create(['tenant_id' => $this->tenant->id, 'name' => 'Finance', 'permissions' => ['*']]);
+        $cookRole = Role::create(['tenant_id' => $this->tenant->id, 'name' => 'Cook', 'permissions' => ['*']]);
+        $baristaRole = Role::create(['tenant_id' => $this->tenant->id, 'name' => 'Barista', 'permissions' => ['*']]);
 
         $this->ownerUser = User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => $ownerRole->id]);
         $this->managerUser = User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => $managerRole->id]);
         $this->kasirUser = User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => $kasirRole->id]);
+        $this->salesUser = User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => $salesRole->id]);
+        $this->financeUser = User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => $financeRole->id]);
+        $this->cookUser = User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => $cookRole->id]);
+        $this->baristaUser = User::factory()->create(['tenant_id' => $this->tenant->id, 'role_id' => $baristaRole->id]);
 
-        foreach ([$this->ownerUser, $this->managerUser, $this->kasirUser] as $u) {
+        foreach ([$this->ownerUser, $this->managerUser, $this->kasirUser, $this->salesUser, $this->financeUser, $this->cookUser, $this->baristaUser] as $u) {
             DB::table('user_stores')->insert([
                 'tenant_id' => $this->tenant->id,
                 'user_id' => $u->id,
@@ -132,8 +148,65 @@ class ErpSidebarReachabilityTest extends TestCase
         $response = $this->actingAs($this->ownerUser)->get(route('finance.index'));
 
         $response->assertOk();
-        $response->assertSee('Keuangan & Akuntansi');
+        $response->assertSee('Finance & Accounting');
         $response->assertSee('Modul 7');
+    }
+
+    public function test_kds_is_reachable_by_kitchen_and_frontline_staff(): void
+    {
+        foreach ([$this->ownerUser, $this->managerUser, $this->kasirUser, $this->cookUser, $this->baristaUser] as $u) {
+            $response = $this->actingAs($u)->get(route('kds.index'));
+            $response->assertOk();
+        }
+    }
+
+    public function test_all_sales_b2b_subpages_are_reachable(): void
+    {
+        $salesRoutes = [
+            'sales.orders.index',
+            'sales.quotations.index',
+            'sales.invoices.index',
+            'sales.returns.index',
+        ];
+
+        foreach ($salesRoutes as $route) {
+            $this->actingAs($this->ownerUser)->get(route($route))->assertOk();
+            $this->actingAs($this->salesUser)->get(route($route))->assertOk();
+        }
+    }
+
+    public function test_all_finance_subpages_are_reachable(): void
+    {
+        $financeRoutes = [
+            'finance.index',
+            'finance.coa.index',
+            'finance.journals.index',
+            'finance.periods.index',
+            'finance.reconciliation.index',
+        ];
+
+        foreach ($financeRoutes as $route) {
+            $this->actingAs($this->ownerUser)->get(route($route))->assertOk();
+            $this->actingAs($this->financeUser)->get(route($route))->assertOk();
+        }
+    }
+
+    public function test_sales_and_finance_and_kitchen_roles_render_active_sidebar_items(): void
+    {
+        // Sales role sees B2B Sales Orders
+        $salesResp = $this->actingAs($this->salesUser)->get(route('sales.orders.index'));
+        $salesResp->assertOk();
+        $salesResp->assertSee('B2B Sales Orders');
+
+        // Finance role sees B2B Sales Orders and Finance Overview
+        $finResp = $this->actingAs($this->financeUser)->get(route('finance.index'));
+        $finResp->assertOk();
+        $finResp->assertSee('Finance Overview');
+        $finResp->assertSee('B2B Sales Orders');
+
+        // Cook role sees KDS
+        $cookResp = $this->actingAs($this->cookUser)->get(route('kds.index'));
+        $cookResp->assertOk();
     }
 
     public function test_unauthorized_role_cannot_reach_restricted_modules(): void

@@ -1,127 +1,150 @@
-<div class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+<div class="space-y-6" data-gsap="page-enter">
     <!-- Sub Navigasi Modular -->
     @include('livewire.hr.partials.sub-nav')
 
-    <!-- Header & Action -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-                <span class="material-symbols-rounded text-indigo-600 text-[28px]">paid</span>
-                Rekapitulasi Komisi Penjualan Staf
-            </h1>
-            <p class="text-sm text-gray-500 mt-1">
-                Pelacakan perolehan komisi staf kasir berbasis order POS real-time serta pembalikan otomatis akibat retur barang.
-            </p>
-        </div>
+    <!-- Header & Action Halaman -->
+    <x-erp.page-header
+        title="Sales Commission Summary"
+        description="Track sales staff and cashier commissions earned in real time, including automated reversals for returned items.">
+        <x-slot:breadcrumbs>
+            <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('hr.employees.index') }}">HR & Payroll</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item active>Sales Commissions</x-ui.breadcrumbs.item>
+        </x-slot:breadcrumbs>
+    </x-erp.page-header>
+
+    <!-- Flash Feedback Alerts -->
+    @if (session()->has('success'))
+        <x-ui.alert type="success" title="Success" class="rounded-2xl">
+            {{ session('success') }}
+        </x-ui.alert>
+    @endif
+
+    @if (session()->has('error'))
+        <x-ui.alert type="danger" title="Error" class="rounded-2xl">
+            {{ session('error') }}
+        </x-ui.alert>
+    @endif
+
+    <!-- KPI & Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <x-erp.stat-card
+            title="Earned Commission"
+            :value="'Rp ' . number_format($totalEarned, 0, ',', '.')"
+            icon="payments"
+            trend-label="Gross calculated sales incentives"
+            variant="success"
+        />
+        <x-erp.stat-card
+            title="Reversals / Returns"
+            :value="'Rp ' . number_format($totalReversed, 0, ',', '.')"
+            icon="history"
+            trend-label="Deductions from returned orders"
+            delta-variant="danger"
+        />
+        <x-erp.stat-card
+            title="Net Commission"
+            :value="'Rp ' . number_format($netCommission, 0, ',', '.')"
+            icon="account_balance_wallet"
+            trend-label="Payable net sales commissions"
+            variant="success"
+        />
+        <x-erp.stat-card
+            title="Total Records"
+            :value="$totalRecordsCount"
+            icon="receipt_long"
+            trend-label="Lifetime commission transactions"
+        />
     </div>
 
-    <!-- Ringkasan Statistik Moneter -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
-            <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Total Komisi Diperoleh</div>
-            <div class="text-xl font-extrabold text-emerald-600 font-mono">
-                Rp {{ number_format($totalEarned, 2, ',', '.') }}
-            </div>
-        </div>
-
-        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
-            <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Total Dibatalkan / Retur</div>
-            <div class="text-xl font-extrabold text-rose-600 font-mono">
-                Rp {{ number_format($totalReversed, 2, ',', '.') }}
-            </div>
-        </div>
-
-        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm">
-            <div class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Komisi Bersih (Net)</div>
-            <div class="text-xl font-extrabold text-indigo-600 font-mono">
-                Rp {{ number_format($netCommission, 2, ',', '.') }}
-            </div>
-        </div>
-    </div>
-
-    <!-- Filter Bar -->
-    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
+    <!-- Filter & Toolbar -->
+    <div class="card-surface p-4 rounded-2xl border border-border shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Karyawan:</span>
-                <select wire:model.live="employeeFilter" class="text-xs font-semibold px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 outline-none focus:bg-white focus:border-indigo-500">
-                    <option value="">Semua Karyawan</option>
+                <span class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Employee:</span>
+                <x-ui.select wire:model.live="employeeFilter" class="w-auto text-xs sm:text-sm">
+                    <option value="">All Employees</option>
                     @foreach ($employees as $emp)
                         <option value="{{ $emp->id }}">{{ $emp->full_name }}</option>
                     @endforeach
-                </select>
+                </x-ui.select>
             </div>
 
             <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Status:</span>
-                <select wire:model.live="statusFilter" class="text-xs font-semibold px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 outline-none focus:bg-white focus:border-indigo-500">
-                    <option value="ALL">Semua Status</option>
-                    <option value="EARNED">Diperoleh (EARNED)</option>
-                    <option value="REVERSED">Dibatalkan / Retur (REVERSED)</option>
-                    <option value="PAID">Sudah Dicairkan (PAID)</option>
-                </select>
+                <span class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Status:</span>
+                <x-ui.select wire:model.live="statusFilter" class="w-auto text-xs sm:text-sm">
+                    <option value="ALL">All Statuses</option>
+                    @foreach (\App\Modules\HR\Enums\CommissionRecordStatusEnum::cases() as $case)
+                        <option value="{{ $case->value }}">{{ $case->label() }}</option>
+                    @endforeach
+                </x-ui.select>
             </div>
         </div>
     </div>
 
-    <!-- Tabel Catatan Komisi -->
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <!-- Commission Records Table -->
+    <div class="card-surface rounded-2xl border border-border shadow-xs overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-700 divide-y divide-gray-200">
-                <thead class="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
+            <table class="w-full text-left text-sm text-foreground divide-y divide-border">
+                <thead class="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     <tr>
-                        <th class="px-6 py-3.5">Karyawan</th>
-                        <th class="px-6 py-3.5">Referensi Order</th>
-                        <th class="px-6 py-3.5">Dasar Perhitungan</th>
-                        <th class="px-6 py-3.5">Nilai Komisi</th>
+                        <th class="px-6 py-3.5">Employee</th>
+                        <th class="px-6 py-3.5">Order Reference</th>
+                        <th class="px-6 py-3.5">Calculation Basis</th>
+                        <th class="px-6 py-3.5">Commission Amount</th>
                         <th class="px-6 py-3.5">Status</th>
-                        <th class="px-6 py-3.5">Tanggal</th>
+                        <th class="px-6 py-3.5">Date</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200">
+                <tbody class="divide-y divide-border">
                     @forelse ($records as $record)
-                        <tr class="hover:bg-gray-50/60 transition-colors">
-                            <td class="px-6 py-4 font-semibold text-gray-900">
-                                {{ $record->employee?->full_name ?? 'Staf' }}
+                        @php
+                            $isReversal = $record->type === \App\Modules\HR\Enums\CommissionRecordTypeEnum::REVERSAL
+                                || $record->status === \App\Modules\HR\Enums\CommissionRecordStatusEnum::REVERSED
+                                || (float) $record->commission_amount < 0;
+                            $amountAbs = abs((float) $record->commission_amount);
+                            $basisAmount = (float) ($record->calculation_basis_amount ?? $record->basis_amount ?? 0);
+                        @endphp
+                        <tr class="hover:bg-muted/30 transition-colors">
+                            <td class="px-6 py-4 font-semibold text-foreground flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-secondary text-secondary-foreground font-bold flex items-center justify-center text-xs shrink-0">
+                                    {{ strtoupper(substr($record->employee?->full_name ?? 'EM', 0, 2)) }}
+                                </div>
+                                <div class="min-w-0">
+                                    <div class="font-semibold text-foreground truncate">{{ $record->employee?->full_name ?? 'Staff' }}</div>
+                                    <div class="text-xs text-muted-foreground tabular-nums">{{ $record->employee?->employee_number }}</div>
+                                </div>
                             </td>
-                            <td class="px-6 py-4 font-mono text-xs text-gray-600">
+                            <td class="px-6 py-4 text-xs text-muted-foreground tabular-nums">
                                 #{{ $record->order_id }}
                             </td>
-                            <td class="px-6 py-4 font-mono text-xs">
-                                Rp {{ number_format((float) $record->basis_amount, 2, ',', '.') }}
+                            <td class="px-6 py-4 text-xs tabular-nums text-foreground">
+                                Rp {{ number_format($basisAmount, 2, ',', '.') }}
                             </td>
-                            <td class="px-6 py-4 font-bold font-mono {{ $record->status->value === 'REVERSED' ? 'text-rose-600' : 'text-emerald-600' }}">
-                                {{ $record->status->value === 'REVERSED' ? '-' : '+' }} Rp {{ number_format((float) $record->commission_amount, 2, ',', '.') }}
+                            <td class="px-6 py-4 font-bold tabular-nums {{ $isReversal ? 'text-rose-600' : 'text-emerald-600' }}">
+                                {{ $isReversal ? '-' : '+' }} Rp {{ number_format($amountAbs, 2, ',', '.') }}
                             </td>
                             <td class="px-6 py-4">
-                                @php
-                                    $badge = match($record->status->value) {
-                                        'EARNED' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                                        'REVERSED' => 'bg-rose-50 text-rose-700 border-rose-200',
-                                        'PAID' => 'bg-blue-50 text-blue-700 border-blue-200',
-                                        default => 'bg-gray-100 text-gray-700 border-gray-200'
-                                    };
-                                @endphp
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border {{ $badge }}">
-                                    {{ $record->status->value }}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border {{ $record->status->badgeClasses() }}">
+                                    {{ $record->status->label() }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 font-mono text-xs text-gray-500">
+                            <td class="px-6 py-4 text-xs text-muted-foreground tabular-nums">
                                 {{ $record->created_at ? $record->created_at->format('d M Y, H:i') : '-' }}
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-gray-400">
-                                <span class="material-symbols-rounded text-4xl block mb-2 text-gray-300">receipt_long</span>
-                                Tidak ada rekaman transaksi komisi staf ditemukan.
+                            <td colspan="6" class="px-6 py-12 text-center text-muted-foreground">
+                                <span class="material-symbols-rounded text-4xl block mb-2 text-muted-foreground/50">paid</span>
+                                No commission transaction records found.
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        <div class="p-4 border-t border-gray-200">
+        <div class="p-4 border-t border-border">
             {{ $records->links() }}
         </div>
     </div>

@@ -311,6 +311,14 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
     }
 
     /**
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne<\App\Modules\HR\Models\Employee, $this>
+     */
+    public function employee(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(\App\Modules\HR\Models\Employee::class, 'user_id');
+    }
+
+    /**
      * Route binding di-scope ke tenant pada konteks aktif (404 bila lintas tenant).
      * Login tidak melewati route binding, sehingga tidak terpengaruh (BD-7 aman).
      * Fail-closed: jika tenant context tidak ada dan tidak dalam explicit bypass, tolak resolusi.

@@ -371,7 +371,7 @@ class PendingOrderReservationAndCompensationTest extends TestCase
         });
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('lintas tenant');
+        $this->expectExceptionMessage('Cross-tenant access denied.');
 
         $this->returnService->createReturnAndRefund(
             order: $orderB,

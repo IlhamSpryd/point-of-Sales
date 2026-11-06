@@ -190,7 +190,7 @@ final class StatusPalette
             'warning' => 'bg-warning',
             'destructive' => 'bg-destructive',
             'info' => 'bg-info',
-            default => 'bg-muted-foreground',
+            default => 'bg-neutral',
         };
     }
 

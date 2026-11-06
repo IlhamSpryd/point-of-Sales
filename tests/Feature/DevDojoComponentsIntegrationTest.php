@@ -217,7 +217,7 @@ class DevDojoComponentsIntegrationTest extends TestCase
 
         $this->assertStringContainsString('Pemasok', $html);
         $this->assertStringContainsString('*', $html);
-        $this->assertStringContainsString('(wajib diisi)', $html);
+        $this->assertStringContainsString('(required)', $html);
         $this->assertStringContainsString('Pemasok wajib dipilih.', $html);
         $this->assertStringContainsString('role="alert"', $html);
     }
@@ -242,7 +242,7 @@ class DevDojoComponentsIntegrationTest extends TestCase
         $this->assertStringContainsString('role="listbox"', $html);
         $this->assertStringContainsString('Pilih Bahan Baku...', $html);
         $this->assertStringContainsString('Biji Kopi Arabika', $html);
-        $this->assertStringContainsString('aria-label="Bersihkan pilihan"', $html);
+        $this->assertStringContainsString('aria-label="Clear selection"', $html);
     }
 
     public function test_can_render_erp_confirm_dialog_and_dirty_guard(): void

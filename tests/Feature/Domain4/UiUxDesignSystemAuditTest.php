@@ -277,7 +277,7 @@ class UiUxDesignSystemAuditTest extends TestCase
         $toast = Blade::render('<x-toast />');
         $this->assertStringContainsString('role="status"', $toast);
         $this->assertStringContainsString('aria-live="polite"', $toast);
-        $this->assertStringContainsString('aria-label="Tutup notifikasi"', $toast);
+        $this->assertStringContainsString('aria-label="Close notification"', $toast);
 
         // Alert
         $successAlert = Blade::render('<x-alert type="success">Data tersimpan</x-alert>');

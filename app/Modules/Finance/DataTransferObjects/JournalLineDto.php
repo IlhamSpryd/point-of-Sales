@@ -14,6 +14,10 @@ readonly class JournalLineDto
         public ?int $storeId = null,
         public ?int $customerId = null,
         public ?int $supplierId = null,
-        public ?int $taxCodeId = null
+        public ?int $taxCodeId = null,
+        public ?string $foreignCurrencyCode = null,
+        public ?string $foreignDebitAmount = null,
+        public ?string $foreignCreditAmount = null,
+        public ?string $exchangeRate = null
     ) {}
 }

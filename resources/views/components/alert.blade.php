@@ -45,7 +45,7 @@
         <span class="material-symbols-rounded text-[18px] shrink-0" aria-hidden="true">{{ $config['icon'] }}</span>
         <span>{{ $slot }}</span>
     </span>
-    <button @click="show = false" aria-label="Tutup notifikasi" class="{{ $config['btn'] }} transition-colors duration-200 active:scale-90 cursor-pointer p-1 rounded-md">
+    <button @click="show = false" aria-label="Close notification" class="{{ $config['btn'] }} transition-colors duration-200 active:scale-90 cursor-pointer p-1 rounded-md">
         <span class="material-symbols-rounded text-[18px]" aria-hidden="true">close</span>
     </button>
 </div>

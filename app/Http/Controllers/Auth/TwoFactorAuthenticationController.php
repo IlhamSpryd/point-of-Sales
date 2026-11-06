@@ -30,7 +30,7 @@ class TwoFactorAuthenticationController extends Controller
         $user = $request->user();
 
         if ($user->hasTwoFactorEnabled()) {
-            return back()->with('info', 'Autentikasi dua faktor sudah aktif pada akun Anda.');
+            return back()->with('info', 'Two-factor authentication is already enabled for your account.');
         }
 
         $secret = $this->twoFactorService->generateSecretKey();
@@ -76,11 +76,11 @@ class TwoFactorAuthenticationController extends Controller
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Kode autentikasi 6-digit tidak valid atau sudah kedaluwarsa.',
+                    'message' => 'The provided 6-digit authentication code is invalid or has expired.',
                 ], 422);
             }
 
-            return back()->withErrors(['code' => 'Kode autentikasi 6-digit tidak valid atau sudah kedaluwarsa.']);
+            return back()->withErrors(['code' => 'The provided 6-digit authentication code is invalid or has expired.']);
         }
 
         $request->session()->put('two_factor_confirmed_at', now()->timestamp);
@@ -88,11 +88,11 @@ class TwoFactorAuthenticationController extends Controller
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Autentikasi dua faktor berhasil diaktifkan.',
+                'message' => 'Two-factor authentication has been enabled successfully.',
             ]);
         }
 
-        return back()->with('success', 'Autentikasi dua faktor (2FA) berhasil diaktifkan pada akun Anda.');
+        return back()->with('success', 'Two-factor authentication (2FA) has been enabled for your account.');
     }
 
     /**
@@ -113,11 +113,11 @@ class TwoFactorAuthenticationController extends Controller
                 if ($request->wantsJson()) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Kata sandi saat ini salah.',
+                        'message' => 'The provided password does not match your current password.',
                     ], 422);
                 }
 
-                return back()->withErrors(['password' => 'Kata sandi saat ini salah.']);
+                return back()->withErrors(['password' => 'The provided password does not match your current password.']);
             }
         }
 
@@ -127,11 +127,11 @@ class TwoFactorAuthenticationController extends Controller
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
-                'message' => 'Autentikasi dua faktor telah dinonaktifkan.',
+                'message' => 'Two-factor authentication has been disabled.',
             ]);
         }
 
-        return back()->with('success', 'Autentikasi dua faktor (2FA) telah dinonaktifkan.');
+        return back()->with('success', 'Two-factor authentication (2FA) has been disabled.');
     }
 
     /**
@@ -151,7 +151,7 @@ class TwoFactorAuthenticationController extends Controller
             if (now()->timestamp - $startedAt > 300) {
                 $request->session()->forget(['login.mfa_user_id', 'login.mfa_remember', 'login.mfa_started_at']);
 
-                return redirect()->route('login')->withErrors(['email' => 'Sesi verifikasi 2FA telah kedaluwarsa. Silakan login kembali.']);
+                return redirect()->route('login')->withErrors(['email' => 'Your two-factor verification session has expired. Please sign in again.']);
             }
         }
 
@@ -180,11 +180,11 @@ class TwoFactorAuthenticationController extends Controller
                 if ($request->wantsJson()) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Sesi verifikasi 2FA telah kedaluwarsa. Silakan login kembali.',
+                        'message' => 'Your two-factor verification session has expired. Please sign in again.',
                     ], 401);
                 }
 
-                return redirect()->route('login')->withErrors(['email' => 'Sesi verifikasi 2FA telah kedaluwarsa. Silakan login kembali.']);
+                return redirect()->route('login')->withErrors(['email' => 'Your two-factor verification session has expired. Please sign in again.']);
             }
 
             $user = User::withoutGlobalScopes()->find($pendingId);
@@ -195,11 +195,11 @@ class TwoFactorAuthenticationController extends Controller
                 if ($request->wantsJson()) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'Akun tidak valid atau tidak memiliki akses.',
+                        'message' => 'Invalid account or access denied.',
                     ], 403);
                 }
 
-                return redirect()->route('login')->withErrors(['email' => 'Akun tidak valid atau tidak memiliki akses.']);
+                return redirect()->route('login')->withErrors(['email' => 'Invalid account or access denied.']);
             }
 
             $isPendingLogin = true;
@@ -222,11 +222,11 @@ class TwoFactorAuthenticationController extends Controller
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Kode autentikasi dua faktor atau kode pemulihan tidak valid.',
+                    'message' => 'Invalid two-factor authentication code or recovery code.',
                 ], 422);
             }
 
-            return back()->withErrors(['code' => 'Kode autentikasi dua faktor atau kode pemulihan tidak valid.']);
+            return back()->withErrors(['code' => 'Invalid two-factor authentication code or recovery code.']);
         }
 
         if ($isPendingLogin) {
@@ -243,7 +243,7 @@ class TwoFactorAuthenticationController extends Controller
                 userId: (int) $user->id,
                 subjectType: User::class,
                 subjectId: (int) $user->id,
-                description: "Pengguna {$user->email} berhasil menyelesaikan tantangan 2FA saat masuk."
+                description: "User {$user->email} successfully completed two-factor authentication challenge."
             );
 
             if ($request->wantsJson()) {
@@ -268,6 +268,6 @@ class TwoFactorAuthenticationController extends Controller
         }
 
         return redirect()->to($intendedUrl)
-            ->with('success', 'Identitas dua faktor berhasil diverifikasi.');
+            ->with('success', 'Two-factor authentication verified successfully.');
     }
 }

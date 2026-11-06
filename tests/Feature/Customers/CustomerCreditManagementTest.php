@@ -230,7 +230,7 @@ class CustomerCreditManagementTest extends TestCase
             $this->salesOrderService->confirmOrder($so2, $this->ownerA);
             $this->fail('Konfirmasi SO 2 seharusnya gagal karena melebihi plafon kredit');
         } catch (DomainException $e) {
-            $this->assertStringContainsString('melebihi batas kredit', $e->getMessage());
+            $this->assertStringContainsString('exceeds credit limit', $e->getMessage());
         }
 
         $so2->refresh();
@@ -420,7 +420,7 @@ class CustomerCreditManagementTest extends TestCase
 
         $this->assertNotNull($secondException, 'Order kedua yang bersaing harus ditolak.');
         $this->assertInstanceOf(DomainException::class, $secondException);
-        $this->assertStringContainsString('melebihi batas kredit', $secondException->getMessage());
+        $this->assertStringContainsString('exceeds credit limit', $secondException->getMessage());
 
         $soBeta->refresh();
         $this->assertSame(SalesOrderStatusEnum::DRAFT, $soBeta->status);

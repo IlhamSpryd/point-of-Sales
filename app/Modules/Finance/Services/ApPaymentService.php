@@ -32,7 +32,7 @@ class ApPaymentService
     ) {}
 
     /**
-     * Membuat draft pembayaran hutang ke pemasok.
+     * Create AP payment draft for supplier.
      *
      * @param  array<string, mixed>  $data
      */
@@ -47,7 +47,7 @@ class ApPaymentService
 
         if (bccomp(bc_num($totalPaymentAmount), '0.00', 2) <= 0) {
             throw ValidationException::withMessages([
-                'total_payment_amount' => ['FIN-M7-01: Total pembayaran harus lebih besar dari 0.00.'],
+                'total_payment_amount' => ['FIN-M7-01: Total payment amount must be greater than 0.00.'],
             ]);
         }
 
@@ -78,12 +78,12 @@ class ApPaymentService
     }
 
     /**
-     * Mengajukan pembayaran untuk persetujuan.
+     * Submit AP payment for approval.
      */
     public function submit(ApPayment $payment, User $actor): ApPayment
     {
         if (! $payment->isDraft()) {
-            throw new DomainException("Hanya pembayaran berstatus DRAFT yang dapat diajukan. Status saat ini: {$payment->status->value}.");
+            throw new DomainException("Only DRAFT payments can be submitted. Current status: {$payment->status->value}.");
         }
 
         $payment->status = ApPaymentStatusEnum::PENDING_APPROVAL;
@@ -93,17 +93,17 @@ class ApPaymentService
     }
 
     /**
-     * Menyetujui pembayaran dengan kontrol Segregation of Duties (SoD).
+     * Approve AP payment with Segregation of Duties (SoD) enforcement.
      */
     public function approve(ApPayment $payment, User $actor): ApPayment
     {
         if (! in_array($payment->status, [ApPaymentStatusEnum::DRAFT, ApPaymentStatusEnum::PENDING_APPROVAL], true)) {
-            throw new DomainException("Pembayaran dengan status {$payment->status->value} tidak dapat disetujui.");
+            throw new DomainException("Payment with status {$payment->status->value} cannot be approved.");
         }
 
         // Kontrol Separation of Duties (SoD) FIN-M7-10
         if ($payment->created_by_user_id === $actor->id && ! $actor->is_admin) {
-            throw new DomainException('FIN-M7-10: Pembuat draft pembayaran supplier dilarang menyetujui pembayarannya sendiri (Separation of Duties).');
+            throw new DomainException('FIN-M7-10: Payment draft creator cannot approve their own payment (Segregation of Duties).');
         }
 
         $payment->status = ApPaymentStatusEnum::PENDING_APPROVAL;
@@ -141,14 +141,14 @@ class ApPaymentService
             }
 
             if ($lockedPayment->isVoided()) {
-                throw new DomainException('Pembayaran yang sudah dibatalkan (VOIDED) tidak dapat diposting.');
+                throw new DomainException('Voided payments cannot be posted.');
             }
 
-            // 1. Ambil dan urutkan ID faktur secara deterministik (id ASC) untuk mencegah deadlock
+            // 1. Fetch and sort invoice IDs deterministically (id ASC) to prevent deadlocks
             $invoiceIds = array_unique(array_map(fn ($a) => (int) $a['supplier_invoice_id'], $allocationsData));
             sort($invoiceIds);
 
-            // 2. Kunci faktur yang akan dialokasikan
+            // 2. Lock invoices to be allocated
             $invoices = SupplierInvoice::withoutTenantScope()
                 ->where('tenant_id', $tenantId)
                 ->whereIn('id', $invoiceIds)
@@ -159,7 +159,7 @@ class ApPaymentService
 
             $totalAllocated = '0.00';
 
-            // 3. Validasi alokasi & perbarui saldo faktur
+            // 3. Validate allocation and update invoice balance
             foreach ($allocationsData as $alloc) {
                 $invId = (int) $alloc['supplier_invoice_id'];
                 $allocAmount = (string) $alloc['allocated_amount'];
@@ -167,21 +167,21 @@ class ApPaymentService
 
                 if (bccomp(bc_num($allocAmount), '0.00', 2) <= 0) {
                     throw ValidationException::withMessages([
-                        'allocations' => ['FIN-M7-01: Jumlah alokasi pada setiap faktur harus lebih besar dari 0.00.'],
+                        'allocations' => ['FIN-M7-01: Allocation amount on each invoice must be greater than 0.00.'],
                     ]);
                 }
 
                 /** @var SupplierInvoice|null $invoice */
                 $invoice = $invoices->get($invId);
                 if (! $invoice) {
-                    throw new DomainException("Faktur Pemasok #{$invId} tidak ditemukan untuk tenant ini.");
+                    throw new DomainException("Supplier invoice #{$invId} was not found for this tenant.");
                 }
 
-                // Cek overpayment terhadap sisa tagihan faktur pemasok (FIN-M7-11)
+                // Check overpayment against outstanding invoice balance (FIN-M7-11)
                 if (bccomp(bc_num($allocAmount), bc_num($invoice->outstanding_amount), 2) > 0) {
                     throw ValidationException::withMessages([
                         'allocations' => [
-                            "FIN-M7-11: Alokasi pembayaran ({$allocAmount}) melebihi sisa tagihan faktur #{$invoice->internal_invoice_number} ({$invoice->outstanding_amount}).",
+                            "FIN-M7-11: Payment allocation ({$allocAmount}) exceeds outstanding invoice balance for #{$invoice->internal_invoice_number} ({$invoice->outstanding_amount}).",
                         ],
                     ]);
                 }
@@ -336,17 +336,17 @@ class ApPaymentService
                 ->findOrFail($payment->id);
 
             if (! $lockedPayment->isPosted()) {
-                throw new DomainException("Hanya pembayaran berstatus POSTED yang dapat dibatalkan (VOIDED). Status: {$lockedPayment->status->value}.");
+                throw new DomainException("Only POSTED payments can be voided. Status: {$lockedPayment->status->value}.");
             }
 
-            // Periksa rekonsiliasi kas/bank
+            // Check cash/bank reconciliation
             $cbt = CashBankTransaction::withoutTenantScope()
                 ->where('tenant_id', $tenantId)
                 ->where('idempotency_key', "cbt:appay:{$tenantId}:{$lockedPayment->id}")
                 ->first();
 
             if ($cbt && $cbt->is_reconciled) {
-                throw new DomainException('FIN-M7-08: Pembayaran yang mutasi banknya telah direkonsiliasi tidak dapat dibatalkan.');
+                throw new DomainException('FIN-M7-08: Payments with reconciled bank transactions cannot be voided.');
             }
 
             // 1. Buka kembali alokasi pada supplier_invoices

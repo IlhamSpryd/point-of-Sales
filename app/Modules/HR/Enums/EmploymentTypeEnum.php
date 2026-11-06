@@ -15,11 +15,11 @@ enum EmploymentTypeEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::PERMANENT => 'Tetap (PKWTT)',
-            self::CONTRACT_PKWT => 'Kontrak (PKWT)',
-            self::PROBATION => 'Masa Percobaan',
-            self::INTERN => 'Magang (Intern)',
-            self::DAILY_WORKER => 'Pekerja Harian Lepas',
+            self::PERMANENT => 'Permanent (PKWTT)',
+            self::CONTRACT_PKWT => 'Contract (PKWT)',
+            self::PROBATION => 'Probation',
+            self::INTERN => 'Internship',
+            self::DAILY_WORKER => 'Daily Worker',
         };
     }
 }

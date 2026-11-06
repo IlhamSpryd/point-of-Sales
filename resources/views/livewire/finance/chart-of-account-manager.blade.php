@@ -17,14 +17,14 @@
     <!-- Header Action Bar -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-xl font-bold text-zinc-950 dark:text-white tracking-tight">Bagan Akun (Chart of Accounts)</h1>
-            <p class="text-xs text-zinc-500">Struktur hierarki akun buku besar standar akuntansi dual-entry multi-tenant.</p>
+            <h1 class="text-xl font-bold text-zinc-950 dark:text-white tracking-tight">Chart of Accounts</h1>
+            <p class="text-xs text-zinc-500">Multi-tenant dual-entry general ledger chart of accounts hierarchy.</p>
         </div>
         <button type="button"
                 wire:click="openCreateModal"
                 class="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-xl transition-colors shadow-xs">
             <span class="material-symbols-rounded text-base">add</span>
-            <span>Tambah Akun</span>
+            <span>Add Account</span>
         </button>
     </div>
 
@@ -34,22 +34,22 @@
             <span class="material-symbols-rounded absolute left-3 top-2.5 text-zinc-400 text-sm">search</span>
             <input type="text"
                    wire:model.live.debounce.300ms="search"
-                   placeholder="Cari kode atau nama akun..."
+                   placeholder="Search account code or name..."
                    class="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100">
         </div>
 
         <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
             <select wire:model.live="typeFilter" class="text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 px-3 py-1.5 focus:outline-none">
-                <option value="">Semua Tipe Akun</option>
+                <option value="">All Account Types</option>
                 @foreach ($accountTypes as $type)
                     <option value="{{ $type->value }}">{{ $type->value }}</option>
                 @endforeach
             </select>
 
             <select wire:model.live="statusFilter" class="text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 px-3 py-1.5 focus:outline-none">
-                <option value="">Semua Status</option>
-                <option value="active">Aktif Saja</option>
-                <option value="inactive">Nonaktif</option>
+                <option value="">All Statuses</option>
+                <option value="active">Active Only</option>
+                <option value="inactive">Inactive</option>
             </select>
         </div>
     </div>
@@ -60,13 +60,13 @@
             <table class="w-full text-left text-xs">
                 <thead class="bg-zinc-50 dark:bg-zinc-900/60 text-zinc-500 font-semibold border-b border-zinc-200 dark:border-zinc-800">
                     <tr>
-                        <th class="px-4 py-3">Kode Akun</th>
-                        <th class="px-4 py-3">Nama Akun</th>
-                        <th class="px-4 py-3">Tipe Klasifikasi</th>
-                        <th class="px-4 py-3">Saldo Normal</th>
+                        <th class="px-4 py-3">Account Code</th>
+                        <th class="px-4 py-3">Account Name</th>
+                        <th class="px-4 py-3">Classification Type</th>
+                        <th class="px-4 py-3">Normal Balance</th>
                         <th class="px-4 py-3">Postable</th>
                         <th class="px-4 py-3">Status</th>
-                        <th class="px-4 py-3 text-right">Aksi</th>
+                        <th class="px-4 py-3 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
@@ -105,13 +105,13 @@
                                     </span>
                                 @else
                                     <span class="inline-flex items-center gap-1 text-[11px] text-zinc-400">
-                                        <span class="material-symbols-rounded text-sm">folder</span> Header/Induk
+                                        <span class="material-symbols-rounded text-sm">folder</span> Header/Parent
                                     </span>
                                 @endif
                             </td>
                             <td class="px-4 py-3">
                                 <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold {{ $acc->is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-zinc-500/10 text-zinc-500' }}">
-                                    {{ $acc->is_active ? 'Aktif' : 'Nonaktif' }}
+                                    {{ $acc->is_active ? 'Active' : 'Inactive' }}
                                 </span>
                             </td>
                             <td class="px-4 py-3 text-right">
@@ -119,13 +119,13 @@
                                     <button type="button"
                                             wire:click="openEditModal({{ $acc->id }})"
                                             class="p-1 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-colors"
-                                            title="Edit Akun">
+                                            title="Edit Account">
                                         <span class="material-symbols-rounded text-base">edit</span>
                                     </button>
                                     <button type="button"
                                             wire:click="toggleActive({{ $acc->id }})"
                                             class="p-1 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 {{ $acc->is_active ? 'text-rose-500' : 'text-emerald-500' }} transition-colors"
-                                            title="{{ $acc->is_active ? 'Nonaktifkan' : 'Aktifkan' }}">
+                                            title="{{ $acc->is_active ? 'Deactivate' : 'Activate' }}">
                                         <span class="material-symbols-rounded text-base">{{ $acc->is_active ? 'block' : 'check_circle' }}</span>
                                     </button>
                                 </div>
@@ -135,7 +135,7 @@
                         <tr>
                             <td colspan="7" class="px-4 py-12 text-center text-zinc-400">
                                 <span class="material-symbols-rounded text-3xl mb-1 text-zinc-300">account_tree</span>
-                                <p class="text-xs">Tidak ada akun yang sesuai kriteria pencarian.</p>
+                                <p class="text-xs">No accounts matching the search criteria found.</p>
                             </td>
                         </tr>
                     @endforelse
@@ -157,7 +157,7 @@
                  @click.outside="$wire.set('showFormModal', false)">
                 <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
                     <h3 class="text-base font-bold text-zinc-950 dark:text-white">
-                        {{ $editingAccountId ? 'Edit Akun' : 'Tambah Akun Baru' }}
+                        {{ $editingAccountId ? 'Edit Account' : 'Add New Account' }}
                     </h3>
                     <button type="button" wire:click="$set('showFormModal', false)" class="text-zinc-400 hover:text-zinc-600">
                         <span class="material-symbols-rounded text-lg">close</span>
@@ -167,16 +167,16 @@
                 <form wire:submit="saveAccount" class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Kode Akun</label>
+                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Account Code</label>
                             <input type="text"
                                    wire:model="accountCode"
-                                   placeholder="Contoh: 1101"
+                                   placeholder="e.g. 1101"
                                    class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-mono">
                             @error('accountCode') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Klasifikasi Tipe</label>
+                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Classification Type</label>
                             <select wire:model.live="accountType"
                                     class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
                                 @foreach ($accountTypes as $type)
@@ -188,17 +188,17 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Nama Akun</label>
+                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Account Name</label>
                         <input type="text"
                                wire:model="accountName"
-                               placeholder="Contoh: Kas Utama Operasional"
+                               placeholder="e.g. Operating Petty Cash"
                                class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
                         @error('accountName') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Saldo Normal</label>
+                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Normal Balance</label>
                             <select wire:model="normalBalance"
                                     class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-mono">
                                 <option value="DEBIT">DEBIT</option>
@@ -208,10 +208,10 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Akun Induk (Parent)</label>
+                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Parent Account</label>
                             <select wire:model="parentId"
                                     class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-                                <option value="">(Tidak Ada - Akun Utama Level 1)</option>
+                                <option value="">(None - Top Level Account)</option>
                                 @foreach ($parentOptions as $parent)
                                     <option value="{{ $parent->id }}">[{{ $parent->account_code }}] {{ $parent->account_name }}</option>
                                 @endforeach
@@ -223,19 +223,19 @@
                     <div class="space-y-2 pt-2 border-t border-zinc-200 dark:border-zinc-800 text-xs">
                         <label class="flex items-center gap-2 text-zinc-700 dark:text-zinc-300 cursor-pointer">
                             <input type="checkbox" wire:model="isPostable" class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900">
-                            <span>Akun Postable (Dapat diposting baris transaksi jurnal)</span>
+                            <span>Postable Account (Allows direct journal line posting)</span>
                         </label>
                         <label class="flex items-center gap-2 text-zinc-700 dark:text-zinc-300 cursor-pointer">
                             <input type="checkbox" wire:model="allowManualJournal" class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900">
-                            <span>Izinkan Jurnal Manual (Bukan akun kontrol otomatis)</span>
+                            <span>Allow Manual Journal (Not restricted to system automated posting)</span>
                         </label>
                         <label class="flex items-center gap-2 text-zinc-700 dark:text-zinc-300 cursor-pointer">
                             <input type="checkbox" wire:model="isReconcilable" class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900">
-                            <span>Dapat Direkonsiliasi (Akun Kas/Bank)</span>
+                            <span>Reconcilable (Cash/Bank Account)</span>
                         </label>
                         <label class="flex items-center gap-2 text-zinc-700 dark:text-zinc-300 cursor-pointer">
                             <input type="checkbox" wire:model="isActive" class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900">
-                            <span>Akun Aktif</span>
+                            <span>Active Account</span>
                         </label>
                     </div>
 
@@ -243,11 +243,11 @@
                         <button type="button"
                                 wire:click="$set('showFormModal', false)"
                                 class="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white rounded-xl transition-colors">
-                            Batal
+                            Cancel
                         </button>
                         <button type="submit"
                                 class="px-4 py-2 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-xl transition-colors shadow-xs">
-                            Simpan Akun
+                            Save Account
                         </button>
                     </div>
                 </form>

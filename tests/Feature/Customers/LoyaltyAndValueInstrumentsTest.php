@@ -213,7 +213,7 @@ class LoyaltyAndValueInstrumentsTest extends TestCase
 
         // 2. Validasi gagal jika belanja kurang dari minimum
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('belum memenuhi syarat minimum voucher');
+        $this->expectExceptionMessage('does not meet the minimum voucher purchase requirement');
         $this->voucherService->validateVoucher('HEMAT20', $this->customerA, '80000.00');
     }
 
@@ -293,7 +293,7 @@ class LoyaltyAndValueInstrumentsTest extends TestCase
 
         // 3. Tebus dengan PIN salah harus ditolak
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('PIN Gift Card yang dimasukkan salah');
+        $this->expectExceptionMessage('Incorrect Gift Card PIN entered');
         $this->giftCardService->redeemGiftCard(
             cardNumber: $giftCard->card_number,
             amount: '50000.00',
@@ -314,7 +314,7 @@ class LoyaltyAndValueInstrumentsTest extends TestCase
         ], $this->ownerA);
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Saldo Gift Card tidak mencukupi');
+        $this->expectExceptionMessage('Insufficient Gift Card balance');
         $this->giftCardService->redeemGiftCard(
             cardNumber: $giftCard->card_number,
             amount: '60000.00',
@@ -378,7 +378,7 @@ class LoyaltyAndValueInstrumentsTest extends TestCase
         );
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Saldo Store Credit tidak mencukupi');
+        $this->expectExceptionMessage('Insufficient Store Credit balance');
         $this->storeCreditService->redeemStoreCredit(
             customer: $this->customerA,
             amount: '75000.00',
@@ -413,7 +413,7 @@ class LoyaltyAndValueInstrumentsTest extends TestCase
 
         // Coba validasi voucher Tenant A dari konteks Tenant B -> Harus Ditolak
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage("Voucher dengan kode 'TENANTAONLY' tidak ditemukan");
+        $this->expectExceptionMessage("Voucher with code 'TENANTAONLY' was not found");
         $this->voucherService->validateVoucher('TENANTAONLY', $this->customerB, '100000.00');
     }
 

@@ -82,7 +82,7 @@
         </div>
 
         <button type="submit"
-                class="w-full mt-4 h-11 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-background transition-all shadow-sm active:scale-[0.99] flex items-center justify-center gap-2">
+                class="w-full mt-4 h-11 bg-primary text-primary-foreground font-semibold rounded-xl hover:bg-foreground transition-all shadow-sm active:scale-[0.99] flex items-center justify-center gap-2">
             <span class="material-symbols-rounded text-lg">check_circle</span>
             Activate Account &amp; Sign In
         </button>

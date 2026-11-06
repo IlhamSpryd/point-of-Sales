@@ -4,7 +4,6 @@
     $allPurchasingTabs = [
         [
             'label' => 'Suppliers',
-            'alias' => 'Data Induk Pemasok',
             'route' => 'purchasing.suppliers.index',
             'active' => 'purchasing.suppliers.*',
             'icon' => 'local_shipping',
@@ -12,7 +11,6 @@
         ],
         [
             'label' => 'Purchase Orders (PO)',
-            'alias' => 'Pesanan Pembelian',
             'route' => 'purchasing.orders.index',
             'active' => 'purchasing.orders.*',
             'icon' => 'shopping_bag',
@@ -20,7 +18,6 @@
         ],
         [
             'label' => 'Goods Receipt (GRN)',
-            'alias' => 'Penerimaan Barang',
             'route' => 'purchasing.grns.index',
             'active' => 'purchasing.grns.*',
             'icon' => 'input',
@@ -28,7 +25,6 @@
         ],
         [
             'label' => 'Supplier Invoices (3-Way)',
-            'alias' => 'Faktur Pemasok & 3-Way Match',
             'route' => 'purchasing.invoices.index',
             'active' => 'purchasing.invoices.*',
             'icon' => 'receipt',
@@ -36,7 +32,6 @@
         ],
         [
             'label' => 'Purchase Returns',
-            'alias' => 'Retur Pembelian & Nota Debit',
             'route' => 'purchasing.returns.index',
             'active' => 'purchasing.returns.*',
             'icon' => 'keyboard_return',

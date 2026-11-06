@@ -100,7 +100,7 @@ class CriticalScreensRenderTest extends TestCase
     {
         $response = $this->actingAs($this->ownerUser)->get(route('finance.journals.index'));
         $response->assertOk();
-        $response->assertSee('Jurnal Umum');
+        $response->assertSee('General Journal');
     }
 
     public function test_screen_6_products_index_renders(): void
@@ -122,7 +122,7 @@ class CriticalScreensRenderTest extends TestCase
     {
         $response = $this->actingAs($this->ownerUser)->get(route('hr.employees.index'));
         $response->assertOk();
-        $response->assertSee('Karyawan');
+        $response->assertSee('Employee Directory');
     }
 
     public function test_screen_9_sales_reports_renders(): void

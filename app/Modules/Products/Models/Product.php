@@ -183,6 +183,28 @@ class Product extends Model
         return isset($this->attributes['product_code']) ? (string) $this->attributes['product_code'] : null;
     }
 
+    /**
+     * Resolves absolute/root-relative web-accessible URL for the product photo.
+     */
+    public function getPhotoUrlAttribute(): ?string
+    {
+        $photo = $this->attributes['product_photo'] ?? null;
+        if (empty($photo)) {
+            return null;
+        }
+
+        if (filter_var($photo, FILTER_VALIDATE_URL)) {
+            return (string) $photo;
+        }
+
+        return '/storage/' . ltrim((string) $photo, '/');
+    }
+
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->getPhotoUrlAttribute();
+    }
+
     protected static function booted()
     {
         static::created(function ($model) {

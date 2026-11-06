@@ -14,14 +14,17 @@
 
     <div id="receipt" class="receipt-area mx-auto bg-white text-apeiron-ink">
         <div class="text-center mb-2">
-            <p class="font-bold text-base">Apeiron System</p>
+            <div class="flex justify-center mb-1.5">
+                <x-brand-logo variant="symbol" mode="light" class="h-5 w-auto text-black" />
+            </div>
+            <p class="font-bold text-base">{{ $order->branch->name ?? 'Apeiron System' }}</p>
             <p class="text-[10px]">Jl. Dewa No. 16b, Jakarta</p>
             <p class="text-[10px]">{{ $order->created_at->format('d/m/Y H:i') }}</p>
         </div>
 
         @if (($isReprint ?? false) || ($order->print_count ?? 0) > 1)
             <div class="border-y border-dashed border-apeiron-ink py-1 my-1 text-center font-bold text-[11px] tracking-wider">
-                *** COPY / CETAK ULANG #{{ $order->print_count }} ***
+                *** REPRINT #{{ $order->print_count }} ***
             </div>
         @endif
 
@@ -143,7 +146,8 @@
 
         .receipt-area {
             width: var(--receipt-width);
-            font-family: 'Courier New', Courier, monospace;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-variant-numeric: tabular-nums;
         }
 
         @media print {
@@ -158,9 +162,7 @@
                 background: #fff !important;
             }
 
-            /* [OMEGA-NODE4] Ganti pendekatan visibility:hidden (tidak menghapus
-               box dari flow, rawan halaman kosong tambahan pada shell h-dvh/flex)
-               dengan display:none pada shell yang sudah punya ID stabil. | 2026-09-22 */
+            /* Hide sidebar, header, and non-receipt content during thermal receipt printing */
             #main-sidebar,
             #main-wrapper > header,
             #main-content > *:not(#receipt) {

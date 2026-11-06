@@ -32,8 +32,8 @@ class ProfileEmailChangeController extends Controller
             $request->validate([
                 'current_password' => ['required', 'current_password'],
             ], [
-                'current_password.required' => 'Kata sandi saat ini wajib diisi untuk verifikasi keamanan.',
-                'current_password.current_password' => 'Kata sandi saat ini tidak cocok.',
+                'current_password.required' => 'Current password is required for security verification.',
+                'current_password.current_password' => 'The provided password does not match your current password.',
             ]);
         }
 
@@ -41,15 +41,15 @@ class ProfileEmailChangeController extends Controller
         $request->validate([
             'new_email' => ['required', 'string', 'email', 'max:255'],
         ], [
-            'new_email.required' => 'Alamat email baru wajib diisi.',
-            'new_email.email' => 'Format alamat email baru tidak valid.',
+            'new_email.required' => 'New email address is required.',
+            'new_email.email' => 'The new email address must be a valid email format.',
         ]);
 
         $newEmail = (string) $request->input('new_email');
         $newNormalized = EmailNormalizer::normalize($newEmail);
 
         if ($newNormalized === $user->email_normalized) {
-            return back()->withErrors(['new_email' => 'Alamat email baru tidak boleh sama dengan email aktif saat ini.']);
+            return back()->withErrors(['new_email' => 'The new email address cannot be the same as your current active email.']);
         }
 
         // 3. Pengecekan konflik global pada users.email_normalized
@@ -60,7 +60,7 @@ class ProfileEmailChangeController extends Controller
             ->exists();
 
         if ($conflict) {
-            return back()->withErrors(['new_email' => 'Alamat email ini sudah terdaftar pada akun lain.']);
+            return back()->withErrors(['new_email' => 'This email address is already registered to another account.']);
         }
 
         // 4. Simpan ke pending_email (users.email & email_verified_at TIDAK BERUBAH)
@@ -82,15 +82,15 @@ class ProfileEmailChangeController extends Controller
             'tenant_id' => $user->tenant_id,
             'user_id' => $user->id,
             'recipient_email' => $user->email,
-            'subject' => 'Peringatan Keamanan: Permintaan Perubahan Alamat Email',
+            'subject' => 'Security Alert: Email Address Change Requested',
             'event_type' => 'email_change_requested',
-            'body_text' => "Halo {$user->name},\n\nKami mendeteksi adanya permintaan untuk mengubah alamat email akun Anda menjadi {$newEmail}.\nJika Anda tidak merasa melakukan permintaan ini, segera amankan akun Anda dan ganti kata sandi.",
+            'body_text' => "Hello {$user->name},\n\nA request to change your account email address to {$newEmail} has been received.\nIf you did not make this request, please secure your account immediately and change your password.",
             'status' => 'pending',
         ]);
 
         return back()->with([
             'status' => 'pending-email-otp-sent',
-            'success' => 'Kode OTP 6 digit telah dikirim ke '.$newEmail.'. Silakan verifikasi kode untuk menyelesaikan perubahan email.',
+            'success' => 'A 6-digit verification code has been sent to '.$newEmail.'. Please enter the code to complete your email change.',
         ]);
     }
 
@@ -103,8 +103,8 @@ class ProfileEmailChangeController extends Controller
         $request->validate([
             'otp_code' => ['required', 'string', 'size:6'],
         ], [
-            'otp_code.required' => 'Kode OTP wajib diisi.',
-            'otp_code.size' => 'Kode OTP harus 6 digit angka.',
+            'otp_code.required' => 'Verification code is required.',
+            'otp_code.size' => 'Verification code must be 6 digits.',
         ]);
 
         /** @var User $user */
@@ -114,7 +114,7 @@ class ProfileEmailChangeController extends Controller
             $lockedUser = User::where('id', $user->id)->lockForUpdate()->firstOrFail();
 
             if (empty($lockedUser->pending_email)) {
-                return back()->with('error', 'Tidak ada permintaan perubahan email yang sedang berlangsung.');
+                return back()->with('error', 'No active email change request was found.');
             }
 
             // Verifikasi OTP
@@ -122,10 +122,10 @@ class ProfileEmailChangeController extends Controller
 
             if (! $result->isSuccessful()) {
                 if ($result->isLocked()) {
-                    return back()->with('error', 'Kode terkunci karena terlalu banyak kesalahan percobaan. Silakan ajukan perubahan ulang.');
+                    return back()->with('error', 'Verification locked due to too many failed attempts. Please submit a new request.');
                 }
 
-                return back()->with('error', 'Kode OTP salah atau telah kedaluwarsa. Sisa percobaan: '.$result->getRemainingAttempts());
+                return back()->with('error', 'Invalid or expired verification code. Remaining attempts: '.$result->getRemainingAttempts());
             }
 
             // Verifikasi konflik sekali lagi di bawah lock
@@ -137,7 +137,7 @@ class ProfileEmailChangeController extends Controller
                 ->exists();
 
             if ($conflict) {
-                return back()->with('error', 'Alamat email baru telah terdaftar pada akun lain.');
+                return back()->with('error', 'The new email address has already been registered to another account.');
             }
 
             $oldEmail = $lockedUser->email;
@@ -167,15 +167,15 @@ class ProfileEmailChangeController extends Controller
                 'tenant_id' => $lockedUser->tenant_id,
                 'user_id' => $lockedUser->id,
                 'recipient_email' => $oldEmail,
-                'subject' => 'Alamat Email Akun Apeiron POS Telah Berubah',
+                'subject' => 'Apeiron POS Account Email Address Changed',
                 'event_type' => 'email_change_completed',
-                'body_text' => "Halo {$lockedUser->name},\n\nAlamat email akun Anda telah berhasil dialihkan dari {$oldEmail} ke {$newEmail}.",
+                'body_text' => "Hello {$lockedUser->name},\n\nYour account email address has been successfully changed from {$oldEmail} to {$newEmail}.",
                 'status' => 'pending',
             ]);
 
             return back()->with([
                 'status' => 'profile-email-updated',
-                'success' => 'Alamat email berhasil diperbarui menjadi '.$newEmail.'.',
+                'success' => 'Email address successfully updated to '.$newEmail.'.',
             ]);
         });
     }
@@ -193,6 +193,6 @@ class ProfileEmailChangeController extends Controller
             'pending_email_requested_at' => null,
         ])->save();
 
-        return back()->with('success', 'Permintaan perubahan email telah dibatalkan.');
+        return back()->with('success', 'Email change request has been cancelled.');
     }
 }

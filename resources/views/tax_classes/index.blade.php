@@ -38,7 +38,7 @@
 
         <!-- Header -->
         <x-erp.page-header
-            title="Tax Classes (Kelas Pajak)"
+            title="Tax Classes"
             description="Manage tax rate classifications for product commodities (VAT 11%, Tax-Exempt, etc.) across retail and B2B transactions.">
             <x-slot:breadcrumbs>
                 <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
@@ -141,7 +141,7 @@
             @endif
         </div>
 
-        <!-- Modal Tambah / Sunting Kelas Pajak -->
+        <!-- Add / Edit Tax Class Modal -->
         <x-ui.modal x-model="showModal" maxWidth="md">
             <x-slot:title>
                 <span x-text="isEdit ? 'Edit Tax Class' : 'Add New Tax Class'"></span>

@@ -55,10 +55,10 @@ class TailAdminPhaseFiveAdoptionTest extends TestCase
         $this->assertStringContainsString('PR-2026-0099', $html);
         $this->assertStringContainsString('Dimas Anggara', $html);
         $this->assertStringContainsString('Rp 8.500.000', $html);
-        $this->assertStringContainsString('Mendesak', $html);
+        $this->assertStringContainsString('Urgent', $html);
         $this->assertStringContainsString('Level 2', $html);
-        $this->assertStringContainsString('Setujui', $html);
-        $this->assertStringContainsString('Tolak', $html);
+        $this->assertStringContainsString('Approve', $html);
+        $this->assertStringContainsString('Reject', $html);
     }
 
     public function test_subscription_quota_meter_renders_usage_and_ratio(): void
@@ -94,7 +94,7 @@ class TailAdminPhaseFiveAdoptionTest extends TestCase
         $this->assertStringContainsString('Professional', $html);
         $this->assertStringContainsString('Rp 299.000', $html);
         $this->assertStringContainsString('/bulan', $html);
-        $this->assertStringContainsString('Paling Populer', $html);
+        $this->assertStringContainsString('Most Popular', $html);
         $this->assertStringContainsString('Hingga 5 Cabang Fisik', $html);
     }
 

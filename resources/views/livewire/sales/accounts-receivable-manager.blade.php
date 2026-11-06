@@ -78,7 +78,7 @@
         </button>
     </div>
 
-    <!-- TAB 1: DAFTAR INVOICE -->
+    <!-- TAB 1: INVOICE LIST -->
     @if($activeTab === 'invoices')
         <!-- Filter Bar -->
         <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-border dark:border-zinc-800">
@@ -403,7 +403,7 @@
                     </div>
                 </div>
 
-                <!-- Riwayat Alokasi Pembayaran -->
+                <!-- Payment Allocation History -->
                 @if($selectedInvoice->allocations->count() > 0)
                     <div class="border-t border-border dark:border-zinc-800 pt-4">
                         <h4 class="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-2">Settlement Allocation History</h4>
@@ -450,7 +450,7 @@
         </x-slot:footer>
     </x-ui.modal>
 
-    <!-- MODAL 2: TERIMA & ALOKASIKAN PEMBAYARAN -->
+    <!-- MODAL 2: RECEIVE & ALLOCATE PAYMENT -->
     <x-ui.modal wire:model="showPaymentModal" maxWidth="3xl">
         <x-slot:title>
             Receive & Allocate Payment

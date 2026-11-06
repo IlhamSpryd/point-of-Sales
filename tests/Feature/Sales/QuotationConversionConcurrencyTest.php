@@ -133,7 +133,7 @@ class QuotationConversionConcurrencyTest extends TestCase
 
         $this->assertNotNull($secondException, 'Percobaan kedua wajib menghasilkan exception penolakan.');
         $this->assertInstanceOf(DomainException::class, $secondException);
-        $this->assertStringContainsString('sudah pernah dikonversi', $secondException->getMessage());
+        $this->assertStringContainsString('has already been converted', $secondException->getMessage());
 
         // Verifikasi database: TEPAT 1 Sales Order yang merujuk ke quotation_id ini
         $totalSalesOrders = SalesOrder::where('tenant_id', $this->tenant->id)

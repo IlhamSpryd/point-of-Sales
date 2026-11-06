@@ -1,37 +1,37 @@
 @php
     $allHrTabs = [
         [
-            'label' => 'Karyawan',
+            'label' => 'Employees',
             'route' => 'hr.employees.index',
             'active' => 'hr.employees.*',
             'icon' => 'badge',
         ],
         [
-            'label' => 'Jadwal & Roster',
+            'label' => 'Schedules & Shifts',
             'route' => 'hr.schedules.index',
             'active' => 'hr.schedules.*',
             'icon' => 'calendar_month',
         ],
         [
-            'label' => 'Absensi & Lembur',
+            'label' => 'Attendance & Overtime',
             'route' => 'hr.attendance.index',
             'active' => 'hr.attendance.*',
             'icon' => 'schedule',
         ],
         [
-            'label' => 'Manajemen Cuti',
+            'label' => 'Leave Management',
             'route' => 'hr.leaves.index',
             'active' => 'hr.leaves.*',
             'icon' => 'event_busy',
         ],
         [
-            'label' => 'Komisi Penjualan',
+            'label' => 'Sales Commissions',
             'route' => 'hr.commissions.index',
             'active' => 'hr.commissions.*',
             'icon' => 'payments',
         ],
         [
-            'label' => 'Penggajian (Payroll)',
+            'label' => 'Payroll',
             'route' => 'hr.payroll.index',
             'active' => 'hr.payroll.*',
             'icon' => 'account_balance_wallet',
@@ -40,7 +40,7 @@
 @endphp
 
 <div class="w-full pb-3 mb-6 border-b border-border">
-    <nav aria-label="Navigasi SDM & Payroll"
+    <nav aria-label="HR & Payroll Navigation"
         x-data
         x-init="$nextTick(() => {
             const activeTab = $el.querySelector('[aria-current=page]');

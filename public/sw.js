@@ -7,7 +7,6 @@ const ASSETS = [
     '/offline.html',
     '/fonts/material-symbols-rounded.woff2',
     '/fonts/plus-jakarta-sans.woff2',
-    '/fonts/playfair-display.woff2',
     'https://cdn.jsdelivr.net/npm/qz-tray@2.2.4/qz-tray.js'
 ];
 

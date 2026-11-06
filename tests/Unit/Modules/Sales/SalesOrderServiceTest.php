@@ -252,7 +252,7 @@ class SalesOrderServiceTest extends TestCase
 
         // Konfirmasi kedua kali harus ditolak
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Hanya Sales Order berstatus DRAFT atau PENDING_CREDIT_APPROVAL yang dapat dikonfirmasi');
+        $this->expectExceptionMessage('Only Sales Orders with status DRAFT or PENDING_CREDIT_APPROVAL can be confirmed');
         $this->salesOrderService->confirmOrder($confirmed, $this->user);
     }
 
@@ -272,7 +272,7 @@ class SalesOrderServiceTest extends TestCase
         $lineId = $confirmed->lines->first()->id;
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('melebihi sisa pesanan');
+        $this->expectExceptionMessage('exceeds remaining order quantity');
 
         // Mencoba fulfill 12 padahal pesanan hanya 10
         $this->salesOrderService->fulfillOrder($confirmed, [
@@ -456,7 +456,7 @@ class SalesOrderServiceTest extends TestCase
         $this->productA->save();
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('sudah tidak aktif');
+        $this->expectExceptionMessage('is inactive');
 
         $this->salesOrderService->createRepeatOrder($origSO, $this->user);
     }

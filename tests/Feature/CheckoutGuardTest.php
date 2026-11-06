@@ -80,7 +80,7 @@ class CheckoutGuardTest extends TestCase
         ]);
 
         $response->assertRedirect(route('customer.cart.index'));
-        $response->assertSessionHas('error', 'Maksimal 40 item per pesanan. Silakan panggil staf untuk pesanan besar.');
+        $response->assertSessionHas('error', 'Maximum 40 items per order. Please consult our staff for large orders.');
     }
 
     public function test_blocks_checkout_if_session_has_2_pending_orders()
@@ -114,7 +114,7 @@ class CheckoutGuardTest extends TestCase
             'payment_method' => 'cash',
         ]);
 
-        $response->assertSessionHas('error', 'Masih ada pesanan yang belum dibayar. Selesaikan atau tunggu kedaluwarsa sebelum memesan lagi.');
+        $response->assertSessionHas('error', 'There is an outstanding unpaid order for this table. Please settle it or wait for expiration before ordering again.');
     }
 
     public function test_blocks_checkout_if_table_has_5_pending_orders()
@@ -156,7 +156,7 @@ class CheckoutGuardTest extends TestCase
             'payment_method' => 'cash',
         ]);
 
-        $response->assertSessionHas('error', 'Masih ada pesanan yang belum dibayar. Selesaikan atau tunggu kedaluwarsa sebelum memesan lagi.');
+        $response->assertSessionHas('error', 'There is an outstanding unpaid order for this table. Please settle it or wait for expiration before ordering again.');
     }
 
     public function test_blocks_checkout_if_cash_exceeds_500k()
@@ -197,7 +197,7 @@ class CheckoutGuardTest extends TestCase
             'payment_method' => 'cash',
         ]);
 
-        $response->assertSessionHas('error', 'Pesanan tunai maksimal Rp 500.000. Untuk pesanan lebih besar, gunakan pembayaran digital atau pesan di Kasir.');
+        $response->assertSessionHas('error', 'Cash orders are limited to Rp 500,000. For larger amounts, please use digital payment or order at the register.');
     }
 
     public function test_blocks_checkout_if_idempotency_key_is_missing_or_invalid()
@@ -220,7 +220,7 @@ class CheckoutGuardTest extends TestCase
         ]);
 
         $response->assertRedirect(route('customer.cart.index'));
-        $response->assertSessionHas('error', 'Pesanan sudah diproses. Jangan klik tombol bayar lebih dari sekali.');
+        $response->assertSessionHas('error', 'Order is already being processed. Please do not submit multiple times.');
     }
 
     public function test_blocks_checkout_if_concurrent_request_is_detected()
@@ -254,7 +254,7 @@ class CheckoutGuardTest extends TestCase
         ]);
 
         $response->assertRedirect(route('customer.checkout.create'));
-        $response->assertSessionHas('error', 'Pembayaran sedang diproses, mohon tunggu sebentar.');
+        $response->assertSessionHas('error', 'Payment is being processed. Please wait a moment.');
 
         $lock->release();
     }
@@ -300,6 +300,6 @@ class CheckoutGuardTest extends TestCase
         ]);
 
         $response->assertSessionHas('error');
-        $this->assertStringContainsString('dinonaktifkan', Session::get('error'));
+        $this->assertStringContainsString('inactive', Session::get('error'));
     }
 }

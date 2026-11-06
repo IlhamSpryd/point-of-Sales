@@ -92,7 +92,7 @@ class AccountsReceivableService
                 ->firstOrFail();
 
             if ($lockedInvoice->status !== CustomerInvoiceStatusEnum::DRAFT) {
-                throw new DomainException("Hanya faktur berstatus DRAFT yang dapat diposting. Status saat ini: {$lockedInvoice->status->value}");
+                throw new DomainException("Only invoices with status DRAFT can be posted. Current status: {$lockedInvoice->status->value}");
             }
 
             // 2. Kunci Customer Credit Account (Lock Order Step 2 A0/A8)
@@ -201,7 +201,7 @@ class AccountsReceivableService
                 storeId: $lockedInvoice->store_id,
                 subjectType: CustomerInvoice::class,
                 subjectId: $lockedInvoice->id,
-                description: "Faktur penjualan {$lockedInvoice->invoice_number} berhasil diposting senilai Rp ".number_format((float) $invoiceTotal, 2, ',', '.')
+                description: "Sales invoice {$lockedInvoice->invoice_number} posted for amount of ".number_format((float) $invoiceTotal, 2)
             );
 
             return $lockedInvoice->fresh(['lines', 'customer']) ?? $lockedInvoice;
@@ -227,7 +227,7 @@ class AccountsReceivableService
 
             $totalPayment = bcadd(bc_num($paymentData['amount'] ?? '0.00'), '0', 2);
             if (bccomp($totalPayment, '0.00', 2) <= 0) {
-                throw new DomainException('Jumlah pembayaran yang diterima harus lebih besar dari 0.');
+                throw new DomainException('Payment received amount must be greater than 0.');
             }
 
             $storeId = (int) ($paymentData['store_id'] ?? $this->tenantContext->getStoreId() ?? 1);
@@ -293,19 +293,19 @@ class AccountsReceivableService
                 }
 
                 if (! $invoices->has($invId)) {
-                    throw new DomainException("Faktur ID {$invId} tidak ditemukan atau bukan milik pelanggan ini.");
+                    throw new DomainException("Invoice ID {$invId} not found or does not belong to this customer.");
                 }
 
                 /** @var CustomerInvoice $invoice */
                 $invoice = $invoices->get($invId);
 
                 if (! in_array($invoice->status, [CustomerInvoiceStatusEnum::POSTED, CustomerInvoiceStatusEnum::PARTIALLY_PAID], true)) {
-                    throw new DomainException("Faktur {$invoice->invoice_number} tidak dapat menerima alokasi pembayaran. Status saat ini: {$invoice->status->value}");
+                    throw new DomainException("Invoice {$invoice->invoice_number} cannot receive payment allocation. Current status: {$invoice->status->value}");
                 }
 
                 // Anti-Over-Allocation: Alokasi tidak boleh melebihi balance_due
                 if (bccomp($allocAmount, (string) $invoice->balance_due, 2) > 0) {
-                    throw new DomainException('Alokasi pembayaran Rp '.number_format((float) $allocAmount, 2, ',', '.')." melebihi sisa tagihan faktur {$invoice->invoice_number} (Rp ".number_format((float) $invoice->balance_due, 2, ',', '.').').');
+                    throw new DomainException('Payment allocation of '.number_format((float) $allocAmount, 2)." exceeds remaining balance due on invoice {$invoice->invoice_number} (".number_format((float) $invoice->balance_due, 2).').');
                 }
 
                 // Update invoice balances
@@ -440,7 +440,7 @@ class AccountsReceivableService
                 storeId: $storeId,
                 subjectType: CustomerCreditAccount::class,
                 subjectId: $creditAccount->id,
-                description: 'Pembayaran diterima sebesar Rp '.number_format((float) $totalPayment, 2, ',', '.').', dialokasikan ke '.count($allocationsMade).' faktur (Total dialokasikan: Rp '.number_format((float) $totalAllocated, 2, ',', '.').', Sisa kredit: Rp '.number_format((float) $unappliedCredit, 2, ',', '.').')'
+                description: 'Payment received of '.number_format((float) $totalPayment, 2).', allocated to '.count($allocationsMade).' invoices (Total allocated: '.number_format((float) $totalAllocated, 2).', Unapplied credit: '.number_format((float) $unappliedCredit, 2).')'
             );
 
             return [
@@ -470,7 +470,7 @@ class AccountsReceivableService
                 ->firstOrFail();
 
             if ($lockedAlloc->is_reversed) {
-                throw new DomainException('Alokasi pembayaran ini sudah pernah dibatalkan sebelumnya.');
+                throw new DomainException('This payment allocation has already been reversed.');
             }
 
             // 1. Kunci Customer Credit Account (Lock Order Step 2 A0/A8)
@@ -558,7 +558,7 @@ class AccountsReceivableService
                 storeId: $invoice->store_id,
                 subjectType: ArPaymentAllocation::class,
                 subjectId: $lockedAlloc->id,
-                description: 'Alokasi pembayaran senilai Rp '.number_format((float) $amount, 2, ',', '.')." pada faktur {$invoice->invoice_number} dibatalkan. Alasan: {$reason}"
+                description: 'Payment allocation of '.number_format((float) $amount, 2)." on invoice {$invoice->invoice_number} was reversed. Reason: {$reason}"
             );
 
             return $lockedAlloc;
@@ -581,7 +581,7 @@ class AccountsReceivableService
                 ->firstOrFail();
 
             if (! $lockedInvoice->canBeVoided()) {
-                throw new DomainException("Faktur {$lockedInvoice->invoice_number} tidak dapat dibatalkan (VOID) karena sudah memiliki pembayaran atau berstatus {$lockedInvoice->status->value}.");
+                throw new DomainException("Invoice {$lockedInvoice->invoice_number} cannot be voided because it has payments applied or status is {$lockedInvoice->status->value}.");
             }
 
             // 1. Kunci Customer Credit Account (Lock Order Step 2 A0/A8)
@@ -674,7 +674,7 @@ class AccountsReceivableService
                 storeId: $lockedInvoice->store_id,
                 subjectType: CustomerInvoice::class,
                 subjectId: $lockedInvoice->id,
-                description: "Faktur penjualan {$lockedInvoice->invoice_number} berhasil dibatalkan (VOID). Alasan: {$reason}"
+                description: "Sales invoice {$lockedInvoice->invoice_number} voided successfully. Reason: {$reason}"
             );
 
             return $lockedInvoice;
@@ -911,7 +911,7 @@ class AccountsReceivableService
 
         if (! $customer) {
             throw ValidationException::withMessages([
-                'customer_id' => ['Pelanggan tidak valid pada tenant ini.'],
+                'customer_id' => ['Invalid customer for this tenant.'],
             ]);
         }
 
@@ -931,7 +931,7 @@ class AccountsReceivableService
         $items = $source['items'] ?? $source['lines'] ?? [];
         if (! is_array($items) || count($items) === 0) {
             throw ValidationException::withMessages([
-                'items' => ['Faktur penjualan wajib memiliki minimal 1 item tagihan.'],
+                'items' => ['Sales invoice must have at least 1 line item.'],
             ]);
         }
 

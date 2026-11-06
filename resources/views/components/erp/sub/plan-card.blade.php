@@ -1,7 +1,7 @@
 @props([
     'name' => 'Starter',
     'price' => 'Rp 0',
-    'period' => '/bulan',
+    'period' => '/mo',
     'description' => '',
     'features' => [],
     'isCurrent' => false,
@@ -15,7 +15,7 @@
 )) }}>
     @if ($isPopular)
         <span class="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-primary text-primary-foreground shadow-xs">
-            Paling Populer
+            Most Popular
         </span>
     @endif
 
@@ -27,7 +27,7 @@
             </h3>
             @if ($isCurrent)
                 <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-success-muted text-success border border-success-border">
-                    Paket Aktif
+                    Current Plan
                 </span>
             @endif
         </div>
@@ -64,12 +64,12 @@
         @if ($isCurrent)
             <button type="button" disabled
                 class="w-full h-11 rounded-xl text-xs font-bold bg-muted text-muted-foreground border border-border cursor-not-allowed flex items-center justify-center">
-                Paket Anda Saat Ini
+                Current Active Plan
             </button>
         @else
             <button type="button"
                 class="w-full h-11 rounded-xl text-xs font-bold bg-primary text-primary-foreground hover:bg-primary active:scale-95 transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5">
-                <span>Pilih Paket {{ $name }}</span>
+                <span>Select {{ $name }}</span>
                 <span class="material-symbols-rounded text-base">arrow_forward</span>
             </button>
         @endif

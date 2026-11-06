@@ -304,7 +304,7 @@ class SupplierManagementTest extends TestCase
 
         Livewire::actingAs($this->ownerUser)
             ->test(SupplierManager::class)
-            ->assertSee('Data Induk Pemasok')
+            ->assertSee('Suppliers')
             ->assertSee('Supplier Livewire Test')
             ->set('search', 'Livewire')
             ->assertSee('Supplier Livewire Test')

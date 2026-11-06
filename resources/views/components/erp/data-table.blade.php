@@ -3,8 +3,8 @@
     'rows' => null,
     'sortField' => null,
     'sortDirection' => 'asc',
-    'emptyTitle' => 'Belum ada data',
-    'emptyDescription' => 'Data yang Anda cari belum tersedia atau tidak cocok dengan filter aktif.',
+    'emptyTitle' => 'No records found',
+    'emptyDescription' => 'The requested records are not available or do not match active filters.',
     'emptyIcon' => 'inbox',
     'isEmpty' => null,
     'colspan' => null,
@@ -50,7 +50,7 @@
                                 $key = $col['key'] ?? null;
                                 $isCurrentSort = $key && $sortField === $key;
                             @endphp
-                            <th scope="col" class="px-4 py-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap {{ $align === 'right' ? 'text-right' : ($align === 'center' ? 'text-center' : 'text-left') }} {{ !empty($col['numeric']) ? 'font-mono tabular-nums numeric' : '' }} {{ $col['class'] ?? '' }}">
+                            <th scope="col" class="px-4 py-3 text-2xs font-semibold uppercase tracking-wider text-muted-foreground whitespace-nowrap {{ $align === 'right' ? 'text-right' : ($align === 'center' ? 'text-center' : 'text-left') }} {{ !empty($col['numeric']) ? 'tabular-nums numeric' : '' }} {{ $col['class'] ?? '' }}">
                                 @if($isSortable && $key)
                                     <button type="button" wire:click="sortBy('{{ $key }}')" class="group inline-flex items-center gap-1.5 font-semibold text-muted-foreground hover:text-foreground transition-colors focus:outline-hidden focus-visible:ring-1 focus-visible:ring-ring rounded-sm {{ $align === 'right' ? 'flex-row-reverse' : '' }}">
                                         <span>{{ $col['label'] ?? '' }}</span>
@@ -84,9 +84,9 @@
                             <div class="divide-y divide-border/60 bg-card">
                                 @for($s = 0; $s < $skeletonRows; $s++)
                                     <div class="flex items-center gap-4 px-4 py-3.5 animate-pulse">
-                                        <div class="h-4 bg-secondary rounded-medium w-1/4"></div>
-                                        <div class="h-4 bg-secondary rounded-medium w-1/3"></div>
-                                        <div class="h-4 bg-secondary rounded-medium w-1/6 ml-auto"></div>
+                                        <div class="h-4 bg-muted rounded-medium w-1/4"></div>
+                                        <div class="h-4 bg-muted rounded-medium w-1/3"></div>
+                                        <div class="h-4 bg-muted rounded-medium w-1/6 ml-auto"></div>
                                     </div>
                                 @endfor
                             </div>

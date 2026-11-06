@@ -391,12 +391,12 @@ class DepartmentAndJobTitleTest extends TestCase
     {
         $expectedCases = [
             'DRAFT' => ['label' => 'Draft', 'badgeColor' => 'secondary'],
-            'ACTIVE' => ['label' => 'Aktif', 'badgeColor' => 'success'],
-            'ON_PROBATION' => ['label' => 'Masa Percobaan', 'badgeColor' => 'warning'],
-            'SUSPENDED' => ['label' => 'Ditangguhkan', 'badgeColor' => 'danger'],
-            'RESIGNED' => ['label' => 'Mengundurkan Diri', 'badgeColor' => 'warning'],
-            'TERMINATED' => ['label' => 'Diberhentikan', 'badgeColor' => 'danger'],
-            'ARCHIVED' => ['label' => 'Diarsipkan', 'badgeColor' => 'neutral'],
+            'ACTIVE' => ['label' => 'Active', 'badgeColor' => 'success'],
+            'ON_PROBATION' => ['label' => 'On Probation', 'badgeColor' => 'warning'],
+            'SUSPENDED' => ['label' => 'Suspended', 'badgeColor' => 'danger'],
+            'RESIGNED' => ['label' => 'Resigned', 'badgeColor' => 'warning'],
+            'TERMINATED' => ['label' => 'Terminated', 'badgeColor' => 'danger'],
+            'ARCHIVED' => ['label' => 'Archived', 'badgeColor' => 'neutral'],
         ];
 
         $actualCases = EmploymentStatusEnum::cases();
@@ -413,11 +413,11 @@ class DepartmentAndJobTitleTest extends TestCase
     public function test_employment_type_enum_cases_and_labels(): void
     {
         $expectedCases = [
-            'PERMANENT' => 'Tetap (PKWTT)',
-            'CONTRACT_PKWT' => 'Kontrak (PKWT)',
-            'PROBATION' => 'Masa Percobaan',
-            'INTERN' => 'Magang (Intern)',
-            'DAILY_WORKER' => 'Pekerja Harian Lepas',
+            'PERMANENT' => 'Permanent (PKWTT)',
+            'CONTRACT_PKWT' => 'Contract (PKWT)',
+            'PROBATION' => 'Probation',
+            'INTERN' => 'Internship',
+            'DAILY_WORKER' => 'Daily Worker',
         ];
 
         $actualCases = EmploymentTypeEnum::cases();

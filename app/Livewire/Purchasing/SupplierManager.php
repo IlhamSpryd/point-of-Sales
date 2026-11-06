@@ -157,7 +157,7 @@ class SupplierManager extends Component
         $supplier = Supplier::query()->where('tenant_id', $tenantId)->find($id);
 
         if (! $supplier) {
-            abort(404, 'Pemasok tidak ditemukan.');
+            abort(404, 'Supplier not found.');
         }
 
         return $supplier;
@@ -220,11 +220,11 @@ class SupplierManager extends Component
                 $supplier = $this->findSupplierForActiveTenant($this->supplierId);
                 Gate::authorize('update', $supplier);
                 $supplierService->updateSupplier($supplier, $payload, auth()->user());
-                session()->flash('message', "Data pemasok '{$supplier->name}' berhasil diperbarui.");
+                session()->flash('message', "Supplier '{$supplier->name}' updated successfully.");
             } else {
                 Gate::authorize('create', Supplier::class);
                 $supplier = $supplierService->createSupplier($payload, auth()->user());
-                session()->flash('message', "Pemasok '{$supplier->name}' berhasil dibuat dengan kode {$supplier->code}.");
+                session()->flash('message', "Supplier '{$supplier->name}' created successfully with code {$supplier->code}.");
             }
 
             $this->showModal = false;
@@ -240,8 +240,8 @@ class SupplierManager extends Component
 
         Gate::authorize('archive', $supplier);
 
-        $supplierService->archiveSupplier($supplier, 'Diarsipkan melalui antarmuka pengguna.', auth()->user());
-        session()->flash('message', "Pemasok '{$supplier->name}' berhasil diarsipkan.");
+        $supplierService->archiveSupplier($supplier, 'Archived via user interface.', auth()->user());
+        session()->flash('message', "Supplier '{$supplier->name}' archived successfully.");
     }
 
     public function deleteSupplier(int $id, SupplierService $supplierService): void
@@ -252,7 +252,7 @@ class SupplierManager extends Component
 
         try {
             $supplierService->deleteSupplier($supplier, auth()->user());
-            session()->flash('message', "Pemasok '{$supplier->name}' berhasil dihapus.");
+            session()->flash('message', "Supplier '{$supplier->name}' deleted successfully.");
         } catch (ValidationException $e) {
             session()->flash('error', $e->validator->getMessageBag()->first());
         }
@@ -304,7 +304,7 @@ class SupplierManager extends Component
         }
 
         $this->resetContactForm();
-        session()->flash('contact_message', 'Kontak berhasil disimpan.');
+        session()->flash('contact_message', 'Contact saved successfully.');
     }
 
     public function editContact(int $contactId): void
@@ -334,7 +334,7 @@ class SupplierManager extends Component
 
         $supplierService->deleteContact($contact);
         $this->resetContactForm();
-        session()->flash('contact_message', 'Kontak berhasil dihapus.');
+        session()->flash('contact_message', 'Contact deleted successfully.');
     }
 
     // --- Katalog Pemasok / Catalog ---
@@ -383,7 +383,7 @@ class SupplierManager extends Component
         try {
             $supplierService->addOrUpdateSupplierProduct($supplier, $itemData, auth()->user());
             $this->resetCatalogForm();
-            session()->flash('catalog_message', 'Item katalog berhasil disimpan.');
+            session()->flash('catalog_message', 'Catalog item saved successfully.');
         } catch (ValidationException $e) {
             $this->setErrorBag($e->validator->getMessageBag());
         }
@@ -401,7 +401,7 @@ class SupplierManager extends Component
         Gate::authorize('manageCatalog', $supplier);
 
         $supplierService->removeSupplierProduct($item, auth()->user());
-        session()->flash('catalog_message', 'Item katalog berhasil dihapus.');
+        session()->flash('catalog_message', 'Catalog item deleted successfully.');
     }
 
     private function resetSupplierForm(): void

@@ -70,6 +70,8 @@ class CustomerInvoice extends Model
         'subtotal',
         'discount_amount',
         'tax_amount',
+        'tax_invoice_serial_number',
+        'tax_invoice_status',
         'shipping_amount',
         'total_amount',
         'paid_amount',

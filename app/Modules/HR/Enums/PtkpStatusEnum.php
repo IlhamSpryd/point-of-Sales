@@ -18,14 +18,14 @@ enum PtkpStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::TK_0 => 'TK/0 (Tidak Kawin, 0 Tanggungan)',
-            self::TK_1 => 'TK/1 (Tidak Kawin, 1 Tanggungan)',
-            self::TK_2 => 'TK/2 (Tidak Kawin, 2 Tanggungan)',
-            self::TK_3 => 'TK/3 (Tidak Kawin, 3 Tanggungan)',
-            self::K_0 => 'K/0 (Kawin, 0 Tanggungan)',
-            self::K_1 => 'K/1 (Kawin, 1 Tanggungan)',
-            self::K_2 => 'K/2 (Kawin, 2 Tanggungan)',
-            self::K_3 => 'K/3 (Kawin, 3 Tanggungan)',
+            self::TK_0 => 'TK/0 (Single, 0 Dependents)',
+            self::TK_1 => 'TK/1 (Single, 1 Dependent)',
+            self::TK_2 => 'TK/2 (Single, 2 Dependents)',
+            self::TK_3 => 'TK/3 (Single, 3 Dependents)',
+            self::K_0 => 'K/0 (Married, 0 Dependents)',
+            self::K_1 => 'K/1 (Married, 1 Dependent)',
+            self::K_2 => 'K/2 (Married, 2 Dependents)',
+            self::K_3 => 'K/3 (Married, 3 Dependents)',
         };
     }
 

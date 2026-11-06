@@ -288,7 +288,7 @@ class Modul2MvcAndBladeIntegrationTest extends TestCase
         $resShow = $this->get(route('orders.show', $order->order_code));
         $resShow->assertOk();
         $resShow->assertSee($order->order_code);
-        $resShow->assertSee('Item Pesanan');
+        $resShow->assertSee('Order Items');
 
         // 4. Shift Management (/shifts)
         $resShifts = $this->get(route('shifts.index'));
@@ -314,7 +314,7 @@ class Modul2MvcAndBladeIntegrationTest extends TestCase
         // Cetak ulang struk (is_reprint=1)
         $resReceiptReprint = $this->get(route('transaction.receipt', ['orderCode' => $order->order_code, 'is_reprint' => 1]));
         $resReceiptReprint->assertOk();
-        $resReceiptReprint->assertSee('*** COPY / CETAK ULANG #');
+        $resReceiptReprint->assertSee('*** REPRINT #');
     }
 
     /**

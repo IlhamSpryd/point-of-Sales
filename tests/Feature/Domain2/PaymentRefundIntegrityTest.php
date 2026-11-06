@@ -393,7 +393,7 @@ class PaymentRefundIntegrityTest extends TestCase
         // Shift aktif saat ini ($this->shift) HANYA memiliki saldo modal Rp200.000.
         // Coba refund tunai Rp300.000 dari shift aktif saat ini -> HARUS DITOLAK
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Kas fisik di laci shift');
+        $this->expectExceptionMessage('Physical cash in shift drawer');
 
         $this->service->createReturnAndRefund(
             order: $order,

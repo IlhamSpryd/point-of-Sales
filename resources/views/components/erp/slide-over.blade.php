@@ -94,7 +94,7 @@
                         <button
                             type="button"
                             @click="close()"
-                            aria-label="Tutup panel"
+                            aria-label="Close panel"
                             class="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted active:scale-95 transition-all cursor-pointer">
                             <span class="material-symbols-rounded text-[20px]" aria-hidden="true">close</span>
                         </button>

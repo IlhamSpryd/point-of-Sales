@@ -92,7 +92,7 @@ class StockAdjustmentAuthorizationTest extends TestCase
         $context->setStoreId($this->storeA->id);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Product ID {$this->productB->id} tidak ditemukan pada tenant {$this->tenantA->id}");
+        $this->expectExceptionMessage("Product ID {$this->productB->id} not found for tenant {$this->tenantA->id}.");
 
         $this->service->createDraft(
             (int) $this->tenantA->id,

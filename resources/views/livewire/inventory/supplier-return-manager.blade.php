@@ -15,6 +15,23 @@
         </div>
     </div>
 
+    {{-- Enterprise Vendor Return Notice --}}
+    <div class="mb-5 p-4 rounded-2xl border border-border bg-muted/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="flex items-start gap-3">
+            <span class="material-symbols-rounded text-primary text-2xl mt-0.5">assignment_return</span>
+            <div>
+                <h5 class="text-sm font-semibold text-foreground">Retur Pembelian Vendor & Nota Debet (Enterprise P2P)</h5>
+                <p class="text-xs text-muted-foreground mt-0.5">
+                    Pengembalian barang ke vendor yang terhubung dengan Purchase Order dan penerbitan Nota Debet Hutang (AP Debit Note) dikelola terpusat di Modul Purchasing.
+                </p>
+            </div>
+        </div>
+        <a href="{{ route('purchasing.returns.index') }}" wire:navigate class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-background border border-border hover:bg-muted text-foreground transition-colors shrink-0 shadow-xs">
+            <span>Buka Purchasing Returns</span>
+            <span class="material-symbols-rounded text-sm">arrow_forward</span>
+        </a>
+    </div>
+
     {{-- Notification Alert --}}
     @if (session()->has('message'))
         <x-ui.alert variant="success" class="mb-4">

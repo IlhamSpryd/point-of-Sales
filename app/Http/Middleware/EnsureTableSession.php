@@ -32,10 +32,10 @@ class EnsureTableSession
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Sesi meja tidak ditemukan. Silakan scan ulang QR Code.',
+                    'message' => 'Table session not found. Please scan the QR code again.',
                 ], 403);
             }
-            abort(403, 'Silakan scan QR Code di meja Anda terlebih dahulu.');
+            abort(403, 'Please scan the table QR code first.');
         }
 
         // Validasi meja masih aktif di SETIAP request
@@ -50,10 +50,10 @@ class EnsureTableSession
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Meja ini sudah tidak aktif. Silakan scan ulang QR Code.',
+                    'message' => 'This table is currently inactive. Please scan the QR code again.',
                 ], 403);
             }
-            abort(403, 'Meja ini sudah tidak aktif. Silakan scan ulang QR Code.');
+            abort(403, 'This table is currently inactive. Please scan the QR code again.');
         }
 
         // Validasi rotasi token: jika admin merotasi QR, versi berubah dan sesi lama harus ditolak seketika
@@ -64,10 +64,10 @@ class EnsureTableSession
                 if ($request->expectsJson()) {
                     return response()->json([
                         'success' => false,
-                        'message' => 'QR Code meja telah diperbarui oleh staf. Silakan scan ulang QR Code fisik terbaru.',
+                        'message' => 'Table QR code has been refreshed. Please scan the latest physical QR code.',
                     ], 410);
                 }
-                abort(410, 'QR Code meja telah diperbarui oleh staf. Silakan scan ulang QR Code fisik terbaru.');
+                abort(410, 'Table QR code has been refreshed. Please scan the latest physical QR code.');
             }
         } else {
             $request->session()->put('current_qr_token_version', (int) ($table->qr_token_version ?? 1));
@@ -75,7 +75,7 @@ class EnsureTableSession
 
         if (! $table->tenant_id || ! $table->store_id) {
             $this->clearSession($request, $sessionTenantId, $sessionStoreId, $tableId);
-            abort(403, 'Meja tidak terhubung dengan tenant atau cabang mana pun.');
+            abort(403, 'Table is not linked to any tenant or branch.');
         }
 
         // Validasi batas tenant dan store
@@ -85,10 +85,10 @@ class EnsureTableSession
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Sesi meja tidak cocok dengan tenant aktif.',
+                    'message' => 'Table session does not match the active tenant.',
                 ], 403);
             }
-            abort(403, 'Sesi meja tidak cocok dengan tenant aktif.');
+            abort(403, 'Table session does not match the active tenant.');
         }
 
         if ($sessionStoreId && (int) $table->store_id !== (int) $sessionStoreId) {
@@ -97,10 +97,10 @@ class EnsureTableSession
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Sesi meja tidak cocok dengan cabang aktif.',
+                    'message' => 'Table session does not match the active branch.',
                 ], 403);
             }
-            abort(403, 'Sesi meja tidak cocok dengan cabang aktif.');
+            abort(403, 'Table session does not match the active branch.');
         }
 
         $tenant = Tenant::find($table->tenant_id);
@@ -110,10 +110,10 @@ class EnsureTableSession
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Layanan pemesanan sedang tidak aktif atau ditangguhkan.',
+                    'message' => 'Ordering service is currently unavailable or suspended.',
                 ], 403);
             }
-            abort(403, 'Layanan pemesanan sedang tidak aktif atau ditangguhkan.');
+            abort(403, 'Ordering service is currently unavailable or suspended.');
         }
 
         $store = Store::withoutTenantScope()
@@ -127,10 +127,10 @@ class EnsureTableSession
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Cabang sedang tidak aktif.',
+                    'message' => 'Branch is currently inactive.',
                 ], 403);
             }
-            abort(403, 'Cabang sedang tidak aktif.');
+            abort(403, 'Branch is currently inactive.');
         }
 
         $entitlementService = app(EntitlementService::class);
@@ -140,10 +140,10 @@ class EnsureTableSession
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Fitur pemesanan mandiri (self-order) tidak aktif untuk cabang ini.',
+                    'message' => 'Self-ordering feature is disabled for this branch.',
                 ], 403);
             }
-            abort(403, 'Fitur pemesanan mandiri (self-order) tidak aktif untuk cabang ini.');
+            abort(403, 'Self-ordering feature is disabled for this branch.');
         }
 
         $context = app(TenantContext::class);

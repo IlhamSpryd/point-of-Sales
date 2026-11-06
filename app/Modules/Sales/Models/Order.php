@@ -104,6 +104,11 @@ class Order extends Model
         'source_reference',
         'created_by_device_id',
         'sales_order_id',
+        'is_offline_sync',
+        'offline_synced_at',
+        'offline_client_uuid',
+        'currency_code',
+        'exchange_rate',
     ];
 
     /**
@@ -117,6 +122,9 @@ class Order extends Model
             'order_status' => OrderStatus::class,
             'payment_method' => PaymentMethod::class,
             'voided_at' => 'datetime',
+            'is_offline_sync' => 'boolean',
+            'offline_synced_at' => 'datetime',
+            'exchange_rate' => 'string',
         ];
     }
 

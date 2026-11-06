@@ -41,16 +41,7 @@ enum PurchaseOrderStatusEnum: string
      */
     public function badgeType(): string
     {
-        return match ($this) {
-            self::Draft => StatusPalette::variant('draft')->value,
-            self::PendingApproval => StatusPalette::variant('pending_approval')->value,
-            self::Approved => StatusPalette::variant('approved')->value,
-            self::Rejected => StatusPalette::variant('rejected')->value,
-            self::Released => StatusPalette::variant('released')->value,
-            self::Amended => StatusPalette::variant('amended')->value,
-            self::Closed => StatusPalette::variant('closed')->value,
-            self::Cancelled => StatusPalette::variant('cancelled')->value,
-        };
+        return StatusPalette::variant($this)->value;
     }
 
     public function isTerminal(): bool

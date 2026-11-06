@@ -52,7 +52,7 @@ class KdsServiceSecurityTest extends TestCase
         $service = app(KdsService::class);
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Hanya pesanan LUNAS yang boleh diproses di dapur.');
+        $this->expectExceptionMessage('Only PAID orders can be processed in the kitchen.');
 
         $service->claim($orderItem->id, $user->id);
 

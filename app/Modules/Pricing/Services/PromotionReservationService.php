@@ -60,7 +60,7 @@ class PromotionReservationService
                 ->first();
 
             if (! $voucher) {
-                throw new RuntimeException("Voucher #{$voucherId} tidak ditemukan.");
+                throw new RuntimeException("Voucher #{$voucherId} not found.");
             }
 
             $rawStatus = $voucher->status;
@@ -69,7 +69,7 @@ class PromotionReservationService
                 : strtoupper((string) $rawStatus);
 
             if ($currentStatus !== VoucherStatusEnum::ACTIVE->value && $currentStatus !== 'ACTIVE') {
-                throw new RuntimeException("Voucher '{$voucher->code}' tidak aktif.");
+                throw new RuntimeException("Voucher '{$voucher->code}' is not active.");
             }
 
             // Hitung total reservasi aktif yang masih menahan kuota
@@ -138,7 +138,7 @@ class PromotionReservationService
                 ->first();
 
             if (! $reservation) {
-                throw new RuntimeException("Reservasi #{$reservationId} tidak ditemukan.");
+                throw new RuntimeException("Reservation #{$reservationId} not found.");
             }
 
             if ($reservation->status !== 'RESERVED') {

@@ -147,7 +147,7 @@ class CustomerMergeTest extends TestCase
         ], $this->user);
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Pelanggan sumber dan target tidak boleh sama.');
+        $this->expectExceptionMessage('Source and target customers cannot be the same.');
 
         $this->customerService->mergeCustomers($cust, $cust, $this->user, 'Merge to self');
     }
@@ -186,7 +186,7 @@ class CustomerMergeTest extends TestCase
         $target = $this->customerService->createCustomer(['name' => 'Tenant 2 Customer'], $user2);
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Tidak dapat menggabungkan pelanggan dari tenant yang berbeda.');
+        $this->expectExceptionMessage('Cannot merge customers from different tenants.');
 
         $this->customerService->mergeCustomers($source, $target, $this->user, 'Cross tenant merge');
     }

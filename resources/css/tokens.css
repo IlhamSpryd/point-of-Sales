@@ -10,10 +10,11 @@
 :root {
     color-scheme: light;
 
-    /* ── Typography Fonts ── */
+    /* ── Typography Fonts (Strict Single Typeface: Plus Jakarta Sans for All Text & Money) ── */
     --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     --font-brand: "Plus Jakarta Sans", sans-serif;
-    --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --font-mono: "Plus Jakarta Sans", sans-serif;
+    --font-serif: "Plus Jakarta Sans", sans-serif;
 
     /* ── Semantic Colors (Light) — canonical values per
        docs/ui-ux-audit/color-system/02 §11 (contrast-verified) ── */
@@ -85,14 +86,19 @@
     --chart-8: #57534E;
     --chart-grid: #E4E4E7;
     --chart-axis-label: #6B6B74;
+    --chart-seq-0: #F4F4F5;
+    --chart-seq-1: #D4D4D8;
+    --chart-seq-2: #A1A1AA;
+    --chart-seq-3: #52525B;
+    --chart-seq-4: #18181B;
 
-    /* Shell */
-    --shell: #18181B;
-    --shell-foreground: #A1A1AA;
-    --shell-foreground-active: #FAFAFA;
-    --shell-accent: #27272A;
-    --shell-border: #27272A;
-    --shell-ring: #FAFAFA;
+    /* Shell (Clean White ChatGPT Aesthetic) */
+    --shell: #FFFFFF;
+    --shell-foreground: #71717A;
+    --shell-foreground-active: #09090B;
+    --shell-accent: #F4F4F5;
+    --shell-border: #E4E4E7;
+    --shell-ring: #18181B;
 
     /* Sidebar → shell aliases (04 §3; kept for one release) */
     --sidebar-background: var(--shell);
@@ -204,6 +210,11 @@
     --chart-8: #D6D3D1;
     --chart-grid: #2A2A2D;
     --chart-axis-label: #A1A1AA;
+    --chart-seq-0: #1F1F21;
+    --chart-seq-1: #3F3F46;
+    --chart-seq-2: #71717A;
+    --chart-seq-3: #D4D4D8;
+    --chart-seq-4: #FAFAFA;
 
     --shell: #111112;
     --shell-foreground: #A1A1AA;
@@ -248,12 +259,13 @@
 }
 
 /* ═══════════════════════════════════════════════════════
-   UNIFIED THEME — Single @theme inline definition (AC-T1)
+   UNIFIED THEME — Single theme inline definition (AC-T1)
    ═══════════════════════════════════════════════════════ */
 @theme inline {
     --font-sans: var(--font-sans);
     --font-brand: var(--font-brand);
-    --font-mono: var(--font-mono);
+    --font-mono: var(--font-sans);
+    --font-serif: var(--font-sans);
 
     /* ── Semantic Colors ── */
     --color-background: var(--background);
@@ -304,6 +316,11 @@
     --color-chart-8: var(--chart-8);
     --color-chart-grid: var(--chart-grid);
     --color-chart-axis-label: var(--chart-axis-label);
+    --color-chart-seq-0: var(--chart-seq-0);
+    --color-chart-seq-1: var(--chart-seq-1);
+    --color-chart-seq-2: var(--chart-seq-2);
+    --color-chart-seq-3: var(--chart-seq-3);
+    --color-chart-seq-4: var(--chart-seq-4);
 
     /* ── Shell ── */
     --color-shell: var(--shell);
@@ -313,8 +330,11 @@
     --color-shell-border: var(--shell-border);
     --color-shell-ring: var(--shell-ring);
 
-    /* ── Overlay ── */
+    /* ── Overlay & Elevation ── */
     --color-overlay-scrim: var(--overlay-scrim);
+    --shadow-card: var(--shadow-card);
+    --shadow-popover: var(--shadow-popover);
+    --shadow-dialog: var(--shadow-dialog);
 
     /* ── Sidebar aliases (04 §3; kept for one release) ── */
     --color-sidebar-background: var(--sidebar-background);
@@ -382,7 +402,7 @@
    UTILITY CLASSES (LI-07, POS safe area)
    ═══════════════════════════════════════════════════════ */
 .numeric {
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     font-variant-numeric: tabular-nums;
 }
 

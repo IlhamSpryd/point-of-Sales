@@ -230,7 +230,7 @@ class BankReconciliationWorkflowTest extends TestCase
             $this->fail('Seharusnya gagal menyelesaikan sesi jika selisih != 0.00.');
         } catch (DomainException $e) {
             $this->assertStringContainsString('FIN-M7-11', $e->getMessage());
-            $this->assertStringContainsString('Selisih wajib 0.00', $e->getMessage());
+            $this->assertStringContainsString('Difference must be 0.00', $e->getMessage());
         }
 
         // 6. Buat Entri Penyesuaian Biaya Admin Bank langsung dari baris rekening koran

@@ -383,13 +383,13 @@ class ReorderSuggestionService
 
             if ($suggestions->count() !== count($suggestionIds)) {
                 throw ValidationException::withMessages([
-                    'suggestion_ids' => ['Beberapa rekomendasi pemesanan ulang tidak ditemukan pada cabang ini.'],
+                    'suggestion_ids' => ['Some reorder suggestions were not found for this branch.'],
                 ]);
             }
 
             foreach ($suggestions as $sug) {
                 if ($sug->status !== ReorderSuggestionStatusEnum::Open) {
-                    throw new DomainException("Saran pemesanan ulang #{$sug->id} berstatus '{$sug->status->value}' dan tidak dapat dikonversi.");
+                    throw new DomainException("Reorder suggestion #{$sug->id} is in status '{$sug->status->value}' and cannot be converted.");
                 }
             }
 
@@ -406,7 +406,7 @@ class ReorderSuggestionService
                     'uom_conversion_factor' => '1.000000',
                     'estimated_unit_price' => (string) $sug->estimated_unit_price,
                     'preferred_supplier_id' => $sug->preferred_supplier_id,
-                    'notes' => "Dibuat otomatis dari Saran Pemesanan Ulang #{$sug->id}",
+                    'notes' => "Auto-generated from Reorder Suggestion #{$sug->id}",
                 ];
             }
 
@@ -432,7 +432,7 @@ class ReorderSuggestionService
                 userId: $actor->id,
                 subjectType: PurchaseRequest::class,
                 subjectId: $pr->id,
-                description: "Konversi {$suggestions->count()} saran pemesanan ulang menjadi draf PR #{$pr->pr_number}.",
+                description: "Converted {$suggestions->count()} reorder suggestions to draft PR #{$pr->pr_number}.",
                 metadata: [
                     'store_id' => $storeId,
                     'suggestion_ids' => $suggestionIds,
@@ -445,17 +445,17 @@ class ReorderSuggestionService
     }
 
     /**
-     * Abaikan (Dismiss) saran pemesanan ulang dengan alasan eksplisit.
+     * Dismiss reorder suggestion with explicit reason.
      */
     public function dismissSuggestion(ReorderSuggestion $suggestion, string $reason, User $actor): ReorderSuggestion
     {
         if ($suggestion->status !== ReorderSuggestionStatusEnum::Open) {
-            throw new DomainException("Hanya saran pemesanan ulang berstatus 'open' yang dapat diabaikan.");
+            throw new DomainException("Only reorder suggestions with 'open' status can be dismissed.");
         }
 
         if (trim($reason) === '') {
             throw ValidationException::withMessages([
-                'dismissed_reason' => ['Alasan pengabaian rekomendasi pemesanan ulang wajib diisi.'],
+                'dismissed_reason' => ['Reason for dismissing reorder suggestion is required.'],
             ]);
         }
 
@@ -469,7 +469,7 @@ class ReorderSuggestionService
             userId: $actor->id,
             subjectType: ReorderSuggestion::class,
             subjectId: $suggestion->id,
-            description: "Saran pemesanan ulang #{$suggestion->id} diabaikan: {$reason}",
+            description: "Reorder suggestion #{$suggestion->id} dismissed: {$reason}",
             metadata: [
                 'reason' => $reason,
                 'purchasable_type' => $suggestion->purchasable_type,

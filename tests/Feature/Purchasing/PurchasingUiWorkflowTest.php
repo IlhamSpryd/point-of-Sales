@@ -106,34 +106,34 @@ class PurchasingUiWorkflowTest extends TestCase
         $this->actingAs($this->owner)
             ->get(route('purchasing.suppliers.index'))
             ->assertOk()
-            ->assertSee('Data Induk Pemasok');
+            ->assertSee('Suppliers');
 
         $this->actingAs($this->owner)
             ->get(route('purchasing.orders.index'))
             ->assertOk()
-            ->assertSee('Pesanan Pembelian');
+            ->assertSee('Purchase Orders');
 
         $this->actingAs($this->owner)
             ->get(route('purchasing.grns.index'))
             ->assertOk()
-            ->assertSee('Penerimaan Barang');
+            ->assertSee('Goods Received Notes');
 
         $this->actingAs($this->owner)
             ->get(route('purchasing.invoices.index'))
             ->assertOk()
-            ->assertSee('Faktur Pemasok');
+            ->assertSee('Supplier Invoices');
 
         $this->actingAs($this->owner)
             ->get(route('purchasing.returns.index'))
             ->assertOk()
-            ->assertSee('Retur Pembelian');
+            ->assertSee('Purchase Returns');
     }
 
     public function test_purchase_order_manager_livewire_can_create_and_submit_po(): void
     {
         Livewire::actingAs($this->owner)
             ->test(PurchaseOrderManager::class)
-            ->assertSee('Pesanan Pembelian')
+            ->assertSee('Purchase Orders')
             ->call('openCreateModal')
             ->assertSet('showCreateModal', true)
             ->set('supplierId', $this->supplier->id)
@@ -181,7 +181,7 @@ class PurchasingUiWorkflowTest extends TestCase
 
         Livewire::actingAs($this->owner)
             ->test(GoodsReceivedNoteManager::class)
-            ->assertSee('Penerimaan Barang')
+            ->assertSee('Goods Received Notes')
             ->call('openCreateModal')
             ->assertSet('showCreateModal', true)
             ->set('selectedPoId', $po->id)
@@ -192,7 +192,7 @@ class PurchasingUiWorkflowTest extends TestCase
     {
         Livewire::actingAs($this->owner)
             ->test(SupplierInvoiceManager::class)
-            ->assertSee('Faktur Pemasok & 3-Way Match')
+            ->assertSee('Supplier Invoices')
             ->call('openCreateModal')
             ->assertSet('showCreateModal', true);
     }
@@ -201,7 +201,7 @@ class PurchasingUiWorkflowTest extends TestCase
     {
         Livewire::actingAs($this->owner)
             ->test(PurchaseReturnManager::class)
-            ->assertSee('Retur Pembelian & Nota Debit')
+            ->assertSee('Purchase Returns')
             ->call('openCreateModal')
             ->assertSet('showCreateModal', true);
     }

@@ -110,7 +110,7 @@ class CustomerCreditService
                 projectedTotalExposure: $projectedTotal,
                 availableCredit: $available,
                 isOverdue: true,
-                reason: 'Pelanggan memiliki tagihan piutang (invoice) yang telah jatuh tempo melewati batas toleransi (grace period).'
+                reason: 'Customer has overdue invoices exceeding the grace period allowance.'
             );
         }
 
@@ -129,7 +129,7 @@ class CustomerCreditService
                     projectedTotalExposure: $projectedTotal,
                     availableCredit: $available,
                     isOverdue: false,
-                    reason: 'Pelanggan tidak memiliki plafon kredit (Credit Limit = Rp 0,00).'
+                    reason: 'Customer does not have an active credit line (Credit Limit = Rp 0.00).'
                 );
             }
 
@@ -148,7 +148,7 @@ class CustomerCreditService
                     projectedTotalExposure: $projectedTotal,
                     availableCredit: $available,
                     isOverdue: false,
-                    reason: 'Total eksposur yang diproyeksikan (Rp '.number_format((float) $projectedTotal, 2, ',', '.').') melebihi batas kredit (Rp '.number_format((float) $limit, 2, ',', '.').') sebesar Rp '.number_format((float) $exceeded, 2, ',', '.').'.'
+                    reason: 'Projected credit exposure (Rp '.number_format((float) $projectedTotal, 2, '.', ',').') exceeds credit limit (Rp '.number_format((float) $limit, 2, '.', ',').') by Rp '.number_format((float) $exceeded, 2, '.', ',').'.'
                 );
             }
 
@@ -167,7 +167,7 @@ class CustomerCreditService
                     projectedTotalExposure: $projectedTotal,
                     availableCredit: $available,
                     isOverdue: false,
-                    reason: 'Peringatan: Total eksposur kredit pelanggan telah mencapai lebih dari 80% dari batas plafon yang ditentukan.'
+                    reason: 'Warning: Total customer credit exposure has reached 80% or more of the assigned credit limit.'
                 );
             }
         }
@@ -215,7 +215,7 @@ class CustomerCreditService
             if ($allowOverride) {
                 // Verifikasi otorisasi override kredit
                 if (! Gate::forUser($actor)->allows('overrideCredit', [Customer::class, $salesOrder->customer])) {
-                    throw new DomainException("Pengguna '{$actor->name}' tidak memiliki wewenang (izin 'credit.override') untuk mengesahkan override kredit pesanan ini.");
+                    throw new DomainException("User '{$actor->name}' is not authorized (missing 'credit.override' permission) to override credit for this order.");
                 }
 
                 // Catat log override kredit
@@ -381,7 +381,7 @@ class CustomerCreditService
                 storeId: null,
                 subjectType: CustomerCreditAccount::class,
                 subjectId: $locked->id,
-                description: "Batas kredit {$customer->name} diperbarui dari Rp {$oldLimit} menjadi Rp {$formattedNewLimit}. Alasan: {$reason}",
+                description: "Credit limit for {$customer->name} updated from Rp {$oldLimit} to Rp {$formattedNewLimit}. Reason: {$reason}",
                 newValues: ['credit_limit' => $formattedNewLimit]
             );
 
@@ -480,7 +480,7 @@ class CustomerCreditService
                 storeId: null,
                 subjectType: CustomerCreditAccount::class,
                 subjectId: $locked->id,
-                description: "Status kredit {$customer->name} diubah dari {$oldStatus->value} ke {$status->value}. Alasan: {$reason}",
+                description: "Credit status for {$customer->name} updated from {$oldStatus->value} to {$status->value}. Reason: {$reason}",
                 newValues: ['credit_status' => $status->value]
             );
 

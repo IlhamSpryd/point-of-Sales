@@ -80,6 +80,8 @@ class SalesOrder extends Model
         'tax_amount',
         'shipping_amount',
         'total_amount',
+        'currency_code',
+        'exchange_rate',
         'reserved_credit_amount',
         'customer_snapshot_json',
         'source_repeat_order_id',

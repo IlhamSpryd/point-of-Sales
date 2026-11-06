@@ -14,7 +14,7 @@
 @php
     $wireModel = $attributes->whereStartsWith('wire:model')->first();
     $attributes = $attributes->whereDoesntStartWith('wire:model');
-    $openExpression = $wireModel ? "\$wire.entangle('{$wireModel}')" : ($open ? 'true' : 'false');
+    $openExpression = $wireModel ? "\$wire.\$entangle('{$wireModel}', true)" : ($open ? 'true' : 'false');
 
     $maxWidthClass = match ($maxWidth) {
         'sm' => 'max-w-sm',
@@ -26,7 +26,7 @@
         default => 'max-w-md',
     };
 
-    $drawerId = $attributes->get('id') ?? uniqid('dd-drawer-');
+    $drawerId = $attributes->get('id') ?? ($wireModel ? 'dd-drawer-'.$wireModel : uniqid('dd-drawer-'));
     $titleId = $drawerId.'-title';
 @endphp
 
@@ -38,6 +38,7 @@
             this.open = false;
         }
     }"
+    x-modelable="open"
     {{ $attributes->except('id') }}
     x-init="
         $watch('open', function (value) {
@@ -106,7 +107,7 @@
                     <button
                         @click="open = false"
                         type="button"
-                        aria-label="Tutup panel"
+                        aria-label="Close panel"
                         class="inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                     >
                         <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">

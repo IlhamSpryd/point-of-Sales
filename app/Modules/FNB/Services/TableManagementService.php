@@ -40,15 +40,15 @@ class TableManagementService
                 ->first();
 
             if (! $table) {
-                throw new DomainException('Meja tidak ditemukan pada cabang ini.');
+                throw new DomainException('Table not found at this branch.');
             }
 
             if (! $table->is_active) {
-                throw new DomainException("Meja {$table->table_name} sedang non-aktif.");
+                throw new DomainException("Table {$table->table_name} is currently inactive.");
             }
 
             if ($table->operational_status === 'occupied') {
-                throw new DomainException("Meja {$table->table_name} saat ini sedang terisi (occupied).");
+                throw new DomainException("Table {$table->table_name} is currently occupied.");
             }
 
             $table->update([
@@ -104,11 +104,11 @@ class TableManagementService
             $targetTable = $tables->get($targetTableId);
 
             if (! $sourceTable || ! $targetTable) {
-                throw new DomainException('Salah satu atau kedua meja tidak ditemukan.');
+                throw new DomainException('One or both tables not found.');
             }
 
             if ($targetTable->operational_status === 'occupied') {
-                throw new DomainException("Meja tujuan ({$targetTable->table_name}) sedang terisi.");
+                throw new DomainException("Target table ({$targetTable->table_name}) is currently occupied.");
             }
 
             // Ambil semua order aktif yang belum lunas di meja sumber
@@ -121,7 +121,7 @@ class TableManagementService
                 ->get();
 
             if ($activeOrders->isEmpty()) {
-                throw new DomainException("Tidak ada pesanan aktif pada meja sumber ({$sourceTable->table_name}).");
+                throw new DomainException("No active orders found on source table ({$sourceTable->table_name}).");
             }
 
             // Pindahkan pesanan ke meja tujuan
@@ -143,7 +143,7 @@ class TableManagementService
                 storeId: $storeId,
                 subjectType: Table::class,
                 subjectId: $targetTable->id,
-                description: "Pindah meja dari {$sourceTable->table_name} ke {$targetTable->table_name} ({$activeOrders->count()} pesanan dipindahkan).",
+                description: "Moved table from {$sourceTable->table_name} to {$targetTable->table_name} ({$activeOrders->count()} orders moved).",
                 metadata: [
                     'source_table_id' => $sourceTable->id,
                     'target_table_id' => $targetTable->id,
@@ -171,7 +171,7 @@ class TableManagementService
     {
         $filteredSecondary = array_values(array_filter(array_unique($secondaryTableIds), fn ($id) => $id !== $primaryTableId));
         if (empty($filteredSecondary)) {
-            throw new InvalidArgumentException('Daftar meja sekunder harus menyediakan minimal satu meja selain meja utama.');
+            throw new InvalidArgumentException('Secondary tables list must contain at least one table other than the primary table.');
         }
 
         return DB::transaction(function () use ($tenantId, $storeId, $primaryTableId, $filteredSecondary, $userId) {
@@ -188,7 +188,7 @@ class TableManagementService
 
             $primaryTable = $tables->get($primaryTableId);
             if (! $primaryTable) {
-                throw new DomainException('Meja utama tidak ditemukan.');
+                throw new DomainException('Primary table not found.');
             }
 
             // Pindahkan seluruh pesanan aktif meja sekunder ke meja utama
@@ -227,7 +227,7 @@ class TableManagementService
                 storeId: $storeId,
                 subjectType: Table::class,
                 subjectId: $primaryTable->id,
-                description: "Penggabungan meja ke meja utama {$primaryTable->table_name}.",
+                description: "Tables merged into primary table {$primaryTable->table_name}.",
                 metadata: [
                     'primary_table_id' => $primaryTable->id,
                     'secondary_table_ids' => $filteredSecondary,
@@ -245,7 +245,7 @@ class TableManagementService
 
     /**
      * Mencetak tagihan sementara (Proforma Bill).
-     * Wajib mencantumkan tanda tegas: "TAGIHAN SEMENTARA - BUKAN BUKTI PEMBAYARAN".
+     * Wajib mencantumkan tanda tegas: "PROFORMA INVOICE - NOT A PROOF OF PAYMENT".
      *
      * @return array{disclaimer: string, is_proforma: bool, table: array{id: int, table_name: string, area: string, capacity: int}, order: array{id: int, order_code: string, subtotal: float, discount: float, tax: float, service_charge: float, total_amount: float, order_status: string}, items: array<int, array{product_name: string, quantity: int, price: float, subtotal: float, notes: ?string}>, generated_at: string}
      *
@@ -260,7 +260,7 @@ class TableManagementService
             ->first();
 
         if (! $table) {
-            throw new DomainException('Meja tidak ditemukan.');
+            throw new DomainException('Table not found.');
         }
 
         $activeOrder = Order::withoutGlobalScopes()
@@ -273,7 +273,7 @@ class TableManagementService
             ->first();
 
         if (! $activeOrder) {
-            throw new DomainException("Tidak ditemukan pesanan aktif pada meja {$table->table_name}.");
+            throw new DomainException("No active orders found on table {$table->table_name}.");
         }
 
         $items = [];
@@ -290,7 +290,7 @@ class TableManagementService
         }
 
         return [
-            'disclaimer' => 'TAGIHAN SEMENTARA - BUKAN BUKTI PEMBAYARAN',
+            'disclaimer' => 'PROFORMA INVOICE - NOT A PROOF OF PAYMENT',
             'is_proforma' => true,
             'table' => [
                 'id' => (int) $table->id,
@@ -329,7 +329,7 @@ class TableManagementService
                 ->first();
 
             if (! $table) {
-                throw new DomainException('Meja tidak ditemukan.');
+                throw new DomainException('Table not found.');
             }
 
             // Cek apakah masih ada pesanan yang belum lunas di meja ini
@@ -341,7 +341,7 @@ class TableManagementService
                 ->exists();
 
             if ($hasUnpaidOrder) {
-                throw new DomainException("Meja {$table->table_name} tidak dapat dibebaskan karena masih memiliki pesanan yang belum lunas.");
+                throw new DomainException("Table {$table->table_name} cannot be released because it has unpaid orders.");
             }
 
             $table->update([

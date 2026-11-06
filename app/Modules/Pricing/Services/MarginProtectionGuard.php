@@ -57,7 +57,7 @@ class MarginProtectionGuard
         if ($supervisorPin === null || trim($supervisorPin) === '') {
             throw ValidationException::withMessages([
                 'price' => sprintf(
-                    'Harga jual Rp %s melanggar batas margin minimum 5%% (HPP Rp %s, Minimum Rp %s). Diperlukan otorisasi PIN supervisor.',
+                    'Selling price Rp %s violates minimum 5%% margin threshold (COGS Rp %s, Minimum Rp %s). Supervisor PIN authorization is required.',
                     number_format($price, 2),
                     number_format($cost, 2),
                     number_format($minimumSellingPrice, 2)
@@ -68,7 +68,7 @@ class MarginProtectionGuard
         // Verifikasi supervisor PIN
         if (! $this->verifySupervisorPin($supervisorPin, $tenantId)) {
             throw ValidationException::withMessages([
-                'supervisor_pin' => 'PIN supervisor tidak valid. Transaksi harga di bawah HPP ditolak.',
+                'supervisor_pin' => 'Invalid supervisor PIN. Transaction below cost price was rejected.',
             ]);
         }
 

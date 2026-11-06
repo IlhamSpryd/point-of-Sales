@@ -57,17 +57,17 @@ class PurchaseReturnService
     public function createPurchaseReturn(array $header, array $lines, User $actor): PurchaseReturn
     {
         if (! $actor->can('create', PurchaseReturn::class)) {
-            throw new DomainException('Pengguna tidak memiliki izin untuk membuat retur pembelian (purchasing.return.create).');
+            throw new DomainException('User does not have permission to create purchase returns (purchasing.return.create).');
         }
 
         $tenantId = app(TenantContext::class)->getTenantId();
         if ($tenantId === null) {
-            throw new DomainException('TenantContext tidak valid.');
+            throw new DomainException('Invalid TenantContext.');
         }
 
         if (empty($lines)) {
             throw ValidationException::withMessages([
-                'lines' => ['Minimal satu baris retur barang wajib disertakan.'],
+                'lines' => ['At least one return line item is required.'],
             ]);
         }
 
@@ -80,13 +80,13 @@ class PurchaseReturnService
 
             if ($grn->status !== GrnStatusEnum::Posted) {
                 throw ValidationException::withMessages([
-                    'goods_received_note_id' => ['Retur pembelian hanya dapat dibuat dari GRN yang berstatus posted.'],
+                    'goods_received_note_id' => ['Purchase return can only be created from posted GRN.'],
                 ]);
             }
 
             if ((int) $grn->supplier_id !== (int) $header['supplier_id']) {
                 throw ValidationException::withMessages([
-                    'supplier_id' => ['Supplier retur harus sesuai dengan supplier pada GRN.'],
+                    'supplier_id' => ['Return supplier must match the supplier on the GRN.'],
                 ]);
             }
 
@@ -149,7 +149,7 @@ class PurchaseReturnService
                 if (bccomp(bc_num($returnQty), bc_num($maxReturnable), 4) > 0) {
                     throw ValidationException::withMessages([
                         "lines.{$lineNumber}.return_qty" => [
-                            "Kuantitas retur ({$returnQty}) melebihi sisa yang dapat diretur ({$maxReturnable}) untuk baris GRN #{$grnLine->id}.",
+                            "Return quantity ({$returnQty}) exceeds remaining returnable quantity ({$maxReturnable}) for GRN line #{$grnLine->id}.",
                         ],
                     ]);
                 }
@@ -207,7 +207,7 @@ class PurchaseReturnService
     {
         $tenantId = app(TenantContext::class)->getTenantId();
         if ($tenantId === null) {
-            throw new DomainException('TenantContext tidak valid.');
+            throw new DomainException('Invalid TenantContext.');
         }
 
         return DB::transaction(function () use ($returnId, $actor, $idempotencyKey, $tenantId) {
@@ -218,7 +218,7 @@ class PurchaseReturnService
                 ->findOrFail($returnId);
 
             if (! $actor->can('post', $lockedReturn)) {
-                throw new DomainException('Pengguna tidak memiliki izin untuk memposting retur pembelian (purchasing.return.post).');
+                throw new DomainException('User does not have permission to post purchase returns (purchasing.return.post).');
             }
 
             // Penanganan Idempotensi
@@ -237,14 +237,14 @@ class PurchaseReturnService
 
             if ($lockedReturn->status !== PurchaseReturnStatusEnum::Draft) {
                 throw ValidationException::withMessages([
-                    'status' => ["Hanya retur berstatus draft yang dapat diposting. Status saat ini: {$lockedReturn->status->value}."],
+                    'status' => ["Only returns with draft status can be posted. Current status: {$lockedReturn->status->value}."],
                 ]);
             }
 
             $returnLines = $lockedReturn->lines()->orderBy('id', 'asc')->get();
             if ($returnLines->isEmpty()) {
                 throw ValidationException::withMessages([
-                    'lines' => ['Retur pembelian tidak memiliki baris item.'],
+                    'lines' => ['Purchase return has no line items.'],
                 ]);
             }
 
@@ -263,7 +263,7 @@ class PurchaseReturnService
                 $grnLine = $lockedGrnLines->get($rLine->goods_received_note_line_id);
                 if (! $grnLine) {
                     throw ValidationException::withMessages([
-                        'lines' => ["Baris GRN #{$rLine->goods_received_note_line_id} tidak ditemukan."],
+                        'lines' => ["GRN Line #{$rLine->goods_received_note_line_id} not found."],
                     ]);
                 }
 
@@ -280,7 +280,7 @@ class PurchaseReturnService
                 if (bccomp((string) $rLine->return_qty, $maxAvailable, 4) > 0) {
                     throw ValidationException::withMessages([
                         'lines' => [
-                            "Kuantitas retur ({$rLine->return_qty}) melebihi kuantitas GRN yang tersisa ({$maxAvailable}) untuk baris #{$grnLine->id}.",
+                            "Return quantity ({$rLine->return_qty}) exceeds available GRN quantity ({$maxAvailable}) for line #{$grnLine->id}.",
                         ],
                     ]);
                 }
@@ -397,17 +397,17 @@ class PurchaseReturnService
         ?string $notes = null
     ): PurchaseDebitNoteApplication {
         if (! $actor->can('manageDebitNote', PurchaseReturn::class)) {
-            throw new DomainException('Pengguna tidak memiliki izin untuk mengelola nota debit (purchasing.debit_note.manage).');
+            throw new DomainException('User is unauthorized to manage debit notes (purchasing.debit_note.manage).');
         }
 
         $tenantId = app(TenantContext::class)->getTenantId();
         if ($tenantId === null) {
-            throw new DomainException('TenantContext tidak valid.');
+            throw new DomainException('Invalid tenant context.');
         }
 
         if (bccomp(bc_num($appliedAmount), '0', 2) <= 0) {
             throw ValidationException::withMessages([
-                'applied_amount' => ['Nominal aplikasi nota debit harus lebih besar dari 0.'],
+                'applied_amount' => ['Debit note application amount must be greater than zero.'],
             ]);
         }
 
@@ -420,14 +420,14 @@ class PurchaseReturnService
 
             if (! in_array($lockedDebitNote->status, [DebitNoteStatusEnum::Issued, DebitNoteStatusEnum::PartiallyApplied], true)) {
                 throw ValidationException::withMessages([
-                    'debit_note_id' => ["Nota debit tidak dalam status yang dapat diaplikasikan. Status: {$lockedDebitNote->status->value}."],
+                    'debit_note_id' => ["Debit note is not in an applicable status. Current status: {$lockedDebitNote->status->value}."],
                 ]);
             }
 
             if (bccomp(bc_num($appliedAmount), bc_num($lockedDebitNote->remaining_amount), 2) > 0) {
                 throw ValidationException::withMessages([
                     'applied_amount' => [
-                        "Nominal yang diaplikasikan ({$appliedAmount}) melebihi sisa nilai nota debit ({$lockedDebitNote->remaining_amount}).",
+                        "Applied amount ({$appliedAmount}) exceeds remaining debit note balance ({$lockedDebitNote->remaining_amount}).",
                     ],
                 ]);
             }
@@ -441,21 +441,21 @@ class PurchaseReturnService
             if ($lockedInvoice->status !== SupplierInvoiceStatusEnum::ApprovedPayable) {
                 throw ValidationException::withMessages([
                     'supplier_invoice_id' => [
-                        "Nota debit hanya dapat diaplikasikan ke faktur pemasok yang berstatus approved_payable. Status saat ini: {$lockedInvoice->status->value}.",
+                        "Debit note can only be applied to supplier invoices with approved_payable status. Current status: {$lockedInvoice->status->value}.",
                     ],
                 ]);
             }
 
             if ((int) $lockedDebitNote->supplier_id !== (int) $lockedInvoice->supplier_id) {
                 throw ValidationException::withMessages([
-                    'supplier_invoice_id' => ['Nota debit dan faktur pemasok harus berasal dari pemasok yang sama.'],
+                    'supplier_invoice_id' => ['Debit note and supplier invoice must belong to the same supplier.'],
                 ]);
             }
 
             if (bccomp(bc_num($appliedAmount), bc_num($lockedInvoice->outstanding_amount), 2) > 0) {
                 throw ValidationException::withMessages([
                     'applied_amount' => [
-                        "Nominal yang diaplikasikan ({$appliedAmount}) melebihi sisa tagihan faktur pemasok ({$lockedInvoice->outstanding_amount}).",
+                        "Applied amount ({$appliedAmount}) exceeds remaining invoice outstanding balance ({$lockedInvoice->outstanding_amount}).",
                     ],
                 ]);
             }
@@ -536,12 +536,12 @@ class PurchaseReturnService
     public function acknowledgeSupplierCreditNote(int $debitNoteId, string $creditNoteNumber, User $actor): PurchaseDebitNote
     {
         if (! $actor->can('manageDebitNote', PurchaseReturn::class)) {
-            throw new DomainException('Pengguna tidak memiliki izin untuk mengelola nota debit (purchasing.debit_note.manage).');
+            throw new DomainException('User is unauthorized to manage debit notes (purchasing.debit_note.manage).');
         }
 
         $tenantId = app(TenantContext::class)->getTenantId();
         if ($tenantId === null) {
-            throw new DomainException('TenantContext tidak valid.');
+            throw new DomainException('Invalid tenant context.');
         }
 
         return DB::transaction(function () use ($debitNoteId, $creditNoteNumber, $tenantId) {

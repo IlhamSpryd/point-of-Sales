@@ -208,7 +208,7 @@ class Wave2PricingTest extends TestCase
             );
         } catch (ValidationException $e) {
             $rejectedWithoutPin = true;
-            $this->assertStringContainsString('melanggar batas margin minimum', $e->getMessage());
+            $this->assertStringContainsString('violates minimum', $e->getMessage());
         }
 
         $this->assertTrue($rejectedWithoutPin, 'Harga di bawah HPP wajib ditolak tanpa otorisasi supervisor.');

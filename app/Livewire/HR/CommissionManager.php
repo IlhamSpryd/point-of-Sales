@@ -39,7 +39,10 @@ class CommissionManager extends Component
         }
 
         if ($this->statusFilter !== 'ALL') {
-            $query->where('status', CommissionRecordStatusEnum::from($this->statusFilter));
+            $statusEnum = CommissionRecordStatusEnum::tryFrom($this->statusFilter);
+            if ($statusEnum !== null) {
+                $query->where('status', $statusEnum);
+            }
         }
 
         $records = $query->paginate(15);
@@ -61,12 +64,17 @@ class CommissionManager extends Component
             ->where('type', CommissionRecordTypeEnum::REVERSAL)
             ->sum('commission_amount');
 
+        $totalRecordsCount = CommissionRecord::withoutTenantScope()
+            ->where('tenant_id', $tenantId)
+            ->count();
+
         return view('livewire.hr.commission-manager', [
             'records' => $records,
             'employees' => $employees,
             'totalEarned' => $totalEarned,
             'totalReversed' => $totalReversed,
             'netCommission' => $totalEarned - $totalReversed,
-        ])->layout('layouts.app', ['title' => 'Rekapitulasi Komisi Penjualan — Apeiron']);
+            'totalRecordsCount' => $totalRecordsCount,
+        ])->layout('layouts.app', ['title' => 'Sales Commission Summary — Apeiron']);
     }
 }

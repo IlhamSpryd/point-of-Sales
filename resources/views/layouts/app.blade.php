@@ -40,15 +40,19 @@
 
 <body class="font-sans antialiased bg-background text-foreground flex h-dvh overflow-hidden pos-layout-locked">
 
-    {{-- Aksesibilitas: Lewati ke konten utama (WCAG 2.4.1) --}}
+    {{-- Accessibility: Skip to main content (WCAG 2.4.1) --}}
     <a href="#main-content"
         class="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-shell focus:text-shell-foreground-active focus:text-xs focus:font-semibold focus:rounded-lg focus:shadow-lg focus:ring-2 focus:ring-shell-ring">
-        Lewati ke konten utama
+        Skip to main content
     </a>
 
     <div x-data="{
             sidebarMobileOpen: false,
-            expanded: localStorage.getItem('sidebarExpanded') !== 'false',
+            expanded: true,
+            isMobile: window.innerWidth < 768,
+            get wide() {
+                return this.isMobile ? true : Boolean(this.expanded);
+            },
             navigating: false,
             navProgress: 0,
             navTimer: null,
@@ -71,8 +75,9 @@
                 if (main) main.scrollTop = 0;
             }
         }"
-        x-init="$watch('expanded', val => localStorage.setItem('sidebarExpanded', val))"
+        x-init="expanded = (localStorage.getItem('sidebarExpanded') !== null) ? (localStorage.getItem('sidebarExpanded') === 'true') : true; $watch('expanded', val => localStorage.setItem('sidebarExpanded', val))"
         x-effect="if (sidebarMobileOpen) { document.body.classList.add('overflow-hidden'); } else { document.body.classList.remove('overflow-hidden'); }"
+        @resize.window.debounce.100ms="isMobile = window.innerWidth < 768"
         x-on:livewire:navigating.window="startNav()"
         x-on:livewire:navigated.window="endNav()"
         class="flex w-full h-full bg-shell">
@@ -88,93 +93,43 @@
         <!-- Sidebar Navigation -->
         @include('layouts.navigation')
 
-        <!-- Main Content Wrapper (Unified Dark Frame with Inset Canvas) -->
+        <!-- Main Content Wrapper (Unified White Frame with Inset Workspace Canvas) -->
         <div class="flex-1 flex flex-col h-full overflow-hidden transition-all duration-300 bg-shell" id="main-wrapper">
 
-            <!-- Unified Dark Top Navbar (Flows flush from left sidebar) -->
-            <header class="h-14 lg:h-16 shrink-0 bg-shell text-shell-foreground flex items-center justify-between px-4 lg:px-6 z-20 border-b border-shell-border select-none">
+            <!-- Unified White Top Navbar (Flows flush from left sidebar) -->
+            <header class="h-14 md:h-16 shrink-0 bg-shell text-shell-foreground flex items-center justify-between px-4 md:px-6 z-20 border-b-0 select-none">
                 
-                <!-- Left: Quick Navigation, Workstations & Active Branch -->
-                <div class="flex items-center gap-2 lg:gap-3 pl-12 lg:pl-0 min-w-0">
-                    <div class="relative" x-data="{ openWorkstations: false }">
-                        <button type="button"
-                                @click="openWorkstations = !openWorkstations"
-                                @click.outside="openWorkstations = false"
-                                class="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-shell-foreground bg-shell-accent hover:bg-shell-border border border-shell-border rounded-lg transition-colors focus:outline-none focus:ring-1 focus:ring-shell-ring">
-                            <span class="material-symbols-rounded text-sm text-shell-foreground">apps</span>
-                            <span class="hidden sm:inline">Workstations</span>
-                            <span class="material-symbols-rounded text-xs text-shell-foreground transition-transform duration-200" :class="{ 'rotate-180': openWorkstations }">expand_more</span>
-                        </button>
-
-                        <div x-show="openWorkstations"
-                             x-cloak
-                             x-transition:enter="transition ease-out duration-100"
-                             x-transition:enter-start="opacity-0 scale-95"
-                             x-transition:enter-end="opacity-100 scale-100"
-                             x-transition:leave="transition ease-in duration-75"
-                             x-transition:leave-start="opacity-100 scale-100"
-                             x-transition:leave-end="opacity-0 scale-95"
-                             class="absolute left-0 mt-2 w-56 rounded-xl bg-shell border border-shell-border shadow-2xl py-1.5 z-50 text-xs divide-y divide-shell-border">
-                            <div class="px-3 py-1.5 text-[11px] font-semibold text-shell-foreground uppercase tracking-wider">
-                                Quick Launch
-                            </div>
-                            <div class="py-1">
-                                <a href="{{ route('transaction.create') }}" class="flex items-center gap-2.5 px-3 py-2 text-shell-foreground hover:bg-shell-accent hover:text-shell-foreground-active transition-colors">
-                                    <span class="material-symbols-rounded text-base text-shell-foreground">point_of_sale</span>
-                                    <span>POS Kasir Terminal</span>
-                                </a>
-                                <a href="{{ route('orders.index') }}" class="flex items-center gap-2.5 px-3 py-2 text-shell-foreground hover:bg-shell-accent hover:text-shell-foreground-active transition-colors">
-                                    <span class="material-symbols-rounded text-base text-shell-foreground">receipt_long</span>
-                                    <span>Riwayat Order</span>
-                                </a>
-                                <a href="{{ route('kds.index') }}" class="flex items-center gap-2.5 px-3 py-2 text-shell-foreground hover:bg-shell-accent hover:text-shell-foreground-active transition-colors">
-                                    <span class="material-symbols-rounded text-base text-shell-foreground">countertops</span>
-                                    <span>Kitchen Display (KDS)</span>
-                                </a>
-                                <a href="{{ route('inventory.ingredients') }}" class="flex items-center gap-2.5 px-3 py-2 text-shell-foreground hover:bg-shell-accent hover:text-shell-foreground-active transition-colors">
-                                    <span class="material-symbols-rounded text-base text-shell-foreground">inventory_2</span>
-                                    <span>Bahan Baku & Stok</span>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-
+                <!-- Left: Active Branch & Context Breadcrumbs -->
+                <div class="flex items-center gap-2 md:gap-3 pl-12 md:pl-0 min-w-0">
                     {{-- Branch Switcher (Top Navbar) --}}
                     <x-branch-switcher :dark="true" align="left" />
 
-                    {{-- TailAdmin Header Search Trigger (Cmd+K) --}}
-                    <x-ui.header-search />
+                    {{-- Context-Aware Breadcrumbs (Tier 1 ERP Wayfinding) --}}
+                    <x-erp.context-breadcrumbs />
                 </div>
 
-                <!-- Right: Status, Clock, Notification Dropdown, User Profile -->
-                <div class="flex items-center gap-2.5 sm:gap-3.5 shrink-0">
-                    {{-- Clock / Date Tag --}}
-                    <div class="hidden xl:flex items-center gap-2 text-xs font-medium text-shell-foreground bg-shell-accent border border-shell-border px-3 py-1.5 rounded-lg select-none">
-                        <span class="material-symbols-rounded text-[15px] text-shell-foreground">schedule</span>
-                        <span x-data="{ time: new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) }" x-init="setInterval(() => { time = new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) }, 1000)" x-text="time"></span>
-                        <span class="text-shell-border">•</span>
-                        <span>{{ now()->isoFormat('D MMM Y') }}</span>
+                <!-- Right: Utilities, Search & Notifications (Ultra-Minimal Tier-1 Layout) -->
+                <div class="flex items-center gap-2 sm:gap-2.5 shrink-0">
+                    {{-- Sleek Command Palette Search (Cmd+K) --}}
+                    <x-ui.header-search />
+
+                    {{-- Micro Sync Indicator (Clean dot replaces bulky text badge) --}}
+                    <div class="hidden sm:flex items-center justify-center w-8 h-8 rounded-lg text-shell-foreground hover:bg-shell-accent hover:text-shell-foreground-active transition-colors cursor-default"
+                         title="System Status: Online & Cloud Synchronized">
+                        <span class="relative flex h-2 w-2">
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-success opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-success"></span>
+                        </span>
                     </div>
 
-                    {{-- System Sync Pill --}}
-                    <div class="hidden sm:flex items-center gap-1.5 text-[11px] font-medium text-success bg-shell-accent border border-shell-border px-2.5 py-1 rounded-full select-none">
-                        <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
-                        <span>Online • Cloud Sync</span>
-                    </div>
-
-                    {{-- TailAdmin Notification Center Dropdown --}}
+                    {{-- Notification Center Dropdown --}}
                     <x-erp.notification-dropdown />
-
-                    {{-- TailAdmin User Account Dropdown --}}
-                    <div class="pl-2 border-l border-shell-border">
-                        <x-header.user-dropdown />
-                    </div>
                 </div>
             </header>
 
-            <!-- Main Scrollable Area (Curved Inset White Workspace) -->
+            <!-- Main Scrollable Area (Curved Inset Workspace Canvas with Unified Border) -->
             <main
-                class="flex-1 overflow-y-auto overflow-x-hidden w-full bg-background lg:rounded-tl-[28px] border-t border-l border-border-strong flex flex-col {{ ($noPadding ?? false) ? '' : 'p-4 sm:p-6 lg:p-8' }}"
+                class="flex-1 overflow-y-auto overflow-x-hidden w-full bg-zinc-50/70 dark:bg-background md:rounded-tl-[28px] border-t border-l border-shell-border shadow-[inset_0_1px_3px_rgba(0,0,0,0.02)] flex flex-col {{ ($noPadding ?? false) ? '' : 'p-4 sm:p-6 lg:p-8' }}"
                 :class="{ 'opacity-60 transition-opacity duration-150 pointer-events-none': navigating }"
                 id="main-content"
                 data-gsap="page-enter">

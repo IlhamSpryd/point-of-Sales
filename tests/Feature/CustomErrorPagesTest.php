@@ -14,11 +14,11 @@ class CustomErrorPagesTest extends TestCase
         parent::afterSubclassSetUp();
 
         Route::get('/_test/error/403', function () {
-            abort(403, 'Akses ke modul ini dibatasi khusus level Administrator.');
+            abort(403, 'Access to this module is restricted to Administrator level.');
         });
 
         Route::get('/_test/error/500', function () {
-            abort(500, 'Simulasi kegagalan server database.');
+            abort(500, 'Database server failure simulation.');
         });
     }
 
@@ -29,9 +29,9 @@ class CustomErrorPagesTest extends TestCase
         $response->assertStatus(403);
         $response->assertSee('Apeiron Systems', false);
         $response->assertSee('Error 403', false);
-        $response->assertSee('Otorisasi Tidak Memadai', false);
-        $response->assertSee('Akses ke modul ini dibatasi khusus level Administrator.', false);
-        $response->assertSee('Kembali ke Dashboard', false);
+        $response->assertSee('Insufficient Permissions', false);
+        $response->assertSee('Access to this module is restricted to Administrator level.', false);
+        $response->assertSee('Return to Dashboard', false);
     }
 
     public function test_custom_404_error_page_renders_with_apeiron_design_tokens(): void
@@ -41,8 +41,8 @@ class CustomErrorPagesTest extends TestCase
         $response->assertStatus(404);
         $response->assertSee('Apeiron Systems', false);
         $response->assertSee('Error 404', false);
-        $response->assertSee('Halaman Tidak Ditemukan', false);
-        $response->assertSee('Kembali ke Dashboard', false);
+        $response->assertSee('Page Not Found', false);
+        $response->assertSee('Return to Dashboard', false);
     }
 
     public function test_custom_500_error_page_renders_with_apeiron_design_tokens(): void
@@ -52,6 +52,6 @@ class CustomErrorPagesTest extends TestCase
         $response->assertStatus(500);
         $response->assertSee('Apeiron Systems', false);
         $response->assertSee('Error 500', false);
-        $response->assertSee('Terjadi Kesalahan Sistem', false);
+        $response->assertSee('System Error Encountered', false);
     }
 }

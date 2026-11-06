@@ -14,6 +14,7 @@ use App\Livewire\Sales\AccountsReceivableManager;
 use App\Livewire\Sales\QuotationManager;
 use App\Livewire\Sales\ReturnCreditNoteManager;
 use App\Livewire\Sales\SalesOrderManager;
+use App\Modules\Sales\Controllers\OfflineOrderSyncController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -31,12 +32,13 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
     // Kasir POS
     Route::middleware('role:Owner,Manager,Kasir')->group(function () {
         Route::get('/transaction', CreateOrder::class)->name('transaction.create');
-        Route::get('/kasir', CreateOrder::class)->name('kasir.index');
+        Route::redirect('/kasir', '/transaction', 301);
         Route::post('/transaction', [TransactionController::class, 'store'])->name('transaction.store');
         Route::get('/transaction/receipt/{orderCode}', [TransactionController::class, 'receipt'])->name('transaction.receipt');
         Route::post('/api/orders/{order_number}/sync-status', [TransactionController::class, 'syncMidtrans'])->name('api.order.sync-status');
         Route::get('/api/orders/{order_number}/print-payload', [TransactionController::class, 'printPayload'])->name('api.order.print-payload');
         Route::get('/api/orders/{order_number}/print-kitchen-payload', [TransactionController::class, 'printKitchenPayload'])->name('api.order.print-kitchen-payload');
+        Route::post('/api/v1/pos/sync-offline-orders', [OfflineOrderSyncController::class, 'sync'])->name('api.v1.pos.sync-offline-orders');
 
         Route::get('/qz/certificate', [QzTraySigningController::class, 'certificate'])->name('qz.certificate');
         Route::post('/qz/sign', [QzTraySigningController::class, 'sign'])->name('qz.sign');

@@ -106,7 +106,7 @@ class BranchCrudAndIsolationTest extends TestCase
         $response = $this->actingAs($this->ownerA)->get(route('stores.index'));
         $response->assertOk();
         $response->assertSee('Cabang Pusat Senopati');
-        $response->assertSee('Cabang Utama');
+        $response->assertSee('Primary Branch');
 
         $createResponse = $this->actingAs($this->ownerA)->post(route('stores.store'), [
             'name' => 'Cabang Bintaro Sektor 9',

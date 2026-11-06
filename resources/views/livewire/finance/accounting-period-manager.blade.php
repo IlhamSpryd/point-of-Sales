@@ -29,13 +29,13 @@
     <!-- Header Action Bar -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-xl font-bold text-zinc-950 dark:text-white tracking-tight">Periode Akuntansi & Penutupan Buku</h1>
-            <p class="text-xs text-zinc-500">Kelola siklus penutupan buku bulanan (soft-close / hard-close) dan penguncian permanen tahun buku.</p>
+            <h1 class="text-xl font-bold text-zinc-950 dark:text-white tracking-tight">Accounting Periods & Book Closing</h1>
+            <p class="text-xs text-zinc-500">Manage monthly book closing cycles (soft-close / hard-close) and permanent fiscal year locking.</p>
         </div>
 
         <div class="flex items-center gap-3">
             <div class="flex items-center gap-2 text-xs">
-                <span class="text-zinc-500 font-medium">Tahun Fiskal:</span>
+                <span class="text-zinc-500 font-medium">Fiscal Year:</span>
                 <select wire:model.live="selectedFiscalYear"
                         class="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-bold focus:outline-none">
                     @foreach ($availableYears as $year)
@@ -49,7 +49,7 @@
                         wire:click="generateFiscalYearPeriods"
                         class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-xl transition-colors shadow-xs">
                     <span class="material-symbols-rounded text-base">calendar_month</span>
-                    <span>Generate 12 Periode ({{ $selectedFiscalYear }})</span>
+                    <span>Generate 12 Periods ({{ $selectedFiscalYear }})</span>
                 </button>
             @endif
         </div>
@@ -61,12 +61,12 @@
             <table class="w-full text-left text-xs">
                 <thead class="bg-zinc-50 dark:bg-zinc-900/60 text-zinc-500 font-semibold border-b border-zinc-200 dark:border-zinc-800">
                     <tr>
-                        <th class="px-4 py-3">Kode Periode</th>
-                        <th class="px-4 py-3">Bulan / Nomor</th>
-                        <th class="px-4 py-3">Rentang Tanggal</th>
-                        <th class="px-4 py-3 text-center">Status Periode</th>
-                        <th class="px-4 py-3">Hak Posting Jurnal</th>
-                        <th class="px-4 py-3 text-right">Aksi Manajemen Siklus</th>
+                        <th class="px-4 py-3">Period Code</th>
+                        <th class="px-4 py-3">Period / Month</th>
+                        <th class="px-4 py-3">Date Range</th>
+                        <th class="px-4 py-3 text-center">Period Status</th>
+                        <th class="px-4 py-3">Posting Permission</th>
+                        <th class="px-4 py-3 text-right">Cycle Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
@@ -76,7 +76,7 @@
                                 {{ $period->period_code }}
                             </td>
                             <td class="px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200">
-                                Periode #{{ $period->period_number }} ({{ \Carbon\Carbon::parse($period->start_date)->format('F') }})
+                                Period #{{ $period->period_number }} ({{ \Carbon\Carbon::parse($period->start_date)->format('F') }})
                             </td>
                             <td class="px-4 py-3 font-mono text-zinc-600 dark:text-zinc-400">
                                 {{ \Carbon\Carbon::parse($period->start_date)->format('d M Y') }} — {{ \Carbon\Carbon::parse($period->end_date)->format('d M Y') }}
@@ -93,11 +93,11 @@
                             <td class="px-4 py-3">
                                 @if ($period->status->isPostingAllowed())
                                     <span class="inline-flex items-center gap-1 text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
-                                        <span class="material-symbols-rounded text-sm">lock_open</span> Diizinkan
+                                        <span class="material-symbols-rounded text-sm">lock_open</span> Allowed
                                     </span>
                                 @else
                                     <span class="inline-flex items-center gap-1 text-[11px] text-rose-500 font-medium">
-                                        <span class="material-symbols-rounded text-sm">lock</span> Terkunci (Posting Ditolak)
+                                        <span class="material-symbols-rounded text-sm">lock</span> Locked (Posting Rejected)
                                     </span>
                                 @endif
                             </td>
@@ -106,7 +106,7 @@
                                     <button type="button"
                                             wire:click="evaluateGates({{ $period->id }})"
                                             class="px-2 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-medium transition-colors"
-                                            title="Evaluasi Closing Gates">
+                                            title="Evaluate Closing Gates">
                                         Gates
                                     </button>
 
@@ -136,7 +136,7 @@
                                         <button type="button"
                                                 wire:click="lock({{ $period->id }})"
                                                 class="px-2 py-1 rounded-lg bg-zinc-900 hover:bg-black text-white dark:bg-zinc-700 dark:hover:bg-zinc-600 font-medium transition-colors">
-                                            Lock Permanen
+                                            Permanent Lock
                                         </button>
                                         <button type="button"
                                                 wire:click="openReopenModal({{ $period->id }})"
@@ -153,12 +153,12 @@
                         <tr>
                             <td colspan="6" class="px-4 py-12 text-center text-zinc-400">
                                 <span class="material-symbols-rounded text-3xl mb-1 text-zinc-300">event_busy</span>
-                                <p class="text-xs">Belum ada periode akuntansi untuk tahun fiskal {{ $selectedFiscalYear }}.</p>
+                                <p class="text-xs">No accounting periods found for fiscal year {{ $selectedFiscalYear }}.</p>
                                 <button type="button"
                                         wire:click="generateFiscalYearPeriods"
                                         class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-xl transition-colors shadow-xs">
                                     <span class="material-symbols-rounded text-base">add</span>
-                                    <span>Buat 12 Periode Sekarang</span>
+                                    <span>Generate 12 Periods Now</span>
                                 </button>
                             </td>
                         </tr>
@@ -176,18 +176,18 @@
                 
                 <div class="flex items-center gap-3 text-emerald-600 dark:text-emerald-400">
                     <span class="material-symbols-rounded text-2xl">lock_open</span>
-                    <h3 class="text-base font-bold text-zinc-950 dark:text-white">Buka Kembali Periode (Reopen)</h3>
+                    <h3 class="text-base font-bold text-zinc-950 dark:text-white">Reopen Accounting Period</h3>
                 </div>
 
                 <p class="text-xs text-zinc-600 dark:text-zinc-400">
-                    Pembukaan kembali periode akuntansi yang telah ditutup membutuhkan otorisasi dan pencatatan audit log resmi. Masukkan alasan pembukaan kembali:
+                    Reopening a closed accounting period requires authorization and official audit log recording. Enter reopening justification:
                 </p>
 
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Alasan Reopen (Wajib)</label>
+                    <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Reopen Reason (Required)</label>
                     <textarea wire:model="reopenReason"
                               rows="3"
-                              placeholder="Contoh: Koreksi penyesuaian audit eksternal..."
+                              placeholder="e.g. External audit adjustment correction..."
                               class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none"></textarea>
                     @error('reopenReason') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
@@ -196,12 +196,12 @@
                     <button type="button"
                             wire:click="$set('showReopenModal', false)"
                             class="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white rounded-xl transition-colors">
-                        Batal
+                        Cancel
                     </button>
                     <button type="button"
                             wire:click="confirmReopen"
                             class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors shadow-xs">
-                        Konfirmasi Buka Periode
+                        Confirm Reopen Period
                     </button>
                 </div>
             </div>
@@ -217,9 +217,9 @@
                 <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
                     <div>
                         <h3 class="text-base font-bold text-zinc-950 dark:text-white">
-                            Closing Gates Checklist — Periode {{ $gatesPeriod->period_code }}
+                            Closing Gates Checklist — Period {{ $gatesPeriod->period_code }}
                         </h3>
-                        <p class="text-xs text-zinc-500">Evaluasi pra-syarat penutupan buku General Ledger.</p>
+                        <p class="text-xs text-zinc-500">Pre-requisite evaluations for General Ledger book closing.</p>
                     </div>
                     <button type="button" wire:click="$set('showGatesModal', false)" class="text-zinc-400 hover:text-zinc-600">
                         <span class="material-symbols-rounded text-lg">close</span>
@@ -242,7 +242,7 @@
                         </div>
                     @empty
                         <div class="p-4 text-center text-zinc-400 text-xs">
-                            Semua gerbang penutupan (closing gates) terpenuhi.
+                            All closing gates satisfied.
                         </div>
                     @endforelse
                 </div>
@@ -251,7 +251,7 @@
                     <button type="button"
                             wire:click="$set('showGatesModal', false)"
                             class="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white rounded-xl transition-colors">
-                        Tutup
+                        Close
                     </button>
                 </div>
             </div>

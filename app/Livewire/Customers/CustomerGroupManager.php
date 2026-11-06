@@ -121,7 +121,7 @@ class CustomerGroupManager extends Component
 
                 if ($codeExists) {
                     throw ValidationException::withMessages([
-                        'code' => ["Kode grup '{$code}' sudah digunakan pada tenant ini."],
+                        'code' => ["Group code '{$code}' is already in use for this tenant."],
                     ]);
                 }
 
@@ -143,12 +143,12 @@ class CustomerGroupManager extends Component
                     userId: auth()->id(),
                     subjectType: CustomerGroup::class,
                     subjectId: $group->id,
-                    description: "Memperbarui grup pelanggan: {$group->name} ({$group->code})",
+                    description: "Updated customer group: {$group->name} ({$group->code})",
                     oldValues: $oldValues,
                     newValues: $group->toArray()
                 );
 
-                session()->flash('message', "Grup pelanggan '{$group->name}' berhasil diperbarui.");
+                session()->flash('message', "Customer group '{$group->name}' updated successfully.");
             } else {
                 $codeExists = CustomerGroup::withoutGlobalScopes()
                     ->where('tenant_id', $tenantId)
@@ -157,7 +157,7 @@ class CustomerGroupManager extends Component
 
                 if ($codeExists) {
                     throw ValidationException::withMessages([
-                        'code' => ["Kode grup '{$code}' sudah digunakan pada tenant ini."],
+                        'code' => ["Group code '{$code}' is already in use for this tenant."],
                     ]);
                 }
 
@@ -178,11 +178,11 @@ class CustomerGroupManager extends Component
                     userId: auth()->id(),
                     subjectType: CustomerGroup::class,
                     subjectId: $group->id,
-                    description: "Membuat grup pelanggan baru: {$group->name} ({$group->code})",
+                    description: "Created new customer group: {$group->name} ({$group->code})",
                     newValues: $group->toArray()
                 );
 
-                session()->flash('message', "Grup pelanggan '{$group->name}' berhasil dibuat.");
+                session()->flash('message', "Customer group '{$group->name}' created successfully.");
             }
 
             $this->showModal = false;
@@ -209,7 +209,7 @@ class CustomerGroupManager extends Component
             ->exists();
 
         if ($hasAssignedCustomers) {
-            session()->flash('error', "Grup '{$group->name}' tidak dapat dihapus karena masih digunakan oleh pelanggan aktif.");
+            session()->flash('error', "Group '{$group->name}' cannot be deleted because it is assigned to active customers.");
 
             return;
         }
@@ -223,10 +223,10 @@ class CustomerGroupManager extends Component
                 userId: auth()->id(),
                 subjectType: CustomerGroup::class,
                 subjectId: $group->id,
-                description: "Menghapus grup pelanggan: {$group->name} ({$group->code})"
+                description: "Deleted customer group: {$group->name} ({$group->code})"
             );
 
-            session()->flash('message', "Grup pelanggan '{$group->name}' berhasil dihapus.");
+            session()->flash('message', "Customer group '{$group->name}' deleted successfully.");
         } catch (\Throwable $e) {
             session()->flash('error', $e->getMessage());
         }

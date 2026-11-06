@@ -26,16 +26,16 @@ class WaiterCallController extends Controller
         $tableName = session('current_table_name');
 
         if (! $tableId) {
-            return response()->json(['message' => 'Sesi meja tidak valid.'], 422);
+            return response()->json(['message' => 'Invalid table session.'], 422);
         }
 
         // Debounce: maks 1 panggilan per meja per 60 detik.
         $lockKey = "waiter_call_table_{$tableId}";
         if (! Cache::add($lockKey, true, 60)) {
-            return response()->json(['message' => "Panggilan untuk {$tableName} sudah dikirim, staf sedang menuju ke sana."]);
+            return response()->json(['message' => "Staff has already been notified for {$tableName} and is on their way."]);
         }
 
-        Log::channel('stack')->info("[WAITER-CALL] Pelanggan di {$tableName} (ID:{$tableId}) memanggil staf.");
+        Log::channel('stack')->info("[WAITER-CALL] Customer at {$tableName} (ID:{$tableId}) called staff.");
 
         $table = Table::withoutGlobalScopes()->find($tableId);
         $tenantId = $table ? (int) $table->tenant_id : app(TenantContext::class)->getTenantId();
@@ -46,6 +46,6 @@ class WaiterCallController extends Controller
             WaiterCalled::dispatch($tableId, $tableName, $tenantId, $storeId);
         });
 
-        return response()->json(['message' => "Panggilan terkirim. Staf sedang menuju {$tableName}."]);
+        return response()->json(['message' => "Call sent. Staff is on the way to {$tableName}."]);
     }
 }

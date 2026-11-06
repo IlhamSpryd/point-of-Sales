@@ -149,14 +149,14 @@ class PurchaseReturnManager extends Component
             'returnLines' => 'required|array|min:1',
             'returnLines.*.return_quantity' => 'required|numeric|min:0',
         ], [
-            'selectedGrnId.required' => 'Pilih Penerimaan Barang (GRN) asal retur.',
-            'returnLines.min' => 'Tidak ada item yang dapat diretur pada GRN ini.',
+            'selectedGrnId.required' => 'Please select the source Goods Received Note (GRN).',
+            'returnLines.min' => 'There are no returnable items on this GRN.',
         ]);
 
         $activeReturnLines = array_filter($this->returnLines, fn ($l) => (float) $l['return_quantity'] > 0);
 
         if (empty($activeReturnLines)) {
-            session()->flash('error', 'Masukkan kuantitas retur minimal pada 1 baris barang.');
+            session()->flash('error', 'Please enter a return quantity for at least 1 line item.');
 
             return;
         }
@@ -176,12 +176,12 @@ class PurchaseReturnManager extends Component
             $return = $service->createPurchaseReturn($headerData, array_values($activeReturnLines), $actor);
 
             $this->showCreateModal = false;
-            session()->flash('message', "Retur Pembelian #{$return->return_number} berhasil dibuat sebagai Draf.");
+            session()->flash('message', "Purchase Return #{$return->return_number} created as Draft.");
             $this->viewReturn((int) $return->id);
         } catch (ValidationException $e) {
             $this->setErrorBag($e->validator->getMessageBag());
         } catch (\Throwable $e) {
-            session()->flash('error', 'Gagal membuat retur pembelian: '.$e->getMessage());
+            session()->flash('error', 'Unable to create purchase return: '.$e->getMessage());
         }
     }
 
@@ -207,11 +207,11 @@ class PurchaseReturnManager extends Component
             /** @var PurchaseDebitNote|null $dn */
             $dn = $result['debit_note'] ?? null;
 
-            $dnMsg = $dn ? " Nota Debit #{$dn->debit_note_number} sebesar Rp ".number_format((float) $dn->total_amount, 2).' telah diterbitkan.' : '';
-            session()->flash('message', "Retur Pembelian #{$updatedReturn->return_number} berhasil diposting. Stok telah dikurangkan.{$dnMsg}");
+            $dnMsg = $dn ? " Debit Note #{$dn->debit_note_number} for Rp ".number_format((float) $dn->total_amount, 2).' has been issued.' : '';
+            session()->flash('message', "Purchase Return #{$updatedReturn->return_number} successfully posted. Stock deducted.{$dnMsg}");
             $this->viewReturn($id);
         } catch (\Throwable $e) {
-            session()->flash('error', 'Gagal memposting retur: '.$e->getMessage());
+            session()->flash('error', 'Unable to post purchase return: '.$e->getMessage());
         }
     }
 
@@ -241,8 +241,8 @@ class PurchaseReturnManager extends Component
             'applyInvoiceId' => 'required|integer',
             'applyAmount' => 'required|numeric|min:0.01',
         ], [
-            'applyInvoiceId.required' => 'Pilih Faktur Pemasok yang akan dipotong oleh Nota Debit ini.',
-            'applyAmount.min' => 'Nominal alokasi harus lebih besar dari 0.',
+            'applyInvoiceId.required' => 'Please select the Supplier Invoice to apply this Debit Note against.',
+            'applyAmount.min' => 'Allocation amount must be greater than 0.',
         ]);
 
         try {
@@ -255,12 +255,12 @@ class PurchaseReturnManager extends Component
             );
 
             $this->showApplyModal = false;
-            session()->flash('message', 'Nota Debit berhasil dipotongkan ke Faktur Pemasok.');
+            session()->flash('message', 'Debit Note successfully applied to Supplier Invoice.');
             if ($this->selectedReturnId) {
                 $this->viewReturn($this->selectedReturnId);
             }
         } catch (\Throwable $e) {
-            session()->flash('error', 'Gagal memotongkan nota debit: '.$e->getMessage());
+            session()->flash('error', 'Unable to apply debit note: '.$e->getMessage());
         }
     }
 

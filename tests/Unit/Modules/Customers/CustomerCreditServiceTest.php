@@ -137,13 +137,13 @@ class CustomerCreditServiceTest extends TestCase
         $res2 = $this->creditService->evaluateCreditExposure($this->tenant->id, $this->customer->id, '8500000.00');
         $this->assertSame(CreditEvaluationStatusEnum::SOFT_WARNING, $res2->status);
         $this->assertTrue($res2->allowed);
-        $this->assertStringContainsString('lebih dari 80%', (string) $res2->reason);
+        $this->assertStringContainsString('80%', (string) $res2->reason);
 
         // 3. Order 12.000.000 (> Limit 10.000.000) -> HARD_BLOCKED
         $res3 = $this->creditService->evaluateCreditExposure($this->tenant->id, $this->customer->id, '12000000.00');
         $this->assertSame(CreditEvaluationStatusEnum::HARD_BLOCKED, $res3->status);
         $this->assertFalse($res3->allowed);
-        $this->assertStringContainsString('melebihi batas kredit', (string) $res3->reason);
+        $this->assertStringContainsString('exceeds credit limit', (string) $res3->reason);
     }
 
     public function test_evaluates_credit_exposure_blocks_when_account_is_on_hold_or_suspended(): void
@@ -169,7 +169,7 @@ class CustomerCreditServiceTest extends TestCase
         $res = $this->creditService->evaluateCreditExposure($this->tenant->id, $this->customer->id, '500000.00');
         $this->assertSame(CreditEvaluationStatusEnum::HARD_BLOCKED, $res->status);
         $this->assertFalse($res->allowed);
-        $this->assertStringContainsString('tidak memiliki plafon kredit', (string) $res->reason);
+        $this->assertStringContainsString('does not have an active credit line', (string) $res->reason);
     }
 
     public function test_reserves_and_releases_order_exposure(): void
@@ -231,7 +231,7 @@ class CustomerCreditServiceTest extends TestCase
 
         // 1. Konfirmasi biasa tanpa override -> DITOLAK
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('melebihi batas kredit');
+        $this->expectExceptionMessage('exceeds credit limit');
         $this->salesOrderService->confirmOrder($so, $this->owner, false);
     }
 
@@ -281,7 +281,7 @@ class CustomerCreditServiceTest extends TestCase
 
         // Kasir mencoba override -> Ditolak karena tidak punya izin 'credit.override'
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('tidak memiliki wewenang');
+        $this->expectExceptionMessage('is not authorized');
         $this->salesOrderService->confirmOrder($so, $this->cashier, true, 'Kasir mencoba override');
     }
 }

@@ -16,7 +16,7 @@
 @endphp
 
 <x-customer-layout>
-    <x-slot:title>Status Pesanan</x-slot:title>
+    <x-slot:title>Order Status</x-slot:title>
 
     @if ($snapToken)
         <script src="{{ $snapSrc }}" data-client-key="{{ config('services.midtrans.client_key') }}"></script>
@@ -36,29 +36,29 @@
             @if ($snapToken)
                 <button type="button" x-show="isPending" @click="pay()" x-cloak
                         class="mt-6 flex min-h-12 w-full max-w-[200px] items-center justify-center gap-2 rounded-xl bg-apeiron-ink font-semibold text-white shadow-md transition-all hover:bg-primary/90 active:scale-[0.98]">
-                    <span class="material-symbols-rounded text-[18px]">payments</span> <span class="text-[15px]">Bayar Sekarang</span>
+                    <span class="material-symbols-rounded text-[18px]">payments</span> <span class="text-[15px]">Pay Now</span>
                 </button>
             @endif
 
             {{-- F-11 ETA --}}
             <div x-show="status === 'paid' && eta > 0" x-cloak class="mt-4 inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-800">
                 <span class="material-symbols-rounded text-[16px]">timer</span>
-                <span>Estimasi siap dalam <span x-text="eta"></span> menit</span>
+                <span>Estimated ready in <span x-text="eta"></span> minutes</span>
             </div>
         </section>
 
         <section class="card-surface mt-4 p-5">
             <dl class="space-y-3 text-[14px]">
                 <div class="flex justify-between gap-4">
-                    <dt class="text-apeiron-muted">Nomor pesanan</dt>
+                    <dt class="text-apeiron-muted">Order Number</dt>
                     <dd class="font-mono font-bold">{{ $order->order_code }}</dd>
                 </div>
                 <div class="flex justify-between gap-4">
-                    <dt class="text-apeiron-muted">Meja</dt>
+                    <dt class="text-apeiron-muted">Table</dt>
                     <dd class="font-semibold">{{ $order->table?->table_name ?? '-' }}</dd>
                 </div>
                 <div class="flex justify-between gap-4 border-t border-apeiron-border pt-3">
-                    <dt class="font-semibold">Total Tagihan</dt>
+                    <dt class="font-semibold">Total Amount</dt>
                     <dd class="text-[17px] font-extrabold tabular-nums">Rp {{ number_format($order->order_amount, 0, ',', '.') }}</dd>
                 </div>
             </dl>
@@ -68,7 +68,7 @@
             @if ($menuUrl)
                 <a href="{{ $menuUrl }}" x-show="!isPending" x-cloak
                    class="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border border-apeiron-border bg-white font-semibold shadow-sm transition-all hover:bg-apeiron-bg active:scale-[0.98]">
-                    <span class="material-symbols-rounded text-[20px]">restaurant_menu</span> <span class="text-[15px]">Kembali ke Menu</span>
+                    <span class="material-symbols-rounded text-[20px]">restaurant_menu</span> <span class="text-[15px]">Back to Menu</span>
                 </a>
                 
                 {{-- PATCH FOR F-10: Connect reorder() UI --}}
@@ -76,7 +76,7 @@
                     @csrf
                     <button type="submit"
                             class="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-apeiron-surface font-semibold shadow-sm transition-all hover:bg-apeiron-bg active:scale-[0.98]">
-                        <span class="material-symbols-rounded text-[20px]">replay</span> <span class="text-[15px]">Pesan Ulang (Restore Cart)</span>
+                        <span class="material-symbols-rounded text-[20px]">replay</span> <span class="text-[15px]">Reorder Items</span>
                     </button>
                 </form>
             @endif
@@ -92,12 +92,12 @@
                 timer: null,
 
                 states: {
-                    pending:   { icon: 'hourglass_top', title: 'Menunggu pembayaran',   text: cfg.paymentMethod === 'cash' ? 'Silakan tunjukkan QR/kode ini ke kasir untuk membayar tunai.' : 'Selesaikan pembayaran agar pesanan diproses.' },
-                    paid:      { icon: 'check_circle',  title: 'Pembayaran diterima',   text: 'Pesanan masuk antrean dapur.' },
-                    completed: { icon: 'task_alt',      title: 'Pesanan selesai',       text: 'Selamat menikmati.' },
-                    expired:   { icon: 'timer_off',     title: 'Kedaluwarsa',           text: 'Pembayaran lewat batas waktu.', critical: true },
-                    failed:    { icon: 'error',         title: 'Gagal diproses',        text: 'Silakan pesan ulang.', critical: true },
-                    cancelled: { icon: 'cancel',        title: 'Dibatalkan',            text: 'Pesanan ini dibatalkan.', critical: true },
+                    pending:   { icon: 'hourglass_top', title: 'Awaiting Payment',   text: cfg.paymentMethod === 'cash' ? 'Please present this order code to the cashier to pay.' : 'Complete your payment to start order preparation.' },
+                    paid:      { icon: 'check_circle',  title: 'Payment Received',   text: 'Your order has been routed to the kitchen queue.' },
+                    completed: { icon: 'task_alt',      title: 'Order Completed',    text: 'Enjoy your meal!' },
+                    expired:   { icon: 'timer_off',     title: 'Payment Expired',    text: 'Payment window timed out.', critical: true },
+                    failed:    { icon: 'error',         title: 'Payment Failed',     text: 'Please reorder your items.', critical: true },
+                    cancelled: { icon: 'cancel',        title: 'Order Cancelled',    text: 'This order has been cancelled.', critical: true },
                 },
 
                 get view() { return this.states[this.status] ?? this.states.pending; },
@@ -146,13 +146,13 @@
 
                 pay() {
                     if (typeof window.snap === 'undefined' || !cfg.token) {
-                        this.$dispatch('toast', { message: 'Menghubungkan ke Midtrans...' });
+                        this.$dispatch('toast', { message: 'Connecting to payment gateway...' });
                         return;
                     }
                     window.snap.pay(cfg.token, {
                         onSuccess: () => { this.status = 'paid'; this.refresh(); },
                         onPending: () => this.refresh(),
-                        onError: () => this.$dispatch('toast', { message: 'Pembayaran gagal.' }),
+                        onError: () => this.$dispatch('toast', { message: 'Payment was unsuccessful.' }),
                         onClose: () => { /* User tutup modal */ },
                     });
                 },

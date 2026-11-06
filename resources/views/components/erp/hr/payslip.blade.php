@@ -24,14 +24,14 @@
                 {{ $companyName }}
             </h3>
             <p class="text-xs font-semibold text-muted-foreground uppercase tracking-widest mt-0.5">
-                Slip Gaji Karyawan • Pay Slip
+                Employee Pay Slip
             </p>
         </div>
         <div class="text-right">
             <span class="text-xs font-bold text-muted-foreground uppercase tracking-wider block">
-                Periode
+                Period
             </span>
-            <span class="text-sm font-extrabold text-foreground font-mono">
+            <span class="text-sm font-extrabold text-foreground tabular-nums">
                 {{ $period }}
             </span>
         </div>
@@ -40,20 +40,20 @@
     {{-- Employee Metadata Grid --}}
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-muted p-4 rounded-xl border border-border text-xs">
         <div>
-            <span class="text-muted-foreground text-[10px] uppercase font-bold block">Nama Karyawan</span>
+            <span class="text-muted-foreground text-[10px] uppercase font-bold block">Employee Name</span>
             <span class="font-bold text-foreground truncate block mt-0.5">{{ $employeeName }}</span>
         </div>
         <div>
-            <span class="text-muted-foreground text-[10px] uppercase font-bold block">ID Karyawan (NIK)</span>
-            <span class="font-bold text-foreground font-mono block mt-0.5">{{ $employeeId }}</span>
+            <span class="text-muted-foreground text-[10px] uppercase font-bold block">Employee ID</span>
+            <span class="font-bold text-foreground tabular-nums block mt-0.5">{{ $employeeId }}</span>
         </div>
         <div>
-            <span class="text-muted-foreground text-[10px] uppercase font-bold block">Departemen / Jabatan</span>
+            <span class="text-muted-foreground text-[10px] uppercase font-bold block">Department / Job Title</span>
             <span class="font-bold text-foreground truncate block mt-0.5">{{ $department }} • {{ $position }}</span>
         </div>
         <div>
-            <span class="text-muted-foreground text-[10px] uppercase font-bold block">Status Pajak PTKP</span>
-            <span class="font-bold text-foreground font-mono block mt-0.5">{{ $ptkpStatus }}</span>
+            <span class="text-muted-foreground text-[10px] uppercase font-bold block">Tax Filing Status (PTKP)</span>
+            <span class="font-bold text-foreground tabular-nums block mt-0.5">{{ $ptkpStatus }}</span>
         </div>
     </div>
 
@@ -62,22 +62,22 @@
         {{-- Column 1: Penghasilan / Earnings --}}
         <div class="space-y-3">
             <h4 class="text-xs font-bold uppercase tracking-wider text-success border-b border-border pb-1.5 flex items-center justify-between">
-                <span>Penerimaan / Earnings</span>
+                <span>Earnings</span>
                 <span class="material-symbols-rounded text-sm">add_circle</span>
             </h4>
             <div class="space-y-1.5 text-xs">
                 @foreach ($earnings as $earn)
                     <div class="flex items-center justify-between py-1 border-b border-border">
                         <span class="text-muted-foreground">{{ $earn['label'] }}</span>
-                        <span class="font-semibold text-foreground numeric font-mono">
+                        <span class="font-semibold text-foreground numeric tabular-nums">
                             Rp {{ number_format((float) ($earn['amount'] ?? 0), 0, ',', '.') }}
                         </span>
                     </div>
                 @endforeach
             </div>
             <div class="pt-2 border-t border-border flex items-center justify-between text-xs font-bold">
-                <span class="text-foreground">Total Penghasilan Kotor</span>
-                <span class="text-success numeric font-mono text-sm">
+                <span class="text-foreground">Total Gross Earnings</span>
+                <span class="text-success numeric tabular-nums text-sm">
                     Rp {{ number_format($totalEarnings, 0, ',', '.') }}
                 </span>
             </div>
@@ -86,22 +86,22 @@
         {{-- Column 2: Potongan / Deductions --}}
         <div class="space-y-3">
             <h4 class="text-xs font-bold uppercase tracking-wider text-destructive border-b border-border pb-1.5 flex items-center justify-between">
-                <span>Potongan / Deductions</span>
+                <span>Deductions</span>
                 <span class="material-symbols-rounded text-sm">remove_circle</span>
             </h4>
             <div class="space-y-1.5 text-xs">
                 @foreach ($deductions as $deduct)
                     <div class="flex items-center justify-between py-1 border-b border-border">
                         <span class="text-muted-foreground">{{ $deduct['label'] }}</span>
-                        <span class="font-semibold text-destructive numeric font-mono">
+                        <span class="font-semibold text-destructive numeric tabular-nums">
                             Rp {{ number_format((float) ($deduct['amount'] ?? 0), 0, ',', '.') }}
                         </span>
                     </div>
                 @endforeach
             </div>
             <div class="pt-2 border-t border-border flex items-center justify-between text-xs font-bold">
-                <span class="text-foreground">Total Potongan</span>
-                <span class="text-destructive numeric font-mono text-sm">
+                <span class="text-foreground">Total Deductions</span>
+                <span class="text-destructive numeric tabular-nums text-sm">
                     Rp {{ number_format($totalDeductions, 0, ',', '.') }}
                 </span>
             </div>
@@ -112,13 +112,13 @@
     <div class="card-surface bg-muted p-4 rounded-xl border border-border flex items-center justify-between">
         <div>
             <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                Gaji Bersih Diterima (Take-Home Pay)
+                Take-Home Pay (Net Salary)
             </span>
             <span class="text-[11px] text-muted-foreground italic">
-                Ditransfer ke rekening bank terdaftar karyawan
+                Direct deposit to employee registered bank account
             </span>
         </div>
-        <div class="text-2xl sm:text-3xl font-black text-foreground tracking-tight numeric font-mono">
+        <div class="text-2xl sm:text-3xl font-black text-foreground tracking-tight numeric tabular-nums">
             Rp {{ number_format($netSalary, 0, ',', '.') }}
         </div>
     </div>
@@ -126,12 +126,12 @@
     {{-- Signatures --}}
     <div class="pt-4 border-t border-border grid grid-cols-2 text-center text-xs text-muted-foreground">
         <div>
-            <p>Disahkan Oleh,</p>
+            <p>Authorized By,</p>
             <div class="h-16"></div>
-            <p class="font-bold text-foreground underline">Manajer HR & Payroll</p>
+            <p class="font-bold text-foreground underline">HR & Payroll Manager</p>
         </div>
         <div>
-            <p>Diterima Oleh,</p>
+            <p>Received By,</p>
             <div class="h-16"></div>
             <p class="font-bold text-foreground underline">{{ $employeeName }}</p>
         </div>

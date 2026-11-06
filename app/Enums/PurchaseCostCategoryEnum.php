@@ -15,11 +15,11 @@ enum PurchaseCostCategoryEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::Freight => 'Ongkos Kirim (Freight)',
-            self::Insurance => 'Asuransi Pengiriman (Insurance)',
-            self::CustomsDuty => 'Bea Masuk & Cukai (Customs Duty)',
-            self::Handling => 'Bongkar Muat & Penanganan (Handling)',
-            self::Other => 'Biaya Pengadaan Lainnya (Other)',
+            self::Freight => 'Freight & Shipping',
+            self::Insurance => 'Shipping Insurance',
+            self::CustomsDuty => 'Customs & Duties',
+            self::Handling => 'Handling & Logistics',
+            self::Other => 'Other Procurement Costs',
         };
     }
 }

@@ -236,7 +236,7 @@ class Wave4B2bSalesOrderTest extends TestCase
             $this->b2bSalesService->createOrder($exceedingPayload, $this->salesUser, allowOverride: false);
             $this->fail('Seharusnya melempar DomainException karena melampaui limit kredit.');
         } catch (DomainException $e) {
-            $this->assertStringContainsString('Pelanggan telah melampaui batas plafon kredit', $e->getMessage());
+            $this->assertStringContainsString('has exceeded credit limit', $e->getMessage());
         }
 
         // 3. Upaya pembuatan SO DENGAN override resmi harus berhasil

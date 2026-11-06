@@ -194,9 +194,9 @@ class AccountsReceivableManager extends Component
             'paymentAmount' => ['required', 'numeric', 'min:1'],
             'paymentReference' => ['required', 'string', 'min:3'],
         ], [
-            'paymentCustomerId.required' => 'Pelanggan wajib dipilih.',
-            'paymentAmount.required' => 'Jumlah pembayaran yang diterima wajib diisi.',
-            'paymentReference.required' => 'Referensi/nomor bukti pembayaran wajib diisi.',
+            'paymentCustomerId.required' => 'Customer is required.',
+            'paymentAmount.required' => 'Payment received amount is required.',
+            'paymentReference.required' => 'Payment reference number is required.',
         ]);
 
         $actor = Auth::user();
@@ -212,7 +212,7 @@ class AccountsReceivableManager extends Component
         }
 
         if (count($allocations) === 0) {
-            session()->flash('error', 'Minimal satu faktur harus dialokasikan nilai pembayarannya.');
+            session()->flash('error', 'At least one invoice must have payment allocated.');
 
             return;
         }
@@ -230,7 +230,7 @@ class AccountsReceivableManager extends Component
                 actor: $actor
             );
 
-            session()->flash('message', 'Pembayaran berhasil dicatat. Total dialokasikan: Rp '.number_format((float) $res['total_allocated'], 2, ',', '.').(bccomp($res['unapplied_credit'], '0.00', 2) > 0 ? ' (Sisa kredit: Rp '.number_format((float) $res['unapplied_credit'], 2, ',', '.').')' : ''));
+            session()->flash('message', 'Payment recorded successfully. Total allocated: '.number_format((float) $res['total_allocated'], 2).(bccomp($res['unapplied_credit'], '0.00', 2) > 0 ? ' (Unapplied credit: '.number_format((float) $res['unapplied_credit'], 2).')' : ''));
             $this->closePaymentModal();
         } catch (\Throwable $e) {
             session()->flash('error', $e->getMessage());
@@ -266,14 +266,14 @@ class AccountsReceivableManager extends Component
         $this->validate([
             'voidReason' => ['required', 'string', 'min:5'],
         ], [
-            'voidReason.required' => 'Alasan pembatalan faktur wajib diisi minimal 5 karakter.',
+            'voidReason.required' => 'Invoice cancellation reason is required (minimum 5 characters).',
         ]);
 
         $actor = Auth::user();
 
         try {
             $arService->voidInvoice($invoice, $actor, $this->voidReason);
-            session()->flash('message', "Faktur {$invoice->invoice_number} berhasil dibatalkan (VOID).");
+            session()->flash('message', "Invoice {$invoice->invoice_number} voided successfully.");
             $this->closeVoidModal();
             if ($this->showDetailModal) {
                 $this->closeDetailModal();
@@ -290,7 +290,7 @@ class AccountsReceivableManager extends Component
             'statementStartDate' => ['required', 'date'],
             'statementEndDate' => ['required', 'date', 'after_or_equal:statementStartDate'],
         ], [
-            'statementCustomerId.required' => 'Pelanggan wajib dipilih untuk rekening koran.',
+            'statementCustomerId.required' => 'Customer is required for statement of account.',
         ]);
 
         $start = Carbon::parse($this->statementStartDate);

@@ -47,19 +47,19 @@ class CartService
         $storeId = session('current_store_id') ?? app(TenantContext::class)->getStoreId();
 
         if ($tenantId !== null && (int) $product->tenant_id !== (int) $tenantId) {
-            throw ValidationException::withMessages(['product_id' => 'Produk tidak ditemukan di tenant ini.']);
+            throw ValidationException::withMessages(['product_id' => 'Product not found in this tenant.']);
         }
         if ($storeId !== null && isset($product->store_id) && $product->store_id !== null && (int) $product->store_id !== (int) $storeId) {
-            throw ValidationException::withMessages(['product_id' => 'Produk tidak ditemukan di cabang ini.']);
+            throw ValidationException::withMessages(['product_id' => 'Product not found in this branch.']);
         }
 
         if (! $product->is_active || $product->status !== 'active') {
-            throw ValidationException::withMessages(['product_id' => 'Produk tidak dalam status aktif dan tidak dapat dipesan.']);
+            throw ValidationException::withMessages(['product_id' => 'Product is not active and cannot be ordered.']);
         }
 
         $priceResolver = app(CatalogPriceResolverService::class);
         if (! $priceResolver->isAvailableInStore($product, $storeId)) {
-            throw ValidationException::withMessages(['product_id' => 'Produk tidak tersedia di cabang ini.']);
+            throw ValidationException::withMessages(['product_id' => 'Product is not available at this branch.']);
         }
 
         // Validasi keanggotaan grup + is_required + selection_type single/multiple.
@@ -76,7 +76,7 @@ class CartService
         $modifiers = $modifierQuery->with('modifierGroup')->get();
 
         if (count($modifiers) !== count($modifierIds)) {
-            throw ValidationException::withMessages(['modifier_ids' => 'Pilihan varian tidak valid untuk cabang ini.']);
+            throw ValidationException::withMessages(['modifier_ids' => 'Selected options are not valid for this branch.']);
         }
 
         // Urutkan ID modifier agar kombinasi yang sama selalu menghasilkan
@@ -125,7 +125,7 @@ class CartService
         // PATCH FOR S-05: plafon total item per keranjang.
         if (array_sum(array_column($cart, 'qty')) > self::MAX_CART_QTY) {
             throw ValidationException::withMessages([
-                'items' => 'Maksimal '.self::MAX_CART_QTY.' item per pesanan. Silakan panggil staf untuk pesanan besar.',
+                'items' => 'Maximum '.self::MAX_CART_QTY.' items per order. Please request staff assistance for large orders.',
             ]);
         }
 
@@ -154,7 +154,7 @@ class CartService
 
         if (array_sum(array_column($cart, 'qty')) > self::MAX_CART_QTY) {
             throw ValidationException::withMessages([
-                'items' => 'Maksimal '.self::MAX_CART_QTY.' item per pesanan. Silakan panggil staf untuk pesanan besar.',
+                'items' => 'Maximum '.self::MAX_CART_QTY.' items per order. Please request staff assistance for large orders.',
             ]);
         }
 
@@ -341,7 +341,7 @@ class CartService
 
         if (! $device || ! $device->is_active) {
             throw ValidationException::withMessages([
-                'device_id' => 'Perangkat tidak valid atau tidak aktif di cabang ini.',
+                'device_id' => 'Device is invalid or inactive at this branch.',
             ]);
         }
 
@@ -353,7 +353,7 @@ class CartService
 
         if (! $shift || $shift->status !== 'open') {
             throw ValidationException::withMessages([
-                'shift_id' => 'Shift tidak aktif atau sudah ditutup.',
+                'shift_id' => 'Register shift is inactive or closed.',
             ]);
         }
 
@@ -361,7 +361,7 @@ class CartService
         $items = $cartState['items'] ?? $cartState;
         if (empty($items) || ! is_array($items)) {
             throw ValidationException::withMessages([
-                'cart' => 'Tidak dapat menahan keranjang yang kosong.',
+                'cart' => 'Cannot park an empty cart.',
             ]);
         }
 
@@ -425,7 +425,7 @@ class CartService
 
             if (! $shift || $shift->status !== 'open') {
                 throw ValidationException::withMessages([
-                    'shift_id' => 'Kasir harus memiliki shift aktif untuk melanjutkan keranjang.',
+                    'shift_id' => 'Cashier must have an active register shift to resume a parked order.',
                 ]);
             }
 
@@ -437,13 +437,13 @@ class CartService
 
             if (! $parkedCart) {
                 throw ValidationException::withMessages([
-                    'parked_cart' => 'Keranjang tertunda tidak ditemukan.',
+                    'parked_cart' => 'Parked order not found.',
                 ]);
             }
 
             if ($parkedCart->status !== ParkedCart::STATUS_PARKED) {
                 throw ValidationException::withMessages([
-                    'parked_cart' => "Keranjang ini sudah {$parkedCart->status} dan tidak dapat diambil kembali.",
+                    'parked_cart' => "This parked order is {$parkedCart->status} and cannot be resumed.",
                 ]);
             }
 
@@ -465,7 +465,7 @@ class CartService
                 $product = $productId !== null ? Product::withTrashed()->find((int) $productId) : null;
 
                 if (! $product || $product->trashed() || ! $product->is_active || $product->status !== 'active') {
-                    $warnings[] = "Produk '".($item['product_name'] ?? 'ID: '.$productId)."' sudah tidak aktif atau dihapus.";
+                    $warnings[] = "Product '".($item['product_name'] ?? 'ID: '.$productId)."' is no longer active or has been removed.";
                     $hasBlockingIssues = true;
                     $item['is_available'] = false;
                     $revalidatedItems[$key] = $item;
@@ -475,7 +475,7 @@ class CartService
 
                 $resolver = app(CatalogPriceResolverService::class);
                 if (! $resolver->isAvailableInStore($product, $storeId)) {
-                    $warnings[] = "Produk '{$product->product_name}' sudah tidak tersedia di cabang ini.";
+                    $warnings[] = "Product '{$product->product_name}' is no longer available at this branch.";
                     $hasBlockingIssues = true;
                     $item['is_available'] = false;
                     $revalidatedItems[$key] = $item;
@@ -491,7 +491,7 @@ class CartService
                 $modifiers = Modifier::whereIn('id', $modifierIds)->where('is_active', true)->with('modifierGroup')->get();
 
                 if (count($modifiers) !== count($modifierIds)) {
-                    $warnings[] = "Beberapa opsi varian untuk produk '{$product->product_name}' sudah tidak aktif.";
+                    $warnings[] = "Some variant options for product '{$product->product_name}' are no longer active.";
                     $hasBlockingIssues = true;
                     $item['is_available'] = false;
                 }
@@ -505,7 +505,7 @@ class CartService
                 $oldUnitPrice = (int) ($item['unit_price'] ?? $item['base_price'] ?? 0);
 
                 if ($newUnitPrice !== $oldUnitPrice) {
-                    $warnings[] = "Harga produk '{$product->product_name}' berubah dari Rp".number_format($oldUnitPrice, 0, ',', '.').' menjadi Rp'.number_format($newUnitPrice, 0, ',', '.').'.';
+                    $warnings[] = "Price for product '{$product->product_name}' changed from Rp".number_format($oldUnitPrice, 0, ',', '.').' to Rp'.number_format($newUnitPrice, 0, ',', '.').'.';
                     $item['base_price'] = $resolvedBasePrice;
                     $item['unit_price'] = $newUnitPrice;
                 }
@@ -519,7 +519,7 @@ class CartService
                         foreach ($product->ingredients as $ingredient) {
                             $requiredBOM = (float) bcmul((string) $ingredient->pivot->quantity_required, (string) $requestedQty, 4);
                             if ((float) $ingredient->current_stock < $requiredBOM) {
-                                $warnings[] = "Bahan baku '{$ingredient->name}' untuk produk '{$product->product_name}' tidak mencukupi (sisa: {$ingredient->current_stock}).";
+                                $warnings[] = "Ingredient '{$ingredient->name}' for product '{$product->product_name}' is insufficient (remaining: {$ingredient->current_stock}).";
                                 $hasBlockingIssues = true;
                                 $item['is_available'] = false;
                                 $item['insufficient_stock'] = true;
@@ -529,7 +529,7 @@ class CartService
                     } else {
                         $availableStock = (int) $product->stock;
                         if ($availableStock < $requestedQty) {
-                            $warnings[] = "Stok produk '{$product->product_name}' tidak mencukupi (tersedia: {$availableStock}, diminta: {$requestedQty}).";
+                            $warnings[] = "Stock for product '{$product->product_name}' is insufficient (available: {$availableStock}, requested: {$requestedQty}).";
                             $hasBlockingIssues = true;
                             $item['is_available'] = false;
                             $item['insufficient_stock'] = true;
@@ -558,7 +558,7 @@ class CartService
                 }
 
                 if (! $isDiscountValid) {
-                    $warnings[] = 'Voucher diskon sudah tidak berlaku atau kuota telah habis. Diskon dilepas.';
+                    $warnings[] = 'Discount voucher is no longer valid or quota has been reached. Discount removed.';
                     if ($isAssociativeItems) {
                         $payload['discount_id'] = null;
                     }
@@ -578,7 +578,7 @@ class CartService
                 storeId: $storeId,
                 subjectType: ParkedCart::class,
                 subjectId: $parkedCart->id,
-                description: "Keranjang {$parkedCart->hold_reference} dilanjutkan oleh kasir",
+                description: "Parked order {$parkedCart->hold_reference} resumed by cashier",
                 metadata: [
                     'warnings_count' => count($warnings),
                     'has_blocking_issues' => $hasBlockingIssues,

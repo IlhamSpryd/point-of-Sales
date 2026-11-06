@@ -35,7 +35,7 @@ class GiftCardService
 
         $initialAmount = bcadd(bc_num($data['amount'] ?? $data['initial_amount'] ?? '0'), '0', 2);
         if (bccomp($initialAmount, '0.00', 2) <= 0) {
-            throw ValidationException::withMessages(['amount' => ['Nilai saldo awal Gift Card harus lebih besar dari 0.']]);
+            throw ValidationException::withMessages(['amount' => ['Gift Card initial balance must be greater than 0.']]);
         }
 
         $cardNumber = ! empty($data['card_number'])
@@ -48,7 +48,7 @@ class GiftCardService
             ->exists();
 
         if ($existing) {
-            throw ValidationException::withMessages(['card_number' => ["Nomor kartu '{$cardNumber}' sudah terdaftar pada tenant ini."]]);
+            throw ValidationException::withMessages(['card_number' => ["Card number '{$cardNumber}' is already registered for this tenant."]]);
         }
 
         $pinHash = ! empty($data['pin']) ? Hash::make((string) $data['pin']) : null;
@@ -116,7 +116,7 @@ class GiftCardService
         $redeemAmount = bcadd(bc_num($amount), '0', 2);
 
         if (bccomp($redeemAmount, '0.00', 2) <= 0) {
-            throw new DomainException('Jumlah penukaran saldo Gift Card harus lebih besar dari 0.');
+            throw new DomainException('Gift Card redemption amount must be greater than 0.');
         }
 
         return DB::transaction(function () use (
@@ -138,17 +138,17 @@ class GiftCardService
                 ->firstOrFail();
 
             if (! $lockedCard->isValidForRedemption()) {
-                throw new DomainException("Gift Card '{$cardNumber}' tidak valid, sudah kedaluwarsa, atau saldo habis.");
+                throw new DomainException("Gift Card '{$cardNumber}' is invalid, expired, or has zero balance.");
             }
 
             if ($lockedCard->pin_hash !== null) {
                 if (empty($pin) || ! Hash::check($pin, $lockedCard->pin_hash)) {
-                    throw new DomainException('PIN Gift Card yang dimasukkan salah.');
+                    throw new DomainException('Incorrect Gift Card PIN entered.');
                 }
             }
 
             if (bccomp((string) $lockedCard->current_balance, $redeemAmount, 2) < 0) {
-                throw new DomainException("Saldo Gift Card tidak mencukupi. Saldo saat ini: Rp {$lockedCard->current_balance}, dibutuhkan: Rp {$redeemAmount}.");
+                throw new DomainException("Insufficient Gift Card balance. Current balance: {$lockedCard->current_balance}, required: {$redeemAmount}.");
             }
 
             $newBalance = bcsub((string) $lockedCard->current_balance, $redeemAmount, 2);
@@ -200,7 +200,7 @@ class GiftCardService
         $refundAmount = bcadd(bc_num($amount), '0', 2);
 
         if (bccomp($refundAmount, '0.00', 2) <= 0) {
-            throw new DomainException('Jumlah pengembalian ke Gift Card harus lebih besar dari 0.');
+            throw new DomainException('Gift Card refund amount must be greater than 0.');
         }
 
         return DB::transaction(function () use (
@@ -224,7 +224,7 @@ class GiftCardService
 
             // Invariant: current_balance <= initial_balance
             if (bccomp($newBalance, (string) $lockedCard->initial_balance, 2) > 0) {
-                throw new DomainException('Saldo akhir pengembalian Gift Card tidak boleh melebihi saldo awal kartu.');
+                throw new DomainException('Final Gift Card balance after refund cannot exceed the original card balance.');
             }
 
             $lockedCard->current_balance = $newBalance;

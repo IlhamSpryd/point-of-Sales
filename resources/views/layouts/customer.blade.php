@@ -1,36 +1,37 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
 <head>
     <meta charset="UTF-8">
-    {{-- SENGAJA tanpa maximum-scale / user-scalable=no: pinch-zoom wajib aktif (WCAG 1.4.4). --}}
+    {{-- Scalable viewport for accessibility (WCAG 1.4.4) --}}
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ isset($title) ? trim(strip_tags((string) $title)) : 'Pesan' }} — {{ config('app.name') }}</title>
+    <title>{{ isset($title) ? trim(strip_tags((string) $title)) : 'Order' }} — {{ config('app.name') }}</title>
     <x-favicon />
 
     <!-- Self-Hosted Fonts Preload -->
+    <link rel="preload" href="{{ asset('fonts/plus-jakarta-sans.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link rel="preload" href="{{ asset('fonts/material-symbols-rounded.woff2') }}" as="font" type="font/woff2" crossorigin>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 {{--
-    Layout khusus pelanggan (mobile-first, satu kolom). Tanpa sidebar admin, tanpa login.
-    Halaman anak:
+    Customer layout (mobile-first, single column). No admin sidebar, no login required.
+    Child pages:
       <x-customer-layout back-url="{{ $url }}">
-          <x-slot:title>Keranjang</x-slot:title>
-          ...konten...
+          <x-slot:title>Cart</x-slot:title>
+          ...content...
       </x-customer-layout>
 --}}
 
-<body class="antialiased bg-gray-50 text-apeiron-ink font-sans">
+<body class="antialiased bg-background text-foreground font-sans">
     <div
-        class="mx-auto max-w-md min-h-screen bg-apeiron-bg relative shadow-2xl sm:border-x sm:border-apeiron-border pt-safe">
+        class="mx-auto max-w-md min-h-screen bg-card relative shadow-2xl sm:border-x sm:border-border pt-safe">
         <header
-            class="sticky top-0 z-30 h-14 flex items-center gap-1 px-3 bg-apeiron-bg/80 backdrop-blur-xl border-b border-apeiron-border">
+            class="sticky top-0 z-30 h-14 flex items-center gap-1 px-3 bg-card/80 backdrop-blur-xl border-b border-border">
             @if ($backUrl = $attributes->get('back-url'))
-                <a href="{{ $backUrl }}" aria-label="Kembali"
-                    class="w-11 h-11 -ml-1 flex items-center justify-center rounded-full hover:bg-apeiron-surface active:scale-95 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-apeiron-ink">
+                <a href="{{ $backUrl }}" aria-label="Back"
+                    class="w-11 h-11 -ml-1 flex items-center justify-center rounded-full hover:bg-accent active:scale-95 transition-all duration-200 focus-visible:ring-2 focus-visible:ring-ring">
                     <span class="material-symbols-rounded">arrow_back</span>
                 </a>
             @endif
@@ -44,8 +45,8 @@
                 <x-waiter-call-button />
                 @if (session('current_table_name'))
                     <span
-                        class="shrink-0 inline-flex items-center gap-1.5 text-xs font-medium text-apeiron-ink bg-white border border-apeiron-border rounded-lg px-2.5 py-1 shadow-2xs">
-                        <span class="material-symbols-rounded text-[16px] text-apeiron-muted">table_restaurant</span>
+                        class="shrink-0 inline-flex items-center gap-1.5 text-xs font-medium text-foreground bg-card border border-border rounded-lg px-2.5 py-1 shadow-2xs">
+                        <span class="material-symbols-rounded text-[16px] text-muted-foreground">table_restaurant</span>
                         {{ session('current_table_name') }}
                     </span>
                 @endif

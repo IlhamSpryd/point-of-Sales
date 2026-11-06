@@ -19,15 +19,29 @@ enum PayrollBatchStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::DRAFT => 'Konsep (Draft)',
-            self::CALCULATING => 'Sedang Dihitung',
-            self::CALCULATED => 'Selesai Dihitung',
-            self::PENDING_APPROVAL => 'Menunggu Persetujuan',
-            self::APPROVED => 'Disetujui',
-            self::FINALIZED => 'Terkunci & Final (Finalized)',
-            self::PAYMENT_PENDING => 'Menunggu Pembayaran',
-            self::PAID => 'Dibayarkan (Paid)',
-            self::VOIDED => 'Dibatalkan (Voided)',
+            self::DRAFT => 'Draft',
+            self::CALCULATING => 'Calculating',
+            self::CALCULATED => 'Calculated',
+            self::PENDING_APPROVAL => 'Pending Approval',
+            self::APPROVED => 'Approved',
+            self::FINALIZED => 'Finalized',
+            self::PAYMENT_PENDING => 'Payment Pending',
+            self::PAID => 'Paid',
+            self::VOIDED => 'Voided',
+        };
+    }
+
+    public function badgeClasses(): string
+    {
+        return match ($this) {
+            self::DRAFT => 'bg-muted text-muted-foreground border-border',
+            self::CALCULATING => 'bg-amber-50 text-amber-700 border-amber-200',
+            self::CALCULATED => 'bg-blue-50 text-blue-700 border-blue-200',
+            self::PENDING_APPROVAL => 'bg-amber-50 text-amber-700 border-amber-200',
+            self::APPROVED, self::FINALIZED => 'bg-indigo-50 text-indigo-700 border-indigo-200',
+            self::PAYMENT_PENDING => 'bg-purple-50 text-purple-700 border-purple-200',
+            self::PAID => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            self::VOIDED => 'bg-rose-50 text-rose-700 border-rose-200',
         };
     }
 

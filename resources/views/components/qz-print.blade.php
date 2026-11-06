@@ -4,7 +4,7 @@
 
         function ensureConnected() {
             if (typeof qz === 'undefined') {
-                return Promise.reject(new Error('qz-tray.js tidak termuat.'));
+                return Promise.reject(new Error('qz-tray.js is not loaded.'));
             }
             if (qz.websocket.isActive()) {
                 return Promise.resolve();
@@ -34,9 +34,7 @@
                 };
             });
 
-            // Retry rendah + delay 0: kios tidak boleh menggantung lama hanya
-            // karena QZ Tray sedang tidak berjalan -- lebih baik cepat gagal
-            // lalu fallback ke alur manual (window.open + tombol cetak).
+            // Low retry + 0 delay: fail fast and fallback to manual print dialog
             connecting = qz.websocket.connect({ retries: 1, delay: 0 })
                 .finally(() => { connecting = null; });
 
@@ -47,7 +45,7 @@
             return fetch('{{ url('/api/orders') }}/' + orderCode + '/print-payload', {
                 headers: { 'Accept': 'application/json' },
             }).then((res) => {
-                if (!res.ok) throw new Error('Gagal mengambil payload struk.');
+                if (!res.ok) throw new Error('Failed to retrieve receipt payload.');
                 return res.json();
             });
         }
@@ -62,7 +60,7 @@
                 })
                 .then(() => true)
                 .catch((err) => {
-                    console.warn('[QZ Tray] Gagal membuka laci otomatis:', err);
+                    console.warn('[QZ Tray] Failed to open cash drawer automatically:', err);
                     return false;
                 });
         }
@@ -76,7 +74,7 @@
                 })
                 .then(() => true)
                 .catch((err) => {
-                    console.warn('[QZ Tray] Silent print gagal, fallback ke cetak manual:', err);
+                    console.warn('[QZ Tray] Silent print failed, falling back to manual print:', err);
                     return false;
                 });
         }

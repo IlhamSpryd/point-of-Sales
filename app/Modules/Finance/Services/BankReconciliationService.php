@@ -69,21 +69,21 @@ class BankReconciliationService
         $dateStr = $statementDate instanceof CarbonInterface ? $statementDate->toDateString() : Carbon::parse($statementDate)->toDateString();
 
         if (empty($lines)) {
-            throw new DomainException('Data baris mutasi rekening koran tidak boleh kosong.');
+            throw new DomainException('Bank statement transaction rows cannot be empty.');
         }
 
         return DB::transaction(function () use ($tenantId, $account, $lines, $dateStr, $statementNumber, $filePath, $openingBalance, $closingBalance, $actor) {
-            // 1. Cek duplikasi nomor rekening koran per tenant
+            // 1. Check duplicate bank statement number per tenant
             $statementExists = BankStatement::withoutTenantScope()
                 ->where('tenant_id', $tenantId)
                 ->where('statement_number', $statementNumber)
                 ->exists();
 
             if ($statementExists) {
-                throw new DomainException("Nomor rekening koran '{$statementNumber}' sudah pernah diimpor.");
+                throw new DomainException("Bank statement number '{$statementNumber}' has already been imported.");
             }
 
-            // 2. Pra-validasi duplikasi fingerprint pada baris impor
+            // 2. Pre-validate fingerprint duplicates in import lines
             $batchFingerprints = [];
             $preparedLines = [];
 
@@ -99,12 +99,12 @@ class BankReconciliationService
                 $fingerprint = $this->computeFingerprintHash($account->id, $lineDateStr, $debit, $credit, $ref, $desc);
 
                 if (in_array($fingerprint, $batchFingerprints, true)) {
-                    throw new DomainException("FIN-M7-11: Terdapat baris mutasi ganda di dalam dokumen impor yang sama pada baris #{$index}.");
+                    throw new DomainException("FIN-M7-11: Duplicate transaction row detected in the import file at line #{$index}.");
                 }
 
                 $batchFingerprints[] = $fingerprint;
 
-                // Cek ke basis data apakah fingerprint ini sudah pernah diimpor untuk akun kas/bank ini
+                // Check database to see if this fingerprint was already imported for this account
                 $alreadyImported = BankStatementLine::withoutTenantScope()
                     ->where('tenant_id', $tenantId)
                     ->where('cash_bank_account_id', $account->id)
@@ -112,7 +112,7 @@ class BankReconciliationService
                     ->exists();
 
                 if ($alreadyImported) {
-                    throw new DomainException("FIN-M7-11: Baris rekening koran duplikat terdeteksi pada akun #{$account->id} (fingerprint: {$fingerprint}). Impor dibatalkan.");
+                    throw new DomainException("FIN-M7-11: Duplicate bank statement line detected for account #{$account->id} (fingerprint: {$fingerprint}). Import aborted.");
                 }
 
                 $preparedLines[] = [
@@ -185,7 +185,7 @@ class BankReconciliationService
 
         $rows = array_map('str_getcsv', explode("\n", trim($content)));
         if (count($rows) < 2) {
-            throw new DomainException('Berkas CSV tidak memiliki baris data mutasi yang valid.');
+            throw new DomainException('CSV file does not contain valid transaction rows.');
         }
 
         $header = array_map(fn ($col) => strtolower(trim((string) $col)), array_shift($rows));
@@ -331,7 +331,7 @@ class BankReconciliationService
     public function autoMatch(BankReconciliationSession $session, User $actor, int $dateToleranceDays = 3): array
     {
         if ($session->status !== BankReconciliationSessionStatusEnum::IN_PROGRESS) {
-            throw new DomainException("Pencocokan otomatis hanya dapat dijalankan pada sesi berstatus IN_PROGRESS. Status saat ini: {$session->status->value}.");
+            throw new DomainException("Auto-match can only be executed on sessions with IN_PROGRESS status. Current status: {$session->status->value}.");
         }
 
         $tenantId = $session->tenant_id;
@@ -441,27 +441,27 @@ class BankReconciliationService
         User $actor
     ): BankReconciliationMatch {
         if ($session->status !== BankReconciliationSessionStatusEnum::IN_PROGRESS) {
-            throw new DomainException("Pencocokan manual hanya dapat dilakukan pada sesi IN_PROGRESS. Status saat ini: {$session->status->value}.");
+            throw new DomainException("Manual matching can only be performed on IN_PROGRESS sessions. Current status: {$session->status->value}.");
         }
 
         if ($statementLine->cash_bank_account_id !== $session->cash_bank_account_id
             || $transaction->cash_bank_account_id !== $session->cash_bank_account_id) {
-            throw new DomainException('Baris rekening koran dan transaksi kas/bank wajib berasal dari akun yang sama dengan sesi rekonsiliasi.');
+            throw new DomainException('Bank statement line and cash/bank transaction must belong to the reconciliation session account.');
         }
 
         if ($statementLine->match_status !== BankStatementLineMatchStatusEnum::UNMATCHED) {
-            throw new DomainException("Baris rekening koran #{$statementLine->id} sudah memiliki status pencocokan: {$statementLine->match_status->value}.");
+            throw new DomainException("Bank statement line #{$statementLine->id} is already matched with status: {$statementLine->match_status->value}.");
         }
 
         if ($transaction->is_reconciled || $transaction->status !== CashBankTransactionStatusEnum::POSTED) {
-            throw new DomainException("Transaksi kas/bank #{$transaction->id} tidak valid untuk direkonsiliasi (sudah direkonsiliasi atau status bukan POSTED).");
+            throw new DomainException("Cash/bank transaction #{$transaction->id} is invalid for reconciliation (already reconciled or status is not POSTED).");
         }
 
         $isCredit = bccomp((string) $statementLine->credit_amount, '0.00', 2) > 0;
         $targetAmount = $isCredit ? (string) $statementLine->credit_amount : (string) $statementLine->debit_amount;
 
         if (bccomp((string) $transaction->amount, $targetAmount, 2) !== 0) {
-            throw new DomainException("Nominal baris mutasi bank ({$targetAmount}) tidak sama dengan nominal transaksi buku ({$transaction->amount}).");
+            throw new DomainException("Statement amount ({$targetAmount}) does not match book transaction amount ({$transaction->amount}).");
         }
 
         return DB::transaction(function () use ($session, $statementLine, $transaction, $targetAmount, $actor) {
@@ -496,7 +496,7 @@ class BankReconciliationService
         /** @var BankReconciliationSession $session */
         $session = $match->session;
         if ($session->status !== BankReconciliationSessionStatusEnum::IN_PROGRESS) {
-            throw new DomainException("Pencocokan hanya dapat dibatalkan pada sesi IN_PROGRESS. Status saat ini: {$session->status->value}.");
+            throw new DomainException("Matching can only be unlinked on IN_PROGRESS sessions. Current status: {$session->status->value}.");
         }
 
         DB::transaction(function () use ($match, $session) {
@@ -531,11 +531,11 @@ class BankReconciliationService
         User $actor
     ): BankReconciliationMatch {
         if ($session->status !== BankReconciliationSessionStatusEnum::IN_PROGRESS) {
-            throw new DomainException('Penyesuaian transaksi hanya dapat dibuat pada sesi rekonsiliasi yang sedang aktif (IN_PROGRESS).');
+            throw new DomainException('Transaction adjustments can only be created on active reconciliation sessions (IN_PROGRESS).');
         }
 
         if ($statementLine->match_status !== BankStatementLineMatchStatusEnum::UNMATCHED) {
-            throw new DomainException("Baris rekening koran #{$statementLine->id} sudah memiliki status {$statementLine->match_status->value}.");
+            throw new DomainException("Bank statement line #{$statementLine->id} already has status: {$statementLine->match_status->value}.");
         }
 
         $typeEnum = CashBankTransactionTypeEnum::from($adjustmentType);
@@ -592,7 +592,7 @@ class BankReconciliationService
         $diff = $this->calculateUnreconciledDifference($session);
 
         if (bccomp(bc_num($diff), '0.00', 2) !== 0) {
-            throw new DomainException("FIN-M7-11: Sesi rekonsiliasi tidak dapat diselesaikan karena masih terdapat selisih sebesar {$diff}. Selisih wajib 0.00.");
+            throw new DomainException("FIN-M7-11: Reconciliation session cannot be completed while an unreconciled difference of {$diff} remains. Difference must be 0.00.");
         }
 
         $session->status = BankReconciliationSessionStatusEnum::COMPLETED;
@@ -604,12 +604,12 @@ class BankReconciliationService
     }
 
     /**
-     * Membuka kembali (*reopen*) sesi rekonsiliasi yang telah selesai untuk koreksi audit.
+     * Reopen a completed reconciliation session for audit adjustments.
      */
     public function reopenSession(BankReconciliationSession $session, User $actor, string $reason): BankReconciliationSession
     {
         if ($session->status !== BankReconciliationSessionStatusEnum::COMPLETED) {
-            throw new DomainException("Hanya sesi rekonsiliasi berstatus COMPLETED yang dapat dibuka kembali. Status saat ini: {$session->status->value}.");
+            throw new DomainException("Only COMPLETED reconciliation sessions can be reopened. Current status: {$session->status->value}.");
         }
 
         $session->status = BankReconciliationSessionStatusEnum::REOPENED;

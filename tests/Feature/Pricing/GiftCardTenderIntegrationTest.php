@@ -213,7 +213,7 @@ class GiftCardTenderIntegrationTest extends TestCase
         ];
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Saldo Gift Card tidak mencukupi');
+        $this->expectExceptionMessage('Insufficient Gift Card balance');
 
         try {
             $this->transactionService->createTransaction($transactionData, $this->user->id, $this->shift->id);

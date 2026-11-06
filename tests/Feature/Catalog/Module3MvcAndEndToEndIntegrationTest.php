@@ -147,14 +147,14 @@ class Module3MvcAndEndToEndIntegrationTest extends TestCase
         // 1. GET products.index
         $response = $this->get(route('products.index'));
         $response->assertOk();
-        $response->assertSee('Katalog Produk');
-        $response->assertSee('Ekspor');
-        $response->assertSee('Impor');
+        $response->assertSee('Products');
+        $response->assertSee('Export');
+        $response->assertSee('Import');
 
         // 2. GET products.create
         $response = $this->get(route('products.create'));
         $response->assertOk();
-        $response->assertSee('Tambah Produk');
+        $response->assertSee('Add Product');
         $response->assertSee('Alpha Roasters');
         $response->assertSee('PPN 11%');
 
@@ -194,10 +194,10 @@ class Module3MvcAndEndToEndIntegrationTest extends TestCase
         // 4. GET products.edit
         $editResponse = $this->get(route('products.edit', $product->id));
         $editResponse->assertOk();
-        $editResponse->assertSee('Ubah Produk');
+        $editResponse->assertSee('Edit Product');
         $editResponse->assertSee('Caramel Cappuccino');
-        $editResponse->assertSee('Galeri Media Produk');
-        $editResponse->assertSee('Riwayat Perubahan Biaya Pokok');
+        $editResponse->assertSee('Product Media Gallery');
+        $editResponse->assertSee('COGS Change History');
 
         // 5. PUT products.update
         $updatePayload = array_merge($payload, [
@@ -237,7 +237,7 @@ class Module3MvcAndEndToEndIntegrationTest extends TestCase
         // 1. GET categories.index
         $response = $this->get(route('categories.index'));
         $response->assertOk();
-        $response->assertSee('Kategori & Sub-Kategori', false);
+        $response->assertSee('Categories & Subcategories', false);
 
         // 2. POST categories.store (Parent category)
         $storeResponse = $this->post(route('categories.store'), [
@@ -293,7 +293,7 @@ class Module3MvcAndEndToEndIntegrationTest extends TestCase
         // 1. Brands CRUD
         $brandIndex = $this->get(route('brands.index'));
         $brandIndex->assertOk();
-        $brandIndex->assertSee('Merek Produk');
+        $brandIndex->assertSee('Product Brands');
 
         $brandStore = $this->post(route('brands.store'), [
             'code' => 'BR-TOR',
@@ -318,7 +318,7 @@ class Module3MvcAndEndToEndIntegrationTest extends TestCase
         // 2. Unit of Measure CRUD
         $uomIndex = $this->get(route('units-of-measure.index'));
         $uomIndex->assertOk();
-        $uomIndex->assertSee('Satuan Ukur');
+        $uomIndex->assertSee('Units of Measure');
 
         $uomStore = $this->post(route('units-of-measure.store'), [
             'name' => 'Kilogram',
@@ -332,7 +332,7 @@ class Module3MvcAndEndToEndIntegrationTest extends TestCase
         // 3. Tax Classes CRUD
         $taxIndex = $this->get(route('tax-classes.index'));
         $taxIndex->assertOk();
-        $taxIndex->assertSee('Kelas Pajak');
+        $taxIndex->assertSee('Tax Classes');
 
         $taxStore = $this->post(route('tax-classes.store'), [
             'name' => 'PB1 Restoran 10%',
@@ -361,12 +361,12 @@ class Module3MvcAndEndToEndIntegrationTest extends TestCase
         // 1. GET price-lists.index
         $indexResponse = $this->get(route('price-lists.index'));
         $indexResponse->assertOk();
-        $indexResponse->assertSee('Daftar Harga');
+        $indexResponse->assertSee('Price Lists');
 
         // 2. GET price-lists.create
         $createResponse = $this->get(route('price-lists.create'));
         $createResponse->assertOk();
-        $createResponse->assertSee('Buat Daftar Harga');
+        $createResponse->assertSee('Create Price List');
 
         // 3. POST price-lists.store
         $storeResponse = $this->post(route('price-lists.store'), [
@@ -394,7 +394,7 @@ class Module3MvcAndEndToEndIntegrationTest extends TestCase
         // 4. GET price-lists.edit
         $editResponse = $this->get(route('price-lists.edit', $priceList->id));
         $editResponse->assertOk();
-        $editResponse->assertSee('Sunting Daftar Harga');
+        $editResponse->assertSee('Edit Price List');
 
         // 5. PUT price-lists.update
         $updateResponse = $this->put(route('price-lists.update', $priceList->id), [
@@ -439,7 +439,7 @@ class Module3MvcAndEndToEndIntegrationTest extends TestCase
         // 1. GET assortments.index
         $indexResponse = $this->get(route('assortments.index', ['store_id' => $this->storeA->id]));
         $indexResponse->assertOk();
-        $indexResponse->assertSee('Asortimen');
+        $indexResponse->assertSee('Branch Assortments');
 
         // 2. POST assortments.update
         $postResponse = $this->post(route('assortments.update'), [

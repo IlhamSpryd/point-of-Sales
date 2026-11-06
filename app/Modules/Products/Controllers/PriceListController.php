@@ -104,14 +104,14 @@ class PriceListController extends Controller
                 storeId: $priceList->store_id,
                 subjectType: PriceList::class,
                 subjectId: $priceList->id,
-                description: "Daftar Harga '{$priceList->name}' ({$priceList->type}) berhasil dibuat dengan ".count($itemsData).' item.',
+                description: "Price List '{$priceList->name}' ({$priceList->type}) successfully created with ".count($itemsData).' item(s).',
                 oldValues: null,
                 newValues: $priceList->toArray()
             );
 
             $this->menuCache->flush($tenantId, $priceList->store_id);
 
-            return redirect()->route('price-lists.index')->with('success', 'Daftar harga berhasil dibuat.');
+            return redirect()->route('price-lists.index')->with('success', 'Price list created successfully.');
         });
     }
 
@@ -163,14 +163,14 @@ class PriceListController extends Controller
                 storeId: $priceList->store_id,
                 subjectType: PriceList::class,
                 subjectId: $priceList->id,
-                description: "Daftar Harga '{$priceList->name}' berhasil diperbarui.",
+                description: "Price List '{$priceList->name}' successfully updated.",
                 oldValues: $oldValues,
                 newValues: $priceList->toArray()
             );
 
             $this->menuCache->flush($tenantId, $priceList->store_id);
 
-            return redirect()->route('price-lists.index')->with('success', 'Daftar harga berhasil diperbarui.');
+            return redirect()->route('price-lists.index')->with('success', 'Price list updated successfully.');
         });
     }
 
@@ -194,12 +194,12 @@ class PriceListController extends Controller
                 storeId: $storeId,
                 subjectType: PriceList::class,
                 subjectId: $plId,
-                description: "Daftar Harga '{$plName}' berhasil dihapus."
+                description: "Price List '{$plName}' successfully deleted."
             );
 
             $this->menuCache->flush($tenantId, $storeId);
 
-            return redirect()->route('price-lists.index')->with('success', 'Daftar harga berhasil dihapus.');
+            return redirect()->route('price-lists.index')->with('success', 'Price list deleted successfully.');
         });
     }
 }

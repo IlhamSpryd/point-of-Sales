@@ -91,7 +91,7 @@ class SalesOrderManager extends Component
         $actor = Auth::user();
         try {
             $confirmed = $soService->confirmOrder($so, $actor);
-            session()->flash('message', "Sales Order {$confirmed->so_number} BERHASIL dikonfirmasi (CONFIRMED) dan stok direservasi.");
+            session()->flash('message', "Sales Order {$confirmed->so_number} confirmed and stock reserved.");
             $this->viewOrder($id);
         } catch (\Throwable $e) {
             session()->flash('error', $e->getMessage());
@@ -143,7 +143,7 @@ class SalesOrderManager extends Component
         }
 
         if (empty($linesToFulfill)) {
-            session()->flash('error', 'Masukkan kuantitas pemenuhan (> 0) minimal untuk satu item.');
+            session()->flash('error', 'Please enter a fulfillment quantity (> 0) for at least one item.');
 
             return;
         }
@@ -151,7 +151,7 @@ class SalesOrderManager extends Component
         try {
             $executionOrder = $soService->fulfillOrder($so, $linesToFulfill, $actor);
             $this->showFulfillModal = false;
-            session()->flash('message', "Fulfillment berhasil diproses! Dokumen Order #{$executionOrder->order_code} telah dibuat dan stok dipotong.");
+            session()->flash('message', "Fulfillment processed successfully. Order #{$executionOrder->order_code} created and stock deducted.");
 
             if ($this->showDetailModal) {
                 $this->viewOrder($this->selectedSOId);
@@ -190,7 +190,7 @@ class SalesOrderManager extends Component
         $this->validate([
             'cancelReason' => ['required', 'string', 'min:3'],
         ], [
-            'cancelReason.required' => 'Alasan pembatalan pesanan wajib diisi.',
+            'cancelReason.required' => 'Cancellation reason is required.',
         ]);
 
         $actor = Auth::user();
@@ -198,7 +198,7 @@ class SalesOrderManager extends Component
         try {
             $cancelled = $soService->cancelOrder($so, $actor, $this->cancelReason);
             $this->showCancelModal = false;
-            session()->flash('message', "Sales Order {$cancelled->so_number} telah dialihkan ke status {$cancelled->status->value}.");
+            session()->flash('message', "Sales Order {$cancelled->so_number} transitioned to status {$cancelled->status->value}.");
 
             if ($this->showDetailModal) {
                 $this->viewOrder($this->selectedSOId);
@@ -217,7 +217,7 @@ class SalesOrderManager extends Component
 
         try {
             $repeatSO = $soService->createRepeatOrder($so, $actor);
-            session()->flash('message', "Repeat Order BERHASIL dibuat: {$repeatSO->so_number} (Harga & Pajak dihitung ulang per hari ini).");
+            session()->flash('message', "Repeat Order created successfully: {$repeatSO->so_number} (Prices and taxes recalculated).");
             $this->viewOrder($repeatSO->id);
         } catch (\Throwable $e) {
             session()->flash('error', $e->getMessage());

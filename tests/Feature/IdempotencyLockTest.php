@@ -88,7 +88,7 @@ class IdempotencyLockTest extends TestCase
         $res1 = $this->actingAs($this->user)->postJson(route('transaction.store'), $payload);
 
         $res1->assertStatus(200)
-            ->assertJsonFragment(['success' => true, 'message' => 'Pesanan berhasil dibuat']);
+            ->assertJsonFragment(['success' => true, 'message' => 'Order created successfully']);
 
         $orderNumber = $res1->json('order_number');
 
@@ -97,7 +97,7 @@ class IdempotencyLockTest extends TestCase
         $res2->assertStatus(200)
             ->assertJsonFragment([
                 'success' => true,
-                'message' => 'Pesanan sudah diproses sebelumnya (Idempotent)',
+                'message' => 'Order has already been processed (Idempotent)',
                 'order_number' => $orderNumber,
             ]);
 

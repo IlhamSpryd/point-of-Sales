@@ -33,7 +33,7 @@
     />
 
     @if (! $hideRadio)
-        <{!! $controlAttribute !!} {{ $attributes->twMergeFor('radio', 'h-5 w-5 flex-shrink-0 cursor-pointer rounded-full border border-border bg-background flex items-center justify-center transition peer-checked:border-primary peer-disabled:cursor-not-allowed peer-disabled:opacity-60 peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-checked:[&>span]:opacity-100 peer-checked:[&>span]:scale-100') }}>
+        <{!! $controlAttribute !!} {{ $attributes->twMergeFor('radio', 'h-5 w-5 flex-shrink-0 cursor-pointer rounded-full border border-input bg-background flex items-center justify-center transition peer-checked:border-primary peer-disabled:cursor-not-allowed peer-disabled:opacity-60 peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-checked:[&>span]:opacity-100 peer-checked:[&>span]:scale-100') }}>
             <span {{ $attributes->twMergeFor('dot', 'h-2.5 w-2.5 rounded-full bg-primary opacity-0 scale-50 transition duration-150 ease-out') }}></span>
         </{!! $controlAttribute !!}>
     @endif

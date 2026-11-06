@@ -12,8 +12,7 @@
         {{-- Header & Stepper --}}
         <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200/80">
             <div class="flex items-center gap-3">
-                <img src="{{ asset('assets/images/logo.png') }}" alt="Apeiron System" class="h-8 w-auto object-contain">
-                <span class="text-lg font-bold tracking-tight text-slate-900">Apeiron</span>
+                <x-brand-logo variant="wordmark" class="h-7 w-auto text-slate-900" />
             </div>
 
             {{-- Minimalist Progress Indicator (Apple / Google Style) --}}

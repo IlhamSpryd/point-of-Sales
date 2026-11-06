@@ -46,7 +46,7 @@ class StockTransferManagerLivewireTest extends TestCase
             ->withSession(['active_store_id' => $this->storeA->id])
             ->get(route('inventory.transfers'))
             ->assertOk()
-            ->assertSee('Transfer Stok Antarcabang');
+            ->assertSee('Inter-Branch Stock Transfers');
     }
 
     public function test_can_create_draft_transfer_via_livewire(): void

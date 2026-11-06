@@ -49,7 +49,7 @@ class CheckoutController extends Controller
         $tableId = session('current_table_id');
         if (! $tableId) {
             return redirect()->route('customer.cart.index')
-                ->with('error', 'Silakan scan ulang QR Code di meja Anda.');
+                ->with('error', 'Please rescan the table QR code.');
         }
 
         $tenantId = app(TenantContext::class)->requireTenantId();
@@ -61,23 +61,23 @@ class CheckoutController extends Controller
 
         if (! $table) {
             return redirect()->route('customer.cart.index')
-                ->with('error', 'Meja tidak ditemukan atau sedang tidak aktif.');
+                ->with('error', 'Table not found or currently inactive.');
         }
 
         if ($table->operational_status === 'cleaning') {
             return redirect()->route('customer.cart.index')
-                ->with('error', 'Meja sedang dalam proses pembersihan. Silakan panggil staf kami.');
+                ->with('error', 'Table is currently being cleaned. Please contact our staff.');
         }
 
         if ($table->operational_status === 'reserved') {
             return redirect()->route('customer.cart.index')
-                ->with('error', 'Meja ini telah direservasi. Silakan hubungi staf untuk konfirmasi kedatangan.');
+                ->with('error', 'This table is reserved. Please contact staff to confirm your arrival.');
         }
 
         $items = $this->cartService->getItems();
 
         if (empty($items)) {
-            return redirect()->route('customer.cart.index')->with('error', 'Keranjang Anda masih kosong.');
+            return redirect()->route('customer.cart.index')->with('error', 'Your cart is empty.');
         }
 
         $subtotal = $this->cartService->getSubtotal();
@@ -99,31 +99,31 @@ class CheckoutController extends Controller
         $tableId = session('current_table_id');
 
         if (! $tableId) {
-            return redirect()->route('customer.cart.index')->with('error', 'Sesi meja tidak ditemukan, silakan scan ulang QR Code.');
+            return redirect()->route('customer.cart.index')->with('error', 'Table session not found. Please rescan the table QR code.');
         }
 
         // === IDEMPOTENCY GUARD ===
         $idempotencyKey = $request->session()->pull('checkout_idempotency_key');
         if (! $idempotencyKey || $idempotencyKey !== $request->input('_idempotency_key')) {
             return redirect()->route('customer.cart.index')
-                ->with('error', 'Pesanan sudah diproses. Jangan klik tombol bayar lebih dari sekali.');
+                ->with('error', 'Order is already being processed. Please do not submit multiple times.');
         }
 
         $items = $this->cartService->getItems();
 
         if (empty($items)) {
-            return redirect()->route('customer.cart.index')->with('error', 'Keranjang Anda masih kosong.');
+            return redirect()->route('customer.cart.index')->with('error', 'Your cart is empty.');
         }
 
         if ($this->cartService->getTotalQty() > 40) {
-            return redirect()->route('customer.cart.index')->with('error', 'Maksimal 40 item per pesanan. Silakan panggil staf untuk pesanan besar.');
+            return redirect()->route('customer.cart.index')->with('error', 'Maximum 40 items per order. Please consult our staff for large orders.');
         }
 
         // PATCH FOR S-13: gunakan Cache::lock untuk idempotensi yang sesungguhnya.
         $lock = Cache::lock('checkout_idempotency_'.$idempotencyKey, 15);
         if (! $lock->get()) {
             return redirect()->route('customer.checkout.create')
-                ->with('error', 'Pembayaran sedang diproses, mohon tunggu sebentar.');
+                ->with('error', 'Payment is being processed. Please wait a moment.');
         }
 
         // PATCH FOR SO-04: Implementasi atomic quota
@@ -131,7 +131,7 @@ class CheckoutController extends Controller
         if (! $tableQuotaLock->get()) {
             $lock->release();
 
-            return back()->with('error', 'Pesanan Anda sedang diproses. Mohon tunggu.');
+            return back()->with('error', 'Your order is currently processing. Please wait.');
         }
 
         try {
@@ -146,15 +146,15 @@ class CheckoutController extends Controller
                 ->first();
 
             if (! $table) {
-                return back()->with('error', 'Meja tidak ditemukan atau sedang tidak aktif.');
+                return back()->with('error', 'Table not found or currently inactive.');
             }
 
             if ($table->operational_status === 'cleaning') {
-                return back()->with('error', 'Meja sedang dalam proses pembersihan. Silakan panggil staf kami.');
+                return back()->with('error', 'Table is currently being cleaned. Please contact our staff.');
             }
 
             if ($table->operational_status === 'reserved') {
-                return back()->with('error', 'Meja ini telah direservasi. Silakan hubungi staf untuk konfirmasi kedatangan.');
+                return back()->with('error', 'This table is reserved. Please contact staff to confirm your arrival.');
             }
 
             // PATCH FOR S-05: cap order Pending per sesi dan per meja.
@@ -163,7 +163,7 @@ class CheckoutController extends Controller
             $tablePending = Order::where('table_id', $tableId)->where('order_status', OrderStatus::Pending)
                 ->where('created_at', '>=', now()->subMinutes(30))->count();
             if ($openPending >= 2 || $tablePending >= 5) {
-                return back()->with('error', 'Masih ada pesanan yang belum dibayar. Selesaikan atau tunggu kedaluwarsa sebelum memesan lagi.');
+                return back()->with('error', 'You have unpaid pending orders. Please settle or wait until they expire before placing a new order.');
             }
 
             $transactionItems = array_map(function (array $item) use ($tenantId) {
@@ -182,7 +182,7 @@ class CheckoutController extends Controller
                     $modifiers = $modifierQuery->get();
                     if ($modifiers->count() !== count($modifierIds)) {
                         throw ValidationException::withMessages([
-                            'items' => 'Pilihan varian tidak valid atau milik cabang/tenant lain.',
+                            'items' => 'Selected options are invalid or belong to another store.',
                         ]);
                     }
                     $serverExtraPrice = $modifiers->sum('extra_price');
@@ -194,20 +194,20 @@ class CheckoutController extends Controller
 
                 if (! $product) {
                     throw ValidationException::withMessages([
-                        'items' => 'Produk tidak tersedia di cabang/tenant ini.',
+                        'items' => 'Product is unavailable at this store.',
                     ]);
                 }
 
                 if (! $product->is_active || $product->status !== 'active') {
                     throw ValidationException::withMessages([
-                        'items' => "Produk '{$product->product_name}' telah dinonaktifkan dan tidak dapat dipesan.",
+                        'items' => "Product '{$product->product_name}' is inactive and cannot be ordered.",
                     ]);
                 }
 
                 $resolver = app(CatalogPriceResolverService::class);
                 if (! $resolver->isAvailableInStore($product, $storeId)) {
                     throw ValidationException::withMessages([
-                        'items' => "Produk '{$product->product_name}' tidak tersedia di cabang ini.",
+                        'items' => "Product '{$product->product_name}' is not available at this store.",
                     ]);
                 }
 
@@ -228,7 +228,7 @@ class CheckoutController extends Controller
             if (! $systemUserId) {
                 Log::critical('[SELF-ORDER] akun sistem self-order belum di-seed.');
 
-                return back()->with('error', 'Layanan pemesanan mandiri sedang tidak tersedia. Silakan panggil staf.');
+                return back()->with('error', 'Self-ordering service is currently unavailable. Please contact staff.');
             }
 
             // PATCH FOR M-05: Stale Price Protection.
@@ -240,13 +240,13 @@ class CheckoutController extends Controller
             $sessionSubtotal = $this->cartService->getSubtotal();
 
             if ($request->validated('payment_method') === 'cash' && $liveSubtotal > 500000) {
-                return back()->with('error', 'Pesanan tunai maksimal Rp 500.000. Untuk pesanan lebih besar, gunakan pembayaran digital atau pesan di Kasir.');
+                return back()->with('error', 'Cash orders are limited to Rp 500,000. For larger amounts, please use digital payment or order at the Cashier.');
             }
 
             if (abs($liveSubtotal - $sessionSubtotal) > 1) {
                 $this->cartService->refreshCartPrices();
 
-                return back()->with('error', 'Harga beberapa item telah berubah. Silakan periksa kembali keranjang Anda dan coba lagi.');
+                return back()->with('error', 'Prices have updated for some items. Please review your cart and try again.');
             }
 
             $customerId = null;
@@ -255,7 +255,7 @@ class CheckoutController extends Controller
                 if ($customer) {
                     $customerId = $customer->id;
                 } else {
-                    return back()->with('error', 'Nomor HP tidak terdaftar sebagai member.');
+                    return back()->with('error', 'Mobile number is not registered as a member.');
                 }
             }
 
@@ -284,12 +284,12 @@ class CheckoutController extends Controller
             }
             Log::error('[SELF-ORDER] DB error', ['table_id' => $tableId, 'key' => $idempotencyKey, 'error' => $e->getMessage()]);
 
-            return back()->with('error', 'Terjadi gangguan sistem. Pesanan Anda belum dibuat, silakan coba lagi.');
+            return back()->with('error', 'A system issue occurred. Your order has not been placed. Please try again.');
         } catch (\Throwable $e) {
             // PATCH FOR S-07: JANGAN PERNAH tampilkan $e->getMessage() ke pelanggan.
             Log::error('[SELF-ORDER] checkout gagal', ['table_id' => $tableId, 'error' => $e->getMessage()]);
 
-            return back()->with('error', 'Pesanan gagal diproses. Silakan coba lagi atau panggil staf.');
+            return back()->with('error', 'Unable to process order. Please try again or ask our staff for assistance.');
         } finally {
             $lock->release();
             $tableQuotaLock->release();
@@ -377,9 +377,9 @@ class CheckoutController extends Controller
     public function reorder(): RedirectResponse
     {
         if ($this->cartService->restoreSnapshot()) {
-            return redirect()->route('customer.cart.index')->with('success', 'Keranjang berhasil dipulihkan.');
+            return redirect()->route('customer.cart.index')->with('success', 'Cart successfully restored.');
         }
 
-        return redirect()->route('customer.cart.index')->with('error', 'Tidak ada keranjang sebelumnya untuk dipulihkan.');
+        return redirect()->route('customer.cart.index')->with('error', 'No previous cart found to restore.');
     }
 }

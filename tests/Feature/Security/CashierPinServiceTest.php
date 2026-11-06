@@ -83,7 +83,7 @@ class CashierPinServiceTest extends TestCase
             $service->setPin($kasir, '123');
             $this->fail('Seharusnya gagal: PIN 3 digit terlalu pendek.');
         } catch (InvalidArgumentException $e) {
-            $this->assertStringContainsString('4-6 digit', $e->getMessage());
+            $this->assertStringContainsString('4 to 6 numeric digits', $e->getMessage());
         }
 
         // Terlalu panjang (7 digit)
@@ -91,7 +91,7 @@ class CashierPinServiceTest extends TestCase
             $service->setPin($kasir, '1234567');
             $this->fail('Seharusnya gagal: PIN 7 digit terlalu panjang.');
         } catch (InvalidArgumentException $e) {
-            $this->assertStringContainsString('4-6 digit', $e->getMessage());
+            $this->assertStringContainsString('4 to 6 numeric digits', $e->getMessage());
         }
 
         // Mengandung huruf
@@ -99,7 +99,7 @@ class CashierPinServiceTest extends TestCase
             $service->setPin($kasir, '123a');
             $this->fail('Seharusnya gagal: PIN mengandung huruf.');
         } catch (InvalidArgumentException $e) {
-            $this->assertStringContainsString('4-6 digit', $e->getMessage());
+            $this->assertStringContainsString('4 to 6 numeric digits', $e->getMessage());
         }
     }
 
@@ -139,7 +139,7 @@ class CashierPinServiceTest extends TestCase
         } catch (ValidationException $e) {
             $lockedOut = true;
             $this->assertArrayHasKey('pin', $e->errors());
-            $this->assertStringContainsString('terkunci', $e->errors()['pin'][0]);
+            $this->assertStringContainsString('locked', $e->errors()['pin'][0]);
         }
         $this->assertTrue($lockedOut, 'Percobaan ke-5 seharusnya melempar ValidationException.');
         $this->assertTrue($service->isLockedOut($kasir));

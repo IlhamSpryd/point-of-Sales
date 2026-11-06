@@ -253,7 +253,7 @@ class StrictInventoryAndWebhookRejectionTest extends TestCase
             ], $this->cashier->id);
             $this->fail('Modifier BOM shortage must be rejected.');
         } catch (ValidationException $e) {
-            $this->assertStringContainsStringIgnoringCase('tidak mencukupi', collect($e->errors())->flatten()->first());
+            $this->assertStringContainsStringIgnoringCase('insufficient', collect($e->errors())->flatten()->first());
         }
 
         $this->assertTrue(bccomp((string) $this->ingredient->fresh()->current_stock, '0.0000', 4) >= 0);

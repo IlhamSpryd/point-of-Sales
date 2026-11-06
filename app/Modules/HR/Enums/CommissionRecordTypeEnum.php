@@ -13,9 +13,9 @@ enum CommissionRecordTypeEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::STANDARD => 'Komisi Standar',
-            self::REVERSAL => 'Pembalikan Retur / Batal',
-            self::ADJUSTMENT => 'Penyesuaian Manual',
+            self::STANDARD => 'Standard Commission',
+            self::REVERSAL => 'Reversal (Return / Cancel)',
+            self::ADJUSTMENT => 'Manual Adjustment',
         };
     }
 }

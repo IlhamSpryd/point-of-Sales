@@ -3,10 +3,10 @@
         window.addEventListener('confirm-delete', (event) => {
             const triggerEl = document.activeElement;
             const detail = event.detail || {};
-            const title = detail.title || 'Apakah Anda yakin?';
-            const text = detail.text || 'Tindakan ini tidak dapat dibatalkan.';
-            const confirmButtonText = detail.confirmButtonText || 'Ya, Hapus!';
-            const cancelButtonText = detail.cancelButtonText || 'Batal';
+            const title = detail.title || 'Are you sure?';
+            const text = detail.text || 'This action cannot be undone.';
+            const confirmButtonText = detail.confirmButtonText || 'Delete';
+            const cancelButtonText = detail.cancelButtonText || 'Cancel';
 
             if (typeof Swal !== 'undefined') {
                 Swal.fire({

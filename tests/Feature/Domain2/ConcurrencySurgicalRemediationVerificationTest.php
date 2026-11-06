@@ -172,7 +172,7 @@ class ConcurrencySurgicalRemediationVerificationTest extends TestCase
 
         // Percobaan void kedua kali harus ditolak (karena status sudah Void, bukan Paid)
         $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Hanya pesanan yang sudah lunas (Paid) yang dapat di-void.');
+        $this->expectExceptionMessage('Only Paid orders can be voided.');
         app(TenantContext::class)->runAs($this->tenantA->id, $this->storeA->id, function () use ($order) {
             $this->transactionService->voidOrder($order, 'Void kedua kalinya', $this->cashier->id);
         });

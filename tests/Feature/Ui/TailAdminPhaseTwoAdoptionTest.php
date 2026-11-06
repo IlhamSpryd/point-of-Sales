@@ -45,7 +45,7 @@ class TailAdminPhaseTwoAdoptionTest extends TestCase
         $this->assertStringContainsString('Unggah Nota Transaksi', $html);
         $this->assertStringContainsString('Mendukung JPG, PNG, PDF hingga 10MB', $html);
         $this->assertStringContainsString('cloud_upload', $html);
-        $this->assertStringContainsString('Pilih Berkas', $html);
+        $this->assertStringContainsString('Browse Files', $html);
         $this->assertStringContainsString('border-dashed', $html);
         $this->assertStringContainsString('formatFileSize', $html);
     }

@@ -146,7 +146,7 @@ class ShiftDeviceHandoverAndConcurrencyTest extends TestCase
 
         // Kasir 2 mencoba membuka shift kedua pada Device A yang sama -> Service melempar DomainException
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Perangkat kasir ini masih memiliki shift yang sedang aktif.');
+        $this->expectExceptionMessage('This terminal already has an active register shift.');
 
         $shiftService->openShift(
             $this->tenantA->id,
@@ -220,7 +220,7 @@ class ShiftDeviceHandoverAndConcurrencyTest extends TestCase
             );
             $this->fail('Harus gagal karena Device B milik cabang/tenant berbeda.');
         } catch (DomainException $e) {
-            $this->assertStringContainsString('Perangkat tidak terdaftar pada cabang atau tenant yang sesuai.', $e->getMessage());
+            $this->assertStringContainsString('Device is not registered to the current branch or tenant.', $e->getMessage());
         }
 
         // 2. Composite FK rejection pada tabel shifts: foreign key (tenant_id, store_id, device_id)
@@ -449,7 +449,7 @@ class ShiftDeviceHandoverAndConcurrencyTest extends TestCase
             $shiftService->acceptHandover($handover->id, $this->cashier2->id, '654321');
             $this->fail('Harus gagal karena ada selisih kas tanpa persetujuan supervisor.');
         } catch (DomainException $e) {
-            $this->assertStringContainsString('memerlukan persetujuan dan PIN Supervisor', $e->getMessage());
+            $this->assertStringContainsString('supervisor approval and PIN', $e->getMessage());
         }
 
         // Penerimaan dengan PIN Supervisor yang sah -> Berhasil
@@ -526,7 +526,7 @@ class ShiftDeviceHandoverAndConcurrencyTest extends TestCase
             );
             $this->fail('Eksekusi closeShift kedua harus ditolak.');
         } catch (DomainException $e) {
-            $this->assertStringContainsString('Shift sudah ditutup sebelumnya.', $e->getMessage());
+            $this->assertStringContainsString('Register shift has already been closed.', $e->getMessage());
         }
 
         // 3. Pencatatan pergerakan kas pada shift yang sudah closed -> Ditolak atomik
@@ -542,7 +542,7 @@ class ShiftDeviceHandoverAndConcurrencyTest extends TestCase
             );
             $this->fail('recordCashMovement pada shift closed harus ditolak.');
         } catch (DomainException $e) {
-            $this->assertStringContainsString('Pergerakan kas hanya dapat dicatat pada shift berstatus open', $e->getMessage());
+            $this->assertStringContainsString('Cash movements can only be recorded for open register shifts', $e->getMessage());
         }
     }
 
@@ -569,7 +569,7 @@ class ShiftDeviceHandoverAndConcurrencyTest extends TestCase
 
         // Saldo laci kas saat ini = 50.000. Coba cash_out 60.000
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Saldo kas laci tidak mencukupi untuk pengeluaran kas (saldo tidak boleh negatif).');
+        $this->expectExceptionMessage('Drawer cash balance is insufficient for this cash out (balance cannot be negative).');
 
         $shiftService->recordCashMovement(
             $shift->id,

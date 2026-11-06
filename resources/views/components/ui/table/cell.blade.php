@@ -9,7 +9,7 @@
         'center' => 'text-center',
         default => 'text-left',
     };
-    $monoClass = $mono ? 'font-mono tabular-nums' : '';
+    $monoClass = $mono ? 'tabular-nums' : '';
 @endphp
 
 <td {{ $attributes->twMerge("whitespace-nowrap px-4 py-3 {$alignClass} {$monoClass} align-middle text-xs sm:text-sm text-foreground") }}>

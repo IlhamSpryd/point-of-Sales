@@ -90,7 +90,7 @@ class VoucherQuotaConcurrencyTest extends TestCase
 
         // Kasir 2 mencoba validasi / mereserve kuota yang sama saat reservasi Kasir 1 masih aktif (TTL 120s)
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage("Kuota voucher 'LIMITED1' telah habis.");
+        $this->expectExceptionMessage("Voucher 'LIMITED1' quota is exhausted.");
 
         $this->voucherService->reserveVoucher(
             code: 'LIMITED1',

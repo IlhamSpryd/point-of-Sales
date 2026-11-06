@@ -105,7 +105,7 @@ class CustomerModifiersIsolationTest extends TestCase
         // EnsureTableSession returns 403 JSON when expectsJson()
         $response->assertStatus(403);
         $response->assertJsonPath('success', false);
-        $response->assertJsonPath('message', 'Sesi meja tidak ditemukan. Silakan scan ulang QR Code.');
+        $response->assertJsonPath('message', 'Table session not found. Please scan the QR code again.');
     }
 
     public function test_c_invalid_or_inactive_table_session_rejects_gracefully()
@@ -123,7 +123,7 @@ class CustomerModifiersIsolationTest extends TestCase
 
         $response->assertStatus(403);
         $response->assertJsonPath('success', false);
-        $response->assertJsonPath('message', 'Meja ini sudah tidak aktif. Silakan scan ulang QR Code.');
+        $response->assertJsonPath('message', 'This table is currently inactive. Please scan the QR code again.');
     }
 
     public function test_d_cross_tenant_isolation_protects_modifiers()

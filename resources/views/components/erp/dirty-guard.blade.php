@@ -1,6 +1,6 @@
 @props([
     'watch' => null,
-    'message' => 'Perubahan yang Anda buat belum disimpan. Yakin ingin meninggalkan halaman ini?',
+    'message' => 'You have unsaved changes. Are you sure you want to leave this page?',
     'isDirty' => null,
 ])
 

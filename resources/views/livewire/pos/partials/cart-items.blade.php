@@ -1,4 +1,4 @@
-<!-- Area Produk Yang Di-scroll Dalam Keranjang -->
+<!-- Scrollable Products Area in Cart -->
 <div class="flex-1 overflow-y-auto custom-scrollbar space-y-2.5 pr-1 py-1">
     @if ($pendingOrderId)
         <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-xs font-semibold text-amber-900 flex items-center justify-between shadow-xs">
@@ -7,7 +7,7 @@
                 QR Settlement Mode #{{ $pendingOrderCode }}
             </span>
             <button type="button" wire:click="cancelPendingOrderMode" class="text-xs font-bold text-rose-600 hover:text-rose-800 transition-colors ml-2 shrink-0">
-                Batal
+                Cancel
             </button>
         </div>
     @endif
@@ -18,7 +18,7 @@
             <div class="flex items-center justify-between font-bold">
                 <span class="flex items-center gap-1">
                     <span class="material-symbols-rounded text-[15px] text-amber-600">warning</span>
-                    Peringatan Revalidasi:
+                    Revalidation Warning:
                 </span>
                 <button type="button" wire:click="$set('resumeWarnings', [])" class="text-amber-500 hover:text-amber-800 font-bold">&times;</button>
             </div>
@@ -35,8 +35,8 @@
             <div class="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-gray-400 border border-border">
                 <span class="material-symbols-rounded text-[22px]">shopping_cart</span>
             </div>
-            <p class="font-headline-sm text-[13px] font-semibold text-foreground">Keranjang Kosong</p>
-            <p class="font-body-sm text-[11px] text-muted-foreground max-w-[200px] leading-tight">Pilih produk dari menu di sebelah kiri untuk memulai pesanan.</p>
+            <p class="font-headline-sm text-[13px] font-semibold text-foreground">Cart is Empty</p>
+            <p class="font-body-sm text-[11px] text-muted-foreground max-w-[200px] leading-tight">Select products from the catalog to begin an order.</p>
         </div>
     @else
         @foreach ($this->cartLines as $line)
@@ -59,8 +59,8 @@
                     </div>
                     @unless ($pendingOrderId)
                         <button type="button" wire:click="removeFromCart({{ $line['index'] }})"
-                            aria-label="Hapus {{ $line['product_name'] }} dari keranjang"
-                            class="text-muted-foreground hover:text-rose-600 transition-colors p-0.5 shrink-0" title="Hapus">
+                            aria-label="Remove {{ $line['product_name'] }} from cart"
+                            class="text-muted-foreground hover:text-rose-600 transition-colors p-0.5 shrink-0" title="Remove">
                             <span class="material-symbols-rounded text-[15px]">close</span>
                         </button>
                     @endunless
@@ -70,22 +70,22 @@
                     <!-- Stepper Quantity -->
                     <div class="flex items-center gap-1 bg-white border border-border rounded-md p-0.5 h-8">
                         @if ($pendingOrderId)
-                            <span class="font-numeric-currency text-[13px] font-semibold text-foreground px-2 min-w-[20px] text-center font-mono">
+                            <span class="font-numeric-currency text-[13px] font-semibold text-foreground px-2 min-w-[20px] text-center tabular-nums">
                                 {{ $line['qty'] }}
                             </span>
                         @else
                             <button type="button"
                                 wire:click="updateCartQty({{ $line['index'] }}, -1)"
-                                aria-label="Kurangi kuantitas {{ $line['product_name'] }}"
+                                aria-label="Decrease quantity of {{ $line['product_name'] }}"
                                 class="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-colors">
                                 <span class="material-symbols-rounded text-[14px]">remove</span>
                             </button>
-                            <span class="font-numeric-currency text-[13px] font-semibold text-foreground px-2 min-w-[20px] text-center font-mono">
+                            <span class="font-numeric-currency text-[13px] font-semibold text-foreground px-2 min-w-[20px] text-center tabular-nums">
                                 {{ $line['qty'] }}
                             </span>
                             <button type="button"
                                 wire:click="updateCartQty({{ $line['index'] }}, 1)"
-                                aria-label="Tambah kuantitas {{ $line['product_name'] }}"
+                                aria-label="Increase quantity of {{ $line['product_name'] }}"
                                 class="w-7 h-7 rounded flex items-center justify-center text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-colors">
                                 <span class="material-symbols-rounded text-[14px]">add</span>
                             </button>
@@ -94,11 +94,11 @@
 
                     <!-- Line Subtotal & Item Discount -->
                     <div class="flex flex-col items-end">
-                        <span class="font-numeric-currency text-[13px] font-semibold text-foreground font-mono">
+                        <span class="font-numeric-currency text-[13px] font-semibold text-foreground tabular-nums">
                             Rp {{ number_format($line['order_price'], 0, ',', '.') }}
                         </span>
                         @if (!$pendingOrderId && isset($this->cart[$line['index']]['item_discount_amount']) && $this->cart[$line['index']]['item_discount_amount'] > 0)
-                            <span class="text-[10px] text-rose-600 font-mono">
+                            <span class="text-[10px] text-rose-600 tabular-nums">
                                 -Rp {{ number_format($this->cart[$line['index']]['item_discount_amount'], 0, ',', '.') }}
                             </span>
                         @endif

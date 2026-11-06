@@ -3,7 +3,7 @@
     $tableName = session('current_table_name');
 @endphp
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -45,19 +45,19 @@
         <header
             class="sticky top-0 z-40 h-14 flex items-center justify-between gap-3 px-4 bg-apeiron-bg/90 backdrop-blur-xl border-b border-apeiron-border">
             <div class="flex items-center gap-2.5 min-w-0">
-                <img src="{{ asset('assets/images/logo.png') }}" alt="Apeiron System" class="h-6 w-auto object-contain">
+                <x-brand-logo variant="symbol" class="h-6 w-auto text-foreground" />
                 <h1 class="font-brand font-bold text-lg tracking-tight truncate">Apeiron System</h1>
             </div>
 
             <div class="flex items-center gap-2">
                 {{-- PATCH FOR S-08/P-09: panggil waiter yang nyata, XSS-safe via @js() --}}
                 @if ($tableName)
-                    <button type="button" x-data="{ busy: false }" :disabled="busy" aria-label="Panggil Waiter"
+                    <button type="button" x-data="{ busy: false }" :disabled="busy" aria-label="Call Staff"
                         @click="busy = true;
                           fetch(@js(route('customer.waiter.call')), { method: 'POST', headers: { 'Accept': 'application/json',
                                 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content } })
                             .then(r => r.json()).then(d => notify(d.message))
-                            .catch(() => notify('Koneksi bermasalah. Silakan lambaikan tangan ke staf.'))
+                            .catch(() => notify('Connection error. Please wave to a staff member.'))
                             .finally(() => busy = false)"
                         class="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-apeiron-border text-apeiron-muted hover:text-apeiron-ink active:scale-90 transition-all shadow-sm">
                         <span class="material-symbols-rounded text-[18px]">room_service</span>
@@ -69,7 +69,7 @@
                 @if (!empty($activeOrders))
                     <a href="{{ route('customer.checkout.success', end($activeOrders)) }}"
                         class="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-apeiron-border text-apeiron-muted hover:text-apeiron-ink active:scale-90 transition-all shadow-sm"
-                        aria-label="Status Pesanan">
+                        aria-label="Order Status">
                         <span class="material-symbols-rounded text-[18px]">receipt_long</span>
                     </a>
                 @endif
@@ -90,10 +90,10 @@
                 <div class="relative z-10">
                     <span
                         class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white/20 backdrop-blur-md text-[10px] font-bold uppercase tracking-wider mb-3 shadow-sm border border-white/10">
-                        <span class="material-symbols-rounded text-[14px] text-amber-300">stars</span> Spesial Hari Ini
+                        <span class="material-symbols-rounded text-[14px] text-amber-300">stars</span> Today's Specials
                     </span>
-                    <h2 class="font-bold text-xl leading-tight mb-1.5 text-white">Nikmati Promo Terbaik Kami</h2>
-                    <p class="text-xs text-white/70 font-medium">Cek opsi diskon saat proses pembayaran.</p>
+                    <h2 class="font-bold text-xl leading-tight mb-1.5 text-white">Explore Our Featured Menu</h2>
+                    <p class="text-xs text-white/70 font-medium">Check available promotional discounts at checkout.</p>
                 </div>
 
                 {{-- Elemen Dekoratif Premium --}}
@@ -106,11 +106,11 @@
             </div>
 
             {{-- Search Bar (Realtime dengan Alpine) --}}
-            <x-search-input x-model="searchQuery" placeholder="Cari minuman atau hidangan..." />
+            <x-search-input x-model="searchQuery" placeholder="Search drinks or dishes..." />
         </div>
 
-        {{-- Kategori Dinamis --}}
-        <nav aria-label="Kategori menu"
+        {{-- Dynamic Categories --}}
+        <nav aria-label="Menu categories"
             class="sticky top-14 z-30 bg-apeiron-bg/95 backdrop-blur-md pb-2 pt-1 border-b border-apeiron-border/60 shadow-sm">
             <div class="flex gap-2.5 overflow-x-auto scrollbar-hide px-4 py-2 items-center">
                 <button type="button" @click="activeCategory = 'all'"
@@ -118,7 +118,7 @@
                     :class="activeCategory === 'all' ? 'bg-apeiron-ink text-white border-apeiron-ink shadow-sm' :
                         'bg-white text-gray-500 border-border hover:bg-gray-50'"
                     class="shrink-0 flex items-center justify-center h-10 px-4 rounded-xl border text-sm font-medium whitespace-nowrap transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
-                    Semua Menu
+                    All Items
                 </button>
                 @foreach ($visibleCategories as $cat)
                     <button type="button" @click="activeCategory = '{{ $cat->id }}'"
@@ -140,8 +140,8 @@
                     <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-3xl bg-apeiron-surface">
                         <span class="material-symbols-rounded text-[32px] text-primary-300">coffee</span>
                     </div>
-                    <h2 class="text-lg font-bold">Menu belum tersedia</h2>
-                    <p class="mt-1 text-sm text-apeiron-muted">Silakan panggil staf kami untuk bantuan.</p>
+                    <h2 class="text-lg font-bold">Menu Unavailable</h2>
+                    <p class="mt-1 text-sm text-apeiron-muted">Please contact our staff for assistance.</p>
                 </div>
             @else
                 <ul class="grid grid-cols-2 gap-3">
@@ -152,7 +152,7 @@
                                 ? $product->sellableQuantity() <= 0
                                 : $product->stock <= 0;
                             // PATCH FOR U-08: gunakan kolom yang benar (product_description, bukan description).
-                            $desc = $product->product_description ?: 'Racikan pilihan terbaik khas Apeiron System.';
+                            $desc = $product->product_description ?: 'Crafted with premium ingredients by Apeiron System.';
                         @endphp
 
                         {{-- Logic Alpine: Tampilkan jika kategori cocok ATAU sedang mencari nama produk --}}
@@ -164,8 +164,8 @@
                                 @if ($soldOut) disabled @else @click="$dispatch('open-variant', { id: {{ $product->id }} })" @endif
                                 class="group flex h-full w-full flex-col rounded-3xl border border-apeiron-border bg-white p-3 text-left shadow-sm transition-all duration-200 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:shadow-none disabled:active:scale-100">
                                 <span class="relative mb-3 block aspect-square overflow-hidden rounded-2xl bg-apeiron-bg">
-                                    @if ($product->product_photo)
-                                        <img src="{{ asset('storage/' . $product->product_photo) }}" alt=""
+                                    @if ($product->photo_url)
+                                        <img src="{{ $product->photo_url }}" alt=""
                                             loading="lazy"
                                             class="h-full w-full object-cover transition-transform duration-500 ease-out {{ $soldOut ? 'grayscale opacity-60' : 'group-hover:scale-105' }}">
                                     @else
@@ -176,7 +176,7 @@
                                     @endif
                                     @if ($soldOut)
                                         <span
-                                            class="absolute left-2 top-2 rounded-lg bg-apeiron-ink px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md">Habis</span>
+                                            class="absolute left-2 top-2 rounded-lg bg-apeiron-ink px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-white backdrop-blur-md">Sold Out</span>
                                     @endif
                                 </span>
 
@@ -205,15 +205,15 @@
                     @endforeach
                 </ul>
 
-                {{-- Pesan jika pencarian tidak ditemukan --}}
+                {{-- Empty search results message --}}
                 <div x-show="searchQuery.length > 0 && !$el.previousElementSibling.innerText.toLowerCase().includes(searchQuery.toLowerCase())"
                     x-cloak class="col-span-full py-12 text-center text-apeiron-muted text-sm mt-8">
-                    Menu tidak ditemukan. Coba kata kunci lain.
+                    No items found. Try different search terms.
                 </div>
             @endif
         </main>
 
-        {{-- Tombol Keranjang Mengambang --}}
+        {{-- Floating Cart Button --}}
         <div x-data="{
             count: window.customerCartCount ?? {{ app(\App\Services\CartService::class)->getTotalQty() }},
             subtotal: {{ app(\App\Services\CartService::class)->getSubtotal() }}
@@ -227,8 +227,8 @@
             <a href="{{ route('customer.cart.index') }}"
                 class="flex min-h-14 w-full items-center justify-between rounded-2xl bg-apeiron-ink px-5 font-semibold text-white shadow-xl transition-all hover:bg-primary/90 active:scale-[0.98]"
                 wire:navigate>
-                <span class="rounded-lg bg-white/20 px-3 py-1 text-sm" x-text="count + ' Item'"></span>
-                <span>Lihat Keranjang</span>
+                <span class="rounded-lg bg-white/20 px-3 py-1 text-sm" x-text="count + (count === 1 ? ' Item' : ' Items')"></span>
+                <span>View Cart</span>
                 <span class="tabular-nums" x-text="'Rp ' + Number(subtotal).toLocaleString('id-ID')"></span>
             </a>
         </div>

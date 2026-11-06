@@ -23,39 +23,39 @@ class FinancialStatementExport implements FromArray, ShouldAutoSize, WithHeading
     {
         return match ($this->reportType) {
             'trial_balance' => [
-                'Kode Akun',
-                'Nama Akun',
-                'Tipe Akun',
-                'Saldo Awal Debit',
-                'Saldo Awal Kredit',
-                'Mutasi Debit',
-                'Mutasi Kredit',
-                'Saldo Akhir Debit',
-                'Saldo Akhir Kredit',
+                'Account Code',
+                'Account Name',
+                'Account Type',
+                'Beginning Debit',
+                'Beginning Credit',
+                'Period Debit',
+                'Period Credit',
+                'Ending Debit',
+                'Ending Credit',
             ],
             'profit_and_loss' => [
-                'Kategori',
-                'Kode Akun',
-                'Nama Akun',
-                'Nominal',
+                'Category',
+                'Account Code',
+                'Account Name',
+                'Amount',
             ],
             'balance_sheet' => [
-                'Klasifikasi',
-                'Kode Akun',
-                'Nama Akun',
-                'Nominal',
+                'Classification',
+                'Account Code',
+                'Account Name',
+                'Amount',
             ],
             'cash_flow' => [
-                'Aktivitas / Kategori',
-                'Arus Masuk (Inflow)',
-                'Arus Keluar (Outflow)',
-                'Arus Kas Bersih',
+                'Activity / Category',
+                'Cash Inflow',
+                'Cash Outflow',
+                'Net Cash Flow',
             ],
             default => [
-                'Kolom 1',
-                'Kolom 2',
-                'Kolom 3',
-                'Nominal',
+                'Column 1',
+                'Column 2',
+                'Column 3',
+                'Amount',
             ],
         };
     }
@@ -83,7 +83,7 @@ class FinancialStatementExport implements FromArray, ShouldAutoSize, WithHeading
             $totals = $this->reportData['totals'] ?? [];
             $rows[] = [
                 'TOTAL',
-                'Total Neraca Saldo',
+                'Total Trial Balance',
                 '-',
                 $totals['total_opening_debit'] ?? '0.00',
                 $totals['total_opening_credit'] ?? '0.00',
@@ -95,82 +95,82 @@ class FinancialStatementExport implements FromArray, ShouldAutoSize, WithHeading
         } elseif ($this->reportType === 'profit_and_loss') {
             $sections = $this->reportData['sections'] ?? [];
 
-            // 1. Pendapatan
+            // 1. Revenue
             foreach ($sections['revenue']['items'] ?? [] as $item) {
-                $rows[] = ['PENDAPATAN', $item['account_code'], $item['account_name'], $item['amount']];
+                $rows[] = ['REVENUE', $item['account_code'], $item['account_name'], $item['amount']];
             }
-            $rows[] = ['SUBTOTAL', '-', 'Total Pendapatan', $sections['revenue']['total'] ?? '0.00'];
+            $rows[] = ['SUBTOTAL', '-', 'Total Revenue', $sections['revenue']['total'] ?? '0.00'];
 
-            // 2. HPP
+            // 2. COGS
             foreach ($sections['cogs']['items'] ?? [] as $item) {
-                $rows[] = ['HPP', $item['account_code'], $item['account_name'], $item['amount']];
+                $rows[] = ['COGS', $item['account_code'], $item['account_name'], $item['amount']];
             }
-            $rows[] = ['SUBTOTAL', '-', 'Total HPP', $sections['cogs']['total'] ?? '0.00'];
-            $rows[] = ['LABA KOTOR', '-', 'Laba Kotor', $sections['gross_profit'] ?? '0.00'];
+            $rows[] = ['SUBTOTAL', '-', 'Total COGS', $sections['cogs']['total'] ?? '0.00'];
+            $rows[] = ['GROSS PROFIT', '-', 'Gross Profit', $sections['gross_profit'] ?? '0.00'];
 
-            // 3. Beban Operasional
+            // 3. Operating Expenses
             foreach ($sections['operating_expenses']['items'] ?? [] as $item) {
-                $rows[] = ['BEBAN OPERASIONAL', $item['account_code'], $item['account_name'], $item['amount']];
+                $rows[] = ['OPERATING EXPENSES', $item['account_code'], $item['account_name'], $item['amount']];
             }
-            $rows[] = ['SUBTOTAL', '-', 'Total Beban Operasional', $sections['operating_expenses']['total'] ?? '0.00'];
-            $rows[] = ['LABA OPERASIONAL', '-', 'Laba Operasional', $sections['operating_income'] ?? '0.00'];
+            $rows[] = ['SUBTOTAL', '-', 'Total Operating Expenses', $sections['operating_expenses']['total'] ?? '0.00'];
+            $rows[] = ['OPERATING INCOME', '-', 'Operating Income', $sections['operating_income'] ?? '0.00'];
 
-            // 4. Lain-lain
+            // 4. Other
             foreach ($sections['other_income']['items'] ?? [] as $item) {
-                $rows[] = ['PENDAPATAN LAIN', $item['account_code'], $item['account_name'], $item['amount']];
+                $rows[] = ['OTHER INCOME', $item['account_code'], $item['account_name'], $item['amount']];
             }
             foreach ($sections['other_expense']['items'] ?? [] as $item) {
-                $rows[] = ['BEBAN LAIN', $item['account_code'], $item['account_name'], $item['amount']];
+                $rows[] = ['OTHER EXPENSE', $item['account_code'], $item['account_name'], $item['amount']];
             }
 
-            $rows[] = ['LABA BERSIH', '-', 'Laba Bersih Tahun Berjalan', $this->reportData['net_income'] ?? '0.00'];
+            $rows[] = ['NET INCOME', '-', 'Net Income for the Year', $this->reportData['net_income'] ?? '0.00'];
         } elseif ($this->reportType === 'balance_sheet') {
-            // Aset Lancar
+            // Current Assets
             foreach ($this->reportData['assets']['current_assets']['items'] ?? [] as $item) {
-                $rows[] = ['ASET LANCAR', $item['account_code'], $item['account_name'], $item['amount']];
+                $rows[] = ['CURRENT ASSETS', $item['account_code'], $item['account_name'], $item['amount']];
             }
-            $rows[] = ['SUBTOTAL ASET LANCAR', '-', 'Total Aset Lancar', $this->reportData['assets']['current_assets']['total'] ?? '0.00'];
+            $rows[] = ['SUBTOTAL CURRENT ASSETS', '-', 'Total Current Assets', $this->reportData['assets']['current_assets']['total'] ?? '0.00'];
 
-            // Aset Tidak Lancar
+            // Non-Current Assets
             foreach ($this->reportData['assets']['non_current_assets']['items'] ?? [] as $item) {
-                $rows[] = ['ASET TIDAK LANCAR', $item['account_code'], $item['account_name'], $item['amount']];
+                $rows[] = ['NON-CURRENT ASSETS', $item['account_code'], $item['account_name'], $item['amount']];
             }
-            $rows[] = ['SUBTOTAL ASET TIDAK LANCAR', '-', 'Total Aset Tidak Lancar', $this->reportData['assets']['non_current_assets']['total'] ?? '0.00'];
-            $rows[] = ['TOTAL ASET', '-', 'Total Aset', $this->reportData['assets']['total_assets'] ?? '0.00'];
+            $rows[] = ['SUBTOTAL NON-CURRENT ASSETS', '-', 'Total Non-Current Assets', $this->reportData['assets']['non_current_assets']['total'] ?? '0.00'];
+            $rows[] = ['TOTAL ASSETS', '-', 'Total Assets', $this->reportData['assets']['total_assets'] ?? '0.00'];
 
-            // Liabilitas Lancar
+            // Current Liabilities
             foreach ($this->reportData['liabilities']['current_liabilities']['items'] ?? [] as $item) {
-                $rows[] = ['LIABILITAS LANCAR', $item['account_code'], $item['account_name'], $item['amount']];
+                $rows[] = ['CURRENT LIABILITIES', $item['account_code'], $item['account_name'], $item['amount']];
             }
-            $rows[] = ['SUBTOTAL LIABILITAS LANCAR', '-', 'Total Liabilitas Lancar', $this->reportData['liabilities']['current_liabilities']['total'] ?? '0.00'];
+            $rows[] = ['SUBTOTAL CURRENT LIABILITIES', '-', 'Total Current Liabilities', $this->reportData['liabilities']['current_liabilities']['total'] ?? '0.00'];
 
-            // Liabilitas Jangka Panjang
+            // Non-Current Liabilities
             foreach ($this->reportData['liabilities']['non_current_liabilities']['items'] ?? [] as $item) {
-                $rows[] = ['LIABILITAS JANGKA PANJANG', $item['account_code'], $item['account_name'], $item['amount']];
+                $rows[] = ['NON-CURRENT LIABILITIES', $item['account_code'], $item['account_name'], $item['amount']];
             }
-            $rows[] = ['TOTAL LIABILITAS', '-', 'Total Liabilitas', $this->reportData['liabilities']['total_liabilities'] ?? '0.00'];
+            $rows[] = ['TOTAL LIABILITIES', '-', 'Total Liabilities', $this->reportData['liabilities']['total_liabilities'] ?? '0.00'];
 
-            // Ekuitas
+            // Equity
             foreach ($this->reportData['equity']['items'] ?? [] as $item) {
-                $rows[] = ['EKUITAS', $item['account_code'], $item['account_name'], $item['amount']];
+                $rows[] = ['EQUITY', $item['account_code'], $item['account_name'], $item['amount']];
             }
-            $rows[] = ['LABA TAHUN BERJALAN', '-', 'Laba Bersih Tahun Berjalan (YTD)', $this->reportData['equity']['current_year_net_income'] ?? '0.00'];
-            $rows[] = ['TOTAL EKUITAS', '-', 'Total Ekuitas', $this->reportData['equity']['total_equity'] ?? '0.00'];
-            $rows[] = ['TOTAL LIABILITAS & EKUITAS', '-', 'Total Liabilitas dan Ekuitas', $this->reportData['total_liabilities_and_equity'] ?? '0.00'];
+            $rows[] = ['CURRENT YEAR NET INCOME', '-', 'Current Year Net Income (YTD)', $this->reportData['equity']['current_year_net_income'] ?? '0.00'];
+            $rows[] = ['TOTAL EQUITY', '-', 'Total Equity', $this->reportData['equity']['total_equity'] ?? '0.00'];
+            $rows[] = ['TOTAL LIABILITIES & EQUITY', '-', 'Total Liabilities and Equity', $this->reportData['total_liabilities_and_equity'] ?? '0.00'];
         } elseif ($this->reportType === 'cash_flow') {
-            $rows[] = ['Saldo Kas Awal Periode', '-', '-', $this->reportData['beginning_cash'] ?? '0.00'];
+            $rows[] = ['Beginning Cash Balance', '-', '-', $this->reportData['beginning_cash'] ?? '0.00'];
 
             $op = $this->reportData['operating_activities'] ?? [];
-            $rows[] = ['Arus Kas dari Aktivitas Operasi', $op['inflows'] ?? '0.00', $op['outflows'] ?? '0.00', $op['net'] ?? '0.00'];
+            $rows[] = ['Cash Flow from Operating Activities', $op['inflows'] ?? '0.00', $op['outflows'] ?? '0.00', $op['net'] ?? '0.00'];
 
             $inv = $this->reportData['investing_activities'] ?? [];
-            $rows[] = ['Arus Kas dari Aktivitas Investasi', $inv['inflows'] ?? '0.00', $inv['outflows'] ?? '0.00', $inv['net'] ?? '0.00'];
+            $rows[] = ['Cash Flow from Investing Activities', $inv['inflows'] ?? '0.00', $inv['outflows'] ?? '0.00', $inv['net'] ?? '0.00'];
 
             $fin = $this->reportData['financing_activities'] ?? [];
-            $rows[] = ['Arus Kas dari Aktivitas Pendanaan', $fin['inflows'] ?? '0.00', $fin['outflows'] ?? '0.00', $fin['net'] ?? '0.00'];
+            $rows[] = ['Cash Flow from Financing Activities', $fin['inflows'] ?? '0.00', $fin['outflows'] ?? '0.00', $fin['net'] ?? '0.00'];
 
-            $rows[] = ['Kenaikan / (Penurunan) Kas Bersih', '-', '-', $this->reportData['net_cash_flow'] ?? '0.00'];
-            $rows[] = ['Saldo Kas Akhir Periode', '-', '-', $this->reportData['ending_cash'] ?? '0.00'];
+            $rows[] = ['Net Increase / (Decrease) in Cash', '-', '-', $this->reportData['net_cash_flow'] ?? '0.00'];
+            $rows[] = ['Ending Cash Balance', '-', '-', $this->reportData['ending_cash'] ?? '0.00'];
         }
 
         return $rows;

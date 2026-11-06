@@ -1,6 +1,6 @@
 @props([
     'items' => [],
-    'placeholder' => 'Ketik perintah atau cari menu… (Ctrl+K)',
+    'placeholder' => 'Type a command or search… (Ctrl+K)',
     'headless' => false,
 ])
 
@@ -87,7 +87,7 @@
             @else
                 <button type="button" class="inline-flex items-center gap-2 rounded-control border border-border bg-background px-3 py-1.5 text-xs text-muted-foreground transition hover:bg-muted hover:text-foreground">
                     <x-ui.icon name="search" size="xs" />
-                    <span>Cari menu…</span>
+                    <span>Search navigation…</span>
                     <kbd class="ml-4 rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">⌘K</kbd>
                 </button>
             @endif

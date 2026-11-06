@@ -48,6 +48,8 @@ class Payment extends Model
         'change_amount' => 'integer',
         'payment_method' => PaymentMethod::class,
         'status' => PaymentStatusEnum::class,
+        'is_offline_sync' => 'boolean',
+        'offline_synced_at' => 'datetime',
     ];
 
     /**

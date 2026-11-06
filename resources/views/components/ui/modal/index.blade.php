@@ -16,7 +16,7 @@
     // Strip wire:model so it isn't spread onto the (non-input) panel div.
     $attributes = $attributes->whereDoesntStartWith('wire:model');
     $initialOpen = $open || $show;
-    $openExpression = $wireModel ? "\$wire.entangle('{$wireModel}')" : ($initialOpen ? 'true' : 'false');
+    $openExpression = $wireModel ? "\$wire.\$entangle('{$wireModel}', true)" : ($initialOpen ? 'true' : 'false');
 
     $maxWidthClass = match ($maxWidth) {
         'sm' => 'sm:max-w-sm',
@@ -41,13 +41,14 @@
         ? 'rounded-t-[1.75rem] sm:rounded-2xl pb-safe'
         : 'rounded-2xl';
 
-    $modalId = $attributes->get('id') ?? $name ?? uniqid('dd-modal-');
+    $modalId = $attributes->get('id') ?? $name ?? ($wireModel ? 'dd-modal-'.$wireModel : uniqid('dd-modal-'));
     $titleId = $modalId.'-title';
     $descId = $modalId.'-desc';
 @endphp
 
 <div
     x-data="{ modalOpen: {!! $openExpression !!}, modalId: @js($modalId) }"
+    x-modelable="modalOpen"
     x-init="$watch('modalOpen', function (value) {
         if (value) {
             document.body.style.overflow = 'hidden';
@@ -133,9 +134,9 @@
                                 class="inline-flex size-8 items-center justify-center rounded-lg bg-transparent text-muted-foreground transition hover:bg-secondary hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                                 @click="modalOpen = false"
                                 type="button"
-                                aria-label="Tutup dialog"
+                                aria-label="Close dialog"
                             >
-                                <span class="sr-only">Tutup</span>
+                                <span class="sr-only">Close</span>
                                 <svg class="size-4.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" aria-hidden="true">
                                     <path d="M6 18 18 6M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"></path>
                                 </svg>

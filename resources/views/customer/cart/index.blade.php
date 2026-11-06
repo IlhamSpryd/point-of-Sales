@@ -4,7 +4,7 @@
         'lines' => collect($items)->map(fn ($i) => [
             'lineId'    => $i['line_id'],
             'name'      => $i['product_name'],
-            'photo'     => ! empty($i['product_photo']) ? asset('storage/'.$i['product_photo']) : null,
+            'photo'     => ! empty($i['product_photo']) ? '/storage/' . ltrim($i['product_photo'], '/') : null,
             'qty'       => (int) $i['qty'],
             'unitPrice' => (int) $i['unit_price'],
             'notes'     => $i['notes'] ?? null,
@@ -23,7 +23,7 @@
 @endphp
 
 <x-customer-layout :back-url="$menuUrl">
-    <x-slot:title>Keranjang</x-slot:title>
+    <x-slot:title>Cart</x-slot:title>
 
     <div x-data="cartPage(@js($config))">
 
@@ -33,19 +33,19 @@
             <div class="w-16 h-16 rounded-3xl bg-apeiron-surface flex items-center justify-center mb-4">
                 <span class="material-symbols-rounded text-[32px] text-primary-300">shopping_bag</span>
             </div>
-            <h1 class="text-[17px] font-bold">Keranjang masih kosong</h1>
-            <p class="text-[14px] text-apeiron-muted mt-1 mb-6">Pilih menu favorit Anda untuk mulai memesan.</p>
+            <h1 class="text-[17px] font-bold">Your cart is empty</h1>
+            <p class="text-[14px] text-apeiron-muted mt-1 mb-6">Discover our menu and add items to begin your order.</p>
             <template x-if="menuUrl">
                 <a :href="menuUrl" class="inline-flex items-center gap-2 rounded-2xl bg-apeiron-ink text-white px-6 min-h-12 font-semibold active:scale-95 hover:bg-primary/90 transition-all duration-200">
-                    <span class="material-symbols-rounded text-[20px]">restaurant_menu</span> Lihat Menu
+                    <span class="material-symbols-rounded text-[20px]">restaurant_menu</span> View Menu
                 </a>
             </template>
         </div>
 
-        {{-- Daftar item --}}
+        {{-- Item list --}}
         <div x-show="lines.length > 0" x-cloak>
             <div class="mb-3">
-                <p class="text-[13px] font-semibold text-apeiron-muted" x-text="totalQty + ' item di keranjang'"></p>
+                <p class="text-[13px] font-semibold text-apeiron-muted" x-text="totalQty + (totalQty === 1 ? ' item in cart' : ' items in cart')"></p>
             </div>
 
             <ul class="space-y-3">
@@ -77,20 +77,20 @@
                                 </template>
                             </div>
 
-                            <p x-show="line.notes" class="mt-2 text-[12px] italic text-apeiron-muted" x-text="'Catatan: ' + line.notes"></p>
+                            <p x-show="line.notes" class="mt-2 text-[12px] italic text-apeiron-muted" x-text="'Note: ' + line.notes"></p>
 
                             <div class="mt-auto pt-3 flex items-center justify-between gap-3">
                                 <span class="text-[15px] font-extrabold tabular-nums" x-text="rupiah(line.unitPrice * line.qty)"></span>
 
-                                <div class="flex items-center rounded-full bg-apeiron-surface border border-apeiron-border p-0.5" role="group" :aria-label="'Jumlah ' + line.name">
+                                <div class="flex items-center rounded-full bg-apeiron-surface border border-apeiron-border p-0.5" role="group" :aria-label="'Quantity ' + line.name">
                                     <button type="button" @click="change(line, -1)" :disabled="busy"
-                                            :aria-label="line.qty === 1 ? 'Hapus ' + line.name : 'Kurangi jumlah'"
+                                            :aria-label="line.qty === 1 ? 'Remove ' + line.name : 'Decrease quantity'"
                                             class="w-11 h-11 rounded-full flex items-center justify-center bg-white shadow-sm text-apeiron-ink hover:bg-apeiron-bg active:scale-90 disabled:opacity-50 transition-all duration-200">
                                         <span class="material-symbols-rounded text-[20px]" x-text="line.qty === 1 ? 'delete' : 'remove'"></span>
                                     </button>
                                     <span class="w-9 text-center font-bold text-[15px] tabular-nums" x-text="line.qty" aria-live="polite"></span>
                                     <button type="button" @click="change(line, 1)" :disabled="busy || line.qty >= 20"
-                                            aria-label="Tambah jumlah"
+                                            aria-label="Increase quantity"
                                             class="w-11 h-11 rounded-full flex items-center justify-center bg-white shadow-sm text-apeiron-ink hover:bg-apeiron-bg active:scale-90 disabled:opacity-40 transition-all duration-200">
                                         <span class="material-symbols-rounded text-[20px]">add</span>
                                     </button>
@@ -103,7 +103,7 @@
 
             <template x-if="menuUrl">
                 <a :href="menuUrl" class="mt-4 inline-flex items-center gap-1.5 text-[14px] font-semibold text-apeiron-muted hover:text-apeiron-ink active:scale-95 transition-all duration-200 min-h-11">
-                    <span class="material-symbols-rounded text-[18px]">add_circle</span> Tambah menu lain
+                    <span class="material-symbols-rounded text-[18px]">add_circle</span> Add more items
                 </a>
             </template>
 
@@ -116,14 +116,14 @@
             <div class="px-4 pt-4 pb-safe">
                 <dl class="text-[14px] space-y-1.5 mb-4" aria-live="polite">
                     <div class="flex justify-between text-apeiron-muted"><dt>Subtotal</dt><dd class="tabular-nums" x-text="rupiah(subtotal)"></dd></div>
-                    <div class="flex justify-between text-apeiron-muted"><dt x-text="'Pajak (' + taxPercent + '%)'"></dt><dd class="tabular-nums" x-text="rupiah(tax)"></dd></div>
+                    <div class="flex justify-between text-apeiron-muted"><dt x-text="'Tax (' + taxPercent + '%)'"></dt><dd class="tabular-nums" x-text="rupiah(tax)"></dd></div>
                 </dl>
                 <a :href="checkoutUrl" :class="busy ? 'pointer-events-none opacity-60' : ''"
                    class="flex items-center justify-between w-full rounded-2xl bg-apeiron-ink text-white px-5 min-h-14 font-semibold shadow-lg hover:bg-primary/90 active:scale-[0.98] transition-all duration-200 focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2">
-                    <span class="text-[15px]">Lanjut ke Pembayaran</span>
+                    <span class="text-[15px]">Proceed to Checkout</span>
                     <span class="tabular-nums text-[15px]" x-text="rupiah(total)"></span>
                 </a>
-                <p class="text-[11px] text-apeiron-muted text-center mt-2">Total sudah termasuk pajak. Nominal final tampil di layar pembayaran.</p>
+                <p class="text-[11px] text-apeiron-muted text-center mt-2">Tax included. Final amount is calculated at checkout.</p>
             </div>
         </div>
     </div>
@@ -181,7 +181,7 @@
                         await this.send('PATCH', line, { qty: next });
                     } catch (e) {
                         line.qty = prev;
-                        this.notify('Gagal memperbarui jumlah. Periksa koneksi Anda.');
+                        this.notify('Unable to update quantity. Please check your connection.');
                     } finally {
                         this.busy = false;
                     }
@@ -196,7 +196,7 @@
                         setTimeout(() => { this.lines = this.lines.filter(l => l.lineId !== line.lineId); }, 220);
                     } catch (e) {
                         line.removing = false;
-                        this.notify('Gagal menghapus item. Coba lagi.');
+                        this.notify('Unable to remove item. Please try again.');
                     } finally {
                         this.busy = false;
                     }

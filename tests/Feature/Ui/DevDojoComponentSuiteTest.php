@@ -100,7 +100,7 @@ class DevDojoComponentSuiteTest extends TestCase
         $this->assertStringContainsString('Buku Besar &amp; Neraca Saldo', $html);
         $this->assertStringContainsString('id="btn-create-journal"', $html);
         $this->assertStringContainsString('F2', $html);
-        $this->assertStringContainsString('font-mono tabular-nums', $html);
+        $this->assertStringContainsString('tabular-nums', $html);
         $this->assertStringContainsString('sm:max-w-2xl', $html);
         $this->assertStringContainsString('role="dialog"', $html);
         $this->assertStringContainsString('aria-modal="true"', $html);

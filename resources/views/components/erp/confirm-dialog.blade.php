@@ -5,10 +5,10 @@
 <div
     x-data="{
         open: false,
-        title: 'Konfirmasi Tindakan',
-        message: 'Apakah Anda yakin ingin melanjutkan tindakan ini?',
-        confirmText: 'Ya, Lanjutkan',
-        cancelText: 'Batal',
+        title: 'Confirm Action',
+        message: 'Are you sure you want to proceed?',
+        confirmText: 'Confirm',
+        cancelText: 'Cancel',
         variant: 'destructive',
         onConfirmCallback: null,
         formToSubmit: null,
@@ -16,14 +16,14 @@
         wireArgs: [],
         init() {
             window.confirmSubmit = (formId, itemName, options = {}) => {
-                const title = itemName ? 'Hapus “' + itemName + '”?' : (options.title || 'Konfirmasi Tindakan');
-                const message = options.message || options.text || 'Data yang dihapus tidak dapat dikembalikan!';
+                const title = itemName ? 'Delete “' + itemName + '”?' : (options.title || 'Confirm Deletion');
+                const message = options.message || options.text || 'This action cannot be undone. Are you sure you want to proceed?';
                 window.dispatchEvent(new CustomEvent('erp-confirm', {
                     detail: {
                         title: title,
                         message: message,
-                        confirmText: options.confirmText || 'Ya, Hapus',
-                        cancelText: options.cancelText || 'Batal',
+                        confirmText: options.confirmText || 'Delete',
+                        cancelText: options.cancelText || 'Cancel',
                         variant: options.variant || 'destructive',
                         formId: formId,
                     }
@@ -36,10 +36,10 @@
         openConfirm(detail = {}) {
             const payload = Array.isArray(detail) ? detail[0] : detail;
             const opts = payload || {};
-            this.title = opts.title || 'Konfirmasi Tindakan';
-            this.message = opts.message || opts.text || 'Apakah Anda yakin ingin melanjutkan tindakan ini?';
-            this.confirmText = opts.confirmText || opts.confirmButtonText || 'Ya, Lanjutkan';
-            this.cancelText = opts.cancelText || opts.cancelButtonText || 'Batal';
+            this.title = opts.title || 'Confirm Action';
+            this.message = opts.message || opts.text || 'Are you sure you want to proceed?';
+            this.confirmText = opts.confirmText || opts.confirmButtonText || 'Confirm';
+            this.cancelText = opts.cancelText || opts.cancelButtonText || 'Cancel';
             this.variant = opts.variant || 'destructive';
             this.onConfirmCallback = opts.onConfirm || null;
             this.formToSubmit = opts.formId || null;

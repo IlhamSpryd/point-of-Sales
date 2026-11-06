@@ -214,7 +214,7 @@ class StoreCreditTenderIntegrationTest extends TestCase
         ];
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Saldo Store Credit tidak mencukupi');
+        $this->expectExceptionMessage('Insufficient Store Credit balance');
 
         try {
             $this->transactionService->createTransaction($transactionData, $this->user->id, $this->shift->id);

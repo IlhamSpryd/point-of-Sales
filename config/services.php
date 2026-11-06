@@ -86,4 +86,13 @@ return [
         'redirect_uri' => env('APPLE_REDIRECT_URI', 'http://localhost:8000/auth/oauth/apple/callback'),
     ],
 
+    'whatsapp' => [
+        'provider' => env('WHATSAPP_PROVIDER', 'qiscus'),
+        'api_url' => env('WHATSAPP_API_URL', 'https://multichannel.qiscus.com/api/v2'),
+        'app_id' => env('WHATSAPP_APP_ID', 'apeiron_pos'),
+        'secret_key' => env('WHATSAPP_SECRET_KEY', 'mock_secret'),
+        'channel_id' => env('WHATSAPP_CHANNEL_ID', '12345'),
+        'enabled' => env('WHATSAPP_ENABLED', true),
+    ],
+
 ];

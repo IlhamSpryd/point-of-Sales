@@ -22,7 +22,7 @@ x-cloak>
         <div class="flex items-center justify-between border-b border-gray-100 pb-3">
             <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
                 <span class="material-symbols-rounded text-indigo-600">fingerprint</span>
-                Kiosk Absensi Kasir
+                Cashier Attendance Kiosk
             </h3>
             <button @click="openKiosk = false" class="text-gray-400 hover:text-gray-600 cursor-pointer">
                 <span class="material-symbols-rounded">close</span>
@@ -30,7 +30,7 @@ x-cloak>
         </div>
 
         <div>
-            <p class="text-xs text-gray-500 mb-3">Masukkan 6-digit PIN Staf Anda:</p>
+            <p class="text-xs text-gray-500 mb-3">Enter your 6-digit staff PIN:</p>
             <div class="flex items-center justify-center gap-2">
                 <template x-for="i in 6">
                     <div class="w-4 h-4 rounded-full border-2 transition-all duration-150"
@@ -66,11 +66,11 @@ x-cloak>
         <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100" x-show="pin.length === 6">
             <button type="button" @click="$dispatch('kiosk-clock-in', { pin }); openKiosk = false;"
                 class="py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-xs">
-                Masuk (Clock In)
+                Clock In
             </button>
             <button type="button" @click="$dispatch('kiosk-clock-out', { pin }); openKiosk = false;"
                 class="py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs rounded-xl transition-colors cursor-pointer shadow-xs">
-                Pulang (Clock Out)
+                Clock Out
             </button>
         </div>
     </div>

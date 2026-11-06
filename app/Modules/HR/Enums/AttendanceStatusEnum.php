@@ -18,14 +18,25 @@ enum AttendanceStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::PRESENT => 'Hadir Tepat Waktu (Present)',
-            self::LATE => 'Terlambat (Late)',
-            self::EARLY_LEAVE => 'Pulang Lebih Awal (Early Leave)',
-            self::ABSENT => 'Mangkir / Tidak Hadir (Absent)',
-            self::ON_LEAVE => 'Cuti Resmi (On Leave)',
-            self::SICK => 'Sakit (Sick)',
-            self::DAY_OFF => 'Hari Libur (Day Off)',
-            self::CORRECTED => 'Terkoreksi (Corrected)',
+            self::PRESENT => 'Present',
+            self::LATE => 'Late',
+            self::EARLY_LEAVE => 'Early Departure',
+            self::ABSENT => 'Absent',
+            self::ON_LEAVE => 'On Leave',
+            self::SICK => 'Sick Leave',
+            self::DAY_OFF => 'Day Off',
+            self::CORRECTED => 'Corrected',
+        };
+    }
+
+    public function badgeClasses(): string
+    {
+        return match ($this) {
+            self::PRESENT => 'bg-emerald-50 text-emerald-700 border-emerald-200',
+            self::LATE, self::EARLY_LEAVE => 'bg-amber-50 text-amber-700 border-amber-200',
+            self::CORRECTED => 'bg-blue-50 text-blue-700 border-blue-200',
+            self::ABSENT, self::SICK => 'bg-rose-50 text-rose-700 border-rose-200',
+            self::ON_LEAVE, self::DAY_OFF => 'bg-gray-100 text-gray-700 border-gray-200',
         };
     }
 }

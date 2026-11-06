@@ -100,7 +100,7 @@ class PricingPipelineService
             ->first();
 
         if (! $product) {
-            throw new RuntimeException("Produk #{$productId} tidak ditemukan.");
+            throw new RuntimeException("Product #{$productId} not found.");
         }
 
         $variant = null;

@@ -16,12 +16,12 @@ enum SupplierInvoiceStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::Draft => 'Draf',
-            self::Submitted => 'Diajukan',
-            self::VarianceHold => 'Ditahan (Selisih Varians)',
-            self::ApprovedPayable => 'Disetujui Siap-Bayar',
-            self::Disputed => 'Disengketakan',
-            self::Cancelled => 'Dibatalkan',
+            self::Draft => 'Draft',
+            self::Submitted => 'Submitted',
+            self::VarianceHold => 'Variance Hold',
+            self::ApprovedPayable => 'Approved for Payment',
+            self::Disputed => 'Disputed',
+            self::Cancelled => 'Cancelled',
         };
     }
 }

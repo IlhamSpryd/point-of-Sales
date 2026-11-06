@@ -1,6 +1,6 @@
 @props([
     'icon' => 'inbox',
-    'title' => 'Belum ada data',
+    'title' => 'No Data Available',
     'description' => null,
     'action' => null
 ])

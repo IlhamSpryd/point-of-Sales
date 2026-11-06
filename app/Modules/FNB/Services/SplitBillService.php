@@ -32,7 +32,7 @@ class SplitBillService
     public function splitByItem(Order $order, array $splits, int $userId): array
     {
         if (count($splits) < 2) {
-            throw new InvalidArgumentException('Pemisahan tagihan minimal membutuhkan 2 sub-pesanan.');
+            throw new InvalidArgumentException('Bill split requires at least 2 sub-orders.');
         }
 
         return DB::transaction(function () use ($order, $splits, $userId) {
@@ -42,12 +42,12 @@ class SplitBillService
                 ->first();
 
             if (! $lockedOrder) {
-                throw new DomainException('Pesanan tidak ditemukan.');
+                throw new DomainException('Order not found.');
             }
 
             if (in_array($lockedOrder->order_status, [OrderStatus::Paid, OrderStatus::Completed, OrderStatus::Void, OrderStatus::Cancelled], true)) {
                 $statusVal = $lockedOrder->order_status->value;
-                throw new DomainException("Pesanan #{$lockedOrder->order_code} tidak dapat di-split karena berstatus {$statusVal}.");
+                throw new DomainException("Order #{$lockedOrder->order_code} cannot be split because it is {$statusVal}.");
             }
 
             $orderItems = OrderItem::withoutGlobalScopes()
@@ -63,11 +63,11 @@ class SplitBillService
                     $qty = (int) $it['quantity'];
 
                     if ($qty <= 0) {
-                        throw new InvalidArgumentException('Kuantitas item pada split harus lebih besar dari 0.');
+                        throw new InvalidArgumentException('Split item quantity must be greater than 0.');
                     }
 
                     if (! $orderItems->has($itemId)) {
-                        throw new DomainException("Item pesanan #{$itemId} tidak valid atau bukan bagian dari pesanan ini.");
+                        throw new DomainException("Order item #{$itemId} is invalid or not part of this order.");
                     }
 
                     $consumedQtyPerItem[$itemId] = ($consumedQtyPerItem[$itemId] ?? 0) + $qty;
@@ -78,8 +78,8 @@ class SplitBillService
                 $requestedQty = $consumedQtyPerItem[$itemId] ?? 0;
                 if ($requestedQty !== (int) $item->qty) {
                     throw new DomainException(
-                        "Kuantitas item \"{$item->product_name_snapshot}\" yang dialokasikan ({$requestedQty}) ".
-                        "tidak sama dengan total pada pesanan ({$item->qty}). Seluruh item harus dialokasikan secara lengkap."
+                        "Allocated quantity for item \"{$item->product_name_snapshot}\" ({$requestedQty}) ".
+                        "does not match order quantity ({$item->qty}). All items must be fully allocated."
                     );
                 }
             }
@@ -99,7 +99,7 @@ class SplitBillService
                 foreach ($split['items'] as $it) {
                     $originalItem = $orderItems->get((int) $it['order_item_id']);
                     if (! $originalItem) {
-                        throw new DomainException("Item pesanan #{$it['order_item_id']} tidak ditemukan.");
+                        throw new DomainException("Order item #{$it['order_item_id']} not found.");
                     }
                     $qty = (int) $it['quantity'];
                     $unitPrice = (int) $originalItem->order_price;
@@ -176,7 +176,7 @@ class SplitBillService
                 storeId: (int) $lockedOrder->store_id,
                 subjectType: Order::class,
                 subjectId: $lockedOrder->id,
-                description: "Pesanan {$lockedOrder->order_code} dipecah (split by item) menjadi ".count($createdSubOrders).' sub-pesanan.',
+                description: "Order {$lockedOrder->order_code} split (by item) into ".count($createdSubOrders).' sub-orders.',
                 metadata: [
                     'parent_order_id' => $lockedOrder->id,
                     'parent_order_amount' => $parentTotal,
@@ -199,7 +199,7 @@ class SplitBillService
     public function splitByAmount(Order $order, array $amounts, int $userId): array
     {
         if (count($amounts) < 2) {
-            throw new InvalidArgumentException('Pemisahan nominal minimal membutuhkan 2 bagian.');
+            throw new InvalidArgumentException('Amount split requires at least 2 parts.');
         }
 
         return DB::transaction(function () use ($order, $amounts, $userId) {
@@ -209,12 +209,12 @@ class SplitBillService
                 ->first();
 
             if (! $lockedOrder) {
-                throw new DomainException('Pesanan tidak ditemukan.');
+                throw new DomainException('Order not found.');
             }
 
             if (in_array($lockedOrder->order_status, [OrderStatus::Paid, OrderStatus::Completed, OrderStatus::Void, OrderStatus::Cancelled], true)) {
                 $statusVal = $lockedOrder->order_status->value;
-                throw new DomainException("Pesanan #{$lockedOrder->order_code} tidak dapat di-split karena berstatus {$statusVal}.");
+                throw new DomainException("Order #{$lockedOrder->order_code} cannot be split because it is {$statusVal}.");
             }
 
             $parentTotal = (int) $lockedOrder->order_amount;
@@ -224,7 +224,7 @@ class SplitBillService
             foreach ($amounts as $amt) {
                 $val = (int) round((float) $amt);
                 if ($val <= 0) {
-                    throw new InvalidArgumentException('Nominal pecahan tagihan harus lebih besar dari 0.');
+                    throw new InvalidArgumentException('Split bill amount must be greater than 0.');
                 }
                 $intAmounts[] = $val;
                 $sumSplit += $val;
@@ -233,8 +233,8 @@ class SplitBillService
             // Penegakan Paritas Total (T-FNB-02)
             if ($sumSplit !== $parentTotal) {
                 throw new DomainException(
-                    'Total nominal pemecahan tagihan (Rp '.number_format($sumSplit, 0, ',', '.').
-                    ') tidak sama dengan total pesanan (Rp '.number_format($parentTotal, 0, ',', '.').').'
+                    'Total split bill amount (Rp '.number_format($sumSplit, 0, ',', '.').
+                    ') does not equal parent order total (Rp '.number_format($parentTotal, 0, ',', '.').').'
                 );
             }
 
@@ -274,7 +274,7 @@ class SplitBillService
                 storeId: (int) $lockedOrder->store_id,
                 subjectType: Order::class,
                 subjectId: $lockedOrder->id,
-                description: "Pesanan {$lockedOrder->order_code} dipecah (split by amount) menjadi ".count($createdSubOrders).' sub-pesanan.',
+                description: "Order {$lockedOrder->order_code} split (by amount) into ".count($createdSubOrders).' sub-orders.',
                 metadata: [
                     'parent_order_id' => $lockedOrder->id,
                     'parent_order_amount' => $parentTotal,

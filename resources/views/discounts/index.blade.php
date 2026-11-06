@@ -1,7 +1,7 @@
 <x-app-layout>
     <x-slot name="header">
         <h2 class="font-bold text-xl text-apeiron-ink leading-tight">
-            {{ __('Diskon & Promo') }}
+            {{ __('Discounts & Promotions') }}
         </h2>
     </x-slot>
 

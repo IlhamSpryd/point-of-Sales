@@ -210,7 +210,7 @@ class TwoFactorAndIdentityFinalizationTest extends TestCase
         $response->assertStatus(422);
         $response->assertJson([
             'success' => false,
-            'message' => 'Kode autentikasi 6-digit tidak valid atau sudah kedaluwarsa.',
+            'message' => 'The provided 6-digit authentication code is invalid or has expired.',
         ]);
 
         $this->owner->refresh();
@@ -232,7 +232,7 @@ class TwoFactorAndIdentityFinalizationTest extends TestCase
         $response->assertOk();
         $response->assertJson([
             'success' => true,
-            'message' => 'Autentikasi dua faktor berhasil diaktifkan.',
+            'message' => 'Two-factor authentication has been enabled successfully.',
         ]);
 
         $this->owner->refresh();
@@ -410,7 +410,7 @@ class TwoFactorAndIdentityFinalizationTest extends TestCase
         $okResponse->assertOk();
         $okResponse->assertJson([
             'success' => true,
-            'message' => 'Autentikasi dua faktor telah dinonaktifkan.',
+            'message' => 'Two-factor authentication has been disabled.',
         ]);
 
         $this->owner->refresh();

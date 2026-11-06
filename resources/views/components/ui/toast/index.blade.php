@@ -20,7 +20,7 @@
 <template x-teleport="body">
     <div
         role="region"
-        aria-label="Notifikasi sistem"
+        aria-label="System notifications"
         aria-live="polite"
         {{ $attributes->twMerge('pointer-events-none fixed right-0 top-0 z-[99999] flex flex-col items-end gap-2 p-4 w-full sm:max-w-sm') }}
         x-data="{
@@ -129,14 +129,14 @@
                     <p class="font-semibold text-foreground leading-snug" x-text="toast.message"></p>
                     <p x-show="toast.description" class="mt-0.5 text-muted-foreground leading-relaxed" x-text="toast.description"></p>
                     <template x-if="toast.action && toast.action.href">
-                        <a :href="toast.action.href" class="mt-2 inline-flex items-center text-xs font-semibold text-foreground underline" x-text="toast.action.label || 'Lihat detail'"></a>
+                        <a :href="toast.action.href" class="mt-2 inline-flex items-center text-xs font-semibold text-foreground underline" x-text="toast.action.label || 'View details'"></a>
                     </template>
                 </div>
 
                 <button
                     type="button"
                     @click="removeToast(toast.id)"
-                    aria-label="Tutup notifikasi"
+                    aria-label="Close notification"
                     class="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
                 >
                     <svg class="size-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">

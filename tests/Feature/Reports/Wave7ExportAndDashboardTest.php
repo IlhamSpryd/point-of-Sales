@@ -166,22 +166,22 @@ class Wave7ExportAndDashboardTest extends TestCase
         $component->assertSet('activeTab', 'sales')
             ->assertSee('Business Intelligence', false)
             ->assertSee('Advanced Analytics', false)
-            ->assertSee('Top 10 Produk Terlaris', false)
+            ->assertSee('Top 10 Best Selling Products', false)
             // Switch ke tab Persediaan
             ->call('setTab', 'inventory')
             ->assertSet('activeTab', 'inventory')
-            ->assertSee('Distribusi Umur Stok', false)
+            ->assertSee('Stock Aging Distribution', false)
             // Switch ke tab Keuangan
             ->call('setTab', 'finance')
             ->assertSet('activeTab', 'finance')
-            ->assertSee('Rincian Pos Akun Buku Besar', false)
+            ->assertSee('General Ledger Account Breakdown', false)
             // Switch ke tab Pelanggan
             ->call('setTab', 'customers')
             ->assertSet('activeTab', 'customers')
-            ->assertSee('Segmentasi Pelanggan RFM', false)
+            ->assertSee('Customer RFM Segmentation', false)
             // Dispatch export task
             ->call('dispatchExport', 'sales_analytics')
-            ->assertSee('Tugas ekspor', false);
+            ->assertSee('Export task', false);
 
         // Pastikan task tersimpan di DB dan di-dispatch ke queue 'exports'
         $task = ExportTask::where('tenant_id', $this->tenantA->id)->latest('id')->first();

@@ -15,9 +15,9 @@ enum PoInvoicingStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::NotInvoiced => 'Belum Ditagih',
-            self::PartiallyInvoiced => 'Ditagih Sebagian',
-            self::FullyInvoiced => 'Ditagih Penuh',
+            self::NotInvoiced => 'Not Invoiced',
+            self::PartiallyInvoiced => 'Partially Invoiced',
+            self::FullyInvoiced => 'Fully Invoiced',
         };
     }
 
@@ -30,10 +30,6 @@ enum PoInvoicingStatusEnum: string
      */
     public function badgeType(): string
     {
-        return match ($this) {
-            self::NotInvoiced => StatusPalette::variant('draft')->value,
-            self::PartiallyInvoiced => StatusPalette::variant('partially_paid')->value,
-            self::FullyInvoiced => StatusPalette::variant('paid')->value,
-        };
+        return StatusPalette::variant($this)->value;
     }
 }

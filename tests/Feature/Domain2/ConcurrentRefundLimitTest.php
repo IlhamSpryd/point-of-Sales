@@ -251,7 +251,7 @@ class ConcurrentRefundLimitTest extends TestCase
             );
             $this->fail('Request refund kedua wajib ditolak karena melebihi sisa refundable balance payment.');
         } catch (DomainException $e) {
-            $this->assertStringContainsString('melebihi sisa yang dapat direfund', $e->getMessage());
+            $this->assertStringContainsString('exceeds remaining refundable amount', $e->getMessage());
         }
 
         // Verifikasi bahwa di database hanya ada tepat 1 record refund senilai Rp100.000
@@ -350,7 +350,7 @@ class ConcurrentRefundLimitTest extends TestCase
             );
             $this->fail('Refund melebihi payment leg harus ditolak.');
         } catch (DomainException $e) {
-            $this->assertStringContainsString('melebihi sisa yang dapat direfund', $e->getMessage());
+            $this->assertStringContainsString('exceeds remaining refundable amount', $e->getMessage());
         }
 
         // Alokasi yang benar: Rp50.000 pada Leg 1 dan Rp25.000 pada Leg 2 (Total Rp75.000 untuk 1 item) -> LOLOS

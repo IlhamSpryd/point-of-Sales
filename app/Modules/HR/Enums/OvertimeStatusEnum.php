@@ -14,10 +14,10 @@ enum OvertimeStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::PENDING => 'Menunggu Persetujuan',
-            self::APPROVED => 'Disetujui',
-            self::REJECTED => 'Ditolak',
-            self::PROCESSED_IN_PAYROLL => 'Diproses dalam Payroll',
+            self::PENDING => 'Pending Approval',
+            self::APPROVED => 'Approved',
+            self::REJECTED => 'Rejected',
+            self::PROCESSED_IN_PAYROLL => 'Processed in Payroll',
         };
     }
 }

@@ -33,7 +33,7 @@ class VoucherService
 
         $code = strtoupper(trim((string) ($data['code'] ?? $data['voucher_code'] ?? '')));
         if (empty($code)) {
-            throw ValidationException::withMessages(['code' => ['Kode voucher wajib diisi.']]);
+            throw ValidationException::withMessages(['code' => ['Voucher code is required.']]);
         }
 
         $existing = Voucher::withoutGlobalScopes()
@@ -42,7 +42,7 @@ class VoucherService
             ->exists();
 
         if ($existing) {
-            throw ValidationException::withMessages(['code' => ['Kode voucher sudah terdaftar pada tenant ini.']]);
+            throw ValidationException::withMessages(['code' => ['Voucher code is already registered for this tenant.']]);
         }
 
         $discountType = $data['discount_type'] instanceof VoucherDiscountTypeEnum
@@ -51,11 +51,11 @@ class VoucherService
 
         $discountValue = bcadd(bc_num($data['discount_value'] ?? '0'), '0', 2);
         if (bccomp($discountValue, '0.00', 2) <= 0) {
-            throw ValidationException::withMessages(['discount_value' => ['Nilai diskon voucher harus lebih besar dari 0.']]);
+            throw ValidationException::withMessages(['discount_value' => ['Voucher discount value must be greater than 0.']]);
         }
 
         if ($discountType === VoucherDiscountTypeEnum::PERCENTAGE && bccomp($discountValue, '100.00', 2) > 0) {
-            throw ValidationException::withMessages(['discount_value' => ['Persentase diskon voucher tidak boleh melebihi 100%.']]);
+            throw ValidationException::withMessages(['discount_value' => ['Voucher discount percentage cannot exceed 100%.']]);
         }
 
         return Voucher::create([
@@ -95,11 +95,11 @@ class VoucherService
             ->first();
 
         if (! $voucher) {
-            throw new DomainException("Voucher dengan kode '{$code}' tidak ditemukan.");
+            throw new DomainException("Voucher with code '{$code}' was not found.");
         }
 
         if (! $voucher->isValidNow()) {
-            throw new DomainException("Voucher '{$code}' sudah tidak aktif, kedaluwarsa, atau batas pemakaian telah tercapai.");
+            throw new DomainException("Voucher '{$code}' is inactive, expired, or usage limit reached.");
         }
 
         // Cek kuota pemakaian global (used_count + active reserved)
@@ -109,7 +109,7 @@ class VoucherService
             ->count();
 
         if ($voucher->max_uses > 0 && ($voucher->used_count + $activeReserved) >= $voucher->max_uses) {
-            throw new DomainException("Batas kuota pemakaian voucher '{$code}' telah habis.");
+            throw new DomainException("Voucher '{$code}' quota is exhausted.");
         }
 
         // Cek batas pemakaian per pelanggan jika customerId diberikan
@@ -127,27 +127,27 @@ class VoucherService
                 ->count();
 
             if ($customerReserved >= $voucher->max_uses_per_customer) {
-                throw new DomainException("Anda telah mencapai batas maksimal pemakaian voucher '{$code}'.");
+                throw new DomainException("Maximum usage limit per customer for voucher '{$code}' has been reached.");
             }
         }
 
         // Cek syarat minimum transaksi
         if (bccomp(bc_num($orderAmount), bc_num($voucher->min_order_amount), 2) < 0) {
             $formattedMin = number_format((float) $voucher->min_order_amount, 0, ',', '.');
-            throw new DomainException("Total transaksi belanja belum memenuhi syarat minimum voucher (Rp {$formattedMin}).");
+            throw new DomainException("Order total does not meet the minimum voucher purchase requirement ({$formattedMin}).");
         }
 
         // Cek eksklusivitas pelanggan
         if ($voucher->customer_id !== null) {
             if (! $customer || (int) $customer->id !== (int) $voucher->customer_id) {
-                throw new DomainException('Voucher ini eksklusif dan tidak berlaku untuk akun pelanggan ini.');
+                throw new DomainException('This voucher is exclusive and not applicable to this customer account.');
             }
         }
 
         // Cek grup pelanggan
         if ($voucher->customer_group_id !== null) {
             if (! $customer || (int) $customer->customer_group_id !== (int) $voucher->customer_group_id) {
-                throw new DomainException('Voucher ini hanya berlaku untuk grup pelanggan tertentu.');
+                throw new DomainException('This voucher is only valid for specific customer groups.');
             }
         }
 
@@ -196,7 +196,7 @@ class VoucherService
                 ->firstOrFail();
 
             if (! $lockedVoucher->isValidNow()) {
-                throw new DomainException("Voucher '{$code}' tidak aktif atau sudah kedaluwarsa.");
+                throw new DomainException("Voucher '{$code}' is inactive or expired.");
             }
 
             // Cek apakah cartUuid sudah memiliki reservasi aktif untuk voucher ini
@@ -225,7 +225,7 @@ class VoucherService
                 ->count();
 
             if ($lockedVoucher->max_uses > 0 && ($lockedVoucher->used_count + $activeReserved) >= $lockedVoucher->max_uses) {
-                throw new DomainException("Kuota voucher '{$code}' telah habis.");
+                throw new DomainException("Voucher '{$code}' quota is exhausted.");
             }
 
             if ($customerId !== null && $lockedVoucher->max_uses_per_customer > 0) {
@@ -242,7 +242,7 @@ class VoucherService
                     ->count();
 
                 if ($custCount >= $lockedVoucher->max_uses_per_customer) {
-                    throw new DomainException("Batas maksimal pemakaian per pelanggan untuk voucher '{$code}' telah tercapai.");
+                    throw new DomainException("Maximum usage limit per customer for voucher '{$code}' has been reached.");
                 }
             }
 

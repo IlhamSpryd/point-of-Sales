@@ -161,7 +161,7 @@
         @endif
     </div>
 
-    <!-- Modal Form Pemasok -->
+    <!-- Supplier Form Modal -->
     <x-ui.modal wire:model="showModal" maxWidth="2xl">
         <x-slot:title>
             {{ $isEditing ? 'Edit Supplier' : 'Add New Supplier' }}
@@ -243,7 +243,7 @@
         </x-slot:footer>
     </x-ui.modal>
 
-    <!-- Modal Kontak Pemasok -->
+    <!-- Supplier Contacts Modal -->
     <x-ui.modal wire:model="showContactModal" maxWidth="2xl">
         <x-slot:title>
             <div>
@@ -262,7 +262,7 @@
                     </x-ui.alert>
                 @endif
 
-                <!-- Form Kontak Baru/Ubah -->
+                <!-- New / Edit Contact Form -->
                 <form wire:submit="saveContact" class="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 space-y-3 border border-zinc-200 dark:border-zinc-800">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
@@ -298,7 +298,7 @@
                     </div>
                 </form>
 
-                <!-- Daftar Kontak Saat Ini -->
+                <!-- Current Contacts List -->
                 <div class="space-y-2 mt-4">
                     <h4 class="text-xs font-bold uppercase text-zinc-400">Contact List</h4>
                     <div class="divide-y divide-zinc-200 dark:divide-zinc-800 max-h-56 overflow-y-auto">
@@ -340,7 +340,7 @@
         </x-slot:footer>
     </x-ui.modal>
 
-    <!-- Modal Katalog Item Pemasok -->
+    <!-- Supplier Item Catalog Modal -->
     <x-ui.modal wire:model="showCatalogModal" maxWidth="3xl">
         <x-slot:title>
             <div>
@@ -359,7 +359,7 @@
                     </x-ui.alert>
                 @endif
 
-                <!-- Form Tambah/Ubah Item Katalog -->
+                <!-- Add / Edit Catalog Item Form -->
                 <form wire:submit="saveCatalogItem" class="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 space-y-3 border border-zinc-200 dark:border-zinc-800">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                         <div>

@@ -74,7 +74,7 @@ class MetricRegistry
             self::KPI_GROSS_SALES => [
                 'code' => self::KPI_GROSS_SALES,
                 'key' => 'gross_sales',
-                'name' => 'Penjualan Kotor (Gross Sales)',
+                'name' => 'Gross Sales',
                 'formula' => 'SUM(item_price * quantity)',
                 'authoritative_source' => 'order_items / orders.subtotal_amount',
                 'unit' => 'IDR',
@@ -84,7 +84,7 @@ class MetricRegistry
             self::KPI_TOTAL_DISCOUNTS => [
                 'code' => self::KPI_TOTAL_DISCOUNTS,
                 'key' => 'total_discounts',
-                'name' => 'Total Diskon (Total Discounts)',
+                'name' => 'Total Discounts',
                 'formula' => 'SUM(discount_amount)',
                 'authoritative_source' => 'order_items, discounts, orders.discount_amount',
                 'unit' => 'IDR',
@@ -94,7 +94,7 @@ class MetricRegistry
             self::KPI_NET_SALES => [
                 'code' => self::KPI_NET_SALES,
                 'key' => 'net_sales',
-                'name' => 'Penjualan Bersih (Net Sales)',
+                'name' => 'Net Sales',
                 'formula' => 'Gross Sales - Total Discounts - Sales Returns',
                 'authoritative_source' => 'journal_lines (GL 4-10000 / REVENUE) & orders',
                 'unit' => 'IDR',
@@ -104,8 +104,8 @@ class MetricRegistry
             self::KPI_AVERAGE_ORDER_VALUE => [
                 'code' => self::KPI_AVERAGE_ORDER_VALUE,
                 'key' => 'average_order_value',
-                'name' => 'Nilai Transaksi Rata-Rata (AOV)',
-                'formula' => 'Net Sales / Jumlah Transaksi Berhasil',
+                'name' => 'Average Order Value (AOV)',
+                'formula' => 'Net Sales / Completed Transactions',
                 'authoritative_source' => 'orders',
                 'unit' => 'IDR/Order',
                 'scale' => 2,
@@ -114,8 +114,8 @@ class MetricRegistry
             self::KPI_UNITS_PER_TRANSACTION => [
                 'code' => self::KPI_UNITS_PER_TRANSACTION,
                 'key' => 'units_per_transaction',
-                'name' => 'Item per Transaksi (UPT)',
-                'formula' => 'Total Kuantitas Item Terjual / Jumlah Transaksi Berhasil',
+                'name' => 'Units per Transaction (UPT)',
+                'formula' => 'Total Quantity Sold / Completed Transactions',
                 'authoritative_source' => 'order_items, orders',
                 'unit' => 'Units/Order',
                 'scale' => 2,
@@ -124,7 +124,7 @@ class MetricRegistry
             self::KPI_COGS => [
                 'code' => self::KPI_COGS,
                 'key' => 'cogs',
-                'name' => 'Harga Pokok Penjualan (COGS)',
+                'name' => 'Cost of Goods Sold (COGS)',
                 'formula' => 'SUM(moving_avg_cost * sold_qty)',
                 'authoritative_source' => 'stock_movements, ingredient_stock_movements, journal_lines (COGS)',
                 'unit' => 'IDR',
@@ -134,7 +134,7 @@ class MetricRegistry
             self::KPI_GROSS_PROFIT => [
                 'code' => self::KPI_GROSS_PROFIT,
                 'key' => 'gross_profit',
-                'name' => 'Laba Kotor (Gross Profit)',
+                'name' => 'Gross Profit',
                 'formula' => 'Net Sales - COGS',
                 'authoritative_source' => 'journal_lines (GL Aggregation)',
                 'unit' => 'IDR',
@@ -144,7 +144,7 @@ class MetricRegistry
             self::KPI_GROSS_MARGIN_PCT => [
                 'code' => self::KPI_GROSS_MARGIN_PCT,
                 'key' => 'gross_margin_pct',
-                'name' => 'Margin Laba Kotor (Gross Margin %)',
+                'name' => 'Gross Margin (%)',
                 'formula' => '(Gross Profit / Net Sales) * 100',
                 'authoritative_source' => 'journal_lines (GL Aggregation)',
                 'unit' => '%',
@@ -154,7 +154,7 @@ class MetricRegistry
             self::KPI_STOCK_VALUE => [
                 'code' => self::KPI_STOCK_VALUE,
                 'key' => 'stock_value',
-                'name' => 'Total Nilai Persediaan (Stock Value)',
+                'name' => 'Total Stock Value',
                 'formula' => 'SUM(quantity * unit_cost)',
                 'authoritative_source' => 'product_stock_balances, inventory_valuation_snapshots',
                 'unit' => 'IDR',
@@ -164,8 +164,8 @@ class MetricRegistry
             self::KPI_INVENTORY_TURNOVER => [
                 'code' => self::KPI_INVENTORY_TURNOVER,
                 'key' => 'inventory_turnover',
-                'name' => 'Perputaran Persediaan (Inventory Turnover)',
-                'formula' => 'COGS Periode / Rata-Rata Nilai Persediaan',
+                'name' => 'Inventory Turnover',
+                'formula' => 'Period COGS / Average Inventory Valuation',
                 'authoritative_source' => 'product_stock_balances & COGS',
                 'unit' => 'Ratio',
                 'scale' => 2,
@@ -174,7 +174,7 @@ class MetricRegistry
             self::KPI_DAYS_SALES_OF_INVENTORY => [
                 'code' => self::KPI_DAYS_SALES_OF_INVENTORY,
                 'key' => 'days_sales_of_inventory',
-                'name' => 'Hari Rata-Rata Penjualan Persediaan (DSI)',
+                'name' => 'Days Sales of Inventory (DSI)',
                 'formula' => 'Period Days / Inventory Turnover Ratio',
                 'authoritative_source' => 'product_stock_balances & COGS',
                 'unit' => 'Days',
@@ -184,8 +184,8 @@ class MetricRegistry
             self::KPI_CUSTOMER_LIFETIME_VALUE => [
                 'code' => self::KPI_CUSTOMER_LIFETIME_VALUE,
                 'key' => 'customer_lifetime_value',
-                'name' => 'Nilai Seumur Hidup Pelanggan (CLV)',
-                'formula' => 'Total Pendapatan Pelanggan / Total Pelanggan Terlacak',
+                'name' => 'Customer Lifetime Value (CLV)',
+                'formula' => 'Total Customer Revenue / Total Tracked Customers',
                 'authoritative_source' => 'orders, customers',
                 'unit' => 'IDR',
                 'scale' => 2,
@@ -194,8 +194,8 @@ class MetricRegistry
             self::KPI_FOOD_COST_PCT => [
                 'code' => self::KPI_FOOD_COST_PCT,
                 'key' => 'food_cost_pct',
-                'name' => 'Rasio Biaya Makanan (Food Cost %)',
-                'formula' => '(HPP Bahan Baku Resep / Penjualan Makanan Bersih) * 100',
+                'name' => 'Food Cost (%)',
+                'formula' => '(Recipe Raw Material COGS / Net Food Sales) * 100',
                 'authoritative_source' => 'ingredient_stock_movements',
                 'unit' => '%',
                 'scale' => 2,
@@ -204,8 +204,8 @@ class MetricRegistry
             self::KPI_SHRINKAGE_PCT => [
                 'code' => self::KPI_SHRINKAGE_PCT,
                 'key' => 'shrinkage_pct',
-                'name' => 'Rasio Penyusutan (Shrinkage %)',
-                'formula' => '(Nilai Stok Hilang atau Rusak / Total Penjualan Kotor) * 100',
+                'name' => 'Inventory Shrinkage (%)',
+                'formula' => '(Damaged or Lost Stock Value / Gross Sales) * 100',
                 'authoritative_source' => 'stock_adjustments',
                 'unit' => '%',
                 'scale' => 2,
@@ -214,8 +214,8 @@ class MetricRegistry
             self::KPI_LABOR_COST_PCT => [
                 'code' => self::KPI_LABOR_COST_PCT,
                 'key' => 'labor_cost_pct',
-                'name' => 'Rasio Biaya Tenaga Kerja (Labor Cost %)',
-                'formula' => '(Total Biaya Gaji + Lembur + BPJS / Net Sales) * 100',
+                'name' => 'Labor Cost (%)',
+                'formula' => '(Total Payroll + Overtime + BPJS / Net Sales) * 100',
                 'authoritative_source' => 'payroll_batches & orders',
                 'unit' => '%',
                 'scale' => 2,

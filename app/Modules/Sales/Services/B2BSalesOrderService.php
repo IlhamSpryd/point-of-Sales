@@ -46,7 +46,7 @@ class B2BSalesOrderService
         $customerId = (int) ($payload['customer_id'] ?? 0);
 
         if ($customerId <= 0) {
-            throw new DomainException('Pelanggan wajib ditentukan untuk Sales Order B2B.');
+            throw new DomainException('Customer is required for B2B Sales Orders.');
         }
 
         // Hitung estimasi total pesanan
@@ -71,9 +71,9 @@ class B2BSalesOrderService
         $creditEval = $this->customerCreditService->evaluateCreditExposure($tenantId, $customerId, $estimatedTotal);
         if (! $creditEval->allowed && ! $allowOverride) {
             throw new DomainException(
-                'Pelanggan telah melampaui batas plafon kredit (Limit: Rp '.number_format((float) $creditEval->creditLimit, 2, ',', '.').
-                ', Proyeksi: Rp '.number_format((float) $creditEval->projectedTotalExposure, 2, ',', '.').
-                '). Pembuatan Sales Order baru ditolak kecuali di-override.'
+                'Customer has exceeded credit limit (Limit: '.number_format((float) $creditEval->creditLimit, 2).
+                ', Projected: '.number_format((float) $creditEval->projectedTotalExposure, 2).
+                '). Creation of new Sales Order rejected unless overridden.'
             );
         }
 
@@ -82,7 +82,7 @@ class B2BSalesOrderService
         if ($allowOverride && ! $creditEval->allowed) {
             $salesOrder->update([
                 'credit_override_approved_by' => $actor->id,
-                'credit_override_reason' => $overrideReason ?: 'Otorisasi override plafon kredit B2B',
+                'credit_override_reason' => $overrideReason ?: 'B2B credit limit override authorization',
             ]);
         }
 
@@ -105,9 +105,9 @@ class B2BSalesOrderService
         $creditEval = $this->customerCreditService->evaluateCreditExposure($tenantId, $customerId, $totalAmount);
         if (! $creditEval->allowed && ! $allowOverride) {
             throw new DomainException(
-                'Pelanggan telah melampaui batas plafon kredit (Limit: Rp '.number_format((float) $creditEval->creditLimit, 2, ',', '.').
-                ', Proyeksi: Rp '.number_format((float) $creditEval->projectedTotalExposure, 2, ',', '.').
-                '). Pembuatan Sales Order dari penawaran ditolak kecuali di-override.'
+                'Customer has exceeded credit limit (Limit: '.number_format((float) $creditEval->creditLimit, 2).
+                ', Projected: '.number_format((float) $creditEval->projectedTotalExposure, 2).
+                '). Creation of Sales Order from quotation rejected unless overridden.'
             );
         }
 
@@ -151,9 +151,9 @@ class B2BSalesOrderService
 
             if (! $creditEval->allowed && ! $allowOverride) {
                 throw new DomainException(
-                    'Pelanggan telah melampaui batas plafon kredit (Limit: Rp '.number_format((float) $creditEval->creditLimit, 2, ',', '.').
-                    ', Proyeksi: Rp '.number_format((float) $creditEval->projectedTotalExposure, 2, ',', '.').
-                    '). Konfirmasi Sales Order ditolak kecuali di-override.'
+                    'Customer has exceeded credit limit (Limit: '.number_format((float) $creditEval->creditLimit, 2).
+                    ', Projected: '.number_format((float) $creditEval->projectedTotalExposure, 2).
+                    '). Sales Order confirmation rejected unless overridden.'
                 );
             }
 
@@ -207,7 +207,7 @@ class B2BSalesOrderService
                 storeId: $storeId,
                 subjectType: SalesOrder::class,
                 subjectId: $confirmedSO->id,
-                description: "Sales Order {$confirmedSO->so_number} dikonfirmasi dan mereservasi stok produk di product_stock_balances.",
+                description: "Sales Order {$confirmedSO->so_number} confirmed and reserved product stock in product_stock_balances.",
                 metadata: [
                     'sales_order_id' => $confirmedSO->id,
                     'lines_count' => $confirmedSO->lines->count(),

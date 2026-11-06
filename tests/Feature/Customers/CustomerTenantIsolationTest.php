@@ -288,7 +288,7 @@ class CustomerTenantIsolationTest extends TestCase
         try {
             $loyaltyService->calculateEarnablePoints($customerA, 50000);
         } catch (\RuntimeException $e) {
-            $threwConflict = str_contains($e->getMessage(), 'Konflik isolasi tenant');
+            $threwConflict = str_contains($e->getMessage(), 'Tenant isolation conflict');
         }
         $this->assertTrue($threwConflict, 'LoyaltyService::calculateEarnablePoints must fail closed on cross-tenant customer conflict');
 
@@ -297,7 +297,7 @@ class CustomerTenantIsolationTest extends TestCase
         try {
             $loyaltyService->checkAndUpgradeTier($customerA);
         } catch (\RuntimeException $e) {
-            $threwUpgradeConflict = str_contains($e->getMessage(), 'Konflik isolasi tenant');
+            $threwUpgradeConflict = str_contains($e->getMessage(), 'Tenant isolation conflict');
         }
         $this->assertTrue($threwUpgradeConflict, 'LoyaltyService::checkAndUpgradeTier must fail closed on cross-tenant customer conflict');
 
@@ -306,7 +306,7 @@ class CustomerTenantIsolationTest extends TestCase
         try {
             $loyaltyService->getCurrentPoints($customerA);
         } catch (\RuntimeException $e) {
-            $threwPointsConflict = str_contains($e->getMessage(), 'Konflik isolasi tenant');
+            $threwPointsConflict = str_contains($e->getMessage(), 'Tenant isolation conflict');
         }
         $this->assertTrue($threwPointsConflict, 'LoyaltyService::getCurrentPoints must fail closed on cross-tenant customer conflict');
     }

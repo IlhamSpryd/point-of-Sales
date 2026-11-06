@@ -421,7 +421,7 @@ class Increment3AssortmentAndPosEligibilityTest extends TestCase
 
         $this->assertTrue($result['has_blocking_issues']);
         $this->assertNotEmpty($result['warnings']);
-        $this->assertStringContainsString('sudah tidak tersedia di cabang ini', $result['warnings'][0]);
+        $this->assertStringContainsString('is no longer available at this branch', $result['warnings'][0]);
     }
 
     public function test_entitlement_service_asserts_product_quota_limit(): void

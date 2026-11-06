@@ -8,14 +8,14 @@
                     <span class="material-symbols-rounded text-[18px]">payments</span>
                 </div>
                 <div>
-                    <h3 class="font-headline-sm text-[16px] font-semibold text-foreground">Penyelesaian Pembayaran (Kasir)</h3>
+                    <h3 class="font-headline-sm text-[16px] font-semibold text-foreground">Complete Payment (Cashier)</h3>
                     <span class="text-[11px] text-muted-foreground">
-                        {{ $pendingOrderCode ? 'Order: #' . $pendingOrderCode : ($this->activeShift ? 'Shift #' . $this->activeShift->id : 'POS Kasir') }}
-                        @if($tableId) &bull; Meja {{ $this->activeTables->firstWhere('id', $tableId)?->table_name ?? $tableId }} @endif
+                        {{ $pendingOrderCode ? 'Order: #' . $pendingOrderCode : ($this->activeShift ? 'Shift #' . $this->activeShift->id : 'POS Terminal') }}
+                        @if($tableId) &bull; Table {{ $this->activeTables->firstWhere('id', $tableId)?->table_name ?? $tableId }} @endif
                     </span>
                 </div>
             </div>
-            <button type="button" x-on:click="$dispatch('close')" aria-label="Tutup pembayaran (Esc)"
+            <button type="button" x-on:click="$dispatch('close')" aria-label="Close payment (Esc)"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
                 <span class="material-symbols-rounded text-[18px]">close</span>
             </button>
@@ -27,7 +27,7 @@
                 :class="method === 'cash' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'"
                 class="px-3 py-2 rounded-lg font-medium text-[12px] transition-all flex items-center justify-center gap-1">
                 <span class="material-symbols-rounded text-[14px]">payments</span>
-                <span>Tunai</span>
+                <span>Cash</span>
             </button>
             <button type="button" x-on:click="setMethod('qris')"
                 :class="method === 'qris' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'"
@@ -39,7 +39,7 @@
                 :class="method === 'card' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'"
                 class="px-3 py-2 rounded-lg font-medium text-[12px] transition-all flex items-center justify-center gap-1">
                 <span class="material-symbols-rounded text-[14px]">credit_card</span>
-                <span>EDC</span>
+                <span>Card</span>
             </button>
             <button type="button" x-on:click="setMethod('store_credit')"
                 :class="method === 'store_credit' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'"
@@ -57,17 +57,17 @@
 
         <!-- Body Modal Content -->
         <div class="p-5 overflow-y-auto max-h-[62vh] space-y-4 custom-scrollbar bg-white">
-            <!-- Total Tagihan Bersih Banner -->
+            <!-- Net Total Due Banner -->
             <div class="flex items-center justify-between p-3.5 rounded-xl bg-muted border border-border">
                 <div>
-                    <span class="text-[11px] text-muted-foreground font-medium uppercase tracking-wider block">Total Tagihan Bersih</span>
-                    <span class="font-numeric-metric text-[24px] font-bold text-foreground font-mono" x-text="'Rp ' + formatRupiah(total)"></span>
+                    <span class="text-[11px] text-muted-foreground font-medium uppercase tracking-wider block">Net Total Due</span>
+                    <span class="font-numeric-metric text-[24px] font-bold text-foreground tabular-nums" x-text="'Rp ' + formatRupiah(total)"></span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" wire:click="$set('isManualDiscountModalOpen', true)"
                         class="px-3 py-1.5 rounded-lg bg-white border border-border text-foreground hover:bg-muted text-[12px] font-medium flex items-center gap-1.5 transition-colors">
                         <span class="material-symbols-rounded text-[15px] text-amber-500">sell</span>
-                        <span>Atur Diskon</span>
+                        <span>Apply Discount</span>
                     </button>
                 </div>
             </div>
@@ -75,36 +75,36 @@
             <!-- Tab Pane: Tunai (Cash) -->
             <div x-show="method === 'cash'" class="space-y-3.5">
                 <label class="font-headline-sm text-[12px] font-semibold text-foreground uppercase tracking-wider block">
-                    Uang Tunai Diterima
+                    Cash Received
                 </label>
                 <div class="relative">
-                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-muted-foreground font-semibold text-[16px]">Rp</span>
+                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold text-[16px]">Rp</span>
                     <input type="text" inputmode="numeric" :value="amountFormatted"
                         x-on:input="setAmountInput($event)"
                         placeholder="0"
-                        class="w-full h-12 pl-12 pr-24 rounded-xl border-2 border-foreground font-mono text-[20px] font-bold text-foreground focus:outline-none bg-white">
+                        class="w-full h-12 pl-12 pr-24 rounded-xl border-2 border-foreground tabular-nums text-[20px] font-bold text-foreground focus:outline-none bg-white">
                     <button type="button" x-on:click="fillRemaining()"
                         class="absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1.5 rounded-lg bg-muted text-foreground font-label-sm text-[11px] hover:bg-secondary transition-colors font-medium">
-                        Uang Pas
+                        Exact Amount
                     </button>
                 </div>
 
                 <!-- Quick Cash Buttons -->
                 <div class="flex flex-wrap gap-2">
                     <button type="button" x-on:click="addQuick(20000)"
-                        class="px-3 py-1.5 rounded-lg bg-muted border border-border hover:border-foreground font-mono text-[12px] text-foreground font-medium">
+                        class="px-3 py-1.5 rounded-lg bg-muted border border-border hover:border-foreground tabular-nums text-[12px] text-foreground font-medium">
                         +Rp20.000
                     </button>
                     <button type="button" x-on:click="addQuick(50000)"
-                        class="px-3 py-1.5 rounded-lg bg-muted border border-border hover:border-foreground font-mono text-[12px] text-foreground font-medium">
+                        class="px-3 py-1.5 rounded-lg bg-muted border border-border hover:border-foreground tabular-nums text-[12px] text-foreground font-medium">
                         +Rp50.000
                     </button>
                     <button type="button" x-on:click="addQuick(100000)"
-                        class="px-3 py-1.5 rounded-lg bg-muted border border-border hover:border-foreground font-mono text-[12px] text-foreground font-medium">
+                        class="px-3 py-1.5 rounded-lg bg-muted border border-border hover:border-foreground tabular-nums text-[12px] text-foreground font-medium">
                         +Rp100.000
                     </button>
                     <button type="button" x-on:click="addQuick(200000)"
-                        class="px-3 py-1.5 rounded-lg bg-muted border border-border hover:border-foreground font-mono text-[12px] text-foreground font-medium">
+                        class="px-3 py-1.5 rounded-lg bg-muted border border-border hover:border-foreground tabular-nums text-[12px] text-foreground font-medium">
                         +Rp200.000
                     </button>
                 </div>
@@ -114,9 +114,9 @@
                     :class="changePreview >= 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-rose-200 bg-rose-50 text-rose-700'">
                     <div class="flex items-center gap-2">
                         <span class="material-symbols-rounded text-[20px]" x-text="changePreview >= 0 ? 'savings' : 'error'"></span>
-                        <span class="text-[13px] font-medium" x-text="changePreview >= 0 ? 'Kembalian Kasir:' : 'Kurang Bayar:'"></span>
+                        <span class="text-[13px] font-medium" x-text="changePreview >= 0 ? 'Change Due:' : 'Amount Underpaid:'"></span>
                     </div>
-                    <span class="font-mono font-bold text-[18px]" x-text="'Rp ' + formatRupiah(Math.abs(changePreview))"></span>
+                    <span class="tabular-nums font-bold text-[18px]" x-text="'Rp ' + formatRupiah(Math.abs(changePreview))"></span>
                 </div>
             </div>
 
@@ -125,58 +125,58 @@
                 <div class="w-44 h-44 bg-white p-2.5 rounded-xl border border-border shadow-xs flex flex-col items-center justify-center">
                     <div class="w-full h-full border-2 border-dashed border-foreground rounded-lg flex flex-col items-center justify-center text-center p-2">
                         <span class="material-symbols-rounded text-[44px] text-foreground">qr_code_2</span>
-                        <span class="font-mono text-[11px] font-bold text-foreground mt-1">NMID: ID10293847291</span>
+                        <span class="tabular-nums text-[11px] font-bold text-foreground mt-1">NMID: ID10293847291</span>
                         <span class="text-[9px] text-muted-foreground">Apeiron Pay &bull; Static QRIS</span>
                     </div>
                 </div>
                 <div class="text-center">
-                    <span class="font-medium text-[13px] text-foreground block">Scan via GoPay, OVO, ShopeePay, BCA, dll</span>
-                    <span class="text-[11px] text-muted-foreground">Verifikasi saldo di kasir setelah notifikasi berhasil</span>
+                    <span class="font-medium text-[13px] text-foreground block">Scan via digital wallet or mobile banking app</span>
+                    <span class="text-[11px] text-muted-foreground">Confirm payment verification before finalizing order</span>
                 </div>
             </div>
 
             <!-- Tab Pane: EDC Kartu -->
             <div x-show="method === 'card'" class="space-y-3 p-4 bg-muted rounded-xl border border-border">
                 <label class="font-headline-sm text-[12px] font-semibold text-foreground uppercase tracking-wider block">
-                    Mesin EDC & Referensi Kartu
+                    Card Terminal & Reference
                 </label>
                 <div class="grid grid-cols-2 gap-2">
                     <button type="button" x-on:click="edcBank = 'BCA'"
                         :class="edcBank === 'BCA' ? 'border-foreground bg-primary text-white' : 'border-border bg-white text-foreground'"
                         class="p-2.5 rounded-lg border font-medium text-[12px] flex items-center justify-between transition-colors">
-                        <span>EDC BCA #01</span>
-                        <span class="text-[10px] opacity-80 font-mono">Online</span>
+                        <span>Terminal BCA #01</span>
+                        <span class="text-[10px] opacity-80">Online</span>
                     </button>
                     <button type="button" x-on:click="edcBank = 'Mandiri'"
                         :class="edcBank === 'Mandiri' ? 'border-foreground bg-primary text-white' : 'border-border bg-white text-foreground'"
                         class="p-2.5 rounded-lg border font-medium text-[12px] flex items-center justify-between transition-colors">
-                        <span>EDC Mandiri #02</span>
-                        <span class="text-[10px] opacity-80 font-mono">Online</span>
+                        <span>Terminal Mandiri #02</span>
+                        <span class="text-[10px] opacity-80">Online</span>
                     </button>
                 </div>
                 <div>
-                    <label class="text-[11px] text-muted-foreground block mb-1">Nomor Approval / Trace Number (Struk EDC)</label>
-                    <input type="text" x-model="edcTrace" placeholder="Contoh: 849201"
-                        class="w-full h-9 px-3 rounded-lg border border-border text-[12px] text-foreground font-mono focus:outline-none focus:border-foreground bg-white">
+                    <label class="text-[11px] text-muted-foreground block mb-1">Approval Code / Trace Number (Terminal Slip)</label>
+                    <input type="text" x-model="edcTrace" placeholder="e.g. 849201"
+                        class="w-full h-9 px-3 rounded-lg border border-border text-[12px] text-foreground tabular-nums focus:outline-none focus:border-foreground bg-white">
                 </div>
             </div>
 
-            <!-- Tab Pane: Transfer Bank -->
+            <!-- Tab Pane: Bank Transfer -->
             <div x-show="method === 'store_credit'" class="space-y-3 p-4 bg-muted rounded-xl border border-border">
                 <div class="flex items-center justify-between p-3 rounded-lg bg-white border border-border">
                     <div class="flex flex-col">
-                        <span class="text-[11px] text-muted-foreground">Rekening Operasional (BCA)</span>
-                        <span class="font-mono font-bold text-[14px] text-foreground">8010 9928 1120</span>
+                        <span class="text-[11px] text-muted-foreground">Operating Account (BCA)</span>
+                        <span class="tabular-nums font-bold text-[14px] text-foreground">8010 9928 1120</span>
                         <span class="text-[10px] text-muted-foreground">a.n. Apeiron System Coffee</span>
                     </div>
                     <button type="button" x-on:click="navigator.clipboard?.writeText('801099281120')"
                         class="px-2.5 py-1 rounded bg-muted text-[11px] font-medium text-foreground hover:bg-secondary transition-colors">
-                        Salin
+                        Copy
                     </button>
                 </div>
                 <div>
-                    <label class="text-[11px] text-muted-foreground block mb-1">Nama Pengirim / Catatan Mutasi</label>
-                    <input type="text" x-model="transferSender" placeholder="Nama pemilik rekening pengirim..."
+                    <label class="text-[11px] text-muted-foreground block mb-1">Sender Name / Reference Note</label>
+                    <input type="text" x-model="transferSender" placeholder="Account holder name or reference..."
                         class="w-full h-9 px-3 rounded-lg border border-border text-[12px] text-foreground focus:outline-none focus:border-foreground bg-white">
                 </div>
             </div>
@@ -184,10 +184,10 @@
             <!-- Tab Pane: Split Bill (Multi-Payment Legs) -->
             <div x-show="method === 'split'" class="space-y-3 p-4 bg-muted rounded-xl border border-border">
                 <div class="flex items-center justify-between">
-                    <span class="text-[12px] font-medium text-foreground">Alokasi Pembayaran Split</span>
-                    <span class="font-mono text-[12px] font-bold"
+                    <span class="text-[12px] font-medium text-foreground">Split Payment Allocation</span>
+                    <span class="tabular-nums text-[12px] font-bold"
                         :class="remaining > 0 ? 'text-rose-600' : 'text-emerald-600'"
-                        x-text="remaining > 0 ? 'Sisa: Rp ' + formatRupiah(remaining) : 'Lunas (Pas)'"></span>
+                        x-text="remaining > 0 ? 'Remaining: Rp ' + formatRupiah(remaining) : 'Fully Allocated'"></span>
                 </div>
 
                 <!-- Added Payment Legs List -->
@@ -198,7 +198,7 @@
                                 <span class="material-symbols-rounded text-[16px] text-foreground">check_circle</span>
                                 <div>
                                     <span class="font-medium text-xs text-foreground" x-text="leg.label"></span>
-                                    <span class="block text-[11px] text-muted-foreground font-mono" x-text="'Rp ' + formatRupiah(leg.amount)"></span>
+                                    <span class="block text-[11px] text-muted-foreground tabular-nums" x-text="'Rp ' + formatRupiah(leg.amount)"></span>
                                 </div>
                             </div>
                             <button type="button" x-on:click="removeLeg(leg.uid)"
@@ -214,13 +214,13 @@
                     <div class="grid grid-cols-4 gap-1.5">
                         <button type="button" x-on:click="splitTargetMethod = 'cash'"
                             :class="splitTargetMethod === 'cash' ? 'bg-primary text-white' : 'bg-white border-border text-foreground'"
-                            class="px-2 py-1.5 rounded-md border text-[11px] font-medium">Tunai</button>
+                            class="px-2 py-1.5 rounded-md border text-[11px] font-medium">Cash</button>
                         <button type="button" x-on:click="splitTargetMethod = 'qris'"
                             :class="splitTargetMethod === 'qris' ? 'bg-primary text-white' : 'bg-white border-border text-foreground'"
                             class="px-2 py-1.5 rounded-md border text-[11px] font-medium">QRIS</button>
                         <button type="button" x-on:click="splitTargetMethod = 'card'"
                             :class="splitTargetMethod === 'card' ? 'bg-primary text-white' : 'bg-white border-border text-foreground'"
-                            class="px-2 py-1.5 rounded-md border text-[11px] font-medium">Kartu</button>
+                            class="px-2 py-1.5 rounded-md border text-[11px] font-medium">Card</button>
                         <button type="button" x-on:click="splitTargetMethod = 'store_credit'"
                             :class="splitTargetMethod === 'store_credit' ? 'bg-primary text-white' : 'bg-white border-border text-foreground'"
                             class="px-2 py-1.5 rounded-md border text-[11px] font-medium">Transfer</button>
@@ -228,11 +228,11 @@
                     <div class="flex gap-2">
                         <input type="text" inputmode="numeric" :value="splitAmountFormatted"
                             x-on:input="setSplitAmountInput($event)"
-                            placeholder="Nominal alokasi..."
-                            class="flex-1 h-9 px-3 rounded-lg border border-border font-mono text-xs text-foreground bg-white focus:outline-none focus:border-foreground">
+                            placeholder="Allocation amount..."
+                            class="flex-1 h-9 px-3 rounded-lg border border-border tabular-nums text-xs text-foreground bg-white focus:outline-none focus:border-foreground">
                         <button type="button" x-on:click="addSplitLeg()"
                             class="px-3 h-9 rounded-lg bg-primary text-white text-xs font-medium hover:bg-primary/90 transition-colors">
-                            + Alokasikan
+                            + Allocate
                         </button>
                     </div>
                 </div>
@@ -246,14 +246,14 @@
         <div class="p-4 bg-muted border-t border-border flex items-center justify-between shrink-0">
             <button type="button" x-on:click="$dispatch('close')"
                 class="px-4 py-2.5 rounded-lg border border-border hover:bg-white text-foreground font-medium text-[13px] transition-colors">
-                Batal
+                Cancel
             </button>
             <button type="button" id="btn-confirm-pay" x-on:click="submit()"
                 :disabled="submitting || (method === 'split' ? remaining > 0 : false)"
                 class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-[13px] flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                 <span x-show="submitting" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
                 <span class="material-symbols-rounded text-[17px]" x-show="!submitting">check_circle</span>
-                <span x-text="submitting ? 'Memproses Transaksi...' : 'Konfirmasi Pembayaran Diterima'"></span>
+                <span x-text="submitting ? 'Processing Payment...' : 'Confirm Payment Received'"></span>
             </button>
         </div>
     </div>
@@ -364,19 +364,19 @@
 
             methodLabel(m) {
                 return {
-                    cash: 'Tunai',
+                    cash: 'Cash',
                     qris: 'QRIS',
                     ewallet: 'E-Wallet',
-                    card: 'Kartu EDC',
+                    card: 'Card',
                     gift_card: 'Gift Card',
-                    store_credit: 'Transfer Bank'
+                    store_credit: 'Bank Transfer'
                 } [m] ?? m;
             },
 
             addSplitLeg() {
                 this.errorMsg = '';
                 if (!this.splitAmountRaw || this.splitAmountRaw <= 0) {
-                    this.errorMsg = 'Masukkan nominal alokasi split.';
+                    this.errorMsg = 'Please enter an allocation amount.';
                     return;
                 }
                 const applied = Math.min(this.splitAmountRaw, this.remaining);
@@ -401,7 +401,7 @@
                 if (livewireTotal !== undefined && livewireTotal !== null && livewireTotal !== this.total) {
                     this.total = livewireTotal;
                     if (this.method === 'split' && this.remaining > 0) {
-                        this.errorMsg = 'Total tagihan berubah (Rp ' + this.formatRupiah(livewireTotal) + '). Silakan sesuaikan alokasi split.';
+                        this.errorMsg = 'Order total changed (Rp ' + this.formatRupiah(livewireTotal) + '). Please re-adjust split allocations.';
                         return;
                     }
                 }
@@ -409,13 +409,13 @@
                 let payload = [];
                 if (this.method === 'split') {
                     if (this.remaining > 0 || this.legs.length === 0) {
-                        this.errorMsg = 'Tagihan split belum lunas. Sisa: Rp ' + this.formatRupiah(this.remaining);
+                        this.errorMsg = 'Split payment incomplete. Remaining: Rp ' + this.formatRupiah(this.remaining);
                         return;
                     }
                     payload = this.legs.map(l => ({ method: l.method, amount: l.amount }));
                 } else if (this.method === 'cash') {
                     if (this.amountRaw < this.total) {
-                        this.errorMsg = 'Uang tunai yang diterima kurang dari total tagihan!';
+                        this.errorMsg = 'Cash received is less than total amount due!';
                         return;
                     }
                     payload = [{ method: 'cash', amount: this.total }];
@@ -427,7 +427,7 @@
                 try {
                     await $wire.call('submitOrder', payload, this.idempotencyKey);
                 } catch (err) {
-                    this.errorMsg = err?.message || 'Gagal memproses pembayaran kasir.';
+                    this.errorMsg = err?.message || 'Unable to complete cashier payment. Please try again.';
                 } finally {
                     this.submitting = false;
                 }

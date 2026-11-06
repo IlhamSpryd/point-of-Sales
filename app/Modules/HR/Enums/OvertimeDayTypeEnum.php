@@ -13,9 +13,9 @@ enum OvertimeDayTypeEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::WORKDAY => 'Hari Kerja Biasa',
-            self::WEEKLY_REST => 'Hari Istirahat Mingguan',
-            self::PUBLIC_HOLIDAY => 'Hari Libur Resmi Nasional',
+            self::WORKDAY => 'Regular Workday',
+            self::WEEKLY_REST => 'Weekly Rest Day',
+            self::PUBLIC_HOLIDAY => 'Public Holiday',
         };
     }
 }

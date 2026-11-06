@@ -1,8 +1,8 @@
 @props([
     'options' => [],
-    'placeholder' => 'Pilih opsi...',
-    'searchPlaceholder' => 'Ketik untuk mencari...',
-    'emptyMessage' => 'Tidak ada hasil yang cocok',
+    'placeholder' => 'Select an option...',
+    'searchPlaceholder' => 'Type to search...',
+    'emptyMessage' => 'No matching results found',
     'clearable' => false,
     'multiple' => false,
     'searchMethod' => null,
@@ -87,7 +87,7 @@
                 const labels = this.options
                     .filter(o => this.value.includes(o.value))
                     .map(o => o.label);
-                return labels.length > 0 ? labels.join(', ') : `${this.value.length} opsi terpilih`;
+                return labels.length > 0 ? labels.join(', ') : `${this.value.length} selected`;
             }
             const found = this.options.find(o => String(o.value) === String(this.value));
             return found ? found.label : (this.value ? String(this.value) : this.placeholder);
@@ -214,7 +214,7 @@
                 <span
                     role="button"
                     tabindex="0"
-                    aria-label="Bersihkan pilihan"
+                    aria-label="Clear selection"
                     @click.stop="clear()"
                     @keydown.enter.stop="clear()"
                     class="p-0.5 hover:text-foreground rounded cursor-pointer transition-colors"

@@ -27,8 +27,44 @@
     }
 }
 
+/* Universal Typography Enforcement: Plus Jakarta Sans Everywhere (Including Currency & Numeric) */
+html,
+body,
+input,
+button,
+select,
+textarea,
+p,
+span,
+div,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+table,
+th,
+td,
+code,
+kbd,
+pre,
+samp,
+.numeric,
+.font-mono,
+.font-serif,
+.tabular-nums {
+    font-family: var(--font-sans) !important;
+}
+
+/* Material Symbols Icon Font Exception (strictly for icon ligatures) */
+.material-symbols-rounded,
+.material-symbols-outlined {
+    font-family: 'Material Symbols Rounded', sans-serif !important;
+}
+
 body {
-    font-family: var(--font-sans);
+    font-family: var(--font-sans) !important;
     background-color: var(--color-background);
     color: var(--color-foreground);
 }
@@ -77,14 +113,14 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .data-table thead th,
 .table-standard thead th {
-    background-color: var(--color-surface-table-header);
-    color: var(--color-muted-foreground);
+    background-color: var(--surface-table-header);
+    color: var(--muted-foreground);
     font-weight: 600;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.04em;
     padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--border);
     text-align: left;
     white-space: nowrap;
     vertical-align: middle;
@@ -93,8 +129,8 @@ input[type="number"]::-webkit-outer-spin-button {
 .data-table tbody td,
 .table-standard tbody td {
     padding: 0.8125rem 1rem;
-    border-bottom: 1px solid var(--color-border);
-    color: var(--color-card-foreground);
+    border-bottom: 1px solid var(--border);
+    color: var(--card-foreground);
     vertical-align: middle;
 }
 
@@ -105,7 +141,7 @@ input[type="number"]::-webkit-outer-spin-button {
 
 .data-table tbody tr:hover,
 .table-standard tbody tr:hover {
-    background-color: var(--color-accent);
+    background-color: var(--accent);
 }
 
 .data-table tbody tr:last-child td,
@@ -167,17 +203,17 @@ th.tabular-nums {
 .sheet-overlay {
     position: fixed;
     inset: 0;
-    background-color: var(--color-overlay-scrim);
+    background-color: var(--overlay-scrim);
     backdrop-filter: blur(4px);
     z-index: 50;
 }
 
 .sheet-panel {
-    background-color: var(--color-card);
+    background-color: var(--card);
     border-top-left-radius: var(--radius-sheet);
     border-top-right-radius: var(--radius-sheet);
     box-shadow: var(--shadow-dialog);
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--border);
 }
 
 
@@ -358,8 +394,8 @@ html.is-animating .transition-fade {
 }
 
 option {
-    background-color: var(--color-popover);
-    color: var(--color-popover-foreground);
+    background: var(--popover);
+    color: var(--popover-foreground);
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -451,9 +487,6 @@ option {
 
 /* Horizontal-scroll affordance for tables that legitimately need it */
 .table-scroll-shadow {
-    background:
-        radial-gradient(farthest-side at 0 50%, rgba(0,0,0,.08), rgba(0,0,0,0)),
-        radial-gradient(farthest-side at 100% 50%, rgba(0,0,0,.08), rgba(0,0,0,0)) 100% 0;
     background-repeat: no-repeat;
     background-size: 14px 100%, 14px 100%;
     background-attachment: scroll, scroll;
@@ -492,7 +525,7 @@ option {
 }
 
 /* ═══════════════════════════════════════════════════════
-   TYPE SCALE — Finding #10 (Audit UI/UX)
+   TYPE SCALE — Finding 10 (Audit UI/UX)
    Ganti semua text-[Xpx] ad-hoc dengan class semantik ini.
    Skala: caption < label < body < subheading < heading < display
    ═══════════════════════════════════════════════════════ */
@@ -665,8 +698,7 @@ option {
 
     /* Subtle editorial lighting for the right-hand brand panel */
     .editorial-surface {
-        background-color: var(--color-foreground);
-        background-image: radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.04) 0%, transparent 55%);
+        background-color: var(--shell);
     }
 }
 

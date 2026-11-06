@@ -25,13 +25,13 @@ enum PaymentAttemptStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::Initiated => 'Diinisiasi',
-            self::PendingProvider => 'Menunggu Gateway',
-            self::UnknownTimeout => 'Timeout Tidak Diketahui',
-            self::Succeeded => 'Berhasil',
-            self::Failed => 'Gagal',
-            self::Expired => 'Kedaluwarsa',
-            self::Cancelled => 'Dibatalkan',
+            self::Initiated => 'Initiated',
+            self::PendingProvider => 'Pending Gateway',
+            self::UnknownTimeout => 'Unknown Timeout',
+            self::Succeeded => 'Succeeded',
+            self::Failed => 'Failed',
+            self::Expired => 'Expired',
+            self::Cancelled => 'Cancelled',
         };
     }
 }

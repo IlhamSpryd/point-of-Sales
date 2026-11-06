@@ -1,10 +1,8 @@
-{{-- [OMEGA-NODE2] Toolbar seragam agar search + aksi tidak "mengambang lepas"
-     di atas background putih — dibungkus satu kelompok visual, konsisten
-     dengan pola toggle Dine-in/Takeaway di Kasir. | 2026-09-23 --}}
+{{-- Uniform toolbar grouping search and action controls cleanly --}}
 @props([
     'searchAction' => null,
     'searchName' => 'search',
-    'searchPlaceholder' => 'Cari...',
+    'searchPlaceholder' => 'Search...',
 ])
 
 <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between w-full lg:w-auto shrink-0">

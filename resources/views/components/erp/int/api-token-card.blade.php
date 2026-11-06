@@ -2,7 +2,7 @@
     'name' => 'API Access Token',
     'token' => 'apeiron_sec_••••••••••••••••',
     'scopes' => ['sales:read', 'orders:write'],
-    'createdAt' => 'Hari ini',
+    'createdAt' => 'Today',
 ])
 
 <div {{ $attributes->twMerge('rounded-xl border border-border bg-card p-4 shadow-xs select-none space-y-3 transition-all hover:border-border') }}
@@ -22,7 +22,7 @@
                 {{ $name }}
             </h4>
             <p class="text-[11px] text-muted-foreground mt-0.5">
-                Dibuat pada {{ $createdAt }}
+                Created on {{ $createdAt }}
             </p>
         </div>
 

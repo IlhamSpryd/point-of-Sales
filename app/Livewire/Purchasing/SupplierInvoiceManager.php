@@ -162,9 +162,9 @@ class SupplierInvoiceManager extends Component
             'invoiceLines.*.invoiced_qty' => 'required|numeric|min:0.0001',
             'invoiceLines.*.unit_price' => 'required|numeric|min:0',
         ], [
-            'selectedPoId.required' => 'Pilih Pesanan Pembelian (PO) yang ditagihkan.',
-            'supplierInvoiceNumber.required' => 'Nomor faktur dari pemasok wajib diisi.',
-            'invoiceLines.min' => 'Tidak ada item yang dapat ditagihkan pada PO ini.',
+            'selectedPoId.required' => 'Please select a Purchase Order (PO) to bill.',
+            'supplierInvoiceNumber.required' => 'Supplier invoice number is required.',
+            'invoiceLines.min' => 'There are no billable items on this purchase order.',
         ]);
 
         $actor = auth()->user();
@@ -184,12 +184,12 @@ class SupplierInvoiceManager extends Component
             $invoice = $service->createSupplierInvoice($headerData, $this->invoiceLines, $actor);
 
             $this->showCreateModal = false;
-            session()->flash('message', "Faktur Pemasok #{$invoice->supplier_invoice_number} berhasil dicatat sebagai Draf.");
+            session()->flash('message', "Supplier invoice #{$invoice->supplier_invoice_number} recorded as Draft.");
             $this->openMatchWorkbench((int) $invoice->id);
         } catch (ValidationException $e) {
             $this->setErrorBag($e->validator->getMessageBag());
         } catch (\Throwable $e) {
-            session()->flash('error', 'Gagal mencatat faktur: '.$e->getMessage());
+            session()->flash('error', 'Unable to record invoice: '.$e->getMessage());
         }
     }
 
@@ -266,18 +266,18 @@ class SupplierInvoiceManager extends Component
         }
 
         if (empty($plan)) {
-            session()->flash('error', 'Pilih minimal 1 baris GRN penerimaan barang yang cocok.');
+            session()->flash('error', 'Please select at least 1 matching GRN line item.');
 
             return;
         }
 
         try {
             $result = $service->performThreeWayMatching($inv, $plan, auth()->user());
-            session()->flash('message', "3-Way Matching selesai dengan status: {$result->matching_status?->label()}.");
+            session()->flash('message', "3-Way Matching completed with status: {$result->matching_status?->label()}.");
             $this->showMatchModal = false;
             $this->viewInvoice($inv->id);
         } catch (\Throwable $e) {
-            session()->flash('error', 'Gagal mencocokkan faktur: '.$e->getMessage());
+            session()->flash('error', 'Unable to match invoice: '.$e->getMessage());
         }
     }
 
@@ -299,16 +299,16 @@ class SupplierInvoiceManager extends Component
         $this->validate([
             'varianceNotes' => 'required|string|min:5',
         ], [
-            'varianceNotes.required' => 'Alasan persetujuan selisih harga/kuantitas wajib diisi.',
+            'varianceNotes.required' => 'Variance approval notes are required.',
         ]);
 
         try {
             $service->approveVariance($inv, auth()->user(), $this->varianceNotes);
             $this->showVarianceModal = false;
-            session()->flash('message', 'Varians faktur pemasok telah disetujui. Faktur kini siap diposting ke pembayaran.');
+            session()->flash('message', 'Supplier invoice variance approved. Invoice is now ready to post.');
             $this->viewInvoice($inv->id);
         } catch (\Throwable $e) {
-            session()->flash('error', 'Gagal menyetujui varians: '.$e->getMessage());
+            session()->flash('error', 'Unable to approve variance: '.$e->getMessage());
         }
     }
 
@@ -319,10 +319,10 @@ class SupplierInvoiceManager extends Component
 
         try {
             $approved = $service->approvePayable($inv, auth()->user());
-            session()->flash('message', "Faktur #{$approved->supplier_invoice_number} berhasil diposting ke Hutang Dagang (AP). Transaksi dialirkan ke Buku Besar Akuntansi.");
+            session()->flash('message', "Invoice #{$approved->supplier_invoice_number} posted to Accounts Payable (AP) and General Ledger.");
             $this->viewInvoice($id);
         } catch (\Throwable $e) {
-            session()->flash('error', 'Gagal memposting pembayaran: '.$e->getMessage());
+            session()->flash('error', 'Unable to post invoice: '.$e->getMessage());
         }
     }
 

@@ -16,7 +16,7 @@
 <body class="h-full bg-background text-foreground antialiased selection:bg-primary selection:text-primary-foreground flex flex-col justify-between">
     {{-- Skip to main content (WCAG 2.4.1) --}}
     <a href="#main-content" class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-md">
-        Lewati ke konten utama
+        Skip to main content
     </a>
 
     {{-- Header with Apeiron Brand --}}
@@ -41,9 +41,9 @@
     <footer class="w-full max-w-7xl mx-auto px-6 py-6 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
         <span>&copy; {{ date('Y') }} {{ config('app.name', 'Apeiron Systems') }}. All rights reserved.</span>
         <div class="flex items-center gap-4">
-            <a href="{{ url('/') }}" class="hover:text-foreground transition-colors">Beranda</a>
+            <a href="{{ url('/') }}" class="hover:text-foreground transition-colors">Home</a>
             <span class="text-border">•</span>
-            <a href="mailto:support@apeironsystems.com" class="hover:text-foreground transition-colors">Bantuan Teknis</a>
+            <a href="mailto:support@apeironsystems.com" class="hover:text-foreground transition-colors">Technical Support</a>
         </div>
     </footer>
 </body>

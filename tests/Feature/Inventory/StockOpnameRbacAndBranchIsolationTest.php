@@ -187,7 +187,7 @@ class StockOpnameRbacAndBranchIsolationTest extends TestCase
         $context->setStoreId($this->storeA->id);
 
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Product #{$this->productB->id} tidak valid untuk tenant ini.");
+        $this->expectExceptionMessage("Product #{$this->productB->id} is invalid for this tenant.");
 
         $this->service->createDraft(
             tenantId: (int) $this->tenantA->id,

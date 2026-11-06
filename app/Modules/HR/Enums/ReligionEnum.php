@@ -18,12 +18,12 @@ enum ReligionEnum: string
     {
         return match ($this) {
             self::ISLAM => 'Islam',
-            self::KRISTEN => 'Kristen Protestan',
-            self::KATOLIK => 'Katolik',
-            self::HINDU => 'Hindu',
-            self::BUDDHA => 'Buddha',
-            self::KONGHUCU => 'Konghucu',
-            self::OTHER => 'Lainnya',
+            self::KRISTEN => 'Protestantism',
+            self::KATOLIK => 'Catholicism',
+            self::HINDU => 'Hinduism',
+            self::BUDDHA => 'Buddhism',
+            self::KONGHUCU => 'Confucianism',
+            self::OTHER => 'Other',
         };
     }
 }

@@ -236,7 +236,7 @@ class QuotationServiceTest extends TestCase
         $quotation = $this->quotationService->createDraft($payload, $this->user);
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('kedaluwarsa');
+        $this->expectExceptionMessage('expired');
 
         $this->quotationService->accept($quotation, $this->user);
     }
@@ -314,7 +314,7 @@ class QuotationServiceTest extends TestCase
 
         // Percobaan konversi kedua WAJIB ditolak (Anti-Duplikasi)
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('sudah pernah dikonversi');
+        $this->expectExceptionMessage('has already been converted');
 
         $this->quotationService->convertToSalesOrder($accepted, $this->user);
     }
@@ -336,7 +336,7 @@ class QuotationServiceTest extends TestCase
         $this->assertSame(QuotationStatusEnum::DRAFT, $draft->status);
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Hanya Quotation berstatus ACCEPTED yang dapat dikonversi');
+        $this->expectExceptionMessage('Only quotations with status ACCEPTED can be converted');
 
         $this->quotationService->convertToSalesOrder($draft, $this->user);
     }

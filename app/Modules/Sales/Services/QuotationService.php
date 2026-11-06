@@ -48,7 +48,7 @@ class QuotationService
             $customerId = (int) ($payload['customer_id'] ?? 0);
             if ($customerId <= 0) {
                 throw ValidationException::withMessages([
-                    'customer_id' => ['Pelanggan wajib dipilih untuk membuat penawaran harga (Quotation).'],
+                    'customer_id' => ['Customer is required to create a quotation.'],
                 ]);
             }
 
@@ -59,7 +59,7 @@ class QuotationService
 
             if ($customer === null) {
                 throw ValidationException::withMessages([
-                    'customer_id' => ['Pelanggan tidak valid pada tenant ini.'],
+                    'customer_id' => ['Invalid customer for this tenant.'],
                 ]);
             }
 
@@ -78,7 +78,7 @@ class QuotationService
             $items = $payload['items'] ?? $payload['lines'] ?? [];
             if (! is_array($items) || count($items) === 0) {
                 throw ValidationException::withMessages([
-                    'items' => ['Quotation wajib memiliki minimal 1 item penawaran.'],
+                    'items' => ['Quotation must have at least 1 quotation line item.'],
                 ]);
             }
 
@@ -158,7 +158,7 @@ class QuotationService
 
                 if ($product === null) {
                     throw ValidationException::withMessages([
-                        'items' => ["Produk ID {$productId} tidak ditemukan."],
+                        'items' => ["Product ID {$productId} not found."],
                     ]);
                 }
 
@@ -269,7 +269,7 @@ class QuotationService
                 storeId: $storeId,
                 subjectType: Quotation::class,
                 subjectId: $quotation->id,
-                description: "Membuat draft penawaran {$quotation->quotation_number} (v{$quotation->version_number}) untuk {$customer->name}",
+                description: "Created draft quotation {$quotation->quotation_number} (v{$quotation->version_number}) for {$customer->name}",
                 newValues: $quotation->toArray()
             );
 
@@ -290,7 +290,7 @@ class QuotationService
                 ->firstOrFail();
 
             if (! $locked->status->canBeEdited()) {
-                throw new DomainException("Quotation dalam status {$locked->status->value} tidak dapat diajukan/diubah.");
+                throw new DomainException("Quotation in status {$locked->status->value} cannot be submitted or modified.");
             }
 
             // Soft warning: Jika quotation bertempo dan eksposur kredit melanggar, alihkan ke PENDING_APPROVAL
@@ -320,7 +320,7 @@ class QuotationService
                 storeId: $locked->store_id,
                 subjectType: Quotation::class,
                 subjectId: $locked->id,
-                description: "Quotation {$locked->quotation_number} beralih ke status {$locked->status->value}",
+                description: "Quotation {$locked->quotation_number} status changed to {$locked->status->value}",
                 newValues: ['status' => $locked->status->value]
             );
 
@@ -341,7 +341,7 @@ class QuotationService
                 ->firstOrFail();
 
             if (! in_array($locked->status, [QuotationStatusEnum::PENDING_APPROVAL, QuotationStatusEnum::DRAFT], true)) {
-                throw new DomainException("Quotation dalam status {$locked->status->value} tidak memerlukan persetujuan.");
+                throw new DomainException("Quotation in status {$locked->status->value} does not require approval.");
             }
 
             $locked->approved_by_user_id = $approver->id;
@@ -359,7 +359,7 @@ class QuotationService
                 storeId: $locked->store_id,
                 subjectType: Quotation::class,
                 subjectId: $locked->id,
-                description: "Quotation {$locked->quotation_number} disetujui oleh {$approver->name}",
+                description: "Quotation {$locked->quotation_number} approved by {$approver->name}",
                 newValues: ['status' => $locked->status->value, 'approved_by' => $approver->id]
             );
 
@@ -380,7 +380,7 @@ class QuotationService
                 ->firstOrFail();
 
             if ($locked->status->isTerminal()) {
-                throw new DomainException("Quotation dalam status {$locked->status->value} tidak dapat ditolak.");
+                throw new DomainException("Quotation in status {$locked->status->value} cannot be rejected.");
             }
 
             $locked->status = QuotationStatusEnum::REJECTED;
@@ -394,7 +394,7 @@ class QuotationService
                 storeId: $locked->store_id,
                 subjectType: Quotation::class,
                 subjectId: $locked->id,
-                description: "Quotation {$locked->quotation_number} ditolak. Alasan: {$reason}",
+                description: "Quotation {$locked->quotation_number} rejected. Reason: {$reason}",
                 newValues: ['status' => $locked->status->value, 'rejected_reason' => $reason]
             );
 
@@ -417,11 +417,11 @@ class QuotationService
             if ($locked->valid_until->lt(Carbon::today())) {
                 $locked->status = QuotationStatusEnum::EXPIRED;
                 $locked->save();
-                throw new DomainException("Quotation telah kedaluwarsa sejak {$locked->valid_until->toDateString()}.");
+                throw new DomainException("Quotation has expired since {$locked->valid_until->toDateString()}.");
             }
 
             if (! in_array($locked->status, [QuotationStatusEnum::APPROVED, QuotationStatusEnum::SENT, QuotationStatusEnum::DRAFT], true)) {
-                throw new DomainException("Quotation dalam status {$locked->status->value} tidak dapat diterima.");
+                throw new DomainException("Quotation in status {$locked->status->value} cannot be accepted.");
             }
 
             $locked->status = QuotationStatusEnum::ACCEPTED;
@@ -434,7 +434,7 @@ class QuotationService
                 storeId: $locked->store_id,
                 subjectType: Quotation::class,
                 subjectId: $locked->id,
-                description: "Quotation {$locked->quotation_number} diterima oleh pelanggan.",
+                description: "Quotation {$locked->quotation_number} accepted by customer.",
                 newValues: ['status' => $locked->status->value]
             );
 
@@ -457,7 +457,7 @@ class QuotationService
                 ->firstOrFail();
 
             if ($locked->status === QuotationStatusEnum::CONVERTED) {
-                throw new DomainException('Quotation yang telah dikonversi ke Sales Order tidak dapat direvisi.');
+                throw new DomainException('Quotations that have been converted to a Sales Order cannot be revised.');
             }
 
             $locked->status = QuotationStatusEnum::SUPERSEDED;
@@ -500,7 +500,7 @@ class QuotationService
                 storeId: $locked->store_id,
                 subjectType: Quotation::class,
                 subjectId: $revision->id,
-                description: "Revisi Quotation dibuat: {$revision->quotation_number} (v{$revision->version_number}) menggantikan v{$locked->version_number}",
+                description: "Quotation revision created: {$revision->quotation_number} (v{$revision->version_number}) superseding v{$locked->version_number}",
                 newValues: $revision->toArray()
             );
 
@@ -524,19 +524,19 @@ class QuotationService
 
             // 2. Anti-duplikasi: Tolak jika sudah pernah dikonversi
             if ($locked->status === QuotationStatusEnum::CONVERTED || $locked->converted_sales_order_id !== null) {
-                throw new DomainException("Quotation {$locked->quotation_number} sudah pernah dikonversi ke Sales Order.");
+                throw new DomainException("Quotation {$locked->quotation_number} has already been converted to a Sales Order.");
             }
 
             // 3. Status harus ACCEPTED
             if ($locked->status !== QuotationStatusEnum::ACCEPTED) {
-                throw new DomainException("Hanya Quotation berstatus ACCEPTED yang dapat dikonversi ke Sales Order. Status saat ini: {$locked->status->value}");
+                throw new DomainException("Only quotations with status ACCEPTED can be converted to a Sales Order. Current status: {$locked->status->value}");
             }
 
             // 4. Verifikasi masa berlaku (valid_until >= today)
             if ($locked->valid_until->lt(Carbon::today())) {
                 $locked->status = QuotationStatusEnum::EXPIRED;
                 $locked->save();
-                throw new DomainException("Gagal konversi: Quotation telah kedaluwarsa pada {$locked->valid_until->toDateString()}.");
+                throw new DomainException("Conversion failed: Quotation expired on {$locked->valid_until->toDateString()}.");
             }
 
             // 5. Buat Sales Order melalui SalesOrderService
@@ -557,7 +557,7 @@ class QuotationService
                 storeId: $locked->store_id,
                 subjectType: Quotation::class,
                 subjectId: $locked->id,
-                description: "Quotation {$locked->quotation_number} (v{$locked->version_number}) berhasil dikonversi menjadi Sales Order {$salesOrder->so_number}",
+                description: "Quotation {$locked->quotation_number} (v{$locked->version_number}) successfully converted to Sales Order {$salesOrder->so_number}",
                 newValues: [
                     'converted_sales_order_id' => $salesOrder->id,
                     'converted_at' => $locked->converted_at->toIso8601String(),

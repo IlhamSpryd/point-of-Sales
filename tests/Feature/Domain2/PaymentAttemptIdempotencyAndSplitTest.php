@@ -416,7 +416,7 @@ class PaymentAttemptIdempotencyAndSplitTest extends TestCase
 
         // Settle attempt 2 (Rp60.000) -> Akan membuat total captured Rp120.000 > Rp100.000 -> HARUS DITOLAK
         $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('akan melebihi total tagihan pesanan');
+        $this->expectExceptionMessage('would exceed total order amount');
         $this->transactionService->settlePaymentAttempt($attempt2);
     }
 }

@@ -5,30 +5,20 @@
 @endphp
 
 <div x-data="{ open: false }" class="relative inline-block" {{ $attributes }}>
-    {{-- Trigger Button (TailAdmin User Dropdown Style) --}}
+    {{-- Trigger Button (Compact Minimal Avatar Style) --}}
     <button type="button"
         @click="open = !open"
         :aria-expanded="open.toString()"
         aria-haspopup="true"
-        aria-label="Menu akun pengguna"
-        class="flex items-center gap-2.5 p-1 rounded-lg text-left transition-all hover:bg-shell-accent focus:outline-none focus:ring-1 focus:ring-shell-ring cursor-pointer select-none">
+        aria-label="User account menu"
+        title="{{ $user?->name ?? 'User' }} ({{ $roleName }})"
+        class="flex items-center p-0.5 rounded-full transition-all hover:ring-2 hover:ring-shell-ring focus:outline-none focus:ring-2 focus:ring-shell-ring cursor-pointer select-none">
         
         {{-- Avatar with Online Dot --}}
         <div class="relative w-8 h-8 rounded-full bg-shell-accent text-shell-foreground-active border border-shell-border flex items-center justify-center font-bold text-xs shrink-0">
             <span>{{ $initials }}</span>
             <span class="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-success ring-2 ring-shell" aria-hidden="true"></span>
         </div>
-
-        {{-- Name & Role --}}
-        <div class="hidden sm:block text-left leading-tight min-w-0">
-            <div class="text-xs font-semibold text-shell-foreground-active truncate max-w-[130px]">{{ $user?->name ?? 'User' }}</div>
-            <div class="text-[10px] text-shell-foreground truncate">{{ $roleName }}</div>
-        </div>
-
-        {{-- Chevron Indicator --}}
-        <span class="material-symbols-rounded text-sm text-shell-foreground transition-transform duration-200 hidden sm:inline-block"
-            :class="open ? 'rotate-180 text-shell-foreground-active' : ''"
-            aria-hidden="true">expand_more</span>
     </button>
 
     {{-- Dropdown Content Panel (TailAdmin Style) --}}

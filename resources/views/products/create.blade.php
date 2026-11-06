@@ -3,7 +3,7 @@
 
     <div class="flex items-center justify-between mb-6" data-gsap="page-enter">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Add Product <span class="sr-only">Tambah Produk</span></h4>
+            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Add Product</h4>
             <p class="text-sm font-medium text-muted-foreground mt-1">Add a new product to your inventory catalog</p>
         </div>
         <a href="{{ route('products.index') }}" wire:navigate>

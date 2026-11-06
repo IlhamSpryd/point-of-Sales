@@ -65,7 +65,7 @@ class DiscountApprovalService
         if ($approverId !== null) {
             if ($requesterId === $approverId) {
                 throw ValidationException::withMessages([
-                    'pin' => 'Self-approval dilarang. Pengguna tidak boleh menyetujui diskon pada transaksinya sendiri.',
+                    'pin' => 'Self-approval is prohibited. Users cannot approve discounts on their own transactions.',
                 ]);
             }
 
@@ -76,7 +76,7 @@ class DiscountApprovalService
 
             if (! $approver || ! $this->cashierPinService->hasPin($approver) || ! $this->cashierPinService->verifyPin($approver, $pin)) {
                 throw ValidationException::withMessages([
-                    'pin' => 'PIN Supervisor tidak sah atau otorisasi gagal.',
+                    'pin' => 'Supervisor PIN is invalid or authorization failed.',
                 ]);
             }
         } else {
@@ -92,7 +92,7 @@ class DiscountApprovalService
             // Cek terlebih dahulu apakah requester mencoba self-approval dengan PIN-nya sendiri
             if ($requester->pin_hash && Hash::check($pin, (string) $requester->pin_hash)) {
                 throw ValidationException::withMessages([
-                    'pin' => 'Self-approval dilarang. Pengguna tidak boleh menyetujui diskon pada transaksinya sendiri.',
+                    'pin' => 'Self-approval is prohibited. Users cannot approve discounts on their own transactions.',
                 ]);
             }
 
@@ -109,7 +109,7 @@ class DiscountApprovalService
 
             if (! $approver) {
                 throw ValidationException::withMessages([
-                    'pin' => 'PIN Supervisor tidak valid atau tidak memiliki wewenang persetujuan.',
+                    'pin' => 'Supervisor PIN is invalid or lacks discount approval permission.',
                 ]);
             }
         }
@@ -138,11 +138,11 @@ class DiscountApprovalService
             $approval = Approval::lockForUpdate()->find($approvalId);
 
             if (! $approval) {
-                throw new DomainException("Persetujuan dengan ID #{$approvalId} tidak ditemukan.");
+                throw new DomainException("Approval request with ID #{$approvalId} was not found.");
             }
 
             if ($approval->status !== Approval::STATUS_APPROVED) {
-                throw new DomainException("Token approval #{$approvalId} sudah pernah digunakan atau tidak berstatus APPROVED.");
+                throw new DomainException("Approval token #{$approvalId} has already been used or is not in APPROVED status.");
             }
 
             $approval->update([

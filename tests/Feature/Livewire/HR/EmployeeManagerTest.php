@@ -97,10 +97,10 @@ class EmployeeManagerTest extends TestCase
         $response = $this->get(route('hr.employees.index'));
 
         $response->assertOk();
-        $response->assertSee('Master Karyawan &amp; Tenaga Kerja', false);
-        $response->assertSee('Tambah Karyawan Baru');
-        $response->assertSee('Total Karyawan');
-        $response->assertSee('Karyawan Aktif');
+        $response->assertSee('Employee Directory &amp; Workforce', false);
+        $response->assertSee('New Employee');
+        $response->assertSee('Total Employees');
+        $response->assertSee('Active Employees');
         $response->assertSee('data-table');
     }
 

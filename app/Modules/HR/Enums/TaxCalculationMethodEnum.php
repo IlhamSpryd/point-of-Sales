@@ -13,9 +13,9 @@ enum TaxCalculationMethodEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::GROSS => 'Gross (Potong Gaji)',
-            self::NET => 'Net (Ditanggung Perusahaan)',
-            self::GROSS_UP => 'Gross-Up (Tunjangan Pajak)',
+            self::GROSS => 'Gross (Employee Borne)',
+            self::NET => 'Net (Company Borne)',
+            self::GROSS_UP => 'Gross-Up (Tax Allowance)',
         };
     }
 }

@@ -108,7 +108,7 @@ class ReturnCreditNoteManager extends Component
                 actorUserId: (int) Auth::id()
             );
 
-            $this->successMessage = "Nota Kredit #{$cn->credit_note_number} berhasil diaplikasikan ke Faktur #{$invoice->invoice_number}.";
+            $this->successMessage = "Credit Note #{$cn->credit_note_number} successfully applied to Invoice #{$invoice->invoice_number}.";
             $this->closeApplyModal();
         } catch (Exception $e) {
             $this->errorMessage = $e->getMessage();
@@ -124,7 +124,7 @@ class ReturnCreditNoteManager extends Component
 
         try {
             $service->convertCreditNoteToStoreCredit($cn, (int) Auth::id());
-            $this->successMessage = "Nota Kredit #{$cn->credit_note_number} berhasil dikonversi ke Store Credit.";
+            $this->successMessage = "Credit Note #{$cn->credit_note_number} converted to Store Credit successfully.";
         } catch (Exception $e) {
             $this->errorMessage = $e->getMessage();
         }
@@ -192,6 +192,6 @@ class ReturnCreditNoteManager extends Component
             'returns' => $returns,
             'eligibleInvoices' => $eligibleInvoices,
             'statuses' => CreditNoteStatusEnum::cases(),
-        ])->layout('layouts.app', ['title' => 'Retur & Nota Kredit Penjualan']);
+        ])->layout('layouts.app', ['title' => 'Sales Returns & Credit Notes']);
     }
 }

@@ -11,12 +11,12 @@
     <div {{ $attributes->twMerge('w-full space-y-2.5') }}>
         @for ($i = 0; $i < (int) $lines; $i++)
             <div @class([
-                'h-3.5 animate-pulse rounded-medium bg-secondary',
+                'h-3.5 animate-pulse rounded-medium bg-muted',
                 'w-full' => $i !== (int) $lines - 1,
                 'w-2/3' => $i === (int) $lines - 1,
             ])></div>
         @endfor
     </div>
 @else
-    <div {{ $attributes->twMerge('h-4 w-full animate-pulse bg-secondary '.$shape) }}></div>
+    <div {{ $attributes->twMerge('h-4 w-full animate-pulse bg-muted '.$shape) }}></div>
 @endif

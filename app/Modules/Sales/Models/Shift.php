@@ -34,6 +34,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int|null $cash_difference
  * @property int|null $open_shift_lock_key
  * @property int|null $closed_by_user_id
+ * @property int|null $variance_approved_by
+ * @property string|null $variance_reason
  * @property int|null $device_id
  * @property int|null $open_device_guard
  */
@@ -50,7 +52,7 @@ class Shift extends Model
 
     protected $fillable = [
         'user_id', 'active_cashier_id', 'device_id', 'opening_balance', 'closing_balance', 'expected_cash',
-        'cash_difference', 'status', 'opened_at', 'closed_at', 'closed_by_user_id',
+        'cash_difference', 'variance_approved_by', 'variance_reason', 'status', 'opened_at', 'closed_at', 'closed_by_user_id',
         'close_type', 'close_reason', 'notes', 'tenant_id', 'store_id',
     ];
 
@@ -85,6 +87,13 @@ class Shift extends Model
     public function closedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'closed_by_user_id')->withTrashed();
+    }
+
+    /** Relasi (BelongsTo): Supervisor yang mengotorisasi selisih kas fisik.
+     * @return BelongsTo<User, $this> */
+    public function varianceApprover(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'variance_approved_by')->withTrashed();
     }
 
     /** Relasi (BelongsTo): Perangkat terminal kasir fisik yang diikat ke shift.

@@ -230,7 +230,7 @@ class JournalEntryManager extends Component
 
         try {
             $journal = $postingEngine->postManualJournal($dto, $actor);
-            session()->flash('success', "Jurnal {$journal->journal_number} berhasil diposting ke Buku Besar.");
+            session()->flash('success', "Journal {$journal->journal_number} posted to General Ledger successfully.");
             $this->showWorkbenchModal = false;
         } catch (DomainException $e) {
             $this->addError('lines', $e->getMessage());
@@ -280,7 +280,7 @@ class JournalEntryManager extends Component
                 actor: $actor
             );
 
-            session()->flash('success', "Jurnal {$journal->journal_number} berhasil di-reverse dengan jurnal pembalik {$reversalJournal->journal_number}.");
+            session()->flash('success', "Journal {$journal->journal_number} reversed successfully by reversal journal {$reversalJournal->journal_number}.");
             $this->showReversalModal = false;
             $this->showDetailModal = false;
         } catch (DomainException $e) {

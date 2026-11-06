@@ -103,7 +103,7 @@ class WorkforceScheduler extends Component
         );
 
         $this->isAssignModalOpen = false;
-        session()->flash('success', 'Jadwal shift berhasil diperbarui.');
+        session()->flash('success', 'Shift schedule updated successfully.');
     }
 
     public function render(): View
@@ -149,6 +149,10 @@ class WorkforceScheduler extends Component
             'employees' => $employees,
             'schedules' => $schedules,
             'shiftTemplates' => $shiftTemplates,
-        ])->layout('layouts.app', ['title' => 'Penyusunan Roster & Jadwal Shift — Apeiron']);
+            'totalScheduledEmployees' => $employees->count(),
+            'totalAssignedShifts' => $schedules->count(),
+            'totalShiftTemplates' => $shiftTemplates->count(),
+            'totalStores' => $stores->count(),
+        ])->layout('layouts.app', ['title' => 'Workforce Rostering & Shift Scheduling — Apeiron']);
     }
 }

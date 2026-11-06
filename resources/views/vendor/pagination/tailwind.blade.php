@@ -4,21 +4,21 @@
         <div class="flex justify-between flex-1 sm:hidden">
             @if ($paginator->onFirstPage())
                 <span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-muted-foreground/50 bg-card border border-border cursor-not-allowed rounded-lg">
-                    &laquo; Sebelumnya
+                    &laquo; Previous
                 </span>
             @else
                 <a href="{{ $paginator->previousPageUrl() }}" wire:navigate class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors duration-200 active:scale-[0.98]">
-                    &laquo; Sebelumnya
+                    &laquo; Previous
                 </a>
             @endif
 
             @if ($paginator->hasMorePages())
                 <a href="{{ $paginator->nextPageUrl() }}" wire:navigate class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-foreground bg-card border border-border rounded-lg hover:bg-muted transition-colors duration-200 active:scale-[0.98]">
-                    Berikutnya &raquo;
+                    Next &raquo;
                 </a>
             @else
                 <span class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-muted-foreground/50 bg-card border border-border cursor-not-allowed rounded-lg">
-                    Berikutnya &raquo;
+                    Next &raquo;
                 </span>
             @endif
         </div>
@@ -27,13 +27,13 @@
         <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
                 <p class="text-sm text-muted-foreground font-medium">
-                    Menampilkan
+                    Showing
                     <span class="font-semibold text-foreground numeric">{{ $paginator->firstItem() ?? 0 }}</span>
-                    -
+                    to
                     <span class="font-semibold text-foreground numeric">{{ $paginator->lastItem() ?? 0 }}</span>
-                    dari
+                    of
                     <span class="font-semibold text-foreground numeric">{{ $paginator->total() }}</span>
-                    data
+                    results
                 </p>
             </div>
 
@@ -45,7 +45,7 @@
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                         </span>
                     @else
-                        <a href="{{ $paginator->previousPageUrl() }}" wire:navigate rel="prev" class="relative inline-flex items-center p-2 text-muted-foreground bg-card rounded-lg hover:bg-muted hover:text-foreground transition-colors duration-200 active:scale-[0.98]" aria-label="Halaman sebelumnya">
+                        <a href="{{ $paginator->previousPageUrl() }}" wire:navigate rel="prev" class="relative inline-flex items-center p-2 text-muted-foreground bg-card rounded-lg hover:bg-muted hover:text-foreground transition-colors duration-200 active:scale-[0.98]" aria-label="Previous Page">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                         </a>
                     @endif
@@ -71,7 +71,7 @@
 
                     {{-- Next Page --}}
                     @if ($paginator->hasMorePages())
-                        <a href="{{ $paginator->nextPageUrl() }}" wire:navigate rel="next" class="relative inline-flex items-center p-2 text-muted-foreground bg-card rounded-lg hover:bg-muted hover:text-foreground transition-colors duration-200 active:scale-[0.98]" aria-label="Halaman berikutnya">
+                        <a href="{{ $paginator->nextPageUrl() }}" wire:navigate rel="next" class="relative inline-flex items-center p-2 text-muted-foreground bg-card rounded-lg hover:bg-muted hover:text-foreground transition-colors duration-200 active:scale-[0.98]" aria-label="Next Page">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                         </a>
                     @else

@@ -56,7 +56,7 @@ class OrderReturnService
         ?string $idempotencyKey = null
     ): OrderReturn {
         if (empty($items)) {
-            throw new DomainException('Daftar item yang diretur tidak boleh kosong.');
+            throw new DomainException('Returned items list cannot be empty.');
         }
 
         $order = Order::withoutGlobalScopes()
@@ -66,12 +66,12 @@ class OrderReturnService
             ->first();
 
         if (! $order) {
-            throw new DomainException('Pesanan tidak ditemukan pada cabang ini.');
+            throw new DomainException('Order not found in this branch.');
         }
 
         if (! in_array($order->order_status, [OrderStatus::Paid, OrderStatus::Completed], true)) {
             $statusStr = $order->order_status->value;
-            throw new DomainException("Hanya pesanan yang sudah lunas yang dapat diretur. Status pesanan saat ini: {$statusStr}.");
+            throw new DomainException("Only fully paid orders can be returned. Current order status: {$statusStr}.");
         }
 
         // Resolusi shift kasir aktif
@@ -95,7 +95,7 @@ class OrderReturnService
             $deviceId = $device ? (int) $device->id : 1;
         }
 
-        $returnReason = $reason ?: 'Retur kasir pesanan '.$order->order_code;
+        $returnReason = $reason ?: 'Cashier return for order '.$order->order_code;
         $idempotency = $idempotencyKey ?: (string) Str::uuid();
 
         // 1. Validasi item pesanan dan hitung total estimasi refund
@@ -109,7 +109,7 @@ class OrderReturnService
             $itemReason = (string) ($item['reason'] ?? $returnReason);
 
             if ($qty <= 0) {
-                throw new DomainException('Jumlah barang yang diretur harus lebih dari 0.');
+                throw new DomainException('Returned item quantity must be greater than 0.');
             }
 
             $orderItem = OrderItem::withoutGlobalScopes()
@@ -119,11 +119,11 @@ class OrderReturnService
                 ->first();
 
             if (! $orderItem) {
-                throw new DomainException("Item pesanan #{$orderItemId} tidak ditemukan dalam pesanan ini.");
+                throw new DomainException("Order item #{$orderItemId} not found in this order.");
             }
 
             if ($qty > (int) $orderItem->qty) {
-                throw new DomainException("Jumlah retur ({$qty}) melebihi kuantitas pembelian ({$orderItem->qty}) untuk produk #{$orderItem->product_id}.");
+                throw new DomainException("Return quantity ({$qty}) exceeds purchased quantity ({$orderItem->qty}) for product #{$orderItem->product_id}.");
             }
 
             $itemSubtotal = ((int) $orderItem->order_price) * $qty;
@@ -145,7 +145,7 @@ class OrderReturnService
             ->get();
 
         if ($capturedPayments->isEmpty()) {
-            throw new DomainException('Tidak ditemukan data pembayaran captured untuk pesanan ini.');
+            throw new DomainException('No captured payment records found for this order.');
         }
 
         $refundAllocations = [];

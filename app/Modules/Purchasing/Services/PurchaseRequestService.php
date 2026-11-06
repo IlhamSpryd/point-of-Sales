@@ -41,7 +41,7 @@ class PurchaseRequestService
 
         if ($storeId <= 0) {
             throw ValidationException::withMessages([
-                'store_id' => ['Cabang tujuan (store_id) wajib ditentukan.'],
+                'store_id' => ['Destination branch (store_id) is required.'],
             ]);
         }
 
@@ -49,13 +49,13 @@ class PurchaseRequestService
         $store = Store::query()->where('tenant_id', $tenantId)->find($storeId);
         if (! $store) {
             throw ValidationException::withMessages([
-                'store_id' => ['Cabang tidak ditemukan pada tenant ini.'],
+                'store_id' => ['Branch not found for this tenant.'],
             ]);
         }
 
         if (empty($linesData)) {
             throw ValidationException::withMessages([
-                'lines' => ['Minimal harus ada 1 baris item dalam permintaan pembelian.'],
+                'lines' => ['At least 1 item line is required in a purchase request.'],
             ]);
         }
 
@@ -88,7 +88,7 @@ class PurchaseRequestService
                 $purchasableType = strtolower(trim((string) ($line['purchasable_type'] ?? '')));
                 if (! in_array($purchasableType, ['product', 'ingredient'], true)) {
                     throw ValidationException::withMessages([
-                        "lines.{$index}.purchasable_type" => ["Tipe item baris #{$index} harus 'product' atau 'ingredient'."],
+                        "lines.{$index}.purchasable_type" => ["Item type for line #{$index} must be 'product' or 'ingredient'."],
                     ]);
                 }
 
@@ -101,28 +101,28 @@ class PurchaseRequestService
 
                 if (! $item) {
                     throw ValidationException::withMessages([
-                        "lines.{$index}.purchasable_id" => ["Item {$purchasableType} #{$purchasableId} tidak ditemukan pada tenant ini."],
+                        "lines.{$index}.purchasable_id" => ["Item {$purchasableType} #{$purchasableId} not found for this tenant."],
                     ]);
                 }
 
                 $requestedQty = (string) ($line['requested_qty'] ?? '0.0000');
                 if (bccomp(bc_num($requestedQty), '0', 4) <= 0) {
                     throw ValidationException::withMessages([
-                        "lines.{$index}.requested_qty" => ['Kuantitas permintaan harus lebih besar dari 0.'],
+                        "lines.{$index}.requested_qty" => ['Requested quantity must be greater than 0.'],
                     ]);
                 }
 
                 $uom = trim((string) ($line['uom'] ?? ''));
                 if ($uom === '') {
                     throw ValidationException::withMessages([
-                        "lines.{$index}.uom" => ['Satuan UoM wajib diisi.'],
+                        "lines.{$index}.uom" => ['Unit of Measure (UoM) is required.'],
                     ]);
                 }
 
                 $unitPrice = (string) ($line['estimated_unit_price'] ?? '0.0000');
                 if (bccomp(bc_num($unitPrice), '0', 4) < 0) {
                     throw ValidationException::withMessages([
-                        "lines.{$index}.estimated_unit_price" => ['Estimasi harga satuan tidak boleh negatif.'],
+                        "lines.{$index}.estimated_unit_price" => ['Estimated unit price cannot be negative.'],
                     ]);
                 }
 
@@ -155,7 +155,7 @@ class PurchaseRequestService
                 storeId: $storeId,
                 subjectType: PurchaseRequest::class,
                 subjectId: (int) $pr->id,
-                description: "Permintaan Pembelian {$pr->pr_number} dibuat dengan total estimasi Rp ".number_format((float) $totalEstimatedAmount, 2),
+                description: "Purchase Request {$pr->pr_number} created with estimated total of Rp ".number_format((float) $totalEstimatedAmount, 2),
                 newValues: [
                     'pr_number' => $pr->pr_number,
                     'estimated_total_amount' => $totalEstimatedAmount,
@@ -177,7 +177,7 @@ class PurchaseRequestService
     {
         if (! $pr->isDraft()) {
             throw ValidationException::withMessages([
-                'status' => ['Permintaan Pembelian yang telah diajukan bersifat immutable dan tidak dapat diubah.'],
+                'status' => ['Submitted Purchase Requests are immutable and cannot be updated.'],
             ]);
         }
 
@@ -232,7 +232,7 @@ class PurchaseRequestService
                 storeId: (int) $pr->store_id,
                 subjectType: PurchaseRequest::class,
                 subjectId: (int) $pr->id,
-                description: "Permintaan Pembelian {$pr->pr_number} diperbarui."
+                description: "Purchase Request {$pr->pr_number} updated."
             );
 
             return $pr->load('lines');
@@ -246,13 +246,13 @@ class PurchaseRequestService
     {
         if (! $pr->isDraft()) {
             throw ValidationException::withMessages([
-                'status' => ['Hanya PR berstatus draft yang dapat diajukan ke alur persetujuan.'],
+                'status' => ['Only draft PRs can be submitted for approval.'],
             ]);
         }
 
         if ($pr->lines()->count() === 0) {
             throw ValidationException::withMessages([
-                'lines' => ['PR tidak memiliki baris item untuk diajukan.'],
+                'lines' => ['PR has no item lines to submit.'],
             ]);
         }
 
@@ -270,7 +270,7 @@ class PurchaseRequestService
                 storeId: (int) $pr->store_id,
                 subjectType: PurchaseRequest::class,
                 subjectId: (int) $pr->id,
-                description: "Permintaan Pembelian {$pr->pr_number} diajukan ke alur persetujuan."
+                description: "Purchase Request {$pr->pr_number} submitted for approval."
             );
 
             return $pr->fresh(['lines', 'approvalRequests']) ?? $pr;
@@ -284,14 +284,14 @@ class PurchaseRequestService
     {
         if (! $pr->canBeCancelled()) {
             throw ValidationException::withMessages([
-                'status' => ['PR dengan status saat ini tidak dapat dibatalkan.'],
+                'status' => ['PR with current status cannot be cancelled.'],
             ]);
         }
 
         return DB::transaction(function () use ($pr, $actor, $reason) {
             $pr->status = PurchaseRequestStatusEnum::Cancelled;
             if ($reason) {
-                $pr->notes = $pr->notes ? $pr->notes."\n[Alasan Batal]: ".$reason : '[Alasan Batal]: '.$reason;
+                $pr->notes = $pr->notes ? $pr->notes."\n[Cancellation Reason]: ".$reason : '[Cancellation Reason]: '.$reason;
             }
             $pr->save();
 
@@ -310,7 +310,7 @@ class PurchaseRequestService
                 storeId: (int) $pr->store_id,
                 subjectType: PurchaseRequest::class,
                 subjectId: (int) $pr->id,
-                description: "Permintaan Pembelian {$pr->pr_number} dibatalkan.",
+                description: "Purchase Request {$pr->pr_number} cancelled.",
                 metadata: ['reason' => $reason]
             );
 
@@ -325,7 +325,7 @@ class PurchaseRequestService
     {
         if ($pr->status !== PurchaseRequestStatusEnum::Rejected) {
             throw ValidationException::withMessages([
-                'status' => ['Hanya PR berstatus ditolak yang dapat dibuka kembali untuk revisi.'],
+                'status' => ['Only rejected PRs can be reopened for revision.'],
             ]);
         }
 
@@ -340,7 +340,7 @@ class PurchaseRequestService
                 storeId: (int) $pr->store_id,
                 subjectType: PurchaseRequest::class,
                 subjectId: (int) $pr->id,
-                description: "Permintaan Pembelian {$pr->pr_number} dibuka kembali untuk revisi."
+                description: "Purchase Request {$pr->pr_number} reopened for revision."
             );
 
             return $pr;

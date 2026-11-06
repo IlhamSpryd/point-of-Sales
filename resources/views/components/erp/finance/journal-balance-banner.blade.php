@@ -35,20 +35,20 @@
             <div>
                 <h4 class="text-sm font-bold text-foreground tracking-tight">
                     @if ($isEmpty)
-                        Status Keseimbangan Jurnal
+                        Journal Balance Status
                     @elseif ($isBalanced)
-                        Jurnal Seimbang (Balanced)
+                        Journal Balanced
                     @else
-                        Jurnal Tidak Seimbang (Unbalanced)
+                        Journal Unbalanced
                     @endif
                 </h4>
                 <p class="text-xs text-muted-foreground mt-0.5">
                     @if ($isEmpty)
-                        Masukkan baris akun debit dan kredit untuk memvalidasi keseimbangan jurnal.
+                        Add debit and credit account lines to validate journal balance.
                     @elseif ($isBalanced)
-                        Total debit dan kredit persis seimbang. Jurnal memenuhi prinsip pembukuan berpasangan.
+                        Total debits and credits are equal. Journal satisfies double-entry bookkeeping rules.
                     @else
-                        Terdapat selisih antara debit dan kredit. Posting ditolak sampai seimbang.
+                        Difference detected between debits and credits. Posting blocked until balanced.
                     @endif
                 </p>
             </div>
@@ -60,7 +60,7 @@
                 <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
                     Total Debit
                 </span>
-                <span class="text-sm font-extrabold text-foreground numeric font-mono">
+                <span class="text-sm font-extrabold text-foreground numeric tabular-nums">
                     Rp {{ number_format($debit, 0, ',', '.') }}
                 </span>
             </div>
@@ -69,9 +69,9 @@
 
             <div class="text-right">
                 <span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-                    Total Kredit
+                    Total Credit
                 </span>
-                <span class="text-sm font-extrabold text-foreground numeric font-mono">
+                <span class="text-sm font-extrabold text-foreground numeric tabular-nums">
                     Rp {{ number_format($credit, 0, ',', '.') }}
                 </span>
             </div>
@@ -79,9 +79,9 @@
             @if (!$isBalanced && !$isEmpty)
                 <div class="ml-2 pl-3 border-l border-border text-right">
                     <span class="text-[10px] font-bold uppercase tracking-wider text-destructive block">
-                        Selisih
+                        Difference
                     </span>
-                    <span class="text-sm font-extrabold text-destructive numeric font-mono">
+                    <span class="text-sm font-extrabold text-destructive numeric tabular-nums">
                         Rp {{ number_format($diff, 0, ',', '.') }}
                     </span>
                 </div>

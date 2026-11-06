@@ -154,9 +154,9 @@ class GoodsReceivedNoteManager extends Component
             'grnLines' => 'required|array|min:1',
             'grnLines.*.accepted_quantity' => 'required|numeric|min:0',
         ], [
-            'selectedPoId.required' => 'Pilih Pesanan Pembelian (PO) yang diterima.',
-            'deliveryOrderNumber.required' => 'Nomor surat jalan (Surat Pengantar Vendor) wajib diisi.',
-            'grnLines.min' => 'Tidak ada item yang dapat diterima pada PO ini.',
+            'selectedPoId.required' => 'Please select the Purchase Order (PO) to receive.',
+            'deliveryOrderNumber.required' => 'Delivery Order (Vendor Waybill) number is required.',
+            'grnLines.min' => 'There are no receivable items on this PO.',
         ]);
 
         $actor = auth()->user();
@@ -174,12 +174,12 @@ class GoodsReceivedNoteManager extends Component
             $grn = $service->createGoodsReceivedNote($po, $headerData, $this->grnLines, $actor);
 
             $this->showCreateModal = false;
-            session()->flash('message', "GRN #{$grn->grn_number} berhasil dibuat sebagai Draf.");
+            session()->flash('message', "GRN #{$grn->grn_number} created as Draft.");
             $this->viewGrn((int) $grn->id);
         } catch (ValidationException $e) {
             $this->setErrorBag($e->validator->getMessageBag());
         } catch (\Throwable $e) {
-            session()->flash('error', 'Gagal membuat GRN: '.$e->getMessage());
+            session()->flash('error', 'Unable to create GRN: '.$e->getMessage());
         }
     }
 
@@ -200,10 +200,10 @@ class GoodsReceivedNoteManager extends Component
 
         try {
             $posted = $service->postGrn($grn, auth()->user());
-            session()->flash('message', "Penerimaan Barang #{$posted->grn_number} berhasil diposting. Stok telah diperbarui.");
+            session()->flash('message', "Goods Receipt #{$posted->grn_number} successfully posted. Stock updated.");
             $this->viewGrn($id);
         } catch (\Throwable $e) {
-            session()->flash('error', 'Gagal memposting GRN: '.$e->getMessage());
+            session()->flash('error', 'Unable to post GRN: '.$e->getMessage());
         }
     }
 
@@ -230,16 +230,16 @@ class GoodsReceivedNoteManager extends Component
         $this->validate([
             'reverseReason' => 'required|string|min:5',
         ], [
-            'reverseReason.required' => 'Alasan pembatalan/reversal wajib diisi minimal 5 karakter.',
+            'reverseReason.required' => 'Reversal reason is required (minimum 5 characters).',
         ]);
 
         try {
             $reversed = $service->reverseGrn($grn, auth()->user(), $this->reverseReason);
             $this->showReverseModal = false;
-            session()->flash('message', "Penerimaan Barang #{$reversed->grn_number} berhasil dibatalkan (Reversed). Stok telah dikurangi kembali.");
+            session()->flash('message', "Goods Receipt #{$reversed->grn_number} successfully reversed. Stock reverted.");
             $this->viewGrn($grn->id);
         } catch (\Throwable $e) {
-            session()->flash('error', 'Gagal membalikkan GRN: '.$e->getMessage());
+            session()->flash('error', 'Unable to reverse GRN: '.$e->getMessage());
         }
     }
 

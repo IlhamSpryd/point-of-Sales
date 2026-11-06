@@ -13,9 +13,9 @@ enum SalaryComponentTypeEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::EARNING => 'Pendapatan Kotor (Earnings)',
-            self::DEDUCTION => 'Potongan Upah Karyawan (Deductions)',
-            self::EMPLOYER_CONTRIBUTION => 'Kontribusi Pemberi Kerja (Employer Contributions)',
+            self::EARNING => 'Gross Earnings',
+            self::DEDUCTION => 'Employee Deductions',
+            self::EMPLOYER_CONTRIBUTION => 'Employer Contributions',
         };
     }
 }

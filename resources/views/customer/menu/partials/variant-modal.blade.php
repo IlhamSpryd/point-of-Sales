@@ -40,10 +40,10 @@
         {{-- Header --}}
         <div class="flex shrink-0 items-start justify-between gap-3 border-b border-apeiron-border px-5 pb-4 pt-3 sm:pt-5">
             <div class="min-w-0">
-                <h2 id="variant-title" class="text-[20px] font-bold leading-snug" x-text="product ? product.name : 'Memuat…'"></h2>
+                <h2 id="variant-title" class="text-[20px] font-bold leading-snug" x-text="product ? product.name : 'Loading…'"></h2>
                 <p x-show="product" x-cloak class="mt-1 text-[17px] font-bold tabular-nums text-apeiron-muted" x-text="rupiah(product ? product.price : 0)"></p>
             </div>
-            <button type="button" @click="close()" aria-label="Tutup"
+            <button type="button" @click="close()" aria-label="Close"
                     class="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-apeiron-muted transition-all duration-200 hover:bg-apeiron-surface hover:text-apeiron-ink active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink">
                 <span class="material-symbols-rounded">close</span>
             </button>
@@ -69,7 +69,7 @@
                 <p class="mb-4 max-w-xs text-sm font-medium text-apeiron-muted" x-text="error"></p>
                 <button type="button" @click="load()"
                         class="min-h-11 rounded-xl border border-apeiron-border bg-white px-5 text-sm font-semibold shadow-sm transition-all duration-200 hover:bg-apeiron-bg active:scale-95">
-                    Coba lagi
+                    Retry
                 </button>
             </div>
 
@@ -81,7 +81,7 @@
                             <h3 class="text-[12px] font-bold uppercase tracking-wider text-apeiron-muted" x-text="group.name"></h3>
                             <span class="rounded-md px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider"
                                   :class="group.is_required ? 'bg-apeiron-ink text-white' : 'bg-apeiron-surface text-apeiron-muted'"
-                                  x-text="(group.is_required ? 'Wajib' : 'Opsional') + ' · ' + (group.selection_type === 'single' ? 'Pilih 1' : 'Bisa lebih')"></span>
+                                  x-text="(group.is_required ? 'Required' : 'Optional') + ' · ' + (group.selection_type === 'single' ? 'Select 1' : 'Multi-select')"></span>
                         </div>
 
                         <div :role="group.selection_type === 'single' ? 'radiogroup' : 'group'" :aria-label="group.name"
@@ -111,10 +111,9 @@
                 </template>
 
                 <div>
-                    <label for="variant-notes" class="mb-2 block text-[12px] font-bold uppercase tracking-wider text-apeiron-muted">Catatan (opsional)</label>
-                    {{-- text-[15px] (minimal 16px sebenernya utk iOS agar tidak auto-zoom, tp 15px/16px msh ok) --}}
+                    <label for="variant-notes" class="mb-2 block text-[12px] font-bold uppercase tracking-wider text-apeiron-muted">Special instructions (optional)</label>
                     <textarea id="variant-notes" x-model="notes" rows="2" maxlength="255"
-                              placeholder="Contoh: es dipisah, tanpa sedotan"
+                              placeholder="e.g. less ice, extra napkin"
                               class="w-full resize-none rounded-2xl border border-apeiron-border bg-apeiron-bg px-4 py-3 text-[15px] placeholder:text-primary-400 transition-all duration-200 focus:border-apeiron-ink focus:bg-white focus:outline-none focus:ring-1 focus:ring-apeiron-ink"></textarea>
                 </div>
             </div>
@@ -123,18 +122,18 @@
         {{-- Footer --}}
         <div x-show="product && !error && !loading" x-cloak class="shrink-0 border-t border-apeiron-border bg-white px-5 pt-4 pb-safe">
             <p x-show="missing.length" x-cloak class="mb-3 text-xs font-medium text-rose-600"
-               x-text="'Lengkapi pilihan wajib: ' + missing.join(', ')"></p>
+               x-text="'Please complete required selections: ' + missing.join(', ')"></p>
             
             <div class="flex flex-col gap-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-[14px] font-bold text-apeiron-muted">Jumlah:</span>
-                    <div class="flex shrink-0 items-center rounded-full border border-apeiron-border bg-apeiron-surface p-0.5" role="group" aria-label="Jumlah">
-                        <button type="button" @click="qty = Math.max(1, qty - 1)" :disabled="qty <= 1" aria-label="Kurangi jumlah"
+                    <span class="text-[14px] font-bold text-apeiron-muted">Quantity:</span>
+                    <div class="flex shrink-0 items-center rounded-full border border-apeiron-border bg-apeiron-surface p-0.5" role="group" aria-label="Quantity">
+                        <button type="button" @click="qty = Math.max(1, qty - 1)" :disabled="qty <= 1" aria-label="Decrease quantity"
                                 class="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm transition-all duration-200 active:scale-90 disabled:opacity-40">
                             <span class="material-symbols-rounded text-[18px]">remove</span>
                         </button>
                         <span class="w-8 text-center text-[15px] font-bold tabular-nums" x-text="qty" aria-live="polite"></span>
-                        <button type="button" @click="qty = Math.min(20, qty + 1)" :disabled="qty >= 20" aria-label="Tambah jumlah"
+                        <button type="button" @click="qty = Math.min(20, qty + 1)" :disabled="qty >= 20" aria-label="Increase quantity"
                                 class="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm transition-all duration-200 active:scale-90 disabled:opacity-40">
                             <span class="material-symbols-rounded text-[18px]">add</span>
                         </button>
@@ -145,7 +144,7 @@
                         class="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl bg-apeiron-ink px-5 font-bold text-white shadow-lg transition-all duration-200 hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink">
                     <span class="flex items-center gap-2 text-[15px]">
                         <span x-show="submitting" x-cloak class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
-                        <span x-text="submitting ? 'Menambahkan…' : 'Tambah ke Pesanan'"></span>
+                        <span x-text="submitting ? 'Adding…' : 'Add to Order'"></span>
                     </span>
                     <span class="tabular-nums" x-text="rupiah(total)"></span>
                 </button>
@@ -217,7 +216,7 @@
                     if (!data) {
                         this.loading = true;
                         const res = await fetch(modifiersUrl.replace('__ID__', this.productId), { headers: { 'Accept': 'application/json' } });
-                        if (!res.ok) throw new Error(res.status === 404 ? 'Produk ini sudah tidak tersedia.' : 'Gagal memuat varian. Coba lagi.');
+                        if (!res.ok) throw new Error(res.status === 404 ? 'This product is no longer available.' : 'Unable to load variants. Please try again.');
                         data = await res.json();
                         memo[this.productId] = data;
                     }
@@ -232,7 +231,7 @@
                     this.selected = sel;
                 } catch (e) {
                     if (req !== this.reqId) return;
-                    this.error = e.name === 'TypeError' ? 'Koneksi bermasalah. Periksa jaringan Anda.' : (e.message || 'Gagal memuat varian. Coba lagi.');
+                    this.error = e.name === 'TypeError' ? 'Connection error. Please check your network.' : (e.message || 'Unable to load variants. Please try again.');
                 } finally {
                     if (req === this.reqId) this.loading = false;
                 }
@@ -295,13 +294,13 @@
                         }),
                     });
                     const data = await res.json().catch(() => ({}));
-                    if (!res.ok) throw new Error(data.message || 'Gagal menambahkan ke keranjang.');
+                    if (!res.ok) throw new Error(data.message || 'Unable to add to cart.');
                     window.customerCartCount = data.total_qty;
                     window.dispatchEvent(new CustomEvent('cart-updated', { detail: data }));
-                    this.$dispatch('toast', { message: 'Ditambahkan ke keranjang' });
+                    this.$dispatch('toast', { message: 'Added to cart' });
                     this.close();
                 } catch (e) {
-                    this.$dispatch('toast', { message: e.name === 'TypeError' ? 'Koneksi bermasalah. Coba lagi.' : e.message });
+                    this.$dispatch('toast', { message: e.name === 'TypeError' ? 'Connection error. Please try again.' : e.message });
                 } finally {
                     this.submitting = false;
                 }

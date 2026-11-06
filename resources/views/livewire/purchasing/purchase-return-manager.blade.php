@@ -373,7 +373,7 @@
         </x-slot:footer>
     </x-ui.modal>
 
-    <!-- Modal Alokasi Debit Note ke Faktur Pemasok -->
+    <!-- Debit Note Allocation to Supplier Invoice Modal -->
     <x-ui.modal wire:model="showApplyModal" maxWidth="md">
         <x-slot:title>
             Allocate Debit Note to Supplier Invoice

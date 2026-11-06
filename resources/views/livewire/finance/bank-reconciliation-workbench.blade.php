@@ -29,14 +29,14 @@
     <!-- Header Action Bar -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-xl font-bold text-zinc-950 dark:text-white tracking-tight">Rekonsiliasi Bank (Bank Reconciliation)</h1>
-            <p class="text-xs text-zinc-500">Pencocokan mutasi rekening koran bank dengan catatan buku kas/bank General Ledger.</p>
+            <h1 class="text-xl font-bold text-zinc-950 dark:text-white tracking-tight">Bank Reconciliation</h1>
+            <p class="text-xs text-zinc-500">Match bank statement transactions against General Ledger cash & bank entries.</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
             <select wire:model.live="selectedAccountId"
                     class="px-3 py-1.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-medium focus:outline-none">
-                <option value="">-- Pilih Akun Kas/Bank --</option>
+                <option value="">-- Select Cash/Bank Account --</option>
                 @foreach ($accounts as $acc)
                     <option value="{{ $acc->id }}">[{{ $acc->account_code }}] {{ $acc->account_name }} ({{ $acc->bank_name ?: 'Cash' }})</option>
                 @endforeach
@@ -46,7 +46,7 @@
                     wire:click="openStartSessionModal"
                     class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-xl transition-colors shadow-xs">
                 <span class="material-symbols-rounded text-base">add</span>
-                <span>Mulai Sesi Baru</span>
+                <span>Start New Session</span>
             </button>
         </div>
     </div>
@@ -62,7 +62,7 @@
                             {{ $session->status->value }}
                         </span>
                     </div>
-                    <p class="text-xs text-zinc-500">Per Tanggal: {{ $session->statement_end_date->format('d M Y') }} • Akun: {{ $session->account?->account_name }}</p>
+                    <p class="text-xs text-zinc-500">As of: {{ $session->statement_end_date->format('d M Y') }} • Account: {{ $session->account?->account_name }}</p>
                 </div>
 
                 <div class="flex items-center gap-2">
@@ -78,7 +78,7 @@
                                 @if(bccomp((string) $difference, '0.00', 2) !== 0) disabled @endif
                                 class="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors shadow-xs disabled:opacity-40 disabled:cursor-not-allowed">
                             <span class="material-symbols-rounded text-sm">check_circle</span>
-                            <span>Selesaikan Rekonsiliasi</span>
+                            <span>Complete Reconciliation</span>
                         </button>
                     @endif
                 </div>
@@ -87,15 +87,15 @@
             <!-- Balances Metrics Bar -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs">
                 <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800">
-                    <span class="text-[10px] text-zinc-400 block uppercase">Saldo Akhir Rekening Koran</span>
+                    <span class="text-[10px] text-zinc-400 block uppercase">Statement Ending Balance</span>
                     <span class="text-sm font-bold text-zinc-950 dark:text-white">Rp {{ number_format((float) $session->statement_ending_balance, 2) }}</span>
                 </div>
                 <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800">
-                    <span class="text-[10px] text-zinc-400 block uppercase">Saldo Akhir Buku Kas/Bank</span>
+                    <span class="text-[10px] text-zinc-400 block uppercase">General Ledger Ending Balance</span>
                     <span class="text-sm font-bold text-zinc-950 dark:text-white">Rp {{ number_format((float) $session->book_ending_balance, 2) }}</span>
                 </div>
                 <div class="p-3 rounded-xl border {{ bccomp((string) $difference, '0.00', 2) === 0 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400' }}">
-                    <span class="text-[10px] block uppercase opacity-80">Selisih Belum Terekonsiliasi</span>
+                    <span class="text-[10px] block uppercase opacity-80">Unreconciled Difference</span>
                     <span class="text-sm font-bold">Rp {{ number_format((float) $difference, 2) }}</span>
                 </div>
             </div>
@@ -105,13 +105,13 @@
             <!-- Action Toolbar for Manual Matching -->
             <div class="flex items-center justify-between p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 text-xs">
                 <div class="flex items-center gap-3">
-                    <span class="text-zinc-500">Pencocokan Manual:</span>
+                    <span class="text-zinc-500">Manual Match:</span>
                     <span class="font-medium {{ $selectedStatementLineId ? 'text-emerald-600 dark:text-emerald-400 font-mono' : 'text-zinc-400' }}">
-                        {{ $selectedStatementLineId ? '1 Rekening Koran Terpilih' : 'Belum pilih rekening koran' }}
+                        {{ $selectedStatementLineId ? '1 Statement Line Selected' : 'No statement line selected' }}
                     </span>
                     <span class="text-zinc-400">•</span>
                     <span class="font-medium {{ $selectedTransactionId ? 'text-emerald-600 dark:text-emerald-400 font-mono' : 'text-zinc-400' }}">
-                        {{ $selectedTransactionId ? '1 Transaksi Buku Terpilih' : 'Belum pilih transaksi buku' }}
+                        {{ $selectedTransactionId ? '1 Book Transaction Selected' : 'No book transaction selected' }}
                     </span>
                 </div>
 
@@ -119,14 +119,14 @@
                     <button type="button"
                             wire:click="resetMatchSelection"
                             class="px-2.5 py-1 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">
-                        Batal Pilihan
+                        Clear Selection
                     </button>
                     <button type="button"
                             wire:click="manualMatch"
                             @if(! $selectedStatementLineId || ! $selectedTransactionId) disabled @endif
                             class="inline-flex items-center gap-1.5 px-3.5 py-1.5 font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                         <span class="material-symbols-rounded text-sm">link</span>
-                        <span>Cocokkan (Match)</span>
+                        <span>Match Selected</span>
                     </button>
                 </div>
             </div>
@@ -138,7 +138,7 @@
                     <div class="p-3 bg-zinc-50 dark:bg-zinc-900/60 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
                         <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
                             <span class="material-symbols-rounded text-sm text-blue-500">account_balance</span>
-                            <span>Mutasi Rekening Koran (Belum Cocok: {{ $unreconciledStatementLines->count() }})</span>
+                            <span>Bank Statement Lines (Unreconciled: {{ $unreconciledStatementLines->count() }})</span>
                         </h4>
                     </div>
 
@@ -169,7 +169,7 @@
                             </label>
                         @empty
                             <div class="p-8 text-center text-zinc-400 text-xs">
-                                Tidak ada mutasi rekening koran yang belum cocok.
+                                No unreconciled bank statement lines found.
                             </div>
                         @endforelse
                     </div>
@@ -180,7 +180,7 @@
                     <div class="p-3 bg-zinc-50 dark:bg-zinc-900/60 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
                         <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
                             <span class="material-symbols-rounded text-sm text-purple-500">menu_book</span>
-                            <span>Buku Kas/Bank GL (Belum Cocok: {{ $unreconciledTransactions->count() }})</span>
+                            <span>General Ledger Transactions (Unreconciled: {{ $unreconciledTransactions->count() }})</span>
                         </h4>
                     </div>
 
@@ -205,7 +205,7 @@
                             </label>
                         @empty
                             <div class="p-8 text-center text-zinc-400 text-xs">
-                                Tidak ada transaksi buku kas yang belum cocok.
+                                No unreconciled cash/bank transactions found.
                             </div>
                         @endforelse
                     </div>
@@ -218,7 +218,7 @@
             <div class="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
                 <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
                     <span class="material-symbols-rounded text-base text-emerald-500">check_circle</span>
-                    <span>Pasangan Transaksi Terekonsiliasi ({{ $matches->count() }} Match)</span>
+                    <span>Reconciled Transactions ({{ $matches->count() }} Matched)</span>
                 </h4>
             </div>
 
@@ -226,12 +226,12 @@
                 <table class="w-full text-left text-xs">
                     <thead class="bg-zinc-50 dark:bg-zinc-900/60 text-zinc-500 font-semibold border-b border-zinc-200 dark:border-zinc-800">
                         <tr>
-                            <th class="px-4 py-2.5">Tanggal Match</th>
-                            <th class="px-4 py-2.5">Mutasi Rekening Koran</th>
-                            <th class="px-4 py-2.5">Transaksi Buku GL</th>
-                            <th class="px-4 py-2.5 text-right">Nominal Match</th>
-                            <th class="px-4 py-2.5 text-center">Tipe Match</th>
-                            <th class="px-4 py-2.5 text-right">Aksi</th>
+                            <th class="px-4 py-2.5">Matched Date</th>
+                            <th class="px-4 py-2.5">Statement Line</th>
+                            <th class="px-4 py-2.5">GL Transaction</th>
+                            <th class="px-4 py-2.5 text-right">Matched Amount</th>
+                            <th class="px-4 py-2.5 text-center">Match Type</th>
+                            <th class="px-4 py-2.5 text-right">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
@@ -259,7 +259,7 @@
                                         <button type="button"
                                                 wire:click="unmatch({{ $match->id }})"
                                                 class="p-1 rounded text-zinc-400 hover:text-rose-500 transition-colors"
-                                                title="Batalkan Match">
+                                                title="Unmatch">
                                             <span class="material-symbols-rounded text-sm">link_off</span>
                                         </button>
                                     @endif
@@ -268,7 +268,7 @@
                         @empty
                             <tr>
                                 <td colspan="6" class="px-4 py-8 text-center text-zinc-400 text-xs">
-                                    Belum ada transaksi yang dicocokkan pada sesi ini.
+                                    No transactions matched in this session yet.
                                 </td>
                             </tr>
                         @endforelse
@@ -279,13 +279,13 @@
     @else
         <div class="card-surface p-12 rounded-2xl border border-border text-center space-y-3 shadow-xs">
             <span class="material-symbols-rounded text-4xl text-zinc-400">account_balance</span>
-            <h3 class="text-base font-bold text-zinc-950 dark:text-white">Tidak Ada Sesi Rekonsiliasi Aktif</h3>
-            <p class="text-xs text-zinc-500 max-w-sm mx-auto">Pilih akun kas/bank dan klik tombol "Mulai Sesi Baru" untuk memulai pencocokan mutasi rekening koran.</p>
+            <h3 class="text-base font-bold text-zinc-950 dark:text-white">No Active Reconciliation Session</h3>
+            <p class="text-xs text-zinc-500 max-w-sm mx-auto">Select a cash/bank account and click "Start New Session" to begin matching statement lines.</p>
             <button type="button"
                     wire:click="openStartSessionModal"
                     class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-xl transition-colors shadow-xs">
                 <span class="material-symbols-rounded text-base">add</span>
-                <span>Mulai Sesi Rekonsiliasi</span>
+                <span>Start Reconciliation Session</span>
             </button>
         </div>
     @endif
@@ -297,7 +297,7 @@
                  @click.outside="$wire.set('showStartSessionModal', false)">
                 
                 <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
-                    <h3 class="text-base font-bold text-zinc-950 dark:text-white">Mulai Sesi Rekonsiliasi Bank</h3>
+                    <h3 class="text-base font-bold text-zinc-950 dark:text-white">Start Bank Reconciliation Session</h3>
                     <button type="button" wire:click="$set('showStartSessionModal', false)" class="text-zinc-400 hover:text-zinc-600">
                         <span class="material-symbols-rounded text-lg">close</span>
                     </button>
@@ -305,7 +305,7 @@
 
                 <form wire:submit="startNewSession" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Akun Kas / Bank</label>
+                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Cash / Bank Account</label>
                         <select wire:model="selectedAccountId"
                                 class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
                             @foreach ($accounts as $acc)
@@ -316,7 +316,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Tanggal Akhir Rekening Koran</label>
+                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Statement Ending Date</label>
                         <input type="date"
                                wire:model="statementEndDate"
                                class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-mono">
@@ -324,20 +324,20 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Saldo Akhir Rekening Koran (Rp)</label>
+                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Statement Ending Balance</label>
                         <input type="number"
                                step="0.01"
                                wire:model="statementEndingBalance"
-                               placeholder="Contoh: 15000000.00"
+                               placeholder="e.g. 15000000.00"
                                class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-mono font-bold">
                         @error('statementEndingBalance') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
                     <div>
-                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Catatan Sesi (Opsional)</label>
+                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Session Notes (Optional)</label>
                         <input type="text"
                                wire:model="sessionNotes"
-                               placeholder="Contoh: Rekonsiliasi bulanan BCA Operasional..."
+                               placeholder="e.g. Monthly reconciliation for operational account..."
                                class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
                     </div>
 
@@ -345,11 +345,11 @@
                         <button type="button"
                                 wire:click="$set('showStartSessionModal', false)"
                                 class="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white rounded-xl transition-colors">
-                            Batal
+                            Cancel
                         </button>
                         <button type="submit"
                                 class="px-4 py-2 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-xl transition-colors shadow-xs">
-                            Mulai Sesi
+                            Start Session
                         </button>
                     </div>
                 </form>

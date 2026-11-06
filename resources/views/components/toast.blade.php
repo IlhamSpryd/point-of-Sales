@@ -29,7 +29,7 @@
     
     <span class="material-symbols-rounded mr-2" aria-hidden="true" x-text="type === 'success' ? 'check_circle' : ((type === 'danger' || type === 'error') ? 'error' : (type === 'warning' ? 'warning' : 'info'))"></span>
     <span class="text-sm font-medium" x-text="message"></span>
-    <button type="button" @click="show = false" aria-label="Tutup notifikasi" class="ml-4 text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-accent transition-colors flex items-center justify-center">
+    <button type="button" @click="show = false" aria-label="Close notification" class="ml-4 text-muted-foreground hover:text-foreground p-1 rounded-md hover:bg-accent transition-colors flex items-center justify-center">
         <span class="material-symbols-rounded text-[18px]" aria-hidden="true">close</span>
     </button>
 </div>

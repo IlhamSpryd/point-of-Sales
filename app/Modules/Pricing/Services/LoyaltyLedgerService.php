@@ -56,7 +56,7 @@ class LoyaltyLedgerService
 
             if ($newBalance < 0) {
                 throw new InvalidArgumentException(
-                    "Saldo poin loyalitas ({$currentBalance}) tidak mencukupi untuk penukaran sejumlah ".abs($points).' poin.'
+                    "Loyalty points balance ({$currentBalance}) is insufficient to redeem ".abs($points).' points.'
                 );
             }
 

@@ -117,7 +117,7 @@ class GoodsReceivedNoteService
 
                 if (! $poLine) {
                     throw ValidationException::withMessages([
-                        "lines.{$index}.purchase_order_line_id" => ["Baris PO #{$polId} tidak valid untuk PO #{$po->po_number}."],
+                        "lines.{$index}.purchase_order_line_id" => ["PO Line #{$polId} is invalid for PO #{$po->po_number}."],
                     ]);
                 }
 
@@ -129,7 +129,7 @@ class GoodsReceivedNoteService
                 // Invariant chk_grnl_qtys & chk_grnl_qty_balance
                 if (bccomp(bc_num($receivedQty), '0', 4) < 0 || bccomp(bc_num($acceptedQty), '0', 4) < 0 || bccomp(bc_num($rejectedQty), '0', 4) < 0 || bccomp(bc_num($damagedQty), '0', 4) < 0) {
                     throw ValidationException::withMessages([
-                        "lines.{$index}" => ['Kuantitas pada baris penerimaan tidak boleh bernilai negatif.'],
+                        "lines.{$index}" => ['Receipt line quantities cannot be negative.'],
                     ]);
                 }
 
@@ -137,7 +137,7 @@ class GoodsReceivedNoteService
                 if (bccomp(bc_num($receivedQty), bc_num($sumAccRej), 4) !== 0) {
                     throw ValidationException::withMessages([
                         "lines.{$index}.received_qty" => [
-                            "Kuantitas diterima ({$receivedQty}) harus tepat sama dengan jumlah diterima baik ({$acceptedQty}) ditambah ditolak ({$rejectedQty}).",
+                            "Received quantity ({$receivedQty}) must equal accepted quantity ({$acceptedQty}) plus rejected quantity ({$rejectedQty}).",
                         ],
                     ]);
                 }
@@ -150,14 +150,14 @@ class GoodsReceivedNoteService
 
                 if (bccomp($projectedAccepted, $maxAllowed, 4) > 0) {
                     throw new OverReceiptToleranceExceededException(
-                        "Kuantitas diterima ({$projectedAccepted}) melebihi batas maksimum penerimaan ({$maxAllowed}, toleransi {$tolerancePct}%) untuk baris PO #{$poLine->id}."
+                        "Accepted quantity ({$projectedAccepted}) exceeds maximum allowable quantity ({$maxAllowed}, tolerance {$tolerancePct}%) for PO Line #{$poLine->id}."
                     );
                 }
 
                 $uomFactor = (string) ($lineItem['uom_conversion_factor'] ?? $poLine->uom_conversion_factor ?? '1.000000');
                 if (bccomp(bc_num($uomFactor), '0', 6) <= 0) {
                     throw ValidationException::withMessages([
-                        "lines.{$index}.uom_conversion_factor" => ['Faktor konversi UoM harus lebih besar dari 0.'],
+                        "lines.{$index}.uom_conversion_factor" => ['UoM conversion factor must be greater than 0.'],
                     ]);
                 }
 
@@ -202,7 +202,7 @@ class GoodsReceivedNoteService
                 userId: $actor->id,
                 subjectType: GoodsReceivedNote::class,
                 subjectId: $grn->id,
-                description: "Draf GRN #{$grn->grn_number} dibuat atas PO #{$po->po_number}.",
+                description: "Draft GRN #{$grn->grn_number} created for PO #{$po->po_number}.",
                 metadata: [
                     'purchase_order_id' => $po->id,
                     'po_number' => $po->po_number,
@@ -270,7 +270,7 @@ class GoodsReceivedNoteService
 
                 if (! $poLine) {
                     throw ValidationException::withMessages([
-                        "lines.{$index}.purchase_order_line_id" => ["Baris PO #{$polId} tidak valid untuk PO #{$po->po_number}."],
+                        "lines.{$index}.purchase_order_line_id" => ["PO Line #{$polId} is invalid for PO #{$po->po_number}."],
                     ]);
                 }
 
@@ -283,7 +283,7 @@ class GoodsReceivedNoteService
                 if (bccomp(bc_num($receivedQty), bc_num($sumAccRej), 4) !== 0) {
                     throw ValidationException::withMessages([
                         "lines.{$index}.received_qty" => [
-                            "Kuantitas diterima ({$receivedQty}) harus tepat sama dengan jumlah diterima baik ({$acceptedQty}) ditambah ditolak ({$rejectedQty}).",
+                            "Received quantity ({$receivedQty}) must equal accepted quantity ({$acceptedQty}) plus rejected quantity ({$rejectedQty}).",
                         ],
                     ]);
                 }
@@ -295,7 +295,7 @@ class GoodsReceivedNoteService
 
                 if (bccomp($projectedAccepted, $maxAllowed, 4) > 0) {
                     throw new OverReceiptToleranceExceededException(
-                        "Kuantitas diterima ({$projectedAccepted}) melebihi batas maksimum penerimaan ({$maxAllowed}, toleransi {$tolerancePct}%) untuk baris PO #{$poLine->id}."
+                        "Accepted quantity ({$projectedAccepted}) exceeds maximum allowable quantity ({$maxAllowed}, tolerance {$tolerancePct}%) for PO Line #{$poLine->id}."
                     );
                 }
 
@@ -341,7 +341,7 @@ class GoodsReceivedNoteService
                 userId: $actor->id,
                 subjectType: GoodsReceivedNote::class,
                 subjectId: $grn->id,
-                description: "Draf GRN #{$grn->grn_number} diperbarui.",
+                description: "Draft GRN #{$grn->grn_number} updated.",
                 metadata: ['lines_count' => count($linesData)]
             );
 
@@ -408,7 +408,7 @@ class GoodsReceivedNoteService
                 /** @var PurchaseOrderLine|null $poLine */
                 $poLine = $poLines->get($grnLine->purchase_order_line_id);
                 if (! $poLine) {
-                    throw new DomainException("Baris PO #{$grnLine->purchase_order_line_id} tidak ditemukan.");
+                    throw new DomainException("PO Line #{$grnLine->purchase_order_line_id} not found.");
                 }
 
                 $tolerancePct = $poLine->over_receipt_tolerance_pct ?? '0.00';
@@ -418,7 +418,7 @@ class GoodsReceivedNoteService
 
                 if (bccomp($projectedAccepted, $maxAllowed, 4) > 0) {
                     throw new OverReceiptToleranceExceededException(
-                        "Kuantitas diterima ({$projectedAccepted}) melebihi batas maksimum penerimaan ({$maxAllowed}, toleransi {$tolerancePct}%) untuk baris PO #{$poLine->id}."
+                        "Accepted quantity ({$projectedAccepted}) exceeds maximum allowable quantity ({$maxAllowed}, tolerance {$tolerancePct}%) for PO Line #{$poLine->id}."
                     );
                 }
             }
@@ -525,7 +525,7 @@ class GoodsReceivedNoteService
                 userId: $actor->id,
                 subjectType: GoodsReceivedNote::class,
                 subjectId: $lockedGrn->id,
-                description: "GRN #{$lockedGrn->grn_number} berhasil diposting. Stok masuk telah dicatat ke inventori.",
+                description: "GRN #{$lockedGrn->grn_number} successfully posted. Inbound stock recorded to inventory.",
                 metadata: [
                     'po_number' => $po->po_number,
                     'po_receiving_status' => $po->receiving_status->value,
@@ -548,12 +548,12 @@ class GoodsReceivedNoteService
     public function reverseGrn(GoodsReceivedNote $grn, User $actor, string $reversalReason): GoodsReceivedNote
     {
         if (! $grn->isPosted()) {
-            throw new DomainException('Hanya GRN berstatus Diposting (Posted) yang dapat dibalik.');
+            throw new DomainException('Only posted GRNs can be reversed.');
         }
 
         if (trim($reversalReason) === '') {
             throw ValidationException::withMessages([
-                'reversal_reason' => ['Alasan pembalikan GRN wajib diisi.'],
+                'reversal_reason' => ['GRN reversal reason is required.'],
             ]);
         }
 
@@ -674,7 +674,7 @@ class GoodsReceivedNoteService
                 userId: $actor->id,
                 subjectType: GoodsReceivedNote::class,
                 subjectId: $lockedGrn->id,
-                description: "GRN #{$lockedGrn->grn_number} dibalik. Stok keluar pembalik dicatat ke inventori.",
+                description: "GRN #{$lockedGrn->grn_number} reversed. Reversal stock deduction recorded to inventory.",
                 metadata: [
                     'po_number' => $po->po_number,
                     'reversal_reason' => $reversalReason,
@@ -695,12 +695,12 @@ class GoodsReceivedNoteService
     {
         if (! $grn->isDraft()) {
             throw ValidationException::withMessages([
-                'status' => ['Hanya GRN berstatus Draf yang dapat dibatalkan.'],
+                'status' => ['Only draft GRNs can be cancelled.'],
             ]);
         }
 
         $grn->status = GrnStatusEnum::Cancelled;
-        $grn->notes = ($grn->notes ? $grn->notes."\n" : '')."Dibatalkan oleh {$actor->name}: {$reason}";
+        $grn->notes = ($grn->notes ? $grn->notes."\n" : '')."Cancelled by {$actor->name}: {$reason}";
         $grn->save();
 
         $this->auditTrailService->log(
@@ -709,7 +709,7 @@ class GoodsReceivedNoteService
             userId: $actor->id,
             subjectType: GoodsReceivedNote::class,
             subjectId: $grn->id,
-            description: "Draf GRN #{$grn->grn_number} dibatalkan.",
+            description: "Draft GRN #{$grn->grn_number} cancelled.",
             metadata: ['reason' => $reason]
         );
 

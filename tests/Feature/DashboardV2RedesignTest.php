@@ -131,17 +131,17 @@ class DashboardV2RedesignTest extends TestCase
 
         $response->assertStatus(200);
 
-        // Check key UI concept C tokens and texts
-        $response->assertSee('Total pendapatan');
+        // Check key UI tokens and texts
+        $response->assertSee("Today's total revenue");
         $response->assertSee('Budi');
-        $response->assertSee('Total transaksi');
-        $response->assertSee('Terjual bulan ini');
-        $response->assertSee('Stok tipis');
-        $response->assertSee('Metode pembayaran');
-        $response->assertSee('Prakiraan restock');
+        $response->assertSee("This week's total transactions");
+        $response->assertSee('Sold this month');
+        $response->assertSee('Low stock alerts');
+        $response->assertSee('Payment methods');
+        $response->assertSee('Restock Forecast');
         $response->assertSee('Biji Kopi Arabika');
         $response->assertSee('50.000');
-        $response->assertSee('Lunas');
+        $response->assertSee('Paid');
     }
 
     public function test_dashboard_switches_to_single_store(): void

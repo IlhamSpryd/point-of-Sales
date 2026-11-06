@@ -1,11 +1,11 @@
 <x-app-layout>
     <x-slot:header>
         <x-erp.page-header
-            title="Keuangan & Akuntansi (General Ledger)"
+            title="Finance & Accounting (General Ledger)"
             description="Dual-entry accounting hub, chart of accounts (COA), cash & bank flow monitoring, and multi-branch general ledger audit trail."
             badge="Modul 7"
             badgeVariant="neutral"
-            :breadcrumbs="[['label' => 'Dashboard', 'href' => route('dashboard')], ['label' => 'Keuangan & Akuntansi']]"
+            :breadcrumbs="[['label' => 'Dashboard', 'href' => route('dashboard')], ['label' => 'Finance & Accounting']]"
         />
     </x-slot:header>
 

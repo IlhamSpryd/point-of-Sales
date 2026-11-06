@@ -203,7 +203,12 @@ class CommissionService
     ): float {
         return (float) CommissionRecord::where('tenant_id', $tenantId)
             ->where('employee_id', $employeeId)
-            ->whereIn('status', [CommissionRecordStatusEnum::PENDING, CommissionRecordStatusEnum::PROCESSED_IN_PAYROLL])
+            ->whereIn('status', [
+                CommissionRecordStatusEnum::PENDING,
+                CommissionRecordStatusEnum::APPROVED,
+                CommissionRecordStatusEnum::EARNED,
+                CommissionRecordStatusEnum::PROCESSED_IN_PAYROLL,
+            ])
             ->whereBetween('created_at', [$startDate->toDateTimeString(), $endDate->toDateTimeString()])
             ->sum('commission_amount');
     }

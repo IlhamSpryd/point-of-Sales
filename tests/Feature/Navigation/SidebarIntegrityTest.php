@@ -73,6 +73,7 @@ class SidebarIntegrityTest extends TestCase
             'Catalog & Recipes',
             'Inventory & Supply',
             'Analytics & Customers',
+            'Finance & Accounting',
             'Human Resources & Payroll',
             'Settings & Governance',
         ];
@@ -112,29 +113,29 @@ class SidebarIntegrityTest extends TestCase
                 ->all();
         };
 
-        // 1. Owner sees 28 operational items across ERP pillars (including Table Management, 6 HR items & BI Analytics)
+        // 1. Owner sees 31 operational items across ERP pillars (including Table Management, KDS, B2B Sales, Finance, 6 HR items & BI Analytics)
         $ownerRoutes = $getVisibleRoutes('Owner');
-        $this->assertCount(28, $ownerRoutes);
+        $this->assertCount(31, $ownerRoutes);
 
-        // 2. Manager sees 24 items (including Table Management & BI Analytics, all except stores, users, roles, settings)
+        // 2. Manager sees 27 items (including Table Management, KDS, B2B Sales, Finance & BI Analytics, all except stores, users, roles, settings)
         $managerRoutes = $getVisibleRoutes('Manager');
-        $this->assertCount(24, $managerRoutes);
+        $this->assertCount(27, $managerRoutes);
         $this->assertNotContains('stores.index', $managerRoutes);
         $this->assertNotContains('users.index', $managerRoutes);
         $this->assertNotContains('roles.index', $managerRoutes);
         $this->assertNotContains('settings.index', $managerRoutes);
 
-        // 3. Kasir sees frontline operational items (POS, Pesanan, Shift)
+        // 3. Kasir sees frontline operational items (POS, Pesanan, Shift, KDS)
         $kasirRoutes = $getVisibleRoutes('Kasir');
         $this->assertEqualsCanonicalizing(
-            ['transaction.create', 'shifts.index', 'orders.index'],
+            ['transaction.create', 'shifts.index', 'orders.index', 'kds.index'],
             $kasirRoutes
         );
 
-        // 4. Waiter sees orders
+        // 4. Waiter sees orders & KDS
         $waiterRoutes = $getVisibleRoutes('Waiter');
         $this->assertEqualsCanonicalizing(
-            ['orders.index'],
+            ['orders.index', 'kds.index'],
             $waiterRoutes
         );
 
@@ -151,6 +152,33 @@ class SidebarIntegrityTest extends TestCase
                 'purchasing.suppliers.index',
             ],
             $inventoryRoutes
+        );
+
+        // 6. Finance staff sees B2B sales and finance hub
+        $financeRoutes = $getVisibleRoutes('Finance');
+        $this->assertEqualsCanonicalizing(
+            ['sales.orders.index', 'finance.index'],
+            $financeRoutes
+        );
+
+        // 7. Sales staff sees B2B sales hub
+        $salesRoutes = $getVisibleRoutes('Sales');
+        $this->assertEqualsCanonicalizing(
+            ['sales.orders.index'],
+            $salesRoutes
+        );
+
+        // 8. Kitchen staff (Cook & Barista) sees KDS
+        $cookRoutes = $getVisibleRoutes('Cook');
+        $this->assertEqualsCanonicalizing(
+            ['kds.index'],
+            $cookRoutes
+        );
+
+        $baristaRoutes = $getVisibleRoutes('Barista');
+        $this->assertEqualsCanonicalizing(
+            ['kds.index'],
+            $baristaRoutes
         );
     }
 

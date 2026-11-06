@@ -1,176 +1,201 @@
-<div class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+<div class="space-y-6" data-gsap="page-enter">
     <!-- Sub Navigasi Modular -->
     @include('livewire.hr.partials.sub-nav')
 
-    <!-- Header & Action -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-                <span class="material-symbols-rounded text-indigo-600 text-[28px]">schedule</span>
-                Pemantauan Absensi & Lembur Staf
-            </h1>
-            <p class="text-sm text-gray-500 mt-1">
-                Catatan jam masuk/pulang kerja, keterlambatan, istirahat, serta koreksi jam kerja staf.
-            </p>
-        </div>
-    </div>
+    <!-- Header & Action Halaman -->
+    <x-erp.page-header
+        title="Staff Attendance & Overtime Monitoring"
+        description="Monitor employee clock-in/out times, punctuality, tardiness, and manual attendance adjustments.">
+        <x-slot:breadcrumbs>
+            <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('hr.employees.index') }}">HR & Payroll</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item active>Attendance & Overtime</x-ui.breadcrumbs.item>
+        </x-slot:breadcrumbs>
+    </x-erp.page-header>
 
+    <!-- Flash Feedback Alerts -->
     @if (session()->has('success'))
-        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-emerald-800 text-sm font-medium">
-            <span class="material-symbols-rounded text-emerald-600 text-[20px]">check_circle</span>
+        <x-ui.alert type="success" title="Success" class="rounded-2xl">
             {{ session('success') }}
-        </div>
+        </x-ui.alert>
     @endif
 
     @if (session()->has('error'))
-        <div class="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-3 text-rose-800 text-sm font-medium">
-            <span class="material-symbols-rounded text-rose-600 text-[20px]">error</span>
+        <x-ui.alert type="danger" title="Error" class="rounded-2xl">
             {{ session('error') }}
-        </div>
+        </x-ui.alert>
     @endif
 
-    <!-- Filter Bar -->
-    <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
+    <!-- KPI & Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <x-erp.stat-card
+            title="Total Attendance"
+            :value="$totalAttendance"
+            icon="co_present"
+            trend-label="Recorded on selected date"
+        />
+        <x-erp.stat-card
+            title="Present Staff"
+            :value="$presentCount"
+            icon="verified"
+            trend-label="On duty / present"
+            variant="success"
+        />
+        <x-erp.stat-card
+            title="Late Arrivals"
+            :value="$lateCount"
+            icon="schedule"
+            trend-label="Tardiness detected"
+            delta-variant="warning"
+        />
+        <x-erp.stat-card
+            title="Time Corrections"
+            :value="$correctedCount"
+            icon="edit_note"
+            trend-label="Manually adjusted records"
+        />
+    </div>
+
+    <!-- Filter & Toolbar -->
+    <div class="card-surface p-4 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-border">
         <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Cabang:</span>
-                <select wire:model.live="selectedStoreId" class="text-xs font-semibold px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 outline-none focus:bg-white focus:border-indigo-500">
-                    <option value="">Semua Cabang</option>
+                <span class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Branch:</span>
+                <x-ui.select wire:model.live="selectedStoreId" class="w-auto text-xs sm:text-sm">
+                    <option value="">All Branches</option>
                     @foreach ($stores as $store)
                         <option value="{{ $store->id }}">{{ $store->name }}</option>
                     @endforeach
-                </select>
+                </x-ui.select>
             </div>
 
             <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Tanggal:</span>
-                <input type="date" wire:model.live="dateFilter" class="text-xs font-semibold px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 outline-none focus:bg-white focus:border-indigo-500" />
+                <span class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Date:</span>
+                <input
+                    type="date"
+                    wire:model.live="dateFilter"
+                    class="px-3 py-1.5 text-xs sm:text-sm rounded-xl border border-input bg-background text-foreground tabular-nums focus:outline-hidden focus:ring-2 focus:ring-primary/20 transition"
+                />
             </div>
 
             <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Status:</span>
-                <select wire:model.live="statusFilter" class="text-xs font-semibold px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 outline-none focus:bg-white focus:border-indigo-500">
-                    <option value="ALL">Semua Status</option>
-                    <option value="ON_TIME">Tepat Waktu (ON_TIME)</option>
-                    <option value="LATE">Terlambat (LATE)</option>
-                    <option value="OVERTIME">Lembur (OVERTIME)</option>
-                    <option value="EARLY_DEPARTURE">Pulang Cepat (EARLY_DEPARTURE)</option>
-                </select>
+                <span class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Status:</span>
+                <x-ui.select wire:model.live="statusFilter" class="w-auto text-xs sm:text-sm">
+                    <option value="ALL">All Statuses</option>
+                    @foreach (\App\Modules\HR\Enums\AttendanceStatusEnum::cases() as $case)
+                        <option value="{{ $case->value }}">{{ $case->label() }}</option>
+                    @endforeach
+                </x-ui.select>
             </div>
         </div>
     </div>
 
-    <!-- Tabel Catatan Absensi -->
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <!-- Attendance Records Table -->
+    <div class="card-surface rounded-2xl border border-border shadow-xs overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-700 divide-y divide-gray-200">
-                <thead class="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
+            <table class="w-full text-left text-sm text-foreground divide-y divide-border">
+                <thead class="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     <tr>
-                        <th class="px-6 py-3.5">Karyawan</th>
-                        <th class="px-6 py-3.5">Waktu Masuk</th>
-                        <th class="px-6 py-3.5">Waktu Pulang</th>
-                        <th class="px-6 py-3.5">Status Kehadiran</th>
-                        <th class="px-6 py-3.5">Catatan / Koreksi</th>
-                        <th class="px-6 py-3.5 text-right">Aksi</th>
+                        <th class="px-6 py-3.5">Employee</th>
+                        <th class="px-6 py-3.5">Clock-in Time</th>
+                        <th class="px-6 py-3.5">Clock-out Time</th>
+                        <th class="px-6 py-3.5">Attendance Status</th>
+                        <th class="px-6 py-3.5">Notes / Corrections</th>
+                        <th class="px-6 py-3.5 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200">
+                <tbody class="divide-y divide-border">
                     @forelse ($records as $rec)
-                        <tr class="hover:bg-gray-50/60 transition-colors">
-                            <td class="px-6 py-4 font-semibold text-gray-900 flex items-center gap-2">
-                                <div class="w-8 h-8 rounded-full bg-indigo-50 text-indigo-700 font-bold flex items-center justify-center text-xs">
+                        <tr class="hover:bg-muted/30 transition-colors">
+                            <td class="px-6 py-4 font-semibold text-foreground flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-full bg-secondary text-secondary-foreground font-bold flex items-center justify-center text-xs shrink-0">
                                     {{ strtoupper(substr($rec->employee?->full_name ?? 'EM', 0, 2)) }}
                                 </div>
-                                <div>
-                                    <div class="font-semibold text-gray-900">{{ $rec->employee?->full_name ?? 'Staf' }}</div>
-                                    <div class="text-xs text-gray-500 font-mono">{{ $rec->employee?->employee_number }}</div>
+                                <div class="min-w-0">
+                                    <div class="font-semibold text-foreground truncate">{{ $rec->employee?->full_name ?? 'Staff' }}</div>
+                                    <div class="text-xs text-muted-foreground tabular-nums">{{ $rec->employee?->employee_number }}</div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 font-mono text-xs">
+                            <td class="px-6 py-4 text-xs text-foreground tabular-nums">
                                 {{ $rec->clock_in_at ? $rec->clock_in_at->format('d M Y, H:i') : '-' }}
                             </td>
-                            <td class="px-6 py-4 font-mono text-xs">
+                            <td class="px-6 py-4 text-xs text-foreground tabular-nums">
                                 {{ $rec->clock_out_at ? $rec->clock_out_at->format('d M Y, H:i') : '-' }}
                             </td>
                             <td class="px-6 py-4">
-                                @php
-                                    $statusBadge = match($rec->status?->value ?? '') {
-                                        'ON_TIME' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                                        'LATE' => 'bg-amber-50 text-amber-700 border-amber-200',
-                                        'OVERTIME' => 'bg-indigo-50 text-indigo-700 border-indigo-200',
-                                        default => 'bg-gray-100 text-gray-700 border-gray-200'
-                                    };
-                                @endphp
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border {{ $statusBadge }}">
-                                    {{ $rec->status?->value ?? 'PENDING' }}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border {{ $rec->status ? $rec->status->badgeClasses() : 'bg-muted text-muted-foreground border-border' }}">
+                                    {{ $rec->status ? $rec->status->label() : 'Pending' }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-xs text-gray-500 max-w-xs truncate">
+                            <td class="px-6 py-4 text-xs text-muted-foreground max-w-xs truncate">
                                 {{ $rec->notes ?: '-' }}
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <button wire:click="openCorrectionModal({{ $rec->id }})"
-                                    class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 text-gray-700 transition-colors cursor-pointer">
-                                    Koreksi
-                                </button>
+                                <x-ui.button
+                                    variant="secondary"
+                                    size="sm"
+                                    wire:click="openCorrectionModal({{ $rec->id }})"
+                                    class="h-8 px-3 text-xs gap-1">
+                                    <span class="material-symbols-rounded text-sm">edit</span>
+                                    <span>Correction</span>
+                                </x-ui.button>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-gray-400">
-                                <span class="material-symbols-rounded text-4xl block mb-2 text-gray-300">event_busy</span>
-                                Tidak ada rekaman absensi pada tanggal dan cabang yang dipilih.
+                            <td colspan="6" class="px-6 py-12 text-center text-muted-foreground">
+                                <span class="material-symbols-rounded text-4xl block mb-2 text-muted-foreground/50">event_busy</span>
+                                No attendance records found for the selected date and branch.
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-        <div class="p-4 border-t border-gray-200">
+        <div class="p-4 border-t border-border">
             {{ $records->links() }}
         </div>
     </div>
 
-    <!-- Modal Koreksi Waktu Absensi -->
-    @if ($isCorrectionModalOpen)
-        <div class="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
-            <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
-                <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-                    <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
-                        <span class="material-symbols-rounded text-indigo-600">edit_attributes</span>
-                        Koreksi Waktu Absensi Staf
-                    </h3>
-                    <button wire:click="closeCorrectionModal" class="text-gray-400 hover:text-gray-600 cursor-pointer">
-                        <span class="material-symbols-rounded">close</span>
-                    </button>
-                </div>
+    <!-- Attendance Time Correction Modal -->
+    <x-ui.modal wire:model="isCorrectionModalOpen" title="Attendance Time Correction" description="Correct employee clock-in/out timestamps with administrative audit notes." maxWidth="md">
+        <div class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-foreground mb-1.5">Clock-in Time</label>
+                <input
+                    type="datetime-local"
+                    wire:model="correctedClockIn"
+                    class="w-full px-3.5 py-2 text-sm bg-background border border-input rounded-xl tabular-nums text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+                />
+            </div>
 
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Waktu Masuk (Clock-in)</label>
-                        <input type="datetime-local" wire:model="correctedClockIn" class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:bg-white focus:border-indigo-500 font-mono" />
-                    </div>
+            <div>
+                <label class="block text-xs font-semibold text-foreground mb-1.5">Clock-out Time</label>
+                <input
+                    type="datetime-local"
+                    wire:model="correctedClockOut"
+                    class="w-full px-3.5 py-2 text-sm bg-background border border-input rounded-xl tabular-nums text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+                />
+            </div>
 
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Waktu Pulang (Clock-out)</label>
-                        <input type="datetime-local" wire:model="correctedClockOut" class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:bg-white focus:border-indigo-500 font-mono" />
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Alasan Koreksi (Wajib)</label>
-                        <textarea wire:model="correctionReason" rows="2" placeholder="mis. Mesin POS mati listrik / Lupa tap keluar" class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl outline-none focus:bg-white focus:border-indigo-500"></textarea>
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
-                    <button type="button" wire:click="closeCorrectionModal" class="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-800 cursor-pointer">
-                        Batal
-                    </button>
-                    <button type="button" wire:click="saveCorrection" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors cursor-pointer">
-                        Simpan Koreksi
-                    </button>
-                </div>
+            <div>
+                <label class="block text-xs font-semibold text-foreground mb-1.5">Correction Reason (Required)</label>
+                <textarea
+                    wire:model="correctionReason"
+                    rows="3"
+                    placeholder="e.g. Biometric system outage / Forgot to clock out / Network issue"
+                    class="w-full px-3.5 py-2 text-sm bg-background border border-input rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20"
+                ></textarea>
             </div>
         </div>
-    @endif
+
+        <x-slot:footer>
+            <x-ui.button variant="secondary" wire:click="closeCorrectionModal">
+                Cancel
+            </x-ui.button>
+            <x-ui.button variant="primary" wire:click="saveCorrection">
+                Save Correction
+            </x-ui.button>
+        </x-slot:footer>
+    </x-ui.modal>
 </div>

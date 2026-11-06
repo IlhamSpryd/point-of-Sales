@@ -14,10 +14,10 @@ enum AttendanceSourceEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::POS_KIOSK => 'Terminal POS Kasir',
-            self::BRANCH_TABLET => 'Tablet Cabang (QR Code)',
-            self::WEB_PORTAL => 'Portal Mandiri Web',
-            self::MANUAL_CORRECTION => 'Koreksi Manual',
+            self::POS_KIOSK => 'POS Kiosk Terminal',
+            self::BRANCH_TABLET => 'Branch Tablet (QR Code)',
+            self::WEB_PORTAL => 'Web Self-Service Portal',
+            self::MANUAL_CORRECTION => 'Manual Correction',
         };
     }
 }

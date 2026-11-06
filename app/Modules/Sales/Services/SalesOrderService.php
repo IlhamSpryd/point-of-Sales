@@ -67,7 +67,7 @@ class SalesOrderService
             $customerId = (int) ($payload['customer_id'] ?? 0);
             if ($customerId <= 0) {
                 throw ValidationException::withMessages([
-                    'customer_id' => ['Pelanggan wajib dipilih untuk Sales Order.'],
+                    'customer_id' => ['Customer is required for a Sales Order.'],
                 ]);
             }
 
@@ -78,7 +78,7 @@ class SalesOrderService
 
             if ($customer === null) {
                 throw ValidationException::withMessages([
-                    'customer_id' => ['Pelanggan tidak valid pada tenant ini.'],
+                    'customer_id' => ['Invalid customer for this tenant.'],
                 ]);
             }
 
@@ -97,7 +97,7 @@ class SalesOrderService
             $items = $payload['items'] ?? $payload['lines'] ?? [];
             if (! is_array($items) || count($items) === 0) {
                 throw ValidationException::withMessages([
-                    'items' => ['Sales Order wajib memiliki minimal 1 item baris.'],
+                    'items' => ['Sales Order must have at least 1 line item.'],
                 ]);
             }
 
@@ -186,7 +186,7 @@ class SalesOrderService
 
                 if ($product === null) {
                     throw ValidationException::withMessages([
-                        'items' => ["Produk ID {$productId} tidak ditemukan."],
+                        'items' => ["Product ID {$productId} not found."],
                     ]);
                 }
 
@@ -198,7 +198,7 @@ class SalesOrderService
                 $moq = isset($itemData['moq']) ? (string) $itemData['moq'] : (isset($itemData['min_order_qty']) ? (string) $itemData['min_order_qty'] : null);
                 if ($moq !== null && bccomp(bc_num($qty), bc_num($moq), 4) < 0) {
                     throw ValidationException::withMessages([
-                        'items' => ["Kuantitas produk '{$product->product_name}' ({$qty}) tidak memenuhi batas Minimum Order Quantity (MOQ: {$moq})."],
+                        'items' => ["Product quantity for '{$product->product_name}' ({$qty}) does not meet the Minimum Order Quantity (MOQ: {$moq})."],
                     ]);
                 }
 
@@ -295,7 +295,7 @@ class SalesOrderService
                 storeId: $storeId,
                 subjectType: SalesOrder::class,
                 subjectId: $salesOrder->id,
-                description: "Membuat Sales Order baru: {$salesOrder->so_number} untuk {$customer->name}",
+                description: "Created new Sales Order: {$salesOrder->so_number} for {$customer->name}",
                 newValues: $salesOrder->toArray()
             );
 
@@ -385,7 +385,7 @@ class SalesOrderService
                 storeId: $salesOrder->store_id,
                 subjectType: SalesOrder::class,
                 subjectId: $salesOrder->id,
-                description: "Sales Order {$salesOrder->so_number} berhasil dibuat dari Quotation {$quotation->quotation_number}",
+                description: "Sales Order {$salesOrder->so_number} successfully created from Quotation {$quotation->quotation_number}",
                 newValues: $salesOrder->toArray()
             );
 
@@ -411,7 +411,7 @@ class SalesOrderService
                 ->firstOrFail();
 
             if (! in_array($locked->status, [SalesOrderStatusEnum::DRAFT, SalesOrderStatusEnum::PENDING_CREDIT_APPROVAL], true)) {
-                throw new DomainException("Hanya Sales Order berstatus DRAFT atau PENDING_CREDIT_APPROVAL yang dapat dikonfirmasi. Status saat ini: {$locked->status->value}");
+                throw new DomainException("Only Sales Orders with status DRAFT or PENDING_CREDIT_APPROVAL can be confirmed. Current status: {$locked->status->value}");
             }
 
             // 1. Evaluasi & Reservasi Eksposur Kredit (B2B Credit Control - Lock Order Step 2 A0/A8)
@@ -439,7 +439,7 @@ class SalesOrderService
                 storeId: $locked->store_id,
                 subjectType: SalesOrder::class,
                 subjectId: $locked->id,
-                description: "Sales Order {$locked->so_number} telah dikonfirmasi dan mereservasi stok item.",
+                description: "Sales Order {$locked->so_number} confirmed and item stock reserved.",
                 newValues: ['status' => $locked->status->value, 'confirmed_by' => $actor->id]
             );
 
@@ -471,12 +471,12 @@ class SalesOrderService
                 ->firstOrFail();
 
             if (! in_array($lockedSO->status, [SalesOrderStatusEnum::CONFIRMED, SalesOrderStatusEnum::PARTIALLY_FULFILLED], true)) {
-                throw new DomainException("Hanya Sales Order berstatus CONFIRMED atau PARTIALLY_FULFILLED yang dapat dipenuhi. Status saat ini: {$lockedSO->status->value}");
+                throw new DomainException("Only Sales Orders with status CONFIRMED or PARTIALLY_FULFILLED can be fulfilled. Current status: {$lockedSO->status->value}");
             }
 
             if (empty($fulfillmentLines)) {
                 throw ValidationException::withMessages([
-                    'fulfillment_lines' => ['Minimal 1 baris item harus ditentukan untuk pemenuhan pesanan.'],
+                    'fulfillment_lines' => ['At least 1 line item must be specified for fulfillment.'],
                 ]);
             }
 
@@ -503,7 +503,7 @@ class SalesOrderService
 
                 if ($targetLine === null) {
                     throw ValidationException::withMessages([
-                        'fulfillment_lines' => ["Baris SO ID #{$lineId} tidak ditemukan pada pesanan ini."],
+                        'fulfillment_lines' => ["SO line ID #{$lineId} not found for this order."],
                     ]);
                 }
 
@@ -514,7 +514,7 @@ class SalesOrderService
 
                 $remainingQty = $targetLine->getRemainingQty();
                 if (bccomp($fulfillQty, $remainingQty, 4) > 0) {
-                    throw new DomainException("Kuantitas pemenuhan ({$fulfillQty}) melebihi sisa pesanan ({$remainingQty}) pada baris #{$targetLine->line_number} ({$targetLine->description}).");
+                    throw new DomainException("Fulfillment quantity ({$fulfillQty}) exceeds remaining order quantity ({$remainingQty}) on line #{$targetLine->line_number} ({$targetLine->description}).");
                 }
 
                 // Kalkulasi proporsional nilai finansial baris yang dipenuhi
@@ -547,7 +547,7 @@ class SalesOrderService
             }
 
             if (empty($validatedFulfillments)) {
-                throw new DomainException('Tidak ada kuantitas valid (> 0) untuk dipenuhi.');
+                throw new DomainException('No valid quantity (> 0) to fulfill.');
             }
 
             // 3. Buat dokumen eksekusi Order operasional (orders)
@@ -654,7 +654,7 @@ class SalesOrderService
                 storeId: $storeId,
                 subjectType: SalesOrder::class,
                 subjectId: $lockedSO->id,
-                description: "Fulfillment pesanan {$lockedSO->so_number} diproses melalui Order #{$order->order_code}. Status: {$lockedSO->status->value}",
+                description: "Fulfillment for order {$lockedSO->so_number} processed via Order #{$order->order_code}. Status: {$lockedSO->status->value}",
                 newValues: [
                     'order_id' => $order->id,
                     'order_code' => $order->order_code,
@@ -683,7 +683,7 @@ class SalesOrderService
                 ->firstOrFail();
 
             if (in_array($locked->status, [SalesOrderStatusEnum::CLOSED, SalesOrderStatusEnum::CANCELLED, SalesOrderStatusEnum::FULFILLED], true)) {
-                throw new DomainException("Sales Order dalam status {$locked->status->value} tidak dapat dibatalkan.");
+                throw new DomainException("Sales Order in status {$locked->status->value} cannot be cancelled.");
             }
 
             $locked->loadMissing('lines');
@@ -723,7 +723,7 @@ class SalesOrderService
                 storeId: $locked->store_id,
                 subjectType: SalesOrder::class,
                 subjectId: $locked->id,
-                description: "Sales Order {$locked->so_number} dibatalkan/ditutup. Alasan: {$reason}",
+                description: "Sales Order {$locked->so_number} cancelled/closed. Reason: {$reason}",
                 newValues: [
                     'status' => $locked->status->value,
                     'cancellation_reason' => $reason,
@@ -760,7 +760,7 @@ class SalesOrderService
                     ->first();
 
                 if ($product === null || ! $product->is_active) {
-                    throw new DomainException("Produk '{$line->description}' sudah tidak aktif dan tidak dapat dimasukkan ke pemesanan ulang (Repeat Order).");
+                    throw new DomainException("Product '{$line->description}' is inactive and cannot be added to a Repeat Order.");
                 }
 
                 $freshItems[] = [
@@ -780,7 +780,7 @@ class SalesOrderService
                 'order_source' => 'REPEAT_ORDER',
                 'customer_po_number' => $source->customer_po_number ? 'REPEAT-'.$source->customer_po_number : null,
                 'payment_terms_days' => $source->payment_terms_days,
-                'notes' => "Pemesanan ulang otomatis (Repeat Order) dari SO #{$source->so_number}",
+                'notes' => "Automated repeat order from SO #{$source->so_number}",
                 'items' => $freshItems,
             ];
 
@@ -795,7 +795,7 @@ class SalesOrderService
                 storeId: $newSO->store_id,
                 subjectType: SalesOrder::class,
                 subjectId: $newSO->id,
-                description: "Repeat Order {$newSO->so_number} dibuat dari sumber SO #{$source->so_number}",
+                description: "Repeat Order {$newSO->so_number} created from source SO #{$source->so_number}",
                 newValues: ['source_repeat_order_id' => $source->id]
             );
 

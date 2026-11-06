@@ -11,8 +11,8 @@
                             </svg>
                         </div>
                         <div>
-                            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">Simulasi Dampak Marjin Kotor</h3>
-                            <p class="text-xs text-slate-500 dark:text-slate-400">Analisis prediktif kelayakan finansial promosi sebelum dipublikasikan</p>
+                            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100">Gross Margin Impact Simulation</h3>
+                            <p class="text-xs text-slate-500 dark:text-slate-400">Predictive financial feasibility analysis prior to promotion publishing</p>
                         </div>
                     </div>
                     <button wire:click="close" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-lg">
@@ -27,11 +27,11 @@
                             <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
                         </svg>
                         <span>
-                            <strong>Peringatan Marjin Negatif:</strong> Promosi ini menghasilkan marjin negatif pada produk tertentu atau secara agregat.
+                            <strong>Negative Margin Warning:</strong> This promotion yields negative margins on specific items or in aggregate.
                             @if ($canPublish)
-                                <span class="text-emerald-700 dark:text-emerald-400 font-semibold">(Otorisasi Owner Aktif: Publikasi Diizinkan)</span>
+                                <span class="text-emerald-700 dark:text-emerald-400 font-semibold">(Owner Authorized: Publishing Permitted)</span>
                             @else
-                                <span class="font-bold text-rose-700 dark:text-rose-300">Publikasi diblokir kecuali disetujui Owner.</span>
+                                <span class="font-bold text-rose-700 dark:text-rose-300">Publishing blocked unless approved by Owner.</span>
                             @endif
                         </span>
                     </div>
@@ -40,17 +40,17 @@
                 {{-- KPI Metric Summary Cards --}}
                 <div class="p-6 grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-50/50 dark:bg-slate-900/30">
                     <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <span class="text-xs text-slate-500 font-medium">Estimasi Pendapatan</span>
+                        <span class="text-xs text-slate-500 font-medium">Estimated Revenue</span>
                         <div class="text-lg font-bold text-slate-800 dark:text-slate-100 mt-1">Rp {{ number_format($simulation->proposedRevenue, 0, ',', '.') }}</div>
                         <span class="text-xs text-slate-400">Baseline: Rp {{ number_format($simulation->baselineRevenue, 0, ',', '.') }}</span>
                     </div>
                     <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <span class="text-xs text-slate-500 font-medium">Estimasi HPP (COGS)</span>
+                        <span class="text-xs text-slate-500 font-medium">Estimated COGS</span>
                         <div class="text-lg font-bold text-slate-800 dark:text-slate-100 mt-1">Rp {{ number_format($simulation->proposedCogs, 0, ',', '.') }}</div>
                         <span class="text-xs text-slate-400">Fixed Inventory Cost</span>
                     </div>
                     <div class="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm">
-                        <span class="text-xs text-slate-500 font-medium">Estimasi Laba Kotor</span>
+                        <span class="text-xs text-slate-500 font-medium">Estimated Gross Profit</span>
                         <div class="text-lg font-bold @if($simulation->proposedGrossProfit < 0) text-rose-600 @else text-emerald-600 @endif mt-1">
                             Rp {{ number_format($simulation->proposedGrossProfit, 0, ',', '.') }}
                         </div>
@@ -72,11 +72,11 @@
                     <table class="w-full text-left text-xs">
                         <thead class="text-slate-400 uppercase border-b border-slate-200 dark:border-slate-700">
                             <tr>
-                                <th class="py-2">Produk</th>
-                                <th class="py-2 text-right">Harga Normal</th>
-                                <th class="py-2 text-right">Diskon Unit</th>
-                                <th class="py-2 text-right">Harga Promo</th>
-                                <th class="py-2 text-right">HPP</th>
+                                <th class="py-2">Product</th>
+                                <th class="py-2 text-right">Regular Price</th>
+                                <th class="py-2 text-right">Unit Discount</th>
+                                <th class="py-2 text-right">Promo Price</th>
+                                <th class="py-2 text-right">COGS</th>
                                 <th class="py-2 text-right">Margin %</th>
                                 <th class="py-2 text-center">Status</th>
                             </tr>
@@ -94,9 +94,9 @@
                                     </td>
                                     <td class="py-2.5 text-center">
                                         @if ($item['is_negative_margin'])
-                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300">RUGI</span>
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 dark:bg-rose-900/40 text-rose-700 dark:text-rose-300">NEGATIVE</span>
                                         @else
-                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">AMAN</span>
+                                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300">PROFITABLE</span>
                                         @endif
                                     </td>
                                 </tr>
@@ -109,7 +109,7 @@
                 <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between bg-slate-50 dark:bg-slate-800/50">
                     <span class="text-xs text-slate-400">Discount Exposure: <strong>Rp {{ number_format($simulation->discountExposure, 0, ',', '.') }}</strong></span>
                     <button wire:click="close" class="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-medium rounded-xl text-sm transition">
-                        Tutup Simulasi
+                        Close Simulation
                     </button>
                 </div>
             </div>

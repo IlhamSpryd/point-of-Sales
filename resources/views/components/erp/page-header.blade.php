@@ -15,14 +15,18 @@
     <div class="min-w-0">
         @if (! empty($breadcrumbs))
             <x-ui.breadcrumbs class="mb-2">
-                @foreach ($breadcrumbs as $crumb)
-                    <x-ui.breadcrumbs.item
-                        :href="$crumb['href'] ?? ($crumb['url'] ?? null)"
-                        :active="$loop->last"
-                    >
-                        {{ $crumb['label'] ?? '' }}
-                    </x-ui.breadcrumbs.item>
-                @endforeach
+                @if (is_array($breadcrumbs))
+                    @foreach ($breadcrumbs as $crumb)
+                        <x-ui.breadcrumbs.item
+                            :href="$crumb['href'] ?? ($crumb['url'] ?? null)"
+                            :active="$loop->last"
+                        >
+                            {{ $crumb['label'] ?? '' }}
+                        </x-ui.breadcrumbs.item>
+                    @endforeach
+                @else
+                    {{ $breadcrumbs }}
+                @endif
             </x-ui.breadcrumbs>
         @endif
 

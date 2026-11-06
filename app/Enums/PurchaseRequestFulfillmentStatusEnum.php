@@ -13,9 +13,9 @@ enum PurchaseRequestFulfillmentStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::Unfulfilled => 'Belum Dipesan',
-            self::PartiallyOrdered => 'Dipesan Sebagian',
-            self::FullyOrdered => 'Selesai Dipesan',
+            self::Unfulfilled => 'Unfulfilled',
+            self::PartiallyOrdered => 'Partially Ordered',
+            self::FullyOrdered => 'Fully Ordered',
         };
     }
 

@@ -363,7 +363,7 @@ class SalesOrderFulfillmentIntegrationTest extends TestCase
             // Konfirmasi order
             ->call('confirmOrder', $so->id)
             ->assertHasNoErrors()
-            ->assertSee('BERHASIL dikonfirmasi')
+            ->assertSee('confirmed and stock reserved')
             // Buka modal fulfill
             ->call('openFulfillModal', $so->id)
             ->assertSet('showFulfillModal', true)
@@ -371,7 +371,7 @@ class SalesOrderFulfillmentIntegrationTest extends TestCase
             ->set("fulfillmentQuantities.{$so->lines->first()->id}", '4.0000')
             ->call('executeFulfillment')
             ->assertHasNoErrors()
-            ->assertSee('Fulfillment berhasil diproses');
+            ->assertSee('Fulfillment processed successfully');
 
         $so->refresh();
         $this->assertSame(SalesOrderStatusEnum::PARTIALLY_FULFILLED, $so->status);

@@ -1,13 +1,13 @@
 @php
     $methods = [
-        ['qris',    'qr_code_2',              'QRIS',     'Scan dengan aplikasi bank atau e-wallet apa pun'],
-        ['ewallet', 'account_balance_wallet', 'E-Wallet', 'GoPay atau ShopeePay'],
-        ['cash',    'payments',               'Bayar Tunai', 'Bayar ke kasir dan tunjukkan kode pesanan'],
+        ['qris',    'qr_code_2',              'QRIS',     'Scan with supported mobile banking or e-wallet application'],
+        ['ewallet', 'account_balance_wallet', 'E-Wallet', 'GoPay or ShopeePay'],
+        ['cash',    'payments',               'Cash Payment', 'Pay at the counter and present your order number'],
     ];
 @endphp
 
 <x-customer-layout :back-url="route('customer.cart.index')">
-    <x-slot:title>Pembayaran</x-slot:title>
+    <x-slot:title>Checkout</x-slot:title>
 
     <div x-data="{ method: 'qris', submitting: false }">
         <form action="{{ route('customer.checkout.store') }}" method="POST" @submit="submitting = true">
@@ -26,7 +26,7 @@
 
             {{-- Ringkasan pesanan --}}
             <section class="card-surface p-5 mb-5" aria-labelledby="ringkasan">
-                <h2 id="ringkasan" class="text-[12px] font-bold uppercase tracking-wider text-apeiron-muted mb-2">Ringkasan Pesanan</h2>
+                <h2 id="ringkasan" class="text-[12px] font-bold uppercase tracking-wider text-apeiron-muted mb-2">Order Summary</h2>
                 <ul class="divide-y divide-apeiron-border">
                     @foreach ($items as $item)
                         <li class="py-3 flex items-start justify-between gap-4">
@@ -36,7 +36,7 @@
                                     <p class="text-[12px] text-apeiron-muted mt-0.5">{{ collect($item['options'])->pluck('modifier_name')->filter()->implode(' · ') }}</p>
                                 @endif
                                 @if (! empty($item['notes']))
-                                    <p class="text-[12px] italic text-apeiron-muted mt-0.5">Catatan: {{ $item['notes'] }}</p>
+                                    <p class="text-[12px] italic text-apeiron-muted mt-0.5">Note: {{ $item['notes'] }}</p>
                                 @endif
                             </div>
                             <span class="text-[14px] font-semibold tabular-nums shrink-0">Rp {{ number_format($item['subtotal'], 0, ',', '.') }}</span>
@@ -46,26 +46,26 @@
 
                 <dl class="mt-2 pt-3 border-t border-apeiron-border text-[14px] space-y-1.5">
                     <div class="flex justify-between text-apeiron-muted"><dt>Subtotal</dt><dd class="tabular-nums">Rp {{ number_format($subtotal, 0, ',', '.') }}</dd></div>
-                    <div class="flex justify-between text-apeiron-muted"><dt>Pajak ({{ rtrim(rtrim(number_format(($taxRate ?? 0.11) * 100, 1), '0'), '.') }}%)</dt><dd class="tabular-nums">Rp {{ number_format($tax, 0, ',', '.') }}</dd></div>
-                    <div class="flex justify-between text-[17px] font-extrabold pt-1"><dt>Total Tagihan</dt><dd class="tabular-nums">Rp {{ number_format($total, 0, ',', '.') }}</dd></div>
+                    <div class="flex justify-between text-apeiron-muted"><dt>Tax ({{ rtrim(rtrim(number_format(($taxRate ?? 0.11) * 100, 1), '0'), '.') }}%)</dt><dd class="tabular-nums">Rp {{ number_format($tax, 0, ',', '.') }}</dd></div>
+                    <div class="flex justify-between text-[17px] font-extrabold pt-1"><dt>Total Amount</dt><dd class="tabular-nums">Rp {{ number_format($total, 0, ',', '.') }}</dd></div>
                 </dl>
             </section>
 
             {{-- Member / Loyalty --}}
             <section aria-labelledby="loyalty" class="mb-5">
-                <h2 id="loyalty" class="text-[12px] font-bold uppercase tracking-wider text-apeiron-muted mb-3">Member & Loyalty (Opsional)</h2>
+                <h2 id="loyalty" class="text-[12px] font-bold uppercase tracking-wider text-apeiron-muted mb-3">Member & Loyalty (Optional)</h2>
                 <div class="card-surface p-4">
-                    <label for="customer_phone" class="block text-[13px] font-semibold text-gray-700 mb-1.5">Nomor Handphone</label>
+                    <label for="customer_phone" class="block text-[13px] font-semibold text-gray-700 mb-1.5">Mobile Number</label>
                     <input type="tel" name="customer_phone" id="customer_phone" value="{{ old('customer_phone') }}"
-                           placeholder="Contoh: 08123456789"
+                           placeholder="e.g. 08123456789"
                            class="w-full rounded-xl border-apeiron-border bg-white px-4 py-2.5 text-[14px] focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink outline-none transition-all" />
-                    <p class="mt-2 text-[11px] text-apeiron-muted">Masukkan nomor HP yang terdaftar untuk mendapatkan Poin Loyalty dari transaksi ini.</p>
+                    <p class="mt-2 text-[11px] text-apeiron-muted">Enter registered mobile number to collect loyalty points for this order.</p>
                 </div>
             </section>
 
             {{-- Metode pembayaran: Button-Box --}}
             <section aria-labelledby="metode">
-                <h2 id="metode" class="text-[12px] font-bold uppercase tracking-wider text-apeiron-muted mb-3">Metode Pembayaran</h2>
+                <h2 id="metode" class="text-[12px] font-bold uppercase tracking-wider text-apeiron-muted mb-3">Payment Method</h2>
                 <div role="radiogroup" aria-labelledby="metode" class="grid grid-cols-1 gap-3">
                     @foreach ($methods as [$value, $icon, $label, $hint])
                         <button type="button" role="radio"
@@ -88,7 +88,7 @@
                     @endforeach
                 </div>
                 <p class="mt-3 flex items-center gap-1.5 text-[11px] text-apeiron-muted">
-                    <span class="material-symbols-rounded text-[14px]">lock</span> Pembayaran diproses aman melalui Midtrans.
+                    <span class="material-symbols-rounded text-[14px]">lock</span> Payments securely processed via Midtrans.
                 </p>
             </section>
 
@@ -101,7 +101,7 @@
                             class="w-full flex items-center justify-between rounded-2xl bg-apeiron-ink text-white px-5 min-h-14 font-semibold shadow-lg hover:bg-primary/90 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed transition-all duration-200 focus-visible:ring-2 focus-visible:ring-apeiron-ink focus-visible:ring-offset-2">
                         <span class="flex items-center gap-2 text-[15px]">
                             <span x-show="submitting" x-cloak class="spinner" aria-hidden="true"></span>
-                            <span x-text="submitting ? 'Memproses…' : 'Bayar Sekarang'"></span>
+                            <span x-text="submitting ? 'Processing…' : 'Pay Now'"></span>
                         </span>
                         <span class="tabular-nums text-[15px]">Rp {{ number_format($total, 0, ',', '.') }}</span>
                     </button>

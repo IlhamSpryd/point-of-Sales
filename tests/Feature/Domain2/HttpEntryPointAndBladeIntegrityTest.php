@@ -49,7 +49,7 @@ class HttpEntryPointAndBladeIntegrityTest extends TestCase
 
         $response->assertOk();
         $response->assertViewIs('orders.index');
-        $response->assertSee('Riwayat Pesanan');
+        $response->assertSee('Order & Transaction History');
         $response->assertSeeLivewire('kasir.order-history');
     }
 
@@ -66,7 +66,7 @@ class HttpEntryPointAndBladeIntegrityTest extends TestCase
 
         $response->assertOk();
         $response->assertViewIs('discounts.index');
-        $response->assertSee('Diskon & Promo');
+        $response->assertSee('Discounts & Promotions');
         $response->assertSeeLivewire('discount-manager');
     }
 

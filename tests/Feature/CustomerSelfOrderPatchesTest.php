@@ -49,7 +49,7 @@ class CustomerSelfOrderPatchesTest extends TestCase
         ])->postJson(route('customer.waiter.call'));
 
         $response1->assertStatus(200);
-        $response1->assertJson(['message' => "Panggilan terkirim. Staf sedang menuju {$table->table_name}."]);
+        $response1->assertJson(['message' => "Call sent. Staff is on the way to {$table->table_name}."]);
 
         Event::assertDispatched(WaiterCalled::class, function ($event) use ($table) {
             return $event->tableId === $table->id && $event->tableName === $table->table_name;
@@ -62,7 +62,7 @@ class CustomerSelfOrderPatchesTest extends TestCase
         ])->postJson(route('customer.waiter.call'));
 
         $response2->assertStatus(200);
-        $response2->assertJson(['message' => "Panggilan untuk {$table->table_name} sudah dikirim, staf sedang menuju ke sana."]);
+        $response2->assertJson(['message' => "Staff has already been notified for {$table->table_name} and is on their way."]);
 
         // Verify only dispatched once
         Event::assertDispatchedTimes(WaiterCalled::class, 1);
@@ -157,7 +157,7 @@ class CustomerSelfOrderPatchesTest extends TestCase
 
         $response->assertStatus(302);
         $response->assertRedirect(route('customer.cart.index'));
-        $response->assertSessionHas('success', 'Keranjang berhasil dipulihkan.');
+        $response->assertSessionHas('success', 'Cart successfully restored.');
 
         // Cart should have the items back
         $this->assertEquals(2, $cartService->getTotalQty());

@@ -4,7 +4,7 @@
     @if(count($this->cartLines) > 0)
         <div class="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-border px-4 py-3 shadow-lg flex items-center justify-between gap-3 select-none">
             <div class="min-w-0">
-                <span class="text-[11px] font-medium text-muted-foreground block">Total ({{ count($this->cartLines) }} Item)</span>
+                <span class="text-[11px] font-medium text-muted-foreground block">Total ({{ count($this->cartLines) }} {{ count($this->cartLines) === 1 ? 'Item' : 'Items' }})</span>
                 <span class="text-base font-bold text-foreground font-mono">
                     Rp {{ number_format($this->totalAmount, 0, ',', '.') }}
                 </span>
@@ -14,7 +14,7 @@
                 @click="$dispatch('open-drawer', 'pos-mobile-cart-drawer')"
                 class="px-4 py-2.5 bg-primary hover:bg-primary/90 text-white font-medium text-xs rounded-xl shadow-sm active:scale-95 transition-all flex items-center gap-2">
                 <span class="material-symbols-rounded text-[18px]">shopping_bag</span>
-                <span>Lihat Pesanan</span>
+                <span>View Order</span>
                 <span class="bg-white/20 text-white text-[10px] px-1.5 py-0.5 rounded-full font-mono font-bold">
                     {{ count($this->cartLines) }}
                 </span>
@@ -22,12 +22,12 @@
         </div>
     @endif
 
-    {{-- DevDojo Drawer untuk Mobile/Tablet Keranjang --}}
+    {{-- DevDojo Drawer for Mobile/Tablet Cart --}}
     <x-ui.drawer id="pos-mobile-cart-drawer" position="right" maxWidth="md">
         <x-slot:header>
             <div class="flex items-center gap-2">
                 <span class="material-symbols-rounded text-foreground text-[20px]">shopping_bag</span>
-                <span class="font-headline-sm text-[16px] font-semibold text-foreground">Pesanan Saat Ini</span>
+                <span class="font-headline-sm text-[16px] font-semibold text-foreground">Current Order</span>
                 <span class="bg-primary text-white text-[11px] font-mono px-2 py-0.5 rounded-full font-bold">
                     {{ count($this->cartLines) }}
                 </span>
@@ -35,7 +35,7 @@
         </x-slot:header>
 
         <div class="flex flex-col h-full -mx-6 -my-5">
-            {{-- Customer Selection di Mobile --}}
+            {{-- Customer Selection in Mobile --}}
             <div class="p-3 border-b border-border bg-muted">
                 @unless ($pendingOrderId)
                     <div class="relative" x-data="{ showResults: false }">
@@ -54,7 +54,7 @@
                                 <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-[16px] text-muted-foreground pointer-events-none">person_add</span>
                                 <input type="text" wire:model.live.debounce.300ms="customerSearch"
                                     x-on:focus="showResults = true" x-on:click.outside="showResults = false"
-                                    placeholder="Pelanggan (opsional)..."
+                                    placeholder="Customer (optional)..."
                                     class="w-full h-8 pl-9 pr-3 text-xs bg-white border border-border rounded-lg text-foreground placeholder-muted-foreground focus:border-foreground focus:outline-none transition-colors" />
                             </div>
 
@@ -70,7 +70,7 @@
                                             <span class="text-[11px] text-muted-foreground font-mono">{{ $c->phone ?? '-' }}</span>
                                         </button>
                                     @empty
-                                        <div class="px-3 py-2 text-xs text-muted-foreground text-center">Pelanggan tidak ditemukan.</div>
+                                        <div class="px-3 py-2 text-xs text-muted-foreground text-center">No customers found.</div>
                                     @endforelse
                                 </div>
                             @endif

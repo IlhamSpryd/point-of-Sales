@@ -31,7 +31,7 @@ class LoyaltyService
 
         // 1. Validasi tenant ID pelanggan jika ada
         if ($customerTenantId !== null && $customerTenantId <= 0) {
-            throw new \RuntimeException('Tenant ID pelanggan tidak valid.');
+            throw new \RuntimeException('Invalid customer tenant ID.');
         }
 
         // 2. Dapatkan authoritative tenant ID dari context server-side atau requireTenantId()
@@ -40,12 +40,12 @@ class LoyaltyService
         }
 
         if ($contextTenantId <= 0) {
-            throw new \RuntimeException('Konteks tenant yang valid wajib tersedia untuk kalkulasi poin loyalitas.');
+            throw new \RuntimeException('A valid tenant context is required for loyalty points calculation.');
         }
 
         // 3. Pastikan customer belongs to the active tenant context (fail-closed jika konflik)
         if ($customerTenantId !== null && $customerTenantId !== $contextTenantId) {
-            throw new \RuntimeException("Konflik isolasi tenant: konteks tenant ({$contextTenantId}) tidak sesuai dengan tenant pelanggan ({$customerTenantId}).");
+            throw new \RuntimeException("Tenant isolation conflict: tenant context ({$contextTenantId}) does not match customer tenant ({$customerTenantId}).");
         }
 
         return $contextTenantId;
@@ -272,7 +272,7 @@ class LoyaltyService
             type: 'reversal',
             pointsDelta: -$reversePoints, // Memotong kembali poin yang sempat diperoleh
             orderId: $orderId,
-            reference: $reason ?: 'Reversal transaksi retur',
+            reference: $reason ?: 'Return transaction reversal',
             actor: $actor,
             idempotencyKey: $idempotencyKey
         );
@@ -293,11 +293,11 @@ class LoyaltyService
     ): array {
         $delta = (int) $deltaPoints;
         if ($delta === 0) {
-            throw new DomainException('Delta poin penyesuaian tidak boleh 0.');
+            throw new DomainException('Adjustment points delta cannot be 0.');
         }
 
         if (! in_array($type, ['adjustment', 'bonus', 'expire', 'reversal'], true)) {
-            throw new DomainException("Tipe penyesuaian poin tidak valid: {$type}");
+            throw new DomainException("Invalid points adjustment type: {$type}");
         }
 
         return $this->recordLoyaltyMutation(
@@ -355,7 +355,7 @@ class LoyaltyService
             $newBalance = $currentBalance + $pointsDelta;
 
             if ($newBalance < 0) {
-                throw new DomainException("Saldo poin loyalitas tidak mencukupi. Saldo saat ini: {$currentBalance}, mutasi: {$pointsDelta}.");
+                throw new DomainException("Insufficient loyalty points balance. Current balance: {$currentBalance}, delta: {$pointsDelta}.");
             }
 
             // 2. Cek idempotency key jika diberikan

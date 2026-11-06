@@ -316,7 +316,7 @@ class WebhookVsReconcileVsVoidRaceTest extends TestCase
             $customService->voidOrder($order, 'Pelanggan ingin membatalkan', (int) $this->cashier->id);
             $this->fail('Harus melempar DomainException karena pembayaran telah diselesaikan di Midtrans.');
         } catch (DomainException $e) {
-            $this->assertStringContainsString('settlement', $e->getMessage());
+            $this->assertStringContainsString('settled', $e->getMessage());
         }
 
         // 4. Verifikasi bahwa order TIDAK di-void, melainkan dipromosikan ke Paid

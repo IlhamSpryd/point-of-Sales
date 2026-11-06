@@ -22,21 +22,21 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
             <div class="flex justify-between flex-1 sm:hidden">
                 @if ($paginator->onFirstPage())
                     <span class="relative inline-flex items-center px-4 py-2 text-xs font-medium text-muted-foreground bg-muted/40 border border-border/60 cursor-not-allowed rounded-lg">
-                        &laquo; Sebelumnya
+                        &laquo; Previous
                     </span>
                 @else
                     <button type="button" wire:click="previousPage('{{ $paginator->getPageName() }}')" wire:loading.attr="disabled" x-on:click="{{ $scrollIntoViewJsSnippet }}" class="relative inline-flex items-center px-4 py-2 text-xs font-medium text-foreground bg-card border border-border rounded-lg hover:bg-secondary transition-colors duration-200 active:scale-[0.98] disabled:opacity-40 shadow-2xs">
-                        &laquo; Sebelumnya
+                        &laquo; Previous
                     </button>
                 @endif
 
                 @if ($paginator->hasMorePages())
                     <button type="button" wire:click="nextPage('{{ $paginator->getPageName() }}')" wire:loading.attr="disabled" x-on:click="{{ $scrollIntoViewJsSnippet }}" class="relative inline-flex items-center px-4 py-2 ml-3 text-xs font-medium text-foreground bg-card border border-border rounded-lg hover:bg-secondary transition-colors duration-200 active:scale-[0.98] disabled:opacity-40 shadow-2xs">
-                        Berikutnya &raquo;
+                        Next &raquo;
                     </button>
                 @else
                     <span class="relative inline-flex items-center px-4 py-2 ml-3 text-xs font-medium text-muted-foreground bg-muted/40 border border-border/60 cursor-not-allowed rounded-lg">
-                        Berikutnya &raquo;
+                        Next &raquo;
                     </span>
                 @endif
             </div>
@@ -45,13 +45,13 @@ $scrollIntoViewJsSnippet = ($scrollTo !== false)
             <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
                 <div>
                     <p class="text-xs text-muted-foreground font-medium">
-                        Menampilkan
+                        Showing
                         <span class="font-semibold text-foreground">{{ $paginator->firstItem() ?? 0 }}</span>
-                        -
+                        to
                         <span class="font-semibold text-foreground">{{ $paginator->lastItem() ?? 0 }}</span>
-                        dari
+                        of
                         <span class="font-semibold text-foreground">{{ $paginator->total() }}</span>
-                        data
+                        results
                     </p>
                 </div>
 

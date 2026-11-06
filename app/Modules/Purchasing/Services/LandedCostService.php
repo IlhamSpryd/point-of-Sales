@@ -46,7 +46,7 @@ class LandedCostService
             || (bool) $actor->role?->is_admin;
 
         if (! $hasPermission) {
-            throw new DomainException('Pengguna tidak memiliki izin untuk mengelola biaya pengadaan tambahan (purchasing.landed_cost.manage).');
+            throw new DomainException('User is unauthorized to manage landed costs (purchasing.landed_cost.manage).');
         }
     }
 
@@ -77,13 +77,13 @@ class LandedCostService
 
         $tenantId = app(TenantContext::class)->getTenantId();
         if ($tenantId === null) {
-            throw new DomainException('TenantContext tidak valid.');
+            throw new DomainException('Invalid tenant context.');
         }
 
         $amount = (string) $data['amount'];
         if (bccomp(bc_num($amount), '0.00', 2) <= 0) {
             throw ValidationException::withMessages([
-                'amount' => ['Nominal biaya tambahan harus lebih besar dari 0.'],
+                'amount' => ['Additional cost amount must be greater than zero.'],
             ]);
         }
 
@@ -150,12 +150,12 @@ class LandedCostService
 
         $tenantId = app(TenantContext::class)->getTenantId();
         if ($tenantId === null) {
-            throw new DomainException('TenantContext tidak valid.');
+            throw new DomainException('Invalid tenant context.');
         }
 
         if (empty($grnLineIds)) {
             throw ValidationException::withMessages([
-                'grn_line_ids' => ['Minimal satu baris GRN wajib dipilih untuk alokasi landed cost.'],
+                'grn_line_ids' => ['At least one GRN line must be selected for landed cost allocation.'],
             ]);
         }
 
@@ -168,7 +168,7 @@ class LandedCostService
 
             if ($lockedCost->status !== PurchaseCostStatusEnum::Draft) {
                 throw ValidationException::withMessages([
-                    'status' => ["Hanya biaya tambahan berstatus draft yang dapat dialokasikan. Status saat ini: {$lockedCost->status->value}."],
+                    'status' => ["Only draft landed costs can be allocated. Current status: {$lockedCost->status->value}."],
                 ]);
             }
 
@@ -182,7 +182,7 @@ class LandedCostService
 
             if ($lines->count() !== count($grnLineIds)) {
                 throw ValidationException::withMessages([
-                    'grn_line_ids' => ['Satu atau lebih baris GRN tidak ditemukan atau bukan milik tenant ini.'],
+                    'grn_line_ids' => ['One or more GRN lines were not found or belong to another tenant.'],
                 ]);
             }
 
@@ -195,14 +195,14 @@ class LandedCostService
                 foreach ($lines as $line) {
                     if (! isset($manualAmounts[$line->id])) {
                         throw ValidationException::withMessages([
-                            'manual_amounts' => ["Nominal alokasi manual untuk baris GRN #{$line->id} wajib diisi."],
+                            'manual_amounts' => ["Manual allocation amount for GRN line #{$line->id} is required."],
                         ]);
                     }
 
                     $allocAmt = (string) $manualAmounts[$line->id];
                     if (bccomp(bc_num($allocAmt), '0.00', 2) < 0) {
                         throw ValidationException::withMessages([
-                            'manual_amounts' => ["Nominal alokasi baris GRN #{$line->id} tidak boleh negatif."],
+                            'manual_amounts' => ["Allocation amount for GRN line #{$line->id} cannot be negative."],
                         ]);
                     }
 
@@ -217,7 +217,7 @@ class LandedCostService
                 if (bccomp($manualSum, $totalCost, 2) !== 0) {
                     throw ValidationException::withMessages([
                         'manual_amounts' => [
-                            "Total alokasi manual ({$manualSum}) tidak sama persis dengan total biaya ({$totalCost}). Selisih: ".bcsub($manualSum, $totalCost, 2),
+                            "Total manual allocation ({$manualSum}) does not match total cost ({$totalCost}). Difference: ".bcsub($manualSum, $totalCost, 2),
                         ],
                     ]);
                 }
@@ -246,7 +246,7 @@ class LandedCostService
 
                 if (bccomp($totalWeight, '0.0000', 4) <= 0) {
                     throw ValidationException::withMessages([
-                        'allocation' => ['Total bobot baris GRN untuk alokasi adalah 0.'],
+                        'allocation' => ['Total GRN line allocation weight is zero.'],
                     ]);
                 }
 

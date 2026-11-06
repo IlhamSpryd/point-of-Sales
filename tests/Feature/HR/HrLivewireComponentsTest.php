@@ -10,12 +10,17 @@ use App\Livewire\HR\EmployeeManager;
 use App\Livewire\HR\LeaveManager;
 use App\Livewire\HR\PayrollBatchManager;
 use App\Livewire\HR\WorkforceScheduler;
+use App\Enums\OrderStatus;
+use App\Models\Order;
 use App\Models\Role;
 use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\HR\Enums\AttendanceSourceEnum;
 use App\Modules\HR\Enums\AttendanceStatusEnum;
+use App\Modules\HR\Enums\CommissionBasisTypeEnum;
+use App\Modules\HR\Enums\CommissionRecordStatusEnum;
+use App\Modules\HR\Enums\CommissionRecordTypeEnum;
 use App\Modules\HR\Enums\EmploymentStatusEnum;
 use App\Modules\HR\Enums\EmploymentTypeEnum;
 use App\Modules\HR\Enums\GenderEnum;
@@ -23,6 +28,8 @@ use App\Modules\HR\Enums\LeaveRequestStatusEnum;
 use App\Modules\HR\Enums\MaritalStatusEnum;
 use App\Modules\HR\Enums\ReligionEnum;
 use App\Modules\HR\Models\AttendanceRecord;
+use App\Modules\HR\Models\CommissionRecord;
+use App\Modules\HR\Models\CommissionRule;
 use App\Modules\HR\Models\Department;
 use App\Modules\HR\Models\Employee;
 use App\Modules\HR\Models\JobTitle;
@@ -142,7 +149,7 @@ class HrLivewireComponentsTest extends TestCase
     {
         $lw = Livewire::actingAs($this->ownerUser)->test(EmployeeManager::class);
         $lw->assertOk();
-        $lw->assertSee('Master Karyawan', false);
+        $lw->assertSee('Employee Directory', false);
         $lw->assertSee('Dewi Anggraini');
         $lw->set('employeeNumber', 'EMP-LW-NEW')
             ->set('fullName', 'Ahmad Fadillah')
@@ -193,7 +200,7 @@ class HrLivewireComponentsTest extends TestCase
 
         $lw = Livewire::actingAs($this->ownerUser)->test(WorkforceScheduler::class);
         $lw->assertOk();
-        $lw->assertSee('Jadwal', false);
+        $lw->assertSee('Schedules', false);
         $lw->set('selectedStoreId', $this->store->id)
             ->set('assignEmployeeId', $this->employee->id)
             ->set('assignDate', '2026-11-02')
@@ -223,7 +230,7 @@ class HrLivewireComponentsTest extends TestCase
 
         $lw = Livewire::actingAs($this->ownerUser)->test(AttendanceMonitor::class);
         $lw->assertOk();
-        $lw->assertSee('Pemantauan Absensi', false);
+        $lw->assertSee('Attendance', false);
         $lw->set('editingRecordId', $rec->id)
             ->set('correctedClockIn', '2026-11-01T07:00')
             ->set('correctedClockOut', '2026-11-01T15:00')
@@ -270,7 +277,7 @@ class HrLivewireComponentsTest extends TestCase
 
         $lw = Livewire::actingAs($this->ownerUser)->test(LeaveManager::class);
         $lw->assertOk();
-        $lw->assertSee('Manajemen Cuti', false);
+        $lw->assertSee('Leave Management', false);
         $lw->call('approve', $request->id);
 
         $request->refresh();
@@ -281,14 +288,66 @@ class HrLivewireComponentsTest extends TestCase
     {
         $lw = Livewire::actingAs($this->ownerUser)->test(CommissionManager::class);
         $lw->assertOk();
-        $lw->assertSee('Rekapitulasi Komisi Penjualan Staf');
+        $lw->assertSee('Sales Commission Summary');
+    }
+
+    public function test_commission_manager_renders_successfully_with_approved_records(): void
+    {
+        $rule = CommissionRule::create([
+            'tenant_id' => $this->tenant->id,
+            'store_id' => $this->store->id,
+            'rule_name' => 'Test Rule',
+            'basis_type' => CommissionBasisTypeEnum::FIXED_PER_TRANSACTION,
+            'rate_amount' => 5000.00,
+            'is_active' => true,
+            'valid_from' => '2027-01-01',
+        ]);
+
+        $order = Order::forceCreate([
+            'tenant_id' => $this->tenant->id,
+            'store_id' => $this->store->id,
+            'user_id' => $this->ownerUser->id,
+            'order_code' => 'ORD-COMM-TEST',
+            'idempotency_key' => 'idemp-comm-test-' . uniqid(),
+            'order_date' => now()->toDateString(),
+            'order_amount' => 100000.00,
+            'subtotal_amount' => 100000.00,
+            'order_status' => OrderStatus::Completed,
+        ]);
+
+        $record = CommissionRecord::create([
+            'tenant_id' => $this->tenant->id,
+            'store_id' => $this->store->id,
+            'employee_id' => $this->employee->id,
+            'commission_rule_id' => $rule->id,
+            'order_id' => $order->id,
+            'calculation_basis_amount' => 100000.00,
+            'commission_amount' => 5000.00,
+            'type' => CommissionRecordTypeEnum::STANDARD,
+            'status' => CommissionRecordStatusEnum::APPROVED,
+        ]);
+
+        $lw = Livewire::actingAs($this->ownerUser)->test(CommissionManager::class);
+        $lw->assertOk();
+        $lw->assertSee('Sales Commission Summary');
+        $lw->assertSee('Approved');
+        $lw->assertSee('5.000,00');
+
+        $lw->set('statusFilter', 'APPROVED')
+            ->assertOk()
+            ->assertSee('Approved');
+
+        $response = $this->actingAs($this->ownerUser)->get(route('hr.commissions.index'));
+        $response->assertOk();
+        $response->assertSee('Sales Commission Summary');
+        $response->assertSee('Approved');
     }
 
     public function test_payroll_batch_manager_renders_and_creates_batch(): void
     {
         $lw = Livewire::actingAs($this->ownerUser)->test(PayrollBatchManager::class);
         $lw->assertOk();
-        $lw->assertSee('Penggajian Karyawan (Payroll Engine)');
+        $lw->assertSee('Employee Payroll (Payroll Engine)');
         $lw->set('periodStartDate', '2026-11-01')
             ->set('periodEndDate', '2026-11-30')
             ->set('cutoffDate', '2026-11-25')

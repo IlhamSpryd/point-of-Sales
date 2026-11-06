@@ -73,7 +73,7 @@ class SupplierInvoiceMatchingService
 
         if ($rawInvoiceNumber === '') {
             throw ValidationException::withMessages([
-                'supplier_invoice_number' => ['Nomor faktur pemasok wajib diisi.'],
+                'supplier_invoice_number' => ['Supplier invoice number is required.'],
             ]);
         }
 
@@ -91,7 +91,7 @@ class SupplierInvoiceMatchingService
         if ($duplicate) {
             throw ValidationException::withMessages([
                 'supplier_invoice_number' => [
-                    "Nomor faktur pemasok '{$rawInvoiceNumber}' (normalisasi: {$normalizedNumber}) sudah pernah dicatat untuk pemasok ini.",
+                    "Supplier invoice number '{$rawInvoiceNumber}' (normalized: {$normalizedNumber}) has already been recorded for this supplier.",
                 ],
             ]);
         }
@@ -103,13 +103,13 @@ class SupplierInvoiceMatchingService
 
         if (! $supplier->isActive()) {
             throw ValidationException::withMessages([
-                'supplier_id' => ["Pemasok '{$supplier->name}' tidak aktif."],
+                'supplier_id' => ["Supplier '{$supplier->name}' is inactive."],
             ]);
         }
 
         if (empty($linesData)) {
             throw ValidationException::withMessages([
-                'lines' => ['Minimal harus ada 1 baris item tagihan pada faktur pemasok.'],
+                'lines' => ['At least 1 billed line item is required on supplier invoice.'],
             ]);
         }
 
@@ -157,13 +157,13 @@ class SupplierInvoiceMatchingService
 
                 if (bccomp(bc_num($qty), '0', 4) <= 0) {
                     throw ValidationException::withMessages([
-                        "lines.{$index}.invoiced_qty" => ['Kuantitas tagihan harus lebih besar dari 0.'],
+                        "lines.{$index}.invoiced_qty" => ['Invoiced quantity must be greater than 0.'],
                     ]);
                 }
 
                 if (bccomp(bc_num($price), '0', 4) < 0) {
                     throw ValidationException::withMessages([
-                        "lines.{$index}.unit_price" => ['Harga satuan tidak boleh negatif.'],
+                        "lines.{$index}.unit_price" => ['Unit price cannot be negative.'],
                     ]);
                 }
 
@@ -219,7 +219,7 @@ class SupplierInvoiceMatchingService
                 userId: $actor->id,
                 subjectType: SupplierInvoice::class,
                 subjectId: $invoice->id,
-                description: "Faktur pemasok #{$invoice->internal_invoice_number} ({$invoice->supplier_invoice_number}) dicatat.",
+                description: "Supplier invoice #{$invoice->internal_invoice_number} ({$invoice->supplier_invoice_number}) recorded.",
                 metadata: [
                     'supplier_id' => $supplierId,
                     'total_amount' => $totalAmount,
@@ -247,7 +247,7 @@ class SupplierInvoiceMatchingService
         User $actor
     ): SupplierInvoice {
         if ($invoice->isApprovedPayable() || $invoice->isCancelled()) {
-            throw new DomainException("Faktur dengan status {$invoice->status->value} tidak dapat dicocokkan ulang.");
+            throw new DomainException("Invoice with status {$invoice->status->value} cannot be re-matched.");
         }
 
         $tenantId = (int) $invoice->tenant_id;
@@ -281,7 +281,7 @@ class SupplierInvoiceMatchingService
                 $invLine = $invLines->get($invLineId);
                 if (! $invLine) {
                     throw ValidationException::withMessages([
-                        'matches' => ["Baris faktur #{$invLineId} tidak valid."],
+                        'matches' => ["Invoice line #{$invLineId} is invalid."],
                     ]);
                 }
 
@@ -365,7 +365,7 @@ class SupplierInvoiceMatchingService
             if ($hasAnyVariance) {
                 $lockedInvoice->status = SupplierInvoiceStatusEnum::VarianceHold;
                 $lockedInvoice->matching_status = InvoiceMatchingStatusEnum::VarianceDetected;
-                $lockedInvoice->hold_reason = 'Terdeteksi selisih kuantitas atau harga melebihi batas toleransi pada 3-Way Match.';
+                $lockedInvoice->hold_reason = 'Quantity or price variance exceeds allowable tolerance threshold on 3-Way Match.';
             } else {
                 $lockedInvoice->status = SupplierInvoiceStatusEnum::Submitted;
                 $lockedInvoice->matching_status = InvoiceMatchingStatusEnum::Matched;
@@ -379,7 +379,7 @@ class SupplierInvoiceMatchingService
                 userId: $actor->id,
                 subjectType: SupplierInvoice::class,
                 subjectId: $lockedInvoice->id,
-                description: "Rekonsiliasi 3-Way Match selesai untuk faktur #{$lockedInvoice->internal_invoice_number} (Status: {$lockedInvoice->status->value}).",
+                description: "3-Way Match reconciliation completed for invoice #{$lockedInvoice->internal_invoice_number} (Status: {$lockedInvoice->status->value}).",
                 metadata: [
                     'matching_status' => $lockedInvoice->matching_status->value,
                     'has_variance' => $hasAnyVariance,
@@ -400,12 +400,12 @@ class SupplierInvoiceMatchingService
         string $approvalNotes
     ): SupplierInvoice {
         if (! $invoice->isVarianceHold()) {
-            throw new DomainException("Faktur #{$invoice->internal_invoice_number} tidak berada dalam status Ditahan (Variance Hold).");
+            throw new DomainException("Invoice #{$invoice->internal_invoice_number} is not in Variance Hold status.");
         }
 
         if (trim($approvalNotes) === '') {
             throw ValidationException::withMessages([
-                'notes' => ['Catatan justifikasi persetujuan selisih varians wajib diisi.'],
+                'notes' => ['Variance approval justification notes are required.'],
             ]);
         }
 
@@ -438,7 +438,7 @@ class SupplierInvoiceMatchingService
                 userId: $actor->id,
                 subjectType: SupplierInvoice::class,
                 subjectId: $lockedInvoice->id,
-                description: "Selisih varians pada faktur #{$lockedInvoice->internal_invoice_number} disetujui oleh {$actor->name}.",
+                description: "Variance on invoice #{$lockedInvoice->internal_invoice_number} approved by {$actor->name}.",
                 metadata: ['approval_notes' => $approvalNotes]
             );
 
@@ -456,15 +456,15 @@ class SupplierInvoiceMatchingService
     public function approvePayable(SupplierInvoice $invoice, User $actor): SupplierInvoice
     {
         if ($invoice->isApprovedPayable()) {
-            throw new DomainException("Faktur #{$invoice->internal_invoice_number} sudah berstatus Disetujui Siap-Bayar (Approved Payable).");
+            throw new DomainException("Invoice #{$invoice->internal_invoice_number} is already in Approved Payable status.");
         }
 
         if ($invoice->isVarianceHold()) {
-            throw new DomainException('Faktur tertahan selisih (Variance Hold) tidak dapat disetujui menjadi kewajiban siap bayar sebelum variansnya disetujui.');
+            throw new DomainException('Invoices on Variance Hold cannot be approved to payable until variance is approved.');
         }
 
         if ($invoice->isCancelled()) {
-            throw new DomainException('Faktur yang telah dibatalkan tidak dapat disetujui.');
+            throw new DomainException('Cancelled invoices cannot be approved.');
         }
 
         $tenantId = (int) $invoice->tenant_id;
@@ -584,7 +584,7 @@ class SupplierInvoiceMatchingService
                 userId: $actor->id,
                 subjectType: SupplierInvoice::class,
                 subjectId: $lockedInvoice->id,
-                description: "Faktur pemasok #{$lockedInvoice->internal_invoice_number} disetujui menjadi kewajiban siap bayar (Approved Payable). Kontrak AP outbox telah diterbitkan ke M7.",
+                description: "Supplier invoice #{$lockedInvoice->internal_invoice_number} approved as payable (Approved Payable). AP outbox contract published to M7.",
                 metadata: [
                     'total_amount' => $lockedInvoice->total_amount,
                     'po_id' => $po?->id,
@@ -602,11 +602,11 @@ class SupplierInvoiceMatchingService
     public function cancelSupplierInvoice(SupplierInvoice $invoice, User $actor, string $reason): SupplierInvoice
     {
         if ($invoice->isApprovedPayable()) {
-            throw new DomainException('Faktur yang telah disetujui menjadi kewajiban siap bayar tidak dapat dibatalkan secara langsung.');
+            throw new DomainException('Invoices approved as payable cannot be cancelled directly.');
         }
 
         $invoice->status = SupplierInvoiceStatusEnum::Cancelled;
-        $invoice->notes = ($invoice->notes ? $invoice->notes."\n" : '')."Dibatalkan oleh {$actor->name}: {$reason}";
+        $invoice->notes = ($invoice->notes ? $invoice->notes."\n" : '')."Cancelled by {$actor->name}: {$reason}";
         $invoice->save();
 
         $this->auditTrailService->log(
@@ -615,7 +615,7 @@ class SupplierInvoiceMatchingService
             userId: $actor->id,
             subjectType: SupplierInvoice::class,
             subjectId: $invoice->id,
-            description: "Faktur #{$invoice->internal_invoice_number} dibatalkan.",
+            description: "Invoice #{$invoice->internal_invoice_number} cancelled.",
             metadata: ['reason' => $reason]
         );
 

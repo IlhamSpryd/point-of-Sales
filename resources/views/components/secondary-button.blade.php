@@ -1,5 +1,5 @@
 @props(['disabled' => false])
 
-<x-button variant="secondary" :disabled="$disabled" type="button" {{ $attributes }}>
+<x-ui.button variant="secondary" :disabled="$disabled" type="button" {{ $attributes }}>
     {{ $slot }}
-</x-button>
+</x-ui.button>

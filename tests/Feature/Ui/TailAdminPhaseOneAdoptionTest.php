@@ -36,7 +36,7 @@ class TailAdminPhaseOneAdoptionTest extends TestCase
         $this->assertStringContainsString('+12.5%', $html);
         $this->assertStringContainsString('trending_up', $html);
         $this->assertStringContainsString('dibandingkan bulan lalu', $html);
-        $this->assertStringContainsString('bg-secondary', $html);
+        $this->assertStringContainsString('bg-muted', $html);
         $this->assertStringContainsString('numeric', $html);
     }
 
@@ -60,7 +60,7 @@ class TailAdminPhaseOneAdoptionTest extends TestCase
         $this->assertStringContainsString('-4.8%', $html);
         $this->assertStringContainsString('trending_down', $html);
         $this->assertStringContainsString('vs minggu lalu', $html);
-        $this->assertStringContainsString('bg-secondary', $html);   // icon holder: monochrome per P2
+        $this->assertStringContainsString('bg-muted', $html);   // icon holder: monochrome per P2
         $this->assertStringContainsString('bg-destructive-muted', $html);
     }
 
@@ -115,7 +115,7 @@ class TailAdminPhaseOneAdoptionTest extends TestCase
         $this->assertStringContainsString('command-open', $html);
         $this->assertStringContainsString('search', $html);
         $this->assertStringContainsString('⌘', $html);
-        $this->assertStringContainsString('Cari menu &amp; fitur…', $html);
+        $this->assertStringContainsString('Search navigation &amp; features…', $html);
     }
 
     public function test_notification_dropdown_renders_popover_tabs_and_bell(): void
@@ -123,9 +123,9 @@ class TailAdminPhaseOneAdoptionTest extends TestCase
         $html = Blade::render('<x-erp.notification-dropdown />');
 
         $this->assertStringContainsString('notifications', $html);
-        $this->assertStringContainsString('Notifikasi', $html);
-        $this->assertStringContainsString('Belum Dibaca', $html);
-        $this->assertStringContainsString('Tandai semua dibaca', $html);
+        $this->assertStringContainsString('Notifications', $html);
+        $this->assertStringContainsString('Unread', $html);
+        $this->assertStringContainsString('Mark all as read', $html);
     }
 
     public function test_header_user_dropdown_renders_user_menu_and_actions(): void
@@ -177,10 +177,10 @@ class TailAdminPhaseOneAdoptionTest extends TestCase
 
         // Verify TailAdmin Header Search trigger is present
         $response->assertSee('command-open', false);
-        $response->assertSee('Cari menu &amp; fitur…', false);
+        $response->assertSee('Search navigation &amp; features…', false);
 
         // Verify TailAdmin Notification Dropdown is present
-        $response->assertSee('Notifikasi', false);
+        $response->assertSee('Notifications', false);
         $response->assertSee('notifications', false);
     }
 }

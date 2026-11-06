@@ -6,9 +6,9 @@
         open: false,
         activeTab: 'all',
         notifications: [
-            { id: 1, title: 'Shift Kasir Aktif', desc: 'Shift kasir berjalan normal pada terminal 01', time: '10 mnt lalu', icon: 'point_of_sale', variant: 'emerald', unread: true },
-            { id: 2, title: 'Sinkronisasi Cloud', desc: 'Pembaruan data transaksi berhasil disimpan', time: '35 mnt lalu', icon: 'cloud_done', variant: 'blue', unread: true },
-            { id: 3, title: 'Stok Bahan Baku Aman', desc: 'Pemeriksaan otomatis level stok persediaan selesai', time: '2 jam lalu', icon: 'inventory_2', variant: 'amber', unread: false }
+            { id: 1, title: 'Active Cashier Shift', desc: 'Cashier shift operating normally on Terminal 01', time: '10m ago', icon: 'point_of_sale', variant: 'emerald', unread: true },
+            { id: 2, title: 'Cloud Synchronization', desc: 'Transaction batch synchronized successfully', time: '35m ago', icon: 'cloud_done', variant: 'blue', unread: true },
+            { id: 3, title: 'Inventory Levels Verified', desc: 'Automated stock-on-hand audit completed', time: '2h ago', icon: 'inventory_2', variant: 'amber', unread: false }
         ],
         markAllRead() {
             this.notifications.forEach(n => n.unread = false);
@@ -31,7 +31,7 @@
         @click="open = !open"
         :aria-expanded="open.toString()"
         aria-haspopup="true"
-        aria-label="Notifikasi sistem"
+        aria-label="System notifications"
         class="relative w-8 h-8 flex items-center justify-center rounded-lg text-shell-foreground bg-shell-accent hover:bg-shell-border hover:text-shell-foreground-active border border-shell-border active:scale-95 transition-all cursor-pointer">
         <span class="material-symbols-rounded text-[18px]" aria-hidden="true">notifications</span>
 
@@ -60,15 +60,15 @@
         {{-- Popover Header --}}
         <div class="px-4 py-3 border-b border-shell-border flex items-center justify-between">
             <div class="flex items-center gap-2">
-                <span class="text-xs font-semibold text-shell-foreground-active">Notifikasi</span>
+                <span class="text-xs font-semibold text-shell-foreground-active">Notifications</span>
                 <template x-if="unreadTotal > 0">
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-destructive-muted text-destructive border border-destructive-border" x-text="unreadTotal + ' Baru'"></span>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-destructive-muted text-destructive border border-destructive-border" x-text="unreadTotal + ' New'"></span>
                 </template>
             </div>
             <button type="button"
                 @click="markAllRead()"
                 class="text-[11px] font-medium text-shell-foreground hover:text-shell-foreground-active transition-colors cursor-pointer">
-                Tandai semua dibaca
+                Mark all as read
             </button>
         </div>
 
@@ -78,13 +78,13 @@
                 @click="activeTab = 'all'"
                 :class="activeTab === 'all' ? 'bg-shell-accent text-shell-foreground-active font-semibold' : 'text-shell-foreground hover:text-shell-foreground-active'"
                 class="px-2.5 py-1 rounded-md text-[11px] transition-all cursor-pointer">
-                Semua
+                All
             </button>
             <button type="button"
                 @click="activeTab = 'unread'"
                 :class="activeTab === 'unread' ? 'bg-shell-accent text-shell-foreground-active font-semibold' : 'text-shell-foreground hover:text-shell-foreground-active'"
                 class="px-2.5 py-1 rounded-md text-[11px] transition-all cursor-pointer flex items-center gap-1.5">
-                <span>Belum Dibaca</span>
+                <span>Unread</span>
                 <template x-if="unreadTotal > 0">
                     <span class="w-1.5 h-1.5 rounded-full bg-destructive"></span>
                 </template>
@@ -126,7 +126,7 @@
             <template x-if="filtered.length === 0">
                 <div class="py-8 px-4 text-center">
                     <span class="material-symbols-rounded text-2xl text-shell-border">notifications_off</span>
-                    <p class="text-xs text-shell-foreground mt-1.5 font-medium">Tidak ada notifikasi baru</p>
+                    <p class="text-xs text-shell-foreground mt-1.5 font-medium">No new notifications</p>
                 </div>
             </template>
         </div>
@@ -137,7 +137,7 @@
                 <a href="{{ route('activity-logs.index') }}" wire:navigate
                     @click="open = false"
                     class="block py-1 text-[11px] font-medium text-shell-foreground hover:text-shell-foreground-active transition-colors">
-                    Lihat Semua Riwayat Aktivitas &rarr;
+                    View Complete Activity Log &rarr;
                 </a>
             </div>
         @endif

@@ -33,7 +33,7 @@
 
         <div class="card-surface bg-card border border-border rounded-xl p-4 shadow-xs">
             <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground block">
-                2. Penerimaan Barang (GRN)
+                2. Goods Received (GRN)
             </span>
             <div class="text-lg font-bold text-foreground mt-1 truncate">
                 {{ $grnNumber }}
@@ -46,7 +46,7 @@
         <div class="card-surface bg-card border rounded-xl p-4 shadow-xs {{ $isMatched ? 'border-success-border bg-success-muted/20' : 'border-destructive-border bg-destructive-muted/20' }}">
             <div class="flex items-center justify-between">
                 <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                    3. Faktur Tagihan (AP)
+                    3. Supplier Invoice (AP)
                 </span>
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border {{ $isMatched ? 'bg-success-muted text-success border-success-border' : 'bg-destructive-muted text-destructive border-destructive-border' }}">
                     <span class="material-symbols-rounded text-[13px]">{{ $isMatched ? 'check_circle' : 'warning' }}</span>
@@ -66,11 +66,11 @@
     <div class="card-surface bg-card border border-border rounded-xl overflow-hidden shadow-xs">
         <div class="px-5 py-3.5 border-b border-border bg-muted flex items-center justify-between">
             <h4 class="text-xs font-bold uppercase tracking-wider text-foreground">
-                Rekonsiliasi Baris Barang (3-Way Matching Line Items)
+                3-Way Line Item Matching
             </h4>
             @if (!$isMatched)
                 <span class="text-xs font-semibold text-destructive numeric font-mono">
-                    Selisih: Rp {{ number_format(abs($variance), 0, ',', '.') }}
+                    Variance: Rp {{ number_format(abs($variance), 0, ',', '.') }}
                 </span>
             @endif
         </div>
@@ -79,12 +79,12 @@
             <table class="w-full text-left text-xs">
                 <thead class="border-b border-border bg-muted text-muted-foreground uppercase font-bold text-[10px] tracking-wider">
                     <tr>
-                        <th class="px-4 py-3">Item / Bahan Baku</th>
-                        <th class="px-3 py-3 text-right">Qty PO</th>
-                        <th class="px-3 py-3 text-right">Qty GRN</th>
-                        <th class="px-3 py-3 text-right">Qty Faktur</th>
-                        <th class="px-3 py-3 text-right">Harga PO</th>
-                        <th class="px-3 py-3 text-right">Harga Faktur</th>
+                        <th class="px-4 py-3">Item / Raw Material</th>
+                        <th class="px-3 py-3 text-right">PO Qty</th>
+                        <th class="px-3 py-3 text-right">GRN Qty</th>
+                        <th class="px-3 py-3 text-right">Invoice Qty</th>
+                        <th class="px-3 py-3 text-right">PO Unit Price</th>
+                        <th class="px-3 py-3 text-right">Invoice Unit Price</th>
                         <th class="px-4 py-3 text-center">Status</th>
                     </tr>
                 </thead>
@@ -126,7 +126,7 @@
                                 @else
                                     <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-destructive-muted text-destructive border border-destructive-border">
                                         <span class="material-symbols-rounded text-xs">close</span>
-                                        <span>Selisih</span>
+                                        <span>Variance</span>
                                     </span>
                                 @endif
                             </td>
@@ -134,7 +134,7 @@
                     @empty
                         <tr>
                             <td colspan="7" class="px-4 py-8 text-center text-muted-foreground">
-                                Tidak ada rincian baris untuk dicocokkan.
+                                No line items available for matching.
                             </td>
                         </tr>
                     @endforelse

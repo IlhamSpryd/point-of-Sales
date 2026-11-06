@@ -433,7 +433,7 @@ class AccountsReceivableIntegrationTest extends TestCase
         $this->assertNotNull($secondException, 'Pembayaran kedua yang bersaing harus ditolak.');
         $this->assertInstanceOf(DomainException::class, $secondException);
         // Faktur sudah berstatus PAID sehingga tidak dapat menerima alokasi
-        $this->assertStringContainsString('tidak dapat menerima alokasi', $secondException->getMessage());
+        $this->assertStringContainsString('cannot receive payment allocation', $secondException->getMessage());
 
         $invoice->refresh();
         $this->assertSame(CustomerInvoiceStatusEnum::PAID, $invoice->status);

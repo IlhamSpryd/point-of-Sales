@@ -79,3 +79,9 @@ Schedule::command('finance:process-outbox')
     ->withoutOverlapping(10)
     ->onOneServer()
     ->runInBackground();
+
+// TR-008: Pemeliharaan partisi bulanan bergulir otomatis pada tanggal 25 setiap bulan
+Schedule::command('database:create-monthly-partitions')
+    ->monthlyOn(25, '00:00')
+    ->withoutOverlapping(30)
+    ->onOneServer();

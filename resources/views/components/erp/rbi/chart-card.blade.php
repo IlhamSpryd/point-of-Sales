@@ -1,8 +1,8 @@
 @props([
     'title' => '',
     'subtitle' => null,
-    'periods' => ['Hari Ini', '7 Hari', 'Bulan Ini', 'Tahun'],
-    'activePeriod' => 'Bulan Ini',
+    'periods' => ['Today', '7 Days', 'This Month', 'This Year'],
+    'activePeriod' => 'This Month',
     'legends' => [],
 ])
 

@@ -49,7 +49,7 @@
     };
 
     // Icon holder is deliberately monochrome (P2: no tinted icon wells).
-    $iconClasses = 'bg-secondary text-foreground border-border';
+    $iconClasses = 'bg-muted text-muted-foreground border-border';
 @endphp
 
 <div data-gsap="kpi-card" {{ $attributes->twMerge('card-surface bg-card border border-border rounded-xl p-5 flex flex-col justify-between gap-3 shadow-xs hover:border-border-strong hover:shadow-sm transition-all duration-200') }}>

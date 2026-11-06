@@ -3,16 +3,16 @@
     <div class="flex flex-wrap items-center justify-between gap-4">
         <div class="flex flex-col gap-0.5">
             <div class="flex items-center gap-2.5">
-                <h1 class="font-headline-lg text-[22px] leading-7 font-semibold text-foreground tracking-tight">POS / Kasir</h1>
+                <h1 class="font-headline-lg text-[22px] leading-7 font-semibold text-foreground tracking-tight">POS Terminal</h1>
                 @if ($this->activeShift && $this->activeShift->status === 'open')
-                    <a href="{{ route('shifts.index') }}" title="Kelola Shift Kasir"
+                    <a href="{{ route('shifts.index') }}" title="Manage Cashier Shift"
                         class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-medium border border-emerald-200 hover:bg-emerald-100 transition-colors">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                         <span class="font-mono">Shift #{{ $this->activeShift->id }}</span>
                     </a>
                 @endif
             </div>
-            <p class="font-body-sm text-[13px] leading-5 text-muted-foreground">Kelola pesanan dan transaksi penjualan cepat.</p>
+            <p class="font-body-sm text-[13px] leading-5 text-muted-foreground">Manage orders and process point-of-sale transactions.</p>
         </div>
 
         <div class="flex flex-wrap items-center gap-3">
@@ -38,13 +38,29 @@
                 </span>
             </div>
 
-            <!-- Hold Pesanan & Table Selector -->
+            <!-- Offline / Online Status Pill (DEC-006 / TR-003) -->
+            <div x-data="{ online: navigator.onLine, pendingCount: 0 }"
+                 x-init="
+                     window.addEventListener('pos-connectivity-changed', (e) => { online = e.detail.online; });
+                     window.addEventListener('offline-queue-updated', (e) => { pendingCount = e.detail.count; });
+                     if (window.ApeironOfflinePos) { window.ApeironOfflinePos.getPendingCount().then(c => pendingCount = c); }
+                 "
+                 class="flex items-center gap-1.5 px-3 h-10 border rounded-lg text-xs font-medium transition-all"
+                 :class="online ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-amber-50 text-amber-700 border-amber-300 animate-pulse'">
+                <span class="w-2 h-2 rounded-full" :class="online ? 'bg-emerald-500' : 'bg-amber-500'"></span>
+                <span x-text="online ? 'Online' : 'Offline Mode'"></span>
+                <template x-if="pendingCount > 0">
+                    <span class="ml-1 px-1.5 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold" x-text="pendingCount + ' antrean'"></span>
+                </template>
+            </div>
+
+            <!-- Parked Orders & Table Selector -->
             <div class="flex items-center gap-2">
                 <button type="button" wire:click="$set('isParkedListOpen', true)"
                     class="flex items-center gap-1.5 px-3 h-10 rounded-lg bg-white border border-border hover:bg-muted transition-colors text-foreground font-label-md text-[13px] font-medium shadow-sm"
-                    title="Daftar Pesanan Ditahan (Hold Antrean F9)">
+                    title="Parked Orders List (F9)">
                     <span class="material-symbols-rounded text-[17px] text-muted-foreground">pause_circle</span>
-                    <span>Hold Pesanan</span>
+                    <span>Parked Orders</span>
                     <span class="px-1.5 py-0.5 rounded bg-primary text-white text-[10px] font-bold font-mono">{{ $this->parkedCarts->count() }}</span>
                 </button>
 
@@ -52,20 +68,20 @@
                     <div class="relative">
                         <select wire:model.live="tableId"
                             class="h-10 pl-9 pr-8 bg-white border border-border hover:bg-muted transition-colors text-foreground font-label-md text-[13px] font-medium rounded-lg shadow-sm appearance-none cursor-pointer focus:outline-none focus:border-foreground">
-                            <option value="">-- Daftar Meja --</option>
+                            <option value="">-- Select Table --</option>
                             @foreach ($this->activeTables as $table)
                                 @php
                                     $isAvailable = in_array($table->operational_status, ['available', 'reserved']);
                                     $statusLabel = match($table->operational_status) {
-                                        'occupied'   => ' (Terisi)',
-                                        'cleaning'   => ' (Pembersihan)',
-                                        'reserved'   => ' (Dipesan)',
+                                        'occupied'   => ' (Occupied)',
+                                        'cleaning'   => ' (Cleaning)',
+                                        'reserved'   => ' (Reserved)',
                                         'available'  => '',
                                         default      => ' (' . ucfirst($table->operational_status) . ')',
                                     };
                                 @endphp
                                 <option value="{{ $table->id }}" @disabled(! $isAvailable)>
-                                    Meja {{ $table->table_name }}{{ $statusLabel }}
+                                    Table {{ $table->table_name }}{{ $statusLabel }}
                                 </option>
                             @endforeach
                         </select>

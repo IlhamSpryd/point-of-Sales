@@ -686,7 +686,7 @@ class Domain1AuditRemediationTest extends TestCase
         ]);
 
         $response->assertSessionHas('error');
-        $this->assertStringContainsString('pembersihan', Session::get('error'));
+        $this->assertStringContainsString('cleaned', Session::get('error'));
 
         // Assert zero orders, items, payments, and stock movements
         $this->assertSame(0, Order::where('table_id', $table->id)->count());
@@ -775,7 +775,7 @@ class Domain1AuditRemediationTest extends TestCase
         ]);
 
         $response->assertSessionHas('error');
-        $this->assertStringContainsString('direservasi', Session::get('error'));
+        $this->assertStringContainsString('reserved', Session::get('error'));
 
         $this->assertSame(0, Order::where('table_id', $table->id)->count());
         $this->assertSame(0, OrderItem::count());
@@ -882,7 +882,7 @@ class Domain1AuditRemediationTest extends TestCase
         ]);
 
         $response->assertSessionHas('error');
-        $this->assertStringContainsString('pembersihan', Session::get('error'));
+        $this->assertStringContainsString('cleaned', Session::get('error'));
         $this->assertSame(0, Order::where('table_id', $table->id)->count());
         $this->assertSame(0, DB::table('stock_movements')->count());
     }
@@ -924,7 +924,7 @@ class Domain1AuditRemediationTest extends TestCase
             'payment_method' => 'cash',
         ]);
 
-        $response->assertSessionHas('error', 'Pesanan Anda sedang diproses. Mohon tunggu.');
+        $response->assertSessionHas('error', 'Your order is currently processing. Please wait.');
         $this->assertSame(0, Order::where('table_id', $table->id)->count());
 
         $quotaLock->release();

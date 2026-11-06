@@ -54,7 +54,7 @@ class CashierPinService
     public function setPin(User $user, string $pin): void
     {
         if (! $this->validateFormat($pin)) {
-            throw new InvalidArgumentException('PIN Kasir harus berupa 4-6 digit angka numerik.');
+            throw new InvalidArgumentException('Cashier PIN must be 4 to 6 numeric digits.');
         }
 
         // Catatan: Model User memiliki cast 'pin_hash' => 'hashed',
@@ -71,7 +71,7 @@ class CashierPinService
             userId: (int) $user->id,
             subjectType: User::class,
             subjectId: (int) $user->id,
-            description: "PIN Kasir untuk user #{$user->id} ({$user->name}) telah disetel/diperbarui."
+            description: "Cashier PIN for user #{$user->id} ({$user->name}) was updated."
         );
     }
 
@@ -94,7 +94,7 @@ class CashierPinService
             $minutes = (int) ceil($seconds / 60);
 
             throw ValidationException::withMessages([
-                'pin' => "PIN Kasir terkunci karena terlalu banyak percobaan salah. Silakan coba lagi dalam {$minutes} menit.",
+                'pin' => "Cashier PIN is locked due to too many failed attempts. Please try again in {$minutes} minutes.",
             ]);
         }
 
@@ -115,7 +115,7 @@ class CashierPinService
                     storeId: $shiftAudit['store_id'] ?? null,
                     subjectType: User::class,
                     subjectId: (int) $user->id,
-                    description: "PIN Kasir untuk user #{$user->id} ({$user->name}) terkunci selama 15 menit setelah 5 percobaan salah.".(isset($shiftAudit['shift_id']) ? " (Shift #{$shiftAudit['shift_id']})" : ''),
+                    description: "Cashier PIN for user #{$user->id} ({$user->name}) locked for 15 minutes after 5 failed attempts.".(isset($shiftAudit['shift_id']) ? " (Shift #{$shiftAudit['shift_id']})" : ''),
                     metadata: $shiftAudit['metadata'] ?? null
                 );
 
@@ -123,7 +123,7 @@ class CashierPinService
                 $minutes = (int) ceil($seconds / 60);
 
                 throw ValidationException::withMessages([
-                    'pin' => "PIN Kasir terkunci karena terlalu banyak percobaan salah. Silakan coba lagi dalam {$minutes} menit.",
+                    'pin' => "Cashier PIN is locked due to too many failed attempts. Please try again in {$minutes} minutes.",
                 ]);
             }
 
@@ -255,19 +255,19 @@ class CashierPinService
 
         if (! $user) {
             throw ValidationException::withMessages([
-                'pin' => 'Pengguna supervisor tidak ditemukan atau tidak terafiliasi dengan tenant ini.',
+                'pin' => 'Supervisor user not found or not affiliated with this tenant.',
             ]);
         }
 
         if (! $this->hasPin($user)) {
             throw ValidationException::withMessages([
-                'pin' => 'Supervisor belum memiliki PIN aktif.',
+                'pin' => 'Supervisor does not have an active PIN configured.',
             ]);
         }
 
         if (! $this->verifyPin($user, $pin)) {
             throw ValidationException::withMessages([
-                'pin' => 'PIN supervisor tidak valid.',
+                'pin' => 'Invalid supervisor PIN.',
             ]);
         }
 

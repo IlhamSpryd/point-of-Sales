@@ -3,7 +3,7 @@
 
     <div class="flex items-center justify-between mb-6" data-gsap="page-enter">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Edit Product <span class="sr-only">Ubah Produk</span></h4>
+            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Edit Product</h4>
             <p class="text-sm font-medium text-muted-foreground mt-1">Update details for product #{{ $product->id }}</p>
         </div>
         <a href="{{ route('products.index') }}" wire:navigate>
@@ -410,10 +410,10 @@
             <!-- Photo Upload -->
             <div>
                 <x-form-label for="product_photo">Product Photo</x-form-label>
-                @if($product->product_photo)
+                @if($product->photo_url)
                     <div class="mb-3">
                         <p class="text-xs text-muted-foreground mb-2">Current Photo:</p>
-                        <img src="{{ asset('storage/' . $product->product_photo) }}" class="h-24 w-24 object-cover rounded-xl border border-border shadow-sm" alt="Existing photo">
+                        <img src="{{ $product->photo_url }}" class="h-24 w-24 object-cover rounded-xl border border-border shadow-sm" alt="Existing photo">
                     </div>
                 @endif
                 <div class="mt-1 flex items-center justify-center px-6 pt-5 pb-6 border-2 border-border border-dashed rounded-xl transition-colors duration-200 hover:border-border-strong bg-muted">
@@ -447,7 +447,7 @@
 
     <!-- Media Gallery Section -->
     <div class="mt-6 bg-white border border-border rounded-xl shadow-sm overflow-hidden p-6">
-        <h5 class="text-base font-bold text-apeiron-ink mb-1">Product Media Gallery <span class="sr-only">Galeri Media Produk</span></h5>
+        <h5 class="text-base font-bold text-apeiron-ink mb-1">Product Media Gallery</h5>
         <p class="text-xs text-muted-foreground mb-4">Manage supplementary photos and visual assets for this product.</p>
 
         @if($product->media->isNotEmpty())
@@ -486,7 +486,7 @@
 
     <!-- Cost History Section -->
     <div class="mt-6 bg-white border border-border rounded-xl shadow-sm overflow-hidden p-6">
-        <h5 class="text-base font-bold text-apeiron-ink mb-1">COGS Change History <span class="sr-only">Riwayat Perubahan Biaya Pokok</span></h5>
+        <h5 class="text-base font-bold text-apeiron-ink mb-1">COGS Change History</h5>
         <p class="text-xs text-muted-foreground mb-4">Audit trail of unit cost adjustments and costing method revisions.</p>
 
         @if($product->costHistories->isNotEmpty())

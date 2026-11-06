@@ -145,9 +145,9 @@ class ApPaymentAllocationConcurrencyTest extends TestCase
         $this->paymentService->submit($payment, $this->creatorUser);
         $this->assertEquals(ApPaymentStatusEnum::PENDING_APPROVAL, $payment->status);
 
-        // 3. User yang sama (bukan admin) dilarang menyetujui (SoD FIN-M7-10)
+        // 3. Same user (non-admin) forbidden from approving (SoD FIN-M7-10)
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('FIN-M7-10: Pembuat draft pembayaran supplier dilarang menyetujui');
+        $this->expectExceptionMessage('FIN-M7-10: Payment draft creator cannot approve');
         $this->paymentService->approve($payment, $this->creatorUser);
     }
 

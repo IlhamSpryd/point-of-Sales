@@ -36,7 +36,7 @@ class OAuthController extends Controller
 
         if ($intent === OAuthService::INTENT_LINK_ACCOUNT && ! Auth::check()) {
             return redirect()->route('login')
-                ->with('error', 'Silakan masuk terlebih dahulu untuk menautkan akun.');
+                ->with('error', 'Please sign in first to link your account.');
         }
 
         $authId = Auth::id();
@@ -76,13 +76,13 @@ class OAuthController extends Controller
         $state = (string) $request->input('state');
         if (empty($state)) {
             return redirect()->route('login')
-                ->with('error', 'Parameter state tidak ditemukan.');
+                ->with('error', 'State parameter not found.');
         }
 
         $cachedState = $this->oauthService->pullState($state);
         if ($cachedState === null) {
             return redirect()->route('login')
-                ->with('error', 'Sesi autentikasi telah kedaluwarsa atau state tidak valid.');
+                ->with('error', 'Authentication session expired or invalid state.');
         }
 
         // 2. Periksa error dari provider
@@ -90,7 +90,7 @@ class OAuthController extends Controller
             $err = $request->input('error_description', $request->input('error'));
 
             return redirect()->route('login')
-                ->with('error', "Autentikasi ditolak oleh provider: {$err}");
+                ->with('error', "Authentication rejected by provider: {$err}");
         }
 
         // 3. Dapatkan ID Token
@@ -106,13 +106,13 @@ class OAuthController extends Controller
                 );
             } catch (\Throwable $e) {
                 return redirect()->route('login')
-                    ->with('error', 'Gagal menukarkan authorization code dengan provider.');
+                    ->with('error', 'Failed to exchange authorization code with provider.');
             }
         }
 
         if (empty($idToken)) {
             return redirect()->route('login')
-                ->with('error', 'ID Token tidak ditemukan dari respons provider.');
+                ->with('error', 'ID token not found in provider response.');
         }
 
         // 4. Verifikasi ID Token RS256, Nonce, Issuer, Audience, Expiration
@@ -120,7 +120,7 @@ class OAuthController extends Controller
             $claims = $this->oauthService->verifyIdToken($provider, $idToken, $cachedState['nonce']);
         } catch (\Throwable $e) {
             return redirect()->route('login')
-                ->with('error', 'Verifikasi token OIDC gagal: '.$e->getMessage());
+                ->with('error', 'OIDC token verification failed: '.$e->getMessage());
         }
 
         // Jika Apple mengirimkan payload 'user' JSON pada login pertama
@@ -157,7 +157,7 @@ class OAuthController extends Controller
         $invitationToken = $cachedState['invitation_token'] ?? null;
         if (! $invitationToken) {
             return redirect()->route('login')
-                ->with('error', 'Token undangan tidak ditemukan.');
+                ->with('error', 'Invitation token not found.');
         }
 
         try {
@@ -169,13 +169,13 @@ class OAuthController extends Controller
             app(TenantContext::class)->setTenantId((int) $user->tenant_id);
 
             return redirect()->route('dashboard')
-                ->with('success', 'Selamat datang! Akun karyawan Anda telah aktif.');
+                ->with('success', 'Welcome! Your employee account is now active.');
         } catch (HttpException $e) {
             return redirect()->route('login')
-                ->with('error', $e->getMessage() ?: 'Gagal memproses aktivasi undangan via '.ucfirst($provider).'.');
+                ->with('error', $e->getMessage() ?: 'Failed to activate invitation via '.ucfirst($provider).'.');
         } catch (\Throwable $e) {
             return redirect()->route('login')
-                ->with('error', 'Gagal memproses aktivasi undangan: '.$e->getMessage());
+                ->with('error', 'Failed to process invitation: '.$e->getMessage());
         }
     }
 
@@ -201,7 +201,7 @@ class OAuthController extends Controller
 
             if ($user === null || $user->trashed() || ($user->status ?? 'active') === 'suspended' || ! $user->is_active) {
                 return redirect()->route('login')
-                    ->with('error', 'Akun Anda tidak aktif atau telah ditangguhkan.');
+                    ->with('error', 'Your account is inactive or has been suspended.');
             }
 
             $identity->update(['last_used_at' => now()]);
@@ -229,18 +229,18 @@ class OAuthController extends Controller
                 tenantId: (int) $existingUser->tenant_id,
                 action: 'oauth_auto_link_blocked',
                 userId: (int) $existingUser->id,
-                description: "Percobaan login {$provider} ditolak karena belum ditautkan ke akun eksisting.",
+                description: "Login attempt via {$provider} rejected because it has not been linked to an existing account.",
                 ipAddress: $request->ip(),
                 userAgent: $request->userAgent()
             );
 
             return redirect()->route('login')
-                ->with('error', 'Akun '.ucfirst($provider).' ini belum ditautkan. Silakan masuk menggunakan email dan password Anda, lalu tautkan akun '.ucfirst($provider).' melalui menu Pengaturan Profil.');
+                ->with('error', 'This '.ucfirst($provider).' account is not linked. Please sign in with your email and password, then link your '.ucfirst($provider).' account in Profile Settings.');
         }
 
         // KASUS 3: Belum tertaut dan email belum ada (Zero Auto-Provisioning Guard [REQ-SEC-20])
         return redirect()->route('login')
-            ->with('error', 'Akun Anda belum terdaftar. Silakan daftar sebagai Owner bisnis baru atau hubungi administrator untuk mendapatkan undangan staf.');
+            ->with('error', 'Your account is not registered. Please register as a new business owner or contact your administrator for a staff invitation.');
     }
 
     /**
@@ -269,7 +269,7 @@ class OAuthController extends Controller
 
         if ($existingUser !== null) {
             return redirect()->route('login')
-                ->with('error', "Email {$claims['email']} sudah terdaftar. Silakan masuk menggunakan password Anda dan tautkan akun ".ucfirst($provider).' di profil.');
+                ->with('error', "Email {$claims['email']} is already registered. Please sign in using your password and link your ".ucfirst($provider).' account in your profile.');
         }
 
         $lockKey = 'lock:identity:email:'.hash('sha256', $claims['email_normalized']);
@@ -277,7 +277,7 @@ class OAuthController extends Controller
 
         if (! $lock->get()) {
             return redirect()->route('login')
-                ->with('status', 'Pendaftaran sedang diproses.');
+                ->with('status', 'Registration is currently processing.');
         }
 
         try {
@@ -359,7 +359,7 @@ class OAuthController extends Controller
 
         if (! $currentUserId || $currentUserId !== $initiatorUserId) {
             return redirect()->route('login')
-                ->with('error', 'Sesi penautan tidak sah. Silakan login terlebih dahulu.');
+                ->with('error', 'Unauthorized linking session. Please sign in first.');
         }
 
         $user = Auth::user();
@@ -372,13 +372,13 @@ class OAuthController extends Controller
 
         if ($existingLink !== null) {
             return redirect()->route('profile.edit')
-                ->with('error', 'Akun '.ucfirst($provider).' ini sudah ditautkan ke akun lain.');
+                ->with('error', 'This '.ucfirst($provider).' account is already linked to another user.');
         }
 
         // 2. Pastikan user belum menautkan provider yang sama
         if ($user->oauthIdentities()->where('provider', $provider)->exists()) {
             return redirect()->route('profile.edit')
-                ->with('error', 'Anda sudah menautkan akun '.ucfirst($provider).'.');
+                ->with('error', 'You have already linked your '.ucfirst($provider).' account.');
         }
 
         // 3. Tautkan identitas
@@ -399,8 +399,8 @@ class OAuthController extends Controller
         EmailOutbox::create([
             'event_type' => 'oauth_account_linked',
             'recipient_email' => $user->email,
-            'subject' => 'Akun '.ucfirst($provider).' Berhasil Ditautkan — Apeiron POS',
-            'body_text' => "Halo {$user->name},\n\nAkun ".ucfirst($provider)." ({$claims['email']}) berhasil ditautkan ke akun Apeiron POS Anda.\n\nJika Anda tidak melakukan penautan ini, segera amankan akun Anda atau hubungi dukungan sistem.\n\nSalam,\nTim Apeiron POS",
+            'subject' => ucfirst($provider).' Account Linked Successfully — Apeiron POS',
+            'body_text' => "Hello {$user->name},\n\nYour ".ucfirst($provider)." account ({$claims['email']}) has been successfully linked to your Apeiron POS account.\n\nIf you did not perform this action, please secure your account immediately or contact support.\n\nRegards,\nApeiron POS Team",
             'tenant_id' => $user->tenant_id,
             'user_id' => $user->id,
             'status' => EmailOutbox::STATUS_PENDING,
@@ -408,7 +408,7 @@ class OAuthController extends Controller
         ]);
 
         return redirect()->route('profile.edit')
-            ->with('success', 'Akun '.ucfirst($provider).' berhasil ditautkan.');
+            ->with('success', 'Your '.ucfirst($provider).' account has been linked successfully.');
     }
 
     /**
@@ -436,7 +436,7 @@ class OAuthController extends Controller
                 description: "Percobaan pelepasan akun OAuth {$provider} diblokir oleh anti-lockout guard (tidak ada kata sandi dan merupakan metode login terakhir).",
             );
 
-            return back()->with('error', 'Tidak dapat melepas tautan akun ini karena merupakan satu-satunya metode login Anda. Silakan tentukan kata sandi terlebih dahulu.');
+            return back()->with('error', 'Cannot unlink this account as it is your only login method. Please set a password first.');
         }
 
         $identity = $user->oauthIdentities()->where('provider', $provider)->first();
@@ -451,6 +451,6 @@ class OAuthController extends Controller
             );
         }
 
-        return back()->with('success', 'Tautan akun '.ucfirst($provider).' berhasil dilepas.');
+        return back()->with('success', 'Your '.ucfirst($provider).' account has been unlinked successfully.');
     }
 }

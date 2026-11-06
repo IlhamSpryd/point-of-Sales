@@ -56,12 +56,12 @@ class UnitOfMeasureController extends Controller
             storeId: app(TenantContext::class)->getStoreId(),
             subjectType: UnitOfMeasure::class,
             subjectId: $uom->id,
-            description: "Satuan Ukur '{$uom->name}' ({$uom->code}) berhasil ditambahkan.",
+            description: "Unit of Measure '{$uom->name}' ({$uom->code}) created successfully.",
             oldValues: null,
             newValues: $uom->only(['code', 'name', 'precision_scale', 'is_active'])
         );
 
-        return redirect()->route('units-of-measure.index')->with('success', 'Satuan ukur berhasil ditambahkan.');
+        return redirect()->route('units-of-measure.index')->with('success', 'Unit of measure created successfully.');
     }
 
     public function update(UpdateUnitOfMeasureRequest $request, UnitOfMeasure $unitOfMeasure): RedirectResponse
@@ -80,12 +80,12 @@ class UnitOfMeasureController extends Controller
             storeId: app(TenantContext::class)->getStoreId(),
             subjectType: UnitOfMeasure::class,
             subjectId: $unitOfMeasure->id,
-            description: "Satuan Ukur '{$unitOfMeasure->name}' berhasil diperbarui.",
+            description: "Unit of Measure '{$unitOfMeasure->name}' updated successfully.",
             oldValues: $oldValues,
             newValues: $unitOfMeasure->only(['code', 'name', 'precision_scale', 'is_active'])
         );
 
-        return redirect()->route('units-of-measure.index')->with('success', 'Satuan ukur berhasil diperbarui.');
+        return redirect()->route('units-of-measure.index')->with('success', 'Unit of measure updated successfully.');
     }
 
     public function destroy(UnitOfMeasure $unitOfMeasure): RedirectResponse
@@ -94,7 +94,7 @@ class UnitOfMeasureController extends Controller
 
         try {
             if ($unitOfMeasure->products()->exists()) {
-                return redirect()->route('units-of-measure.index')->with('error', 'Satuan ukur ini masih digunakan oleh produk lain dan tidak dapat dihapus.');
+                return redirect()->route('units-of-measure.index')->with('error', 'This unit of measure is assigned to products and cannot be deleted.');
             }
 
             $tenantId = app(TenantContext::class)->requireTenantId();
@@ -110,12 +110,12 @@ class UnitOfMeasureController extends Controller
                 storeId: app(TenantContext::class)->getStoreId(),
                 subjectType: UnitOfMeasure::class,
                 subjectId: $uomId,
-                description: "Satuan Ukur '{$uomName}' berhasil dihapus."
+                description: "Unit of Measure '{$uomName}' deleted successfully."
             );
 
-            return redirect()->route('units-of-measure.index')->with('success', 'Satuan ukur berhasil dihapus.');
+            return redirect()->route('units-of-measure.index')->with('success', 'Unit of measure deleted successfully.');
         } catch (QueryException) {
-            return redirect()->route('units-of-measure.index')->with('error', 'Satuan ukur masih terhubung dengan data lain dan tidak dapat dihapus.');
+            return redirect()->route('units-of-measure.index')->with('error', 'This unit of measure is linked to other records and cannot be deleted.');
         }
     }
 }

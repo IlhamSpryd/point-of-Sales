@@ -198,11 +198,11 @@ class PurchaseOrderManager extends Component
             'items.*.ordered_qty' => 'required|numeric|min:0.0001',
             'items.*.unit_price' => 'required|numeric|min:0',
         ], [
-            'storeId.required' => 'Cabang/toko tujuan wajib dipilih.',
-            'supplierId.required' => 'Pemasok wajib dipilih.',
-            'items.min' => 'Minimal 1 item harus dimasukkan.',
-            'items.*.purchasable_id.required' => 'Item produk/bahan wajib dipilih.',
-            'items.*.ordered_qty.min' => 'Kuantitas pesanan harus lebih besar dari 0.',
+            'storeId.required' => 'Destination branch/store is required.',
+            'supplierId.required' => 'Supplier is required.',
+            'items.min' => 'At least 1 item is required.',
+            'items.*.purchasable_id.required' => 'Product/ingredient item is required.',
+            'items.*.ordered_qty.min' => 'Ordered quantity must be greater than 0.',
         ]);
 
         $actor = auth()->user();
@@ -219,12 +219,12 @@ class PurchaseOrderManager extends Component
             $po = $service->createDirectPurchaseOrder($headerData, $this->items, $actor);
 
             $this->showCreateModal = false;
-            session()->flash('message', "Pesanan Pembelian #{$po->po_number} berhasil dibuat sebagai Draf.");
+            session()->flash('message', "Purchase Order #{$po->po_number} created as Draft.");
             $this->viewPo((int) $po->id);
         } catch (ValidationException $e) {
             $this->setErrorBag($e->validator->getMessageBag());
         } catch (\Throwable $e) {
-            session()->flash('error', 'Gagal membuat PO: '.$e->getMessage());
+            session()->flash('error', 'Unable to create PO: '.$e->getMessage());
         }
     }
 
@@ -245,10 +245,10 @@ class PurchaseOrderManager extends Component
 
         try {
             $updated = $service->submitPurchaseOrder($po, auth()->user());
-            session()->flash('message', "PO #{$updated->po_number} berhasil diajukan.");
+            session()->flash('message', "PO #{$updated->po_number} successfully submitted.");
             $this->viewPo($id);
         } catch (\Throwable $e) {
-            session()->flash('error', 'Gagal mengajukan PO: '.$e->getMessage());
+            session()->flash('error', 'Unable to submit PO: '.$e->getMessage());
         }
     }
 
@@ -259,10 +259,10 @@ class PurchaseOrderManager extends Component
 
         try {
             $updated = $service->releasePurchaseOrder($po, auth()->user());
-            session()->flash('message', "PO #{$updated->po_number} berhasil diterbitkan (Issued).");
+            session()->flash('message', "PO #{$updated->po_number} successfully issued.");
             $this->viewPo($id);
         } catch (\Throwable $e) {
-            session()->flash('error', 'Gagal merilis PO: '.$e->getMessage());
+            session()->flash('error', 'Unable to issue PO: '.$e->getMessage());
         }
     }
 
@@ -287,12 +287,12 @@ class PurchaseOrderManager extends Component
         $this->authorize('update', $po);
 
         try {
-            $service->cancelPurchaseOrder($po, auth()->user(), $this->cancelReason ?: 'Dibatalkan oleh pengguna.');
+            $service->cancelPurchaseOrder($po, auth()->user(), $this->cancelReason ?: 'Cancelled by user.');
             $this->showCancelModal = false;
-            session()->flash('message', "PO #{$po->po_number} berhasil dibatalkan.");
+            session()->flash('message', "PO #{$po->po_number} successfully cancelled.");
             $this->viewPo($po->id);
         } catch (\Throwable $e) {
-            session()->flash('error', 'Gagal membatalkan PO: '.$e->getMessage());
+            session()->flash('error', 'Unable to cancel PO: '.$e->getMessage());
         }
     }
 

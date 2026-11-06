@@ -13,9 +13,9 @@ enum AssignmentTypeEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::PRIMARY => 'Cabang Utama (Primary)',
-            self::SECONDARY => 'Cabang Sekunder (Floating/Secondary)',
-            self::TEMPORARY => 'Penugasan Sementara (Temporary)',
+            self::PRIMARY => 'Primary Branch',
+            self::SECONDARY => 'Secondary Branch',
+            self::TEMPORARY => 'Temporary Assignment',
         };
     }
 }

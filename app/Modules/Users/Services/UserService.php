@@ -73,6 +73,71 @@ class UserService
             $user->tenant_id = app(TenantContext::class)->requireTenantId();
             $user->save();
 
+            // Link to existing employee if email matches and not yet linked,
+            // or auto-provision baseline Employee profile to prevent orphaned user accounts
+            $tenantId = (int) $user->tenant_id;
+            $existingEmployee = \App\Modules\HR\Models\Employee::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where(function ($q) use ($user) {
+                    $q->where('email', $user->email)
+                        ->orWhere('user_id', $user->id);
+                })
+                ->first();
+
+            if ($existingEmployee) {
+                if (! $existingEmployee->user_id) {
+                    $existingEmployee->user_id = $user->id;
+                    $existingEmployee->save();
+                }
+            } else {
+                $defaultDept = \App\Modules\HR\Models\Department::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->first();
+                if (! $defaultDept) {
+                    $defaultDept = \App\Modules\HR\Models\Department::create([
+                        'tenant_id' => $tenantId,
+                        'department_code' => 'OPS',
+                        'name' => 'Store Operations',
+                        'description' => 'Default operations department',
+                        'is_active' => true,
+                    ]);
+                }
+
+                $roleName = $user->role ? $user->role->name : 'Staff';
+                $titleCode = strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $roleName) ?: 'STAFF', 0, 16));
+                $jobTitle = \App\Modules\HR\Models\JobTitle::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->where('title_code', $titleCode)
+                    ->first();
+                if (! $jobTitle) {
+                    $jobTitle = \App\Modules\HR\Models\JobTitle::create([
+                        'tenant_id' => $tenantId,
+                        'title_code' => $titleCode,
+                        'name' => $user->role ? ($user->role->display_name ?? $roleName) : 'General Staff',
+                        'department_id' => $defaultDept->id,
+                        'grade_level' => 1,
+                        'is_active' => true,
+                    ]);
+                }
+
+                $empNumber = ! empty($user->employee_id) ? $user->employee_id : \App\Services\EmployeeIdGenerator::next($tenantId);
+
+                \App\Modules\HR\Models\Employee::create([
+                    'tenant_id' => $tenantId,
+                    'user_id' => $user->id,
+                    'employee_number' => $empNumber,
+                    'full_name' => $user->name,
+                    'email' => $user->email,
+                    'phone_number' => $user->phone_number ?: '080000000000',
+                    'gender' => \App\Modules\HR\Enums\GenderEnum::MALE,
+                    'department_id' => $defaultDept->id,
+                    'job_title_id' => $jobTitle->id,
+                    'employment_type' => \App\Modules\HR\Enums\EmploymentTypeEnum::PERMANENT,
+                    'employment_status' => $user->is_active ? \App\Modules\HR\Enums\EmploymentStatusEnum::ACTIVE : \App\Modules\HR\Enums\EmploymentStatusEnum::ARCHIVED,
+                    'hire_date' => $user->join_date ? $user->join_date->toDateString() : now()->toDateString(),
+                ]);
+            }
+
             return $user;
         });
     }

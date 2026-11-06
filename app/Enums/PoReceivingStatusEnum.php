@@ -32,11 +32,6 @@ enum PoReceivingStatusEnum: string
      */
     public function badgeType(): string
     {
-        return match ($this) {
-            self::NotReceived => StatusPalette::variant('draft')->value,
-            self::PartiallyReceived => StatusPalette::variant('partially_received')->value,
-            self::FullyReceived => StatusPalette::variant('received')->value,
-            self::OverReceived => StatusPalette::variant('overstock')->value,
-        };
+        return StatusPalette::variant($this)->value;
     }
 }

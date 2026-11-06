@@ -56,12 +56,12 @@ class BrandController extends Controller
             storeId: app(TenantContext::class)->getStoreId(),
             subjectType: Brand::class,
             subjectId: $brand->id,
-            description: "Merek '{$brand->name}' ({$brand->code}) berhasil ditambahkan.",
+            description: "Brand '{$brand->name}' ({$brand->code}) created successfully.",
             oldValues: null,
             newValues: $brand->only(['code', 'name', 'is_active'])
         );
 
-        return redirect()->route('brands.index')->with('success', 'Merek produk berhasil ditambahkan.');
+        return redirect()->route('brands.index')->with('success', 'Brand created successfully.');
     }
 
     public function update(UpdateBrandRequest $request, Brand $brand): RedirectResponse
@@ -80,12 +80,12 @@ class BrandController extends Controller
             storeId: app(TenantContext::class)->getStoreId(),
             subjectType: Brand::class,
             subjectId: $brand->id,
-            description: "Merek '{$brand->name}' berhasil diperbarui.",
+            description: "Brand '{$brand->name}' updated successfully.",
             oldValues: $oldValues,
             newValues: $brand->only(['code', 'name', 'is_active', 'description'])
         );
 
-        return redirect()->route('brands.index')->with('success', 'Merek produk berhasil diperbarui.');
+        return redirect()->route('brands.index')->with('success', 'Brand updated successfully.');
     }
 
     public function destroy(Brand $brand): RedirectResponse
@@ -94,7 +94,7 @@ class BrandController extends Controller
 
         try {
             if ($brand->products()->exists()) {
-                return redirect()->route('brands.index')->with('error', 'Merek ini masih digunakan oleh produk lain dan tidak dapat dihapus.');
+                return redirect()->route('brands.index')->with('error', 'This brand is assigned to products and cannot be deleted.');
             }
 
             $tenantId = app(TenantContext::class)->requireTenantId();
@@ -110,12 +110,12 @@ class BrandController extends Controller
                 storeId: app(TenantContext::class)->getStoreId(),
                 subjectType: Brand::class,
                 subjectId: $brandId,
-                description: "Merek '{$brandName}' berhasil dihapus."
+                description: "Brand '{$brandName}' deleted successfully."
             );
 
-            return redirect()->route('brands.index')->with('success', 'Merek produk berhasil dihapus.');
+            return redirect()->route('brands.index')->with('success', 'Brand deleted successfully.');
         } catch (QueryException) {
-            return redirect()->route('brands.index')->with('error', 'Merek ini masih terhubung dengan data lain dan tidak dapat dihapus.');
+            return redirect()->route('brands.index')->with('error', 'This brand is linked to other records and cannot be deleted.');
         }
     }
 }

@@ -122,7 +122,7 @@ class DiscountApprovalThresholdTest extends TestCase
 
         // Percobaan konsumsi token untuk kedua kalinya harus ditolak secara atomik
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage("Token approval #{$approval->id} sudah pernah digunakan");
+        $this->expectExceptionMessage("Approval token #{$approval->id} has already been used");
 
         $this->service->consumeApproval($approval->id, 999);
     }

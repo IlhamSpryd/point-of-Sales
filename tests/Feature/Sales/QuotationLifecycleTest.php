@@ -280,7 +280,7 @@ class QuotationLifecycleTest extends TestCase
             ->assertSee($quotation->quotation_number)
             ->call('convertToSalesOrder', $quotation->id)
             ->assertHasNoErrors()
-            ->assertSee('BERHASIL dikonversi');
+            ->assertSee('converted to Sales Order');
 
         $quotation->refresh();
         $this->assertSame(QuotationStatusEnum::CONVERTED, $quotation->status);

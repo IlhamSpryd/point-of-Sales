@@ -39,7 +39,7 @@ class StoreCreditService
         $issueAmount = bcadd(bc_num($amount), '0', 2);
 
         if (bccomp($issueAmount, '0.00', 2) <= 0) {
-            throw new DomainException('Jumlah penambahan saldo Store Credit harus lebih besar dari 0.');
+            throw new DomainException('Store Credit issuance amount must be greater than 0.');
         }
 
         $typeEnum = $entryType instanceof StoreCreditLedgerTypeEnum
@@ -117,7 +117,7 @@ class StoreCreditService
         $redeemAmount = bcadd(bc_num($amount), '0', 2);
 
         if (bccomp($redeemAmount, '0.00', 2) <= 0) {
-            throw new DomainException('Jumlah pemotongan saldo Store Credit harus lebih besar dari 0.');
+            throw new DomainException('Store Credit redemption amount must be greater than 0.');
         }
 
         $typeEnum = $entryType instanceof StoreCreditLedgerTypeEnum
@@ -143,11 +143,11 @@ class StoreCreditService
                 ->first();
 
             if (! $account || ! $account->isActive()) {
-                throw new DomainException('Akun Store Credit pelanggan tidak aktif atau belum terdaftar.');
+                throw new DomainException('Customer Store Credit account is inactive or not registered.');
             }
 
             if (bccomp((string) $account->current_balance, $redeemAmount, 2) < 0) {
-                throw new DomainException("Saldo Store Credit tidak mencukupi. Saldo saat ini: Rp {$account->current_balance}, dibutuhkan: Rp {$redeemAmount}.");
+                throw new DomainException("Insufficient Store Credit balance. Current balance: {$account->current_balance}, required: {$redeemAmount}.");
             }
 
             $newBalance = bcsub((string) $account->current_balance, $redeemAmount, 2);

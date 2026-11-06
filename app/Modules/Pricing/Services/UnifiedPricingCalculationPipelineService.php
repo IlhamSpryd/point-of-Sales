@@ -86,7 +86,7 @@ class UnifiedPricingCalculationPipelineService
 
             if (! $product) {
                 throw ValidationException::withMessages([
-                    'items' => "Produk #{$productId} tidak ditemukan pada tenant ini.",
+                    'items' => "Product #{$productId} was not found for this tenant.",
                 ]);
             }
 

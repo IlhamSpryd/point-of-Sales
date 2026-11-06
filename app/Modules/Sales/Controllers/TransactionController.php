@@ -39,7 +39,7 @@ class TransactionController extends Controller
     public function __construct(protected TransactionService $transactionService) {}
 
     /**
-     * Menampilkan halaman riwayat pesanan (Orders Index).
+     * Display the orders history page (Orders Index).
      */
     public function index(): View
     {
@@ -49,7 +49,7 @@ class TransactionController extends Controller
     }
 
     /**
-     * Memproses pesanan dari UI Kasir
+     * Process an order from the Cashier / POS interface.
      */
     public function store(StoreTransactionRequest $request): JsonResponse|RedirectResponse
     {
@@ -61,12 +61,8 @@ class TransactionController extends Controller
         $idempotencyKey = $validated['idempotency_key'] ?? null;
 
         try {
-            // Zero-Trust shift guard: setiap transaksi Kasir
-            // WAJIB terikat ke shift yang sedang terbuka -- mencegah
-            // "penjualan hantu" yang tidak pernah masuk rekonsiliasi kas
-            // per-shift (ShiftManager). Melempar ValidationException jika
-            // kasir belum membuka shift, ditangkap oleh catch(\Throwable)
-            // di bawah seperti validasi Service lain di controller ini.
+            // Zero-Trust shift guard: every Cashier transaction must be bound
+            // to an active open shift to prevent unrecorded ghost sales.
             $validated['shift_id'] = $this->transactionService->resolveOpenShiftOrFail((int) $userId);
 
             // Guard against race conditions using Cache::lock
@@ -75,7 +71,7 @@ class TransactionController extends Controller
                 if (Order::where('idempotency_key', $idempotencyKey)->exists()) {
                     return response()->json([
                         'success' => true,
-                        'message' => 'Pesanan sudah diproses sebelumnya (Idempotent)',
+                        'message' => 'Order has already been processed (Idempotent)',
                         'order_number' => Order::where('idempotency_key', $idempotencyKey)->value('order_code'),
                     ]);
                 }
@@ -96,34 +92,34 @@ class TransactionController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pesanan berhasil dibuat',
+                'message' => 'Order created successfully',
                 'snap_token' => $order->snap_token ?? null,
                 'order_number' => $order->order_code,
             ]);
         } catch (LockTimeoutException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Transaksi serupa sedang diproses, coba lagi.',
+                'message' => 'A similar transaction is currently processing. Please try again.',
             ], 429);
         } catch (QueryException $e) {
             $isDuplicate = DatabaseErrorClassifier::isDuplicateEntry($e) || str_contains($e->getMessage(), 'idempotency_key');
             if ($isDuplicate && isset($idempotencyKey) && ($existing = Order::where('idempotency_key', $idempotencyKey)->first())) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Pesanan sudah diproses (Idempotent fallback)',
+                    'message' => 'Order has already been processed (Idempotent fallback)',
                     'order_number' => $existing->order_code,
                 ]);
             }
             Log::error('Transaction Query Error: '.$e->getMessage());
 
-            return response()->json(['success' => false, 'message' => 'Gagal memproses transaksi (DB Error)'], 500);
+            return response()->json(['success' => false, 'message' => 'Unable to process transaction (DB Error)'], 500);
         } catch (\Throwable $e) {
             Log::error('Transaction Error: '.$e->getMessage().' '.$e->getTraceAsString());
 
             // PATCH FOR F-05: Sanitize exception messages
             $safeMessage = $e->getMessage();
             if (! config('app.debug') && ($e instanceof \PDOException || $e instanceof \Error)) {
-                $safeMessage = 'Gagal memproses transaksi (Internal Error).';
+                $safeMessage = 'Unable to process transaction (Internal Error).';
             }
 
             if ($request->wantsJson()) {
@@ -138,7 +134,7 @@ class TransactionController extends Controller
     }
 
     /**
-     * Menampilkan detail spesifik pesanan.
+     * Display specific order details.
      */
     public function show(Request $request, string $orderNumber): JsonResponse|View
     {
@@ -159,7 +155,7 @@ class TransactionController extends Controller
     }
 
     /**
-     * Membatalkan pesanan (Void) melalui otorisasi OrderPolicy.
+     * Cancel order (Void) through OrderPolicy authorization.
      */
     public function void(Request $request, string $orderNumber): JsonResponse
     {
@@ -172,7 +168,7 @@ class TransactionController extends Controller
             'pin' => 'nullable|string',
         ]);
 
-        // Cegah void jika ada transaksi elektronik yang belum terkonfirmasi/timeout
+        // Prevent void if there are pending electronic transactions
         $hasUnresolvedAttempts = PaymentAttempt::where('order_id', $order->id)
             ->whereIn('status', [
                 PaymentAttemptStatus::PendingProvider,
@@ -182,7 +178,7 @@ class TransactionController extends Controller
         if ($hasUnresolvedAttempts) {
             return response()->json([
                 'success' => false,
-                'message' => 'Pesanan memiliki pembayaran elektronik yang sedang dalam proses verifikasi (pending/timeout). Lakukan rekonsiliasi pembayaran terlebih dahulu sebelum membatalkan (void).',
+                'message' => 'This order has pending electronic payments in verification. Please reconcile the payment before voiding.',
             ], 422);
         }
 
@@ -192,7 +188,7 @@ class TransactionController extends Controller
             if (empty($pin)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'PIN Supervisor wajib diisi untuk otorisasi void.',
+                    'message' => 'Supervisor PIN is required to authorize void.',
                 ], 422);
             }
 
@@ -201,7 +197,7 @@ class TransactionController extends Controller
             } catch (\Throwable $e) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'PIN Supervisor tidak sah: '.$e->getMessage(),
+                    'message' => 'Invalid supervisor PIN: '.$e->getMessage(),
                 ], 422);
             }
         }
@@ -211,7 +207,7 @@ class TransactionController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pesanan berhasil dibatalkan (void).',
+                'message' => 'Order successfully voided.',
             ]);
         } catch (\Throwable $e) {
             return response()->json([
@@ -222,7 +218,7 @@ class TransactionController extends Controller
     }
 
     /**
-     * Memproses permohonan retur dan refund pesanan via Controller.
+     * Process order return and refund request.
      */
     public function returnAndRefund(
         Request $request,
@@ -276,7 +272,7 @@ class TransactionController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Retur dan refund berhasil diproses.',
+                'message' => 'Return and refund successfully processed.',
                 'return_number' => $orderReturn->return_number,
             ]);
         } catch (\Throwable $e) {
@@ -288,7 +284,7 @@ class TransactionController extends Controller
     }
 
     /**
-     * Cetak struk pesanan — halaman thermal printer.
+     * Print order receipt — thermal printer page.
      */
     public function receipt(Request $request, string $orderNumber): View
     {
@@ -308,7 +304,7 @@ class TransactionController extends Controller
     }
 
     /**
-     * Sinkronisasi status Midtrans secara manual (untuk localhost tanpa webhook).
+     * Manually synchronize Midtrans status (for localhost development without webhooks).
      */
     public function syncMidtrans(string $orderNumber): JsonResponse
     {
@@ -351,7 +347,7 @@ class TransactionController extends Controller
     }
 
     /**
-     * Endpoint untuk mendapatkan payload raw ESC/POS (QZ Tray).
+     * Endpoint to obtain raw ESC/POS payload (QZ Tray).
      */
     public function printPayload(Request $request, string $orderNumber, ReceiptPrinterService $printerService): JsonResponse
     {
@@ -380,7 +376,7 @@ class TransactionController extends Controller
     }
 
     /**
-     * Endpoint untuk mendapatkan payload raw ESC/POS (QZ Tray) untuk dapur.
+     * Endpoint to obtain raw ESC/POS payload (QZ Tray) for kitchen printing.
      */
     public function printKitchenPayload(string $orderNumber, KitchenPrinterService $printerService): JsonResponse
     {

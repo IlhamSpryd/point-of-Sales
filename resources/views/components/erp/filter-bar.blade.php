@@ -1,6 +1,6 @@
 @props([
     'searchModel' => 'search',
-    'searchPlaceholder' => 'Cari data...',
+    'searchPlaceholder' => 'Search...',
     'searchAction' => null,
     'searchName' => 'search',
     'resetMethod' => null,

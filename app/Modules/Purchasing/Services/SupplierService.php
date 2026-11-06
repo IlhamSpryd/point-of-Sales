@@ -53,7 +53,7 @@ class SupplierService
             $name = trim((string) ($data['name'] ?? ''));
             if ($name === '') {
                 throw ValidationException::withMessages([
-                    'name' => ['Nama pemasok wajib diisi.'],
+                    'name' => ['Supplier name is required.'],
                 ]);
             }
 
@@ -90,7 +90,7 @@ class SupplierService
                 userId: $actor?->id,
                 subjectType: Supplier::class,
                 subjectId: (int) $supplier->id,
-                description: "Pemasok '{$supplier->name}' ({$supplier->code}) dibuat.",
+                description: "Supplier '{$supplier->name}' ({$supplier->code}) created.",
                 newValues: [
                     'code' => $supplier->code,
                     'name' => $supplier->name,
@@ -112,7 +112,7 @@ class SupplierService
         $tenantId = (int) ($actor ? $actor->tenant_id : $this->tenantContext->requireTenantId());
 
         if ((int) $supplier->tenant_id !== $tenantId) {
-            throw new \RuntimeException('Pemasok tidak ditemukan pada tenant aktif.');
+            throw new \RuntimeException('Supplier not found for active tenant.');
         }
 
         return DB::transaction(function () use ($supplier, $data, $actor, $tenantId) {
@@ -134,7 +134,7 @@ class SupplierService
 
                 if ($duplicate) {
                     throw ValidationException::withMessages([
-                        'code' => ["Kode pemasok '{$code}' sudah digunakan."],
+                        'code' => ["Supplier code '{$code}' is already in use."],
                     ]);
                 }
                 $supplier->code = $code;
@@ -144,7 +144,7 @@ class SupplierService
                 $name = trim((string) $data['name']);
                 if ($name === '') {
                     throw ValidationException::withMessages([
-                        'name' => ['Nama pemasok tidak boleh kosong.'],
+                        'name' => ['Supplier name cannot be empty.'],
                     ]);
                 }
                 $supplier->name = $name;
@@ -207,7 +207,7 @@ class SupplierService
                 userId: $actor?->id,
                 subjectType: Supplier::class,
                 subjectId: (int) $supplier->id,
-                description: "Pemasok '{$supplier->name}' ({$supplier->code}) diperbarui.",
+                description: "Supplier '{$supplier->name}' ({$supplier->code}) updated.",
                 oldValues: $oldValues,
                 newValues: $newValues
             );
@@ -223,7 +223,7 @@ class SupplierService
     {
         return $this->updateSupplier($supplier, [
             'status' => SupplierStatusEnum::Archived,
-            'notes' => $reason ? ($supplier->notes ? $supplier->notes."\n[Alasan Arsip]: ".$reason : '[Alasan Arsip]: '.$reason) : $supplier->notes,
+            'notes' => $reason ? ($supplier->notes ? $supplier->notes."\n[Archive Reason]: ".$reason : '[Archive Reason]: '.$reason) : $supplier->notes,
         ], $actor);
     }
 
@@ -235,7 +235,7 @@ class SupplierService
         $tenantId = (int) ($actor ? $actor->tenant_id : $this->tenantContext->requireTenantId());
 
         if ((int) $supplier->tenant_id !== $tenantId) {
-            throw new \RuntimeException('Pemasok tidak ditemukan pada tenant aktif.');
+            throw new \RuntimeException('Supplier not found for active tenant.');
         }
 
         return DB::transaction(function () use ($supplier, $actor, $tenantId) {
@@ -245,7 +245,7 @@ class SupplierService
                 || DB::table('supplier_invoices')->where('tenant_id', $tenantId)->where('supplier_id', $supplier->id)->exists()
             ) {
                 throw ValidationException::withMessages([
-                    'supplier' => ['Pemasok tidak dapat dihapus karena telah memiliki riwayat transaksi/dokumen.'],
+                    'supplier' => ['Supplier cannot be deleted because transactional documents exist.'],
                 ]);
             }
 
@@ -261,7 +261,7 @@ class SupplierService
                 userId: $actor?->id,
                 subjectType: Supplier::class,
                 subjectId: $id,
-                description: "Pemasok '{$name}' ({$code}) dihapus."
+                description: "Supplier '{$name}' ({$code}) deleted."
             );
 
             return true;
@@ -380,35 +380,35 @@ class SupplierService
 
         if ($item === null) {
             throw ValidationException::withMessages([
-                'purchasable_id' => ["Item '{$purchasableType}' dengan ID {$purchasableId} tidak ditemukan pada tenant ini."],
+                'purchasable_id' => ["Item '{$purchasableType}' with ID {$purchasableId} not found for this tenant."],
             ]);
         }
 
         $purchaseUom = trim((string) ($productData['purchase_uom'] ?? ''));
         if ($purchaseUom === '') {
             throw ValidationException::withMessages([
-                'purchase_uom' => ['Satuan pembelian (purchase_uom) wajib diisi.'],
+                'purchase_uom' => ['Purchase unit of measure (purchase_uom) is required.'],
             ]);
         }
 
         $conversionFactor = (string) ($productData['uom_conversion_factor'] ?? '1.000000');
         if (bccomp(bc_num($conversionFactor), '0', 6) <= 0) {
             throw ValidationException::withMessages([
-                'uom_conversion_factor' => ['Faktor konversi UoM harus lebih besar dari 0.'],
+                'uom_conversion_factor' => ['UoM conversion factor must be greater than 0.'],
             ]);
         }
 
         $standardPrice = (string) ($productData['standard_price'] ?? '0.0000');
         if (bccomp(bc_num($standardPrice), '0', 4) < 0) {
             throw ValidationException::withMessages([
-                'standard_price' => ['Harga standar tidak boleh negatif.'],
+                'standard_price' => ['Standard price cannot be negative.'],
             ]);
         }
 
         $minOrderQty = (string) ($productData['min_order_qty'] ?? '1.0000');
         if (bccomp(bc_num($minOrderQty), '0', 4) <= 0) {
             throw ValidationException::withMessages([
-                'min_order_qty' => ['Minimal order kuantitas harus lebih besar dari 0.'],
+                'min_order_qty' => ['Minimum order quantity must be greater than 0.'],
             ]);
         }
 
@@ -473,7 +473,7 @@ class SupplierService
                 userId: $actor?->id,
                 subjectType: SupplierProduct::class,
                 subjectId: (int) $supplierProduct->id,
-                description: "Item katalog pemasok ({$purchasableType} ID {$purchasableId}) diperbarui untuk pemasok '{$supplier->name}'.",
+                description: "Supplier catalog item ({$purchasableType} ID {$purchasableId}) updated for supplier '{$supplier->name}'.",
                 newValues: [
                     'standard_price' => $standardPrice,
                     'uom_conversion_factor' => $conversionFactor,
@@ -502,7 +502,7 @@ class SupplierService
                 userId: $actor?->id,
                 subjectType: SupplierProduct::class,
                 subjectId: $id,
-                description: "Item katalog pemasok ID {$id} dihapus."
+                description: "Supplier catalog item ID {$id} deleted."
             );
 
             return true;

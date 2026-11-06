@@ -86,7 +86,7 @@ class AntiSelfApprovalSecurityTest extends TestCase
     public function test_self_approval_is_blocked_when_supervisor_uses_own_pin_for_own_request(): void
     {
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Self-approval dilarang.');
+        $this->expectExceptionMessage('Self-approval is prohibited.');
 
         // Supervisor yang sedang transaksi di kasir mencoba meng-approve diskonnya sendiri dengan PIN '5555' miliknya
         $this->service->createApproval(
@@ -103,7 +103,7 @@ class AntiSelfApprovalSecurityTest extends TestCase
     public function test_self_approval_is_blocked_even_when_approver_id_is_not_explicitly_passed(): void
     {
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Self-approval dilarang.');
+        $this->expectExceptionMessage('Self-approval is prohibited.');
 
         // Mencoba memasukkan PIN diri sendiri tanpa oper approverId
         $this->service->createApproval(

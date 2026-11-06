@@ -1,4 +1,4 @@
-<!-- AREA KALKULASI & PEMBAYARAN KASIR -->
+<!-- CASHIER CALCULATION & PAYMENT AREA -->
 <div class="pt-3 border-t border-border bg-white shrink-0 z-10 flex flex-col gap-2.5">
     {{-- Promo & Voucher Banner --}}
     @php
@@ -13,7 +13,7 @@
             @foreach($pipelineBreakdown->appliedPromotionsSummary as $promo)
                 <div class="flex justify-between text-[11px] text-amber-900">
                     <span>{{ $promo['name'] ?? 'Promo Otomatis' }}</span>
-                    <span class="font-semibold font-mono">- Rp {{ number_format($promo['discount_amount'] ?? 0, 0, ',', '.') }}</span>
+                    <span class="font-semibold tabular-nums">- Rp {{ number_format($promo['discount_amount'] ?? 0, 0, ',', '.') }}</span>
                 </div>
             @endforeach
         </div>
@@ -26,16 +26,16 @@
                 <span class="material-symbols-rounded text-[14px]">confirmation_number</span>
                 Voucher: {{ $voucherCode }}
             </span>
-            <button type="button" wire:click="removeVoucher" class="text-blue-700 hover:text-rose-600 font-bold p-1 text-sm leading-none" title="Hapus Voucher">&times;</button>
+            <button type="button" wire:click="removeVoucher" class="text-blue-700 hover:text-rose-600 font-bold p-1 text-sm leading-none" title="Remove Voucher">&times;</button>
         </div>
     @elseif (!$pendingOrderId)
         <div class="flex items-center gap-2">
             <input type="text" wire:model="voucherInput" wire:keydown.enter.prevent="applyVoucher"
-                placeholder="Kode kupon / voucher..."
-                class="flex-1 h-8 px-2.5 text-xs bg-white border border-border rounded-lg text-foreground placeholder-muted-foreground focus:border-foreground focus:outline-none uppercase font-mono transition-colors" />
+                placeholder="Coupon / voucher code..."
+                class="flex-1 h-8 px-2.5 text-xs bg-white border border-border rounded-lg text-foreground placeholder-muted-foreground focus:border-foreground focus:outline-none uppercase tabular-nums transition-colors" />
             <button type="button" wire:click="applyVoucher"
                 class="h-8 px-3 text-xs font-medium text-white bg-primary hover:bg-primary/90 rounded-lg transition-colors shadow-xs">
-                Pakai
+                Apply
             </button>
         </div>
         @if ($voucherError)
@@ -43,13 +43,13 @@
         @endif
     @endif
 
-    {{-- Master Discounts Dropdown (Voucher / Diskon Aktif) --}}
+    {{-- Master Discounts Dropdown (Active Vouchers & Discounts) --}}
     @if (count($this->activeDiscounts) > 0)
         <div class="relative">
             <select wire:model.live="selectedDiscountId"
                 @disabled((bool) $pendingOrderId)
                 class="w-full h-8 pl-3 pr-8 bg-white border border-border rounded-lg outline-none text-xs font-medium text-foreground focus:border-foreground appearance-none transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">
-                <option value="">+ Pilih Diskon / Promo</option>
+                <option value="">+ Select Discount / Promo</option>
                 @foreach ($this->activeDiscounts as $d)
                     <option value="{{ $d->id }}">{{ $d->name }}
                         ({{ $d->type === 'percentage' ? $d->value . '%' : 'Rp ' . number_format($d->value, 0, ',', '.') }})
@@ -67,50 +67,50 @@
     @if($appliedManualDiscount > 0)
         <div class="flex items-center justify-between p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-xs">
             <div class="min-w-0">
-                <span class="font-bold text-emerald-800">Diskon Manual: Rp {{ number_format($appliedManualDiscount, 0, ',', '.') }}</span>
+                <span class="font-bold text-emerald-800">Manual Discount: Rp {{ number_format($appliedManualDiscount, 0, ',', '.') }}</span>
                 <span class="text-[10px] text-emerald-600 block truncate">{{ $appliedManualDiscountReason }}</span>
             </div>
-            <button type="button" wire:click="removeManualDiscount" class="text-emerald-700 hover:text-rose-600 font-bold p-1 text-sm leading-none" title="Hapus Diskon Manual">&times;</button>
+            <button type="button" wire:click="removeManualDiscount" class="text-emerald-700 hover:text-rose-600 font-bold p-1 text-sm leading-none" title="Remove Manual Discount">&times;</button>
         </div>
     @endif
 
-    {{-- Detail Subtotal & Diskon --}}
+    {{-- Subtotal & Discount Breakdown --}}
     <div class="pt-2 pb-1 space-y-1.5 font-label-md text-[13px] border-t border-border">
         <div class="flex justify-between text-muted-foreground">
             <span>Subtotal</span>
-            <span class="text-foreground font-medium font-mono">Rp {{ number_format($this->subtotal, 0, ',', '.') }}</span>
+            <span class="text-foreground font-medium tabular-nums">Rp {{ number_format($this->subtotal, 0, ',', '.') }}</span>
         </div>
 
-        {{-- Diskon Member / Override Diskon --}}
+        {{-- Member Discount / Override Discount --}}
         <div class="flex justify-between items-center text-muted-foreground cursor-pointer hover:bg-muted p-1 rounded-md transition-colors"
-            wire:click="$set('isManualDiscountModalOpen', true)" title="Klik untuk atur diskon / otorisasi supervisor">
+            wire:click="$set('isManualDiscountModalOpen', true)" title="Configure discount or supervisor authorization">
             <div class="flex items-center gap-1.5">
                 <span class="material-symbols-rounded text-[14px] text-amber-500">sell</span>
-                <span>Diskon / Promo</span>
+                <span>Discount / Promo</span>
                 @if ($this->discountAmount > 0)
-                    <span class="px-1.5 py-0.2 rounded-[4px] bg-muted border border-border text-muted-foreground font-label-sm text-[10px] font-mono">
-                        Aktif
+                    <span class="px-1.5 py-0.2 rounded-[4px] bg-muted border border-border text-muted-foreground font-label-sm text-[10px] tabular-nums">
+                        Applied
                     </span>
                 @endif
             </div>
-            <span class="text-foreground font-medium font-mono">
+            <span class="text-foreground font-medium tabular-nums">
                 {{ $this->discountAmount > 0 ? '-Rp ' . number_format($this->discountAmount, 0, ',', '.') : 'Rp 0' }}
             </span>
         </div>
 
         {{-- Pajak PB1 & Service --}}
         <div class="flex justify-between text-muted-foreground">
-            <span>PB1 / Pajak Restoran ({{ $this->taxRatePercent }}%)</span>
-            <span class="text-foreground font-medium font-mono">Rp {{ number_format($this->taxAmount, 0, ',', '.') }}</span>
+            <span>Tax / VAT ({{ $this->taxRatePercent }}%)</span>
+            <span class="text-foreground font-medium tabular-nums">Rp {{ number_format($this->taxAmount, 0, ',', '.') }}</span>
         </div>
 
         {{-- Total Akhir --}}
         <div class="pt-2 mt-1 border-t border-border flex justify-between items-baseline">
             <div class="flex flex-col">
-                <span class="font-headline-md text-[15px] font-semibold text-foreground tracking-tight">Total Akhir</span>
-                <span class="font-label-sm text-[11px] text-muted-foreground">Termasuk seluruh pajak</span>
+                <span class="font-headline-md text-[15px] font-semibold text-foreground tracking-tight">Total Due</span>
+                <span class="font-label-sm text-[11px] text-muted-foreground">All taxes included</span>
             </div>
-            <span class="font-numeric-metric text-foreground font-semibold tracking-tight font-mono text-[16px]">
+            <span class="font-numeric-metric text-foreground font-semibold tracking-tight tabular-nums text-[16px]">
                 Rp {{ number_format($this->totalAmount, 0, ',', '.') }}
             </span>
         </div>
@@ -123,7 +123,7 @@
                 type="button"
                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }}, method: 'cash' }); $dispatch('open-modal', 'checkout-payment')"
                 @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
-                Tunai
+                Cash
             </button>
             <button class="h-9 px-1 rounded-md bg-white border border-border hover:bg-muted text-foreground font-label-sm text-[11px] text-center font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 type="button"
@@ -135,7 +135,7 @@
                 type="button"
                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }}, method: 'card' }); $dispatch('open-modal', 'checkout-payment')"
                 @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
-                EDC Kartu
+                Card
             </button>
             <button class="h-9 px-1 rounded-md bg-white border border-border hover:bg-muted text-foreground font-label-sm text-[11px] text-center font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
                 type="button"
@@ -156,11 +156,11 @@
     @if(!$this->canCheckout && count($this->cartLines) > 0)
         <div class="p-2 bg-rose-50 text-rose-700 rounded-lg text-xs font-bold flex items-center gap-1.5">
             <span class="material-symbols-rounded text-[16px]">lock</span>
-            <span>{{ !$this->activeShift ? 'Shift belum dibuka. Buka shift kasir terlebih dahulu.' : 'Handover shift sedang berlangsung.' }}</span>
+            <span>{{ !$this->activeShift ? 'Shift not open. Please open a cashier shift first.' : 'Shift handover in progress.' }}</span>
         </div>
     @endif
 
-    {{-- Tombol Utama Bayar Sekarang --}}
+    {{-- Primary Checkout Button --}}
     <div class="pt-1 flex flex-col gap-1.5">
         @if ($pendingOrderId)
             <button wire:click="submitOrder" id="btn-bayar"
@@ -169,11 +169,11 @@
                 @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
                 <div class="flex items-center gap-2">
                     <span wire:loading wire:target="submitOrder" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
-                    <span wire:loading.remove wire:target="submitOrder" class="font-headline-sm text-[14px] font-medium">Bayar Sekarang</span>
-                    <span wire:loading wire:target="submitOrder" class="font-headline-sm text-[14px] font-medium">Memproses...</span>
-                    <span class="px-1.5 py-0.5 rounded bg-white/20 font-label-sm text-[10px] font-mono uppercase">F4</span>
+                    <span wire:loading.remove wire:target="submitOrder" class="font-headline-sm text-[14px] font-medium">Pay Now</span>
+                    <span wire:loading wire:target="submitOrder" class="font-headline-sm text-[14px] font-medium">Processing...</span>
+                    <span class="px-1.5 py-0.5 rounded bg-white/20 font-label-sm text-[10px] tabular-nums uppercase">F4</span>
                 </div>
-                <span class="font-numeric-currency text-[14px] font-semibold font-mono">
+                <span class="font-numeric-currency text-[14px] font-semibold tabular-nums">
                     Rp {{ number_format($this->totalAmount, 0, ',', '.') }}
                 </span>
             </button>
@@ -184,10 +184,10 @@
                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }} }); $dispatch('open-modal', 'checkout-payment')"
                 @disabled(!$this->canCheckout || count($this->cartLines) === 0 || !$orderType || ($orderType === 'dine_in' && $this->isTablesEnabled && !$tableId))>
                 <div class="flex items-center gap-2">
-                    <span class="font-headline-sm text-[14px] font-medium">Bayar Sekarang</span>
-                    <span class="px-1.5 py-0.5 rounded bg-white/20 font-label-sm text-[10px] font-mono uppercase">F4</span>
+                    <span class="font-headline-sm text-[14px] font-medium">Pay Now</span>
+                    <span class="px-1.5 py-0.5 rounded bg-white/20 font-label-sm text-[10px] tabular-nums uppercase">F4</span>
                 </div>
-                <span class="font-numeric-currency text-[14px] font-semibold font-mono">
+                <span class="font-numeric-currency text-[14px] font-semibold tabular-nums">
                     Rp {{ number_format($this->totalAmount, 0, ',', '.') }}
                 </span>
             </button>
@@ -198,11 +198,11 @@
                 @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }}, method: 'cash' }); $dispatch('open-modal', 'checkout-payment')"
                 class="flex items-center gap-1 hover:text-foreground transition-colors">
                 <span class="material-symbols-rounded text-[13px]">call_split</span>
-                <span>Split Bill Didukung</span>
+                <span>Split Payment Supported</span>
             </button>
             <a href="{{ route('shifts.index') }}" class="flex items-center gap-1 hover:text-foreground transition-colors">
                 <span class="material-symbols-rounded text-[13px]">print</span>
-                <span>Struk Otomatis (USB/LAN)</span>
+                <span>Auto Receipt (USB/LAN)</span>
             </a>
         </div>
     </div>

@@ -31,13 +31,13 @@ class KdsService
 
             if ($item->order?->order_status !== OrderStatus::Paid) {
                 throw ValidationException::withMessages([
-                    'kds' => 'Hanya pesanan LUNAS yang boleh diproses di dapur.',
+                    'kds' => 'Only PAID orders can be processed in the kitchen.',
                 ]);
             }
 
             if ($item->preparation_status !== PreparationStatus::Pending) {
                 throw ValidationException::withMessages([
-                    'kds' => 'Item ini sudah diambil oleh staf lain barusan.',
+                    'kds' => 'This item was already claimed by another staff member.',
                 ]);
             }
 
@@ -62,19 +62,19 @@ class KdsService
 
             if ($item->order?->order_status !== OrderStatus::Paid) {
                 throw ValidationException::withMessages([
-                    'kds' => 'Hanya pesanan LUNAS yang boleh diproses di dapur.',
+                    'kds' => 'Only PAID orders can be processed in the kitchen.',
                 ]);
             }
 
             if ($item->preparation_status !== PreparationStatus::Brewing) {
                 throw ValidationException::withMessages([
-                    'kds' => 'Item ini belum berstatus sedang diracik.',
+                    'kds' => 'This item is not currently in brewing/preparation status.',
                 ]);
             }
 
             if ($item->processed_by !== $staffId) {
                 throw ValidationException::withMessages([
-                    'kds' => 'Anda tidak dapat menyelesaikan item yang diambil staf lain.',
+                    'kds' => 'You cannot complete an item claimed by another staff member.',
                 ]);
             }
 
@@ -96,13 +96,13 @@ class KdsService
 
             if ($item->order?->order_status !== OrderStatus::Paid) {
                 throw ValidationException::withMessages([
-                    'kds' => 'Hanya pesanan LUNAS yang boleh diproses di dapur.',
+                    'kds' => 'Only PAID orders can be processed in the kitchen.',
                 ]);
             }
 
             if (! $canManage && $item->processed_by !== $staffId) {
                 throw ValidationException::withMessages([
-                    'kds' => 'Hanya Owner/Manager atau staf yang mengambil item ini yang bisa melepaskannya.',
+                    'kds' => 'Only Owner/Manager or the staff member who claimed this item can release it.',
                 ]);
             }
 
@@ -126,19 +126,19 @@ class KdsService
 
             if ($item->order?->order_status !== OrderStatus::Paid) {
                 throw ValidationException::withMessages([
-                    'kds' => 'Hanya pesanan LUNAS yang boleh diproses di dapur.',
+                    'kds' => 'Only PAID orders can be processed in the kitchen.',
                 ]);
             }
 
             if ($item->preparation_status !== PreparationStatus::Ready) {
                 throw ValidationException::withMessages([
-                    'kds' => 'Hanya item yang sudah Selesai (Ready) yang dapat ditarik kembali.',
+                    'kds' => 'Only items with status Ready can be recalled.',
                 ]);
             }
 
             if (! $canManage && $item->processed_by !== $staffId) {
                 throw ValidationException::withMessages([
-                    'kds' => 'Hanya staf yang menyelesaikan item ini atau Manager yang bisa menariknya kembali.',
+                    'kds' => 'Only the staff member who completed this item or a Manager can recall it.',
                 ]);
             }
 
@@ -158,7 +158,7 @@ class KdsService
 
             if (! in_array($item->preparation_status, [PreparationStatus::Ready, PreparationStatus::Brewing], true)) {
                 throw ValidationException::withMessages([
-                    'kds' => 'Item belum siap untuk disajikan (status harus Brewing atau Ready).',
+                    'kds' => 'Item is not ready to be served (status must be Brewing or Ready).',
                 ]);
             }
 

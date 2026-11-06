@@ -12,8 +12,8 @@ enum PurchaseOrderSourceTypeEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::FromPr => 'Dari Permintaan Pembelian (PR)',
-            self::Direct => 'Pesanan Langsung (Direct PO)',
+            self::FromPr => 'Purchase Request (PR)',
+            self::Direct => 'Direct PO',
         };
     }
 }

@@ -225,9 +225,9 @@ class CashBankTransferAndSettlementTest extends TestCase
         $this->assertEquals('4000000.00', $bankReconciled['subledger_balance']);
         $this->assertTrue($bankReconciled['is_reconciled']);
 
-        // 6. Uji penolakan transfer jika saldo tidak cukup
+        // 6. Test rejection of transfer if balance is insufficient
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('tidak mencukupi');
+        $this->expectExceptionMessage('Insufficient cash/bank balance');
         $this->txnService->transferInternal(
             sourceAccount: $this->safeAccount,
             destinationAccount: $this->bankAccount,
@@ -394,7 +394,7 @@ class CashBankTransferAndSettlementTest extends TestCase
         $outTxn->save();
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('FIN-M7-12: Transaksi yang sudah direkonsiliasi tidak dapat dibatalkan.');
+        $this->expectExceptionMessage('FIN-M7-12: Reconciled transactions cannot be voided.');
 
         $this->txnService->voidTransaction(
             transaction: $outTxn,

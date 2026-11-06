@@ -81,14 +81,14 @@ class CustomerService
 
             if ($existing) {
                 throw ValidationException::withMessages([
-                    'customer_code' => ["Kode pelanggan '{$code}' sudah digunakan pada tenant ini."],
+                    'customer_code' => ["Customer code '{$code}' is already in use for this tenant."],
                 ]);
             }
 
             $name = trim((string) ($data['name'] ?? ''));
             if ($name === '') {
                 throw ValidationException::withMessages([
-                    'name' => ['Nama pelanggan wajib diisi.'],
+                    'name' => ['Customer name is required.'],
                 ]);
             }
 
@@ -102,7 +102,7 @@ class CustomerService
 
                 if ($phoneExists) {
                     throw ValidationException::withMessages([
-                        'phone' => ["Nomor telepon '{$phone}' sudah digunakan oleh pelanggan aktif lain."],
+                        'phone' => ["Phone number '{$phone}' is already in use by another active customer."],
                     ]);
                 }
             }
@@ -117,7 +117,7 @@ class CustomerService
 
                 if ($emailExists) {
                     throw ValidationException::withMessages([
-                        'email' => ["Alamat email '{$email}' sudah digunakan oleh pelanggan aktif lain."],
+                        'email' => ["Email address '{$email}' is already in use by another active customer."],
                     ]);
                 }
             }
@@ -183,7 +183,7 @@ class CustomerService
                 storeId: $customer->default_store_id,
                 subjectType: Customer::class,
                 subjectId: $customer->id,
-                description: "Membuat pelanggan baru: {$customer->name} ({$customer->customer_code})",
+                description: "Created customer: {$customer->name} ({$customer->customer_code})",
                 newValues: $customer->toArray()
             );
 
@@ -229,7 +229,7 @@ class CustomerService
 
                     if ($phoneExists) {
                         throw ValidationException::withMessages([
-                            'phone' => ["Nomor telepon '{$phone}' sudah digunakan oleh pelanggan aktif lain."],
+                            'phone' => ["Phone number '{$phone}' is already in use by another active customer."],
                         ]);
                     }
                 }
@@ -248,7 +248,7 @@ class CustomerService
 
                     if ($emailExists) {
                         throw ValidationException::withMessages([
-                            'email' => ["Alamat email '{$email}' sudah digunakan oleh pelanggan aktif lain."],
+                            'email' => ["Email address '{$email}' is already in use by another active customer."],
                         ]);
                     }
                 }
@@ -259,7 +259,7 @@ class CustomerService
                 $name = trim((string) $data['name']);
                 if ($name === '') {
                     throw ValidationException::withMessages([
-                        'name' => ['Nama pelanggan tidak boleh kosong.'],
+                        'name' => ['Customer name cannot be empty.'],
                     ]);
                 }
                 $customer->name = $name;
@@ -323,7 +323,7 @@ class CustomerService
                 storeId: $customer->default_store_id,
                 subjectType: Customer::class,
                 subjectId: $customer->id,
-                description: "Memperbarui data pelanggan: {$customer->name} ({$customer->customer_code})",
+                description: "Updated customer: {$customer->name} ({$customer->customer_code})",
                 oldValues: $oldValues,
                 newValues: $newValues
             );
@@ -352,7 +352,7 @@ class CustomerService
                 storeId: $customer->default_store_id,
                 subjectType: Customer::class,
                 subjectId: $customer->id,
-                description: "Menghapus pelanggan: {$customer->name} ({$customer->customer_code}). Alasan: {$reason}",
+                description: "Deleted customer: {$customer->name} ({$customer->customer_code}). Reason: {$reason}",
                 oldValues: ['is_active' => true],
                 newValues: ['is_active' => false, 'deleted_at' => now()]
             );
@@ -367,11 +367,11 @@ class CustomerService
     public function mergeCustomers(Customer $source, Customer $target, User $actor, string $reason): CustomerMergeLog
     {
         if ((int) $source->tenant_id !== (int) $target->tenant_id) {
-            throw new DomainException('Tidak dapat menggabungkan pelanggan dari tenant yang berbeda.');
+            throw new DomainException('Cannot merge customers from different tenants.');
         }
 
         if ($source->id === $target->id) {
-            throw new DomainException('Pelanggan sumber dan target tidak boleh sama.');
+            throw new DomainException('Source and target customers cannot be the same.');
         }
 
         $tenantId = (int) $source->tenant_id;
@@ -395,15 +395,15 @@ class CustomerService
             $lockedTarget = $lockedCustomers->get($target->id);
 
             if (! $lockedSource || ! $lockedTarget) {
-                throw new DomainException('Salah satu atau kedua pelanggan tidak ditemukan untuk di-lock.');
+                throw new DomainException('One or both customers could not be found to lock.');
             }
 
             if ($lockedSource->merged_into_customer_id !== null) {
-                throw new DomainException("Pelanggan sumber '{$lockedSource->customer_code}' sudah pernah digabungkan sebelumnya.");
+                throw new DomainException("Source customer '{$lockedSource->customer_code}' has already been merged previously.");
             }
 
             if ($lockedTarget->merged_into_customer_id !== null) {
-                throw new DomainException("Pelanggan target '{$lockedTarget->customer_code}' sudah tidak aktif karena telah digabungkan ke akun lain.");
+                throw new DomainException("Target customer '{$lockedTarget->customer_code}' is inactive because it was merged into another account.");
             }
 
             $reassigned = [];
@@ -487,7 +487,7 @@ class CustomerService
                 storeId: $lockedTarget->default_store_id,
                 subjectType: Customer::class,
                 subjectId: $lockedTarget->id,
-                description: "Menggabungkan pelanggan {$lockedSource->customer_code} ke {$lockedTarget->customer_code}. Alasan: {$reason}",
+                description: "Merged customer {$lockedSource->customer_code} into {$lockedTarget->customer_code}. Reason: {$reason}",
                 metadata: [
                     'source_customer_id' => $lockedSource->id,
                     'target_customer_id' => $lockedTarget->id,

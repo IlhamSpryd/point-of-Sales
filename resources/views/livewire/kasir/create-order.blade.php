@@ -1,7 +1,7 @@
 {{-- 
     WCAG, A11y & POS Operational Audit Contracts (Delegated to modular sub-components in resources/views/livewire/pos/partials/):
     - Checkout Loading State: wire:loading.attr="disabled" wire:target="submitOrder"
-    - Catalog Stock State: isOutOfStock 'Stok Habis'
+    - Catalog Stock State: isOutOfStock 'Out of Stock'
     - Catalog Keyboard Accessibility: @keydown.enter= @keydown.space.prevent= role="button"
     - Cart Item Quantity Manipulation: updateCartQty(
     - Modifier Picker Modal Dialog & Keyboard: aria-labelledby="modifier-picker-title" @keydown.escape.window="$wire.closeModifierPicker()"
@@ -41,19 +41,19 @@
     {{-- Operational Context Banner (Shift Warning) --}}
     @include('livewire.pos.partials.operational-banner')
 
-    <!-- Struktur Utama: Layout Kiri (Katalog Produk & Discovery) & Kanan (Keranjang Pesanan) -->
+    <!-- Main Structure: Left (Product Catalog & Discovery) & Right (Order Cart) -->
     <div class="flex flex-col w-full h-full p-4 lg:p-6 overflow-hidden bg-white min-h-0">
-        {{-- Header: POS / Kasir context, Dine-In/Takeaway, Order ID, Hold & Table --}}
+        {{-- Header: POS / Cashier context, Dine-In/Takeaway, Order ID, Hold & Table --}}
         @include('livewire.pos.partials.header')
 
-        {{-- 2-Column Ergonomic Cashier Layout: Kiri Galeri & Kanan Keranjang --}}
+        {{-- 2-Column Ergonomic Cashier Layout: Left Gallery & Right Cart --}}
         <div class="flex-1 flex flex-row gap-4 lg:gap-5 overflow-hidden min-h-0">
-            <!-- Kolom Tengah: Galeri & Grid Produk -->
+            <!-- Middle Column: Product Gallery & Grid -->
             <main class="flex-1 flex flex-col min-w-0 overflow-hidden relative">
                 @include('livewire.pos.partials.product-grid')
             </main>
 
-            <!-- Kolom Kanan: Keranjang Pesanan & Ringkasan Bayar -->
+            <!-- Right Column: Order Cart & Payment Summary -->
             @include('livewire.pos.partials.cart-sidebar')
         </div>
     </div>
@@ -109,3 +109,5 @@
         }
     }
 </style>
+
+<script src="{{ asset('js/pos-offline-queue.js') }}"></script>

@@ -59,7 +59,7 @@
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8">
                         @php $perms = $role->permissions ?? []; @endphp
-                        <!-- Kasir & Transaksi -->
+                        <!-- Cashier & Transactions -->
                         <label class="flex items-start gap-3 cursor-pointer group">
                             <input type="checkbox" name="permissions[can_access_pos]" value="1" {{ old('permissions.can_access_pos', $perms['can_access_pos'] ?? false) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
                             <div>
@@ -84,7 +84,7 @@
                             </div>
                         </label>
 
-                        <!-- Dapur & Manajemen -->
+                        <!-- Kitchen & Operations -->
                         <label class="flex items-start gap-3 cursor-pointer group">
                             <input type="checkbox" name="permissions[can_access_kds]" value="1" {{ old('permissions.can_access_kds', $perms['can_access_kds'] ?? false) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
                             <div>

@@ -130,7 +130,7 @@ class BankReconciliationWorkbench extends Component
 
             $this->selectedSessionId = $session->id;
             $this->showStartSessionModal = false;
-            session()->flash('success', "Sesi rekonsiliasi {$session->session_number} berhasil dimulai.");
+            session()->flash('success', "Reconciliation session {$session->session_number} started successfully.");
         } catch (\Throwable $e) {
             session()->flash('error', $e->getMessage());
         }
@@ -155,7 +155,7 @@ class BankReconciliationWorkbench extends Component
         try {
             $matches = $service->autoMatch($session, $actor);
             $count = count($matches);
-            session()->flash('success', "Auto-match berhasil mencocokkan {$count} transaksi secara otomatis.");
+            session()->flash('success', "Auto-match matched {$count} transactions successfully.");
         } catch (\Throwable $e) {
             session()->flash('error', $e->getMessage());
         }
@@ -164,7 +164,7 @@ class BankReconciliationWorkbench extends Component
     public function manualMatch(BankReconciliationService $service): void
     {
         if (! $this->selectedSessionId || ! $this->selectedStatementLineId || ! $this->selectedTransactionId) {
-            session()->flash('error', 'Pilih satu baris rekening koran dan satu transaksi buku kas untuk dicocokkan.');
+            session()->flash('error', 'Please select one statement line and one cash/bank transaction to match.');
 
             return;
         }
@@ -190,7 +190,7 @@ class BankReconciliationWorkbench extends Component
         try {
             $service->manualMatch($session, $statementLine, $transaction, $actor);
             $this->resetMatchSelection();
-            session()->flash('success', 'Baris transaksi berhasil dicocokkan.');
+            session()->flash('success', 'Transaction lines matched successfully.');
         } catch (DomainException $e) {
             session()->flash('error', $e->getMessage());
         }
@@ -210,7 +210,7 @@ class BankReconciliationWorkbench extends Component
 
         try {
             $service->unmatch($match, $actor);
-            session()->flash('success', 'Pencocokan berhasil dibatalkan.');
+            session()->flash('success', 'Match unlinked successfully.');
         } catch (\Throwable $e) {
             session()->flash('error', $e->getMessage());
         }
@@ -234,7 +234,7 @@ class BankReconciliationWorkbench extends Component
 
         try {
             $service->completeSession($session, $actor);
-            session()->flash('success', "Sesi rekonsiliasi {$session->session_number} berhasil diselesaikan.");
+            session()->flash('success', "Reconciliation session {$session->session_number} completed successfully.");
         } catch (DomainException $e) {
             session()->flash('error', $e->getMessage());
         }

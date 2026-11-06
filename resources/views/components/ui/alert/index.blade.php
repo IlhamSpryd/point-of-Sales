@@ -63,7 +63,7 @@
         <button
             type="button"
             @click="shown = false"
-            aria-label="Tutup peringatan"
+            aria-label="Dismiss alert"
             class="inline-flex size-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
         >
             <span class="material-symbols-rounded text-base leading-none" aria-hidden="true">close</span>

@@ -55,15 +55,15 @@ class PurchaseOrderService
         $supplierId = (int) ($headerData['supplier_id'] ?? 0);
 
         if ($storeId <= 0) {
-            throw ValidationException::withMessages(['store_id' => ['Cabang/Toko tujuan wajib dipilih.']]);
+            throw ValidationException::withMessages(['store_id' => ['Destination branch is required.']]);
         }
 
         if ($supplierId <= 0) {
-            throw ValidationException::withMessages(['supplier_id' => ['Pemasok wajib dipilih.']]);
+            throw ValidationException::withMessages(['supplier_id' => ['Supplier is required.']]);
         }
 
         if (empty($allocations)) {
-            throw ValidationException::withMessages(['allocations' => ['Minimal harus ada 1 alokasi baris PR untuk membuat PO.']]);
+            throw ValidationException::withMessages(['allocations' => ['At least 1 PR line allocation is required to create a PO.']]);
         }
 
         // Validasi Pemasok harus Active
@@ -71,7 +71,7 @@ class PurchaseOrderService
         $supplier = Supplier::query()->where('tenant_id', $tenantId)->find($supplierId);
         if (! $supplier || $supplier->status !== SupplierStatusEnum::Active) {
             throw ValidationException::withMessages([
-                'supplier_id' => ['Pemasok tidak ditemukan atau statusnya tidak aktif.'],
+                'supplier_id' => ['Supplier not found or is currently inactive.'],
             ]);
         }
 
@@ -106,14 +106,14 @@ class PurchaseOrderService
 
                 if (! $prLine) {
                     throw ValidationException::withMessages([
-                        "allocations.{$index}.purchase_request_line_id" => ["Baris PR #{$prLineId} tidak ditemukan."],
+                        "allocations.{$index}.purchase_request_line_id" => ["PR Line #{$prLineId} not found."],
                     ]);
                 }
 
                 $parentPr = $prLine->purchaseRequest;
                 if ($parentPr->status !== PurchaseRequestStatusEnum::Approved) {
                     throw ValidationException::withMessages([
-                        "allocations.{$index}" => ["Baris PR #{$prLineId} berasal dari PR yang belum disetujui (Approved)."],
+                        "allocations.{$index}" => ["PR Line #{$prLineId} originates from a PR that is not yet Approved."],
                     ]);
                 }
 
@@ -264,7 +264,7 @@ class PurchaseOrderService
                 storeId: $storeId,
                 subjectType: PurchaseOrder::class,
                 subjectId: $po->id,
-                description: "Pesanan Pembelian {$po->po_number} berhasil dibuat dari alokasi PR.",
+                description: "Purchase Order {$po->po_number} successfully created from PR allocations.",
                 metadata: [
                     'po_number' => $po->po_number,
                     'pr_ids' => array_keys($affectedPrIds),
@@ -293,15 +293,15 @@ class PurchaseOrderService
         $supplierId = (int) ($headerData['supplier_id'] ?? 0);
 
         if ($storeId <= 0) {
-            throw ValidationException::withMessages(['store_id' => ['Cabang/Toko tujuan wajib dipilih.']]);
+            throw ValidationException::withMessages(['store_id' => ['Destination branch is required.']]);
         }
 
         if ($supplierId <= 0) {
-            throw ValidationException::withMessages(['supplier_id' => ['Pemasok wajib dipilih.']]);
+            throw ValidationException::withMessages(['supplier_id' => ['Supplier is required.']]);
         }
 
         if (empty($items)) {
-            throw ValidationException::withMessages(['items' => ['Minimal harus ada 1 item pesanan.']]);
+            throw ValidationException::withMessages(['items' => ['At least 1 order item is required.']]);
         }
 
         // Kontrol Kebijakan Tenant: purchasing.po.require_pr (ADR-M5-02)
@@ -313,7 +313,7 @@ class PurchaseOrderService
         $requirePr = $setting ? filter_var($setting->value, FILTER_VALIDATE_BOOLEAN) : false;
         if ($requirePr) {
             throw ValidationException::withMessages([
-                'policy' => ['Kebijakan tenant mewajibkan seluruh Pesanan Pembelian dibuat melalui Permintaan Pembelian (PR) yang disetujui.'],
+                'policy' => ['Tenant policy requires all Purchase Orders to be generated through an approved Purchase Request (PR).'],
             ]);
         }
 
@@ -324,7 +324,7 @@ class PurchaseOrderService
 
         if (! $hasDirectPermission) {
             throw ValidationException::withMessages([
-                'permission' => ['Anda tidak memiliki izin (purchasing.po.create_direct) untuk membuat Pesanan Pembelian langsung tanpa PR.'],
+                'permission' => ['You do not have permission (purchasing.po.create_direct) to create direct Purchase Orders without PR.'],
             ]);
         }
 
@@ -333,7 +333,7 @@ class PurchaseOrderService
         $supplier = Supplier::query()->where('tenant_id', $tenantId)->find($supplierId);
         if (! $supplier || $supplier->status !== SupplierStatusEnum::Active) {
             throw ValidationException::withMessages([
-                'supplier_id' => ['Pemasok tidak ditemukan atau statusnya tidak aktif.'],
+                'supplier_id' => ['Supplier not found or is currently inactive.'],
             ]);
         }
 
@@ -457,7 +457,7 @@ class PurchaseOrderService
                 storeId: $storeId,
                 subjectType: PurchaseOrder::class,
                 subjectId: $po->id,
-                description: "Pesanan Pembelian Langsung (Direct PO) {$po->po_number} berhasil dibuat.",
+                description: "Direct Purchase Order {$po->po_number} successfully created.",
                 metadata: [
                     'po_number' => $po->po_number,
                     'total_amount' => $finalTotalAmount,
@@ -475,7 +475,7 @@ class PurchaseOrderService
     {
         if (! $po->isDraft()) {
             throw ValidationException::withMessages([
-                'status' => ['PO hanya dapat diajukan ke persetujuan dari status Draf.'],
+                'status' => ['PO can only be submitted for approval from Draft status.'],
             ]);
         }
 
@@ -499,7 +499,7 @@ class PurchaseOrderService
                 storeId: (int) $po->store_id,
                 subjectType: PurchaseOrder::class,
                 subjectId: (int) $po->id,
-                description: "PO {$po->po_number} diajukan. Status: {$po->status->label()}.",
+                description: "PO {$po->po_number} submitted. Status: {$po->status->label()}.",
                 metadata: ['status' => $po->status->value]
             );
 
@@ -515,14 +515,14 @@ class PurchaseOrderService
     {
         if (! $po->canBeReleased()) {
             throw ValidationException::withMessages([
-                'status' => ['PO harus berstatus Disetujui (Approved) untuk dapat diterbitkan (Released).'],
+                'status' => ['PO must be in Approved status to be Released.'],
             ]);
         }
 
         // Pemasok harus tetap active
         if ($po->supplier->status !== SupplierStatusEnum::Active) {
             throw ValidationException::withMessages([
-                'supplier_id' => ['PO tidak dapat dirilis karena status pemasok sedang tidak aktif.'],
+                'supplier_id' => ['PO cannot be released because supplier is currently inactive.'],
             ]);
         }
 
@@ -539,7 +539,7 @@ class PurchaseOrderService
                 storeId: (int) $po->store_id,
                 subjectType: PurchaseOrder::class,
                 subjectId: (int) $po->id,
-                description: "Pesanan Pembelian {$po->po_number} resmi diterbitkan (Released) ke pemasok.",
+                description: "Purchase Order {$po->po_number} released to supplier.",
                 metadata: ['released_at' => $po->released_at->toIso8601String()]
             );
 
@@ -560,14 +560,14 @@ class PurchaseOrderService
     ): PurchaseOrder {
         if (! $po->canBeAmended()) {
             throw ValidationException::withMessages([
-                'status' => ['Hanya PO yang berstatus Diterbitkan (Released) yang dapat diamandemen.'],
+                'status' => ['Only Released POs can be amended.'],
             ]);
         }
 
         $reason = trim($reason);
         if (mb_strlen($reason) < 10) {
             throw ValidationException::withMessages([
-                'reason' => ['Alasan amandemen wajib diisi minimal 10 karakter.'],
+                'reason' => ['Amendment reason must be at least 10 characters.'],
             ]);
         }
 
@@ -594,7 +594,7 @@ class PurchaseOrderService
                 $lineId = (int) ($item['id'] ?? 0);
                 if (! $lockedLines->has($lineId)) {
                     throw ValidationException::withMessages([
-                        'lines' => ["Baris PO #{$lineId} tidak ditemukan."],
+                        'lines' => ["PO Line #{$lineId} not found."],
                     ]);
                 }
                 $linesPayloadIndexed[$lineId] = $item;
@@ -611,7 +611,7 @@ class PurchaseOrderService
                     if (bccomp(bc_num($newQty), bc_num($minAllowed), 4) < 0) {
                         throw ValidationException::withMessages([
                             'lines' => [
-                                "Kuantitas baru ({$newQty}) pada baris #{$lineId} tidak boleh lebih kecil dari kuantitas yang sudah diterima/ditagihkan ({$minAllowed}).",
+                                "New quantity ({$newQty}) on line #{$lineId} cannot be less than quantity already received or billed ({$minAllowed}).",
                             ],
                         ]);
                     }
@@ -703,7 +703,7 @@ class PurchaseOrderService
                 storeId: (int) $lockedPo->store_id,
                 subjectType: PurchaseOrder::class,
                 subjectId: (int) $lockedPo->id,
-                description: "Pesanan Pembelian {$lockedPo->po_number} diamandemen ke Revisi {$revisionNumber}.",
+                description: "Purchase Order {$lockedPo->po_number} amended to Revision {$revisionNumber}.",
                 metadata: [
                     'revision_number' => $revisionNumber,
                     'reason' => $reason,
@@ -725,7 +725,7 @@ class PurchaseOrderService
     {
         if (! $po->canBeCancelled()) {
             throw ValidationException::withMessages([
-                'status' => ['PO yang sudah memiliki histori penerimaan barang atau penagihan faktur tidak dapat dibatalkan.'],
+                'status' => ['PO with receipt history or billed invoices cannot be cancelled.'],
             ]);
         }
 
@@ -764,7 +764,7 @@ class PurchaseOrderService
                 storeId: (int) $po->store_id,
                 subjectType: PurchaseOrder::class,
                 subjectId: (int) $po->id,
-                description: "Pesanan Pembelian {$po->po_number} dibatalkan.",
+                description: "Purchase Order {$po->po_number} cancelled.",
                 metadata: ['reason' => $reason]
             );
 

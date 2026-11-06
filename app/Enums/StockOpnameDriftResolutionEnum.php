@@ -13,9 +13,9 @@ enum StockOpnameDriftResolutionEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::None => 'Tidak Ada Resolusi (Tolak)',
-            self::ReSnapshot => 'Hitung Ulang (Re-Snapshot)',
-            self::RebaseOverride => 'Abaikan & Rebase Terhadap Stok Terkini (Rebase Override)',
+            self::None => 'No Resolution (Reject)',
+            self::ReSnapshot => 'Recount (Re-Snapshot)',
+            self::RebaseOverride => 'Rebase Override (Align with Current Stock)',
         };
     }
 }

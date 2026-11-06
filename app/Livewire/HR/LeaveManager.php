@@ -62,11 +62,11 @@ class LeaveManager extends Component
                 'target_entity_type' => 'LEAVE_REQUEST',
                 'target_entity_id' => $request->id,
                 'status' => 'APPROVED',
-                'reason' => 'Disetujui via HR Portal',
+                'reason' => 'Approved via HR Portal',
             ]);
 
             $leaveService->approveLeaveRequest($tenantId, $request->id, $approval->id, (int) Auth::id());
-            session()->flash('success', "Permohonan cuti #{$request->id} berhasil disetujui.");
+            session()->flash('success', "Leave request #{$request->id} approved successfully.");
         } catch (\Throwable $e) {
             session()->flash('error', $e->getMessage());
         }
@@ -91,8 +91,8 @@ class LeaveManager extends Component
         $this->authorize('reject', $request);
 
         try {
-            $leaveService->rejectLeaveRequest($tenantId, $request->id, (int) Auth::id(), 'Ditolak oleh manajemen.');
-            session()->flash('success', "Permohonan cuti #{$request->id} telah ditolak.");
+            $leaveService->rejectLeaveRequest($tenantId, $request->id, (int) Auth::id(), 'Rejected by management.');
+            session()->flash('success', "Leave request #{$request->id} rejected.");
         } catch (\Throwable $e) {
             session()->flash('error', $e->getMessage());
         }
@@ -108,7 +108,10 @@ class LeaveManager extends Component
             ->orderBy('id', 'desc');
 
         if ($this->statusFilter !== 'ALL') {
-            $query->where('status', LeaveRequestStatusEnum::from($this->statusFilter));
+            $statusEnum = LeaveRequestStatusEnum::tryFrom($this->statusFilter);
+            if ($statusEnum !== null) {
+                $query->where('status', $statusEnum);
+            }
         }
 
         $requests = $query->paginate(12);
@@ -121,9 +124,32 @@ class LeaveManager extends Component
             ->take(20)
             ->get();
 
+        $pendingCount = LeaveRequest::withoutTenantScope()
+            ->where('tenant_id', $tenantId)
+            ->where('status', LeaveRequestStatusEnum::PENDING)
+            ->count();
+
+        $approvedCount = LeaveRequest::withoutTenantScope()
+            ->where('tenant_id', $tenantId)
+            ->where('status', LeaveRequestStatusEnum::APPROVED)
+            ->count();
+
+        $totalBalanceCount = LeaveBalance::withoutTenantScope()
+            ->where('tenant_id', $tenantId)
+            ->count();
+
+        $totalDaysApproved = (float) LeaveRequest::withoutTenantScope()
+            ->where('tenant_id', $tenantId)
+            ->where('status', LeaveRequestStatusEnum::APPROVED)
+            ->sum('total_days');
+
         return view('livewire.hr.leave-manager', [
             'requests' => $requests,
             'balances' => $balances,
-        ])->layout('layouts.app', ['title' => 'Manajemen Cuti & Izin Karyawan — Apeiron']);
+            'pendingCount' => $pendingCount,
+            'approvedCount' => $approvedCount,
+            'totalBalanceCount' => $totalBalanceCount,
+            'totalDaysApproved' => $totalDaysApproved,
+        ])->layout('layouts.app', ['title' => 'Leave & Absence Management — Apeiron']);
     }
 }

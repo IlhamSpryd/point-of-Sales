@@ -48,7 +48,7 @@ class StockAdjustmentService
     public function createDraft(int $tenantId, int $storeId, array $data, int $userId): StockAdjustment
     {
         if (empty($data['items'])) {
-            throw new InvalidArgumentException('Dokumen penyesuaian stok wajib memiliki minimal 1 item.');
+            throw new InvalidArgumentException('Stock adjustment document must contain at least 1 item.');
         }
 
         $idempotencyKey = $data['idempotency_key'] ?? (string) Str::uuid();
@@ -94,7 +94,7 @@ class StockAdjustmentService
                 storeId: $storeId,
                 subjectType: StockAdjustment::class,
                 subjectId: (int) $adjustment->id,
-                description: "Draft penyesuaian stok #{$adjustment->adjustment_number} dibuat dengan alasan {$reasonCode->value}",
+                description: "Stock adjustment draft #{$adjustment->adjustment_number} created with reason {$reasonCode->value}.",
                 metadata: [
                     'adjustment_number' => $adjustment->adjustment_number,
                     'reason_code' => $reasonCode->value,
@@ -119,7 +119,7 @@ class StockAdjustmentService
     public function updateDraft(StockAdjustment $adjustment, array $data, int $userId): StockAdjustment
     {
         if (! $adjustment->isDraft()) {
-            throw new DomainException("Hanya dokumen berstatus DRAFT yang dapat diperbarui. Status saat ini: {$adjustment->status->value}");
+            throw new DomainException("Only documents with DRAFT status can be updated. Current status: {$adjustment->status->value}");
         }
 
         return DB::transaction(function () use ($adjustment, $data, $userId) {
@@ -138,7 +138,7 @@ class StockAdjustmentService
 
             if (isset($data['items'])) {
                 if (empty($data['items'])) {
-                    throw new InvalidArgumentException('Dokumen penyesuaian stok wajib memiliki minimal 1 item.');
+                    throw new InvalidArgumentException('Stock adjustment document must contain at least 1 item.');
                 }
 
                 $adjustment->items()->delete();
@@ -154,7 +154,7 @@ class StockAdjustmentService
                 storeId: (int) $adjustment->store_id,
                 subjectType: StockAdjustment::class,
                 subjectId: (int) $adjustment->id,
-                description: "Draft penyesuaian stok #{$adjustment->adjustment_number} diperbarui",
+                description: "Stock adjustment draft #{$adjustment->adjustment_number} updated.",
             );
 
             return $adjustment->fresh(['items']) ?? $adjustment;
@@ -167,7 +167,7 @@ class StockAdjustmentService
     public function cancelDraft(StockAdjustment $adjustment, int $userId): StockAdjustment
     {
         if (! $adjustment->isDraft()) {
-            throw new DomainException("Hanya dokumen berstatus DRAFT yang dapat dibatalkan. Status saat ini: {$adjustment->status->value}");
+            throw new DomainException("Only documents with DRAFT status can be cancelled. Current status: {$adjustment->status->value}");
         }
 
         $adjustment->update([
@@ -181,7 +181,7 @@ class StockAdjustmentService
             storeId: (int) $adjustment->store_id,
             subjectType: StockAdjustment::class,
             subjectId: (int) $adjustment->id,
-            description: "Draft penyesuaian stok #{$adjustment->adjustment_number} dibatalkan",
+            description: "Stock adjustment draft #{$adjustment->adjustment_number} cancelled.",
         );
 
         return $adjustment->fresh(['items']) ?? $adjustment;
@@ -205,12 +205,12 @@ class StockAdjustmentService
             }
 
             if (! $locked->isDraft()) {
-                throw new DomainException("Hanya dokumen berstatus DRAFT yang dapat diposting. Status saat ini: {$locked->status->value}");
+                throw new DomainException("Only documents with DRAFT status can be posted. Current status: {$locked->status->value}");
             }
 
             $items = $locked->items()->get();
             if ($items->isEmpty()) {
-                throw new DomainException('Dokumen penyesuaian stok tidak memiliki baris detail.');
+                throw new DomainException('Stock adjustment document has no detail items.');
             }
 
             $movements = [];
@@ -237,8 +237,8 @@ class StockAdjustmentService
 
                     if (bccomp(bc_num($currentQty), bc_num($qtyToDeduct), 4) < 0) {
                         throw new DomainException(
-                            "Penyesuaian stok ditolak (OD-05): Saldo cabang untuk {$item->item_name} tersedia {$currentQty}, "
-                            ."tidak mencukupi untuk pengurangan keluar sebesar {$qtyToDeduct}."
+                            "Stock adjustment rejected (OD-05): Branch balance for {$item->item_name} has {$currentQty} available, "
+                            ."insufficient for requested deduction of {$qtyToDeduct}."
                         );
                     }
 
@@ -289,7 +289,7 @@ class StockAdjustmentService
                 storeId: (int) $locked->store_id,
                 subjectType: StockAdjustment::class,
                 subjectId: (int) $locked->id,
-                description: "Penyesuaian stok #{$locked->adjustment_number} berhasil diposting ({$locked->reason_code->value})",
+                description: "Stock adjustment #{$locked->adjustment_number} successfully posted ({$locked->reason_code->value}).",
                 metadata: [
                     'adjustment_number' => $locked->adjustment_number,
                     'reason_code' => $locked->reason_code->value,
@@ -333,7 +333,7 @@ class StockAdjustmentService
     {
         $itemType = (string) ($itemData['item_type'] ?? '');
         if (! in_array($itemType, ['product', 'ingredient'], true)) {
-            throw new InvalidArgumentException("item_type harus 'product' atau 'ingredient'. Diberikan: {$itemType}");
+            throw new InvalidArgumentException("item_type must be 'product' or 'ingredient'. Given: {$itemType}");
         }
 
         $productId = isset($itemData['product_id']) ? (int) $itemData['product_id'] : null;
@@ -341,12 +341,12 @@ class StockAdjustmentService
 
         $direction = strtoupper((string) ($itemData['direction'] ?? $adjustment->reason_code->defaultDirection()));
         if (! in_array($direction, ['IN', 'OUT'], true)) {
-            throw new InvalidArgumentException("direction harus 'IN' atau 'OUT'. Diberikan: {$direction}");
+            throw new InvalidArgumentException("direction must be 'IN' or 'OUT'. Given: {$direction}");
         }
 
         $qty = (string) ($itemData['quantity'] ?? '0');
         if (bccomp(bc_num($qty), '0', 4) <= 0) {
-            throw new InvalidArgumentException("quantity harus lebih besar dari 0. Diberikan: {$qty}");
+            throw new InvalidArgumentException("quantity must be greater than 0. Given: {$qty}");
         }
 
         // Resolusi unit cost snapshot
@@ -357,7 +357,7 @@ class StockAdjustmentService
 
         if ($itemType === 'product') {
             if ($productId === null || $ingredientId !== null) {
-                throw new InvalidArgumentException('Untuk item_type product, product_id wajib diisi dan ingredient_id harus null.');
+                throw new InvalidArgumentException('For item_type product, product_id is required and ingredient_id must be null.');
             }
 
             $product = Product::withoutTenantScope()
@@ -366,7 +366,7 @@ class StockAdjustmentService
                 ->first();
 
             if (! $product) {
-                throw new InvalidArgumentException("Product ID {$productId} tidak ditemukan pada tenant {$adjustment->tenant_id}.");
+                throw new InvalidArgumentException("Product ID {$productId} not found for tenant {$adjustment->tenant_id}.");
             }
 
             if (bccomp(bc_num($unitCostSnapshot), '0', 4) === 0) {
@@ -377,7 +377,7 @@ class StockAdjustmentService
             }
         } else {
             if ($ingredientId === null || $productId !== null) {
-                throw new InvalidArgumentException('Untuk item_type ingredient, ingredient_id wajib diisi dan product_id harus null.');
+                throw new InvalidArgumentException('For item_type ingredient, ingredient_id is required and product_id must be null.');
             }
 
             $ingredient = Ingredient::withoutTenantScope()
@@ -386,7 +386,7 @@ class StockAdjustmentService
                 ->first();
 
             if (! $ingredient) {
-                throw new InvalidArgumentException("Ingredient ID {$ingredientId} tidak ditemukan pada tenant {$adjustment->tenant_id}.");
+                throw new InvalidArgumentException("Ingredient ID {$ingredientId} not found for tenant {$adjustment->tenant_id}.");
             }
 
             if (bccomp(bc_num($unitCostSnapshot), '0', 4) === 0) {

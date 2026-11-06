@@ -38,12 +38,12 @@ class CashBankTransactionService
         $amount = bcadd(bc_num($data['amount'] ?? '0.00'), '0', 2);
 
         if (bccomp($amount, '0.00', 2) <= 0) {
-            throw new DomainException('FIN-M7-03: Nominal penerimaan kas/bank wajib lebih besar dari 0.');
+            throw new DomainException('FIN-M7-03: Cash/bank receipt amount must be greater than 0.');
         }
 
         $date = $data['transaction_date'] ?? now()->toDateString();
         $dateStr = $date instanceof CarbonInterface ? $date->toDateString() : Carbon::parse($date)->toDateString();
-        $description = (string) ($data['description'] ?? "Penerimaan Kas/Bank #{$account->account_name}");
+        $description = (string) ($data['description'] ?? "Cash/Bank Receipt #{$account->account_name}");
         $referenceNumber = $data['reference_number'] ?? null;
         $idempotencyKey = $data['idempotency_key'] ?? "cbt:rec:{$tenantId}:".Str::uuid();
 
@@ -125,12 +125,12 @@ class CashBankTransactionService
         $amount = bcadd(bc_num($data['amount'] ?? '0.00'), '0', 2);
 
         if (bccomp($amount, '0.00', 2) <= 0) {
-            throw new DomainException('FIN-M7-03: Nominal pengeluaran kas/bank wajib lebih besar dari 0.');
+            throw new DomainException('FIN-M7-03: Cash/bank disbursement amount must be greater than 0.');
         }
 
         $date = $data['transaction_date'] ?? now()->toDateString();
         $dateStr = $date instanceof CarbonInterface ? $date->toDateString() : Carbon::parse($date)->toDateString();
-        $description = (string) ($data['description'] ?? "Pengeluaran Kas/Bank #{$account->account_name}");
+        $description = (string) ($data['description'] ?? "Cash/Bank Disbursement #{$account->account_name}");
         $referenceNumber = $data['reference_number'] ?? null;
         $idempotencyKey = $data['idempotency_key'] ?? "cbt:disb:{$tenantId}:".Str::uuid();
 
@@ -141,7 +141,7 @@ class CashBankTransactionService
                 ->findOrFail($account->id);
 
             if (bccomp((string) $lockedAccount->current_balance, $amount, 2) < 0) {
-                throw new DomainException("Saldo kas/bank '{$lockedAccount->account_name}' ({$lockedAccount->current_balance}) tidak mencukupi untuk pengeluaran sebesar {$amount}.");
+                throw new DomainException("Insufficient cash/bank balance in '{$lockedAccount->account_name}' ({$lockedAccount->current_balance}) for disbursement of {$amount}.");
             }
 
             $newBalance = bcsub((string) $lockedAccount->current_balance, $amount, 2);
@@ -221,25 +221,25 @@ class CashBankTransactionService
         ?string $idempotencyKey = null
     ): array {
         if ($sourceAccount->id === $destinationAccount->id) {
-            throw new DomainException('Akun asal dan akun tujuan transfer internal tidak boleh sama.');
+            throw new DomainException('Source and destination accounts for internal transfer cannot be the same.');
         }
 
         if ($sourceAccount->tenant_id !== $destinationAccount->tenant_id) {
-            throw new DomainException('Transfer internal antar akun beda tenant tidak diizinkan.');
+            throw new DomainException('Internal transfers between different tenants are not permitted.');
         }
 
         $tenantId = $sourceAccount->tenant_id;
         $normAmount = bcadd(bc_num($amount), '0', 2);
 
         if (bccomp($normAmount, '0.00', 2) <= 0) {
-            throw new DomainException('FIN-M7-03: Nominal transfer kas/bank wajib lebih besar dari 0.');
+            throw new DomainException('FIN-M7-03: Transfer amount must be greater than 0.');
         }
 
         $dateStr = $date instanceof CarbonInterface ? $date->toDateString() : Carbon::parse($date)->toDateString();
         $idempotencyBase = $idempotencyKey ?: Str::uuid()->toString();
 
         return DB::transaction(function () use ($tenantId, $sourceAccount, $destinationAccount, $normAmount, $dateStr, $description, $referenceNumber, $idempotencyBase, $actor) {
-            // Lock akun dalam urutan ID ascending untuk mencegah deadlock
+            // Lock accounts in ascending ID order to prevent deadlocks
             $firstId = min($sourceAccount->id, $destinationAccount->id);
             $secondId = max($sourceAccount->id, $destinationAccount->id);
 
@@ -249,9 +249,9 @@ class CashBankTransactionService
             $lockedSource = CashBankAccount::withoutTenantScope()->where('tenant_id', $tenantId)->findOrFail($sourceAccount->id);
             $lockedDest = CashBankAccount::withoutTenantScope()->where('tenant_id', $tenantId)->findOrFail($destinationAccount->id);
 
-            // Cek saldo akun pengirim
+            // Check sender account balance
             if (bccomp((string) $lockedSource->current_balance, $normAmount, 2) < 0) {
-                throw new DomainException("Saldo kas/bank '{$lockedSource->account_name}' ({$lockedSource->current_balance}) tidak mencukupi untuk transfer sebesar {$normAmount}.");
+                throw new DomainException("Insufficient cash/bank balance in source account '{$lockedSource->account_name}' ({$lockedSource->current_balance}) for transfer of {$normAmount}.");
             }
 
             // Update Saldo Sumber & Tujuan
@@ -362,18 +362,18 @@ class CashBankTransactionService
         ?int $shiftId = null
     ): array {
         if ($drawerAccount->account_type !== CashBankAccountTypeEnum::POS_DRAWER_CLEARING) {
-            throw new DomainException("Akun sumber setoran kasir wajib bertipe 'POS_DRAWER_CLEARING'.");
+            throw new DomainException("Cashier deposit source account must be of type 'POS_DRAWER_CLEARING'.");
         }
 
         if (! in_array($safeOrBankAccount->account_type, [CashBankAccountTypeEnum::STORE_SAFE, CashBankAccountTypeEnum::BANK_ACCOUNT], true)) {
-            throw new DomainException("Akun tujuan setoran kasir wajib bertipe 'STORE_SAFE' atau 'BANK_ACCOUNT'.");
+            throw new DomainException("Cashier deposit destination account must be of type 'STORE_SAFE' or 'BANK_ACCOUNT'.");
         }
 
         $tenantId = $drawerAccount->tenant_id;
         $normAmount = bcadd(bc_num($amount), '0', 2);
 
         if (bccomp($normAmount, '0.00', 2) <= 0) {
-            throw new DomainException('FIN-M7-03: Nominal setoran kasir wajib lebih besar dari 0.');
+            throw new DomainException('FIN-M7-03: Cashier deposit amount must be greater than 0.');
         }
 
         $dateStr = $date instanceof CarbonInterface ? $date->toDateString() : Carbon::parse($date)->toDateString();
@@ -498,11 +498,11 @@ class CashBankTransactionService
         ?string $idempotencyKey = null
     ): array {
         if ($pgClearingAccount->account_type !== CashBankAccountTypeEnum::PAYMENT_GATEWAY_CLEARING) {
-            throw new DomainException("Akun sumber settlement wajib bertipe 'PAYMENT_GATEWAY_CLEARING'.");
+            throw new DomainException("Settlement source account must be of type 'PAYMENT_GATEWAY_CLEARING'.");
         }
 
         if ($bankAccount->account_type !== CashBankAccountTypeEnum::BANK_ACCOUNT) {
-            throw new DomainException("Akun tujuan settlement wajib bertipe 'BANK_ACCOUNT'.");
+            throw new DomainException("Settlement destination account must be of type 'BANK_ACCOUNT'.");
         }
 
         $tenantId = $pgClearingAccount->tenant_id;
@@ -510,14 +510,14 @@ class CashBankTransactionService
         $normMdr = bcadd(bc_num($mdrFeeAmount), '0', 2);
         $normNet = bcadd(bc_num($netAmount), '0', 2);
 
-        // Invarian FIN-M7-01: Gross === Net + MDR Fee
+        // Invariant FIN-M7-01: Gross === Net + MDR Fee
         $calculatedGross = bcadd($normNet, $normMdr, 2);
         if (bccomp($normGross, $calculatedGross, 2) !== 0) {
-            throw new DomainException("FIN-M7-01: Gross amount ({$normGross}) tidak sama dengan Net ({$normNet}) + MDR Fee ({$normMdr}).");
+            throw new DomainException("FIN-M7-01: Gross amount ({$normGross}) does not match Net ({$normNet}) + MDR Fee ({$normMdr}).");
         }
 
         if (bccomp($normGross, '0.00', 2) <= 0) {
-            throw new DomainException('FIN-M7-03: Nominal gross settlement wajib lebih besar dari 0.');
+            throw new DomainException('FIN-M7-03: Gross settlement amount must be greater than 0.');
         }
 
         $dateStr = $date instanceof CarbonInterface ? $date->toDateString() : Carbon::parse($date)->toDateString();
@@ -657,14 +657,14 @@ class CashBankTransactionService
         $typeEnum = $type instanceof CashBankTransactionTypeEnum ? $type : CashBankTransactionTypeEnum::from((string) $type);
 
         if (! in_array($typeEnum, [CashBankTransactionTypeEnum::BANK_FEE, CashBankTransactionTypeEnum::BANK_INTEREST], true)) {
-            throw new DomainException("Tipe penyesuaian bank hanya diizinkan 'BANK_FEE' atau 'BANK_INTEREST'.");
+            throw new DomainException("Bank adjustment type must be either 'BANK_FEE' or 'BANK_INTEREST'.");
         }
 
         $tenantId = $account->tenant_id;
         $normAmount = bcadd(bc_num($amount), '0', 2);
 
         if (bccomp($normAmount, '0.00', 2) <= 0) {
-            throw new DomainException('FIN-M7-03: Nominal penyesuaian bank wajib lebih besar dari 0.');
+            throw new DomainException('FIN-M7-03: Bank adjustment amount must be greater than 0.');
         }
 
         $dateStr = $date instanceof CarbonInterface ? $date->toDateString() : Carbon::parse($date)->toDateString();
@@ -761,13 +761,13 @@ class CashBankTransactionService
      */
     public function voidTransaction(CashBankTransaction $transaction, User $actor, string $reason): CashBankTransaction
     {
-        // Invarian FIN-M7-12: Transaksi yang sudah direkonsiliasi dilarang dibatalkan
+        // Invariant FIN-M7-12: Reconciled transactions cannot be voided
         if ($transaction->is_reconciled) {
-            throw new DomainException('FIN-M7-12: Transaksi yang sudah direkonsiliasi tidak dapat dibatalkan.');
+            throw new DomainException('FIN-M7-12: Reconciled transactions cannot be voided.');
         }
 
         if ($transaction->status !== CashBankTransactionStatusEnum::POSTED) {
-            throw new DomainException("Hanya transaksi berstatus POSTED yang dapat dibatalkan. Status saat ini: {$transaction->status->value}.");
+            throw new DomainException("Only POSTED transactions can be voided. Current status: {$transaction->status->value}.");
         }
 
         $tenantId = $transaction->tenant_id;

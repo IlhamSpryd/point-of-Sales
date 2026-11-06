@@ -410,7 +410,7 @@ class Wave4FnbTest extends TestCase
             storeId: $this->store->id,
             tableId: $table1->id
         );
-        $this->assertEquals('TAGIHAN SEMENTARA - BUKAN BUKTI PEMBAYARAN', $proforma['disclaimer']);
+        $this->assertEquals('PROFORMA INVOICE - NOT A PROOF OF PAYMENT', $proforma['disclaimer']);
         $this->assertTrue($proforma['is_proforma']);
         $this->assertEquals(150000, $proforma['order']['total_amount']);
 
@@ -438,7 +438,7 @@ class Wave4FnbTest extends TestCase
             );
             $this->fail('Pelepasan meja dengan pesanan pending seharusnya ditolak.');
         } catch (DomainException $e) {
-            $this->assertStringContainsString('belum lunas', $e->getMessage());
+            $this->assertStringContainsString('unpaid orders', $e->getMessage());
         }
 
         // 5. Lunasi order dan release table berhasil

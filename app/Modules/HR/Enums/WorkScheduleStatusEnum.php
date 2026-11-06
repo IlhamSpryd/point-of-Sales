@@ -14,10 +14,10 @@ enum WorkScheduleStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::SCHEDULED => 'Terjadwal (Scheduled)',
-            self::SWAPPED => 'Ditukar (Swapped)',
-            self::CANCELLED => 'Dibatalkan (Cancelled)',
-            self::COMPLETED => 'Selesai Dijalani (Completed)',
+            self::SCHEDULED => 'Scheduled',
+            self::SWAPPED => 'Swapped',
+            self::CANCELLED => 'Cancelled',
+            self::COMPLETED => 'Completed',
         };
     }
 }

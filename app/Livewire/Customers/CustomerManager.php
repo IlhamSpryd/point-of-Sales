@@ -247,7 +247,7 @@ class CustomerManager extends Component
                     'is_loyalty_eligible' => $this->is_loyalty_eligible,
                 ], $actor);
 
-                session()->flash('message', "Data pelanggan '{$customer->name}' berhasil diperbarui.");
+                session()->flash('message', "Customer '{$customer->name}' updated successfully.");
             } else {
                 Gate::authorize('create', Customer::class);
 
@@ -265,7 +265,7 @@ class CustomerManager extends Component
                     'is_loyalty_eligible' => $this->is_loyalty_eligible,
                 ], $actor);
 
-                session()->flash('message', "Pelanggan baru '{$customer->name}' ({$customer->customer_code}) berhasil dibuat.");
+                session()->flash('message', "New customer '{$customer->name}' ({$customer->customer_code}) created successfully.");
             }
 
             $this->showModal = false;
@@ -287,8 +287,8 @@ class CustomerManager extends Component
         Gate::authorize('delete', $customer);
 
         try {
-            $customerService->deleteCustomer($customer, auth()->user(), 'Dihapus melalui web dashboard');
-            session()->flash('message', "Pelanggan '{$customer->name}' berhasil dinonaktifkan.");
+            $customerService->deleteCustomer($customer, auth()->user(), 'Deactivated via web dashboard');
+            session()->flash('message', "Customer '{$customer->name}' deactivated successfully.");
         } catch (\Throwable $e) {
             session()->flash('error', $e->getMessage());
         }
@@ -364,10 +364,10 @@ class CustomerManager extends Component
                     ->where('tenant_id', $tenantId)
                     ->findOrFail($this->addressId);
                 $customerService->updateAddress($address, $data);
-                session()->flash('address_message', 'Alamat berhasil diperbarui.');
+                session()->flash('address_message', 'Address updated successfully.');
             } else {
                 $customerService->addAddress($customer, $data);
-                session()->flash('address_message', 'Alamat baru berhasil ditambahkan.');
+                session()->flash('address_message', 'New address added successfully.');
             }
 
             $this->resetAddressForm();
@@ -391,7 +391,7 @@ class CustomerManager extends Component
 
         try {
             $customerService->deleteAddress($address);
-            session()->flash('address_message', 'Alamat berhasil dihapus.');
+            session()->flash('address_message', 'Address deleted successfully.');
         } catch (\Throwable $e) {
             session()->flash('address_error', $e->getMessage());
         }
@@ -452,10 +452,10 @@ class CustomerManager extends Component
                     ->where('tenant_id', $tenantId)
                     ->findOrFail($this->contactId);
                 $customerService->updateContact($contact, $data);
-                session()->flash('contact_message', 'Kontak narahubung berhasil diperbarui.');
+                session()->flash('contact_message', 'Contact person updated successfully.');
             } else {
                 $customerService->addContact($customer, $data);
-                session()->flash('contact_message', 'Kontak narahubung baru berhasil ditambahkan.');
+                session()->flash('contact_message', 'New contact person added successfully.');
             }
 
             $this->resetContactForm();
@@ -479,7 +479,7 @@ class CustomerManager extends Component
 
         try {
             $customerService->deleteContact($contact);
-            session()->flash('contact_message', 'Kontak narahubung berhasil dihapus.');
+            session()->flash('contact_message', 'Contact person deleted successfully.');
         } catch (\Throwable $e) {
             session()->flash('contact_error', $e->getMessage());
         }
@@ -521,7 +521,7 @@ class CustomerManager extends Component
 
         try {
             $customerService->mergeCustomers($source, $target, auth()->user(), $this->mergeReason);
-            session()->flash('message', "Pelanggan '{$source->customer_code}' berhasil digabungkan ke '{$target->customer_code}'.");
+            session()->flash('message', "Customer '{$source->customer_code}' successfully merged into '{$target->customer_code}'.");
             $this->showMergeModal = false;
         } catch (\Throwable $e) {
             session()->flash('merge_error', $e->getMessage());
@@ -597,7 +597,7 @@ class CustomerManager extends Component
             $this->statementPreview = $arService->generateCustomerStatement($this->activeCustomerId, $start, $end);
         } catch (\Throwable $e) {
             $this->statementPreview = null;
-            session()->flash('error', 'Gagal memuat statement: '.$e->getMessage());
+            session()->flash('error', 'Unable to load statement: '.$e->getMessage());
         }
     }
 

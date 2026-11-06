@@ -89,7 +89,7 @@ class ShiftManager extends Component
         $role = auth()->user()?->role;
         $roleName = $role?->name;
         if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager', 'Kasir', 'Supervisor'], true)) {
-            abort(403, 'Anda tidak memiliki hak akses manajemen shift.');
+            abort(403, 'You do not have permission to manage register shifts.');
         }
     }
 
@@ -124,7 +124,7 @@ class ShiftManager extends Component
         $pinToVerify = $pin ?? $this->cashierPin;
 
         if ($user && ! app(CashierPinService::class)->hasPin($user)) {
-            $this->dispatch('toast', message: 'Kasir wajib menyetel PIN Kasir sebelum dapat membuka shift.', type: 'error');
+            $this->dispatch('toast', message: 'Cashiers must set a PIN before opening a register shift.', type: 'error');
             $this->dispatch('require-pin-setup');
 
             return;
@@ -132,8 +132,8 @@ class ShiftManager extends Component
 
         if (! empty($pinToVerify)) {
             if (! app(CashierPinService::class)->verifyPin($user, $pinToVerify)) {
-                $this->addError('cashierPin', 'PIN Kasir salah.');
-                $this->dispatch('toast', message: 'PIN Kasir salah.', type: 'error');
+                $this->addError('cashierPin', 'Invalid cashier PIN.');
+                $this->dispatch('toast', message: 'Invalid cashier PIN.', type: 'error');
 
                 return;
             }
@@ -173,14 +173,14 @@ class ShiftManager extends Component
 
         if ($opened === null) {
             $this->loadActiveShift();
-            $this->dispatch('toast', message: 'Anda sudah memiliki shift yang sedang aktif.', type: 'info');
+            $this->dispatch('toast', message: 'You already have an active register shift.', type: 'info');
 
             return;
         }
 
         $this->cashierPin = '';
         $this->loadActiveShift();
-        $this->dispatch('toast', message: 'Shift berhasil dibuka.', type: 'success');
+        $this->dispatch('toast', message: 'Register shift opened successfully.', type: 'success');
     }
 
     public function setCashierPin(string $pin): void
@@ -192,7 +192,7 @@ class ShiftManager extends Component
 
         try {
             app(CashierPinService::class)->setPin($user, $pin);
-            $this->dispatch('toast', message: 'PIN Kasir berhasil disetel.', type: 'success');
+            $this->dispatch('toast', message: 'Cashier PIN updated successfully.', type: 'success');
         } catch (\InvalidArgumentException $e) {
             $this->dispatch('toast', message: $e->getMessage(), type: 'error');
         }
@@ -203,7 +203,7 @@ class ShiftManager extends Component
         $this->loadActiveShift();
 
         if (! $this->activeShift) {
-            $this->dispatch('toast', message: 'Tidak ada shift aktif untuk ditutup.', type: 'info');
+            $this->dispatch('toast', message: 'No active register shift to close.', type: 'info');
 
             return;
         }
@@ -215,8 +215,8 @@ class ShiftManager extends Component
 
         if (! empty($pinToVerify)) {
             if (! app(CashierPinService::class)->verifyPin($user, $pinToVerify, $this->activeShift)) {
-                $this->addError('cashierPin', 'PIN Kasir salah.');
-                $this->dispatch('toast', message: 'PIN Kasir salah.', type: 'error');
+                $this->addError('cashierPin', 'Invalid cashier PIN.');
+                $this->dispatch('toast', message: 'Invalid cashier PIN.', type: 'error');
 
                 return;
             }
@@ -250,7 +250,7 @@ class ShiftManager extends Component
         $this->loadActiveShift();
 
         if (! $closedShift) {
-            $this->dispatch('toast', message: 'Tidak ada shift aktif untuk ditutup.', type: 'info');
+            $this->dispatch('toast', message: 'No active register shift to close.', type: 'info');
 
             return;
         }
@@ -260,7 +260,7 @@ class ShiftManager extends Component
         $this->notes = '';
         $this->cashierPin = '';
 
-        $this->dispatch('toast', message: 'Shift berhasil ditutup.', type: 'success');
+        $this->dispatch('toast', message: 'Register shift closed successfully.', type: 'success');
     }
 
     public function initiateHandover(?string $pin = null)
@@ -273,7 +273,7 @@ class ShiftManager extends Component
             $this->activeShift = Shift::find($this->handoverShiftId);
         }
         if (! $this->activeShift) {
-            $this->dispatch('toast', message: 'Tidak ada shift aktif untuk diserahterimakan.', type: 'error');
+            $this->dispatch('toast', message: 'No active register shift to hand over.', type: 'error');
 
             return;
         }
@@ -306,7 +306,7 @@ class ShiftManager extends Component
             $this->activeHandoverId = $handover->id;
             $this->loadActiveShift();
             $this->cashierPin = '';
-            $this->dispatch('toast', message: 'Serah terima shift berhasil diinisiasi.', type: 'success');
+            $this->dispatch('toast', message: 'Shift handover initiated successfully.', type: 'success');
         } catch (\DomainException|ValidationException $e) {
             $message = $e instanceof ValidationException ? collect($e->errors())->flatten()->first() : $e->getMessage();
             $this->dispatch('toast', message: $message, type: 'error');
@@ -317,7 +317,7 @@ class ShiftManager extends Component
     {
         $this->loadActiveShift();
         if (! $this->activeShift || $this->activeShift->status !== 'open') {
-            $this->dispatch('toast', message: 'Hanya shift aktif yang dapat mencatat pergerakan kas.', type: 'error');
+            $this->dispatch('toast', message: 'Cash movements can only be recorded for active register shifts.', type: 'error');
 
             return;
         }
@@ -338,8 +338,8 @@ class ShiftManager extends Component
         if ($this->movementType === 'cash_out' && ! empty($this->movementSupervisorPin)) {
             $isSupValid = app(CashierPinService::class)->verifySupervisorPin((int) $user->id, $this->movementSupervisorPin, $this->activeShift->tenant_id);
             if (! $isSupValid) {
-                $this->addError('movementSupervisorPin', 'PIN Supervisor tidak sah.');
-                $this->dispatch('toast', message: 'PIN Supervisor tidak sah.', type: 'error');
+                $this->addError('movementSupervisorPin', 'Invalid supervisor PIN.');
+                $this->dispatch('toast', message: 'Invalid supervisor PIN.', type: 'error');
 
                 return;
             }
@@ -369,7 +369,7 @@ class ShiftManager extends Component
             $this->movementSupervisorPin = '';
             $this->isMovementModalOpen = false;
             $this->loadActiveShift();
-            $this->dispatch('toast', message: 'Pergerakan kas berhasil dicatat.', type: 'success');
+            $this->dispatch('toast', message: 'Cash movement recorded successfully.', type: 'success');
         } catch (\DomainException|\InvalidArgumentException|ValidationException $e) {
             $msg = $e instanceof ValidationException ? collect($e->errors())->flatten()->first() : $e->getMessage();
             $this->dispatch('toast', message: $msg, type: 'error');
@@ -382,7 +382,7 @@ class ShiftManager extends Component
             app(ShiftService::class)->cancelHandover($handoverId, (int) auth()->id());
             $this->activeHandoverId = null;
             $this->loadActiveShift();
-            $this->dispatch('toast', message: 'Serah terima shift dibatalkan.', type: 'success');
+            $this->dispatch('toast', message: 'Shift handover cancelled.', type: 'success');
         } catch (\DomainException $e) {
             $this->dispatch('toast', message: $e->getMessage(), type: 'error');
         }
@@ -406,7 +406,7 @@ class ShiftManager extends Component
             $this->cashierPin = '';
             $this->supervisorPin = '';
             $this->loadActiveShift();
-            $this->dispatch('toast', message: 'Serah terima shift berhasil diterima.', type: 'success');
+            $this->dispatch('toast', message: 'Shift handover accepted successfully.', type: 'success');
         } catch (\DomainException|ValidationException $e) {
             $message = $e instanceof ValidationException ? collect($e->errors())->flatten()->first() : $e->getMessage();
             $this->dispatch('toast', message: $message, type: 'error');
@@ -419,7 +419,7 @@ class ShiftManager extends Component
         $targetShiftId = $shiftId ?? $this->forceClosingShiftId;
         $targetShift = $targetShiftId ? Shift::find($targetShiftId) : ($this->activeShift ?? Shift::where('status', 'open')->first());
         if (! $targetShift) {
-            $this->dispatch('toast', message: 'Tidak ada shift aktif untuk ditutup paksa.', type: 'error');
+            $this->dispatch('toast', message: 'No active register shift to force close.', type: 'error');
 
             return;
         }
@@ -431,8 +431,8 @@ class ShiftManager extends Component
         $user = auth()->user();
 
         if (empty($actualReason)) {
-            $this->addError('forceCloseReason', 'Alasan penutupan paksa wajib diisi.');
-            $this->dispatch('toast', message: 'Alasan penutupan paksa wajib diisi.', type: 'error');
+            $this->addError('forceCloseReason', 'Force close reason is required.');
+            $this->dispatch('toast', message: 'Force close reason is required.', type: 'error');
 
             return;
         }
@@ -450,7 +450,7 @@ class ShiftManager extends Component
             $this->forceCloseReason = '';
             $this->forceCloseSupervisorPin = '';
             $this->isForceCloseModalOpen = false;
-            $this->dispatch('toast', message: 'Shift berhasil ditutup paksa oleh supervisor.', type: 'success');
+            $this->dispatch('toast', message: 'Register shift force closed by supervisor.', type: 'success');
         } catch (\DomainException|ValidationException $e) {
             $message = $e instanceof ValidationException ? collect($e->errors())->flatten()->first() : $e->getMessage();
             $this->dispatch('toast', message: $message, type: 'error');

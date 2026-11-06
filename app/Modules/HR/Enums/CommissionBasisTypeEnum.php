@@ -15,11 +15,11 @@ enum CommissionBasisTypeEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::PERCENTAGE_OF_SALES => 'Persentase Omzet Penjualan',
-            self::FIXED_PER_TRANSACTION => 'Nominal Tetap Per Transaksi',
-            self::PRODUCT_SPECIFIC => 'Insentif Khusus Produk Promo',
-            self::TIERED_TARGET => 'Komisi Berjenjang Target Omzet',
-            self::SHARED_POOL => 'Kolam Komisi Bersama Tim Toko',
+            self::PERCENTAGE_OF_SALES => 'Percentage of Net Sales',
+            self::FIXED_PER_TRANSACTION => 'Fixed Amount Per Transaction',
+            self::PRODUCT_SPECIFIC => 'Product-Specific Incentive',
+            self::TIERED_TARGET => 'Tiered Target Commission',
+            self::SHARED_POOL => 'Shared Team Commission Pool',
         };
     }
 }

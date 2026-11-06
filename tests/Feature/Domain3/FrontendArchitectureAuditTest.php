@@ -164,7 +164,7 @@ class FrontendArchitectureAuditTest extends TestCase
         Livewire::actingAs($this->cashierUser)
             ->test(CreateOrder::class)
             ->call('loadPendingOrder', 'POS-NONEXISTENT')
-            ->assertDispatched('toast', message: 'Pesanan tidak ditemukan atau sudah dibayar.', type: 'error')
+            ->assertDispatched('toast', message: 'Order not found or has already been paid.', type: 'error')
             ->assertSet('pendingOrderId', null);
     }
 
@@ -752,7 +752,7 @@ class FrontendArchitectureAuditTest extends TestCase
             ->test(OrderHistory::class)
             ->call('voidOrder', $order->id, 'Pembatalan langsung via Livewire action call')
             ->assertHasNoErrors()
-            ->assertDispatched('toast', message: 'Pesanan berhasil di-void dan stok dikembalikan.', type: 'success');
+            ->assertDispatched('toast', message: 'Order successfully voided and inventory restored.', type: 'success');
 
         $fresh = $order->fresh();
         $this->assertEquals(OrderStatus::Void, $fresh->order_status);
@@ -777,7 +777,7 @@ class FrontendArchitectureAuditTest extends TestCase
         Livewire::actingAs($this->cashierUser)
             ->test(OrderHistory::class)
             ->call('voidOrder', $order->id, 'Mencoba batalkan order pending')
-            ->assertDispatched('toast', message: 'Pesanan tidak ditemukan atau tidak dalam status Lunas.', type: 'error');
+            ->assertDispatched('toast', message: 'Order not found or not in paid status.', type: 'error');
 
         $fresh = $order->fresh();
         $this->assertEquals(OrderStatus::Pending, $fresh->order_status);

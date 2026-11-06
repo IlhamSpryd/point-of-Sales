@@ -1,5 +1,5 @@
 @props([
-    'placeholder' => 'Cari...',
+    'placeholder' => 'Search...',
     'icon' => 'search',
 ])
 

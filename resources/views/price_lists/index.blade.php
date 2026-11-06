@@ -22,7 +22,7 @@
 
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6" data-gsap="page-enter">
             <div>
-                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Price Lists & Tiered Pricing (Daftar Harga)</h4>
+                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Price Lists & Tiered Pricing</h4>
                 <p class="text-sm font-medium text-muted-foreground mt-1">Manage volume-tiered wholesale rules, loyalty tier pricing, and customer contracts</p>
             </div>
 

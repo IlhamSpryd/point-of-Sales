@@ -38,14 +38,14 @@ class PurchaseApprovalService
         $minAmount = (string) ($data['min_amount'] ?? '0.00');
         if (bccomp(bc_num($minAmount), '0', 2) < 0) {
             throw ValidationException::withMessages([
-                'min_amount' => ['Batas minimal nominal persetujuan tidak boleh negatif.'],
+                'min_amount' => ['Minimum approval amount cannot be negative.'],
             ]);
         }
 
         $maxAmount = isset($data['max_amount']) && $data['max_amount'] !== '' ? (string) $data['max_amount'] : null;
         if ($maxAmount !== null && bccomp(bc_num($maxAmount), bc_num($minAmount), 2) < 0) {
             throw ValidationException::withMessages([
-                'max_amount' => ['Batas maksimal nominal harus lebih besar atau sama dengan minimal nominal.'],
+                'max_amount' => ['Maximum amount must be greater than or equal to minimum amount.'],
             ]);
         }
 
@@ -106,9 +106,9 @@ class PurchaseApprovalService
 
         $matchedRules = $rules->filter(fn (PurchaseApprovalRule $r) => $r->matchesAmount($amount));
 
-        // Jika tidak ada aturan yang berlaku: dokumen langsung disetujui (auto-approve)
+        // If no rules match: auto-approve
         if ($matchedRules->isEmpty()) {
-            $this->finalizeDocumentApproval($approvable, null, 'Otomatis disetujui karena tidak ada aturan ambang batas.');
+            $this->finalizeDocumentApproval($approvable, null, 'Auto-approved as no threshold rules apply.');
 
             return null;
         }
@@ -138,7 +138,7 @@ class PurchaseApprovalService
             'actor_id' => $submitter->id,
             'actor_role_id' => $submitter->role_id,
             'step_order' => $firstRule->step_order,
-            'reason' => 'Pengajuan dokumen ke alur persetujuan langkah '.$firstRule->step_order,
+            'reason' => 'Document submitted to approval step '.$firstRule->step_order,
             'payload_snapshot' => [
                 'document_type' => $documentType,
                 'amount' => $amount,
@@ -164,14 +164,14 @@ class PurchaseApprovalService
                 ->findOrFail($request->id);
 
             if (! $lockedRequest->isPending()) {
-                throw new \RuntimeException('Permintaan persetujuan sudah tidak dalam status pending.');
+                throw new \RuntimeException('Approval request is no longer in pending status.');
             }
 
             // Penegakan Pemisahan Tugas (Separation of Duties / SoD)
             $isSoleUser = User::query()->where('tenant_id', $tenantId)->where('is_active', true)->count() === 1;
             if ((int) $approver->id === (int) $lockedRequest->submitted_by_user_id && ! $isSoleUser) {
                 throw ValidationException::withMessages([
-                    'approver' => ['Pemisahan Tugas (SoD): Anda dilarang menyetujui dokumen yang Anda ajukan sendiri.'],
+                    'approver' => ['Separation of Duties (SoD): You cannot approve documents you submitted.'],
                 ]);
             }
 
@@ -182,7 +182,7 @@ class PurchaseApprovalService
                     $roleName = $approver->role?->name;
                     if ($roleName !== 'Owner' && ! (bool) $approver->role?->is_admin) {
                         throw ValidationException::withMessages([
-                            'approver' => ['Peran Anda tidak memiliki wewenang untuk menyetujui langkah ini.'],
+                            'approver' => ['Your role is not authorized to approve this step.'],
                         ]);
                     }
                 }
@@ -190,7 +190,7 @@ class PurchaseApprovalService
                 if ($rule->approver_permission && ! $approver->hasPermission($rule->approver_permission)) {
                     if ($approver->role?->name !== 'Owner' && ! (bool) $approver->role?->is_admin) {
                         throw ValidationException::withMessages([
-                            'approver' => ["Anda tidak memiliki izin '{$rule->approver_permission}' untuk menyetujui langkah ini."],
+                            'approver' => ["You do not have permission '{$rule->approver_permission}' to approve this step."],
                         ]);
                     }
                 }
@@ -260,7 +260,7 @@ class PurchaseApprovalService
         $trimmedReason = trim($reason);
         if (mb_strlen($trimmedReason) < 10) {
             throw ValidationException::withMessages([
-                'reason' => ['Alasan penolakan wajib diisi minimal 10 karakter.'],
+                'reason' => ['Rejection reason must be at least 10 characters.'],
             ]);
         }
 
@@ -274,7 +274,7 @@ class PurchaseApprovalService
                 ->findOrFail($request->id);
 
             if (! $lockedRequest->isPending()) {
-                throw new \RuntimeException('Permintaan persetujuan sudah tidak dalam status pending.');
+                throw new \RuntimeException('Approval request is no longer in pending status.');
             }
 
             // Catat log penolakan (Append-only)
@@ -314,7 +314,7 @@ class PurchaseApprovalService
                 userId: $rejector->id,
                 subjectType: $lockedRequest->approvable_type,
                 subjectId: (int) $lockedRequest->approvable_id,
-                description: 'Dokumen ditolak pada alur persetujuan.',
+                description: 'Document rejected in approval workflow.',
                 metadata: ['reason' => $trimmedReason]
             );
 
@@ -352,7 +352,7 @@ class PurchaseApprovalService
             userId: $approver?->id,
             subjectType: $approvable->getMorphClass(),
             subjectId: (int) $approvable->getKey(),
-            description: 'Dokumen berhasil disetujui penuh.',
+            description: 'Document fully approved.',
             metadata: ['notes' => $notes]
         );
     }

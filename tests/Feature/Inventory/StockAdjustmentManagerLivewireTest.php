@@ -38,7 +38,7 @@ class StockAdjustmentManagerLivewireTest extends TestCase
             ->withSession(['active_store_id' => $this->storeA->id])
             ->get(route('inventory.adjustments'))
             ->assertOk()
-            ->assertSee('Penyesuaian Stok (Stock Adjustment)');
+            ->assertSee('Stock Adjustments');
     }
 
     public function test_can_create_draft_and_post_via_livewire(): void

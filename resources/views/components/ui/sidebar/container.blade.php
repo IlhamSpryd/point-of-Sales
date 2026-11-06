@@ -68,7 +68,7 @@
                                 <ol
                                     class="flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5">
                                     <li class="items-center gap-1.5 hidden md:block"><a
-                                            class="transition-colors hover:text-foreground" href="#">All Inboxes</a></li>
+                                            class="transition-colors hover:text-foreground" href="{{ route('dashboard') }}">Overview</a></li>
                                     <li role="presentation" aria-hidden="true"
                                         class="[&amp;>svg]:w-3.5 [&amp;>svg]:h-3.5 hidden md:block">
                                         <svg @class(['w-3.5 h-3.5', 'rotate-180' => $side == 'right']) xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"

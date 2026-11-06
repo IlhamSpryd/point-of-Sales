@@ -202,7 +202,7 @@ class PurchasingTenantIsolationTest extends TestCase
         app(TenantContext::class)->setStoreId($this->storeA->id);
 
         $this->expectException(\RuntimeException::class);
-        $this->expectExceptionMessage('Pemasok tidak ditemukan pada tenant aktif.');
+        $this->expectExceptionMessage('Supplier not found for active tenant.');
 
         $this->service->updateSupplier($suppB, [
             'name' => 'Manipulasi Ilegal',

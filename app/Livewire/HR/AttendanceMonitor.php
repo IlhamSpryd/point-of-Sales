@@ -82,7 +82,7 @@ class AttendanceMonitor extends Component
         $this->authorize('update', AttendanceRecord::class);
 
         if (! $this->editingRecordId || empty($this->correctionReason)) {
-            session()->flash('error', 'Alasan koreksi absensi wajib diisi.');
+            session()->flash('error', 'Attendance correction reason is required.');
 
             return;
         }
@@ -101,10 +101,10 @@ class AttendanceMonitor extends Component
             $record->clock_in_at = ! empty($this->correctedClockIn) ? Carbon::parse($this->correctedClockIn) : null;
             $record->clock_out_at = ! empty($this->correctedClockOut) ? Carbon::parse($this->correctedClockOut) : null;
             $prefix = (is_string($record->notes) && $record->notes !== '') ? $record->notes.' | ' : '';
-            $record->notes = $prefix.'Koreksi: '.$this->correctionReason;
+            $record->notes = $prefix.'Correction: '.$this->correctionReason;
             $record->save();
 
-            session()->flash('success', 'Koreksi waktu absensi berhasil disimpan.');
+            session()->flash('success', 'Attendance correction saved successfully.');
         }
 
         $this->isCorrectionModalOpen = false;
@@ -134,14 +134,35 @@ class AttendanceMonitor extends Component
         }
 
         if ($this->statusFilter !== 'ALL') {
-            $query->where('status', AttendanceStatusEnum::from($this->statusFilter));
+            $statusEnum = AttendanceStatusEnum::tryFrom($this->statusFilter);
+            if ($statusEnum !== null) {
+                $query->where('status', $statusEnum);
+            }
         }
 
         $records = $query->paginate(15);
 
+        $statsBase = AttendanceRecord::withoutTenantScope()->where('tenant_id', $tenantId);
+        if ($this->selectedStoreId) {
+            $statsBase->where('store_id', $this->selectedStoreId);
+        }
+        if (! empty($this->dateFilter)) {
+            $date = Carbon::parse($this->dateFilter);
+            $statsBase->whereBetween('clock_in_at', [$date->copy()->startOfDay(), $date->copy()->endOfDay()]);
+        }
+
+        $totalAttendance = (clone $statsBase)->count();
+        $presentCount = (clone $statsBase)->where('status', AttendanceStatusEnum::PRESENT)->count();
+        $lateCount = (clone $statsBase)->where('status', AttendanceStatusEnum::LATE)->count();
+        $correctedCount = (clone $statsBase)->where('status', AttendanceStatusEnum::CORRECTED)->count();
+
         return view('livewire.hr.attendance-monitor', [
             'stores' => $stores,
             'records' => $records,
-        ])->layout('layouts.app', ['title' => 'Pemantauan Absensi & Lembur — Apeiron']);
+            'totalAttendance' => $totalAttendance,
+            'presentCount' => $presentCount,
+            'lateCount' => $lateCount,
+            'correctedCount' => $correctedCount,
+        ])->layout('layouts.app', ['title' => 'Attendance & Overtime Monitoring — Apeiron']);
     }
 }

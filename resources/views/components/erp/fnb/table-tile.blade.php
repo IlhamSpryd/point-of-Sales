@@ -13,25 +13,25 @@
 
     $statusConfig = match ($statusKey) {
         'occupied', 'terisi' => [
-            'label' => 'Terisi',
+            'label' => 'Occupied',
             'dotClass' => 'bg-warning animate-pulse',
             'badgeClass' => 'bg-warning-muted text-warning border-warning-border',
             'cardClass' => 'border-warning-border bg-card hover:border-warning',
         ],
         'bill_printed', 'menunggu_bayar' => [
-            'label' => 'Cetak Tagihan',
+            'label' => 'Bill Printed',
             'dotClass' => 'bg-info animate-pulse',
             'badgeClass' => 'bg-info-muted text-info border-info-border',
             'cardClass' => 'border-info-border bg-card hover:border-info',
         ],
         'dirty', 'kotor' => [
-            'label' => 'Perlu Dibersihkan',
+            'label' => 'Cleaning Required',
             'dotClass' => 'bg-destructive',
             'badgeClass' => 'bg-destructive-muted text-destructive border-destructive-border',
             'cardClass' => 'border-destructive-border bg-card hover:border-destructive',
         ],
         default => [
-            'label' => 'Tersedia',
+            'label' => 'Available',
             'dotClass' => 'bg-success',
             'badgeClass' => 'bg-success-muted text-success border-success-border',
             'cardClass' => 'border-border bg-card hover:border-border',
@@ -49,7 +49,7 @@
                 </span>
                 <span class="text-[11px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-md flex items-center gap-1">
                     <span class="material-symbols-rounded text-[13px]">group</span>
-                    <span>{{ $capacity }} Kursi</span>
+                    <span>{{ $capacity }} Seats</span>
                 </span>
             </div>
             @if ($name)

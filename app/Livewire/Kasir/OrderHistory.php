@@ -44,7 +44,7 @@ class OrderHistory extends Component
         $role = Auth::user()?->role;
         $roleName = $role?->name;
         if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager', 'Kasir', 'Waiter', 'Supervisor', 'Admin'], true)) {
-            abort(403, 'Anda tidak memiliki hak akses riwayat pesanan.');
+            abort(403, 'Unauthorized access to order history.');
         }
     }
 
@@ -163,8 +163,8 @@ class OrderHistory extends Component
         Gate::authorize('void', $order);
 
         if (! $order || $order->order_status !== OrderStatus::Paid) {
-            session()->flash('error', 'Pesanan tidak ditemukan atau tidak dalam status Lunas.');
-            $this->dispatch('toast', message: 'Pesanan tidak ditemukan atau tidak dalam status Lunas.', type: 'error');
+            session()->flash('error', 'Order not found or not in paid status.');
+            $this->dispatch('toast', message: 'Order not found or not in paid status.', type: 'error');
 
             return;
         }
@@ -177,8 +177,8 @@ class OrderHistory extends Component
             ])->exists();
 
         if ($hasUnresolvedAttempts) {
-            $this->addError('voidReason', 'Pesanan memiliki pembayaran elektronik yang sedang dalam proses verifikasi (pending/timeout). Lakukan rekonsiliasi pembayaran terlebih dahulu sebelum membatalkan (void).');
-            $this->dispatch('toast', message: 'Pesanan memiliki pembayaran elektronik yang sedang dalam proses verifikasi (pending/timeout). Lakukan rekonsiliasi pembayaran terlebih dahulu sebelum membatalkan (void).', type: 'error');
+            $this->addError('voidReason', 'Order has pending electronic payments. Please reconcile payment before voiding.');
+            $this->dispatch('toast', message: 'Order has pending electronic payments. Please reconcile payment before voiding.', type: 'error');
 
             return;
         }
@@ -195,8 +195,8 @@ class OrderHistory extends Component
             }
 
             if (! $pinValid) {
-                $this->addError('supervisorPin', 'PIN Supervisor tidak sah.');
-                $this->dispatch('toast', message: 'PIN Supervisor tidak sah.', type: 'error');
+                $this->addError('supervisorPin', 'Invalid supervisor PIN.');
+                $this->dispatch('toast', message: 'Invalid supervisor PIN.', type: 'error');
 
                 return;
             }
@@ -204,8 +204,8 @@ class OrderHistory extends Component
 
         try {
             app(TransactionService::class)->voidOrder($order, $reason, Auth::id());
-            session()->flash('success', 'Pesanan berhasil di-void dan stok dikembalikan.');
-            $this->dispatch('toast', message: 'Pesanan berhasil di-void dan stok dikembalikan.', type: 'success');
+            session()->flash('success', 'Order successfully voided and inventory restored.');
+            $this->dispatch('toast', message: 'Order successfully voided and inventory restored.', type: 'success');
         } catch (\DomainException $e) {
             session()->flash('error', $e->getMessage());
             $this->dispatch('toast', message: $e->getMessage(), type: 'error');
@@ -215,8 +215,8 @@ class OrderHistory extends Component
                 'order_id' => $targetOrderId,
                 'user_id' => Auth::id(),
             ]);
-            session()->flash('error', 'Terjadi kesalahan sistem saat memproses pembatalan pesanan. Silakan coba beberapa saat lagi.');
-            $this->dispatch('toast', message: 'Terjadi kesalahan sistem saat memproses pembatalan pesanan. Silakan coba beberapa saat lagi.', type: 'error');
+            session()->flash('error', 'A system error occurred while processing order void. Please try again.');
+            $this->dispatch('toast', message: 'A system error occurred while processing order void. Please try again.', type: 'error');
         }
 
         $this->voidingOrderId = null;
@@ -308,27 +308,27 @@ class OrderHistory extends Component
         $selectedItems = collect($this->returnItems)->filter(fn ($item) => ! empty($item['selected']) && (int) $item['qty'] > 0)->values()->all();
 
         if (empty($selectedItems)) {
-            $this->returnErrorMessage = 'Pilih minimal satu item untuk diretur.';
+            $this->returnErrorMessage = 'Please select at least one item to return.';
 
             return;
         }
 
         foreach ($selectedItems as $item) {
             if (! empty($item['is_recipe_product']) && $item['disposition'] === 'restock') {
-                $this->returnErrorMessage = "Larangan Restock: Produk F&B berbasis resep ('{$item['product_name']}') tidak boleh direstock.";
+                $this->returnErrorMessage = "Restock Prohibited: Recipe-based F&B product ('{$item['product_name']}') cannot be restocked.";
 
                 return;
             }
         }
 
         if (strlen(trim($this->returnReason)) < 5) {
-            $this->returnErrorMessage = 'Alasan retur/refund harus minimal 5 karakter.';
+            $this->returnErrorMessage = 'Return/refund reason must be at least 5 characters.';
 
             return;
         }
 
         if (empty($this->returnSupervisorPin)) {
-            $this->returnErrorMessage = 'PIN Supervisor/Manager wajib diisi untuk otorisasi retur/refund.';
+            $this->returnErrorMessage = 'Supervisor PIN is required to authorize return/refund.';
 
             return;
         }
@@ -365,7 +365,7 @@ class OrderHistory extends Component
         }
 
         if (empty($allocationsInput)) {
-            $this->returnErrorMessage = 'Nominal refund harus lebih dari 0.';
+            $this->returnErrorMessage = 'Refund amount must be greater than 0.';
 
             return;
         }
@@ -392,13 +392,13 @@ class OrderHistory extends Component
 
             $this->showReturnModal = false;
             $this->returningOrderId = null;
-            session()->flash('success', "Retur #{$orderReturn->return_number} dan refund berhasil diproses.");
-            $this->dispatch('toast', message: "Retur #{$orderReturn->return_number} dan refund berhasil diproses.", type: 'success');
+            session()->flash('success', "Return #{$orderReturn->return_number} and refund successfully processed.");
+            $this->dispatch('toast', message: "Return #{$orderReturn->return_number} and refund successfully processed.", type: 'success');
         } catch (\DomainException|ValidationException $e) {
             $this->returnErrorMessage = $e->getMessage();
         } catch (\Throwable $e) {
             Log::error('Process return failed: '.$e->getMessage(), ['exception' => $e]);
-            $this->returnErrorMessage = 'Terjadi kesalahan sistem saat memproses retur/refund: '.$e->getMessage();
+            $this->returnErrorMessage = 'A system error occurred while processing return/refund: '.$e->getMessage();
         }
     }
 
@@ -447,7 +447,7 @@ class OrderHistory extends Component
         }
 
         if (strlen(trim($this->reprintReason)) < 5) {
-            $this->addError('reprintReason', 'Alasan cetak ulang minimal 5 karakter.');
+            $this->addError('reprintReason', 'Reprint reason must be at least 5 characters.');
 
             return;
         }
@@ -456,7 +456,7 @@ class OrderHistory extends Component
         $newSequence = (int) $order->print_count + 1;
 
         if ($newSequence > 2 && empty($this->reprintSupervisorPin)) {
-            $this->addError('reprintSupervisorPin', 'PIN Supervisor diperlukan untuk cetak ulang ke-3 atau lebih.');
+            $this->addError('reprintSupervisorPin', 'Supervisor PIN is required for reprint 3 or greater.');
 
             return;
         }

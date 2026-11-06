@@ -51,13 +51,13 @@ class ShiftController extends Controller
         if (! $shift) {
             return response()->json([
                 'success' => false,
-                'message' => 'Anda masih memiliki shift yang sedang aktif atau shift gagal dibuka.',
+                'message' => 'You already have an active register shift or the shift could not be opened.',
             ], 422);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Shift berhasil dibuka.',
+            'message' => 'Register shift opened successfully.',
             'shift' => $shift,
         ]);
     }
@@ -83,13 +83,13 @@ class ShiftController extends Controller
         if (! $closed) {
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menutup shift atau tidak ada shift aktif.',
+                'message' => 'Failed to close register shift or no active shift found.',
             ], 422);
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Shift berhasil ditutup.',
+            'message' => 'Register shift closed successfully.',
             'shift' => $closed,
         ]);
     }
@@ -122,7 +122,7 @@ class ShiftController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Pergerakan kas berhasil dicatat.',
+                'message' => 'Cash movement recorded successfully.',
                 'movement' => $movement,
             ]);
         } catch (\Throwable $e) {
@@ -175,7 +175,7 @@ class ShiftController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Serah terima shift berhasil diinisiasi.',
+                'message' => 'Shift handover initiated successfully.',
                 'handover' => $handover,
             ]);
         } catch (\Throwable $e) {
@@ -208,7 +208,7 @@ class ShiftController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Serah terima shift berhasil diterima.',
+                'message' => 'Shift handover accepted successfully.',
                 'shift' => $shift,
             ]);
         } catch (\Throwable $e) {
@@ -229,7 +229,7 @@ class ShiftController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Serah terima shift berhasil dibatalkan.',
+                'message' => 'Shift handover cancelled.',
                 'shift' => $shift,
             ]);
         } catch (\Throwable $e) {
@@ -264,7 +264,7 @@ class ShiftController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Shift berhasil ditutup paksa oleh supervisor.',
+                'message' => 'Register shift force closed by supervisor.',
                 'shift' => $closed,
             ]);
         } catch (\Throwable $e) {

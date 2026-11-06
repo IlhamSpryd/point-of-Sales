@@ -19,9 +19,9 @@ class TailAdminPhaseThreeAdoptionTest extends TestCase
             />'
         );
 
-        $this->assertStringContainsString('Uang Diterima', $html);
-        $this->assertStringContainsString('Uang Pas', $html);
-        $this->assertStringContainsString('Kembalian', $html);
+        $this->assertStringContainsString('Amount Received', $html);
+        $this->assertStringContainsString('Exact Amount', $html);
+        $this->assertStringContainsString('Change Due', $html);
         $this->assertStringContainsString('formatRupiah', $html);
         $this->assertStringContainsString('numeric', $html);
         $this->assertStringContainsString('backspace', $html);
@@ -33,7 +33,7 @@ class TailAdminPhaseThreeAdoptionTest extends TestCase
             '<x-erp.pos.tender-selector value="qris" />'
         );
 
-        $this->assertStringContainsString('Tunai', $html);
+        $this->assertStringContainsString('Cash', $html);
         $this->assertStringContainsString('QRIS', $html);
         $this->assertStringContainsString('Debit Card', $html);
         $this->assertStringContainsString('qr_code_scanner', $html);
@@ -57,8 +57,8 @@ class TailAdminPhaseThreeAdoptionTest extends TestCase
         $this->assertStringContainsString('T-01', $html);
         $this->assertStringContainsString('Meja Depan VIP', $html);
         $this->assertStringContainsString('VIP Indoor', $html);
-        $this->assertStringContainsString('6 Kursi', $html);
-        $this->assertStringContainsString('Terisi', $html);
+        $this->assertStringContainsString('6 Seats', $html);
+        $this->assertStringContainsString('Occupied', $html);
         $this->assertStringContainsString('35 mnt', $html);
         $this->assertStringContainsString('Rp 340.000', $html);
         $this->assertStringContainsString('animate-pulse', $html);

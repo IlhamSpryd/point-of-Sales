@@ -98,8 +98,8 @@ class DashboardMetricsAndButtonsTest extends TestCase
         // Verify active modal triggers
         $response->assertSee("modal = 'privacy'", false);
         $response->assertSee("modal = 'terms'", false);
-        $response->assertSee('Kebijakan Privasi Apeiron POS (Multi-Tenant SaaS)', false);
-        $response->assertSee('Syarat dan Ketentuan Layanan (Terms of Service)', false);
+        $response->assertSee('Privacy Policy', false);
+        $response->assertSee('Terms of Service', false);
         $response->assertDontSee('onclick="event.preventDefault()"', false);
     }
 

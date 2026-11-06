@@ -66,7 +66,7 @@
                 </div>
 
                 <div class="space-y-2.5">
-                    <h3 class="font-bold text-gray-700 text-xs uppercase tracking-wider">{{ __('Item Pesanan') }}</h3>
+                    <h3 class="font-bold text-gray-700 text-xs uppercase tracking-wider">{{ __('Order Items') }}</h3>
                     <div class="divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden">
                         @foreach($order->orderItems as $item)
                             @php

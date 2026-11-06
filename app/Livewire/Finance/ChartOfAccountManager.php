@@ -192,11 +192,11 @@ class ChartOfAccountManager extends Component
                 ->findOrFail($this->editingAccountId);
             $this->authorize('update', $account);
             $service->updateAccount($this->editingAccountId, $payload, $actor);
-            session()->flash('success', 'Akun berhasil diperbarui.');
+            session()->flash('success', 'Account updated successfully.');
         } else {
             $this->authorize('create', ChartOfAccount::class);
             $service->createAccount($payload, $actor);
-            session()->flash('success', 'Akun baru berhasil ditambahkan.');
+            session()->flash('success', 'New account created successfully.');
         }
 
         $this->showFormModal = false;
@@ -215,7 +215,7 @@ class ChartOfAccountManager extends Component
         $actor = Auth::user();
 
         $service->updateAccount($id, ['is_active' => ! $account->is_active], $actor);
-        session()->flash('success', 'Status akun berhasil diubah.');
+        session()->flash('success', 'Account status updated successfully.');
     }
 
     public function render(): View

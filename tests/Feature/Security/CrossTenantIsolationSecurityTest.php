@@ -110,7 +110,7 @@ class CrossTenantIsolationSecurityTest extends TestCase
             $loyaltyService->calculateEarnablePoints($customerB, 100000);
         } catch (\RuntimeException $e) {
             $caught = true;
-            $this->assertStringContainsString('Konflik isolasi tenant', $e->getMessage());
+            $this->assertStringContainsString('Tenant isolation conflict', $e->getMessage());
         }
         $this->assertTrue($caught, 'Calling LoyaltyService across tenants must fail-closed with RuntimeException.');
 

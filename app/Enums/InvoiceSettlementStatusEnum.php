@@ -13,9 +13,9 @@ enum InvoiceSettlementStatusEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::Unpaid => 'Belum Lunas',
-            self::PartiallyPaid => 'Dibayar Sebagian',
-            self::Paid => 'Lunas',
+            self::Unpaid => 'Unpaid',
+            self::PartiallyPaid => 'Partially Paid',
+            self::Paid => 'Paid',
         };
     }
 }

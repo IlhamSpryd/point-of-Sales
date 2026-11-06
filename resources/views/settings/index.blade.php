@@ -2,7 +2,7 @@
     <div class="space-y-6 max-w-5xl mx-auto" data-gsap="page-enter">
         <x-erp.page-header
             title="System Settings"
-            description="Configure Point of Sales preferences, enterprise features, primary store profile, and transaction rounding rules.">
+            description="Configure Point of Sales preferences, enterprise tax defaults, and transaction rounding rules.">
             <x-slot:breadcrumbs>
                 <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
                 <x-ui.breadcrumbs.item active>Settings</x-ui.breadcrumbs.item>
@@ -19,33 +19,23 @@
             <form action="{{ route('settings.update') }}" method="POST" class="space-y-6">
                 @csrf
 
-                <div>
-                    <h2 class="text-base font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
-                        <span class="material-symbols-rounded text-apeiron-primary text-xl">store</span>
-                        Primary Store / Branch Information
-                    </h2>
-                    <div class="space-y-4">
-                        <div>
-                            <x-ui.label for="store_name">Store Name</x-ui.label>
-                            <x-ui.input type="text" id="store_name" name="store_name" value="{{ old('store_name', $settings['store_name'] ?? '') }}" />
+                {{-- Master Cabang & Outlet Guidance (Single Source of Truth) --}}
+                <div class="p-5 rounded-2xl border border-border bg-muted/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div class="flex items-start gap-3.5">
+                        <div class="p-2.5 rounded-xl bg-background border border-border text-primary shrink-0 shadow-xs">
+                            <span class="material-symbols-rounded text-2xl">store</span>
                         </div>
-
                         <div>
-                            <x-ui.label for="store_address">Full Address</x-ui.label>
-                            <textarea id="store_address" rows="3" name="store_address" class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2.5 text-sm focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-200">{{ old('store_address', $settings['store_address'] ?? '') }}</textarea>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <x-ui.label for="store_phone">Phone Number</x-ui.label>
-                                <x-ui.input type="text" id="store_phone" name="store_phone" value="{{ old('store_phone', $settings['store_phone'] ?? '') }}" />
-                            </div>
-                            <div>
-                                <x-ui.label for="store_email">Email Address</x-ui.label>
-                                <x-ui.input type="email" id="store_email" name="store_email" value="{{ old('store_email', $settings['store_email'] ?? '') }}" />
-                            </div>
+                            <h3 class="text-sm font-semibold text-foreground">Identitas & Profil Gerai Cabang (Multi-Store)</h3>
+                            <p class="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                                Nama toko, alamat fisik operasional, nomor telepon, dan identitas struk transaksi dikelola secara terpusat pada Master Gerai & Cabang demi menjamin integritas multi-outlet.
+                            </p>
                         </div>
                     </div>
+                    <a href="{{ route('stores.index') }}" wire:navigate class="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold rounded-xl bg-background border border-border hover:bg-muted text-foreground transition-colors shrink-0 shadow-xs">
+                        <span>Kelola Master Cabang</span>
+                        <span class="material-symbols-rounded text-sm">arrow_forward</span>
+                    </a>
                 </div>
 
                 <div class="pt-6 border-t border-zinc-200 dark:border-zinc-800">

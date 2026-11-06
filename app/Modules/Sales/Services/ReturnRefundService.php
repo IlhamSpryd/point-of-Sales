@@ -93,7 +93,7 @@ class ReturnRefundService
         $tenantId = (int) $tenantContext->requireTenantId();
 
         if ((int) $order->tenant_id !== $tenantId) {
-            throw new DomainException('Akses lintas tenant ditolak.');
+            throw new DomainException('Cross-tenant access denied.');
         }
 
         return $tenantContext->runAs((int) $order->tenant_id, $order->store_id, function () use (
@@ -167,7 +167,7 @@ class ReturnRefundService
                         ->firstOrFail();
 
                     if ($lockedShift->status !== 'open') {
-                        throw new DomainException("Shift #{$shiftId} tidak dalam status terbuka.");
+                        throw new DomainException("Shift #{$shiftId} is not in open status.");
                     }
                 }
 
@@ -205,7 +205,7 @@ class ReturnRefundService
                 // 4. Validasi Kuantitas Retur & Disposisi (INV-08, AC-3.1)
                 if (empty($returnItemsWithDisposition)) {
                     throw ValidationException::withMessages([
-                        'items' => 'Minimal satu item pesanan wajib disertakan dalam permohonan retur.',
+                        'items' => 'At least one order item is required for the return request.',
                     ]);
                 }
 
@@ -221,13 +221,13 @@ class ReturnRefundService
                     $orderItem = $lockedOrderItems->get($itemId);
                     if (! $orderItem) {
                         throw ValidationException::withMessages([
-                            'items' => "Item pesanan #{$itemId} tidak ditemukan pada pesanan #{$lockedOrder->order_code}.",
+                            'items' => "Order item #{$itemId} not found on order #{$lockedOrder->order_code}.",
                         ]);
                     }
 
                     if ($qty <= 0) {
                         throw ValidationException::withMessages([
-                            'items' => 'Kuantitas retur per item harus lebih dari nol.',
+                            'items' => 'Return quantity per item must be greater than zero.',
                         ]);
                     }
 
@@ -237,7 +237,7 @@ class ReturnRefundService
 
                     if (! $disposition) {
                         throw ValidationException::withMessages([
-                            'disposition' => "Disposisi '{$rawDisposition}' tidak valid. Pilihan: restock, quarantine, write_off_waste.",
+                            'disposition' => "Disposition '{$rawDisposition}' is invalid. Options: restock, quarantine, write_off_waste.",
                         ]);
                     }
 
@@ -248,13 +248,13 @@ class ReturnRefundService
 
                     $remainingReturnable = (int) $orderItem->qty - $alreadyReturnedQty;
                     if ($qty > $remainingReturnable) {
-                        throw new DomainException("Kuantitas retur ({$qty}) melebihi sisa yang dapat diretur ({$remainingReturnable}) untuk item '{$orderItem->product?->product_name}'.");
+                        throw new DomainException("Return quantity ({$qty}) exceeds remaining returnable quantity ({$remainingReturnable}) for item '{$orderItem->product?->product_name}'.");
                     }
 
                     // AC-3.1: Larangan Restock untuk produk F&B berbasis resep
                     $product = $lockedProducts->get($orderItem->product_id);
                     if ($disposition->isRestock() && $product && $product->ingredients->isNotEmpty()) {
-                        throw new DomainException("Larangan Restock: Produk F&B berbasis resep ('{$product->product_name}') tidak boleh direstock ke inventori layak jual.");
+                        throw new DomainException("Restock Prohibited: Recipe-based F&B product ('{$product->product_name}') cannot be restocked into sellable inventory.");
                     }
 
                     $linePrice = (float) $orderItem->order_price;
@@ -275,7 +275,7 @@ class ReturnRefundService
                 // 5. Validasi Refund Finansial (INV-07, AC-3.2, AC-3.3)
                 if (empty($refundAllocations)) {
                     throw ValidationException::withMessages([
-                        'refunds' => 'Minimal satu alokasi refund pembayaran wajib disertakan.',
+                        'refunds' => 'At least one refund payment allocation is required.',
                     ]);
                 }
 
@@ -289,13 +289,13 @@ class ReturnRefundService
                     $payment = $lockedPayments->get($paymentId);
                     if (! $payment) {
                         throw ValidationException::withMessages([
-                            'refunds' => "Pembayaran #{$paymentId} tidak valid untuk pesanan #{$lockedOrder->order_code}.",
+                            'refunds' => "Payment #{$paymentId} is invalid for order #{$lockedOrder->order_code}.",
                         ]);
                     }
 
                     if ($amount <= 0) {
                         throw ValidationException::withMessages([
-                            'refunds' => 'Nominal refund harus lebih dari nol.',
+                            'refunds' => 'Refund amount must be greater than zero.',
                         ]);
                     }
 
@@ -307,7 +307,7 @@ class ReturnRefundService
 
                     $remainingRefundable = (float) $payment->amount - $alreadyRefunded;
                     if ($amount > $remainingRefundable) {
-                        throw new DomainException('Nominal refund (Rp'.number_format($amount, 0, ',', '.').') melebihi sisa yang dapat direfund (Rp'.number_format($remainingRefundable, 0, ',', '.').") pada pembayaran #{$payment->id}.");
+                        throw new DomainException('Refund amount ('.number_format($amount, 2).') exceeds remaining refundable amount ('.number_format($remainingRefundable, 2).") on payment #{$payment->id}.");
                     }
 
                     $origMethod = is_string($payment->payment_method) ? $payment->payment_method : $payment->payment_method->value;
@@ -315,7 +315,7 @@ class ReturnRefundService
                     $isOverride = ($origMethod !== 'cash' && $targetMethod === 'cash');
 
                     if ($isOverride && empty($alloc['is_method_override'])) {
-                        throw new DomainException("Pengecualian refund tunai untuk metode {$origMethod} membutuhkan konfirmasi otorisasi supervisor.");
+                        throw new DomainException("Cash refund exception for method {$origMethod} requires supervisor authorization.");
                     }
 
                     // AC-3.3: Jika refund tunai, periksa kecukupan fisik kas di laci shift aktif
@@ -328,7 +328,7 @@ class ReturnRefundService
                         $availableCash = $opening + $cashIn + $cashPayments - $cashOut;
 
                         if ($amount > $availableCash) {
-                            throw new DomainException("Kas fisik di laci shift #{$lockedShift->id} tidak mencukupi untuk refund tunai (Tersedia: Rp".number_format($availableCash, 0, ',', '.').', Dibutuhkan: Rp'.number_format($amount, 0, ',', '.').').');
+                            throw new DomainException("Physical cash in shift drawer #{$lockedShift->id} is insufficient for cash refund (Available: ".number_format($availableCash, 2).', Required: '.number_format($amount, 2).').');
                         }
                     }
 
@@ -473,7 +473,7 @@ class ReturnRefundService
                     if ($targetMethod === 'store_credit' || $targetMethod === PaymentMethod::StoreCredit->value) {
                         $cust = Customer::withoutGlobalScopes()->find($lockedOrder->customer_id);
                         if (! $cust) {
-                            throw new DomainException('Pelanggan harus terdaftar untuk dapat menerima refund ke Store Credit.');
+                            throw new DomainException('Customer must be registered to receive refund as Store Credit.');
                         }
                         app(StoreCreditService::class)->issueStoreCredit(
                             customer: $cust,
@@ -607,7 +607,7 @@ class ReturnRefundService
                     storeId: (int) $lockedOrder->store_id,
                     subjectType: OrderReturn::class,
                     subjectId: (int) $orderReturn->id,
-                    description: "Retur #{$returnNumber} dan Refund sebesar Rp".number_format($totalRefundAmount, 0, ',', '.')." disetujui untuk pesanan #{$lockedOrder->order_code}.",
+                    description: "Return #{$returnNumber} and refund of ".number_format($totalRefundAmount, 2)." approved for order #{$lockedOrder->order_code}.",
                     metadata: [
                         'order_id' => $lockedOrder->id,
                         'return_number' => $returnNumber,
@@ -683,7 +683,7 @@ class ReturnRefundService
 
         if (! $approver) {
             throw ValidationException::withMessages([
-                'supervisor_pin' => 'PIN Supervisor/Manager yang dimasukkan tidak valid atau tidak berwenang.',
+                'supervisor_pin' => 'Invalid or unauthorized supervisor/manager PIN.',
             ]);
         }
 
@@ -714,7 +714,7 @@ class ReturnRefundService
         $tenantId = (int) $tenantContext->requireTenantId();
 
         if ((int) $order->tenant_id !== $tenantId) {
-            throw new DomainException('Akses lintas tenant ditolak.');
+            throw new DomainException('Cross-tenant access denied.');
         }
 
         return $tenantContext->runAs((int) $order->tenant_id, $order->store_id, function () use (
@@ -785,7 +785,7 @@ class ReturnRefundService
                     ->value('id'));
 
                 if (! $resolvedShiftId || ! $resolvedDeviceId) {
-                    throw new DomainException('Shift dan Device aktif wajib tersedia untuk memproses retur.');
+                    throw new DomainException('Active shift and device are required to process returns.');
                 }
 
                 // 3.1 Lock Order
@@ -807,7 +807,7 @@ class ReturnRefundService
                 // Resolusi Customer
                 $customerId = $lockedOrder->customer_id ?: ($lockedInvoice?->customer_id);
                 if (! $customerId) {
-                    throw new DomainException('Retur dengan Nota Kredit membutuhkan data pelanggan terdaftar (B2B/B2C).');
+                    throw new DomainException('Returns with Credit Note require registered customer data (B2B/B2C).');
                 }
 
                 // 3.3 Lock Customer Credit Account jika ada
@@ -851,7 +851,7 @@ class ReturnRefundService
                 // 4. Validasi Item Retur & Disposisi
                 if (empty($returnItemsWithDisposition)) {
                     throw ValidationException::withMessages([
-                        'items' => 'Minimal satu item pesanan wajib disertakan dalam permohonan retur.',
+                        'items' => 'At least one order item is required for the return request.',
                     ]);
                 }
 
@@ -867,13 +867,13 @@ class ReturnRefundService
                     $orderItem = $lockedOrderItems->get($itemId);
                     if (! $orderItem) {
                         throw ValidationException::withMessages([
-                            'items' => "Item pesanan #{$itemId} tidak ditemukan pada pesanan #{$lockedOrder->order_code}.",
+                            'items' => "Order item #{$itemId} not found on order #{$lockedOrder->order_code}.",
                         ]);
                     }
 
                     if ($qty <= 0) {
                         throw ValidationException::withMessages([
-                            'items' => 'Kuantitas retur per item harus lebih dari nol.',
+                            'items' => 'Return quantity per item must be greater than zero.',
                         ]);
                     }
 
@@ -883,7 +883,7 @@ class ReturnRefundService
 
                     if (! $disposition) {
                         throw ValidationException::withMessages([
-                            'disposition' => "Disposisi '{$rawDisposition}' tidak valid. Pilihan: restock, quarantine, write_off_waste.",
+                            'disposition' => "Disposition '{$rawDisposition}' is invalid. Options: restock, quarantine, write_off_waste.",
                         ]);
                     }
 
@@ -893,12 +893,12 @@ class ReturnRefundService
 
                     $remainingReturnable = (int) $orderItem->qty - $alreadyReturnedQty;
                     if ($qty > $remainingReturnable) {
-                        throw new DomainException("Kuantitas retur ({$qty}) melebihi sisa yang dapat diretur ({$remainingReturnable}) untuk item '{$orderItem->product?->product_name}'.");
+                        throw new DomainException("Return quantity ({$qty}) exceeds remaining returnable quantity ({$remainingReturnable}) for item '{$orderItem->product?->product_name}'.");
                     }
 
                     $product = $lockedProducts->get($orderItem->product_id);
                     if ($disposition->isRestock() && $product && $product->ingredients->isNotEmpty()) {
-                        throw new DomainException("Larangan Restock: Produk F&B berbasis resep ('{$product->product_name}') tidak boleh direstock ke inventori layak jual.");
+                        throw new DomainException("Restock Prohibited: Recipe-based F&B product ('{$product->product_name}') cannot be restocked into sellable inventory.");
                     }
 
                     $linePrice = (string) $orderItem->order_price;
@@ -1071,7 +1071,7 @@ class ReturnRefundService
                     storeId: (int) $lockedOrder->store_id,
                     subjectType: SalesCreditNote::class,
                     subjectId: (int) $creditNote->id,
-                    description: "Retur #{$returnNumber} dan Nota Kredit #{$cnNumber} sebesar Rp ".number_format((float) $totalRefundableAmount, 2, ',', '.')." disetujui untuk pesanan #{$lockedOrder->order_code}.",
+                    description: "Return #{$returnNumber} and Credit Note #{$cnNumber} of ".number_format((float) $totalRefundableAmount, 2)." approved for order #{$lockedOrder->order_code}.",
                     metadata: [
                         'order_id' => $lockedOrder->id,
                         'return_number' => $returnNumber,
@@ -1111,7 +1111,7 @@ class ReturnRefundService
         $currentTenantId = (int) $tenantContext->requireTenantId();
 
         if ($tenantId !== $currentTenantId) {
-            throw new DomainException('Akses lintas tenant ditolak.');
+            throw new DomainException('Cross-tenant access denied.');
         }
 
         return $tenantContext->runAs($tenantId, $storeId, function () use (
@@ -1152,7 +1152,7 @@ class ReturnRefundService
 
                 $cleanAmount = bcadd(bc_num($amount), '0.00', 2);
                 if (bccomp($cleanAmount, '0.00', 2) <= 0) {
-                    throw new DomainException('Nominal nota kredit harus lebih dari nol.');
+                    throw new DomainException('Credit note amount must be greater than zero.');
                 }
 
                 $cnNumber = 'SCN-'.now()->format('Ymd').'-'.strtoupper(Str::random(6));
@@ -1196,11 +1196,11 @@ class ReturnRefundService
         $tenantId = (int) $tenantContext->requireTenantId();
 
         if ((int) $creditNote->tenant_id !== $tenantId || (int) $invoice->tenant_id !== $tenantId) {
-            throw new DomainException('Akses lintas tenant ditolak.');
+            throw new DomainException('Cross-tenant access denied.');
         }
 
         if ((int) $creditNote->customer_id !== (int) $invoice->customer_id) {
-            throw new DomainException('Nota kredit dan faktur harus milik pelanggan yang sama.');
+            throw new DomainException('Credit note and invoice must belong to the same customer.');
         }
 
         return $tenantContext->runAs($creditNote->tenant_id, $creditNote->store_id, function () use (
@@ -1240,7 +1240,7 @@ class ReturnRefundService
     ): SalesCreditNoteApplication {
         $amount = bcadd(bc_num($amount), '0.00', 2);
         if (bccomp($amount, '0.00', 2) <= 0) {
-            throw new DomainException('Nominal aplikasi nota kredit harus lebih dari nol.');
+            throw new DomainException('Credit note application amount must be greater than zero.');
         }
 
         $idempotencyKey = $idempotencyKey ?: 'cn_app:'.Str::uuid();
@@ -1275,19 +1275,19 @@ class ReturnRefundService
             ->firstOrFail();
 
         if (! in_array($lockedInvoice->status, [CustomerInvoiceStatusEnum::POSTED, CustomerInvoiceStatusEnum::PARTIALLY_PAID], true)) {
-            throw new DomainException("Faktur {$lockedInvoice->invoice_number} tidak dapat menerima alokasi nota kredit. Status saat ini: {$lockedInvoice->status->value}");
+            throw new DomainException("Invoice {$lockedInvoice->invoice_number} cannot receive credit note allocation. Current status: {$lockedInvoice->status->value}");
         }
 
         if (in_array($lockedCreditNote->status, [CreditNoteStatusEnum::VOIDED, CreditNoteStatusEnum::APPLIED, CreditNoteStatusEnum::CONVERTED_TO_STORE_CREDIT], true)) {
-            throw new DomainException("Nota kredit {$lockedCreditNote->credit_note_number} tidak aktif atau sudah diterapkan penuh.");
+            throw new DomainException("Credit note {$lockedCreditNote->credit_note_number} is inactive or already fully applied.");
         }
 
         if (bccomp($amount, (string) $lockedCreditNote->remaining_amount, 2) > 0) {
-            throw new DomainException('Nominal aplikasi (Rp '.number_format((float) $amount, 2, ',', '.').') melebihi sisa nota kredit (Rp '.number_format((float) $lockedCreditNote->remaining_amount, 2, ',', '.').').');
+            throw new DomainException('Application amount ('.number_format((float) $amount, 2).') exceeds remaining credit note balance ('.number_format((float) $lockedCreditNote->remaining_amount, 2).').');
         }
 
         if (bccomp($amount, (string) $lockedInvoice->balance_due, 2) > 0) {
-            throw new DomainException('Nominal aplikasi (Rp '.number_format((float) $amount, 2, ',', '.').') melebihi sisa tagihan faktur (Rp '.number_format((float) $lockedInvoice->balance_due, 2, ',', '.').').');
+            throw new DomainException('Application amount ('.number_format((float) $amount, 2).') exceeds invoice balance due ('.number_format((float) $lockedInvoice->balance_due, 2).').');
         }
 
         // 3. Mutasi Invoice
@@ -1384,7 +1384,7 @@ class ReturnRefundService
             storeId: (int) $lockedInvoice->store_id,
             subjectType: SalesCreditNote::class,
             subjectId: (int) $lockedCreditNote->id,
-            description: "Nota Kredit #{$lockedCreditNote->credit_note_number} diaplikasikan sebesar Rp ".number_format((float) $amount, 2, ',', '.')." ke Faktur #{$lockedInvoice->invoice_number}.",
+            description: "Credit Note #{$lockedCreditNote->credit_note_number} applied for ".number_format((float) $amount, 2)." to Invoice #{$lockedInvoice->invoice_number}.",
             metadata: [
                 'invoice_id' => $lockedInvoice->id,
                 'applied_amount' => $amount,
@@ -1407,7 +1407,7 @@ class ReturnRefundService
         $tenantId = (int) $tenantContext->requireTenantId();
 
         if ((int) $creditNote->tenant_id !== $tenantId) {
-            throw new DomainException('Akses lintas tenant ditolak.');
+            throw new DomainException('Cross-tenant access denied.');
         }
 
         return $tenantContext->runAs($creditNote->tenant_id, $creditNote->store_id, function () use (
@@ -1426,11 +1426,11 @@ class ReturnRefundService
                     ->firstOrFail();
 
                 if (bccomp((string) $locked->remaining_amount, '0.00', 2) <= 0) {
-                    throw new DomainException('Nota kredit tidak memiliki sisa nominal untuk dikonversi.');
+                    throw new DomainException('Credit note has no remaining balance to convert.');
                 }
 
                 if ($locked->status === CreditNoteStatusEnum::VOIDED) {
-                    throw new DomainException('Nota kredit yang dibatalkan tidak dapat dikonversi.');
+                    throw new DomainException('Cancelled credit note cannot be converted.');
                 }
 
                 $locked->status = CreditNoteStatusEnum::CONVERTED_TO_STORE_CREDIT;
@@ -1444,7 +1444,7 @@ class ReturnRefundService
                     storeId: (int) $locked->store_id,
                     subjectType: SalesCreditNote::class,
                     subjectId: (int) $locked->id,
-                    description: "Nota Kredit #{$locked->credit_note_number} dikonversi ke Store Credit pelanggan.",
+                    description: "Credit Note #{$locked->credit_note_number} converted to customer Store Credit.",
                     metadata: [
                         'credit_note_id' => $locked->id,
                         'customer_id' => $locked->customer_id,

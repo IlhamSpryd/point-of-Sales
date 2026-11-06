@@ -64,7 +64,7 @@ class StockOpnameService
             ->first();
 
         if (! $store) {
-            throw new InvalidArgumentException("Cabang #{$storeId} tidak ditemukan untuk tenant #{$tenantId}.");
+            throw new InvalidArgumentException("Branch #{$storeId} not found for tenant #{$tenantId}.");
         }
 
         $idempotencyKey = $data['idempotency_key'] ?? (string) Str::uuid();
@@ -127,7 +127,7 @@ class StockOpnameService
             }
 
             if (empty($itemsToCreate)) {
-                throw new InvalidArgumentException('Sesi opname wajib memiliki minimal 1 item untuk dihitung.');
+                throw new InvalidArgumentException('Stock count session must contain at least 1 item to count.');
             }
 
             foreach ($itemsToCreate as $itemData) {
@@ -141,7 +141,7 @@ class StockOpnameService
                 storeId: $storeId,
                 subjectType: StockOpname::class,
                 subjectId: (int) $opname->id,
-                description: "Draft sesi stock opname #{$opname->opname_number} dibuat dengan ".count($itemsToCreate).' item',
+                description: "Stock count draft #{$opname->opname_number} created with ".count($itemsToCreate).' item(s).',
                 metadata: [
                     'opname_number' => $opname->opname_number,
                     'items_count' => count($itemsToCreate),
@@ -167,12 +167,12 @@ class StockOpnameService
                 ->firstOrFail();
 
             if (! $lockedOpname->isDraft()) {
-                throw new DomainException("Sesi opname #{$lockedOpname->opname_number} tidak dalam status DRAFT (status saat ini: {$lockedOpname->status->value}).");
+                throw new DomainException("Stock count session #{$lockedOpname->opname_number} is not in DRAFT status (current status: {$lockedOpname->status->value}).");
             }
 
             $items = $lockedOpname->items()->get();
             if ($items->isEmpty()) {
-                throw new DomainException('Sesi opname tidak memiliki item untuk dihitung.');
+                throw new DomainException('Stock count session has no items to count.');
             }
 
             $now = now();
@@ -204,7 +204,7 @@ class StockOpnameService
                 storeId: (int) $lockedOpname->store_id,
                 subjectType: StockOpname::class,
                 subjectId: (int) $lockedOpname->id,
-                description: "Sesi penghitungan fisik #{$lockedOpname->opname_number} dimulai. Snapshot saldo & sequence pinned.",
+                description: "Physical stock count session #{$lockedOpname->opname_number} started. Stock snapshot and sequence pinned.",
                 metadata: [
                     'opname_number' => $lockedOpname->opname_number,
                     'snapshot_taken_at' => $now->toIso8601String(),
@@ -233,7 +233,7 @@ class StockOpnameService
                 ->firstOrFail();
 
             if (! $lockedOpname->isCounting()) {
-                throw new DomainException("Hasil hitung hanya dapat dicatat saat sesi berstatus COUNTING (status saat ini: {$lockedOpname->status->value}).");
+                throw new DomainException("Counts can only be recorded when session is in COUNTING status (current status: {$lockedOpname->status->value}).");
             }
 
             // Normalisasi array format: array of associative arrays OR key => value map
@@ -261,7 +261,7 @@ class StockOpnameService
                 $countedQty = $input['counted_quantity'];
 
                 if (bccomp(bc_num($countedQty), '0', 4) < 0) {
-                    throw new InvalidArgumentException("Hasil hitung fisik untuk item #{$item->id} tidak boleh bernilai negatif.");
+                    throw new InvalidArgumentException("Physical count quantity for item #{$item->id} cannot be negative.");
                 }
 
                 $variance = bcsub(bc_num($countedQty), bc_num($item->snapshot_on_hand), 4);
@@ -300,14 +300,14 @@ class StockOpnameService
                 ->firstOrFail();
 
             if (! $lockedOpname->isCounting()) {
-                throw new DomainException("Pengajuan persetujuan hanya dapat dilakukan saat sesi berstatus COUNTING (status saat ini: {$lockedOpname->status->value}).");
+                throw new DomainException("Submission for approval can only be performed when session is in COUNTING status (current status: {$lockedOpname->status->value}).");
             }
 
             $items = $lockedOpname->items()->get();
             $uncounted = $items->filter(fn (StockOpnameItem $item) => $item->counted_quantity === null);
 
             if ($uncounted->isNotEmpty()) {
-                throw new DomainException('Seluruh item wajib diisi hasil hitung fisik sebelum diajukan ke manajer (terdapat '.$uncounted->count().' item belum dihitung).');
+                throw new DomainException('All items must have physical counts recorded before submitting to manager ('.$uncounted->count().' uncounted item(s) remaining).');
             }
 
             $now = now();
@@ -332,7 +332,7 @@ class StockOpnameService
                 storeId: (int) $lockedOpname->store_id,
                 subjectType: StockOpname::class,
                 subjectId: (int) $lockedOpname->id,
-                description: "Sesi opname #{$lockedOpname->opname_number} diajukan untuk persetujuan manajer.",
+                description: "Stock count session #{$lockedOpname->opname_number} submitted for manager approval.",
                 metadata: [
                     'opname_number' => $lockedOpname->opname_number,
                     'submitted_at' => $now->toIso8601String(),
@@ -402,7 +402,7 @@ class StockOpnameService
                     storeId: (int) $lockedOpname->store_id,
                     subjectType: StockOpname::class,
                     subjectId: (int) $lockedOpname->id,
-                    description: "Item #{$item->id} di-resnapshot ke posisi saldo terkini ({$item->snapshot_on_hand}). Status sesi dikembalikan ke COUNTING.",
+                    description: "Item #{$item->id} re-snapshotted to current on-hand quantity ({$item->snapshot_on_hand}). Session status returned to COUNTING.",
                     metadata: [
                         'item_id' => $item->id,
                         'snapshot_on_hand' => $item->snapshot_on_hand,
@@ -422,7 +422,7 @@ class StockOpnameService
                     storeId: (int) $lockedOpname->store_id,
                     subjectType: StockOpname::class,
                     subjectId: (int) $lockedOpname->id,
-                    description: "Item #{$item->id} disetujui untuk REBASE OVERRIDE oleh manajer.",
+                    description: "Item #{$item->id} approved for REBASE OVERRIDE by manager.",
                     metadata: [
                         'item_id' => $item->id,
                         'drift_resolution_mode' => StockOpnameDriftResolutionEnum::RebaseOverride->value,
@@ -458,12 +458,12 @@ class StockOpnameService
             }
 
             if (! $lockedOpname->isPendingApproval()) {
-                throw new DomainException("Sesi opname #{$lockedOpname->opname_number} tidak dalam status PENDING_APPROVAL (status: {$lockedOpname->status->value}).");
+                throw new DomainException("Stock count session #{$lockedOpname->opname_number} is not in PENDING_APPROVAL status (status: {$lockedOpname->status->value}).");
             }
 
             $items = $lockedOpname->items()->get();
             if ($items->isEmpty()) {
-                throw new DomainException('Sesi opname tidak memiliki item untuk disetujui.');
+                throw new DomainException('Stock count session has no items to approve.');
             }
 
             // Terapkan resolusi drift ad-hoc jika dilewatkan dalam parameter approval
@@ -546,7 +546,7 @@ class StockOpnameService
                             'variance_quantity' => $rebasedVariance,
                         ]);
                     } elseif ($item->drift_resolution_mode === StockOpnameDriftResolutionEnum::ReSnapshot) {
-                        throw new DomainException("Item #{$item->id} ditandai RE_SNAPSHOT dan membutuhkan hitung ulang fisik sebelum opname disetujui.");
+                        throw new DomainException("Item #{$item->id} is flagged RE_SNAPSHOT and requires physical recount before stock count can be approved.");
                     }
                 }
             }
@@ -564,7 +564,7 @@ class StockOpnameService
                 $item->refresh();
 
                 if ($item->counted_quantity === null) {
-                    throw new DomainException("Item #{$item->id} belum memiliki data hasil hitung fisik.");
+                    throw new DomainException("Item #{$item->id} does not have physical count data.");
                 }
 
                 $variance = (string) $item->variance_quantity;
@@ -609,7 +609,7 @@ class StockOpnameService
                 storeId: (int) $lockedOpname->store_id,
                 subjectType: StockOpname::class,
                 subjectId: (int) $lockedOpname->id,
-                description: "Sesi stock opname #{$lockedOpname->opname_number} disetujui. Rekonsiliasi ".count($movementsToRecord).' pergerakan stok dicatat ke ledger.',
+                description: "Stock count session #{$lockedOpname->opname_number} approved. Reconciled ".count($movementsToRecord).' stock movement(s) recorded to ledger.',
                 metadata: [
                     'opname_number' => $lockedOpname->opname_number,
                     'approved_at' => $now->toIso8601String(),
@@ -640,12 +640,12 @@ class StockOpnameService
                 ->firstOrFail();
 
             if (! $lockedOpname->status->canCancel()) {
-                throw new DomainException("Sesi opname dalam status {$lockedOpname->status->value} tidak dapat dibatalkan.");
+                throw new DomainException("Stock count session in status {$lockedOpname->status->value} cannot be cancelled.");
             }
 
             $lockedOpname->update([
                 'status' => StockOpnameStatusEnum::Cancelled,
-                'notes' => $reason ? trim(($lockedOpname->notes ?? '')."\n[Dibatalkan]: {$reason}") : $lockedOpname->notes,
+                'notes' => $reason ? trim(($lockedOpname->notes ?? '')."\n[Cancelled]: {$reason}") : $lockedOpname->notes,
             ]);
 
             $this->auditTrailService->log(
@@ -655,7 +655,7 @@ class StockOpnameService
                 storeId: (int) $lockedOpname->store_id,
                 subjectType: StockOpname::class,
                 subjectId: (int) $lockedOpname->id,
-                description: "Sesi stock opname #{$lockedOpname->opname_number} dibatalkan.",
+                description: "Stock count session #{$lockedOpname->opname_number} cancelled.",
                 metadata: [
                     'opname_number' => $lockedOpname->opname_number,
                     'reason' => $reason,
@@ -679,7 +679,7 @@ class StockOpnameService
     {
         $itemType = $itemData['item_type'] ?? null;
         if (! in_array($itemType, ['product', 'ingredient'], true)) {
-            throw new InvalidArgumentException("item_type harus bernilai 'product' atau 'ingredient'.");
+            throw new InvalidArgumentException("item_type must be either 'product' or 'ingredient'.");
         }
 
         $productId = isset($itemData['product_id']) ? (int) $itemData['product_id'] : null;
@@ -687,7 +687,7 @@ class StockOpnameService
 
         if ($itemType === 'product') {
             if (! $productId || $ingredientId !== null) {
-                throw new InvalidArgumentException('Item bertipe product wajib menyertakan product_id dan mengosongkan ingredient_id.');
+                throw new InvalidArgumentException('Items of type product must include product_id and leave ingredient_id empty.');
             }
 
             $product = Product::withoutGlobalScopes()
@@ -696,11 +696,11 @@ class StockOpnameService
                 ->first();
 
             if (! $product) {
-                throw new InvalidArgumentException("Product #{$productId} tidak valid untuk tenant ini.");
+                throw new InvalidArgumentException("Product #{$productId} is invalid for this tenant.");
             }
         } else {
             if (! $ingredientId || $productId !== null) {
-                throw new InvalidArgumentException('Item bertipe ingredient wajib menyertakan ingredient_id dan mengosongkan product_id.');
+                throw new InvalidArgumentException('Items of type ingredient must include ingredient_id and leave product_id empty.');
             }
 
             $ingredient = Ingredient::withoutGlobalScopes()
@@ -709,7 +709,7 @@ class StockOpnameService
                 ->first();
 
             if (! $ingredient) {
-                throw new InvalidArgumentException("Ingredient #{$ingredientId} tidak valid untuk tenant ini.");
+                throw new InvalidArgumentException("Ingredient #{$ingredientId} is invalid for this tenant.");
             }
         }
 

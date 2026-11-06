@@ -38,7 +38,7 @@
 
         <!-- Header -->
         <x-erp.page-header
-            title="Units of Measure (Satuan Ukur)"
+            title="Units of Measure"
             description="Manage product quantity units (Pcs, Kg, Liter, Box, etc.) and decimal precision for inventory tracking.">
             <x-slot:breadcrumbs>
                 <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
@@ -143,7 +143,7 @@
             @endif
         </div>
 
-        <!-- Modal Tambah / Sunting Satuan Ukur -->
+        <!-- Add / Edit Unit of Measure Modal -->
         <x-ui.modal x-model="showModal" maxWidth="md">
             <x-slot:title>
                 <span x-text="isEdit ? 'Edit Unit of Measure' : 'Add New Unit of Measure'"></span>

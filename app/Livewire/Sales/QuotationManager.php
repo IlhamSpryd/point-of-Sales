@@ -135,9 +135,9 @@ class QuotationManager extends Component
             'lines.*.product_id' => ['required', 'integer'],
             'lines.*.quantity' => ['required', 'numeric', 'min:0.0001'],
         ], [
-            'customer_id.required' => 'Pelanggan wajib dipilih.',
-            'valid_until.after_or_equal' => 'Masa berlaku harus sama atau setelah tanggal penawaran.',
-            'lines.*.product_id.required' => 'Produk pada baris penawaran wajib dipilih.',
+            'customer_id.required' => 'Customer is required.',
+            'valid_until.after_or_equal' => 'Valid until date must be on or after the issue date.',
+            'lines.*.product_id.required' => 'Product is required for each quotation line.',
         ]);
 
         $actor = Auth::user();
@@ -163,7 +163,7 @@ class QuotationManager extends Component
         $quotation = $quotationService->createDraft($payload, $actor);
 
         $this->showCreateModal = false;
-        session()->flash('message', "Quotation {$quotation->quotation_number} (v{$quotation->version_number}) berhasil dibuat.");
+        session()->flash('message', "Quotation {$quotation->quotation_number} (v{$quotation->version_number}) created successfully.");
     }
 
     public function viewQuotation(int $id): void
@@ -193,7 +193,7 @@ class QuotationManager extends Component
         $actor = Auth::user();
         $updated = $quotationService->submitForApprovalOrSend($quotation, $actor);
 
-        session()->flash('message', "Quotation {$updated->quotation_number} berhasil dialihkan ke status {$updated->status->value}.");
+        session()->flash('message', "Quotation {$updated->quotation_number} transitioned to status {$updated->status->value}.");
         $this->viewQuotation($id);
     }
 
@@ -205,7 +205,7 @@ class QuotationManager extends Component
         $actor = Auth::user();
         $approved = $quotationService->approve($quotation, $actor);
 
-        session()->flash('message', "Quotation {$approved->quotation_number} berhasil disetujui (APPROVED).");
+        session()->flash('message', "Quotation {$approved->quotation_number} approved successfully.");
         $this->viewQuotation($id);
     }
 
@@ -228,14 +228,14 @@ class QuotationManager extends Component
         $this->validate([
             'rejectReason' => ['required', 'string', 'min:3'],
         ], [
-            'rejectReason.required' => 'Alasan penolakan wajib diisi.',
+            'rejectReason.required' => 'Rejection reason is required.',
         ]);
 
         $actor = Auth::user();
         $rejected = $quotationService->reject($quotation, $actor, $this->rejectReason);
 
         $this->showRejectModal = false;
-        session()->flash('message', "Quotation {$rejected->quotation_number} telah ditolak.");
+        session()->flash('message', "Quotation {$rejected->quotation_number} has been rejected.");
 
         if ($this->showDetailModal) {
             $this->viewQuotation($this->selectedQuotationId);
@@ -250,7 +250,7 @@ class QuotationManager extends Component
         $actor = Auth::user();
         $accepted = $quotationService->accept($quotation, $actor);
 
-        session()->flash('message', "Quotation {$accepted->quotation_number} diterima oleh pelanggan (ACCEPTED).");
+        session()->flash('message', "Quotation {$accepted->quotation_number} accepted by customer (ACCEPTED).");
         $this->viewQuotation($id);
     }
 
@@ -263,7 +263,7 @@ class QuotationManager extends Component
 
         try {
             $salesOrder = $quotationService->convertToSalesOrder($quotation, $actor);
-            session()->flash('message', "Quotation {$quotation->quotation_number} BERHASIL dikonversi menjadi Sales Order: {$salesOrder->so_number}!");
+            session()->flash('message', "Quotation {$quotation->quotation_number} converted to Sales Order {$salesOrder->so_number} successfully!");
             $this->viewQuotation($id);
         } catch (\Throwable $e) {
             session()->flash('error', $e->getMessage());

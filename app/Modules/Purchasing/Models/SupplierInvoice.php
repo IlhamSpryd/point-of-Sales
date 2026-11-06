@@ -34,6 +34,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property numeric-string $subtotal_amount
  * @property numeric-string $discount_amount
  * @property numeric-string $tax_amount
+ * @property string|null $tax_invoice_serial_number
+ * @property string|null $tax_invoice_status
  * @property numeric-string $additional_charges_amount
  * @property numeric-string $total_amount
  * @property numeric-string $debit_note_applied_amount

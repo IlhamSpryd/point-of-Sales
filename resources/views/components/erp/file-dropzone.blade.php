@@ -1,7 +1,7 @@
 @props([
     'name' => 'file',
-    'label' => 'Unggah Berkas',
-    'hint' => 'Seret dan lepas gambar atau dokumen (PNG, JPG, PDF maks 10MB) di sini atau telusuri',
+    'label' => 'Upload File',
+    'hint' => 'Drag and drop files here or browse (PNG, JPG, PDF up to 10MB)',
     'accept' => '.png,.jpg,.jpeg,.webp,.svg,.pdf',
     'multiple' => false,
     'maxSizeMb' => 10,
@@ -103,20 +103,20 @@
 
             {{-- Heading --}}
             <h4 class="mb-1 text-base font-semibold text-foreground tracking-tight"
-                x-text="isDragReject ? 'Format berkas tidak didukung' : isDragActive ? 'Lepaskan berkas di sini' : '{{ $label }}'">
+                x-text="isDragReject ? 'Unsupported file format' : isDragActive ? 'Drop files here' : '{{ $label }}'">
                 {{ $label }}
             </h4>
 
             {{-- Subtitle / Hint --}}
             <p class="mb-3 max-w-sm text-xs text-muted-foreground leading-normal"
-                x-text="isDragReject ? 'Ukuran berkas melebihi batas {{ $maxSizeMb }}MB' : '{{ $hint }}'">
+                x-text="isDragReject ? 'File exceeds {{ $maxSizeMb }}MB limit' : '{{ $hint }}'">
                 {{ $hint }}
             </p>
 
             {{-- Browse Button Pill --}}
             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold bg-card border border-border text-foreground hover:bg-muted shadow-xs transition-colors">
                 <span class="material-symbols-rounded text-sm">folder_open</span>
-                <span>Pilih Berkas</span>
+                <span>Browse Files</span>
             </span>
         </div>
     </div>
@@ -125,10 +125,10 @@
     <div x-show="files.length > 0" x-cloak class="mt-4 space-y-3">
         <div class="flex items-center justify-between">
             <span class="text-xs font-semibold text-foreground">
-                Berkas Terpilih (<span x-text="files.length"></span>)
+                Selected Files (<span x-text="files.length"></span>)
             </span>
             <button type="button" @click="clearAll()" class="text-xs font-medium text-destructive hover:underline cursor-pointer">
-                Hapus Semua
+                Clear All
             </button>
         </div>
 
@@ -148,7 +148,7 @@
                         <div class="absolute inset-0 flex items-center justify-center bg-overlay-scrim opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                             <button type="button"
                                 @click="removeFile(index)"
-                                title="Hapus berkas"
+                                title="Remove file"
                                 class="flex size-8 items-center justify-center rounded-full bg-destructive text-destructive-foreground hover:bg-destructive transition-colors cursor-pointer shadow-xs">
                                 <span class="material-symbols-rounded text-base">delete</span>
                             </button>

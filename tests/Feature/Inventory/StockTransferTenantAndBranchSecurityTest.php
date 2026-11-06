@@ -145,7 +145,7 @@ class StockTransferTenantAndBranchSecurityTest extends TestCase
 
         // Coba transfer dari Tenant A (storeA) ke Tenant B (storeB)
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('tidak ditemukan untuk tenant ini');
+        $this->expectExceptionMessage('was not found for this tenant');
 
         $this->service->createDraft(
             tenantId: (int) $this->tenantA->id,
@@ -189,7 +189,7 @@ class StockTransferTenantAndBranchSecurityTest extends TestCase
             );
             $this->fail('Harus gagal validasi cabang asal sama dengan cabang tujuan');
         } catch (InvalidArgumentException $e) {
-            $this->assertStringContainsString('tidak boleh sama', $e->getMessage());
+            $this->assertStringContainsString('cannot be the same as', $e->getMessage());
         }
 
         // 2. Layer basis data (MariaDB Trigger) menolak jika ada bypass

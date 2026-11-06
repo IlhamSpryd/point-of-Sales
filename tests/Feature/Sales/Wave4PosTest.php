@@ -234,7 +234,7 @@ class Wave4PosTest extends TestCase
             );
             $this->fail('Upaya membuka shift kedua seharusnya gagal.');
         } catch (DomainException $e) {
-            $this->assertStringContainsString('sudah memiliki shift aktif', $e->getMessage());
+            $this->assertStringContainsString('already has an active register shift', $e->getMessage());
         }
 
         // Upaya mem-bypass domain dan menulis langsung ke DB wajib memicu QueryException unique constraint:

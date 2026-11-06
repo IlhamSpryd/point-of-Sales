@@ -108,12 +108,12 @@ class ProductController extends Controller
             storeId: app(TenantContext::class)->getStoreId(),
             subjectType: Product::class,
             subjectId: $product->id,
-            description: "Produk '{$product->product_name}' ({$product->product_code}) berhasil dibuat.",
+            description: "Product '{$product->product_name}' ({$product->product_code}) successfully created.",
             oldValues: null,
             newValues: $product->toArray()
         );
 
-        return redirect()->route('products.index')->with('success', 'Produk berhasil ditambahkan.');
+        return redirect()->route('products.index')->with('success', 'Product created successfully.');
     }
 
     /**
@@ -161,12 +161,12 @@ class ProductController extends Controller
             storeId: app(TenantContext::class)->getStoreId(),
             subjectType: Product::class,
             subjectId: $product->id,
-            description: "Produk '{$product->product_name}' berhasil diperbarui.",
+            description: "Product '{$product->product_name}' successfully updated.",
             oldValues: $oldValues,
             newValues: $updated->toArray()
         );
 
-        return redirect()->route('products.index')->with('success', 'Produk berhasil diperbarui.');
+        return redirect()->route('products.index')->with('success', 'Product updated successfully.');
     }
 
     /**
@@ -190,12 +190,12 @@ class ProductController extends Controller
                 storeId: app(TenantContext::class)->getStoreId(),
                 subjectType: Product::class,
                 subjectId: $pId,
-                description: "Produk '{$pName}' berhasil dihapus."
+                description: "Product '{$pName}' successfully deleted."
             );
 
-            return redirect()->route('products.index')->with('success', 'Produk berhasil dihapus.');
+            return redirect()->route('products.index')->with('success', 'Product deleted successfully.');
         } catch (QueryException) {
-            return redirect()->route('products.index')->with('error', 'Data ini masih terhubung dengan data lain dan tidak dapat dihapus.');
+            return redirect()->route('products.index')->with('error', 'This record cannot be deleted because it is referenced by other records.');
         } catch (\Throwable $e) {
             return redirect()->route('products.index')->with('error', $e->getMessage());
         }
@@ -209,7 +209,7 @@ class ProductController extends Controller
         $this->authorize('update', $product);
 
         if ((int) $media->product_id !== (int) $product->id) {
-            abort(404, 'Media tidak ditemukan pada produk ini.');
+            abort(404, 'Media not found for this product.');
         }
 
         if ($media->file_path && Storage::disk('public')->exists($media->file_path)) {
@@ -218,7 +218,7 @@ class ProductController extends Controller
 
         $media->delete();
 
-        return back()->with('success', 'Media produk berhasil dihapus.');
+        return back()->with('success', 'Product media deleted successfully.');
     }
 
     /**
@@ -229,14 +229,14 @@ class ProductController extends Controller
         $this->authorize('update', $product);
 
         if ((int) $media->product_id !== (int) $product->id) {
-            abort(404, 'Media tidak ditemukan pada produk ini.');
+            abort(404, 'Media not found for this product.');
         }
 
         ProductMedia::where('product_id', $product->id)->update(['is_primary' => false]);
         $media->update(['is_primary' => true]);
         $product->update(['product_photo' => $media->file_path]);
 
-        return back()->with('success', 'Foto utama produk berhasil diperbarui.');
+        return back()->with('success', 'Primary product media updated successfully.');
     }
 
     /**
@@ -252,12 +252,12 @@ class ProductController extends Controller
         $result = $importService->importCsv($file, null, $strictMode);
 
         if ($result['failed_count'] > 0) {
-            $msg = "Impor selesai: {$result['imported_count']} berhasil, {$result['failed_count']} gagal.";
+            $msg = "Import completed: {$result['imported_count']} succeeded, {$result['failed_count']} failed.";
 
             return redirect()->route('products.index')->with('warning', $msg)->with('import_errors', $result['errors']);
         }
 
-        return redirect()->route('products.index')->with('success', "Berhasil mengimpor {$result['imported_count']} produk.");
+        return redirect()->route('products.index')->with('success', "Successfully imported {$result['imported_count']} products.");
     }
 
     /**
@@ -283,6 +283,6 @@ class ProductController extends Controller
             default => 0,
         };
 
-        return redirect()->route('products.index')->with('success', "Berhasil memperbarui {$count} produk terpilih.");
+        return redirect()->route('products.index')->with('success', "Successfully updated {$count} selected products.");
     }
 }

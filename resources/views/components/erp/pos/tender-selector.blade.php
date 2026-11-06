@@ -1,7 +1,7 @@
 @props([
     'value' => 'cash',
     'methods' => [
-        ['id' => 'cash', 'label' => 'Tunai', 'icon' => 'payments', 'color' => 'emerald'],
+        ['id' => 'cash', 'label' => 'Cash', 'icon' => 'payments', 'color' => 'emerald'],
         ['id' => 'qris', 'label' => 'QRIS', 'icon' => 'qr_code_scanner', 'color' => 'blue'],
         ['id' => 'debit', 'label' => 'Debit Card', 'icon' => 'credit_card', 'color' => 'amber'],
         ['id' => 'transfer', 'label' => 'Bank Transfer', 'icon' => 'account_balance', 'color' => 'purple'],

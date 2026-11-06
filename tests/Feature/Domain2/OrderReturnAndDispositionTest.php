@@ -370,7 +370,7 @@ class OrderReturnAndDispositionTest extends TestCase
 
         // Mencoba restock produk kopi F&B -> HARUS DITOLAK
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Larangan Restock: Produk F&B berbasis resep');
+        $this->expectExceptionMessage('Restock Prohibited: Recipe-based F&B product');
 
         $this->service->createReturnAndRefund(
             order: $order,
@@ -443,7 +443,7 @@ class OrderReturnAndDispositionTest extends TestCase
 
         // Coba retur 2 unit padahal beli cuma 1 -> HARUS DITOLAK
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('melebihi sisa yang dapat diretur');
+        $this->expectExceptionMessage('exceeds remaining returnable quantity');
 
         $this->service->createReturnAndRefund(
             order: $order,

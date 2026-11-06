@@ -55,7 +55,7 @@ class AdvancedAnalyticsDashboard extends Component
         $role = Auth::user()?->role;
         $roleName = $role?->name;
         if (! in_array($roleName, ['Owner', 'Manager', 'Admin'], true)) {
-            abort(403, 'Akses ditolak: Anda tidak memiliki wewenang membuka Dashboard Business Intelligence.');
+            abort(403, 'Access denied: You do not have permission to access the Business Intelligence Dashboard.');
         }
     }
 
@@ -134,7 +134,7 @@ class AdvancedAnalyticsDashboard extends Component
         ProcessAnalyticsExportJob::dispatch($task, $tenantId, $this->selectedStoreId);
 
         $this->activeExportTaskId = $task->id;
-        $this->exportFeedback = "Tugas ekspor #{$task->id} ({$exportType}) berhasil dijadwalkan pada antrean background worker.";
+        $this->exportFeedback = "Export task #{$task->id} ({$exportType}) queued successfully.";
     }
 
     public function checkExportStatus(): ?ExportTask
@@ -151,7 +151,7 @@ class AdvancedAnalyticsDashboard extends Component
             ->first();
 
         if ($task && $task->status === ExportTaskStatus::Completed) {
-            $this->exportFeedback = "Ekspor #{$task->id} telah siap untuk diunduh!";
+            $this->exportFeedback = "Export #{$task->id} is ready for download.";
         }
 
         return $task;

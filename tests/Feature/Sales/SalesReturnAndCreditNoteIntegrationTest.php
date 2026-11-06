@@ -264,7 +264,7 @@ class SalesReturnAndCreditNoteIntegrationTest extends TestCase
 
         // Retur tahap 3: coba 3 unit (padahal sisa cuma 2) -> Wajib Ditolak!
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('melebihi sisa yang dapat diretur');
+        $this->expectExceptionMessage('exceeds remaining returnable quantity');
 
         $this->returnService->createReturnWithCreditNote(
             order: $order,
@@ -349,7 +349,7 @@ class SalesReturnAndCreditNoteIntegrationTest extends TestCase
         $orderItem = $order->orderItems()->first();
 
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Larangan Restock: Produk F&B berbasis resep');
+        $this->expectExceptionMessage('Restock Prohibited: Recipe-based F&B product');
 
         $this->returnService->createReturnWithCreditNote(
             order: $order,
@@ -484,7 +484,7 @@ class SalesReturnAndCreditNoteIntegrationTest extends TestCase
 
         // Coba aplikasi lebih dari sisa nota kredit (Rp 600.000 > Rp 500.000)
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('melebihi sisa nota kredit');
+        $this->expectExceptionMessage('exceeds remaining credit note balance');
 
         $this->returnService->applyCreditNoteToInvoice(
             creditNote: $creditNote,

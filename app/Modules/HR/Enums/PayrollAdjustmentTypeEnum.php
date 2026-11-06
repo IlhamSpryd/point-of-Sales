@@ -12,8 +12,8 @@ enum PayrollAdjustmentTypeEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::ADDITION => 'Penambahan Upah',
-            self::DEDUCTION => 'Pemotongan Upah',
+            self::ADDITION => 'Addition / Allowance',
+            self::DEDUCTION => 'Deduction',
         };
     }
 }

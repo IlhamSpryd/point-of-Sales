@@ -28,7 +28,7 @@
             <span>{{ $label }}</span>
             @if ($required)
                 <span class="text-destructive font-bold" aria-hidden="true">*</span>
-                <span class="sr-only">(wajib diisi)</span>
+                <span class="sr-only">(required)</span>
             @endif
         </label>
     @endif

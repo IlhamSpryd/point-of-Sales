@@ -1,175 +1,210 @@
-<div class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+<div class="space-y-6" data-gsap="page-enter">
     <!-- Sub Navigasi Modular -->
     @include('livewire.hr.partials.sub-nav')
 
-    <!-- Header & Action -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
-                <span class="material-symbols-rounded text-indigo-600 text-[28px]">event_busy</span>
-                Manajemen Cuti & Izin Karyawan
-            </h1>
-            <p class="text-sm text-gray-500 mt-1">
-                Verifikasi permohonan cuti tahunan, sakit, izin khusus, dan pemantauan saldo cuti staf.
-            </p>
-        </div>
-        <div class="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
-            <button wire:click="$set('activeTab', 'REQUESTS')"
-                class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer {{ $activeTab === 'REQUESTS' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-900' }}">
-                Permohonan Cuti
-            </button>
-            <button wire:click="$set('activeTab', 'BALANCES')"
-                class="px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer {{ $activeTab === 'BALANCES' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-900' }}">
-                Saldo Cuti Staf
-            </button>
-        </div>
-    </div>
+    <!-- Header & Action Halaman -->
+    <x-erp.page-header
+        title="Employee Leave & Absence Management"
+        description="Manage annual leave, sick leave, time-off requests, and track employee leave balances.">
+        <x-slot:breadcrumbs>
+            <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item href="{{ route('hr.employees.index') }}">HR & Payroll</x-ui.breadcrumbs.item>
+            <x-ui.breadcrumbs.item active>Leave Management</x-ui.breadcrumbs.item>
+        </x-slot:breadcrumbs>
 
+        <x-slot:actions>
+            <div class="flex items-center gap-1 bg-muted p-1 rounded-xl border border-border">
+                <button
+                    type="button"
+                    wire:click="$set('activeTab', 'REQUESTS')"
+                    class="px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer {{ $activeTab === 'REQUESTS' ? 'bg-card text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground' }}">
+                    Leave Requests
+                </button>
+                <button
+                    type="button"
+                    wire:click="$set('activeTab', 'BALANCES')"
+                    class="px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-colors cursor-pointer {{ $activeTab === 'BALANCES' ? 'bg-card text-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground' }}">
+                    Leave Balances
+                </button>
+            </div>
+        </x-slot:actions>
+    </x-erp.page-header>
+
+    <!-- Flash Feedback Alerts -->
     @if (session()->has('success'))
-        <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-3 text-emerald-800 text-sm font-medium">
-            <span class="material-symbols-rounded text-emerald-600 text-[20px]">check_circle</span>
+        <x-ui.alert type="success" title="Success" class="rounded-2xl">
             {{ session('success') }}
-        </div>
+        </x-ui.alert>
     @endif
 
     @if (session()->has('error'))
-        <div class="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-center gap-3 text-rose-800 text-sm font-medium">
-            <span class="material-symbols-rounded text-rose-600 text-[20px]">error</span>
+        <x-ui.alert type="danger" title="Error" class="rounded-2xl">
             {{ session('error') }}
-        </div>
+        </x-ui.alert>
     @endif
+
+    <!-- KPI & Summary Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <x-erp.stat-card
+            title="Pending Approval"
+            :value="$pendingCount"
+            icon="pending_actions"
+            trend-label="Awaiting supervisor review"
+            delta-variant="warning"
+        />
+        <x-erp.stat-card
+            title="Approved Requests"
+            :value="$approvedCount"
+            icon="task_alt"
+            trend-label="Granted leave applications"
+            variant="success"
+        />
+        <x-erp.stat-card
+            title="Tracked Balances"
+            :value="$totalBalanceCount"
+            icon="account_balance_wallet"
+            trend-label="Employee balance ledgers"
+        />
+        <x-erp.stat-card
+            title="Total Days Taken"
+            :value="$totalDaysApproved"
+            icon="event_available"
+            trend-label="Total cumulative leave days"
+        />
+    </div>
 
     @if ($activeTab === 'REQUESTS')
         <!-- Filter Bar -->
-        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Status Permohonan:</span>
-                <select wire:model.live="statusFilter" class="text-xs font-semibold px-3 py-1.5 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 outline-none focus:bg-white focus:border-indigo-500">
-                    <option value="ALL">Semua Status</option>
-                    <option value="PENDING">Menunggu Persetujuan (PENDING)</option>
-                    <option value="APPROVED">Disetujui (APPROVED)</option>
-                    <option value="REJECTED">Ditolak (REJECTED)</option>
-                    <option value="CANCELLED">Dibatalkan (CANCELLED)</option>
-                </select>
+        <div class="card-surface p-4 rounded-2xl border border-border shadow-xs flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-xs font-bold text-muted-foreground uppercase tracking-wider">Request Status:</span>
+                <x-ui.select wire:model.live="statusFilter" class="w-auto text-xs sm:text-sm">
+                    <option value="ALL">All Statuses</option>
+                    @foreach (\App\Modules\HR\Enums\LeaveRequestStatusEnum::cases() as $case)
+                        <option value="{{ $case->value }}">{{ $case->label() }}</option>
+                    @endforeach
+                </x-ui.select>
             </div>
         </div>
 
-        <!-- Tabel Permohonan Cuti -->
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <!-- Leave Requests Table -->
+        <div class="card-surface rounded-2xl border border-border shadow-xs overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-gray-700 divide-y divide-gray-200">
-                    <thead class="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                <table class="w-full text-left text-sm text-foreground divide-y divide-border">
+                    <thead class="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         <tr>
-                            <th class="px-6 py-3.5">Nomor & Karyawan</th>
-                            <th class="px-6 py-3.5">Jenis Cuti</th>
-                            <th class="px-6 py-3.5">Rentang Tanggal</th>
-                            <th class="px-6 py-3.5">Durasi</th>
+                            <th class="px-6 py-3.5">Request & Employee</th>
+                            <th class="px-6 py-3.5">Leave Type</th>
+                            <th class="px-6 py-3.5">Date Range</th>
+                            <th class="px-6 py-3.5">Duration</th>
                             <th class="px-6 py-3.5">Status</th>
-                            <th class="px-6 py-3.5 text-right">Aksi</th>
+                            <th class="px-6 py-3.5 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200">
+                    <tbody class="divide-y divide-border">
                         @forelse ($requests as $req)
-                            <tr class="hover:bg-gray-50/60 transition-colors">
+                            <tr class="hover:bg-muted/30 transition-colors">
                                 <td class="px-6 py-4">
-                                    <div class="font-bold text-gray-900 font-mono text-xs">#{{ $req->id }}</div>
-                                    <div class="text-sm text-gray-800">{{ $req->employee?->full_name ?? 'Karyawan' }}</div>
+                                    <div class="font-bold text-foreground tabular-nums text-xs">#{{ $req->id }}</div>
+                                    <div class="text-sm font-semibold text-foreground">{{ $req->employee?->full_name ?? 'Employee' }}</div>
+                                    <div class="text-[11px] text-muted-foreground tabular-nums">{{ $req->employee?->employee_number }}</div>
                                 </td>
-                                <td class="px-6 py-4 font-medium text-gray-900">
-                                    {{ $req->policy?->policy_name ?? 'Cuti Umum' }}
+                                <td class="px-6 py-4 font-medium text-foreground">
+                                    {{ $req->policy?->policy_name ?? 'General Leave' }}
                                 </td>
-                                <td class="px-6 py-4 font-mono text-xs text-gray-600">
-                                    {{ $req->start_date->format('d M Y') }} s/d {{ $req->end_date->format('d M Y') }}
+                                <td class="px-6 py-4 text-xs text-muted-foreground tabular-nums">
+                                    {{ $req->start_date->format('d M Y') }} - {{ $req->end_date->format('d M Y') }}
                                 </td>
-                                <td class="px-6 py-4 font-semibold text-gray-900">
-                                    {{ (float) $req->total_days }} Hari
+                                <td class="px-6 py-4 font-semibold text-foreground tabular-nums">
+                                    {{ (float) $req->total_days }} Days
                                 </td>
                                 <td class="px-6 py-4">
-                                    @php
-                                        $badgeColor = match($req->status->value) {
-                                            'APPROVED' => 'bg-emerald-50 text-emerald-700 border-emerald-200',
-                                            'PENDING' => 'bg-amber-50 text-amber-700 border-amber-200',
-                                            'REJECTED' => 'bg-rose-50 text-rose-700 border-rose-200',
-                                            default => 'bg-gray-100 text-gray-700 border-gray-200'
-                                        };
-                                    @endphp
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border {{ $badgeColor }}">
-                                        {{ $req->status->value }}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border {{ $req->status->badgeClasses() }}">
+                                        {{ $req->status->label() }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     @if ($req->status === \App\Modules\HR\Enums\LeaveRequestStatusEnum::PENDING)
                                         <div class="flex items-center justify-end gap-2">
-                                            <button wire:click="approve({{ $req->id }})"
-                                                class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer">
-                                                Setujui
-                                            </button>
-                                            <button wire:click="reject({{ $req->id }})"
-                                                class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-semibold transition-colors cursor-pointer">
-                                                Tolak
-                                            </button>
+                                            <x-ui.button
+                                                variant="primary"
+                                                size="sm"
+                                                wire:click="approve({{ $req->id }})"
+                                                class="h-8 px-3 text-xs gap-1 bg-emerald-600 hover:bg-emerald-700 text-white">
+                                                <span class="material-symbols-rounded text-sm">check</span>
+                                                <span>Approve</span>
+                                            </x-ui.button>
+                                            <x-ui.button
+                                                variant="destructive"
+                                                size="sm"
+                                                wire:click="reject({{ $req->id }})"
+                                                class="h-8 px-3 text-xs gap-1">
+                                                <span class="material-symbols-rounded text-sm">close</span>
+                                                <span>Reject</span>
+                                            </x-ui.button>
                                         </div>
                                     @else
-                                        <span class="text-xs text-gray-400">Selesai</span>
+                                        <span class="text-xs text-muted-foreground">Completed</span>
                                     @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center text-gray-400">
-                                    <span class="material-symbols-rounded text-4xl block mb-2 text-gray-300">event_available</span>
-                                    Tidak ada permohonan cuti pada antrean.
+                                <td colspan="6" class="px-6 py-12 text-center text-muted-foreground">
+                                    <span class="material-symbols-rounded text-4xl block mb-2 text-muted-foreground/50">event_available</span>
+                                    No leave requests in queue.
                                 </td>
                             </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-            <div class="p-4 border-t border-gray-200">
+            <div class="p-4 border-t border-border">
                 {{ $requests->links() }}
             </div>
         </div>
     @else
-        <!-- Tabel Saldo Cuti Staf -->
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <!-- Staff Leave Balances Table -->
+        <div class="card-surface rounded-2xl border border-border shadow-xs overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-gray-700 divide-y divide-gray-200">
-                    <thead class="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                <table class="w-full text-left text-sm text-foreground divide-y divide-border">
+                    <thead class="bg-muted/50 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                         <tr>
-                            <th class="px-6 py-3.5">Karyawan</th>
-                            <th class="px-6 py-3.5">Kebijakan Cuti</th>
-                            <th class="px-6 py-3.5">Tahun</th>
-                            <th class="px-6 py-3.5">Hak Cuti</th>
-                            <th class="px-6 py-3.5">Terpakai</th>
-                            <th class="px-6 py-3.5">Sisa Saldo</th>
+                            <th class="px-6 py-3.5">Employee</th>
+                            <th class="px-6 py-3.5">Leave Policy</th>
+                            <th class="px-6 py-3.5">Year</th>
+                            <th class="px-6 py-3.5">Allocated Days</th>
+                            <th class="px-6 py-3.5">Used Days</th>
+                            <th class="px-6 py-3.5">Remaining Balance</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200">
+                    <tbody class="divide-y divide-border">
                         @forelse ($balances as $bal)
-                            <tr class="hover:bg-gray-50/60 transition-colors">
-                                <td class="px-6 py-4 font-semibold text-gray-900">
-                                    {{ $bal->employee?->full_name ?? 'Karyawan' }}
+                            <tr class="hover:bg-muted/30 transition-colors">
+                                <td class="px-6 py-4 font-semibold text-foreground">
+                                    {{ $bal->employee?->full_name ?? 'Employee' }}
                                 </td>
-                                <td class="px-6 py-4 font-medium text-gray-800">
-                                    {{ $bal->policy?->policy_name ?? 'Cuti' }}
+                                <td class="px-6 py-4 font-medium text-foreground">
+                                    {{ $bal->policy?->policy_name ?? 'Leave' }}
                                 </td>
-                                <td class="px-6 py-4 font-mono text-xs">
+                                <td class="px-6 py-4 text-xs text-muted-foreground tabular-nums">
                                     {{ $bal->year }}
                                 </td>
-                                <td class="px-6 py-4">
-                                    {{ (float) $bal->allocated_days }} Hari
+                                <td class="px-6 py-4 tabular-nums text-foreground">
+                                    {{ (float) $bal->allocated_days }} Days
                                 </td>
-                                <td class="px-6 py-4 text-rose-600 font-semibold">
-                                    {{ (float) $bal->used_days }} Hari
+                                <td class="px-6 py-4 text-rose-600 font-semibold tabular-nums">
+                                    {{ (float) $bal->used_days }} Days
                                 </td>
-                                <td class="px-6 py-4 text-emerald-600 font-bold">
-                                    {{ (float) $bal->remaining_days }} Hari
+                                <td class="px-6 py-4 text-emerald-600 font-bold tabular-nums">
+                                    {{ (float) $bal->remaining_days }} Days
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center text-gray-400">
-                                    Belum ada catatan saldo cuti staf yang terdaftar.
+                                <td colspan="6" class="px-6 py-12 text-center text-muted-foreground">
+                                    <span class="material-symbols-rounded text-4xl block mb-2 text-muted-foreground/50">account_balance_wallet</span>
+                                    No staff leave balances recorded yet.
                                 </td>
                             </tr>
                         @endforelse

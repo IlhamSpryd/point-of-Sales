@@ -223,7 +223,7 @@ class ParkedCartLifecycleAndRevalidationTest extends TestCase
         // Harus ada pesan peringatan kenaikan harga
         $this->assertNotEmpty($resumed['warnings']);
         $warningText = implode(' ', $resumed['warnings']);
-        $this->assertStringContainsString('berubah', $warningText);
+        $this->assertStringContainsString('changed', $warningText);
         $this->assertStringContainsString('25.000', $warningText);
 
         // Status keranjang berubah menjadi resumed
@@ -280,8 +280,8 @@ class ParkedCartLifecycleAndRevalidationTest extends TestCase
 
         // Harus ada pesan peringatan stok tidak mencukupi
         $warningText = implode(' ', $resumed['warnings']);
-        $this->assertStringContainsString('Stok', $warningText);
-        $this->assertStringContainsString('tidak mencukupi', $warningText);
+        $this->assertStringContainsString('Stock', $warningText);
+        $this->assertStringContainsString('insufficient', $warningText);
     }
 
     /**
@@ -343,7 +343,7 @@ class ParkedCartLifecycleAndRevalidationTest extends TestCase
 
         // Ada peringatan kuota voucher habis
         $warningText = implode(' ', $resumed['warnings']);
-        $this->assertStringContainsString('Voucher diskon sudah tidak berlaku', $warningText);
+        $this->assertStringContainsString('Discount voucher is no longer valid', $warningText);
     }
 
     /**

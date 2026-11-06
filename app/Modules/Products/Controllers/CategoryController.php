@@ -88,16 +88,16 @@ class CategoryController extends Controller
             storeId: app(TenantContext::class)->getStoreId(),
             subjectType: Category::class,
             subjectId: $category->id,
-            description: "Kategori '{$category->category_name}' ({$category->category_code}) berhasil dibuat.",
+            description: "Category '{$category->category_name}' ({$category->category_code}) created successfully.",
             oldValues: null,
             newValues: $category->toArray()
         );
 
-        return redirect()->route('categories.index')->with('success', 'Kategori berhasil dibuat.');
+        return redirect()->route('categories.index')->with('success', 'Category created successfully.');
     }
 
     /**
-     * Menampilkan form untuk menyunting resource yang dipilih.
+     * Show the form for editing the specified resource.
      */
     public function edit(Category $category): View
     {
@@ -109,7 +109,7 @@ class CategoryController extends Controller
     }
 
     /**
-     * Perbarui properti resource yang sudah ada berdasarkan kuncinya.
+     * Update the specified resource in storage.
      */
     public function update(UpdateCategoryRequest $request, Category $category): RedirectResponse
     {
@@ -126,16 +126,16 @@ class CategoryController extends Controller
             storeId: app(TenantContext::class)->getStoreId(),
             subjectType: Category::class,
             subjectId: $category->id,
-            description: "Kategori '{$category->category_name}' berhasil diperbarui.",
+            description: "Category '{$category->category_name}' updated successfully.",
             oldValues: $oldValues,
             newValues: $updated->toArray()
         );
 
-        return redirect()->route('categories.index')->with('success', 'Kategori berhasil diperbarui.');
+        return redirect()->route('categories.index')->with('success', 'Category updated successfully.');
     }
 
     /**
-     * Hapus permanen instance dari resource database.
+     * Remove the specified resource from storage.
      */
     public function destroy(Category $category): RedirectResponse
     {
@@ -155,12 +155,12 @@ class CategoryController extends Controller
                 storeId: app(TenantContext::class)->getStoreId(),
                 subjectType: Category::class,
                 subjectId: $catId,
-                description: "Kategori '{$catName}' berhasil dihapus."
+                description: "Category '{$catName}' deleted successfully."
             );
 
-            return redirect()->route('categories.index')->with('success', 'Kategori berhasil dihapus.');
+            return redirect()->route('categories.index')->with('success', 'Category deleted successfully.');
         } catch (QueryException) {
-            return redirect()->route('categories.index')->with('error', 'Data ini masih terhubung dengan data lain dan tidak dapat dihapus.');
+            return redirect()->route('categories.index')->with('error', 'This category is linked to other records and cannot be deleted.');
         } catch (\Throwable $e) {
             return redirect()->route('categories.index')->with('error', $e->getMessage());
         }

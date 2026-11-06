@@ -69,7 +69,7 @@ class StockTransferService
     public function createDraft(int $tenantId, int $fromStoreId, int $toStoreId, array $data, int $userId): StockTransfer
     {
         if ($fromStoreId === $toStoreId) {
-            throw new InvalidArgumentException('Cabang asal (from_store_id) tidak boleh sama dengan cabang tujuan (to_store_id).');
+            throw new InvalidArgumentException('Origin branch (from_store_id) cannot be the same as destination branch (to_store_id).');
         }
 
         $fromStore = Store::withoutGlobalScopes()
@@ -83,11 +83,11 @@ class StockTransferService
             ->first();
 
         if (! $fromStore || ! $toStore) {
-            throw new InvalidArgumentException("Cabang asal #{$fromStoreId} atau cabang tujuan #{$toStoreId} tidak ditemukan untuk tenant ini.");
+            throw new InvalidArgumentException("Origin branch #{$fromStoreId} or destination branch #{$toStoreId} was not found for this tenant.");
         }
 
         if (empty($data['items'])) {
-            throw new InvalidArgumentException('Dokumen transfer stok wajib memiliki minimal 1 item.');
+            throw new InvalidArgumentException('Stock transfer document must contain at least 1 item.');
         }
 
         $shipIdempotencyKey = $data['ship_idempotency_key'] ?? (string) Str::uuid();
@@ -128,7 +128,7 @@ class StockTransferService
                 storeId: $fromStoreId,
                 subjectType: StockTransfer::class,
                 subjectId: (int) $transfer->id,
-                description: "Draft transfer stok #{$transfer->transfer_number} dibuat dari cabang #{$fromStoreId} ke cabang #{$toStoreId}",
+                description: "Stock transfer draft #{$transfer->transfer_number} created from branch #{$fromStoreId} to branch #{$toStoreId}.",
                 metadata: [
                     'transfer_number' => $transfer->transfer_number,
                     'from_store_id' => $fromStoreId,
@@ -161,7 +161,7 @@ class StockTransferService
                 ->firstOrFail();
 
             if (! $lockedTransfer->isDraft()) {
-                throw new DomainException("Hanya transfer berstatus DRAFT yang dapat diperbarui (status saat ini: {$lockedTransfer->status->value}).");
+                throw new DomainException("Only transfers with DRAFT status can be updated (current status: {$lockedTransfer->status->value}).");
             }
 
             if (isset($data['notes'])) {
@@ -183,7 +183,7 @@ class StockTransferService
                 storeId: (int) $lockedTransfer->from_store_id,
                 subjectType: StockTransfer::class,
                 subjectId: (int) $lockedTransfer->id,
-                description: "Draft transfer stok #{$lockedTransfer->transfer_number} diperbarui.",
+                description: "Stock transfer draft #{$lockedTransfer->transfer_number} updated.",
                 metadata: [
                     'transfer_number' => $lockedTransfer->transfer_number,
                 ]
@@ -210,12 +210,12 @@ class StockTransferService
                 ->firstOrFail();
 
             if (! $lockedTransfer->isDraft()) {
-                throw new DomainException("Transfer #{$lockedTransfer->transfer_number} tidak dalam status DRAFT (status: {$lockedTransfer->status->value}).");
+                throw new DomainException("Transfer #{$lockedTransfer->transfer_number} is not in DRAFT status (status: {$lockedTransfer->status->value}).");
             }
 
             $items = $lockedTransfer->items()->get();
             if ($items->isEmpty()) {
-                throw new DomainException('Dokumen transfer tidak memiliki item untuk dikirim.');
+                throw new DomainException('Transfer document has no items to ship.');
             }
 
             // Perbarui kuantitas kirim jika ada input kuantitas spesifik
@@ -224,7 +224,7 @@ class StockTransferService
                     if (isset($shippedQuantities[$item->id])) {
                         $qty = (string) $shippedQuantities[$item->id];
                         if (bccomp(bc_num($qty), '0', 4) < 0) {
-                            throw new InvalidArgumentException("Kuantitas kirim untuk item #{$item->id} tidak boleh negatif.");
+                            throw new InvalidArgumentException("Shipped quantity for item #{$item->id} cannot be negative.");
                         }
                         $item->quantity_shipped = bc_num($qty);
                         $item->save();
@@ -272,14 +272,14 @@ class StockTransferService
                     'type' => $item->item_type === 'product'
                         ? StockMovementType::TransferOut
                         : IngredientStockMovementTypeEnum::TransferOut,
-                    'reason' => "Transfer Out ke Cabang #{$lockedTransfer->to_store_id} ({$lockedTransfer->transfer_number})",
+                    'reason' => "Transfer Out to Branch #{$lockedTransfer->to_store_id} ({$lockedTransfer->transfer_number})",
                     'idempotency_key' => "st:{$lockedTransfer->id}:item:{$item->id}:ship",
                     'user_id' => $userId,
                 ];
             }
 
             if (empty($movementsToRecord)) {
-                throw new DomainException('Tidak ada kuantitas barang yang dikirim pada transfer ini.');
+                throw new DomainException('No items or quantities to ship on this transfer.');
             }
 
             // Eksekusi mutasi keluar dengan penegakan strict non-negative stock (OD-05)
@@ -302,7 +302,7 @@ class StockTransferService
                 storeId: (int) $lockedTransfer->from_store_id,
                 subjectType: StockTransfer::class,
                 subjectId: (int) $lockedTransfer->id,
-                description: "Transfer stok #{$lockedTransfer->transfer_number} dikirim dari cabang #{$lockedTransfer->from_store_id} (Status: IN_TRANSIT).",
+                description: "Stock transfer #{$lockedTransfer->transfer_number} dispatched from branch #{$lockedTransfer->from_store_id} (Status: IN_TRANSIT).",
                 metadata: [
                     'transfer_number' => $lockedTransfer->transfer_number,
                     'from_store_id' => $lockedTransfer->from_store_id,
@@ -351,11 +351,11 @@ class StockTransferService
                 if ($receiveIdempotencyKey && $lockedTransfer->receive_idempotency_key === $receiveIdempotencyKey) {
                     return $lockedTransfer->load(['items.product', 'items.ingredient']);
                 }
-                throw new DomainException("Transfer #{$lockedTransfer->transfer_number} sudah berstatus RECEIVED.");
+                throw new DomainException("Transfer #{$lockedTransfer->transfer_number} has already been marked as RECEIVED.");
             }
 
             if (! $lockedTransfer->isInTransit()) {
-                throw new DomainException("Hanya transfer berstatus IN_TRANSIT yang dapat diterima (status saat ini: {$lockedTransfer->status->value}).");
+                throw new DomainException("Only transfers with IN_TRANSIT status can be received (current status: {$lockedTransfer->status->value}).");
             }
 
             $items = $lockedTransfer->items()->get();
@@ -381,7 +381,7 @@ class StockTransferService
             foreach ($items as $item) {
                 if (! isset($normalizedItems[$item->id])) {
                     throw ValidationException::withMessages([
-                        'items' => "Item #{$item->id} tidak ditemukan dalam payload penerimaan.",
+                        'items' => "Item #{$item->id} was not found in the receiving payload.",
                     ]);
                 }
 
@@ -391,14 +391,14 @@ class StockTransferService
 
                 if (bccomp(bc_num($qtyReceived), '0', 4) < 0) {
                     throw ValidationException::withMessages([
-                        'items' => "Kuantitas yang diterima untuk item #{$item->id} tidak boleh negatif.",
+                        'items' => "Received quantity for item #{$item->id} cannot be negative.",
                     ]);
                 }
 
                 // HARD ANTI-OVER-RECEIPT CONSTRAINT (INV-M4-06 & OD-03)
                 if (bccomp(bc_num($qtyReceived), bc_num($qtyShipped), 4) > 0) {
                     throw ValidationException::withMessages([
-                        'items' => "Kuantitas yang diterima ({$qtyReceived}) melebihi kuantitas yang dikirim ({$qtyShipped}). Over-receipt dilarang keras.",
+                        'items' => "Received quantity ({$qtyReceived}) exceeds shipped quantity ({$qtyShipped}). Over-receipt is strictly prohibited.",
                     ]);
                 }
 
@@ -411,7 +411,7 @@ class StockTransferService
                     $rawRes = $input['discrepancy_resolution'] ?? null;
                     if (! $rawRes || $rawRes === 'NONE' || $rawRes === StockTransferDiscrepancyResolutionEnum::None) {
                         throw ValidationException::withMessages([
-                            'items' => "Terdapat selisih kekurangan penerimaan sebesar {$discrepancy} pada item #{$item->id}. Resolusi selisih (RETURN_TO_SOURCE atau WRITE_OFF_IN_TRANSIT) wajib ditentukan (OD-03).",
+                            'items' => "Receipt discrepancy shortage of {$discrepancy} detected on item #{$item->id}. Discrepancy resolution (RETURN_TO_SOURCE or WRITE_OFF_IN_TRANSIT) is required.",
                         ]);
                     }
 
@@ -443,7 +443,7 @@ class StockTransferService
                         'type' => $item->item_type === 'product'
                             ? StockMovementType::TransferIn
                             : IngredientStockMovementTypeEnum::TransferIn,
-                        'reason' => "Transfer In dari Cabang #{$lockedTransfer->from_store_id} ({$lockedTransfer->transfer_number})",
+                        'reason' => "Transfer In from Branch #{$lockedTransfer->from_store_id} ({$lockedTransfer->transfer_number})",
                         'idempotency_key' => "st:{$lockedTransfer->id}:item:{$item->id}:receive",
                         'user_id' => $userId,
                     ];
@@ -462,7 +462,7 @@ class StockTransferService
                             'type' => $item->item_type === 'product'
                                 ? StockMovementType::TransferReturnIn
                                 : IngredientStockMovementTypeEnum::TransferReturnIn,
-                            'reason' => "Transfer Shortage Return dari Cabang #{$lockedTransfer->to_store_id} ({$lockedTransfer->transfer_number})",
+                            'reason' => "Transfer Shortage Return from Branch #{$lockedTransfer->to_store_id} ({$lockedTransfer->transfer_number})",
                             'idempotency_key' => "st:{$lockedTransfer->id}:item:{$item->id}:return_to_source",
                             'user_id' => $userId,
                         ];
@@ -501,7 +501,7 @@ class StockTransferService
                 storeId: (int) $lockedTransfer->to_store_id,
                 subjectType: StockTransfer::class,
                 subjectId: (int) $lockedTransfer->id,
-                description: "Transfer stok #{$lockedTransfer->transfer_number} diterima di cabang #{$lockedTransfer->to_store_id} (Status: RECEIVED).",
+                description: "Stock transfer #{$lockedTransfer->transfer_number} received at branch #{$lockedTransfer->to_store_id} (Status: RECEIVED).",
                 metadata: [
                     'transfer_number' => $lockedTransfer->transfer_number,
                     'from_store_id' => $lockedTransfer->from_store_id,
@@ -533,7 +533,7 @@ class StockTransferService
                 ->firstOrFail();
 
             if (! $lockedTransfer->status->canCancel()) {
-                throw new DomainException("Transfer dalam status {$lockedTransfer->status->value} tidak dapat dibatalkan.");
+                throw new DomainException("Transfers in status {$lockedTransfer->status->value} cannot be cancelled.");
             }
 
             // Jika transfer dibatalkan saat IN_TRANSIT, stok yang sudah keluar dari cabang asal harus dipulihkan
@@ -555,7 +555,7 @@ class StockTransferService
                             'type' => $item->item_type === 'product'
                                 ? StockMovementType::TransferReturnIn
                                 : IngredientStockMovementTypeEnum::TransferReturnIn,
-                            'reason' => "Pemulihan Stok Akibat Pembatalan Transfer #{$lockedTransfer->transfer_number}",
+                            'reason' => "Stock restoration due to cancellation of Transfer #{$lockedTransfer->transfer_number}",
                             'idempotency_key' => "st:{$lockedTransfer->id}:item:{$item->id}:cancel_restore",
                             'user_id' => $userId,
                         ];
@@ -575,7 +575,7 @@ class StockTransferService
                 'status' => StockTransferStatusEnum::Cancelled,
                 'cancelled_at' => $now,
                 'cancelled_by' => $userId,
-                'notes' => $reason ? trim(($lockedTransfer->notes ?? '')."\n[Dibatalkan]: {$reason}") : $lockedTransfer->notes,
+                'notes' => $reason ? trim(($lockedTransfer->notes ?? '')."\n[Cancelled]: {$reason}") : $lockedTransfer->notes,
             ]);
 
             $this->auditTrailService->log(
@@ -585,7 +585,7 @@ class StockTransferService
                 storeId: (int) $lockedTransfer->from_store_id,
                 subjectType: StockTransfer::class,
                 subjectId: (int) $lockedTransfer->id,
-                description: "Transfer stok #{$lockedTransfer->transfer_number} dibatalkan.",
+                description: "Stock transfer #{$lockedTransfer->transfer_number} cancelled.",
                 metadata: [
                     'transfer_number' => $lockedTransfer->transfer_number,
                     'reason' => $reason,
@@ -609,7 +609,7 @@ class StockTransferService
     {
         $itemType = $itemData['item_type'] ?? null;
         if (! in_array($itemType, ['product', 'ingredient'], true)) {
-            throw new InvalidArgumentException("item_type harus bernilai 'product' atau 'ingredient'.");
+            throw new InvalidArgumentException("item_type must be either 'product' or 'ingredient'.");
         }
 
         $productId = isset($itemData['product_id']) ? (int) $itemData['product_id'] : null;
@@ -617,7 +617,7 @@ class StockTransferService
 
         if ($itemType === 'product') {
             if (! $productId || $ingredientId !== null) {
-                throw new InvalidArgumentException('Item bertipe product wajib menyertakan product_id dan mengosongkan ingredient_id.');
+                throw new InvalidArgumentException('Items of type product must include product_id and leave ingredient_id empty.');
             }
 
             $product = Product::withoutGlobalScopes()
@@ -626,11 +626,11 @@ class StockTransferService
                 ->first();
 
             if (! $product) {
-                throw new InvalidArgumentException("Product #{$productId} tidak valid untuk tenant ini.");
+                throw new InvalidArgumentException("Product #{$productId} is invalid for this tenant.");
             }
         } else {
             if (! $ingredientId || $productId !== null) {
-                throw new InvalidArgumentException('Item bertipe ingredient wajib menyertakan ingredient_id dan mengosongkan product_id.');
+                throw new InvalidArgumentException('Items of type ingredient must include ingredient_id and leave product_id empty.');
             }
 
             $ingredient = Ingredient::withoutGlobalScopes()
@@ -639,18 +639,18 @@ class StockTransferService
                 ->first();
 
             if (! $ingredient) {
-                throw new InvalidArgumentException("Ingredient #{$ingredientId} tidak valid untuk tenant ini.");
+                throw new InvalidArgumentException("Ingredient #{$ingredientId} is invalid for this tenant.");
             }
         }
 
         $qtyRequested = (string) ($itemData['quantity_requested'] ?? '0');
         if (bccomp(bc_num($qtyRequested), '0', 4) <= 0) {
-            throw new InvalidArgumentException('quantity_requested harus bernilai lebih besar dari 0.');
+            throw new InvalidArgumentException('quantity_requested must be greater than 0.');
         }
 
         $qtyShipped = isset($itemData['quantity_shipped']) ? (string) $itemData['quantity_shipped'] : '0.0000';
         if (bccomp(bc_num($qtyShipped), '0', 4) < 0) {
-            throw new InvalidArgumentException('quantity_shipped tidak boleh negatif.');
+            throw new InvalidArgumentException('quantity_shipped cannot be negative.');
         }
 
         return StockTransferItem::create([

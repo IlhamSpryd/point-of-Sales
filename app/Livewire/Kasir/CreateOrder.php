@@ -59,11 +59,11 @@ class CreateOrder extends Component
         $role = Auth::user()?->role;
         $roleName = $role?->name;
         if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager', 'Kasir', 'Admin'], true)) {
-            abort(403, 'Anda tidak memiliki hak akses kasir.');
+            abort(403, 'You do not have permission to access the POS terminal.');
         }
 
         if (Auth::user()->pin_hash === null) {
-            session()->flash('warning', 'Kasir wajib menyetel PIN Kasir sebelum dapat membuka shift atau memproses transaksi.');
+            session()->flash('warning', 'Cashiers must configure a PIN before opening a register shift or processing transactions.');
         }
     }
 
@@ -165,7 +165,7 @@ class CreateOrder extends Component
         $this->voucherError = null;
         $code = strtoupper(trim($this->voucherInput));
         if (empty($code)) {
-            $this->voucherError = 'Kode voucher tidak boleh kosong.';
+            $this->voucherError = 'Voucher code cannot be empty.';
 
             return;
         }
@@ -186,7 +186,7 @@ class CreateOrder extends Component
 
             $this->voucherCode = $code;
             $this->voucherInput = '';
-            session()->flash('success', "Voucher '{$code}' berhasil diterapkan.");
+            session()->flash('success', "Voucher '{$code}' applied successfully.");
         } catch (\Throwable $e) {
             $this->voucherError = $e->getMessage();
         }
@@ -265,7 +265,7 @@ class CreateOrder extends Component
             ->first();
 
         if (! $order) {
-            $this->dispatch('toast', message: 'Pesanan tidak ditemukan atau sudah dibayar.', type: 'error');
+            $this->dispatch('toast', message: 'Order not found or has already been paid.', type: 'error');
 
             return;
         }
@@ -292,7 +292,7 @@ class CreateOrder extends Component
         $this->orderType = $order->order_type?->value;
         $this->tableId = $order->table_id;
 
-        $this->dispatch('toast', message: 'Pesanan '.$orderCode.' berhasil ditarik!', type: 'success');
+        $this->dispatch('toast', message: 'Order '.$orderCode.' retrieved successfully.', type: 'success');
     }
 
     public function cancelPendingOrderMode(): void
@@ -472,7 +472,7 @@ class CreateOrder extends Component
     public function openModifierPicker(int $productId): void
     {
         if ($this->pendingOrderId !== null) {
-            $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+            $this->addError('cart', 'Pending self-orders are read-only and cannot be modified.');
 
             return;
         }
@@ -481,7 +481,7 @@ class CreateOrder extends Component
         $storeId = app(TenantContext::class)->getStoreId();
         $resolver = app(CatalogPriceResolverService::class);
         if (! $resolver->isAvailableInStore($product, $storeId)) {
-            $this->addError('cart', "Produk '{$product->product_name}' tidak tersedia di cabang ini.");
+            $this->addError('cart', "Product '{$product->product_name}' is not available at this branch.");
 
             return;
         }
@@ -516,7 +516,7 @@ class CreateOrder extends Component
     public function toggleModifier(int $groupId, int $modifierId, string $selectionType): void
     {
         if ($this->pendingOrderId !== null) {
-            $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+            $this->addError('cart', 'Pending self-orders are read-only and cannot be modified.');
 
             return;
         }
@@ -540,7 +540,7 @@ class CreateOrder extends Component
     public function confirmAddToCart(): void
     {
         if ($this->pendingOrderId !== null) {
-            $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+            $this->addError('cart', 'Pending self-orders are read-only and cannot be modified.');
 
             return;
         }
@@ -555,7 +555,7 @@ class CreateOrder extends Component
         $storeId = app(TenantContext::class)->getStoreId();
         $resolver = app(CatalogPriceResolverService::class);
         if (! $resolver->isAvailableInStore($product, $storeId)) {
-            $this->addError('cart', "Produk '{$product->product_name}' tidak tersedia di cabang ini.");
+            $this->addError('cart', "Product '{$product->product_name}' is not available at this branch.");
 
             return;
         }
@@ -579,7 +579,7 @@ class CreateOrder extends Component
             $selectedGroupIds = $selectedModifiers->pluck('modifier_group_id')->unique();
             foreach ($requiredGroups as $group) {
                 if (! $selectedGroupIds->contains($group->id)) {
-                    $this->addError('cart', "Pilihan wajib untuk {$group->name} belum dipilih.");
+                    $this->addError('cart', "Required option for {$group->name} has not been selected.");
 
                     return;
                 }
@@ -617,7 +617,7 @@ class CreateOrder extends Component
     public function addToCartDirectly(int $productId): void
     {
         if ($this->pendingOrderId !== null) {
-            $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+            $this->addError('cart', 'Pending self-orders are read-only and cannot be modified.');
 
             return;
         }
@@ -626,7 +626,7 @@ class CreateOrder extends Component
         $storeId = app(TenantContext::class)->getStoreId();
         $resolver = app(CatalogPriceResolverService::class);
         if (! $resolver->isAvailableInStore($product, $storeId)) {
-            $this->addError('cart', "Produk '{$product->product_name}' tidak tersedia di cabang ini.");
+            $this->addError('cart', "Product '{$product->product_name}' is not available at this branch.");
 
             return;
         }
@@ -661,7 +661,7 @@ class CreateOrder extends Component
     public function removeFromCart(int $index): void
     {
         if ($this->pendingOrderId !== null) {
-            $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+            $this->addError('cart', 'Pending self-orders are read-only and cannot be modified.');
 
             return;
         }
@@ -673,7 +673,7 @@ class CreateOrder extends Component
     public function updateCartQty(int $index, int $delta): void
     {
         if ($this->pendingOrderId !== null) {
-            $this->addError('cart', 'Pesanan QR pending bersifat read-only dan tidak dapat dimodifikasi.');
+            $this->addError('cart', 'Pending self-orders are read-only and cannot be modified.');
 
             return;
         }
@@ -790,7 +790,7 @@ class CreateOrder extends Component
     {
         if ($this->pendingOrderId !== null) {
             $this->selectedDiscountId = null;
-            $this->addError('cart', 'Diskon tidak dapat dimodifikasi pada pesanan QR pending.');
+            $this->addError('cart', 'Discounts cannot be modified on pending self-orders.');
         }
     }
 
@@ -836,7 +836,7 @@ class CreateOrder extends Component
             $pinValidator = validator(
                 ['pin' => $pin],
                 ['pin' => 'required|string|min:4'],
-                ['pin.required' => 'PIN Supervisor wajib diisi.', 'pin.min' => 'PIN Supervisor minimal 4 karakter.']
+                ['pin.required' => 'Supervisor PIN is required.', 'pin.min' => 'Supervisor PIN must be at least 4 characters.']
             );
 
             if ($pinValidator->fails()) {
@@ -871,7 +871,7 @@ class CreateOrder extends Component
         $this->appliedManualDiscount = (int) $this->manualDiscountAmount;
         $this->appliedManualDiscountReason = $this->manualDiscountReason;
         $this->isManualDiscountModalOpen = false;
-        $this->dispatch('toast', message: 'Diskon manual berhasil diterapkan.', type: 'success');
+        $this->dispatch('toast', message: 'Manual discount applied successfully.', type: 'success');
     }
 
     public function addPaymentLeg(): void
@@ -889,13 +889,13 @@ class CreateOrder extends Component
         $this->manualDiscountAmount = 0;
         $this->manualDiscountReason = '';
         $this->manualDiscountApprovalId = null;
-        $this->dispatch('toast', message: 'Diskon manual dilepas.', type: 'info');
+        $this->dispatch('toast', message: 'Manual discount removed.', type: 'info');
     }
 
     public function parkCurrentCart(): void
     {
         if (empty($this->cart)) {
-            $this->addError('cart', 'Keranjang masih kosong, tidak dapat ditahan.');
+            $this->addError('cart', 'Cart is empty and cannot be parked.');
 
             return;
         }
@@ -909,7 +909,7 @@ class CreateOrder extends Component
         })->where('status', 'open')->first();
 
         if (! $activeShift) {
-            $this->addError('cart', 'Terminal kasir belum memiliki shift yang terbuka.');
+            $this->addError('cart', 'POS terminal does not have an open register shift.');
 
             return;
         }
@@ -945,7 +945,7 @@ class CreateOrder extends Component
             $this->holdNotes = '';
             $this->isParkModalOpen = false;
             $this->dispatch('pos-cart-state-changed', dirty: false);
-            $this->dispatch('toast', message: "Keranjang berhasil ditahan (Ref: {$parked->hold_reference})", type: 'success');
+            $this->dispatch('toast', message: "Order parked successfully (Ref: {$parked->hold_reference})", type: 'success');
         } catch (\Throwable $e) {
             $this->addError('cart', $e->getMessage());
         }
@@ -962,7 +962,7 @@ class CreateOrder extends Component
         })->where('status', 'open')->first();
 
         if (! $activeShift) {
-            $this->addError('cart', 'Shift harus aktif untuk mengambil keranjang tertunda.');
+            $this->addError('cart', 'Register shift must be active to resume parked orders.');
 
             return;
         }
@@ -1008,7 +1008,7 @@ class CreateOrder extends Component
             $this->resumeWarnings = $result['warnings'];
             $this->isParkedListOpen = false;
             $this->dispatch('pos-cart-state-changed', dirty: true);
-            $this->dispatch('toast', message: 'Keranjang berhasil dimuat kembali.', type: 'success');
+            $this->dispatch('toast', message: 'Parked order resumed successfully.', type: 'success');
         } catch (\Throwable $e) {
             $this->addError('cart', $e->getMessage());
         }
@@ -1021,7 +1021,7 @@ class CreateOrder extends Component
         try {
             $storeId = $this->resolveActiveStoreId($this->activeStoreId, $tenantId);
             app(CartService::class)->discardParkedCart($parkedCartId, $tenantId, $storeId, (int) Auth::id());
-            $this->dispatch('toast', message: 'Keranjang tertunda berhasil dibatalkan.', type: 'info');
+            $this->dispatch('toast', message: 'Parked order discarded.', type: 'info');
         } catch (\Throwable $e) {
             $this->addError('cart', $e->getMessage());
         }
@@ -1174,7 +1174,7 @@ class CreateOrder extends Component
         // Stale branch state guard
         $currentStoreId = app(TenantContext::class)->getStoreId();
         if ($this->activeStoreId !== null && $currentStoreId !== null && (int) $this->activeStoreId !== (int) $currentStoreId) {
-            $this->addError('cart', 'Cabang aktif telah berubah dalam sesi Anda. Silakan muat ulang halaman sebelum melanjutkan.');
+            $this->addError('cart', 'Active branch has changed in your session. Please refresh the page before proceeding.');
 
             return;
         }
@@ -1214,7 +1214,7 @@ class CreateOrder extends Component
         if ($idempotencyKey) {
             $lock = Cache::lock('order_idempotency_'.$idempotencyKey, 10);
             if (! $lock->get()) {
-                $this->addError('cart', 'Transaksi serupa sedang diproses, coba lagi.');
+                $this->addError('cart', 'A similar transaction is currently processing, please try again.');
 
                 return;
             }
@@ -1235,7 +1235,7 @@ class CreateOrder extends Component
                 // Skenario Tarik Pesanan via form tunai langsung di kasir
                 if ((int) $this->cashReceived < (int) $this->totalAmount) {
                     throw ValidationException::withMessages([
-                        'cart' => 'Uang tunai yang diterima kurang dari total tagihan.',
+                        'cart' => 'Cash received is less than total amount due.',
                     ]);
                 }
                 $normalizedLegs[] = [
@@ -1249,7 +1249,7 @@ class CreateOrder extends Component
 
                     if (! $method || $amount <= 0) {
                         throw ValidationException::withMessages([
-                            'cart' => 'Salah satu metode pembayaran tidak valid.',
+                            'cart' => 'One of the payment methods is invalid.',
                         ]);
                     }
 
@@ -1265,14 +1265,14 @@ class CreateOrder extends Component
 
             if (empty($normalizedLegs)) {
                 throw ValidationException::withMessages([
-                    'cart' => 'Minimal satu metode pembayaran wajib diisi sebelum memproses transaksi.',
+                    'cart' => 'At least one payment method is required before processing the transaction.',
                 ]);
             }
 
             $sumLegs = array_sum(array_column($normalizedLegs, 'amount'));
             if ($sumLegs !== (int) $this->totalAmount) {
                 throw ValidationException::withMessages([
-                    'cart' => 'Total metode pembayaran (Rp'.number_format($sumLegs, 0, ',', '.').') tidak cocok dengan total tagihan (Rp'.number_format($this->totalAmount, 0, ',', '.').').',
+                    'cart' => 'Total payments (Rp'.number_format($sumLegs, 0, ',', '.').') do not match the total due (Rp'.number_format($this->totalAmount, 0, ',', '.').').',
                 ]);
             }
 
@@ -1370,7 +1370,7 @@ class CreateOrder extends Component
                 $this->addError('cart', $e->getMessage());
             } else {
                 Log::error('CreateOrder submitOrder error: '.$e->getMessage(), ['exception' => $e]);
-                $this->addError('cart', 'Terjadi kesalahan sistem saat memproses transaksi. Silakan coba lagi.');
+                $this->addError('cart', 'A system error occurred while processing the transaction. Please try again.');
             }
 
             return;

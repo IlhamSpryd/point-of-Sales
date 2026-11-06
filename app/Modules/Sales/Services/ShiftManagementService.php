@@ -44,26 +44,26 @@ class ShiftManagementService
     ): Shift {
         $user = User::withoutGlobalScopes()->find($userId);
         if (! $user) {
-            throw new DomainException('Pengguna kasir tidak ditemukan.');
+            throw new DomainException('Cashier user not found.');
         }
 
         if ((int) $user->tenant_id !== $tenantId) {
-            throw new DomainException('Pengguna tidak terdaftar pada tenant ini.');
+            throw new DomainException('User is not registered to this tenant.');
         }
 
         // Validasi PIN jika disediakan atau jika pengguna memiliki PIN terdaftar
         if ($cashierPin !== null) {
             if (! $this->cashierPinService->verifyPin($user, $cashierPin)) {
-                throw ValidationException::withMessages(['pin' => 'PIN Kasir tidak sah.']);
+                throw ValidationException::withMessages(['pin' => 'Invalid cashier PIN.']);
             }
         } elseif ($this->cashierPinService->hasPin($user)) {
             // Jika user punya PIN tapi tidak diinput, wajibkan PIN
-            throw new DomainException('Kasir wajib memasukkan PIN Kasir untuk membuka shift.');
+            throw new DomainException('Cashier PIN is required to open a register shift.');
         }
 
         $openingBalance = (int) round((float) $openingCash);
         if ($openingBalance < 0) {
-            throw new DomainException('Modal awal kasir tidak boleh bernilai negatif.');
+            throw new DomainException('Opening balance cannot be negative.');
         }
 
         return DB::transaction(function () use ($tenantId, $storeId, $user, $openingBalance, $deviceId) {
@@ -82,14 +82,14 @@ class ShiftManagementService
                 ->first();
 
             if ($existingOpenShift) {
-                throw new DomainException("Kasir {$user->name} sudah memiliki shift aktif (#{$existingOpenShift->id}) di cabang ini.");
+                throw new DomainException("Cashier {$user->name} already has an active register shift (#{$existingOpenShift->id}) at this branch.");
             }
 
             // Jika device_id diberikan, pastikan valid dan milik tenant & store yang sama
             if ($deviceId !== null) {
                 $device = Device::withoutGlobalScopes()->where('id', $deviceId)->first();
                 if (! $device || (int) $device->tenant_id !== $tenantId || (int) $device->store_id !== $storeId) {
-                    throw new DomainException('Perangkat kasir tidak valid atau tidak terdaftar di cabang ini.');
+                    throw new DomainException('Cashier terminal is invalid or not registered to this branch.');
                 }
             }
 
@@ -113,7 +113,7 @@ class ShiftManagementService
                 storeId: $storeId,
                 subjectType: Shift::class,
                 subjectId: $shift->id,
-                description: "Shift #{$shift->id} berhasil dibuka oleh kasir {$user->name} dengan modal awal Rp ".number_format($openingBalance, 0, ',', '.'),
+                description: "Register shift #{$shift->id} opened by cashier {$user->name} with opening balance of Rp ".number_format($openingBalance, 0, ',', '.'),
                 metadata: [
                     'shift_id' => $shift->id,
                     'opening_balance' => $openingBalance,
@@ -144,12 +144,12 @@ class ShiftManagementService
     ): CashDrawerMovement {
         $cleanAmount = (int) round((float) $amount);
         if ($cleanAmount <= 0) {
-            throw new DomainException('Nominal pergerakan kas harus bernilai lebih dari 0.');
+            throw new DomainException('Cash movement amount must be greater than zero.');
         }
 
         $type = strtolower($type);
         if (! in_array($type, ['cash_in', 'cash_out'], true)) {
-            throw new DomainException('Tipe pergerakan kas tidak valid. Harus cash_in atau cash_out.');
+            throw new DomainException('Invalid cash movement type. Must be cash_in or cash_out.');
         }
 
         return DB::transaction(function () use (
@@ -163,17 +163,54 @@ class ShiftManagementService
                 ->first();
 
             if (! $shift || $shift->status !== 'open') {
-                throw new ShiftClosedException('Sesi shift tidak aktif atau telah ditutup. Tidak dapat mencatat pergerakan kas.');
+                throw new ShiftClosedException('Register shift session is inactive or closed. Unable to record cash movement.');
             }
 
+            $summary = $this->getCashSummary($shift);
+            $currentCash = (int) $summary['expected_cash'];
+
             $approvedBy = $userId;
+            $isSupervisorApproved = false;
+
             if ($supervisorPin !== null) {
-                $supervisor = $supervisorUserId ? User::withoutGlobalScopes()->find($supervisorUserId) : null;
-                if ($supervisor && ! $this->cashierPinService->verifyPin($supervisor, $supervisorPin, $shift)) {
-                    throw ValidationException::withMessages(['supervisor_pin' => 'PIN Supervisor tidak sah.']);
+                if ($supervisorUserId) {
+                    $supervisor = User::withoutGlobalScopes()
+                        ->where('tenant_id', $tenantId)
+                        ->find($supervisorUserId);
+                    if ($supervisor && $this->cashierPinService->verifyPin($supervisor, $supervisorPin, $shift)) {
+                        $approvedBy = $supervisor->id;
+                        $isSupervisorApproved = true;
+                    } else {
+                        throw ValidationException::withMessages(['supervisor_pin' => 'Invalid supervisor PIN.']);
+                    }
+                } else {
+                    $allSupervisors = User::withoutGlobalScopes()
+                        ->where('tenant_id', $tenantId)
+                        ->whereHas('role', function ($q) {
+                            $q->whereIn('name', ['Supervisor', 'Manager', 'Admin', 'Owner', 'Store Manager']);
+                        })
+                        ->get();
+
+                    foreach ($allSupervisors as $candidate) {
+                        if ($this->cashierPinService->verifyPin($candidate, $supervisorPin, $shift)) {
+                            $approvedBy = $candidate->id;
+                            $isSupervisorApproved = true;
+                            break;
+                        }
+                    }
+
+                    if (! $isSupervisorApproved) {
+                        throw ValidationException::withMessages(['supervisor_pin' => 'Invalid supervisor PIN.']);
+                    }
                 }
-                if ($supervisor) {
-                    $approvedBy = $supervisor->id;
+            }
+
+            // DEC-005 / TR-005: Cegah saldo laci kas minus tanpa otorisasi PIN supervisor
+            if ($type === 'cash_out' && $currentCash < $cleanAmount) {
+                if (! $isSupervisorApproved) {
+                    throw new DomainException(
+                        'Drawer cash balance is insufficient for this cash out (balance cannot be negative without supervisor PIN authorization).'
+                    );
                 }
             }
 
@@ -236,7 +273,7 @@ class ShiftManagementService
     ): array {
         $counted = (float) $countedCash;
         if ($counted < 0) {
-            throw new DomainException('Hitungan kas fisik tidak boleh bernilai negatif.');
+            throw new DomainException('Physical cash count cannot be negative.');
         }
 
         $toleranceAmount = (float) $tolerance;
@@ -252,11 +289,11 @@ class ShiftManagementService
                 ->first();
 
             if (! $shift) {
-                throw new DomainException('Shift tidak ditemukan.');
+                throw new DomainException('Register shift not found.');
             }
 
             if ($shift->status !== 'open') {
-                throw new ShiftClosedException('Shift sudah ditutup atau tidak dalam status terbuka.');
+                throw new ShiftClosedException('Register shift is already closed or not in open status.');
             }
 
             // Hitung ringkasan kas sistem (Expected Cash)
@@ -270,9 +307,9 @@ class ShiftManagementService
             if (! $isWithinTolerance) {
                 if (empty($supervisorPin)) {
                     throw new DomainException(
-                        'Selisih kas fisik (Rp '.number_format($absDiscrepancy, 2, ',', '.').
-                        ') melebihi batas toleransi (Rp '.number_format($toleranceAmount, 2, ',', '.').
-                        '). Diperlukan otorisasi PIN Supervisor untuk menutup shift.'
+                        'Physical cash discrepancy (Rp '.number_format($absDiscrepancy, 2, ',', '.').
+                        ') exceeds tolerance threshold (Rp '.number_format($toleranceAmount, 2, ',', '.').
+                        '). Supervisor PIN authorization is required to close this shift.'
                     );
                 }
 
@@ -285,21 +322,23 @@ class ShiftManagementService
                     ->get();
 
                 $pinValid = false;
+                $approvedSupervisorId = null;
                 foreach ($allSupervisors as $candidate) {
                     if ($this->cashierPinService->verifyPin($candidate, $supervisorPin, $shift)) {
                         $pinValid = true;
+                        $approvedSupervisorId = $candidate->id;
                         break;
                     }
                 }
 
                 if (! $pinValid) {
                     throw ValidationException::withMessages([
-                        'supervisor_pin' => 'PIN Supervisor tidak sah untuk otorisasi selisih kas.',
+                        'supervisor_pin' => 'Invalid supervisor PIN for cash discrepancy authorization.',
                     ]);
                 }
             }
 
-            $shift->update([
+            $updatePayload = [
                 'closing_balance' => (int) round($counted),
                 'expected_cash' => (int) round($expectedCash),
                 'cash_difference' => (int) round($discrepancy),
@@ -308,7 +347,14 @@ class ShiftManagementService
                 'closed_at' => now(),
                 'closed_by_user_id' => $userId,
                 'close_type' => 'normal',
-            ]);
+            ];
+
+            if (! $isWithinTolerance && isset($approvedSupervisorId)) {
+                $updatePayload['variance_approved_by'] = $approvedSupervisorId;
+                $updatePayload['variance_reason'] = $notes ?: 'Physical cash discrepancy approved by supervisor';
+            }
+
+            $shift->update($updatePayload);
 
             // Dispatch outbox event untuk keuangan & akuntansi
             try {
@@ -324,8 +370,8 @@ class ShiftManagementService
                 storeId: $storeId,
                 subjectType: Shift::class,
                 subjectId: $shift->id,
-                description: "Shift #{$shift->id} ditutup dengan hitungan fisik Rp ".number_format($counted, 0, ',', '.').
-                    ' (Expected: Rp '.number_format($expectedCash, 0, ',', '.').', Selisih: Rp '.number_format($discrepancy, 0, ',', '.').')',
+                description: "Shift #{$shift->id} closed with physical count Rp ".number_format($counted, 0, ',', '.').
+                    ' (Expected: Rp '.number_format($expectedCash, 0, ',', '.').', Discrepancy: Rp '.number_format($discrepancy, 0, ',', '.').')',
                 metadata: [
                     'shift_id' => $shift->id,
                     'counted_cash' => $counted,
@@ -373,7 +419,7 @@ class ShiftManagementService
         $shift = $this->getActiveShift($tenantId, $storeId, $userId);
 
         if (! $shift) {
-            throw new ShiftClosedException('Kasir tidak dapat bertransaksi di luar sesi shift aktif. Silakan buka shift baru sebelum melanjutkan.');
+            throw new ShiftClosedException('Cashiers cannot process transactions outside an active register shift. Please open a new shift before proceeding.');
         }
 
         return $shift;

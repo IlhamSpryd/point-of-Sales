@@ -126,7 +126,7 @@ class KdsLifecycleTest extends TestCase
             $service->markReady($orderItem->id, $this->staffB->id);
             $this->fail('Staff B should not be allowed to mark ready an item claimed by Staff A');
         } catch (ValidationException $e) {
-            $this->assertStringContainsString('diambil staf lain', $e->getMessage());
+            $this->assertStringContainsString('claimed by another staff member', $e->getMessage());
         }
 
         // 3. Staff A marks ready -> must succeed

@@ -85,7 +85,7 @@ class PayrollBatchManager extends Component
             );
 
             $this->isCreateModalOpen = false;
-            session()->flash('success', "Batch penggajian [{$batch->batch_number}] berhasil diinisiasi.");
+            session()->flash('success', "Payroll batch [{$batch->batch_number}] initiated successfully.");
         } catch (\Throwable $e) {
             session()->flash('error', $e->getMessage());
         }
@@ -109,7 +109,7 @@ class PayrollBatchManager extends Component
 
         try {
             $batchService->executeCalculation($batch);
-            session()->flash('success', "Kalkulasi batch penggajian [{$batch->batch_number}] selesai.");
+            session()->flash('success', "Payroll calculation for batch [{$batch->batch_number}] completed.");
         } catch (\Throwable $e) {
             session()->flash('error', $e->getMessage());
         }
@@ -132,7 +132,7 @@ class PayrollBatchManager extends Component
         $this->authorize('finalize', $batch);
 
         try {
-            // Buat otorisasi persetujuan
+            // Create authorization approval record
             $approval = Approval::create([
                 'tenant_id' => $tenantId,
                 'requester_user_id' => (int) Auth::id(),
@@ -146,14 +146,14 @@ class PayrollBatchManager extends Component
 
             $finalizedBatch = $batchService->finalizeBatch($batch->id, (int) Auth::id(), $approval->id);
 
-            // Teruskan jurnal akrual ke GL
+            // Forward accrual journal to GL
             try {
                 $postingService->postAccrualJournal($finalizedBatch, (int) Auth::id());
             } catch (\Throwable) {
-                // Jangan batalkan finalisasi jika jurnal GL gagal posting
+                // Do not cancel finalization if posting GL journal fails
             }
 
-            session()->flash('success', "Batch penggajian [{$batch->batch_number}] berhasil difinalisasi & dikunci.");
+            session()->flash('success', "Payroll batch [{$batch->batch_number}] finalized and locked successfully.");
         } catch (\Throwable $e) {
             session()->flash('error', $e->getMessage());
         }
@@ -180,7 +180,10 @@ class PayrollBatchManager extends Component
             ->orderBy('id', 'desc');
 
         if ($this->statusFilter !== 'ALL') {
-            $query->where('status', PayrollBatchStatusEnum::from($this->statusFilter));
+            $statusEnum = PayrollBatchStatusEnum::tryFrom($this->statusFilter);
+            if ($statusEnum !== null) {
+                $query->where('status', $statusEnum);
+            }
         }
 
         $batches = $query->paginate(10);
@@ -194,9 +197,30 @@ class PayrollBatchManager extends Component
                 ->get();
         }
 
+        $totalBatchesCount = PayrollBatch::withoutTenantScope()
+            ->where('tenant_id', $tenantId)
+            ->count();
+
+        $finalizedBatchesCount = PayrollBatch::withoutTenantScope()
+            ->where('tenant_id', $tenantId)
+            ->whereIn('status', [PayrollBatchStatusEnum::FINALIZED, PayrollBatchStatusEnum::PAID])
+            ->count();
+
+        $totalGrossDisbursed = (float) PayrollBatch::withoutTenantScope()
+            ->where('tenant_id', $tenantId)
+            ->sum('total_gross_amount');
+
+        $totalNetDisbursed = (float) PayrollBatch::withoutTenantScope()
+            ->where('tenant_id', $tenantId)
+            ->sum('total_net_amount');
+
         return view('livewire.hr.payroll-batch-manager', [
             'batches' => $batches,
             'detailRecords' => $records,
-        ])->layout('layouts.app', ['title' => 'Pengelolaan Penggajian (Payroll) — Apeiron']);
+            'totalBatchesCount' => $totalBatchesCount,
+            'finalizedBatchesCount' => $finalizedBatchesCount,
+            'totalGrossDisbursed' => $totalGrossDisbursed,
+            'totalNetDisbursed' => $totalNetDisbursed,
+        ])->layout('layouts.app', ['title' => 'Payroll Batch Processing — Apeiron']);
     }
 }

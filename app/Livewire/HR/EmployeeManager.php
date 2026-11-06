@@ -69,6 +69,15 @@ class EmployeeManager extends Component
 
     public string $hireDate = '';
 
+    // System User Account Provisioning State
+    public bool $createSystemAccount = false;
+
+    public ?int $systemRoleId = null;
+
+    public string $systemPassword = '';
+
+    public string $cashierPin = '';
+
     /**
      * @return array<string, string>
      */
@@ -188,6 +197,10 @@ class EmployeeManager extends Component
             'departmentId',
             'jobTitleId',
             'editingEmployeeId',
+            'createSystemAccount',
+            'systemRoleId',
+            'systemPassword',
+            'cashierPin',
         ]);
         $this->gender = 'MALE';
         $this->maritalStatus = 'SINGLE';
@@ -227,32 +240,66 @@ class EmployeeManager extends Component
             ]);
 
             $this->closeModal();
-            session()->flash('success', "Data karyawan [{$this->fullName}] berhasil diperbarui.");
+            session()->flash('success', "Employee profile [{$this->fullName}] updated successfully.");
 
             return;
         }
 
         $this->authorize('create', Employee::class);
 
-        Employee::create([
-            'tenant_id' => $tenantId,
-            'department_id' => $this->departmentId,
-            'job_title_id' => $this->jobTitleId,
-            'employee_number' => $this->employeeNumber,
-            'full_name' => $this->fullName,
-            'email' => $this->email,
-            'phone_number' => $this->phoneNumber,
-            'national_id_number' => $this->nationalIdNumber,
-            'gender' => GenderEnum::from($this->gender),
-            'marital_status' => MaritalStatusEnum::from($this->maritalStatus),
-            'religion' => ReligionEnum::from($this->religion),
-            'employment_type' => EmploymentTypeEnum::from($this->employmentType),
-            'employment_status' => EmploymentStatusEnum::ACTIVE,
-            'hire_date' => $this->hireDate,
-        ]);
+        if ($this->createSystemAccount) {
+            $this->validate([
+                'systemRoleId' => 'required|integer',
+                'systemPassword' => 'required|string|min:8',
+                'cashierPin' => 'nullable|string|digits_between:4,6',
+            ]);
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($tenantId) {
+            $userId = null;
+            if ($this->createSystemAccount) {
+                $user = \App\Models\User::create([
+                    'tenant_id' => $tenantId,
+                    'name' => $this->fullName,
+                    'email' => $this->email,
+                    'phone_number' => $this->phoneNumber,
+                    'role_id' => $this->systemRoleId,
+                    'password' => $this->systemPassword,
+                    'cashier_pin' => $this->cashierPin ?: null,
+                    'is_active' => true,
+                    'email_verified_at' => now(),
+                ]);
+                $userId = $user->id;
+
+                $defaultStore = \App\Models\Store::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->first();
+                if ($defaultStore) {
+                    $user->stores()->syncWithoutDetaching([$defaultStore->id => ['tenant_id' => $tenantId]]);
+                }
+            }
+
+            Employee::create([
+                'tenant_id' => $tenantId,
+                'user_id' => $userId,
+                'department_id' => $this->departmentId,
+                'job_title_id' => $this->jobTitleId,
+                'employee_number' => $this->employeeNumber,
+                'full_name' => $this->fullName,
+                'email' => $this->email,
+                'phone_number' => $this->phoneNumber,
+                'national_id_number' => $this->nationalIdNumber,
+                'gender' => GenderEnum::from($this->gender),
+                'marital_status' => MaritalStatusEnum::from($this->maritalStatus),
+                'religion' => ReligionEnum::from($this->religion),
+                'employment_type' => EmploymentTypeEnum::from($this->employmentType),
+                'employment_status' => EmploymentStatusEnum::ACTIVE,
+                'hire_date' => $this->hireDate,
+            ]);
+        });
 
         $this->closeModal();
-        session()->flash('success', "Karyawan [{$this->fullName}] berhasil didaftarkan.");
+        session()->flash('success', "Employee [{$this->fullName}] registered successfully.");
     }
 
     public function toggleActiveStatus(int $employeeId): void
@@ -272,8 +319,23 @@ class EmployeeManager extends Component
             $employee->employment_status = $isActive ? EmploymentStatusEnum::TERMINATED : EmploymentStatusEnum::ACTIVE;
             $employee->save();
 
-            $statusText = $employee->employment_status === EmploymentStatusEnum::ACTIVE ? 'diaktifkan' : 'dinonaktifkan';
-            session()->flash('success', "Status karyawan [{$employee->full_name}] berhasil {$statusText}.");
+            // Cascade status to linked user account if exists
+            if ($employee->user_id) {
+                $linkedUser = \App\Models\User::withoutGlobalScopes()->find($employee->user_id);
+                if ($linkedUser) {
+                    $linkedUser->is_active = ($employee->employment_status === EmploymentStatusEnum::ACTIVE);
+                    $linkedUser->save();
+
+                    if (! $linkedUser->is_active) {
+                        try {
+                            \Illuminate\Support\Facades\DB::table('sessions')->where('user_id', $linkedUser->id)->delete();
+                        } catch (\Throwable) {}
+                    }
+                }
+            }
+
+            $statusText = $employee->employment_status === EmploymentStatusEnum::ACTIVE ? 'activated' : 'deactivated';
+            session()->flash('success', "Employee [{$employee->full_name}] status successfully {$statusText}.");
         }
     }
 
@@ -322,6 +384,11 @@ class EmployeeManager extends Component
             ->orderBy('name')
             ->get();
 
+        $roles = \App\Models\Role::withoutTenantScope()
+            ->where('tenant_id', $tenantId)
+            ->orderBy('name')
+            ->get();
+
         $totalEmployees = Employee::withoutTenantScope()
             ->where('tenant_id', $tenantId)
             ->count();
@@ -344,10 +411,11 @@ class EmployeeManager extends Component
             'employees' => $employees,
             'departments' => $departments,
             'jobTitles' => $jobTitles,
+            'roles' => $roles,
             'totalEmployees' => $totalEmployees,
             'activeEmployees' => $activeEmployees,
             'contractEmployees' => $contractEmployees,
             'totalDepartments' => $totalDepartments,
-        ])->layout('layouts.app', ['title' => 'Master Karyawan & Tenaga Kerja — Apeiron']);
+        ])->layout('layouts.app', ['title' => 'Employee Directory & Workforce — Apeiron']);
     }
 }

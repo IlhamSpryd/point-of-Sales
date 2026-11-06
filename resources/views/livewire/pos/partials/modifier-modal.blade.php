@@ -39,8 +39,8 @@
             <!-- Header Modal -->
             <div class="p-4 border-b border-border flex items-center justify-between shrink-0 bg-white">
                 <div class="flex items-center gap-3">
-                    @if ($selectingProduct->product_photo)
-                        <img src="{{ Storage::url($selectingProduct->product_photo) }}"
+                    @if ($selectingProduct->photo_url)
+                        <img src="{{ $selectingProduct->photo_url }}"
                             alt="{{ $selectingProduct->product_name }}"
                             class="w-12 h-12 rounded-lg object-cover bg-muted border border-border">
                     @else
@@ -73,7 +73,7 @@
                                 {{ $group->name }}
                             </label>
                             <span class="text-[11px] font-medium text-muted-foreground">
-                                {{ $group->is_required ? ($group->selection_type === 'single' ? 'Wajib (Pilih 1)' : 'Wajib') : 'Opsional' }}
+                                {{ $group->is_required ? ($group->selection_type === 'single' ? 'Required (Select 1)' : 'Required') : 'Optional' }}
                             </span>
                         </div>
 
@@ -105,10 +105,10 @@
 
                 <div>
                     <label class="font-headline-sm text-[12px] font-semibold text-foreground uppercase tracking-wider block mb-1.5">
-                        Catatan Khusus
+                        Special Instructions
                     </label>
                     <input type="text" wire:model="pendingNotes"
-                        placeholder="Contoh: pisahkan es, jangan terlalu manis..."
+                        placeholder="e.g. Less ice, extra sauce..."
                         class="w-full h-9 px-3 rounded-lg border border-border text-[12px] text-foreground focus:outline-none focus:border-foreground transition-colors">
                 </div>
             </div>
@@ -133,7 +133,7 @@
                     <button type="button" wire:click="confirmAddToCart"
                         class="px-4 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-[13px] flex items-center gap-1.5 shadow-sm transition-all active:scale-98">
                         <span class="material-symbols-rounded text-[16px]">shopping_bag</span>
-                        <span>Tambah ke Pesanan</span>
+                        <span>Add to Order</span>
                     </button>
                 </div>
             </div>

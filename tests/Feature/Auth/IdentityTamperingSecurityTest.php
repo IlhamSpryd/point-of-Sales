@@ -132,7 +132,7 @@ class IdentityTamperingSecurityTest extends TestCase
         // 1. Coba buka shift melalui ShiftService: DITOLAK karena pin_hash belum disetel
         $shiftService = app(ShiftService::class);
         $this->expectException(\DomainException::class);
-        $this->expectExceptionMessage('Kasir wajib menyetel PIN Kasir sebelum dapat membuka shift.');
+        $this->expectExceptionMessage('Cashiers must set a PIN before opening a register shift.');
         $shiftService->openShift($kasir->id, 100000);
     }
 

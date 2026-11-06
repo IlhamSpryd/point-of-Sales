@@ -56,12 +56,12 @@ class TaxClassController extends Controller
             storeId: app(TenantContext::class)->getStoreId(),
             subjectType: TaxClass::class,
             subjectId: $taxClass->id,
-            description: "Kelas Pajak '{$taxClass->name}' ({$taxClass->code}) dengan tarif {$taxClass->rate}% berhasil ditambahkan.",
+            description: "Tax Class '{$taxClass->name}' ({$taxClass->code}) with rate {$taxClass->rate}% created successfully.",
             oldValues: null,
             newValues: $taxClass->only(['code', 'name', 'rate', 'is_active'])
         );
 
-        return redirect()->route('tax-classes.index')->with('success', 'Kelas pajak berhasil ditambahkan.');
+        return redirect()->route('tax-classes.index')->with('success', 'Tax class created successfully.');
     }
 
     public function update(UpdateTaxClassRequest $request, TaxClass $taxClass): RedirectResponse
@@ -80,12 +80,12 @@ class TaxClassController extends Controller
             storeId: app(TenantContext::class)->getStoreId(),
             subjectType: TaxClass::class,
             subjectId: $taxClass->id,
-            description: "Kelas Pajak '{$taxClass->name}' berhasil diperbarui.",
+            description: "Tax Class '{$taxClass->name}' updated successfully.",
             oldValues: $oldValues,
             newValues: $taxClass->only(['code', 'name', 'rate', 'is_active'])
         );
 
-        return redirect()->route('tax-classes.index')->with('success', 'Kelas pajak berhasil diperbarui.');
+        return redirect()->route('tax-classes.index')->with('success', 'Tax class updated successfully.');
     }
 
     public function destroy(TaxClass $taxClass): RedirectResponse
@@ -106,12 +106,12 @@ class TaxClassController extends Controller
                 storeId: app(TenantContext::class)->getStoreId(),
                 subjectType: TaxClass::class,
                 subjectId: $taxId,
-                description: "Kelas Pajak '{$taxName}' berhasil dihapus."
+                description: "Tax Class '{$taxName}' deleted successfully."
             );
 
-            return redirect()->route('tax-classes.index')->with('success', 'Kelas pajak berhasil dihapus.');
+            return redirect()->route('tax-classes.index')->with('success', 'Tax class deleted successfully.');
         } catch (QueryException) {
-            return redirect()->route('tax-classes.index')->with('error', 'Kelas pajak masih terhubung dengan data lain dan tidak dapat dihapus.');
+            return redirect()->route('tax-classes.index')->with('error', 'This tax class is linked to other records and cannot be deleted.');
         }
     }
 }

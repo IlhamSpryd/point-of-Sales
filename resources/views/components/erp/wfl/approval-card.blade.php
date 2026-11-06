@@ -1,11 +1,11 @@
 @props([
-    'type' => 'Persetujuan Dokumen',
+    'type' => 'Document Approval',
     'docNumber' => '',
     'requestedBy' => '',
     'role' => '',
     'amount' => null,
     'priority' => 'normal',
-    'level' => 'Tingkat 1',
+    'level' => 'Level 1',
     'reason' => null,
     'date' => null,
 ])
@@ -13,12 +13,12 @@
 @php
     $priorityConfig = match (strtolower((string) $priority)) {
         'urgent', 'kritis' => [
-            'label' => 'Mendesak',
+            'label' => 'Urgent',
             'class' => 'bg-destructive-muted text-destructive border-destructive-border',
             'dot' => 'bg-destructive animate-pulse',
         ],
         'high', 'tinggi' => [
-            'label' => 'Prioritas Tinggi',
+            'label' => 'High Priority',
             'class' => 'bg-warning-muted text-warning border-warning-border',
             'dot' => 'bg-warning',
         ],
@@ -43,7 +43,7 @@
                 </span>
             </div>
             <p class="text-xs text-muted-foreground mt-0.5">
-                Diajukan oleh <strong class="text-foreground">{{ $requestedBy }}</strong>@if($role) ({{ $role }})@endif
+                Requested by <strong class="text-foreground">{{ $requestedBy }}</strong>@if($role) ({{ $role }})@endif
             </p>
         </div>
 
@@ -62,14 +62,14 @@
     <div class="bg-muted p-3 rounded-xl border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
         @if ($reason)
             <div class="min-w-0 flex-1">
-                <span class="text-[10px] uppercase font-bold text-muted-foreground block">Catatan / Alasan:</span>
+                <span class="text-[10px] uppercase font-bold text-muted-foreground block">Remarks / Justification:</span>
                 <p class="text-foreground font-medium truncate mt-0.5">{{ $reason }}</p>
             </div>
         @endif
 
         @if ($amount)
             <div class="text-right sm:self-center shrink-0">
-                <span class="text-[10px] uppercase font-bold text-muted-foreground block">Nominal Pengajuan:</span>
+                <span class="text-[10px] uppercase font-bold text-muted-foreground block">Requested Amount:</span>
                 <span class="text-base font-black text-foreground numeric font-mono">
                     {{ $amount }}
                 </span>
@@ -81,7 +81,7 @@
     <div class="pt-2 border-t border-border flex items-center justify-between text-xs">
         <span class="text-[11px] text-muted-foreground flex items-center gap-1">
             <span class="material-symbols-rounded text-sm">schedule</span>
-            <span>{{ $date ?? 'Menunggu Persetujuan' }}</span>
+            <span>{{ $date ?? 'Pending Approval' }}</span>
         </span>
 
         <div class="flex items-center gap-2">
@@ -91,12 +91,12 @@
                 <button type="button"
                     class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-destructive-muted text-destructive hover:bg-destructive-muted border border-destructive-border transition-colors cursor-pointer flex items-center gap-1">
                     <span class="material-symbols-rounded text-sm">close</span>
-                    <span>Tolak</span>
+                    <span>Reject</span>
                 </button>
                 <button type="button"
                     class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-success text-success-foreground hover:opacity-90 transition-colors cursor-pointer flex items-center gap-1">
                     <span class="material-symbols-rounded text-sm">check</span>
-                    <span>Setujui</span>
+                    <span>Approve</span>
                 </button>
             @endif
         </div>

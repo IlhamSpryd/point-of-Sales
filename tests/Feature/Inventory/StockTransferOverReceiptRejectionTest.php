@@ -75,7 +75,7 @@ class StockTransferOverReceiptRejectionTest extends TestCase
 
         // Coba terima 5.0001 unit (melebihi 5.0000 yang dikirim)
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('Over-receipt dilarang keras');
+        $this->expectExceptionMessage('Over-receipt is strictly prohibited');
 
         $this->service->receiveTransfer(
             $shipped,
@@ -171,7 +171,7 @@ class StockTransferOverReceiptRejectionTest extends TestCase
         $item = $shipped->items()->first();
 
         $this->expectException(ValidationException::class);
-        $this->expectExceptionMessage('tidak boleh negatif');
+        $this->expectExceptionMessage('cannot be negative');
 
         $this->service->receiveTransfer(
             $shipped,

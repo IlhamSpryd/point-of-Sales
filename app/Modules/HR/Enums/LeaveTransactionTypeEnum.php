@@ -15,11 +15,11 @@ enum LeaveTransactionTypeEnum: string
     public function label(): string
     {
         return match ($this) {
-            self::ACCRUAL => 'Penambahan Hak Cuti (Accrual)',
-            self::USAGE => 'Pemakaian Cuti (Usage)',
-            self::REVERSAL => 'Pengembalian / Pembatalan Cuti (Reversal)',
-            self::ADJUSTMENT => 'Penyesuaian Manual (Adjustment)',
-            self::EXPIRATION => 'Kedaluwarsa / Hangus (Expiration)',
+            self::ACCRUAL => 'Accrual',
+            self::USAGE => 'Usage',
+            self::REVERSAL => 'Reversal',
+            self::ADJUSTMENT => 'Manual Adjustment',
+            self::EXPIRATION => 'Expiration',
         };
     }
 }

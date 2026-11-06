@@ -154,13 +154,13 @@ class TransactionService
 
                         if (! $lockedTable) {
                             throw ValidationException::withMessages([
-                                'table_id' => 'Meja tidak ditemukan atau bukan milik cabang ini.',
+                                'table_id' => 'Table not found or does not belong to this branch.',
                             ]);
                         }
 
                         if (! $lockedTable->is_active || $lockedTable->operational_status === 'disabled') {
                             throw ValidationException::withMessages([
-                                'table_id' => 'Meja sedang tidak aktif dan tidak dapat digunakan.',
+                                'table_id' => 'Table is currently inactive and cannot be used.',
                             ]);
                         }
 
@@ -169,7 +169,7 @@ class TransactionService
                     } elseif ($hasActiveTables) {
                         // INV-TBL-04: Dine-In pada cabang dengan meja aktif wajib menyertakan table_id valid
                         throw ValidationException::withMessages([
-                            'table_id' => 'Meja wajib dipilih untuk pesanan Dine-In.',
+                            'table_id' => 'Table is required for Dine-In orders.',
                         ]);
                     } else {
                         // Cabang dengan tables_enabled tapi belum ada meja aktif
@@ -184,7 +184,7 @@ class TransactionService
                     $shift = Shift::lockForUpdate()->find((int) $data['shift_id']);
 
                     if (! $shift || $shift->status !== 'open') {
-                        throw new ShiftClosedException('Shift Anda baru saja ditutup. Transaksi ini dibatalkan, silakan buka shift baru sebelum melanjutkan.');
+                        throw new ShiftClosedException('Your register shift was just closed. This transaction has been cancelled, please open a new shift before proceeding.');
                     }
                 }
 
@@ -197,19 +197,19 @@ class TransactionService
 
                     if (! $parkedCart) {
                         throw ValidationException::withMessages([
-                            'parked_cart' => 'Keranjang tertunda tidak ditemukan.',
+                            'parked_cart' => 'Parked order not found.',
                         ]);
                     }
 
                     if ($parkedCart->status === ParkedCart::STATUS_CONVERTED) {
                         throw ValidationException::withMessages([
-                            'parked_cart' => 'Keranjang ini sudah di-checkout menjadi order lain.',
+                            'parked_cart' => 'This parked order has already been checked out.',
                         ]);
                     }
 
                     if (in_array($parkedCart->status, [ParkedCart::STATUS_DISCARDED, ParkedCart::STATUS_EXPIRED], true)) {
                         throw ValidationException::withMessages([
-                            'parked_cart' => "Keranjang ini sudah {$parkedCart->status} dan tidak dapat di-checkout.",
+                            'parked_cart' => "This parked order is {$parkedCart->status} and cannot be checked out.",
                         ]);
                     }
                 }
@@ -249,7 +249,7 @@ class TransactionService
                         $qty = $group->sum('quantity');
                         if ((int) $qty < 1) {
                             throw ValidationException::withMessages([
-                                'cart' => 'Kuantitas produk tidak valid. Minimal 1.',
+                                'cart' => 'Invalid product quantity. Minimum is 1.',
                             ]);
                         }
 
@@ -319,19 +319,19 @@ class TransactionService
 
                     if (! $product) {
                         throw ValidationException::withMessages([
-                            'items' => 'Salah satu produk yang dipilih sudah tidak tersedia.',
+                            'items' => 'One of the selected products is no longer available.',
                         ]);
                     }
 
                     if (! $product->is_active || $product->status !== 'active') {
                         throw ValidationException::withMessages([
-                            'items' => 'Produk "'.$product->product_name.'" tidak dalam status aktif dan tidak dapat dijual.',
+                            'items' => 'Product "'.$product->product_name.'" is not active and cannot be sold.',
                         ]);
                     }
 
                     if (! $catalogPriceResolver->isAvailableInStore($product, $activeStoreId)) {
                         throw ValidationException::withMessages([
-                            'items' => 'Produk "'.$product->product_name.'" tidak tersedia di cabang ini.',
+                            'items' => 'Product "'.$product->product_name.'" is not available at this branch.',
                         ]);
                     }
 
@@ -349,7 +349,7 @@ class TransactionService
 
                         if ($this->compareScaled((string) $available, (string) $item['quantity']) < 0) {
                             throw ValidationException::withMessages([
-                                'items' => 'Stok produk "'.$product->product_name.'" tidak mencukupi. (Sisa: '.$available.')',
+                                'items' => 'Insufficient stock for product "'.$product->product_name.'". (Available: '.$available.')',
                             ]);
                         }
                     }
@@ -371,7 +371,7 @@ class TransactionService
 
                             if (! $mod || ! $mod->is_active) {
                                 throw ValidationException::withMessages([
-                                    'items' => 'Salah satu varian yang dipilih sudah tidak tersedia. Muat ulang halaman.',
+                                    'items' => 'One of the selected variants is no longer available. Please refresh the page.',
                                 ]);
                             }
 
@@ -523,13 +523,13 @@ class TransactionService
 
                         if (! $ingredient) {
                             throw ValidationException::withMessages([
-                                'items' => 'Bahan baku dengan ID '.$ingredientId.' tidak ditemukan atau sudah diarsipkan.',
+                                'items' => 'Ingredient with ID '.$ingredientId.' not found or has been archived.',
                             ]);
                         }
 
                         if (! $ingredient->is_active) {
                             throw ValidationException::withMessages([
-                                'items' => 'Bahan baku "'.$ingredient->name.'" sedang dinonaktifkan dan tidak dapat dipakai.',
+                                'items' => 'Ingredient "'.$ingredient->name.'" is disabled and cannot be used.',
                             ]);
                         }
 
@@ -538,8 +538,8 @@ class TransactionService
 
                         if ($this->compareScaled((string) $available, $needed) < 0) {
                             throw ValidationException::withMessages([
-                                'items' => 'Stok bahan baku "'.$ingredient->name.'" tidak mencukupi. '
-                                    .'(Dibutuhkan: '.$needed.' '.$ingredient->unit.', Tersedia: '.$available.' '.$ingredient->unit.')',
+                                'items' => 'Insufficient stock for ingredient "'.$ingredient->name.'". '
+                                    .'(Required: '.$needed.' '.$ingredient->unit.', Available: '.$available.' '.$ingredient->unit.')',
                             ]);
                         }
                     }
@@ -566,7 +566,7 @@ class TransactionService
                     // [OQ-05 Opsi A] Validasi aturan penggabungan (stacking) diskon item vs diskon order
                     if ($isValidDiscount && $totalItemDiscounts > 0 && ! $discount->is_stackable) {
                         throw ValidationException::withMessages([
-                            'discount_id' => 'Voucher diskon ini tidak dapat digabungkan dengan diskon produk.',
+                            'discount_id' => 'This discount voucher cannot be combined with product discounts.',
                         ]);
                     }
 
@@ -578,7 +578,7 @@ class TransactionService
 
                         if ($appliedCount >= $discount->usage_limit) {
                             throw ValidationException::withMessages([
-                                'discount_id' => 'Kuota voucher telah habis.',
+                                'discount_id' => 'Discount voucher quota has been reached.',
                             ]);
                         }
                     }
@@ -619,8 +619,8 @@ class TransactionService
 
                     if ($sumApplied !== $totalAmount) {
                         throw ValidationException::withMessages([
-                            'payments' => 'Total seluruh metode pembayaran (Rp'.number_format($sumApplied, 0, ',', '.')
-                                .') tidak sama dengan total tagihan (Rp'.number_format($totalAmount, 0, ',', '.').').',
+                            'payments' => 'Total payment across methods (Rp'.number_format($sumApplied, 0, ',', '.')
+                                .') does not match order total (Rp'.number_format($totalAmount, 0, ',', '.').').',
                         ]);
                     }
 
@@ -662,9 +662,13 @@ class TransactionService
                     $isDeferredCash = $dominantPaymentMethod === 'cash' && ! empty($data['is_self_order_cash']);
                     $isImmediateCash = $dominantPaymentMethod === 'cash' && ! $isDeferredCash;
 
+                    if ($isImmediateCash && ! empty($data['is_offline_sync'])) {
+                        $cashReceived = max((int) ($cashReceived ?? $totalAmount), $totalAmount);
+                    }
+
                     if ($isImmediateCash && (int) $cashReceived < $totalAmount) {
                         throw ValidationException::withMessages([
-                            'cash_received' => 'Uang tunai yang diterima tidak mencukupi total tagihan.',
+                            'cash_received' => 'Cash received is less than total amount due.',
                         ]);
                     }
 
@@ -712,6 +716,9 @@ class TransactionService
                     'origin_channel' => $data['origin_channel'] ?? 'pos_cashier',
                     'source_reference' => $data['source_reference'] ?? null,
                     'created_by_device_id' => $resolvedDeviceId,
+                    'is_offline_sync' => (bool) ($data['is_offline_sync'] ?? false),
+                    'offline_synced_at' => ! empty($data['is_offline_sync']) ? ($data['offline_synced_at'] ?? now()) : null,
+                    'offline_client_uuid' => $data['offline_client_uuid'] ?? null,
                 ]);
 
                 if ($lockedTable !== null) {
@@ -831,6 +838,8 @@ class TransactionService
                             'captured_at' => now(),
                             'processed_by' => $userId,
                             'idempotency_key' => $leg['idempotency_key'] ?? ('payment:'.$order->order_code.':'.$i),
+                            'is_offline_sync' => (bool) ($data['is_offline_sync'] ?? false),
+                            'offline_synced_at' => ! empty($data['is_offline_sync']) ? ($data['offline_synced_at'] ?? now()) : null,
                         ]);
                     }
                 } elseif ($initialStatus === OrderStatus::Paid) {
@@ -862,6 +871,8 @@ class TransactionService
                         'captured_at' => now(),
                         'processed_by' => $userId,
                         'idempotency_key' => 'payment:'.$order->order_code.':0',
+                        'is_offline_sync' => (bool) ($data['is_offline_sync'] ?? false),
+                        'offline_synced_at' => ! empty($data['is_offline_sync']) ? ($data['offline_synced_at'] ?? now()) : null,
                     ]);
                 }
 
@@ -905,11 +916,11 @@ class TransactionService
                     // PATCH FOR S-02: hitung adjustment agar sum(item_details) == gross_amount.
                     $roundingAdjustment = (int) $totalAmount - (int) $subtotalAmount - (int) $taxAmount;
                     $itemDetails = [
-                        ['id' => 'ORDER-'.$order->id, 'price' => (int) $subtotalAmount, 'quantity' => 1, 'name' => 'Pesanan POS'],
-                        ['id' => 'TAX-PPN',           'price' => (int) $taxAmount,      'quantity' => 1, 'name' => 'Pajak'],
+                        ['id' => 'ORDER-'.$order->id, 'price' => (int) $subtotalAmount, 'quantity' => 1, 'name' => 'POS Order'],
+                        ['id' => 'TAX-PPN',           'price' => (int) $taxAmount,      'quantity' => 1, 'name' => 'Tax'],
                     ];
                     if ($roundingAdjustment !== 0) {
-                        $itemDetails[] = ['id' => 'ROUNDING', 'price' => $roundingAdjustment, 'quantity' => 1, 'name' => 'Pembulatan'];
+                        $itemDetails[] = ['id' => 'ROUNDING', 'price' => $roundingAdjustment, 'quantity' => 1, 'name' => 'Rounding'];
                     }
 
                     $snapParams = [
@@ -919,7 +930,7 @@ class TransactionService
                         ],
                         'item_details' => $itemDetails,
                         'customer_details' => [
-                            'first_name' => 'Pelanggan Walk-in',
+                            'first_name' => 'Walk-in Customer',
                         ],
                         'expiry' => [
                             'unit' => 'minutes',
@@ -1020,7 +1031,7 @@ class TransactionService
                     : PaymentMethod::from((string) $rawMethod);
             } catch (\ValueError) {
                 throw ValidationException::withMessages([
-                    'payments' => 'Metode pembayaran "'.$rawMethod.'" tidak dikenali.',
+                    'payments' => 'Payment method "'.$rawMethod.'" is not recognized.',
                 ]);
             }
 
@@ -1028,7 +1039,7 @@ class TransactionService
 
             if ($amount <= 0) {
                 throw ValidationException::withMessages([
-                    'payments' => 'Nominal setiap metode pembayaran harus lebih dari nol.',
+                    'payments' => 'Each payment method amount must be greater than zero.',
                 ]);
             }
 
@@ -1046,7 +1057,7 @@ class TransactionService
 
         if (empty($legs)) {
             throw ValidationException::withMessages([
-                'payments' => 'Minimal satu metode pembayaran wajib diisi.',
+                'payments' => 'At least one payment method is required.',
             ]);
         }
 
@@ -1070,7 +1081,7 @@ class TransactionService
                 $cardNumber = $leg['card_number'] ?? $leg['reference_number'] ?? null;
                 if (empty($cardNumber)) {
                     throw ValidationException::withMessages([
-                        'payments' => 'Nomor kartu Gift Card wajib disertakan untuk metode pembayaran Gift Card.',
+                        'payments' => 'Gift card number is required for gift card payments.',
                     ]);
                 }
                 app(GiftCardService::class)->redeemGiftCard(
@@ -1086,13 +1097,13 @@ class TransactionService
             } elseif ($method === PaymentMethod::StoreCredit) {
                 if (empty($order->customer_id)) {
                     throw ValidationException::withMessages([
-                        'payments' => 'Pelanggan wajib dipilih untuk metode pembayaran Store Credit.',
+                        'payments' => 'A customer must be selected for store credit payments.',
                     ]);
                 }
                 $customer = Customer::find($order->customer_id);
                 if (! $customer) {
                     throw ValidationException::withMessages([
-                        'payments' => 'Pelanggan tidak ditemukan untuk Store Credit.',
+                        'payments' => 'Customer not found for store credit payment.',
                     ]);
                 }
                 app(StoreCreditService::class)->redeemStoreCredit(
@@ -1222,7 +1233,7 @@ class TransactionService
             ->value('id');
 
         if ($shiftId === null) {
-            throw new ShiftClosedException('Anda belum membuka shift kasir. Silakan buka shift terlebih dahulu sebelum memproses transaksi.');
+            throw new ShiftClosedException('You have not opened a register shift. Please open a shift before processing transactions.');
         }
 
         return $shiftId;
@@ -1257,7 +1268,7 @@ class TransactionService
         foreach ($requiredGroupIds as $groupId) {
             if (! $selectedGroupIds->contains($groupId)) {
                 throw ValidationException::withMessages([
-                    'items' => "Pilihan wajib untuk {$product->product_name} belum lengkap.",
+                    'items' => "Required options for {$product->product_name} are incomplete.",
                 ]);
             }
         }
@@ -1272,14 +1283,14 @@ class TransactionService
         );
         if ($foreignModifiers->isNotEmpty()) {
             throw ValidationException::withMessages([
-                'items' => "Satu atau lebih varian yang dipilih tidak tersedia untuk {$product->product_name}.",
+                'items' => "One or more selected variants are not available for {$product->product_name}.",
             ]);
         }
 
         foreach ($productGroups as $group) {
             $selectedForGroup = $selectedModifiers->where('modifier_group_id', $group->id)->count();
             if ($group->selection_type === 'single' && $selectedForGroup > 1) {
-                throw ValidationException::withMessages(['items' => "Varian {$group->name} hanya boleh dipilih satu untuk {$product->product_name}."]);
+                throw ValidationException::withMessages(['items' => "Only one option may be selected for {$group->name} on {$product->product_name}."]);
             }
         }
 
@@ -1328,13 +1339,13 @@ class TransactionService
 
             if ($order->order_status->isFinal()) {
                 throw ValidationException::withMessages([
-                    'payments' => 'Pesanan ini sudah '.$order->order_status->value.' dan tidak dapat dibayar lagi.',
+                    'payments' => 'This order is already '.$order->order_status->value.' and cannot be paid again.',
                 ]);
             }
 
             if ($order->order_status !== OrderStatus::Pending) {
                 throw ValidationException::withMessages([
-                    'payments' => 'Pesanan ini tidak dalam status Pending.',
+                    'payments' => 'This order is not in Pending status.',
                 ]);
             }
 
@@ -1342,7 +1353,7 @@ class TransactionService
             if ($shiftId) {
                 $shift = Shift::lockForUpdate()->find($shiftId);
                 if (! $shift || $shift->status !== 'open') {
-                    throw new ShiftClosedException('Shift Anda baru saja ditutup. Transaksi ini dibatalkan.');
+                    throw new ShiftClosedException('Your register shift was just closed. This transaction has been cancelled.');
                 }
                 $resolvedDeviceId = $resolvedDeviceId ?? $shift->device_id;
             }
@@ -1352,7 +1363,7 @@ class TransactionService
 
             if ($sumApplied !== (int) $order->order_amount) {
                 throw ValidationException::withMessages([
-                    'payments' => 'Total metode pembayaran (Rp'.number_format($sumApplied, 0, ',', '.').') tidak sama dengan total tagihan (Rp'.number_format((int) $order->order_amount, 0, ',', '.').').',
+                    'payments' => 'Total payments (Rp'.number_format($sumApplied, 0, ',', '.').') do not match the total due (Rp'.number_format((int) $order->order_amount, 0, ',', '.').').',
                 ]);
             }
 
@@ -1500,7 +1511,7 @@ class TransactionService
         $numAmount = (int) $amount;
 
         if ($numAmount <= 0) {
-            throw new \InvalidArgumentException('Nominal pembayaran harus lebih besar dari 0.');
+            throw new \InvalidArgumentException('Payment amount must be greater than zero.');
         }
 
         if (! $provider) {
@@ -1533,7 +1544,7 @@ class TransactionService
             $remaining = $lockedOrder->getRemainingBalance();
             if ($numAmount > $remaining) {
                 throw ValidationException::withMessages([
-                    'amount' => 'Nominal pembayaran (Rp'.number_format($numAmount, 0, ',', '.').') melebihi sisa tagihan (Rp'.number_format($remaining, 0, ',', '.').').',
+                    'amount' => 'Payment amount (Rp'.number_format($numAmount, 0, ',', '.').') exceeds remaining balance (Rp'.number_format($remaining, 0, ',', '.').').',
                 ]);
             }
 
@@ -1572,7 +1583,7 @@ class TransactionService
                 }
 
                 if (in_array($lockedAttempt->status, [PaymentAttemptStatus::Expired, PaymentAttemptStatus::Cancelled], true)) {
-                    throw new \DomainException("Percobaan pembayaran #{$lockedAttempt->id} sudah kedaluwarsa atau dibatalkan.");
+                    throw new \DomainException("Payment attempt #{$lockedAttempt->id} has expired or was cancelled.");
                 }
 
                 $tendered = isset($providerMeta['amount_tendered']) ? (int) $providerMeta['amount_tendered'] : (int) $lockedAttempt->amount;
@@ -1586,7 +1597,7 @@ class TransactionService
                     ->sum('amount');
 
                 if ($currentPaid + $appliedAmount > (int) $order->order_amount) {
-                    throw new \DomainException('Penyelesaian pembayaran sebesar Rp'.number_format($appliedAmount, 0, ',', '.').' akan melebihi total tagihan pesanan (Sudah dibayar: Rp'.number_format($currentPaid, 0, ',', '.').', Total tagihan: Rp'.number_format((int) $order->order_amount, 0, ',', '.').').');
+                    throw new \DomainException('Payment settlement of Rp'.number_format($appliedAmount, 0, ',', '.').' would exceed total order amount (Already paid: Rp'.number_format($currentPaid, 0, ',', '.').', Total due: Rp'.number_format((int) $order->order_amount, 0, ',', '.').').');
                 }
 
                 $pmEnum = PaymentMethod::tryFrom($lockedAttempt->payment_method) ?? PaymentMethod::Cash;
@@ -1630,7 +1641,7 @@ class TransactionService
                                 'type' => 'cash_in',
                                 'category' => 'restock_change',
                                 'amount' => $netCash,
-                                'reason' => "Pembayaran pesanan #{$order->order_code}",
+                                'reason' => "Payment for order #{$order->order_code}",
                             ]);
                         }
                     }
@@ -1790,7 +1801,7 @@ class TransactionService
                                 'transaction_status' => $txStatus,
                                 'gross_amount' => $midtransStatus->gross_amount ?? null,
                             ]);
-                            throw new \DomainException('Tidak dapat membatalkan pesanan (void): transaksi pembayaran telah berhasil diselesaikan (settlement) di Midtrans.');
+                            throw new \DomainException('Cannot void order: payment transaction has already settled with payment gateway.');
                         }
                     } catch (\DomainException $de) {
                         throw $de;
@@ -1801,7 +1812,7 @@ class TransactionService
             }
             // Pre-check sebagai fail-fast UX saja (BUKAN penjaga tunggal).
             if ($order->order_status !== OrderStatus::Paid) {
-                throw new \Exception('Hanya pesanan yang sudah lunas (Paid) yang dapat di-void.');
+                throw new \Exception('Only Paid orders can be voided.');
             }
 
             $capturedPayments = Payment::where('order_id', $order->id)->where('status', PaymentStatusEnum::Captured)->get();
@@ -1823,7 +1834,7 @@ class TransactionService
             }
 
             if ($hasNonCash) {
-                throw new \DomainException('Void pesanan non-tunai belum didukung. Gunakan prosedur refund manual.');
+                throw new \DomainException('Voiding non-cash orders is not supported. Use the standard refund procedure.');
             }
 
             DB::transaction(function () use ($order, $reason, $userId) {
@@ -1832,7 +1843,7 @@ class TransactionService
 
                 if (! $lockedOrder || $lockedOrder->order_status !== OrderStatus::Paid) {
                     throw new \Exception(
-                        'Pesanan ini sudah tidak berstatus Lunas (mungkin baru saja di-void oleh proses lain).'
+                        'This order is no longer in Paid status (it may have been voided by another process).'
                     );
                 }
 
@@ -1901,7 +1912,7 @@ class TransactionService
                     'store_id' => $lockedOrder->store_id,
                     'user_id' => $userId,
                     'action' => 'VOID_ORDER',
-                    'description' => "Membatalkan pesanan {$lockedOrder->order_code}. Alasan: {$reason}",
+                    'description' => "Void order {$lockedOrder->order_code}. Reason: {$reason}",
                     'ip_address' => request()->ip(),
                     'user_agent' => request()->userAgent(),
                     'metadata' => [
@@ -2021,7 +2032,7 @@ class TransactionService
                 quantityDelta: (float) $item->qty,
                 type: StockMovementType::RestoreCompensation,
                 unitCost: $product->standard_cost ? (float) $product->standard_cost : null,
-                reason: "Kompensasi stok otomatis: order {$order->order_code} berubah ke status {$order->order_status->value}.",
+                reason: "Automatic stock compensation: order {$order->order_code} transitioned to {$order->order_status->value}.",
                 idempotencyKey: $idempotencyKey,
                 orderId: (int) $order->id,
                 orderItemId: (int) $item->id,
@@ -2060,7 +2071,7 @@ class TransactionService
                     quantityDelta: abs((float) $deduction->quantity),
                     type: IngredientStockMovementTypeEnum::RestoreCompensation,
                     unitCost: $ingredient->cost_per_unit ? (float) $ingredient->cost_per_unit : null,
-                    reason: "Kompensasi bahan baku otomatis: order {$order->order_code} berubah ke status {$order->order_status->value}.",
+                    reason: "Automatic ingredient compensation: order {$order->order_code} transitioned to {$order->order_status->value}.",
                     idempotencyKey: $idempotencyKey,
                     orderId: (int) $order->id,
                     orderItemId: (int) $deduction->order_item_id,
@@ -2149,7 +2160,7 @@ class TransactionService
         $storeId = $balance->store_id ?? app(TenantContext::class)->getStoreId();
 
         if ($storeId === null) {
-            throw new \RuntimeException('Store aktif tidak tersedia untuk pembaruan balance stok produk.');
+            throw new \RuntimeException('Active store not available for product stock balance update.');
         }
 
         $type = bccomp(bc_num($delta), '0', 4) >= 0 ? StockMovementType::RestoreCompensation : StockMovementType::SaleDeduction;
@@ -2162,7 +2173,7 @@ class TransactionService
             quantityDelta: (float) $delta,
             type: $type,
             unitCost: $product->standard_cost ? (float) $product->standard_cost : null,
-            reason: 'Pembaruan delta balance stok produk via TransactionService.'
+            reason: 'Product stock balance delta update via TransactionService.'
         );
     }
 
@@ -2176,7 +2187,7 @@ class TransactionService
         $storeId = $balance->store_id ?? app(TenantContext::class)->getStoreId();
 
         if ($storeId === null) {
-            throw new \RuntimeException('Store aktif tidak tersedia untuk pembaruan balance stok bahan baku.');
+            throw new \RuntimeException('Active store not available for ingredient stock balance update.');
         }
 
         $type = bccomp(bc_num($delta), '0', 4) >= 0 ? IngredientStockMovementTypeEnum::RestoreCompensation : IngredientStockMovementTypeEnum::SaleDeduction;

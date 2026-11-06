@@ -180,7 +180,7 @@
                 :class="{ 'opacity-70 cursor-not-allowed': isLoading }"
                 :aria-busy="isLoading"
             >
-                <span x-show="isLoading" class="w-3.5 h-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true" x-cloak></span>
+                <span x-show="isLoading" class="w-3.5 h-3.5 animate-spin rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground" aria-hidden="true" x-cloak></span>
                 <span x-text="isLoading ? '{{ __('Registering...') }}' : '{{ __('Register business') }}'">{{ __('Register business') }}</span>
             </button>
         </div>
