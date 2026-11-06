@@ -1,5 +1,6 @@
 {{--
     ROLE & SCOPE BASED DYNAMIC SIDEBAR — Apeiron System
+    Design Inspiration: DEMURE Fashion & Lifestyle Trade ERP SaaS (Dribbble Tier-1 Benchmark)
     Single source of truth for menu: config/navigation.php.
     Inactive items render with a "Coming Soon" badge.
 --}}
@@ -11,7 +12,7 @@
         ? app(\App\Services\EntitlementService::class)->isTablesEnabled((int) $tenantId, (int) $storeId)
         : true;
 
-    $menu = config('navigation.sections');
+    $menu = config('navigation.sections', []);
     $visibleMenu = collect($menu)
         ->map(fn($items) => array_values(array_filter($items, function ($i) use ($roleName, $tablesEnabled) {
             if (! in_array($roleName, $i['roles'], true)) {
@@ -25,22 +26,52 @@
         ->filter(fn($items) => count($items) > 0);
 
     $homeUrl = route('home');
+    $tenantName = auth()->user()?->tenant?->name ?? 'Apeiron System';
+
+    // Pre-calculate which section contains the currently active route
+    $activeSectionSlug = null;
+    foreach ($visibleMenu as $sectionName => $secItems) {
+        foreach ($secItems as $secItem) {
+            if (\Illuminate\Support\Facades\Route::has($secItem['route']) && request()->routeIs(...(array) $secItem['active'])) {
+                $activeSectionSlug = \Illuminate\Support\Str::slug($sectionName, '_');
+                break 2;
+            }
+        }
+    }
 @endphp
 
 {{-- Mobile drawer overlay --}}
 <div x-show="sidebarMobileOpen" @click="sidebarMobileOpen = false" x-transition.opacity.duration.200ms
-    class="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-40 lg:hidden" x-cloak aria-hidden="true"></div>
+    class="fixed inset-0 bg-black/60 backdrop-blur-[2px] z-40 md:hidden" x-cloak aria-hidden="true"></div>
 
 {{-- Mobile drawer trigger button --}}
 <button type="button" x-show="!sidebarMobileOpen" @click="sidebarMobileOpen = true; $nextTick(() => { const first = document.querySelector('#main-sidebar a, #main-sidebar button'); if (first) first.focus(); })"
     id="mobile-menu-btn"
     aria-controls="main-sidebar"
     :aria-expanded="sidebarMobileOpen.toString()" aria-label="Open main navigation menu"
-    class="lg:hidden fixed top-2 left-2 z-40 w-[40px] h-[40px] flex items-center justify-center text-shell-foreground-active bg-shell hover:bg-shell-accent border border-shell-border active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-200 rounded-lg cursor-pointer shadow-xs">
+    class="md:hidden fixed top-2 left-2 z-40 w-[40px] h-[40px] flex items-center justify-center text-shell-foreground-active bg-shell hover:bg-shell-accent border border-shell-border active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-200 rounded-lg cursor-pointer shadow-xs">
     <span class="material-symbols-rounded text-[22px]">menu</span>
 </button>
 
-<aside id="main-sidebar" x-data="{ openPopover: false, wide: true }" x-effect="wide = expanded || sidebarMobileOpen"
+<aside id="main-sidebar"
+    x-data="{
+        openPopover: false,
+        openSections: {
+            @foreach ($visibleMenu as $sectionName => $secItems)
+                @php
+                    $sSlug = \Illuminate\Support\Str::slug($sectionName, '_');
+                    // Open if it's the active section, or if the role has few sections (<= 2)
+                    $defaultOpen = ($activeSectionSlug !== null)
+                        ? ($activeSectionSlug === $sSlug)
+                        : ($loop->first || count($visibleMenu) <= 2);
+                @endphp
+                '{{ $sSlug }}': {{ $defaultOpen ? 'true' : 'false' }},
+            @endforeach
+        },
+        toggleSection(slug) {
+            this.openSections[slug] = !this.openSections[slug];
+        }
+    }"
     role="region" aria-label="Main Navigation Sidebar"
     @keydown.escape.window="if (sidebarMobileOpen) { sidebarMobileOpen = false; $nextTick(() => document.getElementById('mobile-menu-btn')?.focus()); }"
     @keydown.tab="
@@ -59,134 +90,202 @@
         }
     "
     :class="[
-        sidebarMobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0',
-        wide ? 'w-72 lg:w-64' : 'w-18'
+        isMobile
+            ? (sidebarMobileOpen ? 'fixed inset-y-0 left-0 translate-x-0 shadow-2xl z-40' : 'fixed inset-y-0 left-0 -translate-x-full z-40')
+            : 'relative translate-x-0 z-30',
+        wide ? (isMobile ? 'w-72' : 'w-64') : 'w-16'
     ]"
-    class="fixed lg:relative z-40 h-full flex flex-col bg-shell text-shell-foreground select-none transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
+    class="h-full flex flex-col bg-shell text-shell-foreground select-none overflow-x-hidden transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]">
 
-    {{-- Logo + collapse trigger --}}
-    <div class="h-14 flex items-center shrink-0 transition-all duration-200" :class="wide ? 'justify-between px-4 gap-3' : 'justify-center px-0'">
-        <a href="{{ $homeUrl }}" wire:navigate
-            @click="if (window.apeironPosCartDirty && !confirm('You have an active cart in POS. Leaving this page will cancel the current cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; } if (sidebarMobileOpen) { sidebarMobileOpen = false; } if (!wide) { $event.preventDefault(); expanded = true; }"
-            :title="!wide ? 'Expand sidebar' : ''"
-            class="group flex items-center justify-center min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring">
-            <span
-                class="flex items-center justify-center shrink-0 w-9 h-9 rounded-lg group-hover:bg-shell-accent transition-colors">
-                <img src="{{ asset('assets/images/logo-white.png') }}" alt="Apeiron System Logo" :class="!wide ? 'group-hover:hidden' : ''" class="h-7 w-auto object-contain transition-transform duration-300 group-hover:scale-105">
-                <svg :class="!wide ? 'hidden group-hover:block' : 'hidden'" width="18" height="18"
-                    viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                    stroke-linejoin="round" class="text-shell-foreground" aria-hidden="true">
-                    <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
-                    <path d="M9 3v18"></path>
-                    <path d="m14 9 3 3-3 3"></path>
-                </svg>
-            </span>
-            <span :class="wide ? 'opacity-100 ml-2.5' : 'hidden'"
-                class="font-sans text-base tracking-tight whitespace-nowrap overflow-hidden transition-all duration-200">
-                <span class="font-bold text-shell-foreground-active">Apeiron</span><span class="font-medium text-shell-foreground ml-1">System</span>
-            </span>
-        </a>
+    {{-- Header: DEMURE Luxury Brand Logo + Circular Collapse/Expand Toggle --}}
+    <div class="h-16 flex items-center shrink-0 transition-all duration-200" :class="wide ? 'justify-between px-4' : 'justify-center px-0'">
+        <div x-show="wide" class="flex items-center min-w-0">
+            <a href="{{ $homeUrl }}" wire:navigate
+                @click="if (window.apeironPosCartDirty && !confirm('You have an active cart in POS. Leaving this page will cancel the current cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; } if (sidebarMobileOpen) { sidebarMobileOpen = false; }"
+                class="group flex items-center min-w-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring">
+                <x-brand-logo variant="wordmark" class="h-5 w-auto text-shell-foreground-active transition-transform group-hover:scale-105" />
+            </a>
+        </div>
 
-        {{-- Collapse sidebar (desktop) --}}
-        <button type="button" @click="expanded = false" x-show="expanded" x-cloak title="Collapse sidebar"
+        {{-- In rail mode: Logo button transforms into arrow > icon on hover and triggers expand --}}
+        <div x-show="!wide" x-cloak class="flex items-center justify-center w-full">
+            <button type="button"
+                @mouseenter="expanded = true"
+                @click="expanded = true"
+                title="Expand sidebar"
+                aria-label="Expand sidebar"
+                class="group relative w-9 h-9 rounded-xl flex items-center justify-center hover:bg-shell-accent active:scale-95 transition-all duration-150 cursor-pointer text-shell-foreground-active">
+                {{-- Default: Logo Symbol (hides when hovered) --}}
+                <span class="flex items-center justify-center transition-all duration-150 group-hover:hidden">
+                    <x-brand-logo variant="symbol" class="h-4 w-auto text-shell-foreground-active" />
+                </span>
+                {{-- Hover: Arrow > icon (replaces logo completely rather than overlaying) --}}
+                <span class="hidden group-hover:flex items-center justify-center transition-all duration-150 text-shell-foreground-active">
+                    <span class="material-symbols-rounded text-[20px]">chevron_right</span>
+                </span>
+            </button>
+        </div>
+
+        {{-- Circular Collapse Trigger Button (Desktop/Laptop/iPad - when wide) --}}
+        <button type="button" @click="expanded = false" x-show="wide && !sidebarMobileOpen" x-cloak title="Collapse sidebar"
             aria-label="Collapse sidebar"
-            class="hidden lg:flex w-8 h-8 items-center justify-center rounded-lg text-shell-foreground hover:text-shell-foreground-active hover:bg-shell-accent active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-200 cursor-pointer">
-            <span class="material-symbols-rounded text-[19px]">left_panel_close</span>
+            class="hidden md:flex w-7 h-7 items-center justify-center rounded-full text-shell-foreground bg-white hover:bg-shell-accent hover:text-shell-foreground-active border border-shell-border active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-150 cursor-pointer shadow-2xs">
+            <span class="material-symbols-rounded text-[16px]">chevron_left</span>
         </button>
 
         {{-- Close drawer (mobile) --}}
         <button type="button" @click="sidebarMobileOpen = false; $nextTick(() => document.getElementById('mobile-menu-btn')?.focus())" x-show="sidebarMobileOpen" x-cloak
             aria-label="Close navigation menu"
-            class="lg:hidden w-[38px] h-[38px] flex items-center justify-center rounded-lg text-shell-foreground hover:bg-shell-accent hover:text-shell-foreground-active active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-200 cursor-pointer">
+            class="md:hidden w-[36px] h-[36px] flex items-center justify-center rounded-full text-shell-foreground hover:bg-shell-accent hover:text-shell-foreground-active active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-200 cursor-pointer">
             <span class="material-symbols-rounded text-[20px]">close</span>
         </button>
     </div>
 
-
-
-    {{-- Main Navigation --}}
-    <nav id="sidebar-nav-container" class="flex-1 py-2 overflow-y-auto overflow-x-hidden scrollbar-hide" :class="wide ? 'px-3' : 'px-0'"
+    {{-- Main Navigation Container --}}
+    <nav id="sidebar-nav-container" class="flex-1 py-3 overflow-y-auto overflow-x-hidden scrollbar-hide" :class="wide ? 'px-3' : 'px-1.5 flex flex-col items-center'"
         aria-label="Main navigation">
-        @foreach ($visibleMenu as $section => $items)
-            @php
-                $isWorkstation = ($section === 'Cashier & Operations' || $section === 'Workstations');
-            @endphp
-            <div class="{{ $loop->first ? '' : ($isWorkstation ? 'mt-4 pt-2.5 border-t border-shell-border' : 'mt-3.5') }}">
-                <div x-show="wide" class="px-2.5 pb-1">
-                    <p class="text-[11px] font-semibold text-shell-foreground tracking-[0.04em] whitespace-nowrap uppercase">
-                        {{ $section }}
-                    </p>
-                </div>
-                @unless ($loop->first)
-                    <div x-show="!wide" x-cloak class="w-6 mx-auto my-1.5 border-t border-shell-border"></div>
-                @endunless
 
-                <ul class="space-y-0.5">
-                    @foreach ($items as $item)
-                        @php
-                            $routeExists = \Illuminate\Support\Facades\Route::has($item['route']);
-                            $activePatterns = (array) $item['active'];
-                            $isActive = $routeExists && request()->routeIs(...$activePatterns);
-                            $scope = $item['scope'] ?? 'store';
-                            $rowBase =
-                                'group relative flex items-center rounded-lg text-[13px] whitespace-nowrap transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-shell-ring';
-                        @endphp
-                        <li class="flex justify-center w-full">
-                            @if ($routeExists)
-                                <a href="{{ route($item['route']) }}" wire:navigate
-                                    @click="if (window.apeironPosCartDirty && !confirm('You have an active cart in POS. Leaving this page will cancel the current cart. Continue?')) { $event.preventDefault(); $event.stopImmediatePropagation(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; } if (sidebarMobileOpen) { sidebarMobileOpen = false; }"
-                                    @if ($isActive) aria-current="page" @endif
-                                    title="{{ $item['label'] }} ({{ $scope === 'store' ? 'Active Branch' : 'Tenant' }})"
-                                    :class="wide ? 'w-full px-2.5 min-h-[36px] justify-start before:left-0 before:top-2 before:bottom-2 before:w-1.5 before:rounded-r' : 'w-9 h-9 justify-center px-0 before:hidden'"
-                                    class="{{ $rowBase }} {{ $isActive ? 'bg-shell-accent text-shell-foreground-active font-semibold border border-shell-border shadow-xs before:absolute before:w-[2px] before:bg-shell-foreground-active' : 'text-shell-foreground hover:text-shell-foreground-active hover:bg-shell-accent' }}">
-                                    <span
-                                        class="material-symbols-rounded text-[19px] shrink-0 text-center flex items-center justify-center {{ $isActive ? 'text-shell-foreground-active' : 'text-shell-foreground group-hover:text-shell-foreground-active transition-colors' }}">{{ $item['icon'] }}</span>
-                                    <span :class="wide ? 'opacity-100 ml-2.5 flex-1 truncate' : 'hidden'"
-                                        class="overflow-hidden transition-all duration-150">{{ $item['label'] }}</span>
-                                </a>
-                            @else
-                                <div aria-disabled="true" title="{{ $item['label'] }} — coming soon"
-                                    :class="wide ? 'w-full px-2.5 min-h-[36px] justify-start' : 'w-9 h-9 justify-center px-0'"
-                                    class="{{ $rowBase }} text-shell-border cursor-not-allowed">
-                                    <span
-                                        class="material-symbols-rounded text-[19px] shrink-0 text-center flex items-center justify-center text-shell-border">{{ $item['icon'] }}</span>
-                                    <span :class="wide ? 'opacity-100 ml-2.5 flex-1 truncate' : 'hidden'"
-                                        class="overflow-hidden transition-all duration-150">{{ $item['label'] }}</span>
-                                    <span x-show="wide"
-                                        class="ml-auto text-[9px] font-medium uppercase tracking-wider text-shell-foreground bg-shell-accent border border-shell-border rounded px-1.5 py-0.5">Coming Soon</span>
-                                </div>
-                            @endif
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-        @endforeach
+        {{-- MODE A: Wide Accordion Navigation (Desktop Expanded & Mobile Drawer) --}}
+        <div x-show="wide" class="w-full">
+            @foreach ($visibleMenu as $section => $items)
+                @php
+                    $sectionSlug = \Illuminate\Support\Str::slug($section, '_');
+                    $isWorkstation = ($section === 'Cashier & Operations' || $section === 'Workstations');
+                    $sectionItemCount = count($items);
+                @endphp
+                <div class="{{ $loop->first ? '' : ($isWorkstation ? 'mt-3.5 pt-1' : 'mt-2.5') }} w-full">
+                    {{-- Section Header Button (Accordion Trigger) --}}
+                    <div class="px-1 mb-1">
+                        <button type="button"
+                            @click="toggleSection('{{ $sectionSlug }}')"
+                            aria-expanded="openSections['{{ $sectionSlug }}']"
+                            class="w-full flex items-center justify-between px-2 py-1 rounded-md text-shell-foreground hover:text-shell-foreground-active hover:bg-shell-accent transition-colors group cursor-pointer select-none">
+                            <span class="text-[10px] font-bold tracking-[0.08em] uppercase truncate"
+                                  :class="openSections['{{ $sectionSlug }}'] ? 'text-shell-foreground-active font-bold' : 'text-shell-foreground font-semibold'">
+                                {{ $section }}
+                            </span>
+                            <div class="flex items-center gap-1.5 shrink-0">
+                                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-shell-accent text-shell-foreground group-hover:text-shell-foreground-active border border-shell-border">
+                                    {{ $sectionItemCount }}
+                                </span>
+                                <span class="material-symbols-rounded text-[14px] text-shell-foreground transition-transform duration-200"
+                                      :class="openSections['{{ $sectionSlug }}'] ? 'rotate-180 text-shell-foreground-active' : ''">
+                                    expand_more
+                                </span>
+                            </div>
+                        </button>
+                    </div>
+
+                    {{-- Accordion Content List --}}
+                    <ul x-show="openSections['{{ $sectionSlug }}']"
+                        x-collapse
+                        class="space-y-1">
+                        @foreach ($items as $item)
+                            @php
+                                $routeExists = \Illuminate\Support\Facades\Route::has($item['route']);
+                                $activePatterns = (array) $item['active'];
+                                $isActive = $routeExists && request()->routeIs(...$activePatterns);
+                                $scope = $item['scope'] ?? 'store';
+                                $rowBase = 'group relative flex items-center rounded-xl text-[13px] whitespace-nowrap transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-shell-ring';
+                            @endphp
+                            <li class="flex justify-center w-full">
+                                @if ($routeExists)
+                                    <a href="{{ route($item['route']) }}" wire:navigate
+                                        @click="if (window.apeironPosCartDirty && !confirm('You have an active cart in POS. Leaving this page will cancel the current cart. Continue?')) { $event.preventDefault(); $event.stopImmediatePropagation(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; } if (sidebarMobileOpen) { sidebarMobileOpen = false; }"
+                                        @if ($isActive) aria-current="page" @endif
+                                        title="{{ $item['label'] }} ({{ $scope === 'store' ? 'Active Branch' : 'Tenant' }})"
+                                        class="{{ $rowBase }} w-full px-3 min-h-[38px] justify-start before:left-0 before:top-2 before:bottom-2 before:w-[3px] before:rounded-r {{ $isActive ? 'bg-shell-accent text-shell-foreground-active font-semibold border border-shell-border shadow-2xs before:absolute before:bg-shell-foreground-active' : 'text-shell-foreground hover:text-shell-foreground-active hover:bg-shell-accent/60' }}">
+                                        
+                                        <span class="material-symbols-rounded text-[20px] shrink-0 text-center flex items-center justify-center {{ $isActive ? 'text-shell-foreground-active' : 'text-shell-foreground group-hover:text-shell-foreground-active transition-colors' }}">{{ $item['icon'] }}</span>
+                                        
+                                        <span class="ml-2.5 flex-1 truncate font-medium overflow-hidden transition-all duration-150">{{ $item['label'] }}</span>
+
+                                        @if (!empty($item['active']) && is_array($item['active']) && count($item['active']) > 1)
+                                            <span class="material-symbols-rounded text-xs text-shell-foreground/60 ml-auto group-hover:text-shell-foreground-active">chevron_right</span>
+                                        @endif
+                                    </a>
+                                @else
+                                    <div aria-disabled="true" title="{{ $item['label'] }} — coming soon"
+                                        class="{{ $rowBase }} w-full px-3 min-h-[38px] justify-start text-shell-border cursor-not-allowed">
+                                        <span class="material-symbols-rounded text-[20px] shrink-0 text-center flex items-center justify-center text-shell-border">{{ $item['icon'] }}</span>
+                                        <span class="ml-2.5 flex-1 truncate overflow-hidden transition-all duration-150">{{ $item['label'] }}</span>
+                                        <span class="ml-auto text-[9px] font-medium uppercase tracking-wider text-shell-foreground bg-shell-accent border border-shell-border rounded px-1.5 py-0.5">Soon</span>
+                                    </div>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endforeach
+        </div>
+
+        {{-- MODE B: Micro-Rail Navigation (Desktop Collapsed — DEMURE Signature 1 Icon Per Module) --}}
+        <ul x-show="!wide" x-cloak class="w-full flex flex-col items-center space-y-1.5 py-1.5">
+            @foreach ($visibleMenu as $section => $items)
+                @php
+                    $sectionSlug = \Illuminate\Support\Str::slug($section, '_');
+                    $isSectionActive = ($activeSectionSlug === $sectionSlug);
+                    $firstItem = $items[0] ?? null;
+                    if (!$firstItem) continue;
+
+                    $sectionIcon = match($section) {
+                        'Overview' => 'space_dashboard',
+                        'Cashier & Operations' => 'point_of_sale',
+                        'Catalog & Recipes' => 'inventory_2',
+                        'Inventory & Supply' => 'warehouse',
+                        'Analytics & Customers' => 'query_stats',
+                        'Human Resources & Payroll' => 'badge',
+                        'Settings & Governance' => 'settings',
+                        default => $firstItem['icon'] ?? 'circle',
+                    };
+
+                    // Find active item route if section is active, or fallback to first item
+                    $targetItem = collect($items)->first(function ($it) {
+                        return \Illuminate\Support\Facades\Route::has($it['route']) && request()->routeIs(...(array) $it['active']);
+                    }) ?? $firstItem;
+
+                    $targetRoute = \Illuminate\Support\Facades\Route::has($targetItem['route']) ? route($targetItem['route']) : '#';
+                @endphp
+                <li class="flex justify-center w-full">
+                    <a href="{{ $targetRoute }}" wire:navigate
+                        @click="if (window.apeironPosCartDirty && !confirm('You have an active cart in POS. Leaving this page will cancel the current cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }"
+                        title="{{ $section }}"
+                        aria-label="{{ $section }}"
+                        @if ($isSectionActive) aria-current="page" @endif
+                        class="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-150 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring {{ $isSectionActive ? 'bg-shell-foreground-active text-white shadow-xs font-bold' : 'text-shell-foreground hover:text-shell-foreground-active hover:bg-shell-accent' }}">
+                        <span class="material-symbols-rounded text-[19px] {{ $isSectionActive ? 'text-white' : 'text-shell-foreground group-hover:text-shell-foreground-active' }}">
+                            {{ $sectionIcon }}
+                        </span>
+                    </a>
+                </li>
+            @endforeach
+        </ul>
     </nav>
 
-    {{-- User Profile & Popover --}}
-    <div class="shrink-0 mt-auto relative border-t border-shell-border" :class="wide ? 'p-2.5' : 'py-2.5 px-0 flex justify-center'">
+    {{-- DEMURE Luxury Footer: User Card --}}
+    <div class="shrink-0 mt-auto relative" :class="wide ? 'p-3' : 'py-3 px-1.5 flex flex-col items-center'">
+        
+        {{-- Luxury User Card (Catherine Kim Style) --}}
         <button type="button" @click="openPopover = !openPopover" :aria-expanded="openPopover.toString()"
             aria-haspopup="true"
             aria-label="User account menu"
-            class="flex items-center rounded-lg transition-all duration-150 whitespace-nowrap min-h-[38px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring cursor-pointer"
-            :class="[wide ? 'w-full p-2 hover:bg-shell-accent' : 'w-9 h-9 justify-center p-0 hover:bg-shell-accent', openPopover ? 'bg-shell-accent' : '']"
+            class="flex items-center rounded-xl transition-all duration-150 whitespace-nowrap min-h-[42px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring cursor-pointer group select-none"
+            :class="[wide ? 'w-full p-2 hover:bg-shell-accent' : 'w-9 h-9 justify-center p-0 hover:bg-shell-accent rounded-xl', openPopover ? 'bg-shell-accent' : '']"
             title="{{ auth()->user()->name ?? 'Profile' }}">
             <div
-                class="w-7 h-7 rounded-full bg-shell-accent text-shell-foreground-active border border-shell-border flex items-center justify-center font-semibold text-[11px] shrink-0">
+                class="w-7 h-7 rounded-full bg-shell-foreground-active text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
                 {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
             </div>
-            <div :class="wide ? 'opacity-100 ml-2.5 flex-1 text-left' : 'hidden'"
-                class="overflow-hidden transition-all duration-150">
-                <p class="text-[13px] font-medium text-shell-foreground-active truncate leading-tight">{{ auth()->user()->name ?? 'User' }}
-                </p>
-                <p class="text-[11px] text-shell-foreground truncate leading-tight mt-0.5">{{ $roleName ?? 'No role' }}
-                </p>
+            <div x-show="wide" x-cloak class="ml-2.5 flex-1 text-left overflow-hidden transition-all duration-150">
+                <p class="text-[12px] font-bold text-shell-foreground-active truncate leading-tight group-hover:text-shell-foreground-active">{{ auth()->user()->name ?? 'User' }}</p>
+                <p class="text-[10px] text-shell-foreground truncate leading-tight mt-0.5">{{ auth()->user()->email ?? $roleName }}</p>
             </div>
-            <span x-show="wide"
-                class="material-symbols-rounded text-[18px] text-shell-foreground transition-transform duration-200"
-                :class="openPopover ? 'rotate-180' : ''">expand_less</span>
+            <span x-show="wide" x-cloak
+                class="material-symbols-rounded text-[16px] text-shell-foreground transition-transform duration-200 group-hover:text-shell-foreground-active"
+                :class="openPopover ? 'rotate-90 text-shell-foreground-active' : ''">chevron_right</span>
         </button>
 
+        {{-- Dropdown Profile Popover --}}
         <div x-show="openPopover" x-cloak @click.outside="openPopover = false"
             @keydown.escape.window="openPopover = false"
             role="menu"
@@ -197,28 +296,28 @@
             x-transition:leave="transition-all duration-100 ease-in"
             x-transition:leave-start="opacity-100 scale-100 translate-y-0"
             x-transition:leave-end="opacity-0 scale-95 translate-y-1"
-            class="absolute bottom-full mb-2 bg-shell text-shell-foreground rounded-xl shadow-xl border border-shell-border overflow-hidden z-50"
-            :class="wide ? 'left-2.5 right-2.5' : 'left-2 w-56 md:left-full md:ml-2'">
-            <div class="px-3.5 py-2.5 border-b border-shell-border">
-                <p class="text-xs font-semibold text-shell-foreground-active truncate">{{ auth()->user()->name ?? 'User' }}</p>
+            class="absolute bottom-full mb-2 bg-white text-shell-foreground-active rounded-2xl shadow-xl border border-shell-border overflow-hidden z-50 divide-y divide-shell-border"
+            :class="wide ? 'left-3 right-3' : 'left-2 w-56 md:left-full md:ml-2'">
+            <div class="px-3.5 py-3 bg-white">
+                <p class="text-xs font-bold text-shell-foreground-active truncate">{{ auth()->user()->name ?? 'User' }}</p>
                 <p class="text-[11px] text-shell-foreground truncate mt-0.5">{{ auth()->user()->email ?? '' }}</p>
                 @if ($roleName)
                     <span
-                        class="inline-flex items-center mt-1.5 px-2 py-0.5 rounded text-[10px] font-medium bg-shell-accent text-shell-foreground-active border border-shell-border">{{ $roleName }}</span>
+                        class="inline-flex items-center mt-2 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-shell-accent text-shell-foreground-active border border-shell-border">{{ $roleName }}</span>
                 @endif
             </div>
-            <div class="p-1">
+            <div class="p-1.5 space-y-0.5 bg-white">
                 <a href="{{ route('profile.edit') }}" wire:navigate
                     @click="if (window.apeironPosCartDirty && !confirm('You have an active cart in POS. Leaving this page will cancel the current cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; } if (sidebarMobileOpen) { sidebarMobileOpen = false; }"
                     role="menuitem"
-                    class="flex items-center gap-2.5 px-2.5 min-h-[36px] rounded-lg text-xs font-medium text-shell-foreground hover:text-shell-foreground-active hover:bg-shell-accent active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-150">
+                    class="flex items-center gap-2.5 px-2.5 min-h-[36px] rounded-xl text-xs font-medium text-shell-foreground hover:text-shell-foreground-active hover:bg-shell-accent active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-150">
                     <span class="material-symbols-rounded text-[17px]">person</span> My Profile
                 </a>
                 @if(auth()->user()->role?->name === 'Owner')
                 <a href="{{ route('settings.index') }}" wire:navigate
                     @click="if (window.apeironPosCartDirty && !confirm('You have an active cart in POS. Leaving this page will cancel the current cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; } if (sidebarMobileOpen) { sidebarMobileOpen = false; }"
                     role="menuitem"
-                    class="flex items-center gap-2.5 px-2.5 min-h-[36px] rounded-lg text-xs font-medium text-shell-foreground hover:text-shell-foreground-active hover:bg-shell-accent active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-150">
+                    class="flex items-center gap-2.5 px-2.5 min-h-[36px] rounded-xl text-xs font-medium text-shell-foreground hover:text-shell-foreground-active hover:bg-shell-accent active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-150">
                     <span class="material-symbols-rounded text-[17px]">settings</span> Settings
                 </a>
                 @endif
@@ -227,7 +326,7 @@
                     @csrf
                     <button type="submit"
                         role="menuitem"
-                        class="flex w-full items-center gap-2.5 px-2.5 min-h-[36px] rounded-lg text-xs font-medium text-destructive hover:bg-destructive-muted hover:text-destructive-foreground active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 transition-all duration-150 cursor-pointer">
+                        class="flex w-full items-center gap-2.5 px-2.5 min-h-[36px] rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 transition-all duration-150 cursor-pointer">
                         <span class="material-symbols-rounded text-[17px]">logout</span> Sign Out
                     </button>
                 </form>

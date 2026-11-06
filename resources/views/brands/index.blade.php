@@ -38,7 +38,7 @@
 
         <!-- Header -->
         <x-erp.page-header
-            title="Product Brands (Merek Produk)"
+            title="Product Brands"
             description="Manage product brands and manufacturers for catalog classification and reporting.">
             <x-slot:breadcrumbs>
                 <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
@@ -80,24 +80,24 @@
             <div class="overflow-x-auto">
                 <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="border-b border-border dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                            <th class="px-6 py-4">Code</th>
-                            <th class="px-6 py-4">Brand Name</th>
-                            <th class="px-6 py-4">Description</th>
-                            <th class="px-6 py-4 text-right">Products</th>
-                            <th class="px-6 py-4 text-center">Status</th>
+                        <tr class="border-b border-border bg-muted/30 text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            <th class="px-6 py-3.5">Code</th>
+                            <th class="px-6 py-3.5">Brand Name</th>
+                            <th class="px-6 py-3.5">Description</th>
+                            <th class="px-6 py-3.5 text-right">Products</th>
+                            <th class="px-6 py-3.5 text-center">Status</th>
                             @if($canManage)
-                                <th class="px-6 py-4 text-right">Actions</th>
+                                <th class="px-6 py-3.5 text-right">Actions</th>
                             @endif
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-border dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-border">
                         @forelse($brands as $brand)
-                            <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
-                                <td class="px-6 py-4 font-mono text-xs font-semibold text-apeiron-ink dark:text-white">{{ $brand->code }}</td>
-                                <td class="px-6 py-4 text-sm font-semibold text-zinc-900 dark:text-white">{{ $brand->name }}</td>
-                                <td class="px-6 py-4 text-sm text-zinc-500">{{ $brand->description ?? '—' }}</td>
-                                <td class="px-6 py-4 text-sm font-medium text-right text-zinc-900 dark:text-white font-mono tabular-nums">{{ $brand->products_count }}</td>
+                            <tr class="hover:bg-muted/40 transition-colors">
+                                <td class="px-6 py-4 font-mono text-xs font-semibold text-foreground">{{ $brand->code }}</td>
+                                <td class="px-6 py-4 text-sm font-semibold text-foreground">{{ $brand->name }}</td>
+                                <td class="px-6 py-4 text-sm text-muted-foreground">{{ $brand->description ?? '—' }}</td>
+                                <td class="px-6 py-4 text-sm font-medium text-right text-foreground font-mono tabular-nums">{{ $brand->products_count }}</td>
                                 <td class="px-6 py-4 text-center">
                                     <x-ui.badge variant="{{ $brand->is_active ? 'success' : 'neutral' }}" size="sm">
                                         {{ $brand->is_active ? 'Active' : 'Inactive' }}
@@ -105,29 +105,24 @@
                                 </td>
                                 @if($canManage)
                                     <td class="px-6 py-4 text-right">
-                                        <div class="flex items-center justify-end gap-1.5">
-                                            <button type="button" @click="openEdit({{ json_encode($brand) }})"
-                                                class="p-1.5 rounded-lg text-zinc-500 hover:text-blue-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
-                                                title="Edit brand">
-                                                <span class="material-symbols-rounded text-lg">edit</span>
-                                            </button>
-                                            <form id="delete-brand-{{ $brand->id }}" action="{{ route('brands.destroy', $brand->id) }}" method="POST" class="inline-block">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="button" onclick="confirmSubmit('delete-brand-{{ $brand->id }}', '{{ addslashes($brand->name) }}')"
-                                                    class="p-1.5 rounded-lg text-zinc-500 hover:text-rose-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition"
-                                                    title="Delete brand">
-                                                    <span class="material-symbols-rounded text-lg">delete</span>
-                                                </button>
-                                            </form>
-                                        </div>
+                                        <x-ui.table-actions>
+                                            <x-ui.table-action-item icon="edit" @click="openEdit({{ json_encode($brand) }})">
+                                                Edit
+                                            </x-ui.table-action-item>
+                                            <x-ui.table-action-item icon="delete" variant="destructive" onclick="confirmSubmit('delete-brand-{{ $brand->id }}', '{{ addslashes($brand->name) }}')">
+                                                Delete
+                                            </x-ui.table-action-item>
+                                        </x-ui.table-actions>
+                                        <form id="delete-brand-{{ $brand->id }}" action="{{ route('brands.destroy', $brand->id) }}" method="POST" class="hidden">
+                                            @csrf
+                                            @method('DELETE')
+                                        </form>
                                     </td>
                                 @endif
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ $canManage ? 6 : 5 }}" class="px-6 py-12 text-center text-zinc-400">
-                                    <span class="material-symbols-rounded text-4xl block mb-2">verified</span>
+                                <td colspan="{{ $canManage ? 6 : 5 }}" class="px-6 py-12 text-center text-muted-foreground text-xs">
                                     No product brands registered.
                                 </td>
                             </tr>
@@ -143,7 +138,7 @@
             @endif
         </div>
 
-        <!-- Modal Tambah / Sunting Merek -->
+        <!-- Add / Edit Brand Modal -->
         <x-ui.modal x-model="showModal" maxWidth="md">
             <x-slot:title>
                 <span x-text="isEdit ? 'Edit Brand' : 'Add New Brand'"></span>

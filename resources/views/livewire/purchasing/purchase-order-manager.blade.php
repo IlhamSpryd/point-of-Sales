@@ -84,21 +84,21 @@
         :colspan="8"
     >
         @foreach($purchaseOrders as $po)
-                    <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
+                    <tr class="hover:bg-muted/40 transition-colors">
                         <td class="px-6 py-4">
-                            <div class="font-bold text-zinc-900 dark:text-white font-mono">{{ $po->po_number }}</div>
-                            <div class="text-xs text-zinc-500">{{ \Carbon\Carbon::parse($po->order_date)->format('d M Y') }}</div>
+                            <div class="font-bold text-foreground font-mono">{{ $po->po_number }}</div>
+                            <div class="text-xs text-muted-foreground">{{ \Carbon\Carbon::parse($po->order_date)->format('d M Y') }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $po->supplier?->name ?? 'Vendor #' . $po->supplier_id }}</div>
-                            <div class="text-xs text-zinc-400">{{ $po->supplier?->phone ?: $po->supplier?->email }}</div>
+                            <div class="font-medium text-foreground">{{ $po->supplier?->name ?? 'Vendor #' . $po->supplier_id }}</div>
+                            <div class="text-xs text-muted-foreground">{{ $po->supplier?->phone ?: $po->supplier?->email }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <span class="text-zinc-700 dark:text-zinc-300 font-medium">{{ $po->store?->name ?? 'All Branches' }}</span>
+                            <span class="text-foreground font-medium">{{ $po->store?->name ?? 'All Branches' }}</span>
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <div class="font-bold text-zinc-900 dark:text-white">Rp {{ number_format((float) $po->total_amount, 2) }}</div>
-                            <div class="text-[11px] text-zinc-400">Tax: Rp {{ number_format((float) $po->tax_amount, 2) }}</div>
+                            <div class="font-bold text-foreground">Rp {{ number_format((float) $po->total_amount, 2) }}</div>
+                            <div class="text-[11px] text-muted-foreground">Tax: Rp {{ number_format((float) $po->tax_amount, 2) }}</div>
                         </td>
                         <td class="px-6 py-4 text-center">
                             @php
@@ -140,47 +140,27 @@
                                 {{ $po->status?->label() ?? $poStatusVal }}
                             </x-ui.badge>
                         </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <x-ui.button
-                                    size="icon"
-                                    variant="ghost"
-                                    wire:click="viewPo({{ $po->id }})"
-                                    title="View PO Details"
-                                    aria-label="Detail">
-                                    <span class="material-symbols-rounded text-base text-zinc-600 dark:text-zinc-400">visibility</span>
-                                </x-ui.button>
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <x-ui.table-actions>
+                                <x-ui.table-action-item icon="visibility" wire:click="viewPo({{ $po->id }})">
+                                    View PO Details
+                                </x-ui.table-action-item>
                                 @if($po->isDraft())
-                                    <x-ui.button
-                                        size="icon"
-                                        variant="ghost"
-                                        wire:click="submitPo({{ $po->id }})"
-                                        title="Submit for Approval"
-                                        aria-label="Submit">
-                                        <span class="material-symbols-rounded text-base text-amber-600">send</span>
-                                    </x-ui.button>
+                                    <x-ui.table-action-item icon="send" wire:click="submitPo({{ $po->id }})">
+                                        Submit for Approval
+                                    </x-ui.table-action-item>
                                 @endif
                                 @if($po->status?->value === 'APPROVED' || $po->status === 'approved')
-                                    <x-ui.button
-                                        size="icon"
-                                        variant="ghost"
-                                        wire:click="releasePo({{ $po->id }})"
-                                        title="Issue to Supplier"
-                                        aria-label="Issue">
-                                        <span class="material-symbols-rounded text-base text-emerald-600">check_circle</span>
-                                    </x-ui.button>
+                                    <x-ui.table-action-item icon="check_circle" wire:click="releasePo({{ $po->id }})">
+                                        Issue to Supplier
+                                    </x-ui.table-action-item>
                                 @endif
                                 @if($po->canBeCancelled())
-                                    <x-ui.button
-                                        size="icon"
-                                        variant="ghost"
-                                        wire:click="confirmCancelPo({{ $po->id }})"
-                                        title="Cancel PO"
-                                        aria-label="Cancel">
-                                        <span class="material-symbols-rounded text-base text-rose-500">cancel</span>
-                                    </x-ui.button>
+                                    <x-ui.table-action-item icon="cancel" variant="destructive" wire:click="confirmCancelPo({{ $po->id }})">
+                                        Cancel PO
+                                    </x-ui.table-action-item>
                                 @endif
-                            </div>
+                            </x-ui.table-actions>
                         </td>
                     </tr>
         @endforeach
@@ -437,7 +417,7 @@
         </x-slot:footer>
     </x-ui.modal>
 
-    <!-- Modal Konfirmasi Batal PO -->
+    <!-- Cancel Purchase Order Confirmation Modal -->
     <x-ui.modal wire:model="showCancelModal" maxWidth="md">
         <x-slot:title>
             Confirm PO Cancellation

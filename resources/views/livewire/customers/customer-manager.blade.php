@@ -147,35 +147,35 @@
                                 {{ $c->is_active ? 'Active' : 'Inactive' }}
                             </x-ui.badge>
                         </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex items-center justify-end gap-1.5">
-                                <button wire:click="openAddresses({{ $c->id }})" title="Manage Addresses" class="p-1.5 rounded-lg text-zinc-500 hover:text-apeiron-primary hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
-                                    <span class="material-symbols-rounded text-lg">home_pin</span>
-                                </button>
-                                <button wire:click="openStatement({{ $c->id }})" title="Statement & Transaction History" class="p-1.5 rounded-lg text-zinc-500 hover:text-apeiron-primary hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
-                                    <span class="material-symbols-rounded text-lg">receipt_long</span>
-                                </button>
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <x-ui.table-actions>
+                                <x-ui.table-action-item icon="receipt_long" wire:click="openStatement({{ $c->id }})">
+                                    Statement &amp; History
+                                </x-ui.table-action-item>
+                                <x-ui.table-action-item icon="home_pin" wire:click="openAddresses({{ $c->id }})">
+                                    Manage Addresses
+                                </x-ui.table-action-item>
                                 @if($c->isCompany())
-                                <button wire:click="openContacts({{ $c->id }})" title="Manage B2B Contacts" class="p-1.5 rounded-lg text-zinc-500 hover:text-indigo-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
-                                    <span class="material-symbols-rounded text-lg">contacts</span>
-                                </button>
+                                    <x-ui.table-action-item icon="contacts" wire:click="openContacts({{ $c->id }})">
+                                        B2B Contacts
+                                    </x-ui.table-action-item>
                                 @endif
                                 @can('merge', $c)
-                                <button wire:click="openMerge({{ $c->id }})" title="Merge Customer" class="p-1.5 rounded-lg text-zinc-500 hover:text-amber-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
-                                    <span class="material-symbols-rounded text-lg">merge</span>
-                                </button>
+                                    <x-ui.table-action-item icon="merge" wire:click="openMerge({{ $c->id }})">
+                                        Merge Customer
+                                    </x-ui.table-action-item>
                                 @endcan
                                 @can('update', $c)
-                                <button wire:click="edit({{ $c->id }})" title="Edit Customer" class="p-1.5 rounded-lg text-zinc-500 hover:text-blue-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
-                                    <span class="material-symbols-rounded text-lg">edit</span>
-                                </button>
+                                    <x-ui.table-action-item icon="edit" wire:click="edit({{ $c->id }})">
+                                        Edit Customer
+                                    </x-ui.table-action-item>
                                 @endcan
                                 @can('delete', $c)
-                                <button wire:click="delete({{ $c->id }})" wire:confirm="Are you sure you want to deactivate this customer?" title="Delete Customer" class="p-1.5 rounded-lg text-zinc-500 hover:text-rose-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
-                                    <span class="material-symbols-rounded text-lg">delete</span>
-                                </button>
+                                    <x-ui.table-action-item icon="delete" variant="destructive" wire:click="delete({{ $c->id }})" wire:confirm="Are you sure you want to deactivate this customer?">
+                                        Deactivate
+                                    </x-ui.table-action-item>
                                 @endcan
-                            </div>
+                            </x-ui.table-actions>
                         </td>
                     </tr>
         @endforeach

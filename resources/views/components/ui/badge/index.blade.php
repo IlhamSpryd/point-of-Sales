@@ -7,8 +7,9 @@
     'icon' => null,
     'iconPosition' => 'before',
     'pill' => false,
+    'chip' => false,
     'asBadge' => false,
-    'dot' => false,
+    'dot' => true,
 ])
 
 @php
@@ -26,10 +27,6 @@
 
     $variant = $variant ?? $colorMapped ?? $type;
 
-    if ($colorMapped !== null) {
-        $asBadge = true;
-    }
-
     if ($status instanceof \BackedEnum) {
         if ($variant === null && method_exists($status, 'badgeType')) {
             $variant = $status->badgeType();
@@ -38,33 +35,32 @@
         $variant = $status;
     }
 
-    // `primary` and `outline` are structural variants, not statuses: they are
-    // resolved against semantic UI tokens rather than StatusPalette.
+    // `primary` and `outline` are structural variants, not statuses
     $areStructural = in_array(strtolower((string) $variant), ['primary', 'outline'], true);
     $semantic = \App\Support\Color\StatusPalette::variant($variant ?? 'neutral');
 
-    $isBadge = $pill || $asBadge || $dot || $areStructural || $semantic !== \App\Support\Color\StatusVariant::Neutral;
+    // Only render chunky pill/chip if explicitly requested or structural
+    $isBadge = $pill || $chip || $asBadge || $areStructural;
+    $showDot = $dot && ! $isBadge;
 
     $structure = 'border rounded-md px-2 py-0.5 text-xs';
 
     $classes = \Illuminate\Support\Arr::toCssClasses([
-        'inline-flex items-center whitespace-nowrap font-medium tracking-normal transition-colors',
+        'inline-flex items-center whitespace-nowrap font-medium tracking-normal transition-colors text-xs',
 
-        // ── Pill / chip form ──
+        // ── Pill / chip form (explicit only) ──
         $structure => $isBadge,
         \App\Support\Color\StatusPalette::badgeClasses($semantic) => $isBadge && ! $areStructural,
         'bg-primary text-primary-foreground border-primary' => $isBadge && strtolower((string) $variant) === 'primary',
         'bg-transparent text-foreground border-border' => $isBadge && strtolower((string) $variant) === 'outline',
 
-        // ── Inline text form (no fill): used for ordinary status cells ──
-        'bg-transparent border-0 p-0 text-xs sm:text-sm' => ! $isBadge,
-        \App\Support\Color\StatusPalette::textClasses($semantic) => ! $isBadge && ! $areStructural,
-        'text-foreground' => ! $isBadge && $areStructural,
+        // ── Minimalist inline status form (clean enterprise default): NO background fill, NO borders ──
+        'bg-transparent border-0 p-0 text-foreground' => ! $isBadge,
     ]);
 @endphp
 
 <span {{ $attributes->twMerge($classes) }}>
-    @if($dot)
+    @if($showDot)
         <span class="w-1.5 h-1.5 rounded-full shrink-0 mr-1.5 {{ \App\Support\Color\StatusPalette::dotClasses($semantic) }}" aria-hidden="true"></span>
     @endif
     @if ($icon && $iconPosition === 'before')

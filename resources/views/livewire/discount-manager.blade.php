@@ -85,28 +85,25 @@
                                     </div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end gap-1.5">
-                                    <button type="button"
-                                        wire:click="edit({{ $discount->id }})"
-                                        title="Edit Discount"
-                                        class="p-1.5 rounded-lg text-zinc-500 hover:text-blue-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
-                                        <span class="material-symbols-rounded text-lg">edit</span>
-                                    </button>
-                                    <button type="button"
+                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="edit" wire:click="edit({{ $discount->id }})">
+                                        Edit Discount
+                                    </x-ui.table-action-item>
+                                    <x-ui.table-action-item
+                                        icon="delete"
+                                        variant="destructive"
                                         wire:click="delete({{ $discount->id }})"
                                         wire:confirm="Discount &quot;{{ $discount->name }}&quot; will be permanently deleted. Continue?"
-                                        title="Delete Discount"
-                                        class="p-1.5 rounded-lg text-zinc-500 hover:text-rose-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition">
-                                        <span class="material-symbols-rounded text-lg">delete</span>
-                                    </button>
-                                </div>
+                                    >
+                                        Delete Discount
+                                    </x-ui.table-action-item>
+                                </x-ui.table-actions>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-zinc-400">
-                                <span class="material-symbols-rounded text-4xl block mb-2">local_offer</span>
+                            <td colspan="6" class="px-6 py-12 text-center text-muted-foreground text-xs">
                                 No discounts or promo codes registered.
                             </td>
                         </tr>
@@ -121,7 +118,7 @@
         @endif
     </div>
 
-    <!-- Modal Form Diskon -->
+    <!-- Discount Form Modal -->
     <x-ui.modal wire:model="isModalOpen" name="discount-form" maxWidth="2xl">
         <x-slot:title>
             {{ $discountId ? 'Edit Discount' : 'Add New Discount' }}

@@ -21,7 +21,7 @@
     }">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Products <span class="text-sm font-normal text-muted-foreground">(Katalog Produk)</span></h4>
+                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Products</h4>
                 <p class="text-sm font-medium text-muted-foreground mt-1">Manage master catalog, product types, pricing, and inventory</p>
             </div>
 
@@ -29,13 +29,13 @@
                 <x-slot:actions>
                     <a href="{{ route('products.export') }}" class="flex-1 sm:flex-none">
                         <x-ui.button variant="secondary" type="button" class="w-full h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                            <span class="material-symbols-rounded text-[18px]">download</span> Export Excel <span class="sr-only">Ekspor</span>
+                            <span class="material-symbols-rounded text-[18px]">download</span> Export Excel <span class="sr-only">Export</span>
                         </x-ui.button>
                     </a>
 
                     @if($canManage)
                         <x-ui.button variant="secondary" type="button" @click="showImportModal = true" class="flex-1 sm:flex-none h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                            <span class="material-symbols-rounded text-[18px]">upload</span> Import CSV <span class="sr-only">Impor</span>
+                            <span class="material-symbols-rounded text-[18px]">upload</span> Import CSV <span class="sr-only">Import</span>
                         </x-ui.button>
 
                         <button type="button" x-show="selectedIds.length > 0" x-cloak @click="showBulkModal = true"
@@ -46,7 +46,7 @@
 
                         <a href="{{ route('products.create') }}" class="flex-1 sm:flex-none" wire:navigate>
                             <x-ui.button variant="primary" type="button" class="w-full h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                                <span class="material-symbols-rounded text-[18px]">add</span> Add Product <span class="sr-only">Tambah Produk</span>
+                                <span class="material-symbols-rounded text-[18px]">add</span> Add Product <span class="sr-only">Add Product</span>
                             </x-ui.button>
                         </a>
                     @endif
@@ -125,8 +125,8 @@
                         @endif
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
-                                @if($product->product_photo)
-                                    <img src="{{ asset('storage/' . $product->product_photo) }}" alt="{{ $product->product_name }}" loading="lazy" class="w-10 h-10 rounded-xl object-cover border border-border">
+                                @if($product->photo_url)
+                                    <img src="{{ $product->photo_url }}" alt="{{ $product->product_name }}" loading="lazy" class="w-10 h-10 rounded-xl object-cover border border-border">
                                 @else
                                     <div class="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
                                         <span class="material-symbols-rounded">image</span>
@@ -171,16 +171,18 @@
                             </x-ui.badge>
                         </td>
                         @if($canManage)
-                            <td class="px-6 py-4 text-right space-x-1">
-                                <a href="{{ route('products.edit', $product->id) }}" class="inline-flex items-center justify-center min-w-9 min-h-9 rounded-lg text-primary hover:text-primary/80 hover:bg-muted transition-colors" aria-label="Edit product" wire:navigate>
-                                    <span class="material-symbols-rounded text-[20px]">edit</span>
-                                </a>
-                                <form id="delete-form-{{ $product->id }}" action="{{ route('products.destroy', $product->id) }}" method="POST" class="inline-block">
+                            <td class="px-6 py-4 text-right">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="edit" href="{{ route('products.edit', $product->id) }}" wire:navigate>
+                                        Edit
+                                    </x-ui.table-action-item>
+                                    <x-ui.table-action-item icon="delete" variant="destructive" onclick="confirmSubmit('delete-form-{{ $product->id }}', '{{ addslashes($product->product_name) }}')">
+                                        Delete
+                                    </x-ui.table-action-item>
+                                </x-ui.table-actions>
+                                <form id="delete-form-{{ $product->id }}" action="{{ route('products.destroy', $product->id) }}" method="POST" class="hidden">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" onclick="confirmSubmit('delete-form-{{ $product->id }}', '{{ addslashes($product->product_name) }}')" class="inline-flex items-center justify-center min-w-9 min-h-9 rounded-lg text-destructive hover:text-destructive/80 hover:bg-destructive/10 transition-colors" aria-label="Delete">
-                                        <span class="material-symbols-rounded text-[20px]">delete</span>
-                                    </button>
                                 </form>
                             </td>
                         @endif
@@ -202,14 +204,14 @@
                     <div>
                         <x-form-label for="csv_file">Select CSV File (.csv) <span class="text-danger-600">*</span></x-form-label>
                         <input type="file" id="csv_file" name="file" accept=".csv,text/csv" required
-                            class="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-muted file:text-apeiron-ink hover:file:bg-accent">
+                            class="w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-muted file:text-foreground hover:file:bg-accent">
                         <p class="text-xs text-muted-foreground mt-2">Max 1,000 rows per file. Required columns: <code>product_name, category_id, product_price</code>. Includes automated CSV formula sanitization.</p>
                     </div>
 
                     <div class="flex items-center gap-2 pt-2">
                         <input type="checkbox" id="strict_mode" name="strict_mode" value="1"
-                            class="rounded border-gray-300 text-apeiron-ink focus:ring-apeiron-ink">
-                        <label for="strict_mode" class="text-xs text-apeiron-ink font-medium">Strict Mode (Roll back entire batch if any row fails)</label>
+                            class="rounded border-border text-primary focus:ring-ring">
+                        <label for="strict_mode" class="text-xs text-foreground font-medium">Strict Mode (Roll back entire batch if any row fails)</label>
                     </div>
 
                     <div class="flex justify-end gap-2 pt-4 border-t border-border">

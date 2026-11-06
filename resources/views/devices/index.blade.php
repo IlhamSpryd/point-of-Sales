@@ -70,29 +70,28 @@
             <div class="overflow-x-auto">
                 <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="border-b border-border dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                            <th class="px-6 py-4">Code</th>
-                            <th class="px-6 py-4">Device &amp; Branch</th>
-                            <th class="px-6 py-4">Type</th>
-                            <th class="px-6 py-4 text-center">Connection Status</th>
-                            <th class="px-6 py-4">Last Activity</th>
-                            <th class="px-6 py-4 text-right">Actions</th>
+                        <tr class="border-b border-border bg-muted/30 text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            <th class="px-6 py-3.5">Code</th>
+                            <th class="px-6 py-3.5">Device &amp; Branch</th>
+                            <th class="px-6 py-3.5">Type</th>
+                            <th class="px-6 py-3.5 text-center">Connection Status</th>
+                            <th class="px-6 py-3.5">Last Activity</th>
+                            <th class="px-6 py-3.5 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-border dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-border">
                         @forelse($devices as $device)
-                            <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
-                                <td class="px-6 py-4 font-mono font-medium text-apeiron-ink dark:text-white text-sm whitespace-nowrap">
+                            <tr class="hover:bg-muted/40 transition-colors">
+                                <td class="px-6 py-4 font-mono font-medium text-foreground text-sm whitespace-nowrap">
                                     {{ $device->device_code }}
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="font-bold text-zinc-900 dark:text-white text-sm">{{ $device->device_name }}</div>
-                                    <div class="text-xs text-zinc-400 mt-0.5 flex items-center gap-1.5">
-                                        <span class="material-symbols-rounded text-[14px]">store</span>
-                                        <span>{{ $device->store?->name ?? 'Unknown branch' }}</span>
+                                    <div class="font-semibold text-foreground text-sm">{{ $device->device_name }}</div>
+                                    <div class="text-xs text-muted-foreground mt-0.5">
+                                        {{ $device->store?->name ?? 'Unknown branch' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 text-xs text-zinc-800 dark:text-zinc-200 whitespace-nowrap">
+                                <td class="px-6 py-4 text-xs text-foreground whitespace-nowrap">
                                     @php
                                         $typeLabel = match($device->device_type) {
                                             'pos_terminal' => 'POS Cashier Terminal',
@@ -100,15 +99,8 @@
                                             'waiter_tablet' => 'Waiter Tablet',
                                             default => $device->device_type,
                                         };
-                                        $typeIcon = match($device->device_type) {
-                                            'pos_terminal' => 'point_of_sale',
-                                            'kds_display' => 'restaurant_menu',
-                                            'waiter_tablet' => 'tablet_mac',
-                                            default => 'devices',
-                                        };
                                     @endphp
-                                    <span class="inline-flex items-center gap-1.5 font-medium">
-                                        <span class="material-symbols-rounded text-[16px] text-zinc-400">{{ $typeIcon }}</span>
+                                    <span class="font-medium text-foreground">
                                         {{ $typeLabel }}
                                     </span>
                                 </td>
@@ -131,22 +123,23 @@
                                         {{ $statusLabel }}
                                     </x-ui.badge>
                                 </td>
-                                <td class="px-6 py-4 text-xs text-zinc-500 whitespace-nowrap">
+                                <td class="px-6 py-4 text-xs text-muted-foreground whitespace-nowrap">
                                     {{ $device->last_seen_at ? $device->last_seen_at->diffForHumans() : 'Never active' }}
                                 </td>
-                                <td class="px-6 py-4 text-right space-x-1 whitespace-nowrap">
-                                    <a href="{{ route('devices.show', $device) }}" class="inline-flex items-center justify-center p-1.5 rounded-lg text-zinc-500 hover:text-blue-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition" aria-label="View details" wire:navigate>
-                                        <span class="material-symbols-rounded text-lg">visibility</span>
-                                    </a>
-                                    <a href="{{ route('devices.edit', $device) }}" class="inline-flex items-center justify-center p-1.5 rounded-lg text-zinc-500 hover:text-blue-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition" aria-label="Edit device" wire:navigate>
-                                        <span class="material-symbols-rounded text-lg">edit</span>
-                                    </a>
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    <x-ui.table-actions>
+                                        <x-ui.table-action-item icon="visibility" href="{{ route('devices.show', $device) }}" wire:navigate>
+                                            View Details
+                                        </x-ui.table-action-item>
+                                        <x-ui.table-action-item icon="edit" href="{{ route('devices.edit', $device) }}" wire:navigate>
+                                            Edit Device
+                                        </x-ui.table-action-item>
+                                    </x-ui.table-actions>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-12 text-center text-zinc-400 text-sm">
-                                    <span class="material-symbols-rounded text-4xl block mb-2">devices</span>
+                                <td colspan="6" class="px-6 py-12 text-center text-muted-foreground text-xs">
                                     No cashier devices registered yet.
                                 </td>
                             </tr>

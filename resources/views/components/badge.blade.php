@@ -2,8 +2,8 @@
     'type' => null,
     'variant' => null,
     'status' => null,
-    'dot' => false,
-    'asBadge' => true,
+    'dot' => true,
+    'asBadge' => false,
     'pill' => false,
 ])
 

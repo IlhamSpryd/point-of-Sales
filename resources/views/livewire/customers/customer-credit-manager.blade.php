@@ -75,21 +75,21 @@
     </div>
 
     <!-- Table -->
-    <div class="card-surface overflow-hidden rounded-2xl border border-border dark:border-zinc-800 shadow-sm">
+    <div class="card-surface overflow-hidden rounded-xl border border-border shadow-xs">
         <div class="overflow-x-auto">
-            <table class="table-standard w-full min-w-full text-left border-collapse text-sm text-zinc-600 dark:text-zinc-300">
+            <table class="table-standard w-full min-w-full text-left border-collapse text-sm text-foreground">
                 <thead>
-                    <tr class="border-b border-border dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                        <th class="py-3.5 px-4">Customer</th>
-                        <th class="py-3.5 px-4 text-right">Credit Limit</th>
-                        <th class="py-3.5 px-4 text-center">Terms & Grace</th>
-                        <th class="py-3.5 px-4 text-right">Reserved SO</th>
-                        <th class="py-3.5 px-4 text-right">Available Limit</th>
-                        <th class="py-3.5 px-4 text-center">Credit Status</th>
-                        <th class="py-3.5 px-4 text-center">Actions</th>
+                    <tr class="border-b border-border bg-muted/30 text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        <th class="py-3 px-4">Customer</th>
+                        <th class="py-3 px-4 text-right">Credit Limit</th>
+                        <th class="py-3 px-4 text-center">Terms &amp; Grace</th>
+                        <th class="py-3 px-4 text-right">Reserved SO</th>
+                        <th class="py-3 px-4 text-right">Available Limit</th>
+                        <th class="py-3 px-4 text-center">Credit Status</th>
+                        <th class="py-3 px-4 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-border dark:divide-zinc-800/70">
+                <tbody class="divide-y divide-border">
                     @forelse($customers as $cust)
                         @php
                             $acc = $cust->creditAccount;
@@ -99,22 +99,22 @@
                             $availVal = max(0, $limitVal - ($reservedVal + $invoicedVal));
                             $statusVal = $acc?->status ?? 'ACTIVE';
                         @endphp
-                        <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition">
+                        <tr class="hover:bg-muted/40 transition-colors">
                             <td class="py-3.5 px-4">
-                                <div class="font-semibold text-zinc-900 dark:text-white">{{ $cust->name }}</div>
-                                <div class="text-xs text-zinc-400 font-mono">{{ $cust->customer_code }}</div>
+                                <div class="font-semibold text-foreground">{{ $cust->name }}</div>
+                                <div class="text-xs text-muted-foreground font-mono">{{ $cust->customer_code }}</div>
                             </td>
-                            <td class="py-3.5 px-4 text-right font-mono tabular-nums font-medium text-zinc-900 dark:text-white">
+                            <td class="py-3.5 px-4 text-right font-mono tabular-nums font-semibold text-foreground">
                                 Rp {{ number_format($limitVal, 2, ',', '.') }}
                             </td>
                             <td class="py-3.5 px-4 text-center text-xs">
-                                <span class="font-semibold text-zinc-800 dark:text-zinc-200">{{ $acc?->payment_terms_days ?? 0 }} days</span>
-                                <span class="text-zinc-400 block text-[11px]">(Grace: {{ $acc?->grace_period_days ?? 0 }} days)</span>
+                                <span class="font-medium text-foreground">{{ $acc?->payment_terms_days ?? 0 }} days</span>
+                                <span class="text-muted-foreground block text-[11px]">(Grace: {{ $acc?->grace_period_days ?? 0 }} days)</span>
                             </td>
-                            <td class="py-3.5 px-4 text-right font-mono tabular-nums text-xs text-blue-600 dark:text-blue-400">
+                            <td class="py-3.5 px-4 text-right font-mono tabular-nums text-xs text-muted-foreground">
                                 Rp {{ number_format($reservedVal, 2, ',', '.') }}
                             </td>
-                            <td class="py-3.5 px-4 text-right font-mono tabular-nums text-xs font-semibold {{ $availVal > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600' }}">
+                            <td class="py-3.5 px-4 text-right font-mono tabular-nums text-xs font-semibold {{ $availVal > 0 ? 'text-success' : 'text-destructive' }}">
                                 Rp {{ number_format($availVal, 2, ',', '.') }}
                             </td>
                             <td class="py-3.5 px-4 text-center">
@@ -130,24 +130,23 @@
                                     {{ $statusVal }}
                                 </x-ui.badge>
                             </td>
-                            <td class="py-3.5 px-4 text-center">
-                                <div class="flex items-center justify-center gap-1">
-                                    <x-ui.button size="icon" variant="ghost" wire:click="openEditModal({{ $cust->id }})" title="Configure Limit & Terms" aria-label="Edit">
-                                        <span class="material-symbols-rounded text-base text-zinc-600 dark:text-zinc-400">tune</span>
-                                    </x-ui.button>
-                                    <x-ui.button size="icon" variant="ghost" wire:click="openStatusModal({{ $cust->id }})" title="Change Credit Status" aria-label="Status">
-                                        <span class="material-symbols-rounded text-base text-amber-500">lock_reset</span>
-                                    </x-ui.button>
-                                    <x-ui.button size="icon" variant="ghost" wire:click="openLogsModal({{ $cust->id }})" title="Credit Audit Trail" aria-label="Audit">
-                                        <span class="material-symbols-rounded text-base text-zinc-500">history</span>
-                                    </x-ui.button>
-                                </div>
+                            <td class="py-3.5 px-4 text-right whitespace-nowrap">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="tune" wire:click="openEditModal({{ $cust->id }})">
+                                        Configure Limit &amp; Terms
+                                    </x-ui.table-action-item>
+                                    <x-ui.table-action-item icon="lock_reset" wire:click="openStatusModal({{ $cust->id }})">
+                                        Change Credit Status
+                                    </x-ui.table-action-item>
+                                    <x-ui.table-action-item icon="history" wire:click="openLogsModal({{ $cust->id }})">
+                                        Credit Audit Trail
+                                    </x-ui.table-action-item>
+                                </x-ui.table-actions>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="py-12 text-center text-zinc-400">
-                                <span class="material-symbols-rounded text-4xl block mb-2">account_balance_wallet</span>
+                            <td colspan="7" class="py-12 text-center text-muted-foreground text-xs">
                                 No customer credit accounts found.
                             </td>
                         </tr>
@@ -156,7 +155,7 @@
             </table>
         </div>
         @if($customers->hasPages())
-            <div class="px-6 py-4 border-t border-zinc-200 dark:border-zinc-800">
+            <div class="px-6 py-4 border-t border-border">
                 {{ $customers->links() }}
             </div>
         @endif
@@ -256,7 +255,7 @@
         </x-slot:footer>
     </x-ui.modal>
 
-    <!-- Modal Riwayat Audit Kredit -->
+    <!-- Credit Audit Trail Modal -->
     <x-ui.modal wire:model="showLogsModal" maxWidth="3xl">
         <x-slot:title>
             @if($selectedCustomer)

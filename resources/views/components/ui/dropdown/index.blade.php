@@ -137,7 +137,7 @@
             x-cloak
             class="w-max">
             @if (isset($menu))
-                <div {{ $menu->attributes->twMerge('min-w-44 overflow-hidden rounded-medium border border-border bg-popover p-1 text-popover-foreground shadow-lg$matchWidth ? ' w-full' : '')) }}>
+                <div {{ $menu->attributes->twMerge('min-w-44 overflow-hidden rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg ' . ($matchWidth ? 'w-full' : '')) }}>
                     {{ $menu }}
                 </div>
             @else

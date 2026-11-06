@@ -4,17 +4,17 @@
         <div>
             <h1 class="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
                 <span class="material-symbols-rounded text-indigo-600 text-[28px]">campaign</span>
-                Kampanye Promosi & Diskon Otomatis
+                Promotion Campaigns & Automated Discounts
             </h1>
             <p class="text-sm text-gray-500 mt-1">
-                Kelola strategi promosi multi-tipe (Diskon Otomatis, Buy X Get Y, Paket Bundle, dan Happy Hour) dengan proteksi simulasi marjin.
+                Manage multi-type promotion strategies (Automated Discounts, Buy X Get Y, Bundles, and Happy Hour) with gross margin simulation protections.
             </p>
         </div>
         <div class="flex items-center gap-2">
             <button wire:click="openCreateModal"
                 class="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors">
                 <span class="material-symbols-rounded text-[18px]">add</span>
-                Buat Promosi Baru
+                Create Campaign
             </button>
         </div>
     </div>
@@ -33,27 +33,27 @@
                 <span class="material-symbols-rounded text-[18px]">search</span>
             </span>
             <input type="text" wire:model.live.debounce.300ms="search"
-                placeholder="Cari nama atau kode promosi..."
+                placeholder="Search by promotion name or code..."
                 class="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-indigo-500 focus:ring-0 outline-none transition-colors" />
         </div>
 
         <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
             <select wire:model.live="typeFilter"
                 class="text-xs font-semibold px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 outline-none focus:bg-white focus:border-indigo-500">
-                <option value="ALL">Semua Tipe Promosi</option>
-                <option value="AUTOMATIC_DISCOUNT">Diskon Otomatis</option>
+                <option value="ALL">All Promotion Types</option>
+                <option value="AUTOMATIC_DISCOUNT">Automatic Discount</option>
                 <option value="BUY_X_GET_Y">Buy X Get Y (BXGY)</option>
-                <option value="BUNDLE_PACKAGE">Paket Bundle</option>
+                <option value="BUNDLE_PACKAGE">Bundle Package</option>
                 <option value="HAPPY_HOUR">Happy Hour</option>
             </select>
 
             <select wire:model.live="statusFilter"
                 class="text-xs font-semibold px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 outline-none focus:bg-white focus:border-indigo-500">
-                <option value="ALL">Semua Status</option>
-                <option value="ACTIVE">Aktif</option>
-                <option value="PAUSED">Ditangguhkan (Paused)</option>
-                <option value="DRAFT">Draf</option>
-                <option value="EXPIRED">Kedaluwarsa</option>
+                <option value="ALL">All Statuses</option>
+                <option value="ACTIVE">Active</option>
+                <option value="PAUSED">Paused</option>
+                <option value="DRAFT">Draft</option>
+                <option value="EXPIRED">Expired</option>
             </select>
         </div>
     </div>
@@ -64,12 +64,12 @@
             <table class="w-full text-left text-sm text-gray-700 divide-y divide-gray-200">
                 <thead class="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
                     <tr>
-                        <th class="px-6 py-3.5">Kode & Nama Promosi</th>
-                        <th class="px-6 py-3.5">Tipe & Jadwal</th>
-                        <th class="px-6 py-3.5">Prioritas</th>
-                        <th class="px-6 py-3.5">Kuota / Terpakai</th>
+                        <th class="px-6 py-3.5">Code & Campaign Name</th>
+                        <th class="px-6 py-3.5">Type & Schedule</th>
+                        <th class="px-6 py-3.5">Priority</th>
+                        <th class="px-6 py-3.5">Quota / Used</th>
                         <th class="px-6 py-3.5">Status</th>
-                        <th class="px-6 py-3.5 text-right">Aksi</th>
+                        <th class="px-6 py-3.5 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -100,45 +100,36 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-xs font-medium text-gray-600">
-                                <div>Terpakai: <span class="font-bold text-gray-900">{{ $campaign->current_usage_count }}</span></div>
-                                <div class="text-gray-400 text-[11px]">Batas: {{ $campaign->max_usage_limit ?: 'Tak Terbatas' }}</div>
+                                <div>Used: <span class="font-bold text-gray-900">{{ $campaign->current_usage_count }}</span></div>
+                                <div class="text-gray-400 text-[11px]">Limit: {{ $campaign->max_usage_limit ?: 'Unlimited' }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                @if ($campaign->status === 'ACTIVE')
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">AKTIF</span>
-                                @elseif ($campaign->status === 'PAUSED')
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">PAUSED</span>
-                                @elseif ($campaign->status === 'DRAFT')
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600">DRAFT</span>
-                                @else
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">{{ $campaign->status }}</span>
-                                @endif
+                                <x-ui.badge :variant="strtolower($campaign->status)">
+                                    {{ $campaign->status }}
+                                </x-ui.badge>
                             </td>
-                            <td class="px-6 py-4 text-right space-x-1">
-                                <button type="button" wire:click="triggerMarginSimulation({{ $campaign->id }})"
-                                    title="Simulasi Marjin Kotor"
-                                    class="p-1.5 text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 rounded-lg transition-colors">
-                                    <span class="material-symbols-rounded text-[20px]">show_chart</span>
-                                </button>
-                                <button type="button" wire:click="openEditModal({{ $campaign->id }})"
-                                    title="Edit Kampanye"
-                                    class="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-                                    <span class="material-symbols-rounded text-[20px]">edit</span>
-                                </button>
-                                <button type="button" wire:click="toggleStatus({{ $campaign->id }})"
-                                    title="Ubah Status"
-                                    class="p-1.5 {{ $campaign->status === 'ACTIVE' ? 'text-amber-600 hover:text-amber-800 hover:bg-amber-50' : 'text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50' }} rounded-lg transition-colors">
-                                    <span class="material-symbols-rounded text-[20px]">
-                                        {{ $campaign->status === 'ACTIVE' ? 'pause_circle' : 'play_circle' }}
-                                    </span>
-                                </button>
+                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="show_chart" wire:click="triggerMarginSimulation({{ $campaign->id }})">
+                                        Margin Simulation
+                                    </x-ui.table-action-item>
+                                    <x-ui.table-action-item icon="edit" wire:click="openEditModal({{ $campaign->id }})">
+                                        Edit Campaign
+                                    </x-ui.table-action-item>
+                                    <x-ui.table-action-item
+                                        icon="{{ $campaign->status === 'ACTIVE' ? 'pause_circle' : 'play_circle' }}"
+                                        wire:click="toggleStatus({{ $campaign->id }})"
+                                    >
+                                        {{ $campaign->status === 'ACTIVE' ? 'Pause Campaign' : 'Activate Campaign' }}
+                                    </x-ui.table-action-item>
+                                </x-ui.table-actions>
                             </td>
                         </tr>
                     @empty
                         <tr>
                             <td colspan="6" class="px-6 py-12 text-center text-gray-400">
                                 <span class="material-symbols-rounded text-[40px] text-gray-300 block mb-2">campaign</span>
-                                Belum ada kampanye promosi yang terdaftar.
+                                No promotion campaigns registered yet.
                             </td>
                         </tr>
                     @endforelse
@@ -156,7 +147,7 @@
             <div class="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl border border-gray-100">
                 <div class="flex items-center justify-between pb-3 border-b border-gray-100">
                     <h3 class="text-lg font-bold text-gray-900">
-                        {{ $editingCampaignId ? 'Ubah Kampanye Promosi' : 'Buat Kampanye Promosi Baru' }}
+                        {{ $editingCampaignId ? 'Edit Promotion Campaign' : 'Create Promotion Campaign' }}
                     </h3>
                     <button wire:click="$set('isFormModalOpen', false)" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">
                         <span class="material-symbols-rounded">close</span>
@@ -166,54 +157,54 @@
                 <form wire:submit="save" class="space-y-4">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Kode Promosi</label>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Campaign Code</label>
                             <input type="text" wire:model="campaignCode" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl uppercase font-mono" required />
                             @error('campaignCode') <span class="text-rose-600 text-xs">{{ $message }}</span> @enderror
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Nama Promosi</label>
-                            <input type="text" wire:model="name" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl" placeholder="Contoh: Diskon Kemerdekaan" required />
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Campaign Name</label>
+                            <input type="text" wire:model="name" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl" placeholder="e.g. Independence Day Special" required />
                             @error('name') <span class="text-rose-600 text-xs">{{ $message }}</span> @enderror
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Tipe Promosi</label>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Promotion Type</label>
                             <select wire:model.live="type" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl font-medium">
-                                <option value="AUTOMATIC_DISCOUNT">Diskon Otomatis Keranjang</option>
+                                <option value="AUTOMATIC_DISCOUNT">Automatic Cart Discount</option>
                                 <option value="BUY_X_GET_Y">Buy X Get Y (BXGY)</option>
-                                <option value="BUNDLE_PACKAGE">Paket Bundle</option>
-                                <option value="HAPPY_HOUR">Happy Hour (Jadwal Khusus)</option>
+                                <option value="BUNDLE_PACKAGE">Bundle Package</option>
+                                <option value="HAPPY_HOUR">Happy Hour (Time-Based)</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Prioritas Evaluasi (1-100)</label>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Evaluation Priority (1-100)</label>
                             <input type="number" wire:model="priority" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl" min="1" max="100" />
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Mulai Berlaku</label>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Start Date & Time</label>
                             <input type="datetime-local" wire:model="startDatetime" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl" required />
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Berakhir Pada</label>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">End Date & Time</label>
                             <input type="datetime-local" wire:model="endDatetime" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl" required />
                         </div>
                     </div>
 
                     @if ($type === 'HAPPY_HOUR')
                         <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl space-y-3">
-                            <span class="text-xs font-bold text-amber-900 block">Pengaturan Jadwal Happy Hour</span>
+                            <span class="text-xs font-bold text-amber-900 block">Happy Hour Schedule Settings</span>
                             <div class="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label class="block text-[11px] font-semibold text-amber-800 mb-1">Jam Mulai</label>
+                                    <label class="block text-[11px] font-semibold text-amber-800 mb-1">Start Time</label>
                                     <input type="time" wire:model="startTime" class="w-full text-xs px-2.5 py-1.5 bg-white border border-amber-300 rounded-lg" />
                                 </div>
                                 <div>
-                                    <label class="block text-[11px] font-semibold text-amber-800 mb-1">Jam Selesai</label>
+                                    <label class="block text-[11px] font-semibold text-amber-800 mb-1">End Time</label>
                                     <input type="time" wire:model="endTime" class="w-full text-xs px-2.5 py-1.5 bg-white border border-amber-300 rounded-lg" />
                                 </div>
                             </div>
@@ -221,28 +212,28 @@
                     @endif
 
                     <div class="p-3 bg-gray-50 border border-gray-200 rounded-xl space-y-3">
-                        <span class="text-xs font-bold text-gray-800 block">Besaran Diskon & Syarat</span>
+                        <span class="text-xs font-bold text-gray-800 block">Discount Value & Requirements</span>
                         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                             <div>
-                                <label class="block text-[11px] font-semibold text-gray-700 mb-1">Tipe Diskon</label>
+                                <label class="block text-[11px] font-semibold text-gray-700 mb-1">Discount Type</label>
                                 <select wire:model.live="rewardType" class="w-full text-xs px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg font-medium">
-                                    <option value="PERCENTAGE_DISCOUNT">Persentase (%)</option>
-                                    <option value="FIXED_AMOUNT_DISCOUNT">Nominal Tetap (Rp)</option>
+                                    <option value="PERCENTAGE_DISCOUNT">Percentage (%)</option>
+                                    <option value="FIXED_AMOUNT_DISCOUNT">Fixed Amount (Rp)</option>
                                 </select>
                             </div>
                             @if ($rewardType === 'PERCENTAGE_DISCOUNT')
                                 <div>
-                                    <label class="block text-[11px] font-semibold text-gray-700 mb-1">Diskon (%)</label>
+                                    <label class="block text-[11px] font-semibold text-gray-700 mb-1">Discount (%)</label>
                                     <input type="number" step="0.01" wire:model="discountPercentage" class="w-full text-xs px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg" />
                                 </div>
                                 <div>
-                                    <label class="block text-[11px] font-semibold text-gray-700 mb-1">Maks Diskon (Rp)</label>
-                                    <input type="number" wire:model="maxDiscountAmount" class="w-full text-xs px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg" placeholder="Opsional" />
+                                    <label class="block text-[11px] font-semibold text-gray-700 mb-1">Max Discount (Rp)</label>
+                                    <input type="number" wire:model="maxDiscountAmount" class="w-full text-xs px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg" placeholder="Optional" />
                                 </div>
                             @else
                                 <div class="sm:col-span-2">
-                                    <label class="block text-[11px] font-semibold text-gray-700 mb-1">Nominal Diskon (Rp)</label>
-                                    <input type="number" wire:model="discountFixedAmount" class="w-full text-xs px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg" placeholder="Contoh: 15000" />
+                                    <label class="block text-[11px] font-semibold text-gray-700 mb-1">Discount Amount (Rp)</label>
+                                    <input type="number" wire:model="discountFixedAmount" class="w-full text-xs px-2.5 py-1.5 bg-white border border-gray-300 rounded-lg" placeholder="e.g. 15000" />
                                 </div>
                             @endif
                         </div>
@@ -251,11 +242,11 @@
                     <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
                         <button type="button" wire:click="$set('isFormModalOpen', false)"
                             class="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
-                            Batal
+                            Cancel
                         </button>
                         <button type="submit"
                             class="px-5 py-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-xl shadow-sm transition-colors">
-                            Simpan Kampanye
+                            Save Campaign
                         </button>
                     </div>
                 </form>
@@ -263,6 +254,6 @@
         </div>
     @endif
 
-    {{-- Livewire Modal Simulasi Marjin --}}
+    {{-- Margin Simulation Modal --}}
     <livewire:pricing.margin-simulation-modal />
 </div>

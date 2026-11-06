@@ -1,5 +1,5 @@
 <x-app-layout :noPadding="true">
-    <div class="w-full min-h-full flex flex-col flex-1 p-4 sm:p-6 lg:p-8 gap-6 bg-background text-foreground">
+    <div class="w-full min-h-full flex flex-col flex-1 p-4 sm:p-6 lg:p-8 gap-6 bg-transparent text-foreground">
 
         {{-- FLASH SESSION NOTIFICATIONS --}}
         @if (session('success'))
@@ -12,58 +12,67 @@
             <x-ui.alert type="warning" dismissible>{{ session('warning') }}</x-ui.alert>
         @endif
 
-        {{-- 1. TOP HEADER & ACTIONS (x-erp.page-header) --}}
-        <x-erp.page-header
-            title="Dashboard"
-            :description="'Welcome back, ' . (auth()->user()?->name ?? 'User')"
-            class="pb-4 border-b border-border mb-0"
-        >
-            <x-slot:actions>
-                <a href="{{ route('transaction.create') }}" wire:navigate>
-                    <x-ui.button variant="primary" size="sm">
-                        <x-ui.icon name="receipt_long" size="sm" />
-                        <span>New Order</span>
-                    </x-ui.button>
-                </a>
-                <a href="{{ route('products.index') }}" wire:navigate>
-                    <x-ui.button variant="outline" size="sm">
-                        <x-ui.icon name="inventory_2" size="sm" />
-                        <span>Manage Products</span>
-                    </x-ui.button>
-                </a>
-            </x-slot:actions>
-        </x-erp.page-header>
+        {{-- 1. TOP HEADER & ACTIONS (DEMURE Luxury Canvas Header Reference) --}}
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-2 mb-2">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground">
+                    Dashboard
+                </h1>
+                <p class="text-xs text-muted-foreground mt-0.5">
+                    Welcome back, {{ auth()->user()?->name ?? 'User' }} · {{ auth()->user()?->tenant?->name ?? 'Apeiron Enterprise' }}
+                </p>
+            </div>
 
-        {{-- 2. TOP 3 KPI CARDS (x-erp.stat-card) --}}
+            <div class="flex items-center gap-3 sm:gap-4 flex-wrap">
+                {{-- DEMURE Sub-Nav Action Text Links --}}
+                <div class="hidden xl:flex items-center gap-4 text-xs font-medium text-muted-foreground pr-3 border-r border-border/80">
+                    <a href="{{ route('inventory.goods-receipts') }}" wire:navigate class="hover:text-foreground transition-colors">Stock In/Out</a>
+                    <a href="{{ route('sales.orders.index') }}" wire:navigate class="hover:text-foreground transition-colors">Sales Orders</a>
+                    <a href="{{ route('products.index') }}" wire:navigate class="hover:text-foreground transition-colors">Product Catalog</a>
+                    <a href="{{ route('customers.index') }}" wire:navigate class="hover:text-foreground transition-colors">Buyers &amp; CRM</a>
+                </div>
+
+                {{-- DEMURE Dark Action Pill Buttons --}}
+                <a href="{{ route('orders.index') }}" wire:navigate
+                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-primary-foreground bg-primary hover:opacity-90 shadow-xs active:scale-95 transition-all">
+                    <span class="material-symbols-rounded text-[17px]">receipt_long</span>
+                    <span>All Orders</span>
+                </a>
+                <a href="{{ route('transaction.create') }}" wire:navigate
+                   class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-primary-foreground bg-primary hover:opacity-90 shadow-xs active:scale-95 transition-all">
+                    <span class="material-symbols-rounded text-[17px]">point_of_sale</span>
+                    <span>POS Terminal</span>
+                </a>
+            </div>
+        </div>
+
+        {{-- 2. TOP 3 KPI CARDS (DEMURE Pure Minimalist Cards) --}}
         <section class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6" aria-label="Primary Orders Summary">
             {{-- Card 1: Today's Orders --}}
             <x-erp.stat-card
                 label="Today's Orders"
-                hint="Total pendapatan hari ini"
+                hint="Today's total revenue"
                 :value="$displayTodayOrders"
                 delta="+1.9%"
                 delta-variant="positive"
-                icon="receipt_long"
             />
 
             {{-- Card 2: This Week's Orders --}}
             <x-erp.stat-card
                 label="This Week's Orders"
-                hint="Total transaksi minggu ini"
+                hint="This week's total transactions"
                 :value="$displayWeekOrders"
                 delta="-8.1%"
                 delta-variant="negative"
-                icon="calendar_view_week"
             />
 
             {{-- Card 3: This Month's Orders --}}
             <x-erp.stat-card
                 label="This Month's Orders"
-                hint="Terjual bulan ini"
+                hint="Sold this month"
                 :value="number_format($displayMonthOrders, 0, ',', '.')"
                 delta="+24%"
                 delta-variant="positive"
-                icon="calendar_month"
             />
         </section>
 
@@ -184,11 +193,11 @@
                         <div class="text-2xl sm:text-3xl font-extrabold text-foreground tracking-tight numeric" x-text="periodTotalFormatted">
                             Rp {{ number_format($totalEarnings, 0, ',', '.') }}
                         </div>
-                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-success-muted text-success border border-success-border">
                             <span class="material-symbols-rounded text-[15px]">trending_up</span> +1.9%
                         </span>
                     </div>
-                    <div class="text-xs text-muted-foreground mt-1 font-mono numeric" x-text="periodVolumeText">
+                    <div class="text-xs text-muted-foreground mt-1 tabular-nums numeric" x-text="periodVolumeText">
                         {{ number_format($totalEarnings, 0, ',', '.') }} IDR · Real-Time Volume
                     </div>
                 </div>
@@ -199,14 +208,14 @@
                     <div class="flex items-center gap-1 bg-muted p-1 rounded-lg border border-border">
                         <button type="button"
                             @click="chartType = 'bar'"
-                            :class="chartType === 'bar' ? 'bg-card text-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'"
+                            :class="chartType === 'bar' ? 'bg-card text-foreground shadow-2xs font-semibold' : 'text-muted-foreground hover:text-foreground'"
                             class="w-8 h-8 rounded-md flex items-center justify-center cursor-pointer transition-all"
                             title="Bar Chart" aria-label="Switch to Bar Chart">
                             <span class="material-symbols-rounded text-[18px]">bar_chart</span>
                         </button>
                         <button type="button"
                             @click="chartType = 'spline'"
-                            :class="chartType === 'spline' ? 'bg-card text-foreground shadow-2xs' : 'text-muted-foreground hover:text-foreground'"
+                            :class="chartType === 'spline' ? 'bg-card text-foreground shadow-2xs font-semibold' : 'text-muted-foreground hover:text-foreground'"
                             class="size-8 rounded-md flex items-center justify-center cursor-pointer transition-all"
                             title="Spline Chart" aria-label="Switch to Spline Chart">
                             <span class="material-symbols-rounded text-[18px]">show_chart</span>
@@ -217,19 +226,19 @@
                     <div class="inline-flex items-center bg-muted p-1 rounded-lg border border-border text-xs font-medium">
                         <button type="button"
                             @click="period = 'monthly'; hoveredBar = null"
-                            :class="period === 'monthly' ? 'bg-card text-foreground font-semibold shadow-2xs' : 'text-muted-foreground hover:text-foreground'"
+                            :class="period === 'monthly' ? 'bg-primary text-primary-foreground font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground'"
                             class="px-3 py-1.5 rounded-md transition-all cursor-pointer">
                             Monthly
                         </button>
                         <button type="button"
                             @click="period = 'weekly'; hoveredBar = null"
-                            :class="period === 'weekly' ? 'bg-card text-foreground font-semibold shadow-2xs' : 'text-muted-foreground hover:text-foreground'"
+                            :class="period === 'weekly' ? 'bg-primary text-primary-foreground font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground'"
                             class="px-3 py-1.5 rounded-md transition-all cursor-pointer">
                             Weekly
                         </button>
                         <button type="button"
                             @click="period = 'yearly'; hoveredBar = null"
-                            :class="period === 'yearly' ? 'bg-card text-foreground font-semibold shadow-2xs' : 'text-muted-foreground hover:text-foreground'"
+                            :class="period === 'yearly' ? 'bg-primary text-primary-foreground font-semibold shadow-xs' : 'text-muted-foreground hover:text-foreground'"
                             class="px-3 py-1.5 rounded-md transition-all cursor-pointer">
                             Yearly
                         </button>
@@ -261,9 +270,9 @@
                                  :title="`${bar.label}: ${bar.formatted} (${bar.count} tx)`">
                                 
                                 {{-- Bar Element --}}
-                                <div class="w-full rounded-t-sm transition-all duration-200 group-hover:opacity-80"
-                                     :style="`height: ${bar.height}%; ${ (activeIndex === idx) ? 'background: repeating-linear-gradient(45deg, currentColor, currentColor 3px, transparent 3px, transparent 6px); border: 1.5px solid currentColor;' : 'background-color: currentColor;' }`"
-                                     :class="activeIndex === idx ? 'text-primary' : 'text-primary/70'">
+                                <div class="w-full rounded-t-md transition-all duration-200"
+                                     :style="`height: ${bar.height}%;`"
+                                     :class="activeIndex === idx ? 'bg-primary ring-2 ring-primary ring-offset-2 ring-offset-card' : 'bg-primary group-hover:opacity-80'">
                                 </div>
                             </div>
                         </template>
@@ -305,10 +314,9 @@
                             <path :d="splinePaths.line" fill="none" stroke="currentColor" class="text-primary" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
 
                             {{-- Interactive Data Dots.
-                                 Alpine tidak dapat mengoper x-for di dalam subtree SVG secara
-                                 andal (atribut binding tidak diproses), sehingga lingkaran
-                                 dirender server-side dan hanya reveal/hover yang Alpine.
-                                 Koordinat dihitung ulang oleh x-effect saat periode berubah. --}}
+                                 Alpine cannot reliably handle x-for inside an SVG subtree
+                                 (attribute bindings are not processed), so circles
+                                 are updated dynamically via x-effect when the period changes. --}}
                             <g x-ref="splineDots" x-effect="renderDots(splinePaths.points)"></g>
                         </svg>
                     </div>
@@ -337,11 +345,11 @@
                         <div class="text-xl sm:text-2xl font-bold text-foreground tracking-tight numeric">
                             Rp {{ number_format($quarterEarnings, 0, ',', '.') }}
                         </div>
-                        <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800">
+                        <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-destructive-muted text-destructive border border-destructive-border">
                             <span class="material-symbols-rounded text-[13px]">trending_down</span> {{ $quarterDeltaPercent }}%
                         </span>
                     </div>
-                    <div class="text-[11px] text-muted-foreground mt-0.5 font-mono">
+                    <div class="text-[11px] text-muted-foreground mt-0.5 tabular-nums">
                         144,094,882 IDR · Quarterly Target
                     </div>
                 </div>
@@ -350,7 +358,7 @@
                 <div class="grid grid-cols-4 gap-3 items-end h-32 pt-6 mt-4 border-t border-border/60">
                     @foreach($quarterBars as $qb)
                         <div class="flex flex-col items-center justify-end h-full group">
-                            <div class="w-full rounded-t-sm transition-all duration-200 {{ $qb['is_current'] ? 'bg-primary' : 'bg-muted group-hover:bg-muted-foreground/20' }}"
+                            <div class="w-full rounded-t-md transition-all duration-200 {{ $qb['is_current'] ? 'bg-primary ring-2 ring-primary ring-offset-2 ring-offset-card' : 'bg-primary group-hover:opacity-80' }}"
                                  style="height: {{ $qb['percent'] }}%;"></div>
                             <span class="text-[11px] font-semibold mt-2 {{ $qb['is_current'] ? 'text-foreground' : 'text-muted-foreground' }}">{{ $qb['quarter'] }}</span>
                         </div>
@@ -362,16 +370,16 @@
             <div class="card-surface rounded-xl border border-border p-5 shadow-xs flex flex-col justify-between hover:border-border-strong transition-all">
                 <div class="flex items-start justify-between">
                     <div>
-                        <div class="text-xs sm:text-sm font-medium text-muted-foreground">Logistics & Raw Materials <span class="sr-only">Stok tipis</span></div>
+                        <div class="text-xs sm:text-sm font-medium text-muted-foreground">Logistics & Raw Materials <span class="sr-only">Low stock alerts</span></div>
                         <div class="flex items-center gap-2.5 mt-1.5">
                             <div class="text-xl sm:text-2xl font-bold text-foreground tracking-tight numeric">
                                 {{ $lowStockCount }} Critical Items
                             </div>
-                            <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                            <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-success-muted text-success border border-success-border">
                                 <span class="material-symbols-rounded text-[13px]">trending_up</span> +2.1%
                             </span>
                         </div>
-                        <div class="text-[11px] text-muted-foreground mt-0.5 font-mono">
+                        <div class="text-[11px] text-muted-foreground mt-0.5 tabular-nums">
                             {{ $productsCount }} Monitored Products
                         </div>
                     </div>
@@ -393,7 +401,7 @@
                         </defs>
                         <path d="M 0,85 Q 50,40 100,75 T 200,35 T 300,55 L 300,100 L 0,100 Z" fill="url(#logisticsGradient)" />
                         <path d="M 0,85 Q 50,40 100,75 T 200,35 T 300,55" fill="none" stroke="currentColor" class="text-primary" stroke-width="2" stroke-linecap="round" />
-                        <circle cx="200" cy="35" r="4.5" fill="currentColor" class="text-primary" stroke="var(--color-card, #ffffff)" stroke-width="1.5" />
+                        <circle cx="200" cy="35" r="4.5" fill="currentColor" class="text-primary" stroke="var(--card)" stroke-width="1.5" />
                     </svg>
                 </div>
             </div>
@@ -402,16 +410,16 @@
             <div class="card-surface rounded-xl border border-border p-5 shadow-xs flex flex-col justify-between hover:border-border-strong transition-all">
                 <div class="flex items-start justify-between">
                     <div>
-                        <div class="text-xs sm:text-sm font-medium text-muted-foreground">Transaction Channels <span class="sr-only">Metode pembayaran</span></div>
+                        <div class="text-xs sm:text-sm font-medium text-muted-foreground">Transaction Channels <span class="sr-only">Payment methods</span></div>
                         <div class="flex items-center gap-2.5 mt-1.5">
                             <div class="text-xl sm:text-2xl font-bold text-foreground tracking-tight numeric">
                                 {{ number_format($totalPaidOrders, 0, ',', '.') }} Transactions
                             </div>
-                            <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                            <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-success-muted text-success border border-success-border">
                                 <span class="material-symbols-rounded text-[13px]">trending_up</span> +0.4%
                             </span>
                         </div>
-                        <div class="text-[11px] text-muted-foreground mt-0.5 font-mono">
+                        <div class="text-[11px] text-muted-foreground mt-0.5 tabular-nums">
                             QRIS {{ $paymentBreakdown['qris']['percent'] ?? 0 }}% · Cash {{ $paymentBreakdown['cash']['percent'] ?? 0 }}%
                         </div>
                     </div>
@@ -427,7 +435,7 @@
                     <svg class="w-full h-full overflow-visible" viewBox="0 0 300 100" preserveAspectRatio="none">
                         <path d="M 0,90 C 70,85 120,40 180,60 C 230,75 260,20 300,45" fill="none" stroke="currentColor" class="text-border" stroke-width="2" stroke-linecap="round" />
                         <path d="M 0,80 C 60,70 120,30 180,50 C 220,65 260,15 300,35" fill="none" stroke="currentColor" class="text-primary" stroke-width="2.5" stroke-linecap="round" />
-                        <circle cx="180" cy="50" r="5" fill="currentColor" class="text-primary" stroke="var(--color-card, #ffffff)" stroke-width="2" />
+                        <circle cx="180" cy="50" r="5" fill="currentColor" class="text-primary" stroke="var(--card)" stroke-width="2" />
                     </svg>
                 </div>
             </div>
@@ -477,13 +485,13 @@
                                 </div>
                             </div>
                             <div class="text-right shrink-0">
-                                <div class="font-bold text-xs text-foreground font-mono tabular-nums numeric">Rp {{ number_format($order->order_amount, 0, ',', '.') }}</div>
+                                <div class="font-bold text-xs text-foreground tabular-nums numeric">Rp {{ number_format($order->order_amount, 0, ',', '.') }}</div>
                                 @if($statusVal === 'paid' || $statusVal === 'completed')
-                                    <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">Paid <span class="sr-only">Lunas</span></span>
+                                    <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-success-muted text-success border border-success-border">Paid <span class="sr-only">Lunas</span></span>
                                 @elseif($statusVal === 'pending')
-                                    <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border border-amber-200 dark:border-amber-800">Pending</span>
+                                    <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-warning-muted text-warning border border-warning-border">Pending</span>
                                 @else
-                                    <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 border border-rose-200 dark:border-rose-800">Cancelled</span>
+                                    <span class="inline-block mt-0.5 px-2 py-0.5 rounded text-[10px] font-semibold bg-destructive-muted text-destructive border border-destructive-border">Cancelled</span>
                                 @endif
                             </div>
                         </div>
@@ -512,11 +520,11 @@
                         <div class="p-3 rounded-lg border border-border hover:border-border-strong transition-colors">
                             <div class="flex items-center justify-between text-xs mb-1.5">
                                 <span class="font-semibold text-foreground">{{ $item['name'] }}</span>
-                                <span class="font-mono text-[11px] font-semibold" style="color: {{ $item['trend_color'] }}">{{ $item['days_label'] }} ({{ $item['trend_label'] }})</span>
+                                <span class="tabular-nums text-[11px] font-semibold" style="color: {{ $item['trend_color'] }}">{{ $item['days_label'] }} ({{ $item['trend_label'] }})</span>
                             </div>
                             <div class="w-full bg-muted rounded-full h-1.5 overflow-hidden">
                                 <div class="h-full rounded-full transition-all duration-300"
-                                     style="width: {{ $item['progress_percent'] }}%; background-color: {{ $item['trend'] === 'falling' ? 'var(--color-destructive, #e11d48)' : 'var(--color-primary, #18181b)' }};"></div>
+                                     style="width: {{ $item['progress_percent'] }}%; background-color: {{ $item['trend'] === 'falling' ? 'var(--destructive)' : 'var(--primary)' }};"></div>
                             </div>
                         </div>
                     @empty

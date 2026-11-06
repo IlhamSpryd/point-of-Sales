@@ -8,7 +8,7 @@
     <div class="space-y-6" data-gsap="page-enter">
         <!-- Header -->
         <x-erp.page-header
-            title="Branch Assortments & Price Overrides (Asortimen Cabang)"
+            title="Branch Assortments & Price Overrides"
             description="Configure branch-level product availability and branch-specific pricing without duplicating master catalog records.">
             <x-slot:breadcrumbs>
                 <x-ui.breadcrumbs.item href="{{ route('dashboard') }}">Dashboard</x-ui.breadcrumbs.item>
@@ -42,22 +42,22 @@
             </x-ui.alert>
         @endif
 
-        <div class="card-surface overflow-hidden rounded-2xl border border-border dark:border-zinc-800 shadow-xs">
+        <div class="card-surface overflow-hidden rounded-xl border border-border shadow-xs">
             <div class="overflow-x-auto">
                 <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="border-b border-border dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                            <th class="px-6 py-4">Product</th>
-                            <th class="px-6 py-4">Category</th>
-                            <th class="px-6 py-4 text-right">Base Price</th>
-                            <th class="px-6 py-4 text-center">Available in Branch</th>
-                            <th class="px-6 py-4 text-right">Branch Price Override</th>
+                        <tr class="border-b border-border bg-muted/30 text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
+                            <th class="px-6 py-3.5">Product</th>
+                            <th class="px-6 py-3.5">Category</th>
+                            <th class="px-6 py-3.5 text-right">Base Price</th>
+                            <th class="px-6 py-3.5 text-center">Available in Branch</th>
+                            <th class="px-6 py-3.5 text-right">Branch Price Override</th>
                             @if($canManage)
-                                <th class="px-6 py-4 text-right">Save</th>
+                                <th class="px-6 py-3.5 text-right">Save</th>
                             @endif
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-border dark:divide-zinc-800/70">
+                    <tbody class="divide-y divide-border">
                         @forelse($products as $prod)
                             @php
                                 $assortment = $prod->storeAssortments->first();
@@ -67,8 +67,8 @@
                             <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
-                                        @if($prod->product_photo)
-                                            <img src="{{ asset('storage/' . $prod->product_photo) }}" alt="{{ $prod->product_name }}" class="w-10 h-10 rounded-xl object-cover border border-zinc-200 dark:border-zinc-700">
+                                        @if($prod->photo_url)
+                                            <img src="{{ $prod->photo_url }}" alt="{{ $prod->product_name }}" class="w-10 h-10 rounded-xl object-cover border border-zinc-200 dark:border-zinc-700">
                                         @else
                                             <div class="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400">
                                                 <span class="material-symbols-rounded">inventory_2</span>
@@ -105,7 +105,7 @@
                                         </label>
                                     </td>
 
-                                    <!-- Override Harga Cabang -->
+                                    <!-- Branch Price Override -->
                                     <td class="px-6 py-4 text-right">
                                         <input type="number" name="store_price_override" value="{{ $overridePrice }}" step="0.01" min="0"
                                             form="form-assortment-{{ $prod->id }}"
@@ -113,7 +113,7 @@
                                             class="w-48 inline-block text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2 text-right font-mono tabular-nums text-zinc-800 dark:text-zinc-100 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
                                     </td>
 
-                                    <!-- Tombol Simpan Baris -->
+                                    <!-- Save Row Button -->
                                     <td class="px-6 py-4 text-right">
                                         <x-ui.button variant="secondary" size="xs" type="submit" form="form-assortment-{{ $prod->id }}">
                                             Save
@@ -135,8 +135,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ $canManage ? 6 : 5 }}" class="px-6 py-12 text-center text-zinc-400">
-                                    <span class="material-symbols-rounded text-4xl block mb-2">storefront</span>
+                                <td colspan="{{ $canManage ? 6 : 5 }}" class="px-6 py-12 text-center text-muted-foreground text-xs">
                                     No products found for this branch.
                                 </td>
                             </tr>

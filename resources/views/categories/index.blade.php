@@ -44,7 +44,7 @@
 
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-                <h4 class="text-xl font-bold text-foreground tracking-tight">Categories & Subcategories <span class="text-sm font-normal text-muted-foreground">(Kategori & Sub-Kategori)</span></h4>
+                <h4 class="text-xl font-bold text-foreground tracking-tight">Categories & Subcategories</h4>
                 <p class="text-sm font-medium text-muted-foreground mt-1">Manage commodity classification hierarchies and product taxonomy</p>
             </div>
             
@@ -110,16 +110,18 @@
                             @endif
                         </td>
                         @if($canManage)
-                            <td class="px-6 py-4 text-right space-x-2">
-                                <button type="button" @click="openEdit({{ json_encode($category) }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-primary hover:text-primary/80 hover:bg-muted transition-colors duration-200 active:scale-90" aria-label="Edit category">
-                                    <span class="material-symbols-rounded text-[20px]">edit</span>
-                                </button>
-                                <form id="delete-form-{{ $category->id }}" action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline-block">
+                            <td class="px-6 py-4 text-right">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="edit" @click="openEdit({{ json_encode($category) }})">
+                                        Edit
+                                    </x-ui.table-action-item>
+                                    <x-ui.table-action-item icon="delete" variant="destructive" onclick="confirmSubmit('delete-form-{{ $category->id }}', '{{ addslashes($category->category_name) }}')">
+                                        Delete
+                                    </x-ui.table-action-item>
+                                </x-ui.table-actions>
+                                <form id="delete-form-{{ $category->id }}" action="{{ route('categories.destroy', $category->id) }}" method="POST" class="hidden">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" onclick="confirmSubmit('delete-form-{{ $category->id }}', '{{ addslashes($category->category_name) }}')" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-lg text-destructive hover:text-destructive/80 hover:bg-destructive/10 transition-colors duration-200 active:scale-90" aria-label="Delete">
-                                        <span class="material-symbols-rounded text-[20px]">delete</span>
-                                    </button>
                                 </form>
                             </td>
                         @endif

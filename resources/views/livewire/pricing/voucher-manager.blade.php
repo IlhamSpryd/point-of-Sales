@@ -4,17 +4,17 @@
         <div>
             <h1 class="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
                 <span class="material-symbols-rounded text-blue-600 text-[28px]">confirmation_number</span>
-                Manajemen Kupon & Voucher Belanja
+                Promotional Coupons & Vouchers
             </h1>
             <p class="text-sm text-gray-500 mt-1">
-                Kelola voucher belanja transaksi, batas pemakaian per pelanggan, dan pelacakan kuota real-time dua fase.
+                Manage transaction vouchers, per-customer usage limits, and real-time quota tracking.
             </p>
         </div>
         <div class="flex items-center gap-2">
             <button wire:click="openCreateModal"
                 class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl shadow-sm transition-colors">
                 <span class="material-symbols-rounded text-[18px]">add</span>
-                Buat Voucher Baru
+                Create Voucher
             </button>
         </div>
     </div>
@@ -33,17 +33,17 @@
                 <span class="material-symbols-rounded text-[18px]">search</span>
             </span>
             <input type="text" wire:model.live.debounce.300ms="search"
-                placeholder="Cari kode atau nama voucher..."
+                placeholder="Search by voucher code or name..."
                 class="w-full pl-9 pr-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-0 outline-none transition-colors" />
         </div>
 
         <div class="flex items-center gap-2 w-full sm:w-auto">
             <select wire:model.live="statusFilter"
                 class="text-xs font-semibold px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 outline-none focus:bg-white focus:border-blue-500">
-                <option value="ALL">Semua Status</option>
-                <option value="ACTIVE">Aktif</option>
-                <option value="INACTIVE">Tidak Aktif</option>
-                <option value="EXPIRED">Kedaluwarsa / Kuota Habis</option>
+                <option value="ALL">All Statuses</option>
+                <option value="ACTIVE">Active</option>
+                <option value="INACTIVE">Inactive</option>
+                <option value="EXPIRED">Expired / Depleted</option>
             </select>
         </div>
     </div>
@@ -54,13 +54,13 @@
             <table class="w-full text-left text-sm text-gray-700 divide-y divide-gray-200">
                 <thead class="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
                     <tr>
-                        <th class="px-6 py-3.5">Kode & Nama Voucher</th>
-                        <th class="px-6 py-3.5">Nilai Diskon</th>
-                        <th class="px-6 py-3.5">Min. Belanja</th>
-                        <th class="px-6 py-3.5">Realisasi Kuota</th>
-                        <th class="px-6 py-3.5">Masa Berlaku</th>
+                        <th class="px-6 py-3.5">Code & Voucher Name</th>
+                        <th class="px-6 py-3.5">Discount Value</th>
+                        <th class="px-6 py-3.5">Min. Spend</th>
+                        <th class="px-6 py-3.5">Quota Usage</th>
+                        <th class="px-6 py-3.5">Validity Period</th>
                         <th class="px-6 py-3.5">Status</th>
-                        <th class="px-6 py-3.5 text-right">Aksi</th>
+                        <th class="px-6 py-3.5 text-right">Actions</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -82,7 +82,7 @@
                                 @if ($typeVal === 'PERCENTAGE')
                                     {{ (float) $voucher->discount_value }}%
                                     @if ($voucher->max_discount_amount)
-                                        <div class="text-[11px] font-normal text-gray-400">Maks Rp {{ number_format((float) $voucher->max_discount_amount, 0, ',', '.') }}</div>
+                                        <div class="text-[11px] font-normal text-gray-400">Max Rp {{ number_format((float) $voucher->max_discount_amount, 0, ',', '.') }}</div>
                                     @endif
                                 @else
                                     Rp {{ number_format((float) $voucher->discount_value, 0, ',', '.') }}
@@ -105,38 +105,32 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-xs text-gray-500">
-                                <div>{{ $voucher->starts_at ? \Carbon\Carbon::parse($voucher->starts_at)->format('d M Y') : 'Sekarang' }}</div>
-                                <div class="text-[11px] text-gray-400">s/d {{ $voucher->expires_at ? \Carbon\Carbon::parse($voucher->expires_at)->format('d M Y') : 'Selamanya' }}</div>
+                                <div>{{ $voucher->starts_at ? \Carbon\Carbon::parse($voucher->starts_at)->format('d M Y') : 'Now' }}</div>
+                                <div class="text-[11px] text-gray-400">to {{ $voucher->expires_at ? \Carbon\Carbon::parse($voucher->expires_at)->format('d M Y') : 'Unlimited' }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                @if ($statusVal === 'ACTIVE')
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">AKTIF</span>
-                                @elseif ($statusVal === 'INACTIVE')
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600">NON-AKTIF</span>
-                                @else
-                                    <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800">HABIS/EXPIRED</span>
-                                @endif
+                                <x-ui.badge :variant="strtolower($statusVal)">
+                                    {{ $statusVal }}
+                                </x-ui.badge>
                             </td>
-                            <td class="px-6 py-4 text-right space-x-1">
-                                <button type="button" wire:click="openEditModal({{ $voucher->id }})"
-                                    title="Edit Voucher"
-                                    class="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-                                    <span class="material-symbols-rounded text-[20px]">edit</span>
-                                </button>
-                                <button type="button" wire:click="toggleStatus({{ $voucher->id }})"
-                                    title="Ubah Status"
-                                    class="p-1.5 {{ $statusVal === 'ACTIVE' ? 'text-amber-600 hover:text-amber-800 hover:bg-amber-50' : 'text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50' }} rounded-lg transition-colors">
-                                    <span class="material-symbols-rounded text-[20px]">
-                                        {{ $statusVal === 'ACTIVE' ? 'pause_circle' : 'play_circle' }}
-                                    </span>
-                                </button>
+                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="edit" wire:click="openEditModal({{ $voucher->id }})">
+                                        Edit Voucher
+                                    </x-ui.table-action-item>
+                                    <x-ui.table-action-item
+                                        icon="{{ $statusVal === 'ACTIVE' ? 'pause_circle' : 'play_circle' }}"
+                                        wire:click="toggleStatus({{ $voucher->id }})"
+                                    >
+                                        {{ $statusVal === 'ACTIVE' ? 'Deactivate' : 'Activate' }}
+                                    </x-ui.table-action-item>
+                                </x-ui.table-actions>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center text-gray-400">
-                                <span class="material-symbols-rounded text-[40px] text-gray-300 block mb-2">confirmation_number</span>
-                                Belum ada voucher belanja yang dibuat.
+                            <td colspan="7" class="px-6 py-12 text-center text-muted-foreground text-xs">
+                                No vouchers created yet.
                             </td>
                         </tr>
                     @endforelse
@@ -154,7 +148,7 @@
             <div class="bg-white rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl border border-gray-100">
                 <div class="flex items-center justify-between pb-3 border-b border-gray-100">
                     <h3 class="text-lg font-bold text-gray-900">
-                        {{ $editingVoucherId ? 'Ubah Voucher Belanja' : 'Buat Voucher Belanja Baru' }}
+                        {{ $editingVoucherId ? 'Edit Voucher' : 'Create New Voucher' }}
                     </h3>
                     <button wire:click="$set('isFormModalOpen', false)" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg">
                         <span class="material-symbols-rounded">close</span>
@@ -164,9 +158,9 @@
                 <form wire:submit="save" class="space-y-4">
                     <div>
                         <div class="flex items-center justify-between mb-1">
-                            <label class="block text-xs font-bold text-gray-700">Kode Voucher</label>
+                            <label class="block text-xs font-bold text-gray-700">Voucher Code</label>
                             <button type="button" wire:click="generateCode" class="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1">
-                                <span class="material-symbols-rounded text-[14px]">autorenew</span> Generate Acak
+                                <span class="material-symbols-rounded text-[14px]">autorenew</span> Generate Random
                             </button>
                         </div>
                         <input type="text" wire:model="code" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl uppercase font-mono font-bold" required />
@@ -174,56 +168,56 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-gray-700 mb-1">Nama Voucher</label>
-                        <input type="text" wire:model="name" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl" placeholder="Contoh: Voucher Diskon 20K Member" required />
+                        <label class="block text-xs font-bold text-gray-700 mb-1">Voucher Name</label>
+                        <input type="text" wire:model="name" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl" placeholder="e.g. 20K Member Discount Voucher" required />
                         @error('name') <span class="text-rose-600 text-xs">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Tipe Diskon</label>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Discount Type</label>
                             <select wire:model.live="discountType" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl font-medium">
-                                <option value="PERCENTAGE">Persentase (%)</option>
-                                <option value="FIXED_AMOUNT">Nominal Tetap (Rp)</option>
+                                <option value="PERCENTAGE">Percentage (%)</option>
+                                <option value="FIXED_AMOUNT">Fixed Amount (Rp)</option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Nilai Diskon</label>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Discount Value</label>
                             <input type="number" step="0.01" wire:model="discountValue" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl" required />
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Min. Belanja (Rp)</label>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Min. Spend (Rp)</label>
                             <input type="number" wire:model="minOrderAmount" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl" min="0" />
                         </div>
                         @if ($discountType === 'PERCENTAGE')
                             <div>
-                                <label class="block text-xs font-bold text-gray-700 mb-1">Maks. Diskon (Rp)</label>
-                                <input type="number" wire:model="maxDiscountAmount" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl" placeholder="Opsional" />
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Max. Discount (Rp)</label>
+                                <input type="number" wire:model="maxDiscountAmount" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl" placeholder="Optional" />
                             </div>
                         @endif
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Maks Kuota Global</label>
-                            <input type="number" wire:model="maxUses" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl" min="0" placeholder="0 = Tak terbatas" />
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Global Usage Limit</label>
+                            <input type="number" wire:model="maxUses" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl" min="0" placeholder="0 = Unlimited" />
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Maks per Pelanggan</label>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Limit per Customer</label>
                             <input type="number" wire:model="maxUsesPerCustomer" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl" min="1" />
                         </div>
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Mulai Berlaku</label>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Valid From</label>
                             <input type="datetime-local" wire:model="startsAt" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl" required />
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-gray-700 mb-1">Kedaluwarsa Pada</label>
+                            <label class="block text-xs font-bold text-gray-700 mb-1">Expires On</label>
                             <input type="datetime-local" wire:model="expiresAt" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl" required />
                         </div>
                     </div>
@@ -231,11 +225,11 @@
                     <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-100">
                         <button type="button" wire:click="$set('isFormModalOpen', false)"
                             class="px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
-                            Batal
+                            Cancel
                         </button>
                         <button type="submit"
                             class="px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition-colors">
-                            Simpan Voucher
+                            Save Voucher
                         </button>
                     </div>
                 </form>

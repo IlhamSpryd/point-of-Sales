@@ -80,46 +80,45 @@
                 </x-slot:head>
                 
                 @foreach($users as $user)
-                    <tr class="hover:bg-zinc-50/70 dark:hover:bg-zinc-800/50 transition-colors duration-150">
-                        <td class="px-6 py-4 font-mono font-medium text-apeiron-ink text-sm">{{ $user->employee_id }}</td>
+                    <tr class="hover:bg-muted/40 transition-colors duration-150">
+                        <td class="px-6 py-4 font-mono font-medium text-foreground text-sm">{{ $user->employee_id }}</td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-8 h-8 rounded-full bg-zinc-100 dark:bg-zinc-800 text-apeiron-ink dark:text-zinc-100 flex items-center justify-center font-bold text-xs border border-zinc-200 dark:border-zinc-700 shrink-0">
+                                <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
                                     {{ strtoupper(substr($user->name, 0, 1)) }}
                                 </div>
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-semibold text-apeiron-ink dark:text-zinc-100">{{ $user->name }}</span>
-                                    <span class="text-xs text-zinc-500">{{ $user->email }}</span>
+                                    <span class="text-sm font-semibold text-foreground">{{ $user->name }}</span>
+                                    <span class="text-xs text-muted-foreground">{{ $user->email }}</span>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-zinc-600 dark:text-zinc-300">{{ $user->phone_number ?: '—' }}</td>
+                        <td class="px-6 py-4 text-sm text-muted-foreground">{{ $user->phone_number ?: '—' }}</td>
                         <td class="px-6 py-4">
-                            <div class="flex flex-col items-start gap-1.5">
-                                @if($user->role)
-                                    <x-ui.badge variant="primary">{{ $user->role->name }}</x-ui.badge>
-                                @else
-                                    <x-ui.badge variant="secondary">Unassigned</x-ui.badge>
-                                @endif
-                                
+                            <div class="flex flex-col items-start gap-1">
+                                <span class="text-xs font-medium text-foreground">{{ $user->role ? $user->role->name : 'Unassigned' }}</span>
                                 <x-ui.badge :variant="$user->is_active ? 'success' : 'destructive'">
                                     {{ $user->is_active ? 'Active' : 'Inactive' }}
                                 </x-ui.badge>
                             </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-zinc-500">{{ $user->join_date ? $user->join_date->format('M d, Y') : ($user->created_at?->format('M d, Y') ?? '—') }}</td>
-                        <td class="px-6 py-4 text-right space-x-1 whitespace-nowrap">
-                            <a href="{{ route('users.edit', $user->id) }}" class="inline-flex items-center justify-center size-9 rounded-lg text-zinc-600 hover:text-apeiron-ink hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-90" aria-label="Edit user" wire:navigate>
-                                <span class="material-symbols-rounded text-[18px]">edit</span>
-                            </a>
+                        <td class="px-6 py-4 text-sm text-muted-foreground">{{ $user->join_date ? $user->join_date->format('M d, Y') : ($user->created_at?->format('M d, Y') ?? '—') }}</td>
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <x-ui.table-actions>
+                                <x-ui.table-action-item icon="edit" href="{{ route('users.edit', $user->id) }}" wire:navigate>
+                                    Edit User
+                                </x-ui.table-action-item>
+                                @if(auth()->id() !== $user->id)
+                                    <x-ui.table-action-item icon="delete" variant="destructive" onclick="confirmSubmit('delete-form-{{ $user->id }}', '{{ addslashes($user->name) }}')">
+                                        Delete User
+                                    </x-ui.table-action-item>
+                                @endif
+                            </x-ui.table-actions>
                             @if(auth()->id() !== $user->id)
-                            <form id="delete-form-{{ $user->id }}" action="{{ route('users.destroy', $user->id) }}" method="POST" class="inline-block">
-                                @csrf
-                                @method('DELETE')
-                                <button type="button" onclick="confirmSubmit('delete-form-{{ $user->id }}', '{{ addslashes($user->name) }}')" class="inline-flex items-center justify-center size-9 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors active:scale-90" aria-label="Delete user">
-                                    <span class="material-symbols-rounded text-[18px]">delete</span>
-                                </button>
-                            </form>
+                                <form id="delete-form-{{ $user->id }}" action="{{ route('users.destroy', $user->id) }}" method="POST" class="hidden">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
                             @endif
                         </td>
                     </tr>

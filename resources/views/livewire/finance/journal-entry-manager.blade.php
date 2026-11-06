@@ -17,14 +17,14 @@
     <!-- Header Action Bar -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-xl font-bold text-zinc-950 dark:text-white tracking-tight">Jurnal Umum (General Ledger)</h1>
-            <p class="text-xs text-zinc-500">Buku besar mutasi keuangan ganda, posting otomatis transaksi dan workbench penyesuaian manual.</p>
+            <h1 class="text-xl font-bold text-zinc-950 dark:text-white tracking-tight">General Journal (General Ledger)</h1>
+            <p class="text-xs text-zinc-500">Dual-entry general ledger, automated transaction posting, and manual adjustment workbench.</p>
         </div>
         <button type="button"
                 wire:click="openWorkbenchModal"
                 class="inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-xl transition-colors shadow-xs">
             <span class="material-symbols-rounded text-base">post_add</span>
-            <span>Buat Jurnal Manual</span>
+            <span>Create Manual Journal</span>
         </button>
     </div>
 
@@ -34,24 +34,24 @@
             <span class="material-symbols-rounded absolute left-3 top-2.5 text-zinc-400 text-sm">search</span>
             <input type="text"
                    wire:model.live.debounce.300ms="search"
-                   placeholder="Cari nomor jurnal, referensi..."
+                   placeholder="Search journal number, reference..."
                    class="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none">
         </div>
 
         <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
             <select wire:model.live="statusFilter" class="text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 px-3 py-1.5 focus:outline-none">
-                <option value="">Semua Status</option>
+                <option value="">All Statuses</option>
                 @foreach ($statuses as $status)
                     <option value="{{ $status->value }}">{{ $status->value }}</option>
                 @endforeach
             </select>
 
             <div class="flex items-center gap-1.5 text-xs text-zinc-500">
-                <span>Dari:</span>
+                <span>From:</span>
                 <input type="date"
                        wire:model.live="dateFrom"
                        class="px-2.5 py-1.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none font-mono">
-                <span>Sampai:</span>
+                <span>To:</span>
                 <input type="date"
                        wire:model.live="dateTo"
                        class="px-2.5 py-1.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none font-mono">
@@ -61,14 +61,14 @@
 
     @php
         $journalColumns = [
-            ['key' => 'journal_number', 'label' => 'Nomor Jurnal', 'sortable' => true],
-            ['key' => 'posting_date', 'label' => 'Tanggal Posting', 'sortable' => true],
-            ['key' => 'source_module', 'label' => 'Sumber & Tipe'],
-            ['key' => 'notes', 'label' => 'Keterangan'],
+            ['key' => 'journal_number', 'label' => 'Journal Number', 'sortable' => true],
+            ['key' => 'posting_date', 'label' => 'Posting Date', 'sortable' => true],
+            ['key' => 'source_module', 'label' => 'Source & Type'],
+            ['key' => 'notes', 'label' => 'Notes'],
             ['key' => 'total_debit', 'label' => 'Total Debit', 'numeric' => true, 'sortable' => true],
             ['key' => 'total_credit', 'label' => 'Total Credit', 'numeric' => true, 'sortable' => true],
             ['key' => 'status', 'label' => 'Status', 'align' => 'center'],
-            ['key' => 'actions', 'label' => 'Aksi', 'align' => 'right'],
+            ['key' => 'actions', 'label' => 'Actions', 'align' => 'right'],
         ];
     @endphp
 
@@ -78,57 +78,48 @@
         :rows="$journals"
         loading-target="search, filterModule, filterStatus"
         :is-empty="$journals->isEmpty()"
-        empty-title="Belum ada catatan jurnal umum yang terdaftar."
-        empty-description="Buat jurnal manual baru atau periksa filter yang aktif."
+        empty-title="No general journal entries found."
+        empty-description="Create a new manual journal or check active filters."
         empty-icon="receipt_long"
         :colspan="8"
     >
         @foreach ($journals as $journal)
-                        <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/30 transition-colors">
-                            <td class="px-4 py-3 font-mono font-medium text-zinc-950 dark:text-white">
+                        <tr class="hover:bg-muted/40 transition-colors">
+                            <td class="px-4 py-3 font-mono font-medium text-foreground">
                                 {{ $journal->journal_number }}
                             </td>
-                            <td class="px-4 py-3 font-mono text-zinc-600 dark:text-zinc-400">
+                            <td class="px-4 py-3 font-mono text-muted-foreground text-xs">
                                 {{ $journal->posting_date->format('d M Y') }}
                             </td>
                             <td class="px-4 py-3">
-                                <span class="font-semibold text-zinc-900 dark:text-zinc-200">{{ $journal->source_module }}</span>
-                                <span class="text-[10px] text-zinc-400 block">{{ $journal->journal_type->value }}</span>
+                                <span class="font-semibold text-foreground text-xs">{{ $journal->source_module }}</span>
+                                <span class="text-[10px] text-muted-foreground block">{{ $journal->journal_type->value }}</span>
                             </td>
-                            <td class="px-4 py-3 text-zinc-600 dark:text-zinc-300 max-w-xs truncate" title="{{ $journal->notes }}">
+                            <td class="px-4 py-3 text-muted-foreground max-w-xs truncate text-xs" title="{{ $journal->notes }}">
                                 {{ $journal->notes ?: '-' }}
                             </td>
-                            <td class="px-4 py-3 text-right font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                            <td class="px-4 py-3 text-right font-mono font-semibold text-foreground tabular-nums">
                                 Rp {{ number_format((float) $journal->total_debit, 2) }}
                             </td>
-                            <td class="px-4 py-3 text-right font-mono font-semibold text-zinc-900 dark:text-zinc-100">
+                            <td class="px-4 py-3 text-right font-mono font-semibold text-foreground tabular-nums">
                                 Rp {{ number_format((float) $journal->total_credit, 2) }}
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold
-                                    @if($journal->status->value === 'POSTED') bg-emerald-500/10 text-emerald-600 dark:text-emerald-400
-                                    @elseif($journal->status->value === 'REVERSED') bg-rose-500/10 text-rose-600 dark:text-rose-400
-                                    @else bg-amber-500/10 text-amber-600 dark:text-amber-400 @endif">
+                                <x-ui.badge :variant="strtolower($journal->status->value)">
                                     {{ $journal->status->value }}
-                                </span>
+                                </x-ui.badge>
                             </td>
-                            <td class="px-4 py-3 text-right">
-                                <div class="inline-flex items-center gap-1">
-                                    <button type="button"
-                                            wire:click="viewJournal({{ $journal->id }})"
-                                            class="p-1 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-colors"
-                                            title="Lihat Rincian Baris">
-                                        <span class="material-symbols-rounded text-base">visibility</span>
-                                    </button>
+                            <td class="px-4 py-3 text-right whitespace-nowrap">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="visibility" wire:click="viewJournal({{ $journal->id }})">
+                                        View Lines
+                                    </x-ui.table-action-item>
                                     @if ($journal->status->value === 'POSTED' && ! $journal->reversed_by_journal_id)
-                                        <button type="button"
-                                                wire:click="openReversalModal({{ $journal->id }})"
-                                                class="p-1 rounded-lg hover:bg-rose-500/10 text-rose-500 transition-colors"
-                                                title="Reverse Jurnal">
-                                            <span class="material-symbols-rounded text-base">undo</span>
-                                        </button>
+                                        <x-ui.table-action-item icon="undo" variant="destructive" wire:click="openReversalModal({{ $journal->id }})">
+                                            Reverse Journal
+                                        </x-ui.table-action-item>
                                     @endif
-                                </div>
+                                </x-ui.table-actions>
                             </td>
                         </tr>
         @endforeach
@@ -142,8 +133,8 @@
                 
                 <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
                     <div>
-                        <h3 class="text-base font-bold text-zinc-950 dark:text-white">Workbench Jurnal Manual (Dual-Entry)</h3>
-                        <p class="text-xs text-zinc-500">Validasi keseimbangan debit dan credit secara real-time sebelum memposting ke General Ledger.</p>
+                        <h3 class="text-base font-bold text-zinc-950 dark:text-white">Manual Journal Workbench (Dual-Entry)</h3>
+                        <p class="text-xs text-zinc-500">Real-time debit and credit balance validation before posting to General Ledger.</p>
                     </div>
                     <button type="button" wire:click="$set('showWorkbenchModal', false)" class="text-zinc-400 hover:text-zinc-600">
                         <span class="material-symbols-rounded text-lg">close</span>
@@ -155,7 +146,7 @@
                     <!-- General Header Information -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Tanggal Posting</label>
+                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Posting Date</label>
                             <input type="date"
                                    wire:model="postingDate"
                                    class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-mono">
@@ -163,20 +154,20 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Tipe Jurnal</label>
+                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Journal Type</label>
                             <select wire:model="journalType"
                                     class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-                                <option value="MANUAL_ADJUSTMENT">MANUAL_ADJUSTMENT (Jurnal Penyesuaian)</option>
-                                <option value="OPENING_BALANCE">OPENING_BALANCE (Saldo Awal)</option>
+                                <option value="MANUAL_ADJUSTMENT">MANUAL_ADJUSTMENT (Adjusting Journal)</option>
+                                <option value="OPENING_BALANCE">OPENING_BALANCE (Opening Balance)</option>
                             </select>
                             @error('journalType') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Catatan / Keterangan</label>
+                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Notes / Description</label>
                             <input type="text"
                                    wire:model="notes"
-                                   placeholder="Contoh: Penyesuaian beban operasional akhir bulan..."
+                                   placeholder="e.g. Month-end operational expense adjustment..."
                                    class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
                             @error('notes') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
@@ -185,12 +176,12 @@
                     <!-- Journal Lines Editor Table -->
                     <div class="space-y-2 pt-2">
                         <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100">Rincian Baris Jurnal</span>
+                            <span class="text-xs font-bold text-zinc-900 dark:text-zinc-100">Journal Entry Lines</span>
                             <button type="button"
                                     wire:click="addLine"
                                     class="inline-flex items-center gap-1 px-3 py-1 text-xs font-semibold text-zinc-800 dark:text-zinc-200 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 rounded-lg transition-colors">
                                 <span class="material-symbols-rounded text-sm">add</span>
-                                <span>Tambah Baris</span>
+                                <span>Add Line</span>
                             </button>
                         </div>
 
@@ -204,8 +195,8 @@
                             <table class="w-full text-left text-xs">
                                 <thead class="bg-zinc-50 dark:bg-zinc-900/60 text-zinc-500 font-semibold border-b border-zinc-200 dark:border-zinc-800">
                                     <tr>
-                                        <th class="px-3 py-2.5 w-1/3">Akun COA</th>
-                                        <th class="px-3 py-2.5 w-1/4">Keterangan Baris</th>
+                                        <th class="px-3 py-2.5 w-1/3">COA Account</th>
+                                        <th class="px-3 py-2.5 w-1/4">Line Description</th>
                                         <th class="px-3 py-2.5 text-right w-1/6">Debit (Rp)</th>
                                         <th class="px-3 py-2.5 text-right w-1/6">Credit (Rp)</th>
                                         <th class="px-2 py-2.5 text-center w-10"></th>
@@ -224,14 +215,14 @@
                                                 <x-erp.searchable-select
                                                     wire:model.live="lines.{{ $index }}.account_id"
                                                     :options="$accOptions"
-                                                    placeholder="-- Pilih Akun --"
+                                                    placeholder="-- Select Account --"
                                                 />
                                                 @error("lines.{$index}.account_id") <span class="text-[10px] text-destructive block mt-1">{{ $message }}</span> @enderror
                                             </td>
                                             <td class="p-2">
                                                 <input type="text"
                                                        wire:model="lines.{{ $index }}.description"
-                                                       placeholder="Keterangan baris (opsional)"
+                                                       placeholder="Line description (optional)"
                                                        class="w-full px-2.5 py-1.5 text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
                                             </td>
                                             <td class="p-2">
@@ -275,10 +266,10 @@
                             </div>
                             <div>
                                 <span class="text-xs font-bold {{ $balance['isBalanced'] ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
-                                    {{ $balance['isBalanced'] ? 'Jurnal Seimbang (Ready to Post)' : 'Jurnal Tidak Seimbang' }}
+                                    {{ $balance['isBalanced'] ? 'Journal Balanced (Ready to Post)' : 'Journal Unbalanced' }}
                                 </span>
                                 <span class="text-[11px] text-zinc-500 block font-mono">
-                                    Selisih: Rp {{ number_format((float) abs((float) $balance['difference']), 2) }}
+                                    Difference: Rp {{ number_format((float) abs((float) $balance['difference']), 2) }}
                                 </span>
                             </div>
                         </div>
@@ -300,7 +291,7 @@
                         <button type="button"
                                 wire:click="$set('showWorkbenchModal', false)"
                                 class="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white rounded-xl transition-colors">
-                            Batal
+                            Cancel
                         </button>
                         <button type="submit"
                                 wire:loading.attr="disabled"
@@ -308,7 +299,7 @@
                                 @if(! $balance['isBalanced']) disabled @endif
                                 class="inline-flex items-center gap-2 px-5 py-2 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-xl transition-colors shadow-xs disabled:opacity-40 disabled:cursor-not-allowed">
                             <span class="material-symbols-rounded text-sm">send</span>
-                            <span>Posting ke General Ledger</span>
+                            <span>Post to General Ledger</span>
                         </button>
                     </div>
                 </form>
@@ -337,16 +328,16 @@
                 <div class="space-y-3">
                     <div class="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-xl text-xs space-y-1">
                         <div class="flex justify-between">
-                            <span class="text-zinc-500">Keterangan:</span>
+                            <span class="text-zinc-500">Notes:</span>
                             <span class="text-zinc-900 dark:text-zinc-100 font-medium">{{ $selectedJournal->notes ?: '-' }}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-zinc-500">Diposting Oleh:</span>
+                            <span class="text-zinc-500">Posted By:</span>
                             <span class="text-zinc-900 dark:text-zinc-100 font-medium">{{ $selectedJournal->createdByUser?->name ?? 'System Auto' }}</span>
                         </div>
                         @if($selectedJournal->reversed_by_journal_id)
                             <div class="flex justify-between text-rose-500">
-                                <span>Status Pembalikan:</span>
+                                <span>Reversal Status:</span>
                                 <span>Reversed by #{{ $selectedJournal->reversed_by_journal_id }} ({{ $selectedJournal->reversal_reason }})</span>
                             </div>
                         @endif
@@ -356,9 +347,9 @@
                         <table class="w-full text-left text-xs">
                             <thead class="bg-zinc-50 dark:bg-zinc-900 text-zinc-500 font-semibold border-b border-zinc-200 dark:border-zinc-800">
                                 <tr>
-                                    <th class="px-3 py-2">Kode Akun</th>
-                                    <th class="px-3 py-2">Nama Akun</th>
-                                    <th class="px-3 py-2">Keterangan Baris</th>
+                                    <th class="px-3 py-2">Account Code</th>
+                                    <th class="px-3 py-2">Account Name</th>
+                                    <th class="px-3 py-2">Line Description</th>
                                     <th class="px-3 py-2 text-right">Debit</th>
                                     <th class="px-3 py-2 text-right">Credit</th>
                                 </tr>
@@ -393,7 +384,7 @@
                     <button type="button"
                             wire:click="$set('showDetailModal', false)"
                             class="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white rounded-xl transition-colors">
-                        Tutup
+                        Close
                     </button>
                 </div>
             </div>
@@ -408,18 +399,18 @@
                 
                 <div class="flex items-center gap-3 text-rose-600 dark:text-rose-400">
                     <span class="material-symbols-rounded text-2xl">undo</span>
-                    <h3 class="text-base font-bold text-zinc-950 dark:text-white">Konfirmasi Pembalikan Jurnal</h3>
+                    <h3 class="text-base font-bold text-zinc-950 dark:text-white">Confirm Journal Reversal</h3>
                 </div>
 
                 <p class="text-xs text-zinc-600 dark:text-zinc-400">
-                    Tindakan ini akan membuat jurnal pembalik simetris (debit menjadi credit dan sebaliknya) secara otomatis di General Ledger dan mengunci status jurnal ini menjadi REVERSED.
+                    This action will automatically generate a symmetric reversal journal (swapping debits and credits) in the General Ledger and mark this journal as REVERSED.
                 </p>
 
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Alasan Pembalikan (Wajib)</label>
+                    <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Reversal Reason (Required)</label>
                     <textarea wire:model="reversalReason"
                               rows="3"
-                              placeholder="Masukkan alasan pembatalan atau revisi jurnal..."
+                              placeholder="Enter reason for journal cancellation or adjustment..."
                               class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none"></textarea>
                     @error('reversalReason') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
@@ -428,12 +419,12 @@
                     <button type="button"
                             wire:click="$set('showReversalModal', false)"
                             class="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white rounded-xl transition-colors">
-                        Batal
+                        Cancel
                     </button>
                     <button type="button"
                             wire:click="confirmReversal"
                             class="px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-colors shadow-xs">
-                        Lakukan Pembalikan
+                        Confirm Reversal
                     </button>
                 </div>
             </div>

@@ -146,25 +146,28 @@
                                     {{ $item->is_active ? 'Active' : 'Inactive' }}
                                 </x-ui.badge>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right space-x-2">
-                                <button wire:click="adjustStock({{ $item->id }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-200 active:scale-95" title="Adjust Stock">
-                                    <x-ui.icon name="inventory" size="sm" />
-                                </button>
-                                <button wire:click="edit({{ $item->id }})" class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors duration-200 active:scale-95" title="Edit">
-                                    <x-ui.icon name="edit" size="sm" />
-                                </button>
-                                <button
-                                    type="button"
-                                    x-on:click="$dispatch('erp-confirm', {
-                                        title: 'Delete Raw Material?',
-                                        message: 'Raw material &quot;{{ $item->name }}&quot; will be permanently deleted.',
-                                        variant: 'destructive',
-                                        confirmText: 'Hapus',
-                                        onConfirm: () => $wire.delete({{ $item->id }})
-                                    })"
-                                    class="inline-flex items-center justify-center min-w-11 min-h-11 rounded-medium text-destructive hover:bg-destructive/10 transition-colors duration-200 active:scale-95" title="Delete">
-                                    <x-ui.icon name="delete" size="sm" />
-                                </button>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="inventory" wire:click="adjustStock({{ $item->id }})">
+                                        Adjust Stock
+                                    </x-ui.table-action-item>
+                                    <x-ui.table-action-item icon="edit" wire:click="edit({{ $item->id }})">
+                                        Edit
+                                    </x-ui.table-action-item>
+                                    <x-ui.table-action-item
+                                        icon="delete"
+                                        variant="destructive"
+                                        x-on:click="$dispatch('erp-confirm', {
+                                            title: 'Delete Raw Material?',
+                                            message: 'Raw material &quot;{{ $item->name }}&quot; will be permanently deleted.',
+                                            variant: 'destructive',
+                                            confirmText: 'Delete',
+                                            onConfirm: () => $wire.delete({{ $item->id }})
+                                        })"
+                                    >
+                                        Delete
+                                    </x-ui.table-action-item>
+                                </x-ui.table-actions>
                             </td>
                         </tr>
                     @endforeach

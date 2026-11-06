@@ -209,7 +209,7 @@
                                 title: 'Delete Modifier Group?',
                                 message: 'This group and all associated options will be permanently deleted.',
                                 variant: 'destructive',
-                                confirmText: 'Hapus',
+                                confirmText: 'Delete',
                                 onConfirm: () => $wire.deleteGroup({{ $group->id }})
                             })"
                             class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-destructive hover:bg-destructive/10 transition-colors" title="Delete Group">
@@ -231,32 +231,40 @@
                             </div>
                             <span class="text-sm font-semibold text-success font-mono tabular-nums">+Rp {{ number_format($modifier->extra_price, 0, ',', '.') }}</span>
                         </div>
-                        <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-3">
                             @if($modifier->ingredients->isNotEmpty())
-                                <span class="text-xs text-muted-foreground flex items-center gap-1">
-                                    <x-ui.icon name="inventory_2" size="xs" /> {{ $modifier->ingredients->count() }} Ingredients
+                                <span class="text-xs text-muted-foreground">
+                                    {{ $modifier->ingredients->count() }} Ingredients
                                 </span>
                             @endif
-                            <button wire:click="editModifier({{ $modifier->id }})" class="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors">Edit</button>
-                            <button type="button"
-                                x-on:click="$dispatch('erp-confirm', {
-                                    title: 'Delete Modifier Option?',
-                                    message: 'Option &quot;{{ $modifier->name }}&quot; will be permanently deleted.',
-                                    variant: 'destructive',
-                                    confirmText: 'Hapus',
-                                    onConfirm: () => $wire.deleteModifier({{ $modifier->id }})
-                                })"
-                                class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-destructive hover:bg-destructive/10 transition-colors" title="Delete"><x-ui.icon name="delete" size="sm" /></button>
+                            <x-ui.table-actions>
+                                <x-ui.table-action-item icon="edit" wire:click="editModifier({{ $modifier->id }})">
+                                    Edit
+                                </x-ui.table-action-item>
+                                <x-ui.table-action-item
+                                    icon="delete"
+                                    variant="destructive"
+                                    x-on:click="$dispatch('erp-confirm', {
+                                        title: 'Delete Modifier Option?',
+                                        message: 'Option &quot;{{ $modifier->name }}&quot; will be permanently deleted.',
+                                        variant: 'destructive',
+                                        confirmText: 'Delete',
+                                        onConfirm: () => $wire.deleteModifier({{ $modifier->id }})
+                                    })"
+                                >
+                                    Delete
+                                </x-ui.table-action-item>
+                            </x-ui.table-actions>
                         </div>
                     </div>
                     @empty
-                    <div class="text-sm text-apeiron-muted italic p-3 text-center">No modifiers configured in this group.</div>
+                    <div class="text-sm text-muted-foreground italic p-3 text-center">No modifiers configured in this group.</div>
                     @endforelse
                 </div>
 
                 <div class="mt-4">
-                    <button wire:click="createModifier({{ $group->id }})" class="text-sm text-primary-600 font-medium flex items-center space-x-1 hover:text-primary-800 transition-colors">
-                        <span class="material-symbols-rounded text-[18px]">add</span>
+                    <button wire:click="createModifier({{ $group->id }})" class="text-xs text-primary font-medium flex items-center space-x-1 hover:text-primary/80 transition-colors">
+                        <span class="material-symbols-rounded text-[16px]">add</span>
                         <span>Add Modifier Option</span>
                     </button>
                 </div>

@@ -15,6 +15,23 @@
         </div>
     </div>
 
+    {{-- Enterprise Inbound Notice --}}
+    <div class="mb-5 p-4 rounded-2xl border border-border bg-muted/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="flex items-start gap-3">
+            <span class="material-symbols-rounded text-primary text-2xl mt-0.5">local_shipping</span>
+            <div>
+                <h5 class="text-sm font-semibold text-foreground">Penerimaan Barang Pembelian Vendor (Enterprise P2P)</h5>
+                <p class="text-xs text-muted-foreground mt-0.5">
+                    Penerimaan Purchase Order (PO) resmi dengan rekonsiliasi 3-Way Matching dan posting jurnal kliring GR/IR ke Akuntansi dikelola terpusat di Modul Purchasing.
+                </p>
+            </div>
+        </div>
+        <a href="{{ route('purchasing.grns.index') }}" wire:navigate class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-background border border-border hover:bg-muted text-foreground transition-colors shrink-0 shadow-xs">
+            <span>Buka Purchasing GRN</span>
+            <span class="material-symbols-rounded text-sm">arrow_forward</span>
+        </a>
+    </div>
+
     {{-- Alert Notifikasi --}}
     @if (session()->has('message'))
         <x-ui.alert variant="success" class="mb-4">
@@ -73,22 +90,22 @@
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Items</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Total Value</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Actions</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
 
                 @foreach ($receipts as $receipt)
-                    <tr class="hover:bg-apeiron-surface transition-colors duration-150">
+                    <tr class="hover:bg-muted/40 transition-colors duration-150">
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="text-sm font-bold text-apeiron-ink">{{ $receipt->receipt_number }}</span>
-                            <div class="text-xs text-apeiron-muted">Created by: {{ $receipt->creator->name ?? 'System' }}</div>
+                            <span class="text-sm font-semibold text-foreground">{{ $receipt->receipt_number }}</span>
+                            <div class="text-xs text-muted-foreground">Created by: {{ $receipt->creator->name ?? 'System' }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-apeiron-ink">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                             {{ $receipt->received_at->format('d M Y H:i') }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-apeiron-ink">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                             <div>{{ $receipt->supplier_reference ?: '-' }}</div>
                             @if($receipt->purchase_order_reference)
-                                <div class="text-xs text-apeiron-muted">PO: {{ $receipt->purchase_order_reference }}</div>
+                                <div class="text-xs text-muted-foreground">PO: {{ $receipt->purchase_order_reference }}</div>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
@@ -96,29 +113,31 @@
                                 {{ $receipt->status->label() }}
                             </x-ui.badge>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-apeiron-ink">
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-foreground">
                             {{ $receipt->items->count() }} items
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-apeiron-ink">
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-foreground font-mono tabular-nums">
                             Rp {{ number_format((float) $receipt->calculateTotalValue(), 2, ',', '.') }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
-                            <button wire:click="viewDetails({{ $receipt->id }})" class="text-apeiron-ink hover:text-apeiron-muted transition-colors" title="View Details">
-                                <span class="material-symbols-rounded text-[18px]">visibility</span>
-                            </button>
+                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                            <x-ui.table-actions>
+                                <x-ui.table-action-item icon="visibility" wire:click="viewDetails({{ $receipt->id }})">
+                                    View Details
+                                </x-ui.table-action-item>
 
-                            @if($receipt->isDraft())
-                                <button wire:click="post({{ $receipt->id }})" wire:confirm="Are you sure you want to post this goods receipt to warehouse inventory?" class="text-emerald-600 hover:text-emerald-800 transition-colors" title="Post to Inventory">
-                                    <span class="material-symbols-rounded text-[18px]">task_alt</span>
-                                </button>
-                                <button wire:click="cancel({{ $receipt->id }})" wire:confirm="Cancel this draft goods receipt?" class="text-rose-500 hover:text-rose-700 transition-colors" title="Cancel Draft">
-                                    <span class="material-symbols-rounded text-[18px]">cancel</span>
-                                </button>
-                            @elseif($receipt->isPosted())
-                                <button wire:click="openReverseModal({{ $receipt->id }})" class="text-rose-600 hover:text-rose-800 transition-colors" title="Reverse Document">
-                                    <span class="material-symbols-rounded text-[18px]">undo</span>
-                                </button>
-                            @endif
+                                @if($receipt->isDraft())
+                                    <x-ui.table-action-item icon="check_circle" wire:click="post({{ $receipt->id }})" wire:confirm="Are you sure you want to post this goods receipt to warehouse inventory?">
+                                        Post to Inventory
+                                    </x-ui.table-action-item>
+                                    <x-ui.table-action-item icon="cancel" variant="destructive" wire:click="cancel({{ $receipt->id }})" wire:confirm="Cancel this draft goods receipt?">
+                                        Cancel Draft
+                                    </x-ui.table-action-item>
+                                @elseif($receipt->isPosted())
+                                    <x-ui.table-action-item icon="undo" variant="destructive" wire:click="openReverseModal({{ $receipt->id }})">
+                                        Reverse Document
+                                    </x-ui.table-action-item>
+                                @endif
+                            </x-ui.table-actions>
                         </td>
                     </tr>
                 @endforeach

@@ -79,17 +79,17 @@
                                 <x-ui.badge variant="neutral">Inactive</x-ui.badge>
                             @endif
                         </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex items-center justify-end gap-1.5">
-                                @can('manageGroups', \App\Models\Customer::class)
-                                <x-ui.button size="icon" variant="ghost" wire:click="edit({{ $grp->id }})" title="Edit Group" aria-label="Edit">
-                                    <span class="material-symbols-rounded text-lg text-zinc-600 dark:text-zinc-400">edit</span>
-                                </x-ui.button>
-                                <x-ui.button size="icon" variant="ghost" wire:click="delete({{ $grp->id }})" wire:confirm="Delete this customer group?" title="Delete Group" aria-label="Delete">
-                                    <span class="material-symbols-rounded text-lg text-rose-500">delete</span>
-                                </x-ui.button>
-                                @endcan
-                            </div>
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                            @can('manageGroups', \App\Models\Customer::class)
+                            <x-ui.table-actions>
+                                <x-ui.table-action-item icon="edit" wire:click="edit({{ $grp->id }})">
+                                    Edit Group
+                                </x-ui.table-action-item>
+                                <x-ui.table-action-item icon="delete" variant="destructive" wire:click="delete({{ $grp->id }})" wire:confirm="Delete this customer group?">
+                                    Delete Group
+                                </x-ui.table-action-item>
+                            </x-ui.table-actions>
+                            @endcan
                         </td>
                     </tr>
                     @empty

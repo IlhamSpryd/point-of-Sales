@@ -74,6 +74,23 @@
 
     <!-- Tab 1: Vouchers -->
     @if ($activeTab === 'vouchers')
+        {{-- Enterprise Pricing Engine Guidance --}}
+        <div class="p-4 rounded-2xl border border-border bg-muted/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-start gap-3">
+                <span class="material-symbols-rounded text-primary text-2xl mt-0.5">campaign</span>
+                <div>
+                    <h5 class="text-sm font-semibold text-foreground">Manajemen Kampanye Voucher & Promosi (Modul Pricing)</h5>
+                    <p class="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                        Konfigurasi kuota penukaran, kuota per pelanggan, masa aktif berulang, dan aturan otomatisasi promosi dikelola secara terpusat pada Modul 04 Pricing & Promotions.
+                    </p>
+                </div>
+            </div>
+            <a href="{{ route('pricing.vouchers.index') }}" wire:navigate class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-background border border-border hover:bg-muted text-foreground transition-colors shrink-0 shadow-xs">
+                <span>Buka Master Vouchers</span>
+                <span class="material-symbols-rounded text-sm">arrow_forward</span>
+            </a>
+        </div>
+
         <div class="card-surface rounded-2xl border border-border dark:border-zinc-800 overflow-hidden shadow-xs">
             <div class="overflow-x-auto">
                 <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
@@ -133,16 +150,18 @@
                                         {{ $voucher->is_active ? 'Active' : 'Inactive' }}
                                     </x-ui.badge>
                                 </td>
-                                <td class="px-6 py-4 text-right">
-                                    @if ($voucher->is_active)
-                                        <x-ui.button variant="danger" size="xs" wire:click="deactivateVoucher({{ $voucher->id }})" wire:confirm="Deactivate this voucher?">
-                                            Deactivate
-                                        </x-ui.button>
-                                    @else
-                                        <x-ui.button variant="secondary" size="xs" wire:click="activateVoucher({{ $voucher->id }})" wire:confirm="Activate this voucher?">
-                                            Activate
-                                        </x-ui.button>
-                                    @endif
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    <x-ui.table-actions>
+                                        @if ($voucher->is_active)
+                                            <x-ui.table-action-item icon="pause_circle" variant="destructive" wire:click="deactivateVoucher({{ $voucher->id }})" wire:confirm="Deactivate this voucher?">
+                                                Deactivate Voucher
+                                            </x-ui.table-action-item>
+                                        @else
+                                            <x-ui.table-action-item icon="play_circle" wire:click="activateVoucher({{ $voucher->id }})" wire:confirm="Activate this voucher?">
+                                                Activate Voucher
+                                            </x-ui.table-action-item>
+                                        @endif
+                                    </x-ui.table-actions>
                                 </td>
                             </tr>
                         @empty
@@ -210,16 +229,18 @@
                                         {{ $card->status->value }}
                                     </x-ui.badge>
                                 </td>
-                                <td class="px-6 py-4 text-right">
-                                    @if ($card->status->value === 'ACTIVE')
-                                        <x-ui.button variant="warning" size="xs" wire:click="freezeGiftCard({{ $card->id }})" wire:confirm="Freeze this gift card?">
-                                            Freeze
-                                        </x-ui.button>
-                                    @elseif ($card->status->value === 'BLOCKED')
-                                        <x-ui.button variant="secondary" size="xs" wire:click="unfreezeGiftCard({{ $card->id }})" wire:confirm="Unfreeze this gift card?">
-                                            Unfreeze
-                                        </x-ui.button>
-                                    @endif
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    <x-ui.table-actions>
+                                        @if ($card->status->value === 'ACTIVE')
+                                            <x-ui.table-action-item icon="lock" variant="destructive" wire:click="freezeGiftCard({{ $card->id }})" wire:confirm="Freeze this gift card?">
+                                                Freeze Card
+                                            </x-ui.table-action-item>
+                                        @elseif ($card->status->value === 'BLOCKED')
+                                            <x-ui.table-action-item icon="lock_open" wire:click="unfreezeGiftCard({{ $card->id }})" wire:confirm="Unfreeze this gift card?">
+                                                Unfreeze Card
+                                            </x-ui.table-action-item>
+                                        @endif
+                                    </x-ui.table-actions>
                                 </td>
                             </tr>
                         @empty
@@ -271,10 +292,12 @@
                                 <td class="px-6 py-4 text-xs text-zinc-500">
                                     {{ $sc->updated_at ? $sc->updated_at->diffForHumans() : '-' }}
                                 </td>
-                                <td class="px-6 py-4 text-right">
-                                    <x-ui.button variant="secondary" size="xs" wire:click="$set('store_credit_customer_id', {{ $sc->customer_id }}); $set('showStoreCreditModal', true)">
-                                        + Add Balance
-                                    </x-ui.button>
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    <x-ui.table-actions>
+                                        <x-ui.table-action-item icon="add" wire:click="$set('store_credit_customer_id', {{ $sc->customer_id }}); $set('showStoreCreditModal', true)">
+                                            Top Up Balance
+                                        </x-ui.table-action-item>
+                                    </x-ui.table-actions>
                                 </td>
                             </tr>
                         @empty

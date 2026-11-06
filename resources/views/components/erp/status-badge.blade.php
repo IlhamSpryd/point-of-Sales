@@ -3,6 +3,7 @@
     'label' => null,
     'size' => 'sm',
     'dot' => true,
+    'pill' => false,
 ])
 
 @php
@@ -14,6 +15,6 @@
             : ucwords(str_replace(['_', '-'], ' ', strtolower($rawStatus ?: 'unknown'))));
 @endphp
 
-<x-ui.badge :variant="$rawStatus ?: null" :dot="$dot" {{ $attributes }}>
+<x-ui.badge :variant="$rawStatus ?: null" :dot="$dot" :pill="$pill" {{ $attributes }}>
     {{ $slot->isNotEmpty() ? $slot : $displayLabel }}
 </x-ui.badge>

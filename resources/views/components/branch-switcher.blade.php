@@ -30,7 +30,6 @@
         class="{{ $isDark ? 'inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium text-shell-foreground bg-shell-accent hover:bg-shell-border hover:text-shell-foreground-active border border-shell-border rounded-lg shadow-xs transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-shell-ring cursor-pointer' : 'inline-flex bg-card hover:bg-secondary border-border text-foreground items-center gap-2 px-3 py-1.5 text-xs font-medium rounded-lg border shadow-xs transition-all duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer' }} {{ $fullWidth ? 'w-full justify-between' : '' }}">
         <div class="flex items-center gap-2 min-w-0">
             <span class="shrink-0 w-2 h-2 rounded-full {{ $isAll ? 'bg-warning' : 'bg-success' }}"></span>
-            <x-ui.icon name="storefront" size="sm" class="{{ $isDark ? 'text-muted-foreground' : 'text-muted-foreground' }} shrink-0" />
             <span class="truncate text-left text-xs {{ $fullWidth ? 'max-w-[145px]' : 'max-w-[120px] sm:max-w-[180px] lg:max-w-[220px]' }}">{{ $activeLabel }}</span>
         </div>
         <x-ui.icon name="expand_more" size="sm" class="{{ $isDark ? 'text-muted-foreground' : 'text-muted-foreground' }} transition-transform duration-150 shrink-0" ::class="open ? 'rotate-180' : ''" />
