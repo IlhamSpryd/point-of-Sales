@@ -86,7 +86,7 @@
         @foreach($purchaseOrders as $po)
                     <tr class="hover:bg-muted/40 transition-colors">
                         <td class="px-6 py-4">
-                            <div class="font-bold text-foreground font-mono">{{ $po->po_number }}</div>
+                            <div class="font-bold text-foreground font-sans">{{ $po->po_number }}</div>
                             <div class="text-xs text-muted-foreground">{{ \Carbon\Carbon::parse($po->order_date)->format('d M Y') }}</div>
                         </td>
                         <td class="px-6 py-4">
@@ -302,7 +302,7 @@
         <x-slot:title>
             @if($selectedPo)
                 <div>
-                    <span class="font-mono">{{ $selectedPo->po_number }}</span>
+                    <span class="font-sans">{{ $selectedPo->po_number }}</span>
                     <span class="ml-2">
                         <x-ui.badge variant="primary">{{ $selectedPo->status?->label() ?? $selectedPo->status }}</x-ui.badge>
                     </span>
@@ -320,7 +320,7 @@
                     <div>
                         <div class="text-zinc-400 uppercase font-bold text-[10px]">Supplier</div>
                         <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5">{{ $selectedPo->supplier?->name }}</div>
-                        <div class="text-zinc-500 font-mono">{{ $selectedPo->supplier?->code }}</div>
+                        <div class="text-zinc-500 font-sans">{{ $selectedPo->supplier?->code }}</div>
                     </div>
                     <div>
                         <div class="text-zinc-400 uppercase font-bold text-[10px]">Branch</div>
@@ -362,7 +362,7 @@
                                         </div>
                                         <div class="text-[10px] text-zinc-400 uppercase">{{ $line->purchasable_type }}</div>
                                     </td>
-                                    <td class="px-4 py-2.5 font-mono uppercase">{{ $line->purchase_uom }}</td>
+                                    <td class="px-4 py-2.5 font-sans uppercase">{{ $line->purchase_uom }}</td>
                                     <td class="px-4 py-2.5 text-right font-medium tabular-nums">{{ (float) $line->ordered_qty }}</td>
                                     <td class="px-4 py-2.5 text-right font-medium text-emerald-600 tabular-nums">{{ (float) $line->received_qty }}</td>
                                     <td class="px-4 py-2.5 text-right tabular-nums">Rp {{ number_format((float) $line->unit_price, 2) }}</td>

@@ -48,7 +48,7 @@
                                 x-on:click="showResults = false"
                                 class="w-full flex items-center justify-between gap-2 px-3 py-2 text-left hover:bg-muted transition-colors border-b border-border last:border-0 text-xs">
                                 <span class="font-medium text-foreground">{{ $c->name }}</span>
-                                <span class="text-[11px] text-muted-foreground font-mono">{{ $c->phone ?? '-' }}</span>
+                                <span class="text-[11px] text-muted-foreground font-sans tabular-nums">{{ $c->phone ?? '-' }}</span>
                             </button>
                         @empty
                             <div class="px-3 py-2 text-xs text-muted-foreground text-center">No customers found.</div>

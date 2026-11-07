@@ -3,8 +3,8 @@
     {{-- Header & Primary Action --}}
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Stock Opname & Physical Reconciliation</h4>
-            <p class="text-sm font-medium text-apeiron-muted mt-1">
+            <h4 class="text-xl font-bold text-foreground tracking-tight">Stock Opname & Physical Reconciliation</h4>
+            <p class="text-sm font-medium text-muted-foreground mt-1">
                 Periodic physical stock counts with snapshot sequence pinning and drift gate (OD-04).
             </p>
         </div>
@@ -32,8 +32,8 @@
     <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
         <div class="relative w-full sm:w-80">
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search opname number, notes..."
-                   class="form-input w-full pl-10 pr-4 py-2 rounded-2xl border border-apeiron-border bg-white text-apeiron-ink placeholder-apeiron-muted focus:outline-none focus:ring-2 focus:ring-apeiron-ink shadow-sm text-sm">
-            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-apeiron-muted">
+                   class="form-input w-full pl-10 pr-4 py-2 rounded-2xl border border-border bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring shadow-sm text-sm">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
                 <span class="material-symbols-rounded text-[18px]">search</span>
             </div>
         </div>
@@ -41,13 +41,13 @@
         <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <div class="relative w-full sm:w-60">
                 <select wire:model.live="statusFilter"
-                        class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-apeiron-border bg-white text-apeiron-ink focus:outline-none focus:ring-2 focus:ring-apeiron-ink text-sm shadow-sm appearance-none">
+                        class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-sm appearance-none">
                     <option value="ALL">All Statuses</option>
                     @foreach ($statusOptions as $s)
                         <option value="{{ $s->value }}">{{ $s->label() }}</option>
                     @endforeach
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-apeiron-muted">
+                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-muted-foreground">
                     <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
                 </div>
             </div>
@@ -69,22 +69,22 @@
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Opname #</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Snapshot Date</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Items</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Items</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Counter / Approver</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Actions</th>
                 </x-slot:head>
 
                 @foreach ($opnames as $opname)
-                    <tr class="hover:bg-apeiron-surface transition-colors duration-150">
+                    <tr class="hover:bg-secondary transition-colors duration-150">
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="text-sm font-bold text-apeiron-ink">{{ $opname->opname_number }}</span>
-                            <div class="text-xs text-apeiron-muted">Created: {{ $opname->created_at->format('d M Y H:i') }}</div>
+                            <span class="text-sm font-bold text-foreground">{{ $opname->opname_number }}</span>
+                            <div class="text-xs text-muted-foreground">Created: {{ $opname->created_at->format('d M Y H:i') }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-apeiron-ink">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                             @if ($opname->snapshot_taken_at)
                                 <span class="font-medium text-emerald-700">{{ $opname->snapshot_taken_at->format('d M Y H:i') }}</span>
                             @else
-                                <span class="text-xs text-apeiron-muted italic">Not started</span>
+                                <span class="text-xs text-muted-foreground italic">Not started</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
@@ -92,16 +92,16 @@
                                 {{ $opname->status->label() }}
                             </x-ui.badge>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-apeiron-ink text-right">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-foreground text-right">
                             {{ $opname->items_count }} items
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-xs text-apeiron-ink">
+                        <td class="px-6 py-4 whitespace-nowrap text-xs text-foreground">
                             <div>Count: <span class="font-medium">{{ $opname->submitter->name ?? '-' }}</span></div>
                             <div>Approve: <span class="font-medium">{{ $opname->approver->name ?? '-' }}</span></div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
                             <div class="flex items-center justify-center gap-2">
-                                <button type="button" wire:click="viewDetail({{ $opname->id }})" class="p-1 hover:text-apeiron-ink text-apeiron-muted transition-colors" title="View Details">
+                                <button type="button" wire:click="viewDetail({{ $opname->id }})" class="p-1 hover:text-foreground text-muted-foreground transition-colors" title="View Details">
                                     <span class="material-symbols-rounded text-[20px]">visibility</span>
                                 </button>
 
@@ -139,7 +139,7 @@
         </div>
 
         @if ($opnames->hasPages())
-            <div class="px-6 py-4 border-t border-apeiron-border">
+            <div class="px-6 py-4 border-t border-border">
                 {{ $opnames->links() }}
             </div>
         @endif
@@ -148,7 +148,7 @@
     {{-- MODAL 1: Create Opname Session Form --}}
     <x-ui.modal wire:model="showFormModal" maxWidth="2xl">
         <x-slot:header>
-            <h5 class="text-lg font-bold text-apeiron-ink">New Stock Opname Session</h5>
+            <h5 class="text-lg font-bold text-foreground">New Stock Opname Session</h5>
         </x-slot:header>
         <x-slot:content>
             @if ($errors->has('general'))
@@ -164,19 +164,19 @@
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <input type="checkbox" id="all_items" wire:model.live="all_items" class="rounded border-apeiron-border text-apeiron-ink focus:ring-apeiron-ink">
-                    <label for="all_items" class="text-sm font-semibold text-apeiron-ink cursor-pointer">
+                    <input type="checkbox" id="all_items" wire:model.live="all_items" class="rounded border-border text-foreground focus:ring-ring">
+                    <label for="all_items" class="text-sm font-semibold text-foreground cursor-pointer">
                         Count all branch catalog items (products & raw materials)
                     </label>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-apeiron-ink uppercase tracking-wider mb-1">Notes</label>
-                    <textarea wire:model="notes" rows="2" placeholder="Opname objective, warehouse area, shift, etc." class="form-input w-full p-3 rounded-xl border border-apeiron-border text-sm"></textarea>
+                    <label class="block text-xs font-bold text-foreground uppercase tracking-wider mb-1">Notes</label>
+                    <textarea wire:model="notes" rows="2" placeholder="Opname objective, warehouse area, shift, etc." class="form-input w-full p-3 rounded-xl border border-border text-sm"></textarea>
                 </div>
             </div>
 
-            <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-apeiron-border">
+            <div class="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-border">
                 <x-ui.button type="button" variant="secondary" wire:click="closeFormModal">Cancel</x-ui.button>
                 <x-ui.button type="button" variant="primary" wire:click="saveOpname" x-on:click="window.erpMotion?.pulseHighlight($el)">Create Opname Draft</x-ui.button>
             </div>
@@ -188,8 +188,8 @@
         <x-slot:header>
             @if ($activeOpname)
                 <div>
-                    <h5 class="text-lg font-bold text-apeiron-ink">Record Physical Counts #{{ $activeOpname->opname_number }}</h5>
-                    <p class="text-xs text-apeiron-muted">Snapshot Timestamp: {{ $activeOpname->snapshot_taken_at?->format('d M Y H:i:s') }}</p>
+                    <h5 class="text-lg font-bold text-foreground">Record Physical Counts #{{ $activeOpname->opname_number }}</h5>
+                    <p class="text-xs text-muted-foreground">Snapshot Timestamp: {{ $activeOpname->snapshot_taken_at?->format('d M Y H:i:s') }}</p>
                 </div>
             @endif
         </x-slot:header>
@@ -197,7 +197,7 @@
             @if ($activeOpname)
                 <div class="max-h-96 overflow-y-auto mb-4">
                     <table class="table-standard w-full min-w-full text-left text-sm">
-                        <thead class="bg-apeiron-surface text-xs font-semibold text-apeiron-muted uppercase">
+                        <thead class="bg-secondary text-xs font-semibold text-muted-foreground uppercase">
                             <tr>
                                 <th class="p-3">Item</th>
                                 <th class="p-3 text-right">Snapshot Balance</th>
@@ -205,23 +205,23 @@
                                 <th class="p-3">Notes</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-apeiron-border">
+                        <tbody class="divide-y divide-border">
                             @foreach ($activeOpname->items as $item)
                                 <tr>
                                     <td class="p-3">
-                                        <div class="font-bold text-apeiron-ink">
+                                        <div class="font-bold text-foreground">
                                             {{ $item->item_type === 'product' ? ($item->product?->product_name ?? $item->product?->name) : $item->ingredient?->name }}
                                         </div>
-                                        <div class="text-xs text-apeiron-muted uppercase">{{ $item->item_type }}</div>
+                                        <div class="text-xs text-muted-foreground uppercase">{{ $item->item_type }}</div>
                                     </td>
-                                    <td class="p-3 text-right font-medium tabular-nums text-apeiron-ink">
+                                    <td class="p-3 text-right font-medium tabular-nums text-foreground">
                                         {{ number_format((float) $item->snapshot_on_hand, 2) }}
                                     </td>
                                     <td class="p-3 text-right">
-                                        <input type="number" step="0.0001" min="0" wire:model="countedQuantities.{{ $item->id }}" placeholder="0.00" class="form-input w-full p-2 text-right tabular-nums rounded-lg border border-apeiron-border text-sm font-semibold">
+                                        <input type="number" step="0.0001" min="0" wire:model="countedQuantities.{{ $item->id }}" placeholder="0.00" class="form-input w-full p-2 text-right tabular-nums rounded-lg border border-border text-sm font-semibold">
                                     </td>
                                     <td class="p-3">
-                                        <input type="text" wire:model="countNotes.{{ $item->id }}" placeholder="Optional..." class="form-input w-full p-2 rounded-lg border border-apeiron-border text-xs">
+                                        <input type="text" wire:model="countNotes.{{ $item->id }}" placeholder="Optional..." class="form-input w-full p-2 rounded-lg border border-border text-xs">
                                     </td>
                                 </tr>
                             @endforeach
@@ -229,7 +229,7 @@
                     </table>
                 </div>
 
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-apeiron-border">
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-border">
                     <x-ui.button type="button" variant="secondary" wire:click="closeCountModal">Close</x-ui.button>
                     <x-ui.button type="button" variant="primary" wire:click="saveCounts" x-on:click="window.erpMotion?.pulseHighlight($el)">Save Counts</x-ui.button>
                 </div>
@@ -253,10 +253,10 @@
 
                 <div class="space-y-4 max-h-96 overflow-y-auto mb-6">
                     @foreach ($driftedItems as $d)
-                        <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-apeiron-ink flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-foreground flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
-                                <div class="font-bold text-sm text-apeiron-ink">{{ $d['name'] }}</div>
-                                <div class="text-apeiron-muted uppercase">{{ $d['item_type'] }} #{{ $d['item_id'] }}</div>
+                                <div class="font-bold text-sm text-foreground">{{ $d['name'] }}</div>
+                                <div class="text-muted-foreground uppercase">{{ $d['item_type'] }} #{{ $d['item_id'] }}</div>
                                 <div class="mt-2 grid grid-cols-3 gap-2">
                                     <div>Snapshot Balance: <strong class="text-amber-800">{{ $d['snapshot_on_hand'] }}</strong></div>
                                     <div>Current Balance: <strong class="text-rose-800">{{ $d['current_on_hand'] }}</strong></div>
@@ -264,7 +264,7 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-2 shrink-0">
-                                <button type="button" wire:click="resolveDriftItem({{ $d['item_id'] }}, 'RE_SNAPSHOT')" class="px-3 py-2 bg-white hover:bg-apeiron-surface text-apeiron-ink font-semibold rounded-xl border border-apeiron-border shadow-sm">
+                                <button type="button" wire:click="resolveDriftItem({{ $d['item_id'] }}, 'RE_SNAPSHOT')" class="px-3 py-2 bg-white hover:bg-secondary text-foreground font-semibold rounded-xl border border-border shadow-sm">
                                     Recount (Re-Snapshot)
                                 </button>
                                 <button type="button" wire:click="resolveDriftItem({{ $d['item_id'] }}, 'REBASE_OVERRIDE')" class="px-3 py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-xl shadow-sm">
@@ -275,7 +275,7 @@
                     @endforeach
                 </div>
 
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-apeiron-border">
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-border">
                     <x-ui.button type="button" variant="secondary" wire:click="$set('showDriftModal', false)">Close & Review Later</x-ui.button>
                 </div>
             @endif
@@ -287,35 +287,35 @@
         <x-slot:header>
             @if ($selectedOpname)
                 <div>
-                    <h5 class="text-lg font-bold text-apeiron-ink">Stock Opname Details: {{ $selectedOpname->opname_number }}</h5>
-                    <p class="text-xs text-apeiron-muted">Status: {{ $selectedOpname->status->label() }}</p>
+                    <h5 class="text-lg font-bold text-foreground">Stock Opname Details: {{ $selectedOpname->opname_number }}</h5>
+                    <p class="text-xs text-muted-foreground">Status: {{ $selectedOpname->status->label() }}</p>
                 </div>
             @endif
         </x-slot:header>
         <x-slot:content>
             @if ($selectedOpname)
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 p-4 rounded-2xl bg-apeiron-surface text-xs">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6 p-4 rounded-2xl bg-secondary text-xs">
                     <div>
-                        <span class="text-apeiron-muted block">Snapshot Taken</span>
-                        <span class="font-semibold text-apeiron-ink">{{ $selectedOpname->snapshot_taken_at?->format('d M Y H:i') ?? '-' }}</span>
+                        <span class="text-muted-foreground block">Snapshot Taken</span>
+                        <span class="font-semibold text-foreground">{{ $selectedOpname->snapshot_taken_at?->format('d M Y H:i') ?? '-' }}</span>
                     </div>
                     <div>
-                        <span class="text-apeiron-muted block">Submitted</span>
-                        <span class="font-semibold text-apeiron-ink">{{ $selectedOpname->submitted_at?->format('d M Y H:i') ?? '-' }} ({{ $selectedOpname->submitter->name ?? '-' }})</span>
+                        <span class="text-muted-foreground block">Submitted</span>
+                        <span class="font-semibold text-foreground">{{ $selectedOpname->submitted_at?->format('d M Y H:i') ?? '-' }} ({{ $selectedOpname->submitter->name ?? '-' }})</span>
                     </div>
                     <div>
-                        <span class="text-apeiron-muted block">Approved</span>
-                        <span class="font-semibold text-apeiron-ink">{{ $selectedOpname->approved_at?->format('d M Y H:i') ?? '-' }} ({{ $selectedOpname->approver->name ?? '-' }})</span>
+                        <span class="text-muted-foreground block">Approved</span>
+                        <span class="font-semibold text-foreground">{{ $selectedOpname->approved_at?->format('d M Y H:i') ?? '-' }} ({{ $selectedOpname->approver->name ?? '-' }})</span>
                     </div>
                     <div>
-                        <span class="text-apeiron-muted block">Notes</span>
-                        <span class="font-semibold text-apeiron-ink">{{ $selectedOpname->notes ?? '-' }}</span>
+                        <span class="text-muted-foreground block">Notes</span>
+                        <span class="font-semibold text-foreground">{{ $selectedOpname->notes ?? '-' }}</span>
                     </div>
                 </div>
 
                 <div class="max-h-96 overflow-y-auto mb-4">
                     <table class="table-standard w-full min-w-full text-left text-sm">
-                        <thead class="bg-apeiron-surface text-xs font-semibold text-apeiron-muted uppercase">
+                        <thead class="bg-secondary text-xs font-semibold text-muted-foreground uppercase">
                             <tr>
                                 <th class="p-3">Item</th>
                                 <th class="p-3 text-right">Snapshot Balance</th>
@@ -324,26 +324,26 @@
                                 <th class="p-3 text-center">Drift Resolution</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-apeiron-border">
+                        <tbody class="divide-y divide-border">
                             @foreach ($selectedOpname->items as $item)
                                 <tr>
                                     <td class="p-3">
-                                        <div class="font-bold text-apeiron-ink">
+                                        <div class="font-bold text-foreground">
                                             {{ $item->item_type === 'product' ? ($item->product?->product_name ?? $item->product?->name) : $item->ingredient?->name }}
                                         </div>
-                                        <div class="text-xs text-apeiron-muted uppercase">{{ $item->item_type }}</div>
+                                        <div class="text-xs text-muted-foreground uppercase">{{ $item->item_type }}</div>
                                     </td>
-                                    <td class="p-3 text-right font-medium tabular-nums text-apeiron-ink">
+                                    <td class="p-3 text-right font-medium tabular-nums text-foreground">
                                         {{ number_format((float) $item->snapshot_on_hand, 2) }}
                                     </td>
-                                    <td class="p-3 text-right font-medium tabular-nums text-apeiron-ink">
+                                    <td class="p-3 text-right font-medium tabular-nums text-foreground">
                                         {{ $item->counted_quantity !== null ? number_format((float) $item->counted_quantity, 2) : '-' }}
                                     </td>
-                                    <td class="p-3 text-right font-bold tabular-nums {{ (float) $item->variance_quantity < 0 ? 'text-rose-600' : ((float) $item->variance_quantity > 0 ? 'text-emerald-600' : 'text-apeiron-muted') }}">
+                                    <td class="p-3 text-right font-bold tabular-nums {{ (float) $item->variance_quantity < 0 ? 'text-rose-600' : ((float) $item->variance_quantity > 0 ? 'text-emerald-600' : 'text-muted-foreground') }}">
                                         {{ $item->variance_quantity !== null ? number_format((float) $item->variance_quantity, 2) : '-' }}
                                     </td>
                                     <td class="p-3 text-center text-xs">
-                                        <span class="px-2 py-1 rounded bg-apeiron-surface border border-apeiron-border">
+                                        <span class="px-2 py-1 rounded bg-secondary border border-border">
                                             {{ $item->drift_resolution_mode->value }}
                                         </span>
                                     </td>
@@ -353,7 +353,7 @@
                     </table>
                 </div>
 
-                <div class="flex items-center justify-end gap-3 pt-4 border-t border-apeiron-border">
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-border">
                     <x-ui.button type="button" variant="secondary" wire:click="closeDetailModal">Close</x-ui.button>
                 </div>
             @endif

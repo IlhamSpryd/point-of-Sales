@@ -102,19 +102,19 @@
                         <tr class="hover:bg-muted/40 transition-colors">
                             <td class="py-3.5 px-4">
                                 <div class="font-semibold text-foreground">{{ $cust->name }}</div>
-                                <div class="text-xs text-muted-foreground font-mono">{{ $cust->customer_code }}</div>
+                                <div class="text-xs text-muted-foreground font-sans">{{ $cust->customer_code }}</div>
                             </td>
-                            <td class="py-3.5 px-4 text-right font-mono tabular-nums font-semibold text-foreground">
+                            <td class="py-3.5 px-4 text-right font-sans tabular-nums font-semibold text-foreground">
                                 Rp {{ number_format($limitVal, 2, ',', '.') }}
                             </td>
                             <td class="py-3.5 px-4 text-center text-xs">
                                 <span class="font-medium text-foreground">{{ $acc?->payment_terms_days ?? 0 }} days</span>
                                 <span class="text-muted-foreground block text-[11px]">(Grace: {{ $acc?->grace_period_days ?? 0 }} days)</span>
                             </td>
-                            <td class="py-3.5 px-4 text-right font-mono tabular-nums text-xs text-muted-foreground">
+                            <td class="py-3.5 px-4 text-right font-sans tabular-nums text-xs text-muted-foreground">
                                 Rp {{ number_format($reservedVal, 2, ',', '.') }}
                             </td>
-                            <td class="py-3.5 px-4 text-right font-mono tabular-nums text-xs font-semibold {{ $availVal > 0 ? 'text-success' : 'text-destructive' }}">
+                            <td class="py-3.5 px-4 text-right font-sans tabular-nums text-xs font-semibold {{ $availVal > 0 ? 'text-success' : 'text-destructive' }}">
                                 Rp {{ number_format($availVal, 2, ',', '.') }}
                             </td>
                             <td class="py-3.5 px-4 text-center">
@@ -174,20 +174,20 @@
 
                 <div>
                     <x-ui.label for="creditLimit">Credit Limit Ceiling (Rp) *</x-ui.label>
-                    <x-ui.input type="number" step="1000" min="0" id="creditLimit" wire:model="creditLimit" class="font-mono text-sm" />
+                    <x-ui.input type="number" step="1000" min="0" id="creditLimit" wire:model="creditLimit" class="font-sans text-sm" />
                     @error('creditLimit') <span class="text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <x-ui.label for="paymentTermsDays">Payment Terms (Days) *</x-ui.label>
-                        <x-ui.input type="number" min="0" max="365" id="paymentTermsDays" wire:model="paymentTermsDays" class="font-mono text-sm" />
+                        <x-ui.input type="number" min="0" max="365" id="paymentTermsDays" wire:model="paymentTermsDays" class="font-sans text-sm" />
                         <span class="text-[10px] text-zinc-400 mt-0.5 block">0 = Cash on Delivery / COD, 30 = Net 30</span>
                         @error('paymentTermsDays') <span class="text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
                     <div>
                         <x-ui.label for="gracePeriodDays">Grace Period (Days) *</x-ui.label>
-                        <x-ui.input type="number" min="0" max="90" id="gracePeriodDays" wire:model="gracePeriodDays" class="font-mono text-sm" />
+                        <x-ui.input type="number" min="0" max="90" id="gracePeriodDays" wire:model="gracePeriodDays" class="font-sans text-sm" />
                         <span class="text-[10px] text-zinc-400 mt-0.5 block">Tolerance days before automatic credit hold</span>
                         @error('gracePeriodDays') <span class="text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
@@ -195,7 +195,7 @@
 
                 <div>
                     <x-ui.label for="limitChangeReason">Reason for Change *</x-ui.label>
-                    <textarea id="limitChangeReason" wire:model="limitChangeReason" rows="2" placeholder="e.g., Adjustment following Q1 credit risk assessment..." class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 text-zinc-800 dark:text-zinc-100 text-xs focus:ring-2 focus:ring-apeiron-ink/20"></textarea>
+                    <textarea id="limitChangeReason" wire:model="limitChangeReason" rows="2" placeholder="e.g., Adjustment following Q1 credit risk assessment..." class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 text-zinc-800 dark:text-zinc-100 text-xs focus:ring-2 focus:ring-ring/20"></textarea>
                     @error('limitChangeReason') <span class="text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
             </div>
@@ -236,7 +236,7 @@
 
                 <div>
                     <x-ui.label for="statusChangeReason">Reason for Status Change *</x-ui.label>
-                    <textarea id="statusChangeReason" wire:model="statusChangeReason" rows="3" placeholder="Enter reason for status change..." class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 text-zinc-800 dark:text-zinc-100 text-xs focus:ring-2 focus:ring-apeiron-ink/20"></textarea>
+                    <textarea id="statusChangeReason" wire:model="statusChangeReason" rows="3" placeholder="Enter reason for status change..." class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-800 p-2.5 text-zinc-800 dark:text-zinc-100 text-xs focus:ring-2 focus:ring-ring/20"></textarea>
                     @error('statusChangeReason') <span class="text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
             </div>
@@ -271,7 +271,7 @@
                 @forelse($selectedCustomer->creditLogs as $log)
                     <div class="p-3.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs flex flex-col gap-1.5 bg-zinc-50/50 dark:bg-zinc-800/30">
                         <div class="flex items-center justify-between">
-                            <span class="font-bold text-zinc-900 dark:text-white uppercase tracking-wider font-mono">{{ $log->event_type }}</span>
+                            <span class="font-bold text-zinc-900 dark:text-white uppercase tracking-wider font-sans">{{ $log->event_type }}</span>
                             <span class="text-zinc-400 text-[11px]">{{ $log->created_at->format('d/m/Y H:i:s') }}</span>
                         </div>
                         <p class="text-zinc-600 dark:text-zinc-300">{{ $log->reason }}</p>

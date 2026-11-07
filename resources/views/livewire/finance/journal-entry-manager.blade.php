@@ -50,11 +50,11 @@
                 <span>From:</span>
                 <input type="date"
                        wire:model.live="dateFrom"
-                       class="px-2.5 py-1.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none font-mono">
+                       class="px-2.5 py-1.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none font-sans">
                 <span>To:</span>
                 <input type="date"
                        wire:model.live="dateTo"
-                       class="px-2.5 py-1.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none font-mono">
+                       class="px-2.5 py-1.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none font-sans">
             </div>
         </div>
     </div>
@@ -85,10 +85,10 @@
     >
         @foreach ($journals as $journal)
                         <tr class="hover:bg-muted/40 transition-colors">
-                            <td class="px-4 py-3 font-mono font-medium text-foreground">
+                            <td class="px-4 py-3 font-sans font-medium text-foreground">
                                 {{ $journal->journal_number }}
                             </td>
-                            <td class="px-4 py-3 font-mono text-muted-foreground text-xs">
+                            <td class="px-4 py-3 font-sans text-muted-foreground text-xs">
                                 {{ $journal->posting_date->format('d M Y') }}
                             </td>
                             <td class="px-4 py-3">
@@ -98,10 +98,10 @@
                             <td class="px-4 py-3 text-muted-foreground max-w-xs truncate text-xs" title="{{ $journal->notes }}">
                                 {{ $journal->notes ?: '-' }}
                             </td>
-                            <td class="px-4 py-3 text-right font-mono font-semibold text-foreground tabular-nums">
+                            <td class="px-4 py-3 text-right font-sans font-semibold text-foreground tabular-nums">
                                 Rp {{ number_format((float) $journal->total_debit, 2) }}
                             </td>
-                            <td class="px-4 py-3 text-right font-mono font-semibold text-foreground tabular-nums">
+                            <td class="px-4 py-3 text-right font-sans font-semibold text-foreground tabular-nums">
                                 Rp {{ number_format((float) $journal->total_credit, 2) }}
                             </td>
                             <td class="px-4 py-3 text-center">
@@ -149,7 +149,7 @@
                             <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Posting Date</label>
                             <input type="date"
                                    wire:model="postingDate"
-                                   class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-mono">
+                                   class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-sans">
                             @error('postingDate') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
 
@@ -230,7 +230,7 @@
                                                        step="0.01"
                                                        min="0"
                                                        wire:model.live.debounce.300ms="lines.{{ $index }}.debit_amount"
-                                                       class="w-full px-2.5 py-1.5 text-xs text-right font-mono rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-semibold">
+                                                       class="w-full px-2.5 py-1.5 text-xs text-right font-sans rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-semibold">
                                                 @error("lines.{$index}.debit_amount") <span class="text-[10px] text-rose-500 block text-right">{{ $message }}</span> @enderror
                                             </td>
                                             <td class="p-2">
@@ -238,7 +238,7 @@
                                                        step="0.01"
                                                        min="0"
                                                        wire:model.live.debounce.300ms="lines.{{ $index }}.credit_amount"
-                                                       class="w-full px-2.5 py-1.5 text-xs text-right font-mono rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-semibold">
+                                                       class="w-full px-2.5 py-1.5 text-xs text-right font-sans rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-semibold">
                                                 @error("lines.{$index}.credit_amount") <span class="text-[10px] text-rose-500 block text-right">{{ $message }}</span> @enderror
                                             </td>
                                             <td class="p-2 text-center">
@@ -268,13 +268,13 @@
                                 <span class="text-xs font-bold {{ $balance['isBalanced'] ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400' }}">
                                     {{ $balance['isBalanced'] ? 'Journal Balanced (Ready to Post)' : 'Journal Unbalanced' }}
                                 </span>
-                                <span class="text-[11px] text-zinc-500 block font-mono">
+                                <span class="text-[11px] text-zinc-500 block font-sans">
                                     Difference: Rp {{ number_format((float) abs((float) $balance['difference']), 2) }}
                                 </span>
                             </div>
                         </div>
 
-                        <div class="flex items-center gap-6 font-mono text-xs">
+                        <div class="flex items-center gap-6 font-sans text-xs">
                             <div class="text-right">
                                 <span class="text-[10px] text-zinc-400 block uppercase">Total Debit</span>
                                 <span class="font-bold text-zinc-950 dark:text-white">Rp {{ number_format((float) $balance['totalDebit'], 2) }}</span>
@@ -315,7 +315,7 @@
                 
                 <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
                     <div>
-                        <h3 class="text-base font-bold text-zinc-950 dark:text-white font-mono">
+                        <h3 class="text-base font-bold text-zinc-950 dark:text-white font-sans">
                             {{ $selectedJournal->journal_number }}
                         </h3>
                         <p class="text-xs text-zinc-500">Posting Date: {{ $selectedJournal->posting_date->format('d M Y') }} • Type: {{ $selectedJournal->journal_type->value }}</p>
@@ -357,19 +357,19 @@
                             <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
                                 @foreach ($selectedJournal->lines as $line)
                                     <tr>
-                                        <td class="px-3 py-2 font-mono text-zinc-900 dark:text-zinc-100 font-medium">{{ $line->account?->account_code ?? $line->account_id }}</td>
+                                        <td class="px-3 py-2 font-sans text-zinc-900 dark:text-zinc-100 font-medium">{{ $line->account?->account_code ?? $line->account_id }}</td>
                                         <td class="px-3 py-2 text-zinc-800 dark:text-zinc-200">{{ $line->account?->account_name ?? '-' }}</td>
                                         <td class="px-3 py-2 text-zinc-500">{{ $line->description ?: '-' }}</td>
-                                        <td class="px-3 py-2 text-right font-mono font-medium text-zinc-900 dark:text-zinc-100">
+                                        <td class="px-3 py-2 text-right font-sans font-medium text-zinc-900 dark:text-zinc-100">
                                             {{ (float) $line->debit_amount > 0 ? 'Rp ' . number_format((float) $line->debit_amount, 2) : '-' }}
                                         </td>
-                                        <td class="px-3 py-2 text-right font-mono font-medium text-zinc-900 dark:text-zinc-100">
+                                        <td class="px-3 py-2 text-right font-sans font-medium text-zinc-900 dark:text-zinc-100">
                                             {{ (float) $line->credit_amount > 0 ? 'Rp ' . number_format((float) $line->credit_amount, 2) : '-' }}
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
-                            <tfoot class="bg-zinc-50 dark:bg-zinc-900 font-mono font-bold text-xs border-t border-zinc-200 dark:border-zinc-800">
+                            <tfoot class="bg-zinc-50 dark:bg-zinc-900 font-sans font-bold text-xs border-t border-zinc-200 dark:border-zinc-800">
                                 <tr>
                                     <td colspan="3" class="px-3 py-2 text-right">Total</td>
                                     <td class="px-3 py-2 text-right">Rp {{ number_format((float) $selectedJournal->total_debit, 2) }}</td>

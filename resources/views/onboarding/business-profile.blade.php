@@ -63,7 +63,7 @@
                             @if (!empty($ownerPhone))
                             <div class="px-4 py-2.5 flex items-center justify-between">
                                 <dt class="text-xs font-medium text-slate-500">Phone / WhatsApp</dt>
-                                <dd class="text-xs sm:text-sm text-slate-800 font-mono text-right">{{ $ownerPhone }}</dd>
+                                <dd class="text-xs sm:text-sm text-slate-800 font-sans text-right">{{ $ownerPhone }}</dd>
                             </div>
                             @endif
                             <div class="px-4 py-2.5 flex items-center justify-between">

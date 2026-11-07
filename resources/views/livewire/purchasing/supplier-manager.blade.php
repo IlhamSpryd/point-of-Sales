@@ -66,7 +66,7 @@
                     <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
                         <td class="px-6 py-4">
                             <div class="font-bold text-zinc-900 dark:text-white">{{ $supplier->name }}</div>
-                            <div class="text-xs text-zinc-500 font-mono">{{ $supplier->code }}</div>
+                            <div class="text-xs text-zinc-500 font-sans">{{ $supplier->code }}</div>
                             @if($supplier->tax_id)
                                 <div class="text-[11px] text-zinc-400 mt-0.5">Tax ID: {{ $supplier->tax_id }}</div>
                             @endif
@@ -220,13 +220,13 @@
 
                 <div>
                     <x-ui.label for="address">Address</x-ui.label>
-                    <textarea id="address" wire:model="address" rows="2" placeholder="Office or warehouse address..." class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-apeiron-ink/20 focus:border-apeiron-ink"></textarea>
+                    <textarea id="address" wire:model="address" rows="2" placeholder="Office or warehouse address..." class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-primary"></textarea>
                     <x-input-error :messages="$errors->get('address')" class="mt-1" />
                 </div>
 
                 <div>
                     <x-ui.label for="notes">Additional Notes</x-ui.label>
-                    <textarea id="notes" wire:model="notes" rows="2" placeholder="Special terms, warranty conditions, notes..." class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-apeiron-ink/20 focus:border-apeiron-ink"></textarea>
+                    <textarea id="notes" wire:model="notes" rows="2" placeholder="Special terms, warranty conditions, notes..." class="mt-1 w-full rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ring/20 focus:border-primary"></textarea>
                     <x-input-error :messages="$errors->get('notes')" class="mt-1" />
                 </div>
             </form>

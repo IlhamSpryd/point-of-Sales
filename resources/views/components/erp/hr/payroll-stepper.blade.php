@@ -35,7 +35,7 @@
                             @if ($isCompleted)
                                 <span class="material-symbols-rounded text-base font-bold" aria-hidden="true">check</span>
                             @else
-                                <span class="font-mono">{{ $stepNum }}</span>
+                                <span class="font-sans">{{ $stepNum }}</span>
                             @endif
                         </div>
 

@@ -52,7 +52,7 @@
                         <h3 id="modifier-picker-title" class="font-headline-sm text-[16px] font-semibold text-foreground">
                             {{ $selectingProduct->product_name }}
                         </h3>
-                        <span class="text-[13px] text-muted-foreground font-mono">
+                        <span class="text-[13px] text-muted-foreground font-sans tabular-nums">
                             Rp {{ number_format($selectingProduct->product_price, 0, ',', '.') }}
                         </span>
                     </div>
@@ -93,7 +93,7 @@
                                     <span class="text-xs">{{ $mod->name }}</span>
                                     @if ($mod->extra_price > 0)
                                         <span :class="localMods.includes({{ $mod->id }}) ? 'text-white/80' : 'text-muted-foreground'"
-                                            class="text-[11px] font-mono">
+                                            class="text-[11px] font-sans tabular-nums">
                                             +Rp{{ number_format($mod->extra_price, 0, ',', '.') }}
                                         </span>
                                     @endif
@@ -121,7 +121,7 @@
                         class="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-foreground font-bold hover:bg-muted active:scale-95 transition-all">
                         <span class="material-symbols-rounded text-[16px]">remove</span>
                     </button>
-                    <span class="font-mono font-semibold text-[15px] px-2 text-foreground" x-text="localQty"></span>
+                    <span class="font-sans tabular-nums font-semibold text-[15px] px-2 text-foreground" x-text="localQty"></span>
                     <button type="button" x-on:click="localQty++"
                         aria-label="Increase quantity"
                         class="w-8 h-8 rounded-lg bg-white border border-border flex items-center justify-center text-foreground font-bold hover:bg-muted active:scale-95 transition-all">

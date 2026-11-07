@@ -27,7 +27,7 @@
     <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-border dark:border-zinc-800">
         <div class="relative w-full sm:w-80">
             <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search discounts..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search discounts..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-zinc-800 dark:text-zinc-100">
         </div>
     </div>
 
@@ -49,24 +49,24 @@
                     @forelse($discounts as $discount)
                         <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
                             <td class="px-6 py-4">
-                                <div class="font-semibold text-apeiron-ink dark:text-white">{{ $discount->name }}</div>
-                                <div class="text-xs text-zinc-400 font-mono mt-0.5">{{ $discount->code ?? 'No Code' }}</div>
+                                <div class="font-semibold text-foreground dark:text-white">{{ $discount->name }}</div>
+                                <div class="text-xs text-zinc-400 font-sans mt-0.5">{{ $discount->code ?? 'No Code' }}</div>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <div class="font-semibold text-zinc-900 dark:text-white font-mono tabular-nums">
+                                <div class="font-semibold text-zinc-900 dark:text-white font-sans tabular-nums">
                                     {{ $discount->type === 'percentage' ? $discount->value . '%' : 'Rp ' . number_format((float) $discount->value, 0, ',', '.') }}
                                 </div>
                                 @if($discount->type === 'percentage' && $discount->max_discount_amount)
-                                    <div class="text-[11px] text-zinc-400 font-mono tabular-nums mt-0.5">
+                                    <div class="text-[11px] text-zinc-400 font-sans tabular-nums mt-0.5">
                                         Max: Rp {{ number_format((float) $discount->max_discount_amount, 0, ',', '.') }}
                                     </div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-right text-xs text-zinc-600 dark:text-zinc-400 font-mono tabular-nums">
+                            <td class="px-6 py-4 text-right text-xs text-zinc-600 dark:text-zinc-400 font-sans tabular-nums">
                                 Rp {{ number_format((float) $discount->min_purchase_amount, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <div class="text-xs font-mono font-bold text-zinc-800 dark:text-zinc-200">
+                                <div class="text-xs font-sans font-bold text-zinc-800 dark:text-zinc-200">
                                     {{ $discount->redemptions_count }} / {{ $discount->usage_limit ?? '∞' }}
                                 </div>
                                 <div class="mt-1">
@@ -135,7 +135,7 @@
 
                     <div>
                         <x-ui.label for="discount-code">Voucher Code</x-ui.label>
-                        <x-ui.input id="discount-code" type="text" wire:model="code" placeholder="Leave empty if not a voucher" class="uppercase font-mono" />
+                        <x-ui.input id="discount-code" type="text" wire:model="code" placeholder="Leave empty if not a voucher" class="uppercase font-sans" />
                         @error('code') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                         <p class="text-[11px] text-zinc-400 mt-1">Leave empty for automatic or manual cashier discounts.</p>
                     </div>
@@ -190,7 +190,7 @@
                     <div class="col-span-1 md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                         <label class="flex items-center gap-3 p-3.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer">
                             <input wire:model="is_stackable" id="is_stackable" type="checkbox"
-                                class="rounded border-zinc-300 text-apeiron-primary shadow-xs focus:ring-apeiron-primary">
+                                class="rounded border-zinc-300 text-primary shadow-xs focus:ring-ring">
                             <div>
                                 <span class="block text-xs font-semibold text-zinc-900 dark:text-zinc-100">Stackable Discount</span>
                                 <span class="block text-[11px] text-zinc-500">Allow discount to be combined with other promotions.</span>
@@ -199,7 +199,7 @@
 
                         <label class="flex items-center gap-3 p-3.5 bg-zinc-50 dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 cursor-pointer">
                             <input wire:model="is_active" id="is_active" type="checkbox"
-                                class="rounded border-zinc-300 text-apeiron-primary shadow-xs focus:ring-apeiron-primary">
+                                class="rounded border-zinc-300 text-primary shadow-xs focus:ring-ring">
                             <div>
                                 <span class="block text-xs font-semibold text-zinc-900 dark:text-zinc-100">Active Status</span>
                                 <span class="block text-[11px] text-zinc-500">Discount is available for transaction redemption.</span>

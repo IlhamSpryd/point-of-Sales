@@ -25,17 +25,17 @@
     <div x-data="orderStatus(@js($config))" class="pb-8">
 
         <section class="card-surface flex flex-col items-center px-6 py-10 text-center mt-6" aria-live="polite">
-            <div class="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-apeiron-surface"
+            <div class="mb-5 flex h-20 w-20 items-center justify-center rounded-full bg-secondary"
                  :class="isPending ? 'animate-pulse' : ''">
                 <span class="material-symbols-rounded text-[40px]" :class="view.critical ? 'text-rose-600' : ''" x-text="view.icon"></span>
             </div>
             <h1 class="text-[20px] font-bold tracking-tight" x-text="view.title"></h1>
-            <p class="mt-2 max-w-xs text-[14px] text-apeiron-muted" x-text="view.text"></p>
+            <p class="mt-2 max-w-xs text-[14px] text-muted-foreground" x-text="view.text"></p>
             
             {{-- Tombol Snap Fallback (Pastikan ini selalu ada di HTML jika token tersedia) --}}
             @if ($snapToken)
                 <button type="button" x-show="isPending" @click="pay()" x-cloak
-                        class="mt-6 flex min-h-12 w-full max-w-[200px] items-center justify-center gap-2 rounded-xl bg-apeiron-ink font-semibold text-white shadow-md transition-all hover:bg-primary/90 active:scale-[0.98]">
+                        class="mt-6 flex min-h-12 w-full max-w-[200px] items-center justify-center gap-2 rounded-xl bg-primary font-semibold text-white shadow-md transition-all hover:bg-primary/90 active:scale-[0.98]">
                     <span class="material-symbols-rounded text-[18px]">payments</span> <span class="text-[15px]">Pay Now</span>
                 </button>
             @endif
@@ -50,14 +50,14 @@
         <section class="card-surface mt-4 p-5">
             <dl class="space-y-3 text-[14px]">
                 <div class="flex justify-between gap-4">
-                    <dt class="text-apeiron-muted">Order Number</dt>
-                    <dd class="font-mono font-bold">{{ $order->order_code }}</dd>
+                    <dt class="text-muted-foreground">Order Number</dt>
+                    <dd class="font-sans font-bold">{{ $order->order_code }}</dd>
                 </div>
                 <div class="flex justify-between gap-4">
-                    <dt class="text-apeiron-muted">Table</dt>
+                    <dt class="text-muted-foreground">Table</dt>
                     <dd class="font-semibold">{{ $order->table?->table_name ?? '-' }}</dd>
                 </div>
-                <div class="flex justify-between gap-4 border-t border-apeiron-border pt-3">
+                <div class="flex justify-between gap-4 border-t border-border pt-3">
                     <dt class="font-semibold">Total Amount</dt>
                     <dd class="text-[17px] font-extrabold tabular-nums">Rp {{ number_format($order->order_amount, 0, ',', '.') }}</dd>
                 </div>
@@ -67,7 +67,7 @@
         <div class="mt-5 space-y-3">
             @if ($menuUrl)
                 <a href="{{ $menuUrl }}" x-show="!isPending" x-cloak
-                   class="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border border-apeiron-border bg-white font-semibold shadow-sm transition-all hover:bg-apeiron-bg active:scale-[0.98]">
+                   class="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border border-border bg-white font-semibold shadow-sm transition-all hover:bg-card active:scale-[0.98]">
                     <span class="material-symbols-rounded text-[20px]">restaurant_menu</span> <span class="text-[15px]">Back to Menu</span>
                 </a>
                 
@@ -75,7 +75,7 @@
                 <form action="{{ route('customer.checkout.reorder') }}" method="POST" x-show="!isPending" x-cloak>
                     @csrf
                     <button type="submit"
-                            class="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-apeiron-surface font-semibold shadow-sm transition-all hover:bg-apeiron-bg active:scale-[0.98]">
+                            class="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-secondary font-semibold shadow-sm transition-all hover:bg-card active:scale-[0.98]">
                         <span class="material-symbols-rounded text-[20px]">replay</span> <span class="text-[15px]">Reorder Items</span>
                     </button>
                 </form>

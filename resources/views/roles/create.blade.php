@@ -44,7 +44,7 @@
                 <!-- Permissions Row -->
                 <div class="pt-4 border-t border-border dark:border-zinc-800">
                     <div class="mb-4">
-                        <h5 class="text-base font-semibold text-apeiron-ink dark:text-zinc-100">Module Access Privileges (RBAC)</h5>
+                        <h5 class="text-base font-semibold text-foreground dark:text-zinc-100">Module Access Privileges (RBAC)</h5>
                         <p class="text-sm text-zinc-500">Select specific modules and access permissions granted to this role.</p>
                     </div>
 
@@ -59,50 +59,50 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8">
                         <!-- Cashier & Transactions -->
                         <label class="flex items-start gap-3 cursor-pointer group">
-                            <input type="checkbox" name="permissions[can_access_pos]" value="1" {{ old('permissions.can_access_pos') ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
+                            <input type="checkbox" name="permissions[can_access_pos]" value="1" {{ old('permissions.can_access_pos') ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-ring/20 transition-colors">
                             <div>
-                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">POS Screen Access</span>
+                                <span class="block text-sm font-medium text-foreground dark:text-zinc-200 group-hover:text-primary transition-colors">POS Screen Access</span>
                                 <span class="block text-xs text-zinc-500">Process checkout transactions and cashier duties.</span>
                             </div>
                         </label>
 
                         <label class="flex items-start gap-3 cursor-pointer group">
-                            <input type="checkbox" name="permissions[can_void_order]" value="1" {{ old('permissions.can_void_order') ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
+                            <input type="checkbox" name="permissions[can_void_order]" value="1" {{ old('permissions.can_void_order') ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-ring/20 transition-colors">
                             <div>
-                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">Void Authority</span>
+                                <span class="block text-sm font-medium text-foreground dark:text-zinc-200 group-hover:text-primary transition-colors">Void Authority</span>
                                 <span class="block text-xs text-zinc-500">Cancel paid orders and void receipts.</span>
                             </div>
                         </label>
 
                         <label class="flex items-start gap-3 cursor-pointer group">
-                            <input type="checkbox" name="permissions[can_give_discount]" value="1" {{ old('permissions.can_give_discount') ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
+                            <input type="checkbox" name="permissions[can_give_discount]" value="1" {{ old('permissions.can_give_discount') ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-ring/20 transition-colors">
                             <div>
-                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">Discount Privileges</span>
+                                <span class="block text-sm font-medium text-foreground dark:text-zinc-200 group-hover:text-primary transition-colors">Discount Privileges</span>
                                 <span class="block text-xs text-zinc-500">Apply manual discounts at POS.</span>
                             </div>
                         </label>
 
                         <!-- Kitchen & Operations -->
                         <label class="flex items-start gap-3 cursor-pointer group">
-                            <input type="checkbox" name="permissions[can_access_kds]" value="1" {{ old('permissions.can_access_kds') ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
+                            <input type="checkbox" name="permissions[can_access_kds]" value="1" {{ old('permissions.can_access_kds') ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-ring/20 transition-colors">
                             <div>
-                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">Kitchen Screen (KDS)</span>
+                                <span class="block text-sm font-medium text-foreground dark:text-zinc-200 group-hover:text-primary transition-colors">Kitchen Screen (KDS)</span>
                                 <span class="block text-xs text-zinc-500">Manage Kitchen Display System.</span>
                             </div>
                         </label>
 
                         <label class="flex items-start gap-3 cursor-pointer group">
-                            <input type="checkbox" name="permissions[can_manage_menu]" value="1" {{ old('permissions.can_manage_menu') ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
+                            <input type="checkbox" name="permissions[can_manage_menu]" value="1" {{ old('permissions.can_manage_menu') ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-ring/20 transition-colors">
                             <div>
-                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">Catalog Management</span>
+                                <span class="block text-sm font-medium text-foreground dark:text-zinc-200 group-hover:text-primary transition-colors">Catalog Management</span>
                                 <span class="block text-xs text-zinc-500">Modify items, pricing, and stock.</span>
                             </div>
                         </label>
 
                         <label class="flex items-start gap-3 cursor-pointer group">
-                            <input type="checkbox" name="permissions[can_view_reports]" value="1" {{ old('permissions.can_view_reports') ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
+                            <input type="checkbox" name="permissions[can_view_reports]" value="1" {{ old('permissions.can_view_reports') ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-ring/20 transition-colors">
                             <div>
-                                <span class="block text-sm font-medium text-apeiron-ink dark:text-zinc-200 group-hover:text-apeiron-primary transition-colors">Sales & Shift Reports</span>
+                                <span class="block text-sm font-medium text-foreground dark:text-zinc-200 group-hover:text-primary transition-colors">Sales & Shift Reports</span>
                                 <span class="block text-xs text-zinc-500">Access sales summaries and shift reconciliations.</span>
                             </div>
                         </label>
@@ -114,8 +114,8 @@
                     <div class="flex items-center">
                         <label class="flex items-center gap-3 cursor-pointer">
                             <input type="hidden" name="is_active" value="0">
-                            <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="w-5 h-5 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
-                            <span class="text-sm font-medium text-apeiron-ink dark:text-zinc-200">Active Role</span>
+                            <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }} class="w-5 h-5 rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-ring/20 transition-colors">
+                            <span class="text-sm font-medium text-foreground dark:text-zinc-200">Active Role</span>
                         </label>
                     </div>
                     <p class="text-xs text-zinc-500 mt-1 ml-8">Inactive roles cannot be assigned to new staff accounts.</p>

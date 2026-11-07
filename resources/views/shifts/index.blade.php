@@ -1,6 +1,6 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-bold text-xl text-apeiron-ink leading-tight">
+        <h2 class="font-bold text-xl text-foreground leading-tight">
             {{ __('Cashier Shift') }}
         </h2>
     </x-slot>

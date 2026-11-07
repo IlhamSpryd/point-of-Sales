@@ -71,7 +71,7 @@
         <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-border dark:border-zinc-800">
             <form method="GET" action="{{ route('units-of-measure.index') }}" class="relative w-full sm:w-80">
                 <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search units of measure..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search units of measure..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-zinc-800 dark:text-zinc-100">
             </form>
         </div>
 
@@ -94,10 +94,10 @@
                     <tbody class="divide-y divide-border dark:divide-zinc-800/70">
                         @forelse($unitsOfMeasure as $uom)
                             <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
-                                <td class="px-6 py-4 font-mono text-xs font-semibold text-apeiron-ink dark:text-white">{{ $uom->code }}</td>
+                                <td class="px-6 py-4 font-sans text-xs font-semibold text-foreground dark:text-white">{{ $uom->code }}</td>
                                 <td class="px-6 py-4 text-sm font-semibold text-zinc-900 dark:text-white">{{ $uom->name }}</td>
-                                <td class="px-6 py-4 text-sm text-zinc-500 text-right font-mono tabular-nums">{{ $uom->precision_scale }} decimals</td>
-                                <td class="px-6 py-4 text-sm font-medium text-right text-zinc-900 dark:text-white font-mono tabular-nums">{{ $uom->products_count }}</td>
+                                <td class="px-6 py-4 text-sm text-zinc-500 text-right font-sans tabular-nums">{{ $uom->precision_scale }} decimals</td>
+                                <td class="px-6 py-4 text-sm font-medium text-right text-zinc-900 dark:text-white font-sans tabular-nums">{{ $uom->products_count }}</td>
                                 <td class="px-6 py-4 text-center">
                                     <x-ui.badge variant="{{ $uom->is_active ? 'success' : 'neutral' }}" size="sm">
                                         {{ $uom->is_active ? 'Active' : 'Inactive' }}
@@ -159,26 +159,26 @@
                     <div>
                         <x-ui.label for="uom_code">Unit Code *</x-ui.label>
                         <input type="text" id="uom_code" name="code" x-model="code" required
-                            class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 font-mono uppercase focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
+                            class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 font-sans uppercase focus:outline-hidden focus:ring-2 focus:ring-ring/20">
                     </div>
 
                     <div>
                         <x-ui.label for="uom_name">Unit Name *</x-ui.label>
                         <input type="text" id="uom_name" name="name" x-model="name" required
-                            class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
+                            class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 focus:outline-hidden focus:ring-2 focus:ring-ring/20">
                     </div>
 
                     <div>
                         <x-ui.label for="precision_scale">Decimal Precision (Decimal Places)</x-ui.label>
                         <input type="number" id="precision_scale" name="precision_scale" x-model="precisionScale" min="0" max="4" required
-                            class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 font-mono focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
+                            class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 font-sans focus:outline-hidden focus:ring-2 focus:ring-ring/20">
                         <p class="text-[11px] text-zinc-400 mt-1">e.g. 0 for Pcs, 2 or 3 for Kg / Gram.</p>
                     </div>
 
                     <div class="flex items-center gap-2 pt-2">
                         <input type="hidden" name="is_active" value="0">
                         <input type="checkbox" id="uom_is_active" name="is_active" value="1" x-model="isActive"
-                            class="rounded border-zinc-300 text-apeiron-primary shadow-xs focus:ring-apeiron-primary">
+                            class="rounded border-zinc-300 text-primary shadow-xs focus:ring-ring">
                         <label for="uom_is_active" class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Active Status</label>
                     </div>
                 </form>

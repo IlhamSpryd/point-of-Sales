@@ -21,7 +21,7 @@
     }">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
             <div>
-                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Products</h4>
+                <h4 class="text-xl font-bold text-foreground tracking-tight">Products</h4>
                 <p class="text-sm font-medium text-muted-foreground mt-1">Manage master catalog, product types, pricing, and inventory</p>
             </div>
 
@@ -39,7 +39,7 @@
                         </x-ui.button>
 
                         <button type="button" x-show="selectedIds.length > 0" x-cloak @click="showBulkModal = true"
-                            class="inline-flex items-center gap-1.5 px-3.5 h-10 rounded-xl bg-apeiron-ink text-white hover:bg-black text-xs font-semibold shadow-sm transition-all animate-pulse">
+                            class="inline-flex items-center gap-1.5 px-3.5 h-10 rounded-xl bg-primary text-white hover:bg-black text-xs font-semibold shadow-sm transition-all animate-pulse">
                             <span class="material-symbols-rounded text-[18px]">edit_note</span>
                             <span>Bulk Edit (<span x-text="selectedIds.length"></span>)</span>
                         </button>
@@ -134,7 +134,7 @@
                                 @endif
                                 <div>
                                     <div class="font-semibold text-foreground text-sm">{{ $product->product_name }}</div>
-                                    <div class="font-mono text-xs text-muted-foreground">
+                                    <div class="font-sans font-medium text-xs text-muted-foreground tracking-wide">
                                         {{ $product->product_code }}
                                         @if($product->barcode)
                                              <span class="text-muted-foreground/80 ml-1">[{{ $product->barcode }}]</span>
@@ -235,7 +235,7 @@
                     <div>
                         <x-form-label for="bulk_action">Select Bulk Action <span class="text-danger-600">*</span></x-form-label>
                         <select id="bulk_action" name="action" x-model="bulkAction" required
-                            class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                            class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-primary focus:ring-1 focus:ring-ring">
                             <option value="update_status">Update Product Lifecycle Status</option>
                             <option value="update_category">Move to Another Category</option>
                             <option value="update_price">Adjust Selling Price</option>
@@ -247,7 +247,7 @@
                     <div x-show="bulkAction === 'update_status'" x-cloak>
                         <x-form-label for="bulk_status">Select New Status</x-form-label>
                         <select id="bulk_status" name="status"
-                            class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                            class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-primary focus:ring-1 focus:ring-ring">
                             <option value="active">Active (Available in POS & Menu)</option>
                             <option value="inactive">Inactive</option>
                             <option value="draft">Draft</option>
@@ -259,7 +259,7 @@
                     <div x-show="bulkAction === 'update_category'" x-cloak>
                         <x-form-label for="bulk_category">Select New Category</x-form-label>
                         <select id="bulk_category" name="category_id"
-                            class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                            class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-primary focus:ring-1 focus:ring-ring">
                             <option value="">-- No Category --</option>
                             @foreach ($categories as $cat)
                                 <option value="{{ $cat->id }}">{{ $cat->category_name }}</option>
@@ -272,7 +272,7 @@
                         <div>
                             <x-form-label for="bulk_price_mode">Adjustment Mode</x-form-label>
                             <select id="bulk_price_mode" name="price_mode"
-                                class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                                class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-primary focus:ring-1 focus:ring-ring">
                                 <option value="fixed">Set Fixed Price (Rp)</option>
                                 <option value="percentage_increase">Increase by (%)</option>
                                 <option value="percentage_decrease">Decrease by (%)</option>
@@ -281,7 +281,7 @@
                         <div>
                             <x-form-label for="bulk_price_value">Adjustment Value</x-form-label>
                             <input type="number" id="bulk_price_value" name="price_value" step="0.01" min="0" value="0"
-                                class="w-full h-10 px-3 rounded-xl border border-border text-sm focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                                class="w-full h-10 px-3 rounded-xl border border-border text-sm focus:border-primary focus:ring-1 focus:ring-ring">
                         </div>
                     </div>
 
@@ -290,7 +290,7 @@
                         <div>
                             <x-form-label for="bulk_store_id">Select Branch</x-form-label>
                             <select id="bulk_store_id" name="store_id"
-                                class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-apeiron-ink focus:ring-1 focus:ring-apeiron-ink">
+                                class="w-full h-10 px-3 rounded-xl border border-border text-sm bg-white focus:border-primary focus:ring-1 focus:ring-ring">
                                 @foreach ($stores as $st)
                                     <option value="{{ $st->id }}">{{ $st->name }}</option>
                                 @endforeach
@@ -298,8 +298,8 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <input type="checkbox" id="bulk_is_available" name="is_available" value="1" checked
-                                class="rounded border-gray-300 text-apeiron-ink focus:ring-apeiron-ink">
-                            <label for="bulk_is_available" class="text-sm font-medium text-apeiron-ink">Available at this branch</label>
+                                class="rounded border-gray-300 text-foreground focus:ring-ring">
+                            <label for="bulk_is_available" class="text-sm font-medium text-foreground">Available at this branch</label>
                         </div>
                     </div>
 

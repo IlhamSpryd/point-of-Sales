@@ -75,12 +75,12 @@
         @foreach($grns as $grn)
                     <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
                         <td class="px-6 py-4">
-                            <div class="font-bold text-zinc-900 dark:text-white font-mono">{{ $grn->grn_number }}</div>
+                            <div class="font-bold text-zinc-900 dark:text-white font-sans">{{ $grn->grn_number }}</div>
                             <div class="text-xs text-zinc-500">{{ \Carbon\Carbon::parse($grn->received_date)->format('d M Y') }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="font-medium text-zinc-800 dark:text-zinc-200 font-mono">{{ $grn->purchaseOrder?->po_number ?? 'PO #' . $grn->purchase_order_id }}</div>
-                            <div class="text-xs text-zinc-500 font-mono">DO: {{ $grn->delivery_order_number }}</div>
+                            <div class="font-medium text-zinc-800 dark:text-zinc-200 font-sans">{{ $grn->purchaseOrder?->po_number ?? 'PO #' . $grn->purchase_order_id }}</div>
+                            <div class="text-xs text-zinc-500 font-sans">DO: {{ $grn->delivery_order_number }}</div>
                         </td>
                         <td class="px-6 py-4">
                             <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $grn->purchaseOrder?->supplier?->name ?? 'Vendor' }}</div>
@@ -225,7 +225,7 @@
                                         <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $line['item_name'] }}</div>
                                         <div class="text-[10px] text-zinc-400 uppercase">{{ $line['item_type'] }}</div>
                                     </td>
-                                    <td class="px-3 py-2 font-mono uppercase">{{ $line['purchase_uom'] }}</td>
+                                    <td class="px-3 py-2 font-sans uppercase">{{ $line['purchase_uom'] }}</td>
                                     <td class="px-3 py-2 text-right font-medium text-zinc-500 tabular-nums">{{ (float) $line['ordered_qty'] }}</td>
                                     <td class="px-3 py-2 text-right font-medium text-amber-600 tabular-nums">{{ (float) $line['remaining_qty'] }}</td>
                                     <td class="px-3 py-2 text-right">
@@ -272,7 +272,7 @@
         <x-slot:title>
             @if($selectedGrn)
                 <div>
-                    <span class="font-mono">{{ $selectedGrn->grn_number }}</span>
+                    <span class="font-sans">{{ $selectedGrn->grn_number }}</span>
                     <span class="ml-2">
                         <x-ui.badge variant="success">{{ $selectedGrn->status?->label() ?? $selectedGrn->status }}</x-ui.badge>
                     </span>
@@ -289,12 +289,12 @@
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800 text-xs">
                     <div>
                         <div class="text-zinc-400 uppercase font-bold text-[10px]">PO Reference</div>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5 font-mono">{{ $selectedGrn->purchaseOrder?->po_number }}</div>
+                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5 font-sans">{{ $selectedGrn->purchaseOrder?->po_number }}</div>
                         <div class="text-zinc-500">{{ $selectedGrn->purchaseOrder?->supplier?->name }}</div>
                     </div>
                     <div>
                         <div class="text-zinc-400 uppercase font-bold text-[10px]">Supplier Delivery Order</div>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5 font-mono">{{ $selectedGrn->delivery_order_number }}</div>
+                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5 font-sans">{{ $selectedGrn->delivery_order_number }}</div>
                     </div>
                     <div>
                         <div class="text-zinc-400 uppercase font-bold text-[10px]">Receipt Date</div>
@@ -329,7 +329,7 @@
                                         </div>
                                         <div class="text-[10px] text-zinc-400 uppercase">{{ $line->purchasable_type }}</div>
                                     </td>
-                                    <td class="px-4 py-2.5 font-mono uppercase">{{ $line->purchase_uom }}</td>
+                                    <td class="px-4 py-2.5 font-sans uppercase">{{ $line->purchase_uom }}</td>
                                     <td class="px-4 py-2.5 text-right font-medium tabular-nums">{{ (float) $line->received_quantity }}</td>
                                     <td class="px-4 py-2.5 text-right font-semibold text-emerald-600 tabular-nums">{{ (float) $line->accepted_quantity }}</td>
                                     <td class="px-4 py-2.5 text-right text-rose-500 tabular-nums">{{ (float) $line->rejected_quantity }}</td>

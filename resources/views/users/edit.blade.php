@@ -66,7 +66,7 @@
                         <x-form-label for="role_id">Select Role</x-form-label>
                         <div class="relative">
                             <select id="role_id" name="role_id" 
-                                    class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-apeiron-ink dark:text-zinc-100 appearance-none focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 transition-all duration-200 shadow-xs {{ $errors->has('role_id') ? 'input-error' : '' }}" required>
+                                    class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground dark:text-zinc-100 appearance-none focus:outline-hidden focus:ring-2 focus:ring-ring/20 transition-all duration-200 shadow-xs {{ $errors->has('role_id') ? 'input-error' : '' }}" required>
                                 <option value="">Select Role</option>
                                 @foreach($roles as $role)
                                     <option value="{{ $role->id }}" {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>
@@ -86,8 +86,8 @@
                     <div class="flex items-center pt-8">
                         <label class="flex items-center gap-3 cursor-pointer">
                             <input type="hidden" name="is_active" value="0">
-                            <input type="checkbox" name="is_active" value="1" {{ old('is_active', $user->is_active) ? 'checked' : '' }} class="w-5 h-5 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
-                            <span class="text-sm font-medium text-apeiron-ink dark:text-zinc-200">Active Employee</span>
+                            <input type="checkbox" name="is_active" value="1" {{ old('is_active', $user->is_active) ? 'checked' : '' }} class="w-5 h-5 rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-ring/20 transition-colors">
+                            <span class="text-sm font-medium text-foreground dark:text-zinc-200">Active Employee</span>
                         </label>
                     </div>
                 </div>

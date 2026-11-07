@@ -8,7 +8,7 @@
                     <a href="{{ route('shifts.index') }}" title="Manage Cashier Shift"
                         class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-medium border border-emerald-200 hover:bg-emerald-100 transition-colors">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span class="font-mono">Shift #{{ $this->activeShift->id }}</span>
+                        <span class="font-sans tabular-nums">Shift #{{ $this->activeShift->id }}</span>
                     </a>
                 @endif
             </div>
@@ -33,7 +33,7 @@
             <!-- Order / Shift ID badge -->
             <div class="flex items-center gap-1.5 px-3 h-10 bg-white border border-border rounded-lg text-muted-foreground">
                 <span class="material-symbols-rounded text-[16px]">receipt_long</span>
-                <span class="font-label-md text-[12px] font-mono text-foreground font-medium">
+                <span class="font-label-md text-[12px] font-sans tabular-nums text-foreground font-medium">
                     {{ $pendingOrderCode ? '#' . $pendingOrderCode : ($this->activeShift ? '#SHIFT-' . str_pad((string)$this->activeShift->id, 3, '0', STR_PAD_LEFT) : '#POS-ONLINE') }}
                 </span>
             </div>
@@ -61,7 +61,7 @@
                     title="Parked Orders List (F9)">
                     <span class="material-symbols-rounded text-[17px] text-muted-foreground">pause_circle</span>
                     <span>Parked Orders</span>
-                    <span class="px-1.5 py-0.5 rounded bg-primary text-white text-[10px] font-bold font-mono">{{ $this->parkedCarts->count() }}</span>
+                    <span class="px-1.5 py-0.5 rounded bg-primary text-white text-[10px] font-bold font-sans tabular-nums">{{ $this->parkedCarts->count() }}</span>
                 </button>
 
                 @if ($orderType === 'dine_in' && $this->isTablesEnabled)

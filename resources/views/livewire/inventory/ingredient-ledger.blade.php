@@ -2,8 +2,8 @@
     @include('inventory.partials.sub-nav')
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Raw Material Stock History</h4>
-            <p class="text-sm font-medium text-apeiron-muted mt-1">Historical stock movement ledger and immutable audit trail</p>
+            <h4 class="text-xl font-bold text-foreground tracking-tight">Raw Material Stock History</h4>
+            <p class="text-sm font-medium text-muted-foreground mt-1">Historical stock movement ledger and immutable audit trail</p>
         </div>
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
             <x-ui.button type="button" variant="secondary" wire:navigate href="{{ route('inventory.ingredients') }}">
@@ -11,19 +11,19 @@
             </x-ui.button>
 
             <div class="relative w-full sm:w-48">
-                <select wire:model.live="ingredient_id" class="form-input w-full pl-3.5 pr-8 py-2 rounded-lg border border-border bg-white text-xs font-medium text-apeiron-ink focus:outline-none focus:ring-1 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all shadow-xs appearance-none">
+                <select wire:model.live="ingredient_id" class="form-input w-full pl-3.5 pr-8 py-2 rounded-lg border border-border bg-white text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-primary transition-all shadow-xs appearance-none">
                     <option value="">All Raw Materials</option>
                     @foreach($ingredients as $ing)
                         <option value="{{ $ing->id }}">{{ $ing->name }}</option>
                     @endforeach
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-apeiron-muted">
+                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-muted-foreground">
                     <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
                 </div>
             </div>
             
             <div class="relative w-full sm:w-48">
-                <select wire:model.live="type" class="form-input w-full pl-3.5 pr-8 py-2 rounded-lg border border-border bg-white text-xs font-medium text-apeiron-ink focus:outline-none focus:ring-1 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all shadow-xs appearance-none">
+                <select wire:model.live="type" class="form-input w-full pl-3.5 pr-8 py-2 rounded-lg border border-border bg-white text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-primary transition-all shadow-xs appearance-none">
                     <option value="">All Movement Types</option>
                     <option value="sale_deduction">Sales Deduction (Out)</option>
                     <option value="purchase_receipt">Purchase Receipt (In)</option>
@@ -31,7 +31,7 @@
                     <option value="adjustment">Manual Adjustment</option>
                     <option value="restore_compensation">Order Cancellation (In)</option>
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-apeiron-muted">
+                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-muted-foreground">
                     <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
                 </div>
             </div>
@@ -52,17 +52,17 @@
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Timestamp</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Raw Material</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Quantity</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Quantity</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reason / Notes</th>
                 </x-slot:head>
                     @foreach ($movements as $movement)
-                        <tr class="hover:bg-apeiron-surface transition-colors duration-150">
+                        <tr class="hover:bg-secondary transition-colors duration-150">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-apeiron-ink">{{ $movement->created_at->format('d M Y') }}</div>
-                                <div class="text-xs text-apeiron-muted">{{ $movement->created_at->format('H:i') }}</div>
+                                <div class="text-sm text-foreground">{{ $movement->created_at->format('d M Y') }}</div>
+                                <div class="text-xs text-muted-foreground">{{ $movement->created_at->format('H:i') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-semibold text-apeiron-ink">{{ $movement->ingredient->name ?? '-' }}</span>
+                                <span class="text-sm font-semibold text-foreground">{{ $movement->ingredient->name ?? '-' }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php
@@ -94,7 +94,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4">
-                                <span class="text-sm text-apeiron-muted truncate max-w-xs block" title="{{ $movement->reason }}">
+                                <span class="text-sm text-muted-foreground truncate max-w-xs block" title="{{ $movement->reason }}">
                                     {{ $movement->reason ?: '-' }}
                                 </span>
                             </td>
@@ -103,7 +103,7 @@
             </x-erp.data-table>
         </div>
         @if($movements->hasPages())
-            <div class="p-4 border-t border-apeiron-border shrink-0">
+            <div class="p-4 border-t border-border shrink-0">
                 {{ $movements->links() }}
             </div>
         @endif

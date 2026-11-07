@@ -3,8 +3,8 @@
     {{-- Header & Aksi Utama --}}
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Goods Receipt <span class="sr-only">Penerimaan Barang (Goods Receipt)</span></h4>
-            <p class="text-sm font-medium text-apeiron-muted mt-1">
+            <h4 class="text-xl font-bold text-foreground tracking-tight">Goods Receipt <span class="sr-only">Penerimaan Barang (Goods Receipt)</span></h4>
+            <p class="text-sm font-medium text-muted-foreground mt-1">
                 Record physical receipt of products & ingredients, recalculate WAC valuation, and capture lot batch/expiry details
             </p>
         </div>
@@ -49,8 +49,8 @@
     <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
         <div class="relative w-full sm:w-80">
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search GRN number, supplier, PO..."
-                   class="form-input w-full pl-10 pr-4 py-2 rounded-2xl border border-apeiron-border bg-white text-apeiron-ink placeholder-apeiron-muted focus:outline-none focus:ring-2 focus:ring-apeiron-ink shadow-sm text-sm">
-            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-apeiron-muted">
+                   class="form-input w-full pl-10 pr-4 py-2 rounded-2xl border border-border bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring shadow-sm text-sm">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
                 <span class="material-symbols-rounded text-[18px]">search</span>
             </div>
         </div>
@@ -58,14 +58,14 @@
         <div class="flex items-center gap-3 w-full sm:w-auto">
             <div class="relative w-full sm:w-48">
                 <select wire:model.live="statusFilter"
-                        class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-apeiron-border bg-white text-apeiron-ink focus:outline-none focus:ring-2 focus:ring-apeiron-ink text-sm shadow-sm appearance-none">
+                        class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-sm appearance-none">
                     <option value="ALL">All Statuses</option>
                     <option value="DRAFT">Draft</option>
                     <option value="POSTED">Posted</option>
                     <option value="REVERSED">Reversed</option>
                     <option value="CANCELLED">Cancelled</option>
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-apeiron-muted">
+                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-muted-foreground">
                     <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
                 </div>
             </div>
@@ -88,8 +88,8 @@
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Received At</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Supplier / PO</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Items</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Total Value</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Items</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Total Value</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
 
@@ -116,7 +116,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-foreground">
                             {{ $receipt->items->count() }} items
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-foreground font-mono tabular-nums">
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-foreground font-sans tabular-nums">
                             Rp {{ number_format((float) $receipt->calculateTotalValue(), 2, ',', '.') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right">
@@ -144,7 +144,7 @@
             </x-erp.data-table>
         </div>
         @if ($receipts->hasPages())
-            <div class="p-4 border-t border-apeiron-border">
+            <div class="p-4 border-t border-border">
                 {{ $receipts->links() }}
             </div>
         @endif
@@ -153,7 +153,7 @@
     {{-- Modal Buat / Edit Draft --}}
     <x-ui.modal wire:model="showFormModal" maxWidth="4xl">
         <x-slot:header>
-            <h3 class="text-lg font-bold text-apeiron-ink">
+            <h3 class="text-lg font-bold text-foreground">
                 {{ $isEditing ? 'Edit Goods Receipt Draft' : 'New Goods Receipt' }}
             </h3>
         </x-slot:header>
@@ -161,32 +161,32 @@
             <div class="py-2 space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-apeiron-muted mb-1">Supplier Reference</label>
+                        <label class="block text-xs font-semibold text-muted-foreground mb-1">Supplier Reference</label>
                         <input type="text" wire:model="supplier_reference" placeholder="Supplier Name / Delivery Note No."
-                               class="form-input w-full px-3 py-2 rounded-xl border border-apeiron-border text-sm">
+                               class="form-input w-full px-3 py-2 rounded-xl border border-border text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-apeiron-muted mb-1">PO No. (Optional)</label>
+                        <label class="block text-xs font-semibold text-muted-foreground mb-1">PO No. (Optional)</label>
                         <input type="text" wire:model="purchase_order_reference" placeholder="PO-XXXX"
-                               class="form-input w-full px-3 py-2 rounded-xl border border-apeiron-border text-sm">
+                               class="form-input w-full px-3 py-2 rounded-xl border border-border text-sm">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-apeiron-muted mb-1">Receipt Date & Time *</label>
+                        <label class="block text-xs font-semibold text-muted-foreground mb-1">Receipt Date & Time *</label>
                         <input type="datetime-local" wire:model="received_at"
-                               class="form-input w-full px-3 py-2 rounded-xl border border-apeiron-border text-sm">
+                               class="form-input w-full px-3 py-2 rounded-xl border border-border text-sm">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-apeiron-muted mb-1">Notes</label>
+                    <label class="block text-xs font-semibold text-muted-foreground mb-1">Notes</label>
                     <textarea wire:model="notes" rows="2" placeholder="Receipt notes..."
-                              class="form-input w-full px-3 py-2 rounded-xl border border-apeiron-border text-sm"></textarea>
+                              class="form-input w-full px-3 py-2 rounded-xl border border-border text-sm"></textarea>
                 </div>
 
                 {{-- Daftar Baris Item --}}
                 <div class="pt-2">
                     <div class="flex items-center justify-between mb-2">
-                        <h5 class="text-sm font-bold text-apeiron-ink">Received Items</h5>
+                        <h5 class="text-sm font-bold text-foreground">Received Items</h5>
                         <button type="button" wire:click="addItemLine" class="text-xs font-semibold text-emerald-600 hover:text-emerald-800 flex items-center gap-1">
                             <span class="material-symbols-rounded text-[16px]">add_circle</span> Add Row
                         </button>
@@ -194,10 +194,10 @@
 
                     <div class="space-y-3">
                         @foreach ($items as $index => $item)
-                            <div class="p-3 rounded-2xl border border-apeiron-border bg-slate-50/50 space-y-2">
+                            <div class="p-3 rounded-2xl border border-border bg-slate-50/50 space-y-2">
                                 <div class="grid grid-cols-12 gap-2 items-center">
                                     <div class="col-span-12 sm:col-span-2">
-                                        <select wire:model.live="items.{{ $index }}.item_type" class="w-full text-xs py-1.5 px-2 rounded-lg border border-apeiron-border bg-white">
+                                        <select wire:model.live="items.{{ $index }}.item_type" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-white">
                                             <option value="product">Product</option>
                                             <option value="ingredient">Raw Material</option>
                                         </select>
@@ -205,14 +205,14 @@
 
                                     <div class="col-span-12 sm:col-span-4">
                                         @if ($item['item_type'] === 'product')
-                                            <select wire:model="items.{{ $index }}.product_id" class="w-full text-xs py-1.5 px-2 rounded-lg border border-apeiron-border bg-white">
+                                            <select wire:model="items.{{ $index }}.product_id" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-white">
                                                 <option value="">Select Product...</option>
                                                 @foreach ($products as $prod)
                                                     <option value="{{ $prod->id }}">{{ $prod->product_name }} ({{ $prod->product_code ?: 'No Code' }})</option>
                                                 @endforeach
                                             </select>
                                         @else
-                                            <select wire:model="items.{{ $index }}.ingredient_id" class="w-full text-xs py-1.5 px-2 rounded-lg border border-apeiron-border bg-white">
+                                            <select wire:model="items.{{ $index }}.ingredient_id" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-white">
                                                 <option value="">Select Raw Material...</option>
                                                 @foreach ($ingredients as $ing)
                                                     <option value="{{ $ing->id }}">{{ $ing->name }} ({{ $ing->unit }})</option>
@@ -223,12 +223,12 @@
 
                                     <div class="col-span-6 sm:col-span-2">
                                         <input type="number" step="0.0001" min="0.0001" wire:model="items.{{ $index }}.quantity_received" placeholder="Qty" title="Quantity Received"
-                                               class="w-full text-xs py-1.5 px-2 rounded-lg border border-apeiron-border bg-white text-right">
+                                               class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-white text-right">
                                     </div>
 
                                     <div class="col-span-6 sm:col-span-3">
                                         <input type="number" step="0.0001" min="0" wire:model="items.{{ $index }}.unit_cost" placeholder="Cost/Unit" title="Inbound Unit Cost"
-                                               class="w-full text-xs py-1.5 px-2 rounded-lg border border-apeiron-border bg-white text-right">
+                                               class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-white text-right">
                                     </div>
 
                                     <div class="col-span-12 sm:col-span-1 text-right">
@@ -242,11 +242,11 @@
                                 <div class="grid grid-cols-12 gap-2 text-xs">
                                     <div class="col-span-12 sm:col-span-6">
                                         <input type="text" wire:model="items.{{ $index }}.batch_number" placeholder="Batch / Lot No. (Optional)"
-                                               class="w-full text-xs py-1 px-2 rounded-lg border border-apeiron-border bg-white placeholder-slate-400">
+                                               class="w-full text-xs py-1 px-2 rounded-lg border border-border bg-white placeholder-slate-400">
                                     </div>
                                     <div class="col-span-12 sm:col-span-6">
                                         <input type="date" wire:model="items.{{ $index }}.expiry_date" placeholder="Expiry Date"
-                                               class="w-full text-xs py-1 px-2 rounded-lg border border-apeiron-border bg-white text-slate-700">
+                                               class="w-full text-xs py-1 px-2 rounded-lg border border-border bg-white text-slate-700">
                                     </div>
                                 </div>
                             </div>
@@ -255,7 +255,7 @@
                 </div>
             </div>
 
-            <div class="pt-4 border-t border-apeiron-border flex items-center justify-end gap-3">
+            <div class="pt-4 border-t border-border flex items-center justify-end gap-3">
                 <x-ui.button type="button" variant="secondary" wire:click="$set('showFormModal', false)">
                     Cancel
                 </x-ui.button>
@@ -271,8 +271,8 @@
         <x-slot:header>
             @if ($selectedReceipt)
                 <div>
-                    <h3 class="text-lg font-bold text-apeiron-ink">Receipt Details: {{ $selectedReceipt->receipt_number }}</h3>
-                    <p class="text-xs text-apeiron-muted">Branch: {{ $selectedReceipt->store->name ?? '-' }} | Created: {{ $selectedReceipt->created_at->format('d M Y H:i') }}</p>
+                    <h3 class="text-lg font-bold text-foreground">Receipt Details: {{ $selectedReceipt->receipt_number }}</h3>
+                    <p class="text-xs text-muted-foreground">Branch: {{ $selectedReceipt->store->name ?? '-' }} | Created: {{ $selectedReceipt->created_at->format('d M Y H:i') }}</p>
                 </div>
             @endif
         </x-slot:header>
@@ -281,28 +281,28 @@
                 <div class="py-2 space-y-4">
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-50 text-xs">
                         <div>
-                            <span class="text-apeiron-muted block">Status:</span>
+                            <span class="text-muted-foreground block">Status:</span>
                             <x-ui.badge :variant="$selectedReceipt->status->badgeType()">
                                 {{ $selectedReceipt->status->label() }}
                             </x-ui.badge>
                         </div>
                         <div>
-                            <span class="text-apeiron-muted block">Supplier:</span>
-                            <span class="font-semibold text-apeiron-ink">{{ $selectedReceipt->supplier_reference ?: '-' }}</span>
+                            <span class="text-muted-foreground block">Supplier:</span>
+                            <span class="font-semibold text-foreground">{{ $selectedReceipt->supplier_reference ?: '-' }}</span>
                         </div>
                         <div>
-                            <span class="text-apeiron-muted block">PO No.:</span>
-                            <span class="font-semibold text-apeiron-ink">{{ $selectedReceipt->purchase_order_reference ?: '-' }}</span>
+                            <span class="text-muted-foreground block">PO No.:</span>
+                            <span class="font-semibold text-foreground">{{ $selectedReceipt->purchase_order_reference ?: '-' }}</span>
                         </div>
                         <div>
-                            <span class="text-apeiron-muted block">Received At:</span>
-                            <span class="font-semibold text-apeiron-ink">{{ $selectedReceipt->received_at->format('d M Y H:i') }}</span>
+                            <span class="text-muted-foreground block">Received At:</span>
+                            <span class="font-semibold text-foreground">{{ $selectedReceipt->received_at->format('d M Y H:i') }}</span>
                         </div>
                     </div>
 
                     @if($selectedReceipt->notes)
-                        <div class="text-xs text-apeiron-ink p-3 rounded-xl bg-slate-50 border border-apeiron-border">
-                            <span class="font-semibold block text-apeiron-muted">Notes:</span>
+                        <div class="text-xs text-foreground p-3 rounded-xl bg-slate-50 border border-border">
+                            <span class="font-semibold block text-muted-foreground">Notes:</span>
                             {{ $selectedReceipt->notes }}
                         </div>
                     @endif
@@ -314,9 +314,9 @@
                         </div>
                     @endif
 
-                    <div class="overflow-x-auto border border-apeiron-border rounded-2xl">
-                        <table class="table-standard min-w-full divide-y divide-apeiron-border text-xs">
-                            <thead class="bg-slate-50 text-apeiron-muted uppercase">
+                    <div class="overflow-x-auto border border-border rounded-2xl">
+                        <table class="table-standard min-w-full divide-y divide-border text-xs">
+                            <thead class="bg-slate-50 text-muted-foreground uppercase">
                                 <tr>
                                     <th class="px-4 py-3 text-left">Type</th>
                                     <th class="px-4 py-3 text-left">Item Name</th>
@@ -326,15 +326,15 @@
                                     <th class="px-4 py-3 text-left">Batch / Expiry</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-apeiron-border">
+                            <tbody class="divide-y divide-border">
                                 @foreach ($selectedReceipt->items as $item)
                                     <tr>
                                         <td class="px-4 py-2 font-medium capitalize">{{ $item->item_type }}</td>
-                                        <td class="px-4 py-2 font-semibold text-apeiron-ink">{{ $item->item_name }}</td>
+                                        <td class="px-4 py-2 font-semibold text-foreground">{{ $item->item_name }}</td>
                                         <td class="px-4 py-2 text-right font-medium tabular-nums">{{ number_format((float) $item->quantity_received, 4) }}</td>
                                         <td class="px-4 py-2 text-right font-medium tabular-nums">Rp {{ number_format((float) $item->unit_cost, 2, ',', '.') }}</td>
-                                        <td class="px-4 py-2 text-right font-bold text-apeiron-ink tabular-nums">Rp {{ number_format((float) $item->subtotal, 2, ',', '.') }}</td>
-                                        <td class="px-4 py-2 text-apeiron-muted">
+                                        <td class="px-4 py-2 text-right font-bold text-foreground tabular-nums">Rp {{ number_format((float) $item->subtotal, 2, ',', '.') }}</td>
+                                        <td class="px-4 py-2 text-muted-foreground">
                                             @if($item->batch_number) Batch: {{ $item->batch_number }}<br>@endif
                                             @if($item->expiry_date) Exp: {{ $item->expiry_date->format('d/m/Y') }}@endif
                                             @if(!$item->batch_number && !$item->expiry_date) - @endif
@@ -344,8 +344,8 @@
                             </tbody>
                             <tfoot class="bg-slate-50 font-bold">
                                 <tr>
-                                    <td colspan="4" class="px-4 py-3 text-right text-apeiron-ink uppercase">Total Document Value:</td>
-                                    <td class="px-4 py-3 text-right text-apeiron-ink tabular-nums">Rp {{ number_format((float) $selectedReceipt->calculateTotalValue(), 2, ',', '.') }}</td>
+                                    <td colspan="4" class="px-4 py-3 text-right text-foreground uppercase">Total Document Value:</td>
+                                    <td class="px-4 py-3 text-right text-foreground tabular-nums">Rp {{ number_format((float) $selectedReceipt->calculateTotalValue(), 2, ',', '.') }}</td>
                                     <td></td>
                                 </tr>
                             </tfoot>
@@ -353,7 +353,7 @@
                     </div>
                 </div>
 
-                <div class="pt-4 border-t border-apeiron-border flex justify-end">
+                <div class="pt-4 border-t border-border flex justify-end">
                     <x-ui.button type="button" variant="secondary" wire:click="$set('showDetailModal', false)">
                         Close
                     </x-ui.button>
@@ -375,14 +375,14 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-apeiron-muted mb-1">Reversal Reason *</label>
+                    <label class="block text-xs font-semibold text-muted-foreground mb-1">Reversal Reason *</label>
                     <textarea wire:model="reversal_reason" rows="3" placeholder="Explain the reason for reversal..."
-                              class="form-input w-full px-3 py-2 rounded-xl border border-apeiron-border text-sm"></textarea>
+                              class="form-input w-full px-3 py-2 rounded-xl border border-border text-sm"></textarea>
                     @error('reversal_reason') <span class="text-xs text-rose-600">{{ $message }}</span> @enderror
                 </div>
             </div>
 
-            <div class="pt-4 border-t border-apeiron-border flex items-center justify-end gap-3">
+            <div class="pt-4 border-t border-border flex items-center justify-end gap-3">
                 <x-ui.button type="button" variant="secondary" wire:click="$set('showReverseModal', false)">
                     Cancel
                 </x-ui.button>

@@ -20,7 +20,7 @@
         <!-- Form Pemetaan Baru -->
         <div class="card-surface p-6 rounded-2xl border border-border dark:border-zinc-800 lg:col-span-1 h-fit shadow-xs">
             <h2 class="text-sm font-bold text-zinc-900 dark:text-white mb-5 tracking-tight border-b border-border dark:border-zinc-800 pb-3 flex items-center gap-2">
-                <span class="material-symbols-rounded text-apeiron-primary text-lg">add_link</span>
+                <span class="material-symbols-rounded text-primary text-lg">add_link</span>
                 Add New Mapping
             </h2>
 
@@ -35,7 +35,7 @@
 
                 <div>
                     <x-ui.label for="mapping-external-id">Provider SKU (External Product ID) *</x-ui.label>
-                    <x-ui.input id="mapping-external-id" type="text" wire:model="externalProductId" placeholder="e.g., GF-1234 or SKU-GF-CHICKEN" class="font-mono text-sm" />
+                    <x-ui.input id="mapping-external-id" type="text" wire:model="externalProductId" placeholder="e.g., GF-1234 or SKU-GF-CHICKEN" class="font-sans text-sm" />
                     @error('externalProductId') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
@@ -61,7 +61,7 @@
         <div class="card-surface overflow-hidden rounded-2xl border border-border dark:border-zinc-800 lg:col-span-2 flex flex-col shadow-xs">
             <div class="px-6 py-4 border-b border-border dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
                 <h2 class="text-sm font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
-                    <span class="material-symbols-rounded text-apeiron-primary text-lg">sync_alt</span>
+                    <span class="material-symbols-rounded text-primary text-lg">sync_alt</span>
                     Active Channel Mappings
                 </h2>
                 <span class="text-xs text-zinc-400">Total: {{ $mappings->total() }} SKUs</span>
@@ -84,7 +84,7 @@
                                         {{ strtoupper($mapping->provider) }}
                                     </x-ui.badge>
                                 </td>
-                                <td class="px-6 py-4 font-mono font-semibold text-zinc-900 dark:text-white text-xs">
+                                <td class="px-6 py-4 font-sans font-semibold text-zinc-900 dark:text-white text-xs">
                                     {{ $mapping->external_product_id }}
                                 </td>
                                 <td class="px-6 py-4 text-sm text-zinc-700 dark:text-zinc-300">

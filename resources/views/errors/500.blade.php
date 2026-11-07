@@ -9,7 +9,7 @@
         </div>
 
         <div>
-            <span class="text-xs font-mono font-semibold tracking-wider uppercase text-rose-600 dark:text-rose-400">Error 500 • Server Error</span>
+            <span class="text-xs font-sans font-semibold tracking-wider uppercase text-rose-600 dark:text-rose-400">Error 500 • Server Error</span>
             <h1 class="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 System Error Encountered
             </h1>

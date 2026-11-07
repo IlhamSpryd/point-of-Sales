@@ -1,19 +1,16 @@
 <div data-gsap="page-enter">
     @include('inventory.partials.sub-nav')
-    {{-- Header & Primary Action --}}
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-        <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Stock Adjustments</h4>
-            <p class="text-sm font-medium text-apeiron-muted mt-1">
-                Direct structured stock corrections: damage, expiration, shrinkage, and production waste.
-            </p>
-        </div>
-        <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+    
+    <x-erp.page-header
+        title="Stock Adjustments"
+        description="Direct structured stock corrections: damage, expiration, shrinkage, and production waste."
+    >
+        <x-slot:actions>
             <x-ui.button type="button" variant="primary" wire:click="openCreateModal" x-on:click="window.erpMotion?.pulseHighlight($el)">
                 <span class="material-symbols-rounded text-[18px]">add</span> New Stock Adjustment
             </x-ui.button>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-erp.page-header>
 
     {{-- Notification Alert --}}
     @if (session()->has('message'))
@@ -32,8 +29,8 @@
     <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
         <div class="relative w-full sm:w-80">
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search adjustment number, notes..."
-                   class="form-input w-full pl-10 pr-4 py-2 rounded-2xl border border-apeiron-border bg-white text-apeiron-ink placeholder-apeiron-muted focus:outline-none focus:ring-2 focus:ring-apeiron-ink shadow-sm text-sm">
-            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-apeiron-muted">
+                   class="form-input w-full pl-10 pr-4 py-2 rounded-2xl border border-border bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring shadow-sm text-sm">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
                 <span class="material-symbols-rounded text-[18px]">search</span>
             </div>
         </div>
@@ -41,26 +38,26 @@
         <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
             <div class="relative w-full sm:w-44">
                 <select wire:model.live="statusFilter"
-                        class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-apeiron-border bg-white text-apeiron-ink focus:outline-none focus:ring-2 focus:ring-apeiron-ink text-sm shadow-sm appearance-none">
+                        class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-sm appearance-none">
                     <option value="ALL">All Statuses</option>
                     <option value="DRAFT">Draft</option>
                     <option value="POSTED">Posted</option>
                     <option value="CANCELLED">Cancelled</option>
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-apeiron-muted">
+                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-muted-foreground">
                     <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
                 </div>
             </div>
 
             <div class="relative w-full sm:w-52">
                 <select wire:model.live="reasonFilter"
-                        class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-apeiron-border bg-white text-apeiron-ink focus:outline-none focus:ring-2 focus:ring-apeiron-ink text-sm shadow-sm appearance-none">
+                        class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-sm appearance-none">
                     <option value="ALL">All Reasons</option>
                     @foreach ($reasons as $r)
                         <option value="{{ $r->value }}">{{ $r->label() }}</option>
                     @endforeach
                 </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-apeiron-muted">
+                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-muted-foreground">
                     <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
                 </div>
             </div>
@@ -83,21 +80,21 @@
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Adjustment Date</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Reason Code</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Items</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Total Value</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Items</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Total Value</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Actions</th>
                 </x-slot:head>
 
                 @foreach ($adjustments as $adjustment)
-                    <tr class="hover:bg-apeiron-surface transition-colors duration-150">
+                    <tr class="hover:bg-secondary transition-colors duration-150">
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="text-sm font-bold text-apeiron-ink">{{ $adjustment->adjustment_number }}</span>
-                            <div class="text-xs text-apeiron-muted">Created by: {{ $adjustment->creator->name ?? 'System' }}</div>
+                            <span class="text-sm font-bold text-foreground">{{ $adjustment->adjustment_number }}</span>
+                            <div class="text-xs text-muted-foreground">Created by: {{ $adjustment->creator->name ?? 'System' }}</div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-apeiron-ink">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                             {{ $adjustment->adjusted_at->format('d M Y H:i') }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-apeiron-ink">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                             <span class="font-semibold">{{ $adjustment->reason_code->label() }}</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">
@@ -105,14 +102,14 @@
                                 {{ $adjustment->status->label() }}
                             </x-ui.badge>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-apeiron-ink">
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-foreground">
                             {{ $adjustment->items->count() }} items
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-apeiron-ink">
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-foreground">
                             Rp {{ number_format((float) $adjustment->calculateTotalValue(), 2, ',', '.') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
-                            <button wire:click="viewDetails({{ $adjustment->id }})" class="text-apeiron-ink hover:text-apeiron-muted transition-colors" title="View Details">
+                            <button wire:click="viewDetails({{ $adjustment->id }})" class="text-foreground hover:text-muted-foreground transition-colors" title="View Details">
                                 <span class="material-symbols-rounded text-[18px]">visibility</span>
                             </button>
 
@@ -130,7 +127,7 @@
             </x-erp.data-table>
         </div>
         @if ($adjustments->hasPages())
-            <div class="p-4 border-t border-apeiron-border">
+            <div class="p-4 border-t border-border">
                 {{ $adjustments->links() }}
             </div>
         @endif
@@ -139,7 +136,7 @@
     {{-- Create / Edit Draft Modal --}}
     <x-ui.modal wire:model="showFormModal" maxWidth="4xl">
         <x-slot:header>
-            <h3 class="text-lg font-bold text-apeiron-ink">
+            <h3 class="text-lg font-bold text-foreground">
                 {{ $isEditing ? 'Edit Stock Adjustment Draft' : 'New Stock Adjustment' }}
             </h3>
         </x-slot:header>
@@ -147,31 +144,31 @@
             <div class="py-2 space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-apeiron-muted mb-1">Reason Code *</label>
+                        <label class="block text-xs font-semibold text-muted-foreground mb-1">Reason Code *</label>
                         <select wire:model.live="reason_code"
-                                class="form-input w-full px-3 py-2 rounded-xl border border-apeiron-border text-sm">
+                                class="form-input w-full px-3 py-2 rounded-xl border border-border text-sm">
                             @foreach ($reasons as $r)
                                 <option value="{{ $r->value }}">{{ $r->label() }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-apeiron-muted mb-1">Adjustment Date & Time *</label>
+                        <label class="block text-xs font-semibold text-muted-foreground mb-1">Adjustment Date & Time *</label>
                         <input type="datetime-local" wire:model="adjusted_at"
-                                class="form-input w-full px-3 py-2 rounded-xl border border-apeiron-border text-sm">
+                                class="form-input w-full px-3 py-2 rounded-xl border border-border text-sm">
                     </div>
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-apeiron-muted mb-1">Notes</label>
+                    <label class="block text-xs font-semibold text-muted-foreground mb-1">Notes</label>
                     <textarea wire:model="notes" rows="2" placeholder="Adjustment notes or remarks..."
-                              class="form-input w-full px-3 py-2 rounded-xl border border-apeiron-border text-sm"></textarea>
+                              class="form-input w-full px-3 py-2 rounded-xl border border-border text-sm"></textarea>
                 </div>
 
                 {{-- Item Lines --}}
                 <div class="pt-2">
                     <div class="flex items-center justify-between mb-2">
-                        <h5 class="text-sm font-bold text-apeiron-ink">Adjustment Line Items</h5>
+                        <h5 class="text-sm font-bold text-foreground">Adjustment Line Items</h5>
                         <button type="button" wire:click="addItemLine" class="text-xs font-semibold text-emerald-600 hover:text-emerald-800 flex items-center gap-1">
                             <span class="material-symbols-rounded text-[16px]">add_circle</span> Add Line
                         </button>
@@ -179,10 +176,10 @@
 
                     <div class="space-y-3">
                         @foreach ($items as $index => $item)
-                            <div class="p-3 rounded-2xl border border-apeiron-border bg-slate-50/50 space-y-2">
+                            <div class="p-3 rounded-2xl border border-border bg-slate-50/50 space-y-2">
                                 <div class="grid grid-cols-12 gap-2 items-center">
                                     <div class="col-span-12 sm:col-span-2">
-                                        <select wire:model.live="items.{{ $index }}.item_type" class="w-full text-xs py-1.5 px-2 rounded-lg border border-apeiron-border bg-white">
+                                        <select wire:model.live="items.{{ $index }}.item_type" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-white">
                                             <option value="product">Product</option>
                                             <option value="ingredient">Raw Material</option>
                                         </select>
@@ -190,14 +187,14 @@
 
                                     <div class="col-span-12 sm:col-span-4">
                                         @if ($item['item_type'] === 'product')
-                                            <select wire:model="items.{{ $index }}.product_id" class="w-full text-xs py-1.5 px-2 rounded-lg border border-apeiron-border bg-white">
+                                            <select wire:model="items.{{ $index }}.product_id" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-white">
                                                 <option value="">Select Product...</option>
                                                 @foreach ($products as $prod)
                                                     <option value="{{ $prod->id }}">{{ $prod->product_name }} ({{ $prod->product_code ?: 'No Code' }})</option>
                                                 @endforeach
                                             </select>
                                         @else
-                                            <select wire:model="items.{{ $index }}.ingredient_id" class="w-full text-xs py-1.5 px-2 rounded-lg border border-apeiron-border bg-white">
+                                            <select wire:model="items.{{ $index }}.ingredient_id" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-white">
                                                 <option value="">Select Raw Material...</option>
                                                 @foreach ($ingredients as $ing)
                                                     <option value="{{ $ing->id }}">{{ $ing->name }} ({{ $ing->unit }})</option>
@@ -207,7 +204,7 @@
                                     </div>
 
                                     <div class="col-span-6 sm:col-span-2">
-                                        <select wire:model="items.{{ $index }}.direction" class="w-full text-xs py-1.5 px-2 rounded-lg border border-apeiron-border bg-white font-semibold">
+                                        <select wire:model="items.{{ $index }}.direction" class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-white font-semibold">
                                             <option value="OUT">Outflow (OUT)</option>
                                             <option value="IN">Inflow (IN)</option>
                                         </select>
@@ -215,7 +212,7 @@
 
                                     <div class="col-span-6 sm:col-span-3">
                                         <input type="number" step="0.0001" min="0.0001" wire:model="items.{{ $index }}.quantity" placeholder="Qty" title="Quantity"
-                                               class="w-full text-xs py-1.5 px-2 rounded-lg border border-apeiron-border bg-white text-right font-medium">
+                                               class="w-full text-xs py-1.5 px-2 rounded-lg border border-border bg-white text-right font-medium">
                                     </div>
 
                                     <div class="col-span-12 sm:col-span-1 text-right">
@@ -228,11 +225,11 @@
                                 <div class="grid grid-cols-12 gap-2 text-xs">
                                     <div class="col-span-12 sm:col-span-6">
                                         <input type="text" wire:model="items.{{ $index }}.reason_note" placeholder="Line note (optional)"
-                                               class="w-full text-xs py-1 px-2 rounded-lg border border-apeiron-border bg-white placeholder-slate-400">
+                                               class="w-full text-xs py-1 px-2 rounded-lg border border-border bg-white placeholder-slate-400">
                                     </div>
                                     <div class="col-span-12 sm:col-span-6">
                                         <input type="number" step="0.0001" min="0" wire:model="items.{{ $index }}.unit_cost_snapshot" placeholder="Unit cost snapshot (0 = auto WAC)"
-                                               class="w-full text-xs py-1 px-2 rounded-lg border border-apeiron-border bg-white text-right text-slate-700">
+                                               class="w-full text-xs py-1 px-2 rounded-lg border border-border bg-white text-right text-slate-700">
                                     </div>
                                 </div>
                             </div>
@@ -241,7 +238,7 @@
                 </div>
             </div>
 
-            <div class="pt-4 border-t border-apeiron-border flex items-center justify-end gap-3">
+            <div class="pt-4 border-t border-border flex items-center justify-end gap-3">
                 <x-ui.button type="button" variant="secondary" wire:click="$set('showFormModal', false)">
                     Cancel
                 </x-ui.button>
@@ -257,8 +254,8 @@
         <x-slot:header>
             @if ($selectedAdjustment)
                 <div>
-                    <h3 class="text-lg font-bold text-apeiron-ink">Adjustment Details: {{ $selectedAdjustment->adjustment_number }}</h3>
-                    <p class="text-xs text-apeiron-muted">Branch: {{ $selectedAdjustment->store->name ?? '-' }} | Created: {{ $selectedAdjustment->created_at->format('d M Y H:i') }}</p>
+                    <h3 class="text-lg font-bold text-foreground">Adjustment Details: {{ $selectedAdjustment->adjustment_number }}</h3>
+                    <p class="text-xs text-muted-foreground">Branch: {{ $selectedAdjustment->store->name ?? '-' }} | Created: {{ $selectedAdjustment->created_at->format('d M Y H:i') }}</p>
                 </div>
             @endif
         </x-slot:header>
@@ -267,35 +264,35 @@
                 <div class="py-2 space-y-4">
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-50 text-xs">
                         <div>
-                            <span class="text-apeiron-muted block">Status:</span>
+                            <span class="text-muted-foreground block">Status:</span>
                             <x-ui.badge :variant="$selectedAdjustment->status->badgeType()">
                                 {{ $selectedAdjustment->status->label() }}
                             </x-ui.badge>
                         </div>
                         <div>
-                            <span class="text-apeiron-muted block">Reason Code:</span>
-                            <span class="font-semibold text-apeiron-ink">{{ $selectedAdjustment->reason_code->label() }}</span>
+                            <span class="text-muted-foreground block">Reason Code:</span>
+                            <span class="font-semibold text-foreground">{{ $selectedAdjustment->reason_code->label() }}</span>
                         </div>
                         <div>
-                            <span class="text-apeiron-muted block">Adjustment Date:</span>
-                            <span class="font-semibold text-apeiron-ink">{{ $selectedAdjustment->adjusted_at->format('d M Y H:i') }}</span>
+                            <span class="text-muted-foreground block">Adjustment Date:</span>
+                            <span class="font-semibold text-foreground">{{ $selectedAdjustment->adjusted_at->format('d M Y H:i') }}</span>
                         </div>
                         <div>
-                            <span class="text-apeiron-muted block">Posted By:</span>
-                            <span class="font-semibold text-apeiron-ink">{{ $selectedAdjustment->poster->name ?? '-' }}</span>
+                            <span class="text-muted-foreground block">Posted By:</span>
+                            <span class="font-semibold text-foreground">{{ $selectedAdjustment->poster->name ?? '-' }}</span>
                         </div>
                     </div>
 
                     @if($selectedAdjustment->notes)
-                        <div class="text-xs text-apeiron-ink p-3 rounded-xl bg-slate-50 border border-apeiron-border">
-                            <span class="font-semibold block text-apeiron-muted">Notes:</span>
+                        <div class="text-xs text-foreground p-3 rounded-xl bg-slate-50 border border-border">
+                            <span class="font-semibold block text-muted-foreground">Notes:</span>
                             {{ $selectedAdjustment->notes }}
                         </div>
                     @endif
 
-                    <div class="overflow-x-auto border border-apeiron-border rounded-2xl">
-                        <table class="table-standard min-w-full divide-y divide-apeiron-border text-xs">
-                            <thead class="bg-slate-50 text-apeiron-muted uppercase">
+                    <div class="overflow-x-auto border border-border rounded-2xl">
+                        <table class="table-standard min-w-full divide-y divide-border text-xs">
+                            <thead class="bg-slate-50 text-muted-foreground uppercase">
                                 <tr>
                                     <th class="px-4 py-3 text-left">Type</th>
                                     <th class="px-4 py-3 text-left">Item Name</th>
@@ -306,25 +303,25 @@
                                     <th class="px-4 py-3 text-left">Notes</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-apeiron-border">
+                            <tbody class="divide-y divide-border">
                                 @foreach ($selectedAdjustment->items as $item)
                                     <tr>
                                         <td class="px-4 py-2 font-medium capitalize">{{ $item->item_type }}</td>
-                                        <td class="px-4 py-2 font-semibold text-apeiron-ink">{{ $item->item_name }}</td>
+                                        <td class="px-4 py-2 font-semibold text-foreground">{{ $item->item_name }}</td>
                                         <td class="px-4 py-2 text-center font-bold {{ $item->direction === 'IN' ? 'text-emerald-600' : 'text-rose-600' }}">
                                             {{ $item->direction }}
                                         </td>
                                         <td class="px-4 py-2 text-right font-medium tabular-nums">{{ number_format((float) $item->quantity, 4) }}</td>
                                         <td class="px-4 py-2 text-right font-medium tabular-nums">Rp {{ number_format((float) $item->unit_cost_snapshot, 2, ',', '.') }}</td>
-                                        <td class="px-4 py-2 text-right font-bold text-apeiron-ink tabular-nums">Rp {{ number_format((float) $item->subtotal, 2, ',', '.') }}</td>
-                                        <td class="px-4 py-2 text-apeiron-muted">{{ $item->reason_note ?: '-' }}</td>
+                                        <td class="px-4 py-2 text-right font-bold text-foreground tabular-nums">Rp {{ number_format((float) $item->subtotal, 2, ',', '.') }}</td>
+                                        <td class="px-4 py-2 text-muted-foreground">{{ $item->reason_note ?: '-' }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                             <tfoot class="bg-slate-50 font-bold">
                                 <tr>
-                                    <td colspan="5" class="px-4 py-3 text-right text-apeiron-ink uppercase">Total Adjustment Value:</td>
-                                    <td class="px-4 py-3 text-right text-apeiron-ink tabular-nums">Rp {{ number_format((float) $selectedAdjustment->calculateTotalValue(), 2, ',', '.') }}</td>
+                                    <td colspan="5" class="px-4 py-3 text-right text-foreground uppercase">Total Adjustment Value:</td>
+                                    <td class="px-4 py-3 text-right text-foreground tabular-nums">Rp {{ number_format((float) $selectedAdjustment->calculateTotalValue(), 2, ',', '.') }}</td>
                                     <td></td>
                                 </tr>
                             </tfoot>
@@ -332,7 +329,7 @@
                     </div>
                 </div>
 
-                <div class="pt-4 border-t border-apeiron-border flex justify-end">
+                <div class="pt-4 border-t border-border flex justify-end">
                     <x-ui.button type="button" variant="secondary" wire:click="$set('showDetailModal', false)">
                         Close
                     </x-ui.button>

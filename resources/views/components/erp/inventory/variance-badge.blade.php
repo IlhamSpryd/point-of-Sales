@@ -22,7 +22,7 @@
 
 <div {{ $attributes->twMerge('inline-flex flex-col items-start gap-1') }}>
     {{-- Main Variance Pill --}}
-    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-xs font-bold numeric font-mono {{ $badgeClasses }}">
+    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full border text-xs font-bold numeric font-sans {{ $badgeClasses }}">
         @if ($isSurplus)
             <span class="material-symbols-rounded text-xs" aria-hidden="true">trending_up</span>
             <span>+{{ number_format($diff, 2) }} {{ $unit }}</span>
@@ -36,7 +36,7 @@
     </span>
 
     @if ($showBreakdown)
-        <span class="text-[10px] text-muted-foreground flex items-center gap-1.5 numeric font-mono">
+        <span class="text-[10px] text-muted-foreground flex items-center gap-1.5 numeric font-sans">
             <span>Sistem: {{ number_format($sys, 2) }}</span>
             <span class="text-border">&bull;</span>
             <span>Fisik: {{ number_format($phy, 2) }}</span>

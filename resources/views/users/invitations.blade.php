@@ -53,7 +53,7 @@
 
                 @foreach($invitations as $invitation)
                     <tr class="hover:bg-zinc-50/70 dark:hover:bg-zinc-800/50 transition-colors duration-150">
-                        <td class="px-6 py-4 font-semibold text-apeiron-ink dark:text-zinc-100 text-sm">{{ $invitation->name }}</td>
+                        <td class="px-6 py-4 font-semibold text-foreground dark:text-zinc-100 text-sm">{{ $invitation->name }}</td>
                         <td class="px-6 py-4 text-sm text-zinc-600 dark:text-zinc-300">{{ $invitation->email }}</td>
                         <td class="px-6 py-4 text-sm">
                             <div class="flex flex-col gap-1 items-start">
@@ -83,7 +83,7 @@
                             @if($invitation->status === 'pending' && $invitation->expires_at->isFuture())
                                 <form action="{{ route('users.invitations.resend', $invitation->id) }}" method="POST" class="inline-block">
                                     @csrf
-                                    <button type="submit" class="text-xs font-medium text-apeiron-primary hover:text-apeiron-primary-dark p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" title="Resend">
+                                    <button type="submit" class="text-xs font-medium text-primary hover:text-primary p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" title="Resend">
                                         <span class="material-symbols-rounded text-sm align-middle">forward_to_inbox</span> Resend
                                     </button>
                                 </form>

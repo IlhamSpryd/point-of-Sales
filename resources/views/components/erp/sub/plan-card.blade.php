@@ -40,7 +40,7 @@
 
         {{-- Price Display --}}
         <div class="flex items-baseline gap-1 my-4 pb-4 border-b border-border">
-            <span class="text-3xl font-black text-foreground tracking-tight numeric font-mono">
+            <span class="text-3xl font-black text-foreground tracking-tight numeric font-sans">
                 {{ $price }}
             </span>
             <span class="text-xs text-muted-foreground font-medium">

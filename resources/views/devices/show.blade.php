@@ -50,13 +50,13 @@
                                 <span class="material-symbols-rounded text-3xl">key</span>
                             </div>
                             <div class="flex-1">
-                                <h5 class="text-lg font-bold text-apeiron-ink dark:text-zinc-100">Physical Terminal Pairing Token</h5>
+                                <h5 class="text-lg font-bold text-foreground dark:text-zinc-100">Physical Terminal Pairing Token</h5>
                                 <p class="text-sm text-zinc-500 mt-1">
                                     Enter the following code on your physical cashier terminal to authenticate and securely bind this device to the store.
                                 </p>
 
                                 <div class="mt-6 flex flex-col sm:flex-row sm:items-center gap-4">
-                                    <div class="px-6 py-4 bg-white dark:bg-zinc-900 rounded-2xl border-2 border-dashed border-amber-300 dark:border-amber-700 font-mono text-2xl md:text-3xl font-extrabold tracking-widest text-apeiron-ink dark:text-zinc-100 text-center shadow-xs select-all">
+                                    <div class="px-6 py-4 bg-white dark:bg-zinc-900 rounded-2xl border-2 border-dashed border-amber-300 dark:border-amber-700 font-sans text-2xl md:text-3xl font-extrabold tracking-widest text-foreground dark:text-zinc-100 text-center shadow-xs select-all">
                                         {{ $device->pairing_token ?? 'EXPIRED' }}
                                     </div>
                                     
@@ -84,24 +84,24 @@
                                 <span class="material-symbols-rounded text-3xl">verified</span>
                             </div>
                             <div class="flex-1">
-                                <h5 class="text-lg font-bold text-apeiron-ink dark:text-zinc-100">Device Connected &amp; Authorized</h5>
+                                <h5 class="text-lg font-bold text-foreground dark:text-zinc-100">Device Connected &amp; Authorized</h5>
                                 <p class="text-sm text-zinc-500 mt-1">
                                     This physical cashier terminal has been securely bound with a unique cryptographic signature and device fingerprint.
                                 </p>
 
-                                <div class="mt-6 space-y-3 font-mono text-xs">
+                                <div class="mt-6 space-y-3 font-sans text-xs">
                                     <div class="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
                                         <span class="text-zinc-400 block text-[11px] uppercase font-sans font-semibold mb-1">Device Fingerprint</span>
-                                        <span class="text-apeiron-ink dark:text-zinc-200 break-all select-all">{{ $device->device_fingerprint }}</span>
+                                        <span class="text-foreground dark:text-zinc-200 break-all select-all">{{ $device->device_fingerprint }}</span>
                                     </div>
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div class="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
                                             <span class="text-zinc-400 block text-[11px] uppercase font-sans font-semibold mb-1">Last IP Address</span>
-                                            <span class="text-apeiron-ink dark:text-zinc-200">{{ $device->ip_address ?? '-' }}</span>
+                                            <span class="text-foreground dark:text-zinc-200">{{ $device->ip_address ?? '-' }}</span>
                                         </div>
                                         <div class="p-3 bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800">
                                             <span class="text-zinc-400 block text-[11px] uppercase font-sans font-semibold mb-1">Last Active</span>
-                                            <span class="text-apeiron-ink dark:text-zinc-200">{{ $device->last_seen_at ? $device->last_seen_at->format('M d, Y H:i:s') : 'Not recorded yet' }}</span>
+                                            <span class="text-foreground dark:text-zinc-200">{{ $device->last_seen_at ? $device->last_seen_at->format('M d, Y H:i:s') : 'Not recorded yet' }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -124,7 +124,7 @@
                                 <span class="material-symbols-rounded text-3xl">block</span>
                             </div>
                             <div class="flex-1">
-                                <h5 class="text-lg font-bold text-apeiron-ink dark:text-zinc-100">Device Access Revoked</h5>
+                                <h5 class="text-lg font-bold text-foreground dark:text-zinc-100">Device Access Revoked</h5>
                                 <p class="text-sm text-zinc-500 mt-1">
                                     This physical device is currently disabled and cannot be used to process cashier transactions.
                                 </p>
@@ -144,12 +144,12 @@
 
                 {{-- Cashier Setup Guide --}}
                 <div class="card-surface p-6 rounded-2xl border border-border dark:border-zinc-800 space-y-4 shadow-xs">
-                    <h5 class="text-sm font-bold text-apeiron-ink dark:text-zinc-100 uppercase tracking-wider">Physical Cashier Setup Guide</h5>
+                    <h5 class="text-sm font-bold text-foreground dark:text-zinc-100 uppercase tracking-wider">Physical Cashier Setup Guide</h5>
                     <ol class="list-decimal list-inside text-sm text-zinc-500 space-y-2">
                         <li>Open the Apeiron application on your physical cashier terminal.</li>
-                        <li>On the terminal initialization screen, select <strong class="text-apeiron-ink dark:text-zinc-200">"Connect Terminal / Device Pairing"</strong>.</li>
+                        <li>On the terminal initialization screen, select <strong class="text-foreground dark:text-zinc-200">"Connect Terminal / Device Pairing"</strong>.</li>
                         <li>Enter the 12-character pairing token shown above.</li>
-                        <li>The system will automatically detect the machine/browser hardware fingerprint and securely lock it to branch <strong class="text-apeiron-ink dark:text-zinc-200">{{ $device->store?->name }}</strong>.</li>
+                        <li>The system will automatically detect the machine/browser hardware fingerprint and securely lock it to branch <strong class="text-foreground dark:text-zinc-200">{{ $device->store?->name }}</strong>.</li>
                     </ol>
                 </div>
             </div>
@@ -157,20 +157,20 @@
             {{-- Specification Details Card --}}
             <div class="space-y-6">
                 <div class="card-surface p-6 rounded-2xl border border-border dark:border-zinc-800 space-y-4 shadow-xs">
-                    <h5 class="text-sm font-bold text-apeiron-ink dark:text-zinc-100 uppercase tracking-wider">Device Details</h5>
+                    <h5 class="text-sm font-bold text-foreground dark:text-zinc-100 uppercase tracking-wider">Device Details</h5>
                     
                     <div class="space-y-3 text-sm">
                         <div>
                             <span class="text-xs text-zinc-500 block">Device Name</span>
-                            <span class="font-medium text-apeiron-ink dark:text-zinc-200">{{ $device->device_name }}</span>
+                            <span class="font-medium text-foreground dark:text-zinc-200">{{ $device->device_name }}</span>
                         </div>
                         <div>
                             <span class="text-xs text-zinc-500 block">Unique Code</span>
-                            <span class="font-mono font-medium text-apeiron-ink dark:text-zinc-200">{{ $device->device_code }}</span>
+                            <span class="font-sans font-medium text-foreground dark:text-zinc-200">{{ $device->device_code }}</span>
                         </div>
                         <div>
                             <span class="text-xs text-zinc-500 block">Device Type</span>
-                            <span class="font-medium text-apeiron-ink dark:text-zinc-200">
+                            <span class="font-medium text-foreground dark:text-zinc-200">
                                 {{ match($device->device_type) {
                                     'pos_terminal' => 'POS Cashier Terminal',
                                     'kds_display' => 'Kitchen Display (KDS)',
@@ -181,7 +181,7 @@
                         </div>
                         <div>
                             <span class="text-xs text-zinc-500 block">Assigned Branch</span>
-                            <span class="font-medium text-apeiron-ink dark:text-zinc-200">{{ $device->store?->name }}</span>
+                            <span class="font-medium text-foreground dark:text-zinc-200">{{ $device->store?->name }}</span>
                         </div>
                         <div>
                             <span class="text-xs text-zinc-500 block mb-1">Operational Status</span>
@@ -191,7 +191,7 @@
                         </div>
                         <div>
                             <span class="text-xs text-zinc-500 block">Registered On</span>
-                            <span class="text-apeiron-ink dark:text-zinc-200">{{ $device->created_at?->format('M d, Y H:i') }}</span>
+                            <span class="text-foreground dark:text-zinc-200">{{ $device->created_at?->format('M d, Y H:i') }}</span>
                         </div>
                     </div>
 

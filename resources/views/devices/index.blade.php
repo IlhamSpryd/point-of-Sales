@@ -32,7 +32,7 @@
         <div class="card-surface p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 border border-border dark:border-zinc-800">
             <form method="GET" action="{{ route('devices.index') }}" class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
                 <div class="w-48">
-                    <select name="store_id" onchange="this.form.submit()" class="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-xs focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
+                    <select name="store_id" onchange="this.form.submit()" class="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-xs focus:outline-hidden focus:ring-2 focus:ring-ring/20">
                         <option value="">All Branches</option>
                         @foreach($stores as $st)
                             <option value="{{ $st->id }}" {{ request('store_id') == $st->id ? 'selected' : '' }}>{{ $st->name }}</option>
@@ -40,7 +40,7 @@
                     </select>
                 </div>
                 <div class="w-44">
-                    <select name="device_type" onchange="this.form.submit()" class="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-xs focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
+                    <select name="device_type" onchange="this.form.submit()" class="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-xs focus:outline-hidden focus:ring-2 focus:ring-ring/20">
                         <option value="">All Types</option>
                         <option value="pos_terminal" {{ request('device_type') === 'pos_terminal' ? 'selected' : '' }}>POS Terminal</option>
                         <option value="kds_display" {{ request('device_type') === 'kds_display' ? 'selected' : '' }}>KDS Screen</option>
@@ -48,7 +48,7 @@
                     </select>
                 </div>
                 <div class="w-40">
-                    <select name="status" onchange="this.form.submit()" class="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-xs focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
+                    <select name="status" onchange="this.form.submit()" class="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-xs focus:outline-hidden focus:ring-2 focus:ring-ring/20">
                         <option value="">All Statuses</option>
                         <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending Pairing</option>
                         <option value="paired" {{ request('status') === 'paired' ? 'selected' : '' }}>Paired</option>
@@ -56,13 +56,13 @@
                     </select>
                 </div>
                 @if(request()->hasAny(['store_id', 'device_type', 'status', 'search']))
-                    <a href="{{ route('devices.index') }}" class="text-xs text-zinc-500 hover:text-apeiron-primary font-medium underline">Reset Filter</a>
+                    <a href="{{ route('devices.index') }}" class="text-xs text-zinc-500 hover:text-primary font-medium underline">Reset Filter</a>
                 @endif
             </form>
 
             <form method="GET" action="{{ route('devices.index') }}" class="relative w-full sm:w-64">
                 <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search devices..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search devices..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-zinc-800 dark:text-zinc-100">
             </form>
         </div>
 
@@ -82,7 +82,7 @@
                     <tbody class="divide-y divide-border">
                         @forelse($devices as $device)
                             <tr class="hover:bg-muted/40 transition-colors">
-                                <td class="px-6 py-4 font-mono font-medium text-foreground text-sm whitespace-nowrap">
+                                <td class="px-6 py-4 font-sans font-medium text-foreground text-sm whitespace-nowrap">
                                     {{ $device->device_code }}
                                 </td>
                                 <td class="px-6 py-4">

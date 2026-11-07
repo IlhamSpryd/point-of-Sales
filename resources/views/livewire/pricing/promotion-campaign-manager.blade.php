@@ -77,7 +77,7 @@
                         <tr class="hover:bg-gray-50/80 transition-colors">
                             <td class="px-6 py-4">
                                 <div class="font-bold text-gray-900">{{ $campaign->name }}</div>
-                                <div class="text-xs font-mono text-indigo-600 mt-0.5">{{ $campaign->campaign_code }}</div>
+                                <div class="text-xs font-sans text-indigo-600 mt-0.5">{{ $campaign->campaign_code }}</div>
                             </td>
                             <td class="px-6 py-4">
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold
@@ -158,7 +158,7 @@
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold text-gray-700 mb-1">Campaign Code</label>
-                            <input type="text" wire:model="campaignCode" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl uppercase font-mono" required />
+                            <input type="text" wire:model="campaignCode" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl uppercase font-sans" required />
                             @error('campaignCode') <span class="text-rose-600 text-xs">{{ $message }}</span> @enderror
                         </div>
                         <div>

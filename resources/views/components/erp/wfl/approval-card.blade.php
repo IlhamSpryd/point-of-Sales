@@ -38,7 +38,7 @@
                 <span class="text-xs font-bold text-foreground">
                     {{ $type }}
                 </span>
-                <span class="text-xs font-mono font-bold text-muted-foreground">
+                <span class="text-xs font-sans font-bold text-muted-foreground">
                     {{ $docNumber }}
                 </span>
             </div>
@@ -70,7 +70,7 @@
         @if ($amount)
             <div class="text-right sm:self-center shrink-0">
                 <span class="text-[10px] uppercase font-bold text-muted-foreground block">Requested Amount:</span>
-                <span class="text-base font-black text-foreground numeric font-mono">
+                <span class="text-base font-black text-foreground numeric font-sans">
                     {{ $amount }}
                 </span>
             </div>

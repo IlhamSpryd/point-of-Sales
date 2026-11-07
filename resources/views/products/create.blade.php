@@ -3,7 +3,7 @@
 
     <div class="flex items-center justify-between mb-6" data-gsap="page-enter">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Add Product</h4>
+            <h4 class="text-xl font-bold text-foreground tracking-tight">Add Product</h4>
             <p class="text-sm font-medium text-muted-foreground mt-1">Add a new product to your inventory catalog</p>
         </div>
         <a href="{{ route('products.index') }}" wire:navigate>
@@ -32,7 +32,7 @@
                     <x-form-label for="category_id">Category</x-form-label>
                     <div class="relative">
                         <select id="category_id" name="category_id" 
-                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('category_id') ? 'input-error' : '' }}" required>
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('category_id') ? 'input-error' : '' }}" required>
                             <option value="">Select Category</option>
                             @foreach($categories as $category)
                                 <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
@@ -56,7 +56,7 @@
                     <x-form-label for="brand_id">Brand (Optional)</x-form-label>
                     <div class="relative">
                         <select id="brand_id" name="brand_id"
-                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('brand_id') ? 'input-error' : '' }}">
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('brand_id') ? 'input-error' : '' }}">
                             <option value="">-- No Brand --</option>
                             @foreach($brands as $brand)
                                 <option value="{{ $brand->id }}" {{ old('brand_id') == $brand->id ? 'selected' : '' }}>
@@ -77,7 +77,7 @@
                     <x-form-label for="base_uom_id">Base Unit of Measure (UoM)</x-form-label>
                     <div class="relative">
                         <select id="base_uom_id" name="base_uom_id"
-                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('base_uom_id') ? 'input-error' : '' }}">
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('base_uom_id') ? 'input-error' : '' }}">
                             <option value="">-- Select Unit of Measure --</option>
                             @foreach($uoms as $uom)
                                 <option value="{{ $uom->id }}" {{ old('base_uom_id') == $uom->id ? 'selected' : '' }}>
@@ -122,7 +122,7 @@
                     <x-form-label for="product_type">Product Type</x-form-label>
                     <div class="relative">
                         <select id="product_type" name="product_type"
-                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('product_type') ? 'input-error' : '' }}">
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('product_type') ? 'input-error' : '' }}">
                             <option value="standard" {{ old('product_type', 'standard') == 'standard' ? 'selected' : '' }}>Standard Physical (Standard)</option>
                             <option value="service" {{ old('product_type') == 'service' ? 'selected' : '' }}>Service / Labor (Service)</option>
                             <option value="non_inventory" {{ old('product_type') == 'non_inventory' ? 'selected' : '' }}>Non-Inventory (Non-Inventory)</option>
@@ -141,7 +141,7 @@
                     <x-form-label for="status">Lifecycle Status</x-form-label>
                     <div class="relative">
                         <select id="status" name="status"
-                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('status') ? 'input-error' : '' }}">
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('status') ? 'input-error' : '' }}">
                             <option value="active" {{ old('status', 'active') == 'active' ? 'selected' : '' }}>Active (Ready for Sale)</option>
                             <option value="draft" {{ old('status') == 'draft' ? 'selected' : '' }}>Draft</option>
                             <option value="inactive" {{ old('status') == 'inactive' ? 'selected' : '' }}>Inactive</option>
@@ -163,7 +163,7 @@
                     <x-form-label for="costing_method">Costing Method</x-form-label>
                     <div class="relative">
                         <select id="costing_method" name="costing_method"
-                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('costing_method') ? 'input-error' : '' }}">
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('costing_method') ? 'input-error' : '' }}">
                             <option value="standard" {{ old('costing_method', 'standard') == 'standard' ? 'selected' : '' }}>Standard Cost</option>
                             <option value="fifo" {{ old('costing_method') == 'fifo' ? 'selected' : '' }}>FIFO</option>
                             <option value="moving_average" {{ old('costing_method') == 'moving_average' ? 'selected' : '' }}>Moving Average</option>
@@ -214,7 +214,7 @@
                     <x-form-label for="tax_class_id">Tax Class (Optional)</x-form-label>
                     <div class="relative">
                         <select id="tax_class_id" name="tax_class_id"
-                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('tax_class_id') ? 'input-error' : '' }}">
+                                class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('tax_class_id') ? 'input-error' : '' }}">
                             <option value="">-- Standard / No Special Tax --</option>
                             @if(isset($taxClasses))
                                 @foreach($taxClasses as $tc)
@@ -237,8 +237,8 @@
                     <x-form-label for="is_tax_inclusive">Tax Treatment</x-form-label>
                     <div class="flex items-center gap-3 mt-2">
                         <label class="flex items-center cursor-pointer">
-                            <input type="checkbox" id="is_tax_inclusive" name="is_tax_inclusive" value="1" class="rounded border-border text-apeiron-ink focus:ring-ring h-4 w-4" {{ old('is_tax_inclusive') ? 'checked' : '' }}>
-                            <span class="ml-2 text-sm font-medium text-apeiron-ink">Price is Tax Inclusive</span>
+                            <input type="checkbox" id="is_tax_inclusive" name="is_tax_inclusive" value="1" class="rounded border-border text-foreground focus:ring-ring h-4 w-4" {{ old('is_tax_inclusive') ? 'checked' : '' }}>
+                            <span class="ml-2 text-sm font-medium text-foreground">Price is Tax Inclusive</span>
                         </label>
                     </div>
                     @error('is_tax_inclusive')
@@ -249,27 +249,14 @@
 
             <!-- Status -->
             <div class="flex items-center">
-                <label class="flex items-center cursor-pointer">
-                    <div class="relative">
-                        <input type="checkbox" name="is_active" value="1" class="sr-only" checked>
-                        <div class="block bg-primary-200 w-10 h-6 rounded-full transition-colors duration-300"></div>
-                        <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 shadow-sm"></div>
-                    </div>
-                    <style>
-                        input:checked ~ .block { background-color: #10b981; }
-                        input:checked ~ .dot { transform: translateX(100%); }
-                    </style>
-                    <div class="ml-3 text-sm font-semibold text-apeiron-ink">
-                        Active Product
-                    </div>
-                </label>
+                <x-ui.switch name="is_active" value="1" label="Active Product" :checked="true" />
             </div>
             
             <!-- Description -->
             <div>
                 <x-form-label for="product_description">Description</x-form-label>
                 <textarea id="product_description" name="product_description" rows="3"
-                          class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-apeiron-ink placeholder-primary-400 focus:outline-none focus:ring-2 focus:ring-ring focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('product_description') ? 'input-error' : '' }}" 
+                          class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground placeholder-primary-400 focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('product_description') ? 'input-error' : '' }}" 
                           placeholder="Enter product description (optional)">{{ old('product_description') }}</textarea>
                 @error('product_description')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
@@ -289,7 +276,7 @@
             }" class="pt-4 border-t border-border">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h5 class="text-sm font-bold text-apeiron-ink">Bill of Materials (BOM)</h5>
+                        <h5 class="text-sm font-bold text-foreground">Bill of Materials (BOM)</h5>
                         <p class="text-xs text-muted-foreground mt-0.5">Specify raw ingredients that automatically deplete from inventory when this product is sold.</p>
                     </div>
                     <button type="button" @click="addItem" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-border rounded-xl hover:bg-muted transition-colors shadow-sm">
@@ -301,7 +288,7 @@
                     <template x-for="(item, index) in items" :key="index">
                         <div class="flex items-start gap-3">
                             <div class="flex-1">
-                                <select x-model="item.id" :name="'ingredients['+index+'][id]'" class="form-select w-full px-3 py-2 rounded-xl border border-border bg-white text-apeiron-ink text-sm focus:ring-2 focus:ring-ring focus:border-apeiron-ink shadow-sm" required>
+                                <select x-model="item.id" :name="'ingredients['+index+'][id]'" class="form-select w-full px-3 py-2 rounded-xl border border-border bg-white text-foreground text-sm focus:ring-2 focus:ring-ring focus:border-primary shadow-sm" required>
                                     <option value="">-- Select Ingredient --</option>
                                     <template x-for="ing in ingredients" :key="ing.id">
                                         <option :value="ing.id" x-text="ing.name + ' (' + ing.unit + ')'" :selected="item.id == ing.id"></option>
@@ -309,7 +296,7 @@
                                 </select>
                             </div>
                             <div class="w-32">
-                                <input type="number" step="0.0001" x-model="item.quantity" :name="'ingredients['+index+'][quantity]'" placeholder="Quantity" class="form-input w-full px-3 py-2 rounded-xl border border-border bg-white text-apeiron-ink text-sm focus:ring-2 focus:ring-ring focus:border-apeiron-ink shadow-sm" required>
+                                <input type="number" step="0.0001" x-model="item.quantity" :name="'ingredients['+index+'][quantity]'" placeholder="Quantity" class="form-input w-full px-3 py-2 rounded-xl border border-border bg-white text-foreground text-sm focus:ring-2 focus:ring-ring focus:border-primary shadow-sm" required>
                             </div>
                             <button type="button" @click="removeItem(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors" title="Remove row">
                                 <span class="material-symbols-rounded text-[18px]">close</span>
@@ -336,7 +323,7 @@
             }" class="pt-4 border-t border-border">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h5 class="text-sm font-bold text-apeiron-ink">Variant & Modifier Groups</h5>
+                        <h5 class="text-sm font-bold text-foreground">Variant & Modifier Groups</h5>
                         <p class="text-xs text-muted-foreground mt-0.5">Link modifier groups (e.g., Milk Choice, Temperature) available for this item.</p>
                     </div>
                     <button type="button" @click="addGroup" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-border rounded-xl hover:bg-muted transition-colors shadow-sm">
@@ -348,7 +335,7 @@
                     <template x-for="(groupId, index) in selectedGroups" :key="index">
                         <div class="flex items-start gap-3">
                             <div class="flex-1">
-                                <select x-model="selectedGroups[index]" :name="'modifier_groups['+index+']'" class="form-select w-full px-3 py-2 rounded-xl border border-border bg-white text-apeiron-ink text-sm focus:ring-2 focus:ring-ring focus:border-apeiron-ink shadow-sm" required>
+                                <select x-model="selectedGroups[index]" :name="'modifier_groups['+index+']'" class="form-select w-full px-3 py-2 rounded-xl border border-border bg-white text-foreground text-sm focus:ring-2 focus:ring-ring focus:border-primary shadow-sm" required>
                                     <option value="">-- Select Modifier Group --</option>
                                     <template x-for="g in groups" :key="g.id">
                                         <option :value="g.id" x-text="g.name" :selected="groupId == g.id"></option>
@@ -374,7 +361,7 @@
                     <div class="space-y-1 text-center">
                         <span class="material-symbols-rounded text-[32px] text-primary-300">image</span>
                         <div class="flex flex-col sm:flex-row text-sm text-muted-foreground justify-center gap-1 mt-3">
-                            <label for="product_photo" class="relative cursor-pointer bg-white rounded-xl font-medium text-apeiron-ink hover:text-apeiron-ink focus-within:outline-none px-3 py-1 shadow-sm border border-border transition-all duration-200 active:scale-95">
+                            <label for="product_photo" class="relative cursor-pointer bg-white rounded-xl font-medium text-foreground hover:text-foreground focus-within:outline-none px-3 py-1 shadow-sm border border-border transition-all duration-200 active:scale-95">
                                 <span>Upload file</span>
                                 <input id="product_photo" name="product_photo" type="file" class="sr-only" accept="image/jpeg,image/png,image/jpg,image/webp" onchange="document.getElementById('file-name').textContent = this.files[0].name">
                             </label>

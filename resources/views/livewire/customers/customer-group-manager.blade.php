@@ -61,16 +61,16 @@
                                     <x-ui.badge variant="info">Default B2B</x-ui.badge>
                                 @endif
                             </div>
-                            <div class="text-xs font-mono text-zinc-400 mt-0.5">{{ $grp->code }}</div>
+                            <div class="text-xs font-sans text-zinc-400 mt-0.5">{{ $grp->code }}</div>
                             @if($grp->description)
                                 <p class="text-xs text-zinc-500 mt-1 line-clamp-1">{{ $grp->description }}</p>
                             @endif
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <span class="font-mono font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">{{ $grp->default_discount_rate }}%</span>
+                            <span class="font-sans font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">{{ $grp->default_discount_rate }}%</span>
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <span class="text-xs text-zinc-600 dark:text-zinc-300 font-mono tabular-nums">{{ $grp->customers_count }} customers</span>
+                            <span class="text-xs text-zinc-600 dark:text-zinc-300 font-sans tabular-nums">{{ $grp->customers_count }} customers</span>
                         </td>
                         <td class="px-6 py-4 text-center">
                             @if($grp->is_active)
@@ -138,7 +138,7 @@
 
                 <div>
                     <x-ui.label for="description">Description</x-ui.label>
-                    <textarea id="description" wire:model="description" rows="2" placeholder="Group membership criteria and terms" class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-apeiron-ink/20"></textarea>
+                    <textarea id="description" wire:model="description" rows="2" placeholder="Group membership criteria and terms" class="w-full text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-ring/20"></textarea>
                 </div>
 
                 <div class="pt-2 border-t border-zinc-200 dark:border-zinc-800 space-y-2">

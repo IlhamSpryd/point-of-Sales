@@ -74,12 +74,12 @@
                     @forelse($invoices as $inv)
                     <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
                         <td class="px-6 py-4">
-                            <div class="font-bold text-zinc-900 dark:text-white font-mono">{{ $inv->supplier_invoice_number }}</div>
-                            <div class="text-xs text-zinc-400 font-mono">Internal: {{ $inv->internal_invoice_number }}</div>
+                            <div class="font-bold text-zinc-900 dark:text-white font-sans">{{ $inv->supplier_invoice_number }}</div>
+                            <div class="text-xs text-zinc-400 font-sans">Internal: {{ $inv->internal_invoice_number }}</div>
                         </td>
                         <td class="px-6 py-4">
                             <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $inv->supplier?->name ?? 'Vendor' }}</div>
-                            <div class="text-xs text-zinc-400 font-mono">PO: {{ $inv->purchaseOrder?->po_number ?? '-' }}</div>
+                            <div class="text-xs text-zinc-400 font-sans">PO: {{ $inv->purchaseOrder?->po_number ?? '-' }}</div>
                         </td>
                         <td class="px-6 py-4">
                             <div class="font-medium text-zinc-700 dark:text-zinc-300">{{ \Carbon\Carbon::parse($inv->invoice_date)->format('d M Y') }}</div>
@@ -234,7 +234,7 @@
                                         <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $line['item_name'] }}</div>
                                         <div class="text-[10px] text-zinc-400 uppercase">{{ $line['purchasable_type'] }}</div>
                                     </td>
-                                    <td class="px-3 py-2 font-mono uppercase">{{ $line['purchase_uom'] }}</td>
+                                    <td class="px-3 py-2 font-sans uppercase">{{ $line['purchase_uom'] }}</td>
                                     <td class="px-3 py-2 text-right font-medium text-amber-600 tabular-nums">{{ (float) $line['remaining_qty'] }}</td>
                                     <td class="px-3 py-2 text-right">
                                         <input type="number" step="0.0001" min="0.0001" wire:model="invoiceLines.{{ $i }}.invoiced_qty" class="w-full text-xs rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 py-1 text-right font-semibold text-zinc-900 dark:text-white tabular-nums" />
@@ -308,11 +308,11 @@
                                 <td class="px-4 py-2.5 text-right font-semibold tabular-nums">
                                     {{ (float) $m['invoiced_qty'] }}
                                 </td>
-                                <td class="px-4 py-2.5 text-right font-mono tabular-nums">
+                                <td class="px-4 py-2.5 text-right font-sans tabular-nums">
                                     Rp {{ number_format((float) $m['unit_price'], 2) }}
                                 </td>
                                 <td class="px-4 py-2.5 text-center">
-                                    <span class="font-mono text-emerald-600 dark:text-emerald-400 font-semibold">GRN Line #{{ $m['goods_received_note_line_id'] ?: 'Auto' }}</span>
+                                    <span class="font-sans text-emerald-600 dark:text-emerald-400 font-semibold">GRN Line #{{ $m['goods_received_note_line_id'] ?: 'Auto' }}</span>
                                 </td>
                                 <td class="px-4 py-2.5 text-right">
                                     <input type="number" step="0.0001" min="0.0001" wire:model="matchPlanLines.{{ $i }}.matched_qty" class="w-24 text-xs rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 py-1 text-right font-bold text-emerald-600 tabular-nums" />
@@ -367,7 +367,7 @@
         <x-slot:title>
             @if($selectedInvoice)
                 <div>
-                    <span class="font-mono">{{ $selectedInvoice->supplier_invoice_number }}</span>
+                    <span class="font-sans">{{ $selectedInvoice->supplier_invoice_number }}</span>
                     <span class="ml-2">
                         <x-ui.badge variant="primary">{{ $selectedInvoice->matching_status?->label() ?? $selectedInvoice->matching_status }}</x-ui.badge>
                     </span>
@@ -385,11 +385,11 @@
                     <div>
                         <div class="text-zinc-400 uppercase font-bold text-[10px]">Supplier</div>
                         <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5">{{ $selectedInvoice->supplier?->name }}</div>
-                        <div class="text-zinc-500 font-mono">{{ $selectedInvoice->supplier?->code }}</div>
+                        <div class="text-zinc-500 font-sans">{{ $selectedInvoice->supplier?->code }}</div>
                     </div>
                     <div>
                         <div class="text-zinc-400 uppercase font-bold text-[10px]">PO Reference</div>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5 font-mono">{{ $selectedInvoice->purchaseOrder?->po_number }}</div>
+                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5 font-sans">{{ $selectedInvoice->purchaseOrder?->po_number }}</div>
                     </div>
                     <div>
                         <div class="text-zinc-400 uppercase font-bold text-[10px]">Invoice Date</div>

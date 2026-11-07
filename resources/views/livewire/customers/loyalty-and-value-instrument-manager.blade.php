@@ -50,15 +50,15 @@
 
     <!-- Tabs Navigation -->
     <div class="flex items-center border-b border-zinc-200 dark:border-zinc-800 gap-6">
-        <button wire:click="$set('activeTab', 'vouchers')" class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'vouchers' ? 'border-apeiron-primary text-apeiron-primary dark:text-white' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300' }}">
+        <button wire:click="$set('activeTab', 'vouchers')" class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'vouchers' ? 'border-primary text-primary dark:text-white' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300' }}">
             <span class="material-symbols-rounded text-lg">confirmation_number</span>
             Promo Vouchers
         </button>
-        <button wire:click="$set('activeTab', 'gift_cards')" class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'gift_cards' ? 'border-apeiron-primary text-apeiron-primary dark:text-white' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300' }}">
+        <button wire:click="$set('activeTab', 'gift_cards')" class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'gift_cards' ? 'border-primary text-primary dark:text-white' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300' }}">
             <span class="material-symbols-rounded text-lg">card_giftcard</span>
             Gift Cards
         </button>
-        <button wire:click="$set('activeTab', 'store_credits')" class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'store_credits' ? 'border-apeiron-primary text-apeiron-primary dark:text-white' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300' }}">
+        <button wire:click="$set('activeTab', 'store_credits')" class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'store_credits' ? 'border-primary text-primary dark:text-white' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300' }}">
             <span class="material-symbols-rounded text-lg">account_balance_wallet</span>
             Store Credit
         </button>
@@ -68,7 +68,7 @@
     <div class="card-surface p-4 rounded-2xl border border-border dark:border-zinc-800 flex items-center justify-between gap-4">
         <div class="relative flex-1 max-w-md">
             <span class="material-symbols-rounded absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by code, name, card number, or customer..." class="w-full pl-10 pr-4 py-2 rounded-xl text-sm bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white focus:ring-2 focus:ring-apeiron-primary/20 focus:outline-hidden">
+            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search by code, name, card number, or customer..." class="w-full pl-10 pr-4 py-2 rounded-xl text-sm bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-white focus:ring-2 focus:ring-ring/20 focus:outline-hidden">
         </div>
     </div>
 
@@ -110,7 +110,7 @@
                         @forelse ($vouchers as $voucher)
                             <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 transition">
                                 <td class="px-6 py-4">
-                                    <div class="font-bold text-zinc-900 dark:text-white flex items-center gap-2 font-mono">
+                                    <div class="font-bold text-zinc-900 dark:text-white flex items-center gap-2 font-sans">
                                         <span class="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs">{{ $voucher->voucher_code }}</span>
                                     </div>
                                     <div class="text-xs text-zinc-500 mt-1">{{ $voucher->name }}</div>
@@ -120,7 +120,7 @@
                                         {{ $voucher->discount_type->value === 'PERCENTAGE' ? 'Percentage (%)' : 'Fixed Amount (Rp)' }}
                                     </x-ui.badge>
                                 </td>
-                                <td class="px-6 py-4 font-semibold text-right text-zinc-900 dark:text-white font-mono tabular-nums">
+                                <td class="px-6 py-4 font-semibold text-right text-zinc-900 dark:text-white font-sans tabular-nums">
                                     @if ($voucher->discount_type->value === 'PERCENTAGE')
                                         {{ number_format((float) $voucher->discount_value, 0) }}%
                                         @if ($voucher->max_discount_amount)
@@ -130,7 +130,7 @@
                                         Rp {{ number_format((float) $voucher->discount_value, 2, ',', '.') }}
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 text-right text-zinc-700 dark:text-zinc-300 font-mono tabular-nums">
+                                <td class="px-6 py-4 text-right text-zinc-700 dark:text-zinc-300 font-sans tabular-nums">
                                     Rp {{ number_format((float) $voucher->min_order_amount, 2, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4">
@@ -200,21 +200,21 @@
                     <tbody class="divide-y divide-border dark:divide-zinc-800/70">
                         @forelse ($giftCards as $card)
                             <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 transition">
-                                <td class="px-6 py-4 font-mono font-bold text-zinc-900 dark:text-white">
+                                <td class="px-6 py-4 font-sans font-bold text-zinc-900 dark:text-white">
                                     {{ $card->masked_card_number }}
                                 </td>
                                 <td class="px-6 py-4">
                                     @if ($card->customer)
                                         <div class="font-medium text-zinc-900 dark:text-white">{{ $card->customer->name }}</div>
-                                        <div class="text-xs text-zinc-400 font-mono">{{ $card->customer->customer_code }}</div>
+                                        <div class="text-xs text-zinc-400 font-sans">{{ $card->customer->customer_code }}</div>
                                     @else
                                         <span class="text-xs text-zinc-400 italic">Anonymous / Bearer</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 text-right text-zinc-600 dark:text-zinc-400 font-mono tabular-nums">
+                                <td class="px-6 py-4 text-right text-zinc-600 dark:text-zinc-400 font-sans tabular-nums">
                                     Rp {{ number_format((float) $card->initial_amount, 2, ',', '.') }}
                                 </td>
-                                <td class="px-6 py-4 text-right font-semibold text-emerald-700 dark:text-emerald-400 font-mono tabular-nums">
+                                <td class="px-6 py-4 text-right font-semibold text-emerald-700 dark:text-emerald-400 font-sans tabular-nums">
                                     Rp {{ number_format((float) $card->current_balance, 2, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 text-xs text-zinc-500">
@@ -279,14 +279,14 @@
                             <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 transition">
                                 <td class="px-6 py-4">
                                     <div class="font-bold text-zinc-900 dark:text-white">{{ $sc->customer->name ?? '-' }}</div>
-                                    <div class="text-xs text-zinc-400 font-mono">{{ $sc->customer->customer_code ?? '' }}</div>
+                                    <div class="text-xs text-zinc-400 font-sans">{{ $sc->customer->customer_code ?? '' }}</div>
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <x-ui.badge variant="{{ $sc->status->value === 'ACTIVE' ? 'success' : 'danger' }}" size="sm">
                                         {{ $sc->status->value }}
                                     </x-ui.badge>
                                 </td>
-                                <td class="px-6 py-4 text-right font-bold text-emerald-700 dark:text-emerald-400 font-mono tabular-nums text-base">
+                                <td class="px-6 py-4 text-right font-bold text-emerald-700 dark:text-emerald-400 font-sans tabular-nums text-base">
                                     Rp {{ number_format((float) $sc->current_balance, 2, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 text-xs text-zinc-500">
@@ -328,7 +328,7 @@
             <div class="space-y-4 text-sm">
                 <div>
                     <x-ui.label for="voucher_code">Voucher Code *</x-ui.label>
-                    <x-ui.input type="text" id="voucher_code" wire:model="voucher_code" placeholder="e.g., SAVE20" class="uppercase font-mono" />
+                    <x-ui.input type="text" id="voucher_code" wire:model="voucher_code" placeholder="e.g., SAVE20" class="uppercase font-sans" />
                     @error('voucher_code') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
@@ -399,7 +399,7 @@
             <div class="space-y-4 text-sm">
                 <div>
                     <x-ui.label for="gift_card_number">Card Number (Optional / Auto-generated)</x-ui.label>
-                    <x-ui.input type="text" id="gift_card_number" wire:model="gift_card_number" placeholder="Leave empty to auto-generate" class="font-mono" />
+                    <x-ui.input type="text" id="gift_card_number" wire:model="gift_card_number" placeholder="Leave empty to auto-generate" class="font-sans" />
                     @error('gift_card_number') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
@@ -411,7 +411,7 @@
                     </div>
                     <div>
                         <x-ui.label for="gift_card_pin">Secret PIN (4-8 Digits) *</x-ui.label>
-                        <x-ui.input type="password" id="gift_card_pin" wire:model="gift_card_pin" placeholder="••••" class="font-mono" />
+                        <x-ui.input type="password" id="gift_card_pin" wire:model="gift_card_pin" placeholder="••••" class="font-sans" />
                         @error('gift_card_pin') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
                 </div>

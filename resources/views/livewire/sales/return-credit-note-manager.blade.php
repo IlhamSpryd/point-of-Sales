@@ -34,12 +34,12 @@
     <!-- Tabs Navigation -->
     <div class="flex items-center border-b border-zinc-200 dark:border-zinc-800 gap-6">
         <button wire:click="switchTab('credit_notes')"
-            class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'credit_notes' ? 'border-apeiron-primary text-apeiron-primary dark:text-white' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300' }}">
+            class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'credit_notes' ? 'border-primary text-primary dark:text-white' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300' }}">
             <span class="material-symbols-rounded text-lg">credit_card</span>
             Sales Credit Notes
         </button>
         <button wire:click="switchTab('returns')"
-            class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'returns' ? 'border-apeiron-primary text-apeiron-primary dark:text-white' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300' }}">
+            class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'returns' ? 'border-primary text-primary dark:text-white' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300' }}">
             <span class="material-symbols-rounded text-lg">assignment_return</span>
             Physical Order Returns
         </button>
@@ -50,7 +50,7 @@
         <div class="relative w-full sm:w-80">
             <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
             <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search document number / customer..."
-                class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
+                class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20">
         </div>
         <div class="w-full sm:w-auto flex items-center gap-3">
             @if ($activeTab === 'credit_notes')
@@ -84,7 +84,7 @@
                     <tbody class="divide-y divide-border dark:divide-zinc-800/70">
                         @forelse ($creditNotes as $cn)
                             <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition">
-                                <td class="px-6 py-4 font-mono font-medium text-apeiron-ink dark:text-white">
+                                <td class="px-6 py-4 font-sans font-medium text-foreground dark:text-white">
                                     {{ $cn->credit_note_number }}
                                 </td>
                                 <td class="px-6 py-4">
@@ -168,10 +168,10 @@
                     <tbody class="divide-y divide-border dark:divide-zinc-800/70">
                         @forelse ($returns as $ret)
                             <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition">
-                                <td class="px-6 py-4 font-mono font-medium text-apeiron-ink dark:text-white">
+                                <td class="px-6 py-4 font-sans font-medium text-foreground dark:text-white">
                                     {{ $ret->return_number }}
                                 </td>
-                                <td class="px-6 py-4 font-mono text-xs text-zinc-600 dark:text-zinc-400">
+                                <td class="px-6 py-4 font-sans text-xs text-zinc-600 dark:text-zinc-400">
                                     {{ $ret->order?->order_code ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4">

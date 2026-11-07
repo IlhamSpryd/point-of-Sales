@@ -68,11 +68,11 @@
 
     <!-- Navigation Tabs -->
     <div class="flex items-center border-b border-zinc-200 dark:border-zinc-800 gap-6">
-        <button wire:click="$set('activeTab', 'invoices')" class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'invoices' ? 'border-apeiron-primary text-apeiron-primary dark:text-white' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300' }}">
+        <button wire:click="$set('activeTab', 'invoices')" class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'invoices' ? 'border-primary text-primary dark:text-white' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300' }}">
             <span class="material-symbols-rounded text-lg">receipt_long</span>
             Invoices
         </button>
-        <button wire:click="$set('activeTab', 'statement')" class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'statement' ? 'border-apeiron-primary text-apeiron-primary dark:text-white' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300' }}">
+        <button wire:click="$set('activeTab', 'statement')" class="pb-3 text-sm font-semibold border-b-2 transition flex items-center gap-2 {{ $activeTab === 'statement' ? 'border-primary text-primary dark:text-white' : 'border-transparent text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-300' }}">
             <span class="material-symbols-rounded text-lg">list_alt</span>
             Statement of Account
         </button>
@@ -85,7 +85,7 @@
             <div class="flex-1 max-w-md">
                 <div class="relative">
                     <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search invoice number, customer PO, or company name..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
+                    <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search invoice number, customer PO, or company name..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-zinc-800 dark:text-zinc-100">
                 </div>
             </div>
             <div class="flex items-center gap-3">
@@ -119,7 +119,7 @@
                     <tbody class="divide-y divide-border dark:divide-zinc-800/70">
                         @forelse($invoices as $inv)
                             <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-900/40 transition">
-                                <td class="py-4 px-6 font-mono font-bold text-xs text-apeiron-ink dark:text-white">
+                                <td class="py-4 px-6 font-sans font-bold text-xs text-foreground dark:text-white">
                                     {{ $inv->invoice_number }}
                                     @if($inv->customer_po_number)
                                         <div class="text-[11px] font-sans font-normal text-zinc-400">PO: {{ $inv->customer_po_number }}</div>
@@ -140,13 +140,13 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td class="py-4 px-6 text-right font-mono tabular-nums font-medium text-xs text-zinc-900 dark:text-white">
+                                <td class="py-4 px-6 text-right font-sans tabular-nums font-medium text-xs text-zinc-900 dark:text-white">
                                     Rp {{ number_format((float) $inv->total_amount, 2, ',', '.') }}
                                 </td>
-                                <td class="py-4 px-6 text-right font-mono tabular-nums text-xs text-emerald-600 dark:text-emerald-400">
+                                <td class="py-4 px-6 text-right font-sans tabular-nums text-xs text-emerald-600 dark:text-emerald-400">
                                     Rp {{ number_format((float) $inv->paid_amount, 2, ',', '.') }}
                                 </td>
-                                <td class="py-4 px-6 text-right font-mono tabular-nums font-bold text-xs {{ (float) $inv->balance_due > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-zinc-400' }}">
+                                <td class="py-4 px-6 text-right font-sans tabular-nums font-bold text-xs {{ (float) $inv->balance_due > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-zinc-400' }}">
                                     Rp {{ number_format((float) $inv->balance_due, 2, ',', '.') }}
                                 </td>
                                 <td class="py-4 px-6 text-center">
@@ -205,7 +205,7 @@
     @if($activeTab === 'statement')
         <div class="card-surface p-6 rounded-2xl border border-border dark:border-zinc-800 space-y-6">
             <h2 class="text-base font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                <span class="material-symbols-rounded text-apeiron-primary">tune</span>
+                <span class="material-symbols-rounded text-primary">tune</span>
                 Select Statement Parameters
             </h2>
 
@@ -244,13 +244,13 @@
                     <div class="flex flex-col md:flex-row md:items-center justify-between p-4 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 gap-4">
                         <div>
                             <span class="text-xs font-medium text-zinc-500">Opening Balance:</span>
-                            <div class="text-base font-mono font-bold text-zinc-800 dark:text-zinc-200">
+                            <div class="text-base font-sans font-bold text-zinc-800 dark:text-zinc-200">
                                 Rp {{ number_format((float) $statementData['opening_balance'], 2, ',', '.') }}
                             </div>
                         </div>
                         <div>
                             <span class="text-xs font-medium text-zinc-500">Closing Balance:</span>
-                            <div class="text-lg font-mono font-extrabold text-emerald-600 dark:text-emerald-400">
+                            <div class="text-lg font-sans font-extrabold text-emerald-600 dark:text-emerald-400">
                                 Rp {{ number_format((float) $statementData['closing_balance'], 2, ',', '.') }}
                             </div>
                         </div>
@@ -271,18 +271,18 @@
                             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
                                 @forelse($statementData['transactions'] as $tx)
                                     <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30">
-                                        <td class="py-2.5 px-4 font-mono text-xs">{{ \Carbon\Carbon::parse($tx['entry_date'])->format('d/m/Y H:i') }}</td>
+                                        <td class="py-2.5 px-4 font-sans text-xs">{{ \Carbon\Carbon::parse($tx['entry_date'])->format('d/m/Y H:i') }}</td>
                                         <td class="py-2.5 px-4 text-xs font-medium">
                                             <x-ui.badge variant="neutral" size="xs">{{ $tx['entry_type_label'] }}</x-ui.badge>
                                         </td>
-                                        <td class="py-2.5 px-4 font-mono text-xs text-zinc-600 dark:text-zinc-300">{{ $tx['reference_number'] }}</td>
-                                        <td class="py-2.5 px-4 text-right font-mono tabular-nums text-xs text-rose-600 font-semibold">
+                                        <td class="py-2.5 px-4 font-sans text-xs text-zinc-600 dark:text-zinc-300">{{ $tx['reference_number'] }}</td>
+                                        <td class="py-2.5 px-4 text-right font-sans tabular-nums text-xs text-rose-600 font-semibold">
                                             {{ (float) $tx['debit_amount'] > 0 ? 'Rp '.number_format((float) $tx['debit_amount'], 2, ',', '.') : '-' }}
                                         </td>
-                                        <td class="py-2.5 px-4 text-right font-mono tabular-nums text-xs text-emerald-600 font-semibold">
+                                        <td class="py-2.5 px-4 text-right font-sans tabular-nums text-xs text-emerald-600 font-semibold">
                                             {{ (float) $tx['credit_amount'] > 0 ? 'Rp '.number_format((float) $tx['credit_amount'], 2, ',', '.') : '-' }}
                                         </td>
-                                        <td class="py-2.5 px-4 text-right font-mono tabular-nums font-bold text-xs text-zinc-900 dark:text-white">
+                                        <td class="py-2.5 px-4 text-right font-sans tabular-nums font-bold text-xs text-zinc-900 dark:text-white">
                                             Rp {{ number_format((float) $tx['running_balance'], 2, ',', '.') }}
                                         </td>
                                     </tr>
@@ -359,13 +359,13 @@
                             <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
                                 @foreach($selectedInvoice->lines as $line)
                                     <tr>
-                                        <td class="py-2.5 px-3 font-mono text-zinc-400">{{ $line->line_number }}</td>
+                                        <td class="py-2.5 px-3 font-sans text-zinc-400">{{ $line->line_number }}</td>
                                         <td class="py-2.5 px-3 font-medium text-zinc-800 dark:text-zinc-200">{{ $line->description }}</td>
-                                        <td class="py-2.5 px-3 text-right font-mono tabular-nums">{{ number_format((float) $line->quantity, 2, ',', '.') }}</td>
-                                        <td class="py-2.5 px-3 text-right font-mono tabular-nums">Rp {{ number_format((float) $line->unit_price, 2, ',', '.') }}</td>
-                                        <td class="py-2.5 px-3 text-right font-mono tabular-nums text-amber-600">Rp {{ number_format((float) $line->discount_amount, 2, ',', '.') }}</td>
-                                        <td class="py-2.5 px-3 text-right font-mono tabular-nums text-zinc-500">Rp {{ number_format((float) $line->tax_amount, 2, ',', '.') }}</td>
-                                        <td class="py-2.5 px-3 text-right font-mono tabular-nums font-bold text-zinc-900 dark:text-zinc-100">Rp {{ number_format((float) $line->line_total, 2, ',', '.') }}</td>
+                                        <td class="py-2.5 px-3 text-right font-sans tabular-nums">{{ number_format((float) $line->quantity, 2, ',', '.') }}</td>
+                                        <td class="py-2.5 px-3 text-right font-sans tabular-nums">Rp {{ number_format((float) $line->unit_price, 2, ',', '.') }}</td>
+                                        <td class="py-2.5 px-3 text-right font-sans tabular-nums text-amber-600">Rp {{ number_format((float) $line->discount_amount, 2, ',', '.') }}</td>
+                                        <td class="py-2.5 px-3 text-right font-sans tabular-nums text-zinc-500">Rp {{ number_format((float) $line->tax_amount, 2, ',', '.') }}</td>
+                                        <td class="py-2.5 px-3 text-right font-sans tabular-nums font-bold text-zinc-900 dark:text-zinc-100">Rp {{ number_format((float) $line->line_total, 2, ',', '.') }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -378,27 +378,27 @@
                     <div class="w-full md:w-80 space-y-1.5 text-xs">
                         <div class="flex justify-between py-1 text-zinc-600 dark:text-zinc-400">
                             <span>Subtotal:</span>
-                            <span class="font-mono">Rp {{ number_format((float) $selectedInvoice->subtotal, 2, ',', '.') }}</span>
+                            <span class="font-sans">Rp {{ number_format((float) $selectedInvoice->subtotal, 2, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between py-1 text-zinc-600 dark:text-zinc-400">
                             <span>Discount:</span>
-                            <span class="font-mono text-amber-600">- Rp {{ number_format((float) $selectedInvoice->discount_amount, 2, ',', '.') }}</span>
+                            <span class="font-sans text-amber-600">- Rp {{ number_format((float) $selectedInvoice->discount_amount, 2, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between py-1 text-zinc-600 dark:text-zinc-400">
                             <span>Tax (VAT):</span>
-                            <span class="font-mono">Rp {{ number_format((float) $selectedInvoice->tax_amount, 2, ',', '.') }}</span>
+                            <span class="font-sans">Rp {{ number_format((float) $selectedInvoice->tax_amount, 2, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between py-1 border-t border-zinc-200 dark:border-zinc-800 font-bold text-sm text-zinc-900 dark:text-zinc-100">
                             <span>Total Invoice:</span>
-                            <span class="font-mono">Rp {{ number_format((float) $selectedInvoice->total_amount, 2, ',', '.') }}</span>
+                            <span class="font-sans">Rp {{ number_format((float) $selectedInvoice->total_amount, 2, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between py-1 text-emerald-600 dark:text-emerald-400 font-semibold">
                             <span>Amount Paid:</span>
-                            <span class="font-mono">Rp {{ number_format((float) $selectedInvoice->paid_amount, 2, ',', '.') }}</span>
+                            <span class="font-sans">Rp {{ number_format((float) $selectedInvoice->paid_amount, 2, ',', '.') }}</span>
                         </div>
                         <div class="flex justify-between py-1.5 border-t border-zinc-200 dark:border-zinc-800 font-extrabold text-sm text-rose-600 dark:text-rose-400">
                             <span>Balance Due:</span>
-                            <span class="font-mono">Rp {{ number_format((float) $selectedInvoice->balance_due, 2, ',', '.') }}</span>
+                            <span class="font-sans">Rp {{ number_format((float) $selectedInvoice->balance_due, 2, ',', '.') }}</span>
                         </div>
                     </div>
                 </div>
@@ -421,10 +421,10 @@
                                 <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
                                     @foreach($selectedInvoice->allocations as $alloc)
                                         <tr>
-                                            <td class="py-2 px-3 font-mono">{{ $alloc->allocated_at?->format('d/m/Y H:i') }}</td>
-                                            <td class="py-2 px-3 font-mono text-zinc-600 dark:text-zinc-300">{{ $alloc->payment_reference ?: '-' }}</td>
+                                            <td class="py-2 px-3 font-sans">{{ $alloc->allocated_at?->format('d/m/Y H:i') }}</td>
+                                            <td class="py-2 px-3 font-sans text-zinc-600 dark:text-zinc-300">{{ $alloc->payment_reference ?: '-' }}</td>
                                             <td class="py-2 px-3">{{ $alloc->allocatedBy?->name }}</td>
-                                            <td class="py-2 px-3 text-right font-mono font-bold text-emerald-600 tabular-nums">Rp {{ number_format((float) $alloc->allocated_amount, 2, ',', '.') }}</td>
+                                            <td class="py-2 px-3 text-right font-sans font-bold text-emerald-600 tabular-nums">Rp {{ number_format((float) $alloc->allocated_amount, 2, ',', '.') }}</td>
                                             <td class="py-2 px-3 text-center">
                                                 <x-ui.badge variant="{{ $alloc->is_reversed ? 'danger' : 'success' }}" size="xs">
                                                     {{ $alloc->is_reversed ? 'Reversed' : 'Active' }}
@@ -473,7 +473,7 @@
                     </div>
                     <div>
                         <x-ui.label for="paymentAmount">Total Payment Received (Rp) *</x-ui.label>
-                        <x-ui.input type="number" step="0.01" id="paymentAmount" wire:model="paymentAmount" placeholder="0.00" class="font-mono font-bold" />
+                        <x-ui.input type="number" step="0.01" id="paymentAmount" wire:model="paymentAmount" placeholder="0.00" class="font-sans font-bold" />
                         @error('paymentAmount') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
                     <div>
@@ -487,7 +487,7 @@
                     </div>
                     <div class="md:col-span-2">
                         <x-ui.label for="paymentReference">Reference / Transfer Receipt Number *</x-ui.label>
-                        <x-ui.input type="text" id="paymentReference" wire:model="paymentReference" placeholder="e.g. TRF-BCA-20270105-0982" class="font-mono" />
+                        <x-ui.input type="text" id="paymentReference" wire:model="paymentReference" placeholder="e.g. TRF-BCA-20270105-0982" class="font-sans" />
                         @error('paymentReference') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
                 </div>
@@ -510,13 +510,13 @@
                                 <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
                                     @foreach($openCustomerInvoices as $openInv)
                                         <tr>
-                                            <td class="py-2 px-3 font-mono font-bold">{{ $openInv->invoice_number }}</td>
+                                            <td class="py-2 px-3 font-sans font-bold">{{ $openInv->invoice_number }}</td>
                                             <td class="py-2 px-3 text-zinc-600 dark:text-zinc-400">{{ $openInv->due_date?->format('d/m/Y') }}</td>
-                                            <td class="py-2 px-3 text-right font-mono font-semibold text-rose-600 tabular-nums">
+                                            <td class="py-2 px-3 text-right font-sans font-semibold text-rose-600 tabular-nums">
                                                 Rp {{ number_format((float) $openInv->balance_due, 2, ',', '.') }}
                                             </td>
                                             <td class="py-2 px-3 text-right">
-                                                <x-ui.input type="number" step="0.01" wire:model="allocatedAmounts.{{ $openInv->id }}" placeholder="0.00" class="text-right text-xs font-mono font-bold tabular-nums" />
+                                                <x-ui.input type="number" step="0.01" wire:model="allocatedAmounts.{{ $openInv->id }}" placeholder="0.00" class="text-right text-xs font-sans font-bold tabular-nums" />
                                             </td>
                                             <td class="py-2 px-3 text-center">
                                                 <x-ui.button type="button" variant="secondary" size="xs" wire:click="allocateFull({{ $openInv->id }}, '{{ $openInv->balance_due }}')">
@@ -559,7 +559,7 @@
             @if($selectedInvoice)
             <div class="space-y-4">
                 <p class="text-xs text-zinc-500">
-                    You are about to void invoice <strong class="font-mono text-zinc-800 dark:text-zinc-200">{{ $selectedInvoice->invoice_number }}</strong> valued at <strong class="font-mono text-zinc-800 dark:text-zinc-200">Rp {{ number_format((float) $selectedInvoice->total_amount, 2, ',', '.') }}</strong>. This action reverses receivable journal entries and restores credit exposure to the original Sales Order.
+                    You are about to void invoice <strong class="font-sans text-zinc-800 dark:text-zinc-200">{{ $selectedInvoice->invoice_number }}</strong> valued at <strong class="font-sans text-zinc-800 dark:text-zinc-200">Rp {{ number_format((float) $selectedInvoice->total_amount, 2, ',', '.') }}</strong>. This action reverses receivable journal entries and restores credit exposure to the original Sales Order.
                 </p>
                 <div>
                     <x-ui.label for="voidReason">Void Reason *</x-ui.label>

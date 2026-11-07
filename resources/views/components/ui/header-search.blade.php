@@ -10,7 +10,7 @@
         title="Search navigation or press Cmd+K">
         <span class="material-symbols-rounded text-[16px] text-shell-foreground group-hover:text-shell-foreground-active transition-colors" aria-hidden="true">search</span>
         <span class="text-[12px] font-normal text-shell-foreground group-hover:text-shell-foreground-active truncate max-w-[120px]">{{ $placeholder }}</span>
-        <kbd class="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono font-medium tracking-wide text-shell-foreground bg-shell border border-shell-border rounded shadow-xs ml-1">
+        <kbd class="inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-sans font-medium tracking-wide text-shell-foreground bg-shell border border-shell-border rounded shadow-xs ml-1">
             <span class="text-[11px]">⌘</span>K
         </kbd>
     </button>

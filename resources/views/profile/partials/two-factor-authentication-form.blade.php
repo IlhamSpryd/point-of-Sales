@@ -1,6 +1,6 @@
 <section>
     <header>
-        <h2 class="text-lg font-bold text-apeiron-ink">
+        <h2 class="text-lg font-bold text-foreground">
             {{ __('Two-Factor Authentication (2FA / TOTP)') }}
         </h2>
 
@@ -43,7 +43,7 @@
                         @csrf
                         @method('DELETE')
                         @if (! empty($user->password_hash) || ! empty($user->password))
-                            <input type="password" name="password" placeholder="Confirm password" required class="text-xs px-3 py-1.5 rounded-lg border border-zinc-300 focus:ring-1 focus:ring-apeiron-primary">
+                            <input type="password" name="password" placeholder="Confirm password" required class="text-xs px-3 py-1.5 rounded-lg border border-zinc-300 focus:ring-1 focus:ring-ring">
                         @endif
                         <button type="submit" id="btn-disable-2fa" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg border border-rose-200 text-rose-600 bg-rose-50 hover:bg-rose-100 transition-colors cursor-pointer">
                             <span class="material-symbols-rounded text-sm">lock_open</span>
@@ -64,7 +64,7 @@
                     </div>
                 </div>
 
-                <div class="bg-white p-4 rounded-lg border border-amber-200 text-xs font-mono break-all select-all text-zinc-800">
+                <div class="bg-white p-4 rounded-lg border border-amber-200 text-xs font-sans break-all select-all text-zinc-800">
                     <strong>{{ __('Secret Key:') }}</strong> {{ $sessionSecret }}<br>
                     <span class="text-zinc-500 text-[11px]">{{ $sessionQrUri }}</span>
                 </div>
@@ -74,7 +74,7 @@
                         <h4 class="text-xs font-semibold text-amber-950 mb-2">{{ __('Store These Emergency Recovery Codes:') }}</h4>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-white p-3 rounded-lg border border-amber-200">
                             @foreach ($sessionRecoveryCodes as $code)
-                                <code class="text-xs font-mono font-bold text-zinc-700 bg-zinc-50 px-2 py-1 rounded text-center">{{ $code }}</code>
+                                <code class="text-xs font-sans font-bold text-zinc-700 bg-zinc-50 px-2 py-1 rounded text-center">{{ $code }}</code>
                             @endforeach
                         </div>
                         <p class="text-[11px] text-amber-700 mt-1.5">
@@ -87,8 +87,8 @@
                     <h3 class="text-sm font-semibold text-amber-950 mb-2">{{ __('Step 2: Confirm 6-Digit Code') }}</h3>
                     <form method="POST" action="{{ route('two-factor.confirm') }}" class="flex flex-col sm:flex-row gap-3">
                         @csrf
-                        <input type="text" name="code" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" placeholder="123456" required class="w-full sm:w-48 text-center tracking-widest text-base font-mono px-3 py-2 rounded-lg border border-zinc-300 focus:ring-2 focus:ring-apeiron-primary">
-                        <button type="submit" id="btn-confirm-2fa" class="px-4 py-2 bg-apeiron-primary text-white text-xs font-semibold rounded-lg hover:bg-apeiron-primary-dark transition-all cursor-pointer">
+                        <input type="text" name="code" maxlength="6" pattern="[0-9]{6}" inputmode="numeric" placeholder="123456" required class="w-full sm:w-48 text-center tracking-widest text-base font-sans px-3 py-2 rounded-lg border border-zinc-300 focus:ring-2 focus:ring-ring">
+                        <button type="submit" id="btn-confirm-2fa" class="px-4 py-2 bg-primary text-white text-xs font-semibold rounded-lg hover:bg-primary/90 transition-all cursor-pointer">
                             {{ __('Confirm & Enable 2FA') }}
                         </button>
                     </form>
@@ -118,7 +118,7 @@
 
                 <form method="POST" action="{{ route('two-factor.enable') }}">
                     @csrf
-                    <button type="submit" id="btn-enable-2fa" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-apeiron-primary text-white hover:bg-apeiron-primary-dark transition-all active:scale-[0.98] cursor-pointer">
+                    <button type="submit" id="btn-enable-2fa" class="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-primary text-white hover:bg-primary/90 transition-all active:scale-[0.98] cursor-pointer">
                         <span class="material-symbols-rounded text-sm">lock</span>
                         <span>{{ __('Enable 2FA') }}</span>
                     </button>

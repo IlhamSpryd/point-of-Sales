@@ -29,11 +29,11 @@
     {{-- Price Display --}}
     <div class="mb-3">
         @if ($originalPrice)
-            <span class="text-[11px] text-muted-foreground line-through numeric font-mono block">
+            <span class="text-[11px] text-muted-foreground line-through numeric font-sans block">
                 {{ $originalPrice }}
             </span>
         @endif
-        <div class="text-2xl font-black text-foreground tracking-tight numeric font-mono">
+        <div class="text-2xl font-black text-foreground tracking-tight numeric font-sans">
             {{ $price }}
         </div>
     </div>
@@ -71,7 +71,7 @@
         </svg>
 
         {{-- Barcode Digits & SKU --}}
-        <div class="w-full flex items-center justify-between text-[10px] font-mono text-muted-foreground mt-1">
+        <div class="w-full flex items-center justify-between text-[10px] font-sans text-muted-foreground mt-1">
             <span>{{ $barcode }}</span>
             <span>{{ $sku }}</span>
         </div>

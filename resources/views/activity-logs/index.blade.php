@@ -26,11 +26,11 @@
                             <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="font-medium text-zinc-900 dark:text-white text-xs">{{ $log->created_at->format('M d, Y') }}</div>
-                                    <div class="text-[11px] text-zinc-400 font-mono">{{ $log->created_at->format('H:i:s') }}</div>
+                                    <div class="text-[11px] text-zinc-400 font-sans">{{ $log->created_at->format('H:i:s') }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="font-bold flex items-center gap-2 text-zinc-900 dark:text-white text-xs">
-                                        <div class="w-7 h-7 rounded-full bg-apeiron-primary/10 text-apeiron-primary flex items-center justify-center font-bold text-xs uppercase">
+                                        <div class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs uppercase">
                                             {{ substr($log->user->name ?? 'S', 0, 1) }}
                                         </div>
                                         {{ $log->user->name ?? 'System' }}
@@ -49,7 +49,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-xs text-zinc-500">
-                                    <div class="font-mono text-zinc-600 dark:text-zinc-300">{{ $log->ip_address }}</div>
+                                    <div class="font-sans text-zinc-600 dark:text-zinc-300">{{ $log->ip_address }}</div>
                                     <div class="truncate max-w-[150px] text-[11px]" title="{{ $log->user_agent }}">{{ Str::limit($log->user_agent, 20) }}</div>
                                 </td>
                             </tr>

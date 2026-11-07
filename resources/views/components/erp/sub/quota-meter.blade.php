@@ -21,7 +21,7 @@
 <div {{ $attributes->twMerge('space-y-1.5') }}>
     <div class="flex items-center justify-between text-xs font-semibold">
         <span class="text-foreground">{{ $label }}</span>
-        <span class="text-muted-foreground numeric font-mono">
+        <span class="text-muted-foreground numeric font-sans">
             <strong class="text-foreground">{{ $usedCount }}</strong> / {{ $limitCount }} {{ $unit }}
             <span class="text-[11px] font-bold ml-1">({{ $percent }}%)</span>
         </span>

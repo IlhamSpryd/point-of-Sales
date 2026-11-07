@@ -44,7 +44,7 @@
     <div class="flex items-start justify-between gap-2">
         <div>
             <div class="flex items-center gap-2">
-                <span class="text-xl font-black text-foreground tracking-tight font-mono">
+                <span class="text-xl font-black text-foreground tracking-tight font-sans">
                     {{ $code }}
                 </span>
                 <span class="text-[11px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-md flex items-center gap-1">
@@ -79,7 +79,7 @@
                 </span>
             @endif
             @if ($orderTotal)
-                <span class="font-bold text-foreground numeric font-mono ml-auto">
+                <span class="font-bold text-foreground numeric font-sans ml-auto">
                     {{ $orderTotal }}
                 </span>
             @endif

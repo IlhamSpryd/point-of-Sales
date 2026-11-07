@@ -73,14 +73,14 @@
                     @forelse($returns as $ret)
                     <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
                         <td class="px-6 py-4">
-                            <div class="font-bold text-zinc-900 dark:text-white font-mono">{{ $ret->return_number }}</div>
+                            <div class="font-bold text-zinc-900 dark:text-white font-sans">{{ $ret->return_number }}</div>
                             <div class="text-xs text-zinc-500">{{ \Carbon\Carbon::parse($ret->created_at)->format('d M Y') }}</div>
                         </td>
                         <td class="px-6 py-4">
                             <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $ret->supplier?->name ?? 'Vendor' }}</div>
                             <div class="text-xs text-zinc-400">{{ $ret->store?->name ?? 'All Branches' }}</div>
                         </td>
-                        <td class="px-6 py-4 font-mono text-xs">
+                        <td class="px-6 py-4 font-sans text-xs">
                             <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $ret->goodsReceivedNote?->grn_number ?? 'GRN #' . $ret->goods_received_note_id }}</div>
                             <div class="text-zinc-400">DO: {{ $ret->goodsReceivedNote?->delivery_order_number }}</div>
                         </td>
@@ -89,7 +89,7 @@
                         </td>
                         <td class="px-6 py-4 text-center">
                             @if($ret->debitNote)
-                                <div class="font-mono text-xs font-bold text-emerald-600 dark:text-emerald-400">{{ $ret->debitNote->debit_note_number }}</div>
+                                <div class="font-sans text-xs font-bold text-emerald-600 dark:text-emerald-400">{{ $ret->debitNote->debit_note_number }}</div>
                                 <div class="text-[11px] text-zinc-500">Rp {{ number_format((float) $ret->debitNote->total_amount, 2) }}</div>
                             @else
                                 <span class="text-xs text-zinc-400 italic">Not Issued</span>
@@ -220,12 +220,12 @@
                                         <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $line['item_name'] }}</div>
                                         <div class="text-[10px] text-zinc-400 uppercase">{{ $line['item_type'] }}</div>
                                     </td>
-                                    <td class="px-3 py-2 font-mono uppercase">{{ $line['purchase_uom'] }}</td>
+                                    <td class="px-3 py-2 font-sans uppercase">{{ $line['purchase_uom'] }}</td>
                                     <td class="px-3 py-2 text-right font-medium text-emerald-600 tabular-nums">{{ (float) $line['accepted_qty'] }}</td>
                                     <td class="px-3 py-2 text-right">
                                         <input type="number" step="0.0001" min="0" max="{{ $line['accepted_qty'] }}" wire:model="returnLines.{{ $i }}.return_quantity" class="w-full text-xs rounded-lg border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 py-1 text-right font-bold text-rose-600 tabular-nums" />
                                     </td>
-                                    <td class="px-3 py-2 text-right font-mono tabular-nums text-zinc-500">
+                                    <td class="px-3 py-2 text-right font-sans tabular-nums text-zinc-500">
                                         Rp {{ number_format((float) $line['unit_cost'], 2) }}
                                     </td>
                                 </tr>
@@ -263,7 +263,7 @@
         <x-slot:title>
             @if($selectedReturn)
                 <div>
-                    <span class="font-mono">{{ $selectedReturn->return_number }}</span>
+                    <span class="font-sans">{{ $selectedReturn->return_number }}</span>
                     <span class="ml-2">
                         <x-ui.badge variant="primary">{{ $selectedReturn->status?->label() ?? $selectedReturn->status }}</x-ui.badge>
                     </span>
@@ -281,11 +281,11 @@
                     <div>
                         <div class="text-zinc-400 uppercase font-bold text-[10px]">Supplier</div>
                         <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5">{{ $selectedReturn->supplier?->name }}</div>
-                        <div class="text-zinc-500 font-mono">{{ $selectedReturn->supplier?->code }}</div>
+                        <div class="text-zinc-500 font-sans">{{ $selectedReturn->supplier?->code }}</div>
                     </div>
                     <div>
                         <div class="text-zinc-400 uppercase font-bold text-[10px]">GRN Document</div>
-                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5 font-mono">{{ $selectedReturn->goodsReceivedNote?->grn_number }}</div>
+                        <div class="font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5 font-sans">{{ $selectedReturn->goodsReceivedNote?->grn_number }}</div>
                     </div>
                     <div>
                         <div class="text-zinc-400 uppercase font-bold text-[10px]">Reason</div>
@@ -317,7 +317,7 @@
                                     <td class="px-4 py-2.5 font-medium text-zinc-800 dark:text-zinc-200">
                                         {{ $line->purchasable?->product_name ?? $line->purchasable?->name ?? 'Item #' . $line->purchasable_id }}
                                     </td>
-                                    <td class="px-4 py-2.5 font-mono uppercase">{{ $line->purchase_uom }}</td>
+                                    <td class="px-4 py-2.5 font-sans uppercase">{{ $line->purchase_uom }}</td>
                                     <td class="px-4 py-2.5 text-right font-bold text-rose-600 tabular-nums">{{ (float) $line->return_quantity }}</td>
                                     <td class="px-4 py-2.5 text-right tabular-nums">Rp {{ number_format((float) $line->unit_cost, 2) }}</td>
                                     <td class="px-4 py-2.5 text-right font-semibold tabular-nums">Rp {{ number_format((float) $line->subtotal, 2) }}</td>
@@ -334,7 +334,7 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <span class="text-xs font-bold uppercase text-emerald-800 dark:text-emerald-300">Debit Note Issued</span>
-                            <div class="font-mono text-sm font-bold text-emerald-900 dark:text-emerald-200">{{ $selectedReturn->debitNote->debit_note_number }}</div>
+                            <div class="font-sans text-sm font-bold text-emerald-900 dark:text-emerald-200">{{ $selectedReturn->debitNote->debit_note_number }}</div>
                         </div>
                         <div class="text-right">
                             <span class="text-xs text-zinc-500">Total Credit Amount:</span>

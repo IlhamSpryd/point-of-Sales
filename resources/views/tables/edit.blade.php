@@ -42,7 +42,7 @@
                     <div>
                         <x-form-label for="area">Area / Floor Section</x-form-label>
                         <div class="relative">
-                            <select id="area" name="area" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-apeiron-ink dark:text-zinc-100 text-sm appearance-none focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 transition-all duration-200 shadow-xs {{ $errors->has('area') ? 'border-rose-300 focus:ring-rose-500' : '' }}">
+                            <select id="area" name="area" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground dark:text-zinc-100 text-sm appearance-none focus:outline-hidden focus:ring-2 focus:ring-ring/20 transition-all duration-200 shadow-xs {{ $errors->has('area') ? 'border-rose-300 focus:ring-rose-500' : '' }}">
                                 <option value="Indoor" {{ old('area', $table->area) === 'Indoor' ? 'selected' : '' }}>Indoor</option>
                                 <option value="Outdoor" {{ old('area', $table->area) === 'Outdoor' ? 'selected' : '' }}>Outdoor</option>
                                 <option value="Rooftop" {{ old('area', $table->area) === 'Rooftop' ? 'selected' : '' }}>Rooftop</option>
@@ -60,7 +60,7 @@
                     <div>
                         <x-form-label for="operational_status">Operational Status</x-form-label>
                         <div class="relative">
-                            <select id="operational_status" name="operational_status" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-apeiron-ink dark:text-zinc-100 text-sm appearance-none focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 transition-all duration-200 shadow-xs {{ $errors->has('operational_status') ? 'border-rose-300 focus:ring-rose-500' : '' }}">
+                            <select id="operational_status" name="operational_status" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground dark:text-zinc-100 text-sm appearance-none focus:outline-hidden focus:ring-2 focus:ring-ring/20 transition-all duration-200 shadow-xs {{ $errors->has('operational_status') ? 'border-rose-300 focus:ring-rose-500' : '' }}">
                                 <option value="available" {{ old('operational_status', $table->operational_status) === 'available' ? 'selected' : '' }}>Available</option>
                                 <option value="occupied" {{ old('operational_status', $table->operational_status) === 'occupied' ? 'selected' : '' }}>Occupied</option>
                                 <option value="cleaning" {{ old('operational_status', $table->operational_status) === 'cleaning' ? 'selected' : '' }}>Cleaning</option>
@@ -80,8 +80,8 @@
                 <div>
                     <label class="flex items-center gap-3 cursor-pointer">
                         <input type="hidden" name="is_active" value="0">
-                        <input type="checkbox" name="is_active" value="1" {{ old('is_active', $table->is_active) ? 'checked' : '' }} class="w-5 h-5 rounded border-zinc-300 dark:border-zinc-700 text-apeiron-primary focus:ring-apeiron-primary/20 transition-colors">
-                        <span class="text-sm font-medium text-apeiron-ink dark:text-zinc-200">Active Table (Available for guest seating and orders)</span>
+                        <input type="checkbox" name="is_active" value="1" {{ old('is_active', $table->is_active) ? 'checked' : '' }} class="w-5 h-5 rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-ring/20 transition-colors">
+                        <span class="text-sm font-medium text-foreground dark:text-zinc-200">Active Table (Available for guest seating and orders)</span>
                     </label>
                 </div>
 

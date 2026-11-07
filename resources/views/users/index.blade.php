@@ -56,7 +56,7 @@
             <div class="card-surface p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <form method="GET" action="{{ route('users.index') }}" class="relative w-full sm:w-80">
                     <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search name, email, employee ID..." class="w-full pl-10 pr-4 py-2 text-sm rounded-lg border border-border dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search name, email, employee ID..." class="w-full pl-10 pr-4 py-2 text-sm rounded-lg border border-border dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-zinc-800 dark:text-zinc-100">
                 </form>
             </div>
 
@@ -81,7 +81,7 @@
                 
                 @foreach($users as $user)
                     <tr class="hover:bg-muted/40 transition-colors duration-150">
-                        <td class="px-6 py-4 font-mono font-medium text-foreground text-sm">{{ $user->employee_id }}</td>
+                        <td class="px-6 py-4 font-sans font-medium text-foreground text-sm">{{ $user->employee_id }}</td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
                                 <div class="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
@@ -131,12 +131,12 @@
                     <div class="card-surface p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
                         <div class="flex justify-between items-start mb-2">
                             <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 text-apeiron-ink dark:text-zinc-100 flex items-center justify-center font-bold text-sm border border-zinc-200 dark:border-zinc-700 shrink-0">
+                                <div class="w-10 h-10 rounded-full bg-zinc-100 dark:bg-zinc-800 text-foreground dark:text-zinc-100 flex items-center justify-center font-bold text-sm border border-zinc-200 dark:border-zinc-700 shrink-0">
                                     {{ strtoupper(substr($user->name, 0, 1)) }}
                                 </div>
                                 <div class="flex flex-col">
-                                    <span class="font-bold text-apeiron-ink dark:text-zinc-100 text-sm">{{ $user->name }}</span>
-                                    <span class="text-xs text-zinc-500 font-mono">{{ $user->employee_id }}</span>
+                                    <span class="font-bold text-foreground dark:text-zinc-100 text-sm">{{ $user->name }}</span>
+                                    <span class="text-xs text-zinc-500 font-sans">{{ $user->employee_id }}</span>
                                 </div>
                             </div>
                             <div class="flex flex-col items-end gap-1">
@@ -153,11 +153,11 @@
                         <div class="flex items-center gap-4 mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
                             <div class="flex-1">
                                 <span class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-0.5">Contact</span>
-                                <span class="text-xs text-apeiron-ink dark:text-zinc-200 block truncate">{{ $user->email }}</span>
+                                <span class="text-xs text-foreground dark:text-zinc-200 block truncate">{{ $user->email }}</span>
                                 <span class="text-xs text-zinc-500">{{ $user->phone_number ?: '—' }}</span>
                             </div>
                             <div class="flex items-center gap-1 shrink-0">
-                                <a href="{{ route('users.edit', $user->id) }}" class="size-8 flex items-center justify-center rounded-lg text-zinc-600 hover:text-apeiron-ink hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" aria-label="Edit user" wire:navigate>
+                                <a href="{{ route('users.edit', $user->id) }}" class="size-8 flex items-center justify-center rounded-lg text-zinc-600 hover:text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" aria-label="Edit user" wire:navigate>
                                     <span class="material-symbols-rounded text-[18px]">edit</span>
                                 </a>
                                 @if(auth()->id() !== $user->id)
@@ -204,7 +204,7 @@
                         <tbody class="divide-y divide-border dark:divide-zinc-800/70">
                             @forelse($invitations as $invitation)
                                 <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
-                                    <td class="px-6 py-4 font-medium text-apeiron-ink dark:text-zinc-100">
+                                    <td class="px-6 py-4 font-medium text-foreground dark:text-zinc-100">
                                         {{ $invitation->email }}
                                     </td>
                                     <td class="px-6 py-4 text-xs font-medium text-zinc-700 dark:text-zinc-300">
@@ -310,7 +310,7 @@
                 <div class="flex items-center gap-2 pt-2">
                     <input type="hidden" name="is_active" value="0">
                     <input type="checkbox" id="user_is_active" name="is_active" value="1" checked class="rounded border-zinc-300 text-primary-600 focus:ring-primary-500">
-                    <label for="user_is_active" class="text-sm font-medium text-apeiron-ink">Active Employee Account</label>
+                    <label for="user_is_active" class="text-sm font-medium text-foreground">Active Employee Account</label>
                 </div>
             </form>
 

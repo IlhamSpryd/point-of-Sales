@@ -94,7 +94,7 @@
                 
                 @foreach($categories as $category)
                     <tr class="hover:bg-muted/40 transition-colors duration-200">
-                        <td class="px-6 py-4 font-mono font-semibold text-foreground text-xs">{{ $category->category_code }}</td>
+                        <td class="px-6 py-4 font-sans font-semibold text-foreground text-xs">{{ $category->category_code }}</td>
                         <td class="px-6 py-4">
                             <div class="font-semibold text-foreground text-sm">{{ $category->category_name }}</div>
                             @if($category->description)
@@ -164,7 +164,7 @@
                     </div>
                 @endforelse
             </div>
-            <div class="p-4 border-t border-apeiron-border shrink-0">
+            <div class="p-4 border-t border-border shrink-0">
                 {{ $categories->links() }}
             </div>
         </div>
@@ -184,17 +184,17 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Category Code (Optional)</label>
-                    <input type="text" name="category_code" x-model="form.category_code" placeholder="e.g. BEV, FOOD" class="w-full rounded-xl border border-border px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
+                    <input type="text" name="category_code" x-model="form.category_code" placeholder="e.g. BEV, FOOD" class="w-full rounded-xl border border-border px-3.5 py-2.5 text-sm text-foreground focus:border-primary-500 focus:outline-none">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Category Name <span class="text-rose-500">*</span></label>
-                    <input type="text" name="category_name" x-model="form.category_name" required placeholder="Enter category name" class="w-full rounded-xl border border-border px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
+                    <input type="text" name="category_name" x-model="form.category_name" required placeholder="Enter category name" class="w-full rounded-xl border border-border px-3.5 py-2.5 text-sm text-foreground focus:border-primary-500 focus:outline-none">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Parent Category</label>
-                    <select name="parent_id" x-model="form.parent_id" class="w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
+                    <select name="parent_id" x-model="form.parent_id" class="w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-foreground focus:border-primary-500 focus:outline-none">
                         <option value="">-- No Parent (Primary Category) --</option>
                         @foreach($parentCategories as $parent)
                             <option value="{{ $parent->id }}">{{ $parent->category_name }} ({{ $parent->category_code }})</option>
@@ -204,17 +204,17 @@
 
                 <div>
                     <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Display Order</label>
-                    <input type="number" name="sort_order" x-model="form.sort_order" min="0" class="w-full rounded-xl border border-border px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none">
+                    <input type="number" name="sort_order" x-model="form.sort_order" min="0" class="w-full rounded-xl border border-border px-3.5 py-2.5 text-sm text-foreground focus:border-primary-500 focus:outline-none">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">Description</label>
-                    <textarea name="description" x-model="form.description" rows="3" placeholder="Optional description..." class="w-full rounded-xl border border-border px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none"></textarea>
+                    <textarea name="description" x-model="form.description" rows="3" placeholder="Optional description..." class="w-full rounded-xl border border-border px-3.5 py-2.5 text-sm text-foreground focus:border-primary-500 focus:outline-none"></textarea>
                 </div>
 
                 <div class="flex items-center gap-2 pt-2">
                     <input type="checkbox" id="drawer_is_active" name="is_active" value="1" x-model="form.is_active" class="rounded border-border text-primary-600 focus:ring-primary-500">
-                    <label for="drawer_is_active" class="text-sm font-medium text-apeiron-ink">Active Status</label>
+                    <label for="drawer_is_active" class="text-sm font-medium text-foreground">Active Status</label>
                 </div>
             </form>
 

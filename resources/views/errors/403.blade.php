@@ -9,7 +9,7 @@
         </div>
 
         <div>
-            <span class="text-xs font-mono font-semibold tracking-wider uppercase text-amber-600 dark:text-amber-400">Error 403 • Access Denied</span>
+            <span class="text-xs font-sans font-semibold tracking-wider uppercase text-amber-600 dark:text-amber-400">Error 403 • Access Denied</span>
             <h1 class="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 Insufficient Permissions
             </h1>

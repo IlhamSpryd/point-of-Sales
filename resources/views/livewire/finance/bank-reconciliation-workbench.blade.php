@@ -57,7 +57,7 @@
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-4 border-b border-zinc-200 dark:border-zinc-800">
                 <div>
                     <div class="flex items-center gap-2">
-                        <span class="font-mono font-bold text-zinc-950 dark:text-white text-sm">{{ $session->session_number }}</span>
+                        <span class="font-sans font-bold text-zinc-950 dark:text-white text-sm">{{ $session->session_number }}</span>
                         <span class="px-2 py-0.5 rounded-full text-[10px] font-bold {{ $session->status->value === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-amber-500/10 text-amber-600' }}">
                             {{ $session->status->value }}
                         </span>
@@ -85,7 +85,7 @@
             </div>
 
             <!-- Balances Metrics Bar -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-xs">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-sans text-xs">
                 <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800">
                     <span class="text-[10px] text-zinc-400 block uppercase">Statement Ending Balance</span>
                     <span class="text-sm font-bold text-zinc-950 dark:text-white">Rp {{ number_format((float) $session->statement_ending_balance, 2) }}</span>
@@ -106,11 +106,11 @@
             <div class="flex items-center justify-between p-3 rounded-xl bg-zinc-100 dark:bg-zinc-800/80 text-xs">
                 <div class="flex items-center gap-3">
                     <span class="text-zinc-500">Manual Match:</span>
-                    <span class="font-medium {{ $selectedStatementLineId ? 'text-emerald-600 dark:text-emerald-400 font-mono' : 'text-zinc-400' }}">
+                    <span class="font-medium {{ $selectedStatementLineId ? 'text-emerald-600 dark:text-emerald-400 font-sans' : 'text-zinc-400' }}">
                         {{ $selectedStatementLineId ? '1 Statement Line Selected' : 'No statement line selected' }}
                     </span>
                     <span class="text-zinc-400">•</span>
-                    <span class="font-medium {{ $selectedTransactionId ? 'text-emerald-600 dark:text-emerald-400 font-mono' : 'text-zinc-400' }}">
+                    <span class="font-medium {{ $selectedTransactionId ? 'text-emerald-600 dark:text-emerald-400 font-sans' : 'text-zinc-400' }}">
                         {{ $selectedTransactionId ? '1 Book Transaction Selected' : 'No book transaction selected' }}
                     </span>
                 </div>
@@ -155,7 +155,7 @@
                                         $isCredit = bccomp((string) $line->credit_amount, '0.00', 2) > 0;
                                         $lineAmt = $isCredit ? (float) $line->credit_amount : (float) $line->debit_amount;
                                     @endphp
-                                    <div class="flex items-center justify-between font-mono">
+                                    <div class="flex items-center justify-between font-sans">
                                         <span class="text-zinc-500 text-[11px]">{{ $line->value_date ? \Carbon\Carbon::parse($line->value_date)->format('d M Y') : '-' }}</span>
                                         <span class="font-bold {{ $isCredit ? 'text-emerald-600' : 'text-rose-600' }}">
                                             Rp {{ number_format($lineAmt, 2) }} ({{ $isCredit ? 'CR' : 'DB' }})
@@ -163,7 +163,7 @@
                                     </div>
                                     <p class="text-zinc-800 dark:text-zinc-200 font-medium truncate mt-0.5">{{ $line->description ?: '-' }}</p>
                                     @if($line->external_reference)
-                                        <span class="text-[10px] text-zinc-400 font-mono">Ref: {{ $line->external_reference }}</span>
+                                        <span class="text-[10px] text-zinc-400 font-sans">Ref: {{ $line->external_reference }}</span>
                                     @endif
                                 </div>
                             </label>
@@ -193,14 +193,14 @@
                                        wire:model.live="selectedTransactionId"
                                        class="mt-0.5 text-zinc-900 focus:ring-zinc-900">
                                 <div class="flex-1 min-w-0 text-xs">
-                                    <div class="flex items-center justify-between font-mono">
+                                    <div class="flex items-center justify-between font-sans">
                                         <span class="text-zinc-500 text-[11px]">{{ \Carbon\Carbon::parse($txn->transaction_date)->format('d M Y') }}</span>
                                         <span class="font-bold {{ in_array($txn->transaction_type->value, ['RECEIPT', 'TRANSFER_IN', 'POS_SHIFT_DEPOSIT', 'PG_SETTLEMENT', 'BANK_INTEREST'], true) ? 'text-emerald-600' : 'text-rose-600' }}">
                                             Rp {{ number_format((float) $txn->amount, 2) }} ({{ $txn->transaction_type->value }})
                                         </span>
                                     </div>
                                     <p class="text-zinc-800 dark:text-zinc-200 font-medium truncate mt-0.5">{{ $txn->description ?: $txn->reference_number }}</p>
-                                    <span class="text-[10px] text-zinc-400 font-mono">{{ $txn->transaction_number }}</span>
+                                    <span class="text-[10px] text-zinc-400 font-sans">{{ $txn->transaction_number }}</span>
                                 </div>
                             </label>
                         @empty
@@ -237,16 +237,16 @@
                     <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
                         @forelse ($matches as $match)
                             <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/30">
-                                <td class="px-4 py-2.5 font-mono text-zinc-500">{{ $match->created_at->format('d M Y H:i') }}</td>
+                                <td class="px-4 py-2.5 font-sans text-zinc-500">{{ $match->created_at->format('d M Y H:i') }}</td>
                                 <td class="px-4 py-2.5">
                                     <span class="font-medium text-zinc-900 dark:text-zinc-100 block">{{ $match->statementLine?->description ?: '-' }}</span>
-                                    <span class="font-mono text-[10px] text-zinc-400">{{ $match->statementLine?->value_date ? \Carbon\Carbon::parse($match->statementLine->value_date)->format('d M Y') : '-' }}</span>
+                                    <span class="font-sans text-[10px] text-zinc-400">{{ $match->statementLine?->value_date ? \Carbon\Carbon::parse($match->statementLine->value_date)->format('d M Y') : '-' }}</span>
                                 </td>
                                 <td class="px-4 py-2.5">
                                     <span class="font-medium text-zinc-900 dark:text-zinc-100 block">{{ $match->transaction?->description ?: $match->transaction?->reference_number }}</span>
-                                    <span class="font-mono text-[10px] text-zinc-400">{{ $match->transaction?->transaction_number }}</span>
+                                    <span class="font-sans text-[10px] text-zinc-400">{{ $match->transaction?->transaction_number }}</span>
                                 </td>
-                                <td class="px-4 py-2.5 text-right font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                                <td class="px-4 py-2.5 text-right font-sans font-bold text-emerald-600 dark:text-emerald-400">
                                     Rp {{ number_format((float) $match->matched_amount, 2) }}
                                 </td>
                                 <td class="px-4 py-2.5 text-center">
@@ -319,7 +319,7 @@
                         <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Statement Ending Date</label>
                         <input type="date"
                                wire:model="statementEndDate"
-                               class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-mono">
+                               class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-sans">
                         @error('statementEndDate') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
@@ -329,7 +329,7 @@
                                step="0.01"
                                wire:model="statementEndingBalance"
                                placeholder="e.g. 15000000.00"
-                               class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-mono font-bold">
+                               class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-sans font-bold">
                         @error('statementEndingBalance') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 

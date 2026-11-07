@@ -12,7 +12,7 @@
         </div>
     </div>
 
-    <div id="receipt" class="receipt-area mx-auto bg-white text-apeiron-ink">
+    <div id="receipt" class="receipt-area mx-auto bg-white text-foreground">
         <div class="text-center mb-2">
             <div class="flex justify-center mb-1.5">
                 <x-brand-logo variant="symbol" mode="light" class="h-5 w-auto text-black" />
@@ -23,12 +23,12 @@
         </div>
 
         @if (($isReprint ?? false) || ($order->print_count ?? 0) > 1)
-            <div class="border-y border-dashed border-apeiron-ink py-1 my-1 text-center font-bold text-[11px] tracking-wider">
+            <div class="border-y border-dashed border-foreground py-1 my-1 text-center font-bold text-[11px] tracking-wider">
                 *** REPRINT #{{ $order->print_count }} ***
             </div>
         @endif
 
-        <div class="border-t border-b border-dashed border-apeiron-ink py-1 text-[11px]">
+        <div class="border-t border-b border-dashed border-foreground py-1 text-[11px]">
             <div class="flex justify-between"><span>Order No.</span><span>{{ $order->order_code }}</span></div>
             <div class="flex justify-between"><span>Cashier</span><span>{{ $order->user->name ?? '-' }}</span></div>
             @if ($order->device)
@@ -90,7 +90,7 @@
             @endforeach
         </div>
 
-        <div class="border-t border-dashed border-apeiron-ink pt-1 text-[11px]">
+        <div class="border-t border-dashed border-foreground pt-1 text-[11px]">
             <div class="flex justify-between">
                 <span>Subtotal</span><span>{{ number_format($order->subtotal_amount, 0, ',', '.') }}</span>
             </div>
@@ -109,7 +109,7 @@
                     <span>Service Charge</span><span>{{ number_format($order->service_charge_amount, 0, ',', '.') }}</span>
                 </div>
             @endif
-            <div class="flex justify-between font-bold text-[13px] mt-1 border-t border-dashed border-apeiron-ink pt-1">
+            <div class="flex justify-between font-bold text-[13px] mt-1 border-t border-dashed border-foreground pt-1">
                 <span>TOTAL</span><span>{{ number_format($order->order_amount, 0, ',', '.') }}</span>
             </div>
 
@@ -133,7 +133,7 @@
             @endif
         </div>
 
-        <div class="text-center text-[10px] mt-2 border-t border-dashed border-apeiron-ink pt-1">
+        <div class="text-center text-[10px] mt-2 border-t border-dashed border-foreground pt-1">
             <p>Thank you!</p>
             <p>Enjoy your meal ☕</p>
         </div>

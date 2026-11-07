@@ -39,7 +39,7 @@
         <div class="flex-1 max-w-md">
             <div class="relative">
                 <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search quotation number, customer name, code..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search quotation number, customer name, code..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-zinc-800 dark:text-zinc-100">
             </div>
         </div>
         <div class="flex flex-wrap items-center gap-3">
@@ -76,15 +76,15 @@
                     @forelse($quotations as $qtn)
                         <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
                             <td class="py-4 px-6">
-                                <div class="font-medium text-apeiron-ink dark:text-white flex items-center gap-1.5 font-mono">
+                                <div class="font-medium text-foreground dark:text-white flex items-center gap-1.5 font-sans">
                                     <span>{{ $qtn->quotation_number }}</span>
-                                    <span class="text-xs px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-mono">v{{ $qtn->version_number }}</span>
+                                    <span class="text-xs px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-sans">v{{ $qtn->version_number }}</span>
                                 </div>
                                 <div class="text-xs text-zinc-400 mt-0.5">Branch: {{ $qtn->store?->name ?? 'Headquarters' }}</div>
                             </td>
                             <td class="py-4 px-6">
                                 <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $qtn->customer?->name }}</div>
-                                <div class="text-xs text-zinc-400 font-mono">{{ $qtn->customer?->customer_code }}</div>
+                                <div class="text-xs text-zinc-400 font-sans">{{ $qtn->customer?->customer_code }}</div>
                             </td>
                             <td class="py-4 px-6">
                                 <div class="text-zinc-800 dark:text-zinc-200">{{ $qtn->issue_date->format('d/m/Y') }}</div>
@@ -323,7 +323,7 @@
                         <h4 class="font-bold text-zinc-900 dark:text-white mb-2 text-xs uppercase tracking-wider">Customer Information</h4>
                         <div class="space-y-1 text-xs">
                             <p><span class="text-zinc-500">Name:</span> <strong class="text-zinc-800 dark:text-zinc-200">{{ $selectedQuotation->customer?->name }}</strong></p>
-                            <p><span class="text-zinc-500">Code:</span> <span class="font-mono">{{ $selectedQuotation->customer?->customer_code }}</span></p>
+                            <p><span class="text-zinc-500">Code:</span> <span class="font-sans">{{ $selectedQuotation->customer?->customer_code }}</span></p>
                             <p><span class="text-zinc-500">Phone:</span> {{ $selectedQuotation->customer?->phone ?? '-' }}</p>
                             <p><span class="text-zinc-500">Email:</span> {{ $selectedQuotation->customer?->email ?? '-' }}</p>
                         </div>
@@ -356,35 +356,35 @@
                         <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
                             @foreach($selectedQuotation->lines as $line)
                                 <tr>
-                                    <td class="p-3 font-mono text-zinc-400">{{ $line->line_number }}</td>
+                                    <td class="p-3 font-sans text-zinc-400">{{ $line->line_number }}</td>
                                     <td class="p-3">
                                         <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $line->description ?: ($line->product?->product_name ?? $line->product?->name) }}</div>
-                                        <div class="text-[10px] text-zinc-400 font-mono">{{ $line->product?->product_code ?? $line->product?->sku }} | Source: {{ $line->pricing_source }}</div>
+                                        <div class="text-[10px] text-zinc-400 font-sans">{{ $line->product?->product_code ?? $line->product?->sku }} | Source: {{ $line->pricing_source }}</div>
                                     </td>
-                                    <td class="p-3 text-right font-mono tabular-nums">{{ number_format((float) $line->quantity, 2) }}</td>
-                                    <td class="p-3 text-right font-mono tabular-nums">Rp {{ number_format((float) $line->unit_price, 2, ',', '.') }}</td>
-                                    <td class="p-3 text-right font-mono text-rose-600 tabular-nums">-Rp {{ number_format((float) $line->discount_amount, 2, ',', '.') }}</td>
-                                    <td class="p-3 text-right font-mono tabular-nums">Rp {{ number_format((float) $line->tax_amount, 2, ',', '.') }}</td>
-                                    <td class="p-3 text-right font-mono font-bold text-zinc-900 dark:text-white tabular-nums">Rp {{ number_format((float) $line->line_total, 2, ',', '.') }}</td>
+                                    <td class="p-3 text-right font-sans tabular-nums">{{ number_format((float) $line->quantity, 2) }}</td>
+                                    <td class="p-3 text-right font-sans tabular-nums">Rp {{ number_format((float) $line->unit_price, 2, ',', '.') }}</td>
+                                    <td class="p-3 text-right font-sans text-rose-600 tabular-nums">-Rp {{ number_format((float) $line->discount_amount, 2, ',', '.') }}</td>
+                                    <td class="p-3 text-right font-sans tabular-nums">Rp {{ number_format((float) $line->tax_amount, 2, ',', '.') }}</td>
+                                    <td class="p-3 text-right font-sans font-bold text-zinc-900 dark:text-white tabular-nums">Rp {{ number_format((float) $line->line_total, 2, ',', '.') }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
                         <tfoot class="bg-zinc-50/50 dark:bg-zinc-800/50 border-t border-zinc-200 dark:border-zinc-700 font-semibold text-xs">
                             <tr>
                                 <td colspan="6" class="p-2.5 text-right text-zinc-500">Subtotal:</td>
-                                <td class="p-2.5 text-right font-mono tabular-nums">Rp {{ number_format((float) $selectedQuotation->subtotal, 2, ',', '.') }}</td>
+                                <td class="p-2.5 text-right font-sans tabular-nums">Rp {{ number_format((float) $selectedQuotation->subtotal, 2, ',', '.') }}</td>
                             </tr>
                             <tr>
                                 <td colspan="6" class="p-2.5 text-right text-zinc-500">Total Discount:</td>
-                                <td class="p-2.5 text-right font-mono text-rose-600 tabular-nums">-Rp {{ number_format((float) $selectedQuotation->discount_amount, 2, ',', '.') }}</td>
+                                <td class="p-2.5 text-right font-sans text-rose-600 tabular-nums">-Rp {{ number_format((float) $selectedQuotation->discount_amount, 2, ',', '.') }}</td>
                             </tr>
                             <tr>
                                 <td colspan="6" class="p-2.5 text-right text-zinc-500">Total Tax:</td>
-                                <td class="p-2.5 text-right font-mono tabular-nums">Rp {{ number_format((float) $selectedQuotation->tax_amount, 2, ',', '.') }}</td>
+                                <td class="p-2.5 text-right font-sans tabular-nums">Rp {{ number_format((float) $selectedQuotation->tax_amount, 2, ',', '.') }}</td>
                             </tr>
                             <tr class="text-sm font-bold border-t border-zinc-300 dark:border-zinc-600">
                                 <td colspan="6" class="p-3 text-right text-zinc-900 dark:text-white">TOTAL QUOTATION:</td>
-                                <td class="p-3 text-right font-mono text-emerald-600 dark:text-emerald-400 tabular-nums">Rp {{ number_format((float) $selectedQuotation->total_amount, 2, ',', '.') }}</td>
+                                <td class="p-3 text-right font-sans text-emerald-600 dark:text-emerald-400 tabular-nums">Rp {{ number_format((float) $selectedQuotation->total_amount, 2, ',', '.') }}</td>
                             </tr>
                         </tfoot>
                     </table>

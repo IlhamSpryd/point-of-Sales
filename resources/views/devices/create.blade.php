@@ -33,7 +33,7 @@
                     <div>
                         <x-form-label for="store_id">Assigned Branch</x-form-label>
                         <div class="relative">
-                            <select id="store_id" name="store_id" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-apeiron-ink dark:text-zinc-100 text-sm appearance-none focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 transition-all duration-200 shadow-xs {{ $errors->has('store_id') ? 'border-rose-300 focus:ring-rose-500' : '' }}" required>
+                            <select id="store_id" name="store_id" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground dark:text-zinc-100 text-sm appearance-none focus:outline-hidden focus:ring-2 focus:ring-ring/20 transition-all duration-200 shadow-xs {{ $errors->has('store_id') ? 'border-rose-300 focus:ring-rose-500' : '' }}" required>
                                 <option value="">Select Branch</option>
                                 @foreach($stores as $st)
                                     <option value="{{ $st->id }}" {{ old('store_id') == $st->id ? 'selected' : '' }}>
@@ -53,7 +53,7 @@
                     <div>
                         <x-form-label for="device_type">Physical Device Type</x-form-label>
                         <div class="relative">
-                            <select id="device_type" name="device_type" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-apeiron-ink dark:text-zinc-100 text-sm appearance-none focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 transition-all duration-200 shadow-xs {{ $errors->has('device_type') ? 'border-rose-300 focus:ring-rose-500' : '' }}" required>
+                            <select id="device_type" name="device_type" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground dark:text-zinc-100 text-sm appearance-none focus:outline-hidden focus:ring-2 focus:ring-ring/20 transition-all duration-200 shadow-xs {{ $errors->has('device_type') ? 'border-rose-300 focus:ring-rose-500' : '' }}" required>
                                 <option value="pos_terminal" {{ old('device_type') === 'pos_terminal' ? 'selected' : '' }}>POS Cashier Terminal</option>
                                 <option value="kds_display" {{ old('device_type') === 'kds_display' ? 'selected' : '' }}>Kitchen Display System (KDS)</option>
                                 <option value="waiter_tablet" {{ old('device_type') === 'waiter_tablet' ? 'selected' : '' }}>Server / Order-Taking Tablet</option>
@@ -78,9 +78,9 @@
                 </div>
 
                 <div class="p-4 rounded-xl bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-700 text-xs text-zinc-600 dark:text-zinc-400 flex items-start gap-3">
-                    <span class="material-symbols-rounded text-lg text-apeiron-primary shrink-0 mt-0.5">info</span>
+                    <span class="material-symbols-rounded text-lg text-primary shrink-0 mt-0.5">info</span>
                     <div>
-                        <p class="font-semibold text-apeiron-ink dark:text-zinc-200">Device Activation Details</p>
+                        <p class="font-semibold text-foreground dark:text-zinc-200">Device Activation Details</p>
                         <p class="mt-0.5">Once registration is saved, the system generates a 12-character activation pairing token. Enter this token on your physical terminal login screen to securely bind this device to the selected branch.</p>
                     </div>
                 </div>

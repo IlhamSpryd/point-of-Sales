@@ -4,7 +4,7 @@
         <div class="flex items-center gap-2">
             <span class="material-symbols-rounded text-foreground text-[20px]">pause_circle</span>
             <h3 class="font-headline-sm text-[16px] font-semibold text-foreground">Parked Orders (Held Orders)</h3>
-            <span class="px-1.5 py-0.5 rounded-[5px] bg-primary text-white font-label-sm text-[11px] font-mono">
+            <span class="px-1.5 py-0.5 rounded-[5px] bg-primary text-white font-label-sm text-[11px] font-sans tabular-nums">
                 {{ $this->parkedCarts->count() }}
             </span>
         </div>
@@ -28,7 +28,7 @@
                 <div class="p-3 rounded-xl border border-border hover:border-foreground bg-muted flex items-center justify-between transition-all">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="font-mono font-semibold text-[13px] text-foreground">{{ $pc->hold_reference }}</span>
+                            <span class="font-sans tabular-nums font-semibold text-[13px] text-foreground">{{ $pc->hold_reference }}</span>
                             <span class="px-1.5 py-0.2 rounded bg-white text-[10px] border border-border font-medium uppercase text-foreground">
                                 {{ $pc->order_type }}
                             </span>

@@ -29,7 +29,7 @@
 
             <div class="relative w-full lg:w-64">
                 <select wire:model.live="statusFilter"
-                    class="w-full min-h-[42px] px-3.5 pr-9 rounded-xl border border-border bg-white text-xs font-bold text-gray-700 appearance-none focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-apeiron-ink transition-all shadow-xs cursor-pointer">
+                    class="w-full min-h-[42px] px-3.5 pr-9 rounded-xl border border-border bg-white text-xs font-bold text-gray-700 appearance-none focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-primary transition-all shadow-xs cursor-pointer">
                     <option value="all">All Statuses</option>
                     @foreach ($this->statusOptions as $value => $label)
                         <option value="{{ $value }}">{{ $label }}</option>
@@ -42,7 +42,7 @@
 
             <div wire:loading.flex wire:target="search,statusFilter,datePreset,startDate,endDate"
                 class="hidden items-center gap-2 text-xs text-gray-400 shrink-0">
-                <span class="h-3.5 w-3.5 rounded-full border-2 border-apeiron-ink/30 border-t-apeiron-ink animate-spin"></span>
+                <span class="h-3.5 w-3.5 rounded-full border-2 border-foreground/30 border-t-foreground animate-spin"></span>
                 Loading data...
             </div>
 
@@ -64,7 +64,7 @@
                 'custom' => 'Custom',
             ] as $value => $label)
                 <button type="button" wire:click="$set('datePreset', '{{ $value }}')"
-                    class="min-h-[36px] px-3.5 rounded-xl text-xs font-bold transition-all active:scale-95 {{ $datePreset === $value ? 'bg-apeiron-ink text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200/70 hover:text-apeiron-ink' }}">
+                    class="min-h-[36px] px-3.5 rounded-xl text-xs font-bold transition-all active:scale-95 {{ $datePreset === $value ? 'bg-primary text-white shadow-xs' : 'bg-gray-100 text-gray-600 hover:bg-gray-200/70 hover:text-foreground' }}">
                     {{ $label }}
                 </button>
             @endforeach
@@ -72,10 +72,10 @@
             @if ($datePreset === 'custom')
                 <div class="flex items-center gap-2 ml-1">
                     <input type="date" wire:model.live="startDate"
-                        class="min-h-[36px] px-3 rounded-xl border border-border bg-white text-xs text-apeiron-ink focus:outline-none focus:ring-1 focus:ring-gray-900 shadow-xs">
+                        class="min-h-[36px] px-3 rounded-xl border border-border bg-white text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-gray-900 shadow-xs">
                     <span class="text-gray-400 text-xs font-semibold">to</span>
                     <input type="date" wire:model.live="endDate"
-                        class="min-h-[36px] px-3 rounded-xl border border-border bg-white text-xs text-apeiron-ink focus:outline-none focus:ring-1 focus:ring-gray-900 shadow-xs">
+                        class="min-h-[36px] px-3 rounded-xl border border-border bg-white text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-gray-900 shadow-xs">
                 </div>
             @else
                 <span class="text-xs font-medium text-gray-400 ml-1">({{ $this->dateRangeLabel }})</span>
@@ -117,11 +117,11 @@
                     @endphp
                     <tr wire:key="order-{{ $order->id }}" class="hover:bg-gray-50/70 transition-colors">
                         <td class="px-6 py-4">
-                            <div class="font-mono font-bold text-apeiron-ink text-xs">{{ $order->order_code }}</div>
+                            <div class="font-sans font-bold text-foreground text-xs">{{ $order->order_code }}</div>
                             <div class="text-[11px] text-gray-400 mt-0.5">{{ $order->created_at->format('d M Y, H:i') }}</div>
                         </td>
                         <td class="px-6 py-4">
-                            <div class="text-xs font-bold text-apeiron-ink">{{ $order->user->name ?? 'Self-Order' }}</div>
+                            <div class="text-xs font-bold text-foreground">{{ $order->user->name ?? 'Self-Order' }}</div>
                             <div class="text-[11px] text-gray-500 mt-0.5 flex items-center gap-1">
                                 <span class="material-symbols-rounded text-[13px]">
                                     @if ($order->order_type?->value === 'takeaway')
@@ -171,7 +171,7 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 text-right">
-                            <span class="text-xs font-black text-apeiron-ink tabular-nums">
+                            <span class="text-xs font-black text-foreground tabular-nums">
                                 Rp {{ number_format($order->order_amount, 0, ',', '.') }}
                             </span>
                         </td>
@@ -185,14 +185,14 @@
                                 <button type="button" wire:click="viewDetail({{ $order->id }})"
                                     x-on:click="window.erpMotion?.pulseHighlight($el)"
                                     title="View Details" aria-label="View Order Details"
-                                    class="size-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-apeiron-ink hover:bg-gray-100 transition-colors active:scale-90">
+                                    class="size-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-foreground hover:bg-gray-100 transition-colors active:scale-90">
                                     <span class="material-symbols-rounded text-[18px]">visibility</span>
                                 </button>
                                 @if (in_array($stVal, ['paid', 'completed'], true))
                                     <a href="{{ route('transaction.receipt', $order->order_code) }}"
                                         target="_blank" rel="noopener" title="Reprint Receipt" aria-label="Reprint Receipt"
                                         x-on:click="window.erpMotion?.pulseHighlight($el)"
-                                        class="size-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-apeiron-ink hover:bg-gray-100 transition-colors active:scale-90">
+                                        class="size-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-foreground hover:bg-gray-100 transition-colors active:scale-90">
                                         <span class="material-symbols-rounded text-[18px]">print</span>
                                     </a>
                                 @endif
@@ -219,7 +219,7 @@
                     class="p-4 rounded-xl border border-border bg-white hover:bg-gray-50 transition-colors cursor-pointer shadow-xs"
                     wire:click="viewDetail({{ $order->id }})">
                     <div class="flex justify-between items-start">
-                        <span class="font-mono font-bold text-xs text-apeiron-ink">{{ $order->order_code }}</span>
+                        <span class="font-sans font-bold text-xs text-foreground">{{ $order->order_code }}</span>
                         <x-ui.badge :variant="$stVariant">{{ $order->order_status->label() }}</x-ui.badge>
                     </div>
                     <div class="flex justify-between items-end mt-2.5 pt-2 border-t border-border">
@@ -227,7 +227,7 @@
                             <span class="text-[11px] text-gray-400">{{ $order->created_at->format('d M, H:i') }}</span>
                             <span class="text-xs font-bold text-gray-700">{{ $order->user->name ?? 'Self-Order' }}</span>
                         </div>
-                        <span class="font-black tabular-nums text-sm text-apeiron-ink">
+                        <span class="font-black tabular-nums text-sm text-foreground">
                             Rp {{ number_format($order->order_amount, 0, ',', '.') }}
                         </span>
                     </div>
@@ -257,11 +257,11 @@
 
                 <div class="px-6 py-4 border-b border-border flex justify-between items-start shrink-0 bg-white">
                     <div>
-                        <h3 id="order-detail-title" class="font-black text-lg text-apeiron-ink font-mono">{{ $detail->order_code }}</h3>
+                        <h3 id="order-detail-title" class="font-black text-lg text-foreground font-sans">{{ $detail->order_code }}</h3>
                         <p class="text-xs text-gray-500 mt-0.5">{{ $detail->created_at->format('d F Y, H:i') }} WIB</p>
                     </div>
                     <button type="button" wire:click="closeDetail" aria-label="Close order details"
-                        class="size-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-apeiron-ink hover:bg-gray-100 transition-colors">
+                        class="size-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-foreground hover:bg-gray-100 transition-colors">
                         <span class="material-symbols-rounded text-[20px]">close</span>
                     </button>
                 </div>
@@ -270,11 +270,11 @@
                     <div class="grid grid-cols-2 gap-4 text-xs">
                         <div>
                             <p class="font-bold uppercase tracking-wider text-gray-400 mb-1">Cashier</p>
-                            <p class="font-bold text-apeiron-ink text-sm">{{ $detail->user->name ?? 'Self-Order' }}</p>
+                            <p class="font-bold text-foreground text-sm">{{ $detail->user->name ?? 'Self-Order' }}</p>
                         </div>
                         <div>
                             <p class="font-bold uppercase tracking-wider text-gray-400 mb-1">Order Type</p>
-                            <p class="font-bold text-apeiron-ink text-sm">
+                            <p class="font-bold text-foreground text-sm">
                                 @if ($detail->order_type?->value === 'takeaway')
                                     Takeaway
                                 @elseif($detail->order_type?->value === 'delivery')
@@ -317,7 +317,7 @@
                             <p class="text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">Customer</p>
                             <div class="flex items-center justify-between gap-3">
                                 <div class="min-w-0">
-                                    <p class="font-bold text-xs text-apeiron-ink truncate">{{ $detail->customer->name }}</p>
+                                    <p class="font-bold text-xs text-foreground truncate">{{ $detail->customer->name }}</p>
                                     <p class="text-[11px] text-gray-500">{{ $detail->customer->phone ?? '-' }}</p>
                                 </div>
                             </div>
@@ -333,7 +333,7 @@
                                 @endphp
                                 <li class="p-3 flex justify-between items-start gap-3 bg-white">
                                     <div class="min-w-0">
-                                        <p class="font-bold text-apeiron-ink">
+                                        <p class="font-bold text-foreground">
                                             {{ $item->qty }}&times; {{ $item->product->product_name ?? 'Deleted Product' }}
                                             @if ($returnedQty > 0)
                                                 <x-ui.badge variant="warning" class="ml-1 text-[10px]">
@@ -350,7 +350,7 @@
                                             <p class="text-[11px] italic text-gray-400 mt-0.5">Note: {{ $item->notes }}</p>
                                         @endif
                                     </div>
-                                    <span class="font-black text-apeiron-ink tabular-nums shrink-0">
+                                    <span class="font-black text-foreground tabular-nums shrink-0">
                                         Rp {{ number_format($item->order_subtotal, 0, ',', '.') }}
                                     </span>
                                 </li>
@@ -368,7 +368,7 @@
                         @if ($detail->service_charge_amount > 0)
                             <div class="flex justify-between text-gray-600"><span>Service Charge</span><span class="tabular-nums font-semibold">Rp {{ number_format($detail->service_charge_amount, 0, ',', '.') }}</span></div>
                         @endif
-                        <div class="flex justify-between font-black text-apeiron-ink text-sm pt-2 mt-1 border-t border-border">
+                        <div class="flex justify-between font-black text-foreground text-sm pt-2 mt-1 border-t border-border">
                             <span>Total Amount</span><span class="tabular-nums">Rp {{ number_format($detail->order_amount, 0, ',', '.') }}</span>
                         </div>
                     </div>
@@ -396,7 +396,7 @@
                     @if (in_array($detail->order_status->value, ['paid', 'completed'], true))
                         <button type="button" wire:click="requestReprint({{ $detail->id }})"
                             x-on:click="window.erpMotion?.pulseHighlight($el)"
-                            class="min-h-[40px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-apeiron-ink text-white text-xs font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-xs">
+                            class="min-h-[40px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-xs">
                             <span class="material-symbols-rounded text-[16px]">print</span>
                             <span>{{ (($detail->print_count ?? 0) > 0) ? 'Reprint (#' . (($detail->print_count ?? 0) + 1) . ')' : 'Print Receipt' }}</span>
                         </button>
@@ -433,7 +433,7 @@
                         <label for="void-pin-input" class="block text-xs font-bold uppercase tracking-wider text-rose-600 mb-1.5">Supervisor / Manager PIN</label>
                         <input type="password" id="void-pin-input" wire:model="supervisorPin" required maxlength="6"
                             placeholder="Supervisor PIN (6 digits)"
-                            class="w-full rounded-xl border border-rose-200 bg-rose-50/40 px-3 py-2 text-center font-mono font-bold text-sm tracking-widest text-rose-900 focus:ring-1 focus:ring-rose-500 outline-none shadow-xs">
+                            class="w-full rounded-xl border border-rose-200 bg-rose-50/40 px-3 py-2 text-center font-sans font-bold text-sm tracking-widest text-rose-900 focus:ring-1 focus:ring-rose-500 outline-none shadow-xs">
                         @error('supervisorPin') <span class="text-xs text-rose-600 mt-1 block">{{ $message }}</span> @enderror
                     </div>
 
@@ -463,7 +463,7 @@
             <div class="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] flex flex-col shadow-2xl border border-border my-auto overflow-hidden animate-slide-up-fade">
                 <div class="px-6 py-4 border-b border-border flex justify-between items-center shrink-0 bg-white">
                     <div>
-                        <h3 id="return-modal-title" class="font-bold text-base text-apeiron-ink flex items-center gap-2">
+                        <h3 id="return-modal-title" class="font-bold text-base text-foreground flex items-center gap-2">
                             <span class="material-symbols-rounded text-amber-600">keyboard_return</span> Return &amp; Refund Request
                         </h3>
                         <p class="text-xs text-gray-500">Select items to return, inventory disposition, and refund allocation method</p>
@@ -489,8 +489,8 @@
                                     <div class="flex items-start justify-between gap-3">
                                         <label class="flex items-center gap-2 cursor-pointer">
                                             <input type="checkbox" wire:model.live="returnItems.{{ $id }}.selected"
-                                                class="rounded border-gray-300 text-apeiron-ink focus:ring-apeiron-ink">
-                                            <span class="text-xs font-bold text-apeiron-ink">{{ $item['product_name'] }}</span>
+                                                class="rounded border-gray-300 text-foreground focus:ring-ring">
+                                            <span class="text-xs font-bold text-foreground">{{ $item['product_name'] }}</span>
                                         </label>
                                         <span class="text-xs text-gray-500">Remaining: <strong class="text-gray-800">{{ $item['remaining_qty'] }}</strong> pcs</span>
                                     </div>
@@ -581,7 +581,7 @@
                         <div>
                             <label class="block text-xs font-bold uppercase tracking-wider text-rose-600 mb-1">Supervisor / Manager PIN *</label>
                             <input type="password" wire:model="returnSupervisorPin" maxlength="6" placeholder="Authorization PIN (6 digits)"
-                                class="w-full rounded-xl border border-rose-200 bg-rose-50/40 px-3 py-2 text-xs text-center font-mono font-bold tracking-widest text-rose-900 shadow-xs">
+                                class="w-full rounded-xl border border-rose-200 bg-rose-50/40 px-3 py-2 text-xs text-center font-sans font-bold tracking-widest text-rose-900 shadow-xs">
                         </div>
                     </div>
                 </div>
@@ -609,7 +609,7 @@
         <div class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/40 backdrop-blur-sm p-4 animate-fade-in"
             role="dialog" aria-modal="true" aria-labelledby="reprint-modal-title">
             <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-border animate-slide-up-fade">
-                <div class="flex items-center gap-2 text-apeiron-ink mb-1">
+                <div class="flex items-center gap-2 text-foreground mb-1">
                     <span class="material-symbols-rounded text-[22px]">print</span>
                     <h3 id="reprint-modal-title" class="font-bold text-base">
                         Reprint Receipt (#{{ $reprintOrderPrintCount + 1 }})
@@ -631,7 +631,7 @@
                         <div>
                             <label class="block text-xs font-bold uppercase tracking-wider text-rose-600 mb-1">Supervisor PIN *</label>
                             <input type="password" wire:model="reprintSupervisorPin" maxlength="6" placeholder="Supervisor PIN for &gt;2x reprint"
-                                class="w-full rounded-xl border border-rose-200 bg-rose-50/40 px-3 py-2 text-center font-mono font-bold text-xs tracking-widest text-rose-900 shadow-xs">
+                                class="w-full rounded-xl border border-rose-200 bg-rose-50/40 px-3 py-2 text-center font-sans font-bold text-xs tracking-widest text-rose-900 shadow-xs">
                             @error('reprintSupervisorPin') <span class="text-xs text-rose-600 mt-1 block">{{ $message }}</span> @enderror
                         </div>
                     @endif
@@ -645,7 +645,7 @@
                     <button type="button" wire:click="confirmReprint"
                         wire:loading.attr="disabled" wire:target="confirmReprint"
                         x-on:click="window.erpMotion?.pulseHighlight($el)"
-                        class="px-5 py-2 rounded-xl bg-apeiron-ink text-white text-xs font-bold hover:bg-primary/90 shadow-sm disabled:opacity-50 flex items-center gap-2">
+                        class="px-5 py-2 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 shadow-sm disabled:opacity-50 flex items-center gap-2">
                         <span wire:loading wire:target="confirmReprint" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
                         <span wire:loading.remove wire:target="confirmReprint">Print Now</span>
                         <span wire:loading wire:target="confirmReprint">Processing...</span>

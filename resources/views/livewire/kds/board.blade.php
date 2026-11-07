@@ -45,10 +45,10 @@
         {{-- COLUMN 1: QUEUED --}}
         <section aria-labelledby="kds-pending" class="bg-white border border-gray-200 rounded-2xl flex flex-col overflow-hidden shadow-xs">
             <header class="flex items-center justify-between border-b border-gray-100 bg-gray-50/70 px-5 py-3.5">
-                <h3 id="kds-pending" class="flex items-center gap-2 font-bold text-sm text-apeiron-ink">
-                    <span class="size-2.5 rounded-full bg-apeiron-ink"></span> Queued
+                <h3 id="kds-pending" class="flex items-center gap-2 font-bold text-sm text-foreground">
+                    <span class="size-2.5 rounded-full bg-primary"></span> Queued
                 </h3>
-                <span class="rounded-lg bg-apeiron-ink px-2.5 py-0.5 text-xs font-black text-white tabular-nums">{{ $this->pendingItems->count() }}</span>
+                <span class="rounded-lg bg-primary px-2.5 py-0.5 text-xs font-black text-white tabular-nums">{{ $this->pendingItems->count() }}</span>
             </header>
             <div class="custom-scrollbar max-h-[70vh] flex-1 space-y-3 overflow-y-auto p-4">
                 @forelse ($this->pendingItems as $item)

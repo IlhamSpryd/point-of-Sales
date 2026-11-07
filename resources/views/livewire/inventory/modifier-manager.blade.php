@@ -7,10 +7,10 @@
                 <!-- Full Page Group Form -->
                 <div class="flex items-center justify-between mb-6">
                     <div>
-                        <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">
+                        <h4 class="text-xl font-bold text-foreground tracking-tight">
                             {{ $editingGroupId ? 'Edit Modifier Group' : 'Add Modifier Group' }}
                         </h4>
-                        <p class="text-sm font-medium text-apeiron-muted mt-1">
+                        <p class="text-sm font-medium text-muted-foreground mt-1">
                             {{ $editingGroupId ? 'Update modifier group details' : 'Create a new modifier group for products' }}
                         </p>
                     </div>
@@ -31,11 +31,11 @@
                             <div>
                                 <x-form-label for="selection_type">Selection Type <span class="text-rose-500">*</span></x-form-label>
                                 <div class="relative">
-                                    <select id="selection_type" wire:model="groupForm.selection_type" class="form-input w-full px-4 py-2.5 rounded-xl border border-apeiron-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('groupForm.selection_type') ? 'input-error' : '' }}" required>
+                                    <select id="selection_type" wire:model="groupForm.selection_type" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('groupForm.selection_type') ? 'input-error' : '' }}" required>
                                         <option value="single">Single (Choose 1 option)</option>
                                         <option value="multiple">Multiple (Choose multiple options)</option>
                                     </select>
-                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-apeiron-muted">
+                                    <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-muted-foreground">
                                         <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
                                     </div>
                                 </div>
@@ -50,13 +50,13 @@
                                     <div class="block bg-primary-200 w-10 h-6 rounded-full transition-colors duration-300"></div>
                                     <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 shadow-sm"></div>
                                 </div>
-                                <div class="ml-3 text-sm font-semibold text-apeiron-ink">
+                                <div class="ml-3 text-sm font-semibold text-foreground">
                                     Required selection
                                 </div>
                             </label>
                         </div>
 
-                        <div class="pt-4 border-t border-apeiron-border flex justify-end gap-3">
+                        <div class="pt-4 border-t border-border flex justify-end gap-3">
                             <x-ui.button type="button" variant="secondary" wire:click="resetGroupForm">
                                 Cancel
                             </x-ui.button>
@@ -71,10 +71,10 @@
                 <!-- Full Page Modifier Form -->
                 <div class="flex items-center justify-between mb-6">
                     <div>
-                        <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">
+                        <h4 class="text-xl font-bold text-foreground tracking-tight">
                             {{ $editingModifierId ? 'Edit Modifier Option' : 'Add Modifier Option' }}
                         </h4>
-                        <p class="text-sm font-medium text-apeiron-muted mt-1">
+                        <p class="text-sm font-medium text-muted-foreground mt-1">
                             {{ $editingModifierId ? 'Update modifier option details' : 'Add a new modifier option to the group' }}
                         </p>
                     </div>
@@ -106,7 +106,7 @@
                                     <div class="block bg-primary-200 w-10 h-6 rounded-full transition-colors duration-300"></div>
                                     <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 shadow-sm"></div>
                                 </div>
-                                <div class="ml-3 text-sm font-semibold text-apeiron-ink">
+                                <div class="ml-3 text-sm font-semibold text-foreground">
                                     Set as default option
                                 </div>
                             </label>
@@ -124,7 +124,7 @@
                         }" class="pt-4 border-t border-border">
                             <div class="flex items-center justify-between mb-4">
                                 <div>
-                                    <h5 class="text-sm font-bold text-apeiron-ink">Additional Ingredients (Optional BOM)</h5>
+                                    <h5 class="text-sm font-bold text-foreground">Additional Ingredients (Optional BOM)</h5>
                                     <p class="text-xs text-muted-foreground mt-0.5">Specify ingredients to automatically deduct from stock when this modifier is selected.</p>
                                 </div>
                                 <button type="button" @click="addIngredient" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-primary-500 bg-white border border-border rounded-xl hover:bg-muted transition-colors shadow-sm">
@@ -136,18 +136,18 @@
                                 <template x-for="(ing, index) in ingredients" :key="index">
                                     <div class="flex items-start gap-3">
                                         <div class="flex-1 relative">
-                                            <select x-model="ing.id" class="form-input w-full px-4 py-2.5 rounded-xl border border-apeiron-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all duration-200 shadow-sm" required>
+                                            <select x-model="ing.id" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm" required>
                                                 <option value="">-- Select Ingredient --</option>
                                                 @foreach($this->ingredients as $i)
                                                     <option value="{{ $i->id }}">{{ $i->name }} ({{ $i->unit }})</option>
                                                 @endforeach
                                             </select>
-                                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-apeiron-muted">
+                                            <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-muted-foreground">
                                                 <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
                                             </div>
                                         </div>
                                         <div class="w-32">
-                                            <input type="number" step="0.0001" x-model="ing.quantity" placeholder="Quantity" class="form-input w-full px-4 py-2.5 rounded-xl border border-apeiron-border bg-white text-apeiron-ink focus:outline-none focus:ring-2 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all duration-200 shadow-sm" required>
+                                            <input type="number" step="0.0001" x-model="ing.quantity" placeholder="Quantity" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm" required>
                                         </div>
                                         <button type="button" @click="removeIngredient(index)" class="inline-flex items-center justify-center w-[46px] h-[46px] rounded-xl text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors" title="Remove line">
                                             <span class="material-symbols-rounded text-[18px]">close</span>
@@ -155,13 +155,13 @@
                                     </div>
                                 </template>
                                 
-                                <div x-show="ingredients.length === 0" class="text-center py-6 bg-apeiron-surface rounded-xl border border-apeiron-border border-dashed">
-                                    <p class="text-sm text-apeiron-muted">No additional ingredients configured.</p>
+                                <div x-show="ingredients.length === 0" class="text-center py-6 bg-secondary rounded-xl border border-border border-dashed">
+                                    <p class="text-sm text-muted-foreground">No additional ingredients configured.</p>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="pt-4 border-t border-apeiron-border flex justify-end gap-3">
+                        <div class="pt-4 border-t border-border flex justify-end gap-3">
                             <x-ui.button type="button" variant="secondary" wire:click="resetModifierForm">
                                 Cancel
                             </x-ui.button>
@@ -176,7 +176,7 @@
             <!-- Header Halaman & Toolbar -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                 <div>
-                    <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Modifiers & Variations</h4>
+                    <h4 class="text-xl font-bold text-foreground tracking-tight">Modifiers & Variations</h4>
                     <p class="text-sm font-medium text-muted-foreground mt-1">Manage modifier groups, flavor/size variations, and product add-ons</p>
                 </div>
 
@@ -193,10 +193,10 @@
             <div class="space-y-6">
             @forelse($groups as $group)
             <div class="card-surface p-6">
-                <div class="flex items-center justify-between mb-4 pb-4 border-b border-apeiron-border">
+                <div class="flex items-center justify-between mb-4 pb-4 border-b border-border">
                     <div>
-                        <h3 class="text-lg font-bold text-apeiron-ink">{{ $group->name }}</h3>
-                        <p class="text-sm text-apeiron-muted mt-0.5">
+                        <h3 class="text-lg font-bold text-foreground">{{ $group->name }}</h3>
+                        <p class="text-sm text-muted-foreground mt-0.5">
                             Type: {{ ucfirst($group->selection_type) }} | {{ $group->is_required ? 'Required' : 'Optional' }}
                         </p>
                     </div>
@@ -229,7 +229,7 @@
                                     <span class="ml-2 text-[10px] font-bold bg-primary/10 text-primary px-2 py-0.5 rounded uppercase tracking-wider">Default</span>
                                 @endif
                             </div>
-                            <span class="text-sm font-semibold text-success font-mono tabular-nums">+Rp {{ number_format($modifier->extra_price, 0, ',', '.') }}</span>
+                            <span class="text-sm font-semibold text-success font-sans tabular-nums">+Rp {{ number_format($modifier->extra_price, 0, ',', '.') }}</span>
                         </div>
                         <div class="flex items-center space-x-3">
                             @if($modifier->ingredients->isNotEmpty())

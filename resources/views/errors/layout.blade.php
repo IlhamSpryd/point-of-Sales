@@ -25,7 +25,7 @@
             <x-apeiron-symbol class="h-7 w-auto text-foreground" />
             <span class="font-bold text-sm tracking-tight text-foreground">Apeiron Systems</span>
         </a>
-        <div class="text-xs text-muted-foreground font-mono">
+        <div class="text-xs text-muted-foreground font-sans">
             ERP Platform
         </div>
     </header>

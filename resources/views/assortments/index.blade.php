@@ -20,7 +20,7 @@
                 <form method="GET" action="{{ route('assortments.index') }}" class="flex items-center gap-2">
                     <span class="text-xs font-semibold text-zinc-500 whitespace-nowrap">Select Branch:</span>
                     <select id="store_filter" name="store_id" onchange="this.form.submit()"
-                        class="h-10 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 text-sm bg-white dark:bg-zinc-800 font-medium text-zinc-800 dark:text-zinc-200 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
+                        class="h-10 px-3 rounded-xl border border-zinc-200 dark:border-zinc-700 text-sm bg-white dark:bg-zinc-800 font-medium text-zinc-800 dark:text-zinc-200 focus:outline-hidden focus:ring-2 focus:ring-ring/20">
                         @foreach ($stores as $s)
                             <option value="{{ $s->id }}" {{ (string)$selectedStoreId === (string)$s->id ? 'selected' : '' }}>
                                 {{ $s->name }}
@@ -75,13 +75,13 @@
                                             </div>
                                         @endif
                                         <div>
-                                            <div class="font-semibold text-sm text-apeiron-ink dark:text-white">{{ $prod->product_name }}</div>
-                                            <div class="font-mono text-xs text-zinc-400">{{ $prod->product_code }}</div>
+                                            <div class="font-semibold text-sm text-foreground dark:text-white">{{ $prod->product_name }}</div>
+                                            <div class="font-sans text-xs text-zinc-400">{{ $prod->product_code }}</div>
                                         </div>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-zinc-600 dark:text-zinc-400">{{ $prod->category?->category_name ?? '—' }}</td>
-                                <td class="px-6 py-4 text-sm font-medium text-right text-zinc-900 dark:text-white font-mono tabular-nums">
+                                <td class="px-6 py-4 text-sm font-medium text-right text-zinc-900 dark:text-white font-sans tabular-nums">
                                     Rp {{ number_format((float) $prod->product_price, 0, ',', '.') }}
                                 </td>
 
@@ -98,7 +98,7 @@
                                         <label class="inline-flex items-center justify-center cursor-pointer gap-2">
                                             <input type="checkbox" name="is_available" value="1" {{ $isAvailable ? 'checked' : '' }}
                                                 form="form-assortment-{{ $prod->id }}"
-                                                class="rounded border-zinc-300 text-apeiron-primary shadow-xs focus:ring-apeiron-primary h-4 w-4">
+                                                class="rounded border-zinc-300 text-primary shadow-xs focus:ring-ring h-4 w-4">
                                             <x-ui.badge variant="{{ $isAvailable ? 'success' : 'danger' }}" size="xs">
                                                 {{ $isAvailable ? 'Available' : 'Disabled' }}
                                             </x-ui.badge>
@@ -110,7 +110,7 @@
                                         <input type="number" name="store_price_override" value="{{ $overridePrice }}" step="0.01" min="0"
                                             form="form-assortment-{{ $prod->id }}"
                                             placeholder="Use Base Price"
-                                            class="w-48 inline-block text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2 text-right font-mono tabular-nums text-zinc-800 dark:text-zinc-100 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
+                                            class="w-48 inline-block text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2 text-right font-sans tabular-nums text-zinc-800 dark:text-zinc-100 focus:outline-hidden focus:ring-2 focus:ring-ring/20">
                                     </td>
 
                                     <!-- Save Row Button -->
@@ -125,7 +125,7 @@
                                             {{ $isAvailable ? 'Available' : 'Disabled' }}
                                         </x-ui.badge>
                                     </td>
-                                    <td class="px-6 py-4 text-right text-sm font-semibold text-zinc-900 dark:text-white font-mono tabular-nums">
+                                    <td class="px-6 py-4 text-right text-sm font-semibold text-zinc-900 dark:text-white font-sans tabular-nums">
                                         {{ $overridePrice ? 'Rp ' . number_format((float)$overridePrice, 0, ',', '.') : 'Base Price' }}
                                     </td>
                                     @if($canManage)

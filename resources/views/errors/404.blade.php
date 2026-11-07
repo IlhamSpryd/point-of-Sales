@@ -9,7 +9,7 @@
         </div>
 
         <div>
-            <span class="text-xs font-mono font-semibold tracking-wider uppercase text-indigo-600 dark:text-indigo-400">Error 404 • Not Found</span>
+            <span class="text-xs font-sans font-semibold tracking-wider uppercase text-indigo-600 dark:text-indigo-400">Error 404 • Not Found</span>
             <h1 class="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
                 Page Not Found
             </h1>

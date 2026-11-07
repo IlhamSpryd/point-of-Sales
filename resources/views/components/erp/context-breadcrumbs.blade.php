@@ -32,7 +32,7 @@
         </a>
 
         @if ($activeModule)
-            <span class="text-shell-foreground/40 font-mono text-[11px]">•</span>
+            <span class="text-shell-foreground/40 font-sans text-[11px] select-none">•</span>
             @if (\Illuminate\Support\Facades\Route::has($activeModule['route']))
                 <a href="{{ route($activeModule['route']) }}" wire:navigate
                     class="text-shell-foreground hover:text-shell-foreground-active transition-colors font-medium">
@@ -44,8 +44,8 @@
         @endif
 
         @if ($activeItem && (!$activeModule || $activeItem['label'] !== ($activeModule['short_name'] ?? $activeModule['name'])))
-            <span class="text-shell-foreground/40 font-mono text-[11px]">/</span>
-            <span class="text-shell-foreground-active font-semibold truncate max-w-[180px]">
+            <span class="text-shell-foreground/40 font-sans text-[11px] select-none">/</span>
+            <span class="text-shell-foreground-active font-semibold truncate max-w-[120px] md:max-w-[180px] lg:max-w-[240px]">
                 {{ $activeItem['label'] }}
             </span>
         @endif

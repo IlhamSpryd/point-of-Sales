@@ -1,6 +1,6 @@
 <section>
     <header>
-        <h2 class="text-lg font-bold text-apeiron-ink">
+        <h2 class="text-lg font-bold text-foreground">
             {{ __('Linked Accounts (Google & Apple SSO)') }}
         </h2>
 

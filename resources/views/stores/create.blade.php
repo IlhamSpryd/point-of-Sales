@@ -42,7 +42,7 @@
                     <div>
                         <x-form-label for="timezone">Operational Timezone</x-form-label>
                         <div class="relative">
-                            <select id="timezone" name="timezone" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-apeiron-ink dark:text-zinc-100 text-sm appearance-none focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 transition-all duration-200 shadow-xs {{ $errors->has('timezone') ? 'border-rose-300 focus:ring-rose-500' : '' }}" required>
+                            <select id="timezone" name="timezone" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground dark:text-zinc-100 text-sm appearance-none focus:outline-hidden focus:ring-2 focus:ring-ring/20 transition-all duration-200 shadow-xs {{ $errors->has('timezone') ? 'border-rose-300 focus:ring-rose-500' : '' }}" required>
                                 <option value="Asia/Jakarta" {{ old('timezone', 'Asia/Jakarta') === 'Asia/Jakarta' ? 'selected' : '' }}>WIB — Western Indonesia Time (Asia/Jakarta)</option>
                                 <option value="Asia/Makassar" {{ old('timezone') === 'Asia/Makassar' ? 'selected' : '' }}>WITA — Central Indonesia Time (Asia/Makassar)</option>
                                 <option value="Asia/Jayapura" {{ old('timezone') === 'Asia/Jayapura' ? 'selected' : '' }}>WIT — Eastern Indonesia Time (Asia/Jayapura)</option>
@@ -67,7 +67,7 @@
 
                     <div class="md:col-span-2">
                         <x-form-label for="address">Complete Store Address</x-form-label>
-                        <textarea id="address" name="address" rows="3" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-apeiron-ink dark:text-zinc-100 text-sm focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 transition-all duration-200 shadow-xs {{ $errors->has('address') ? 'border-rose-300 focus:ring-rose-500' : '' }}" placeholder="e.g. 45 Main Avenue, Financial District, South Jakarta">{{ old('address') }}</textarea>
+                        <textarea id="address" name="address" rows="3" class="form-input w-full px-4 py-2.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-foreground dark:text-zinc-100 text-sm focus:outline-hidden focus:ring-2 focus:ring-ring/20 transition-all duration-200 shadow-xs {{ $errors->has('address') ? 'border-rose-300 focus:ring-rose-500' : '' }}" placeholder="e.g. 45 Main Avenue, Financial District, South Jakarta">{{ old('address') }}</textarea>
                         @error('address')
                             <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                         @enderror

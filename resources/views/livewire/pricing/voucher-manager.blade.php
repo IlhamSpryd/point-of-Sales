@@ -72,7 +72,7 @@
                         @endphp
                         <tr class="hover:bg-gray-50/80 transition-colors">
                             <td class="px-6 py-4">
-                                <div class="font-mono font-bold text-blue-600 flex items-center gap-1.5">
+                                <div class="font-sans font-bold text-blue-600 flex items-center gap-1.5">
                                     <span class="material-symbols-rounded text-[16px] text-gray-400">confirmation_number</span>
                                     {{ $voucher->code }}
                                 </div>
@@ -163,7 +163,7 @@
                                 <span class="material-symbols-rounded text-[14px]">autorenew</span> Generate Random
                             </button>
                         </div>
-                        <input type="text" wire:model="code" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl uppercase font-mono font-bold" required />
+                        <input type="text" wire:model="code" class="w-full text-sm px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl uppercase font-sans font-bold" required />
                         @error('code') <span class="text-rose-600 text-xs">{{ $message }}</span> @enderror
                     </div>
 

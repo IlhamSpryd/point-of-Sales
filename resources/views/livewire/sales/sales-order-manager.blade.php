@@ -37,7 +37,7 @@
         <div class="flex-1 max-w-md">
             <div class="relative">
                 <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search SO No., Customer PO, name..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search SO No., Customer PO, name..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-zinc-800 dark:text-zinc-100">
             </div>
         </div>
         <div class="flex flex-wrap items-center gap-3">
@@ -79,7 +79,7 @@
                     @forelse($salesOrders as $so)
                         <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
                             <td class="py-4 px-6">
-                                <div class="font-medium text-apeiron-ink dark:text-white flex items-center gap-1.5 font-mono">
+                                <div class="font-medium text-foreground dark:text-white flex items-center gap-1.5 font-sans">
                                     <span>{{ $so->so_number }}</span>
                                 </div>
                                 <div class="text-xs text-zinc-400 mt-0.5">Source: {{ $so->order_source }}</div>
@@ -87,9 +87,9 @@
                             <td class="py-4 px-6">
                                 <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $so->customer?->name }}</div>
                                 @if($so->customer_po_number)
-                                    <div class="text-xs text-indigo-600 dark:text-indigo-400 font-mono">PO: {{ $so->customer_po_number }}</div>
+                                    <div class="text-xs text-indigo-600 dark:text-indigo-400 font-sans">PO: {{ $so->customer_po_number }}</div>
                                 @else
-                                    <div class="text-xs text-zinc-400 font-mono">{{ $so->customer?->customer_code }}</div>
+                                    <div class="text-xs text-zinc-400 font-sans">{{ $so->customer?->customer_code }}</div>
                                 @endif
                             </td>
                             <td class="py-4 px-6">
@@ -238,14 +238,14 @@
                     <div class="p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 space-y-1">
                         <h4 class="font-bold text-zinc-900 dark:text-white mb-2 text-sm">Customer</h4>
                         <p><span class="text-zinc-500">Name:</span> <strong class="text-zinc-800 dark:text-zinc-200">{{ $selectedSO->customer?->name }}</strong></p>
-                        <p><span class="text-zinc-500">Code:</span> <span class="font-mono">{{ $selectedSO->customer?->customer_code }}</span></p>
+                        <p><span class="text-zinc-500">Code:</span> <span class="font-sans">{{ $selectedSO->customer?->customer_code }}</span></p>
                         <p><span class="text-zinc-500">Terms:</span> {{ $selectedSO->payment_terms_days }} Days</p>
                     </div>
                     <div class="p-4 rounded-xl border border-zinc-200 dark:border-zinc-700 space-y-1">
                         <h4 class="font-bold text-zinc-900 dark:text-white mb-2 text-sm">Fulfillment History</h4>
                         <p><span class="text-zinc-500">Order Execution Documents:</span> {{ $selectedSO->orders->count() }} transactions</p>
                         @foreach($selectedSO->orders as $ord)
-                            <p class="font-mono text-emerald-600 dark:text-emerald-400">#{{ $ord->order_code }} ({{ $ord->order_date }}) - Status: {{ $ord->order_status }}</p>
+                            <p class="font-sans text-emerald-600 dark:text-emerald-400">#{{ $ord->order_code }} ({{ $ord->order_date }}) - Status: {{ $ord->order_status }}</p>
                         @endforeach
                     </div>
                 </div>
@@ -265,13 +265,13 @@
                                 <th class="p-3 text-right">Total Value</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800 font-mono">
+                        <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800 font-sans">
                             @foreach($selectedSO->lines as $line)
                                 <tr>
                                     <td class="p-3 text-zinc-400">{{ $line->line_number }}</td>
                                     <td class="p-3 font-sans">
                                         <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $line->description ?: ($line->product?->product_name ?? $line->product?->name) }}</div>
-                                        <div class="text-[10px] text-zinc-400 font-mono">{{ $line->product?->product_code ?? $line->product?->sku }}</div>
+                                        <div class="text-[10px] text-zinc-400 font-sans">{{ $line->product?->product_code ?? $line->product?->sku }}</div>
                                     </td>
                                     <td class="p-3 text-right tabular-nums">{{ number_format((float) $line->ordered_qty, 2) }}</td>
                                     <td class="p-3 text-right text-blue-600 tabular-nums">{{ number_format((float) $line->reserved_qty, 2) }}</td>
@@ -318,7 +318,7 @@
                                     <div class="text-[11px] text-zinc-400">Remaining to ship: <strong>{{ number_format($rem, 2) }}</strong></div>
                                 </div>
                                 <div class="w-32">
-                                    <x-ui.input type="number" step="0.0001" max="{{ $rem }}" min="0" wire:model="fulfillmentQuantities.{{ $line->id }}" class="text-right font-mono text-xs" />
+                                    <x-ui.input type="number" step="0.0001" max="{{ $rem }}" min="0" wire:model="fulfillmentQuantities.{{ $line->id }}" class="text-right font-sans text-xs" />
                                 </div>
                             </div>
                         @endif

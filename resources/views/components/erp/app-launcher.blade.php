@@ -92,7 +92,7 @@
                 x-model="searchQuery"
                 placeholder="Filter ERP apps & modules (e.g. POS, Inventory, HR, Finance)…"
                 class="w-full bg-transparent text-sm text-shell-foreground-active placeholder:text-shell-foreground/60 border-0 focus:outline-none focus:ring-0 p-0" />
-            <kbd class="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-mono text-shell-foreground bg-shell-accent border border-shell-border rounded">
+            <kbd class="hidden sm:inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] font-sans text-shell-foreground bg-shell-accent border border-shell-border rounded">
                 <span>ESC</span> to exit
             </kbd>
         </div>
@@ -172,7 +172,7 @@
                     <span class="material-symbols-rounded text-[14px]">warehouse</span> Stock
                 </a>
             </div>
-            <span class="hidden md:inline text-[11px] text-shell-foreground">Press <kbd class="px-1 py-0.5 font-mono text-[10px] bg-shell-accent border border-shell-border rounded">Alt+A</kbd> anytime</span>
+            <span class="hidden md:inline text-[11px] text-shell-foreground">Press <kbd class="px-1 py-0.5 font-sans text-[10px] bg-shell-accent border border-shell-border rounded">Alt+A</kbd> anytime</span>
         </div>
     </div>
 </div>

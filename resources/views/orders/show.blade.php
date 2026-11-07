@@ -3,7 +3,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4" data-gsap="page-enter">
             <div>
                 <div class="flex items-center gap-2.5">
-                    <h2 class="font-bold text-xl text-apeiron-ink tracking-tight">
+                    <h2 class="font-bold text-xl text-foreground tracking-tight">
                         {{ __('Order Details: ') . $order->order_code }}
                     </h2>
                     @php
@@ -45,11 +45,11 @@
 
     <div class="py-6" data-gsap="page-enter">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-            <div class="card-surface p-6 rounded-xl border border-apeiron-border space-y-6">
+            <div class="card-surface p-6 rounded-xl border border-border space-y-6">
                 <div class="flex justify-between items-center border-b border-gray-100 pb-4">
                     <div>
                         <span class="text-[11px] text-gray-400 uppercase tracking-wider font-semibold">{{ __('Order Code') }}</span>
-                        <p class="text-lg font-bold text-apeiron-ink font-mono">{{ $order->order_code }}</p>
+                        <p class="text-lg font-bold text-foreground font-sans">{{ $order->order_code }}</p>
                         <p class="text-xs text-gray-500">{{ $order->created_at->format('d M Y, H:i') }} WIB</p>
                     </div>
                     <div class="flex items-center gap-2">
@@ -74,7 +74,7 @@
                             @endphp
                             <div class="p-3.5 flex justify-between items-center text-xs bg-white hover:bg-gray-50/50 transition-colors">
                                 <div>
-                                    <span class="font-bold text-apeiron-ink text-sm">{{ $item->product->product_name ?? 'Product' }}</span>
+                                    <span class="font-bold text-foreground text-sm">{{ $item->product->product_name ?? 'Product' }}</span>
                                     <span class="text-gray-400 font-semibold"> &times; {{ $item->qty }} pcs</span>
                                     @if ($returnedQty > 0)
                                         <x-ui.badge variant="warning" class="ml-2 text-[10px]">
@@ -85,7 +85,7 @@
                                         <p class="text-gray-400 italic text-[11px] mt-0.5">{{ $item->notes }}</p>
                                     @endif
                                 </div>
-                                <span class="font-bold text-apeiron-ink tabular-nums text-sm">Rp {{ number_format((float) $item->order_subtotal, 0, ',', '.') }}</span>
+                                <span class="font-bold text-foreground tabular-nums text-sm">Rp {{ number_format((float) $item->order_subtotal, 0, ',', '.') }}</span>
                             </div>
                         @endforeach
                     </div>
@@ -100,7 +100,7 @@
                                 <div class="bg-amber-50/60 border border-amber-200 rounded-xl p-4 text-xs space-y-2">
                                     <div class="flex justify-between items-center font-bold text-amber-900 border-b border-amber-200 pb-2">
                                         <div class="flex items-center gap-2">
-                                            <span class="font-mono text-sm">{{ $ret->return_number }}</span>
+                                            <span class="font-sans text-sm">{{ $ret->return_number }}</span>
                                             <x-ui.badge variant="warning">{{ $ret->return_type }}</x-ui.badge>
                                         </div>
                                         <span class="text-gray-500 font-normal">{{ $ret->created_at->format('d/m/Y H:i') }}</span>
@@ -137,7 +137,7 @@
                             @foreach ($order->paymentRefunds as $refund)
                                 <div class="bg-rose-50/50 border border-rose-200 rounded-xl p-3.5 text-xs space-y-1.5">
                                     <div class="flex justify-between items-center">
-                                        <span class="font-mono font-bold text-rose-900">{{ $refund->refund_number }}</span>
+                                        <span class="font-sans font-bold text-rose-900">{{ $refund->refund_number }}</span>
                                         <span class="font-bold text-rose-700 tabular-nums text-sm">Rp {{ number_format($refund->amount, 0, ',', '.') }}</span>
                                     </div>
                                     <div class="grid grid-cols-2 gap-2 text-gray-500 text-[11px]">
@@ -174,7 +174,7 @@
                             <span class="tabular-nums font-semibold">Rp {{ number_format((float) $order->service_charge_amount, 0, ',', '.') }}</span>
                         </div>
                     @endif
-                    <div class="flex justify-between text-base font-bold text-apeiron-ink pt-2.5 border-t border-gray-100">
+                    <div class="flex justify-between text-base font-bold text-foreground pt-2.5 border-t border-gray-100">
                         <span>{{ __('Total Amount') }}</span>
                         <span class="tabular-nums">Rp {{ number_format((float) $order->order_amount, 0, ',', '.') }}</span>
                     </div>

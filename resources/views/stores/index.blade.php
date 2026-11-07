@@ -32,7 +32,7 @@
         <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-border dark:border-zinc-800">
             <form method="GET" action="{{ route('stores.index') }}" class="relative w-full sm:w-80">
                 <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search stores..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search stores..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-zinc-800 dark:text-zinc-100">
             </form>
         </div>
 
@@ -53,7 +53,7 @@
                     <tbody class="divide-y divide-border dark:divide-zinc-800/70">
                         @forelse($stores as $store)
                             <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
-                                <td class="px-6 py-4 font-mono font-medium text-apeiron-ink dark:text-white text-sm whitespace-nowrap">
+                                <td class="px-6 py-4 font-sans font-medium text-foreground dark:text-white text-sm whitespace-nowrap">
                                     {{ $store->code }}
                                 </td>
                                 <td class="px-6 py-4">
@@ -70,7 +70,7 @@
                                             </span>
                                         @endif
                                         @if($store->phone)
-                                            <span class="inline-flex items-center gap-1 font-mono">
+                                            <span class="inline-flex items-center gap-1 font-sans">
                                                 <span class="material-symbols-rounded text-[14px]">call</span> {{ $store->phone }}
                                             </span>
                                         @endif

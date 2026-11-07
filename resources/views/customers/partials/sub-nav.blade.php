@@ -57,7 +57,7 @@
                 <a href="{{ route($tab['route']) }}" wire:navigate
                     @if ($isActive) aria-current="page" @endif
                     style="{{ $isActive ? 'background-color: #202020; color: #ffffff;' : '' }}"
-                    class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink {{ $isActive ? 'bg-apeiron-ink text-white shadow-sm' : 'text-muted-foreground hover:text-apeiron-ink hover:bg-muted' }}">
+                    class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring {{ $isActive ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground hover:bg-muted' }}">
                     <span class="material-symbols-rounded text-[18px] shrink-0 {{ $isActive ? 'text-white' : '' }}">{{ $tab['icon'] }}</span>
                     <span class="{{ $isActive ? 'text-white' : '' }}">{{ $tab['label'] }}</span>
                 </a>

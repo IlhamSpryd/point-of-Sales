@@ -1,6 +1,6 @@
 <section>
     <header>
-        <h2 class="text-lg font-bold text-apeiron-ink">
+        <h2 class="text-lg font-bold text-foreground">
             {{ __('Profile Information') }}
         </h2>
 
@@ -67,7 +67,7 @@
     </form>
 
     <div class="mt-8 pt-8 border-t border-border">
-        <h3 class="text-md font-bold text-apeiron-ink">
+        <h3 class="text-md font-bold text-foreground">
             {{ __('Email Address Update (Verify-Before-Swap)') }}
         </h3>
         <p class="mt-1 text-sm text-muted-foreground">
@@ -90,7 +90,7 @@
                 <form method="POST" action="{{ route('profile.email.verify') }}" class="mt-4 flex flex-col sm:flex-row gap-3 items-center">
                     @csrf
                     <input type="text" name="otp_code" maxlength="6" placeholder="6-digit code" required
-                           class="w-full sm:w-48 h-10 px-3 text-center tracking-widest font-mono text-base font-bold rounded-xl border border-amber-300 bg-white text-apeiron-ink focus:outline-none focus:ring-2 focus:ring-amber-500" />
+                           class="w-full sm:w-48 h-10 px-3 text-center tracking-widest font-sans text-base font-bold rounded-xl border border-amber-300 bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-amber-500" />
                     
                     <button type="submit" class="w-full sm:w-auto h-10 px-4 bg-amber-700 hover:bg-amber-800 text-white font-medium text-xs rounded-xl shadow-sm transition-all active:scale-95 flex items-center justify-center gap-1.5">
                         <span class="material-symbols-rounded text-base">verified</span>

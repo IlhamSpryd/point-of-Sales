@@ -129,7 +129,7 @@
 
             <!-- Main Scrollable Area (Curved Inset Workspace Canvas with Unified Border) -->
             <main
-                class="flex-1 overflow-y-auto overflow-x-hidden w-full bg-zinc-50/70 dark:bg-background md:rounded-tl-[28px] border-t border-l border-shell-border shadow-[inset_0_1px_3px_rgba(0,0,0,0.02)] flex flex-col {{ ($noPadding ?? false) ? '' : 'p-4 sm:p-6 lg:p-8' }}"
+                class="flex-1 overflow-y-auto overflow-x-hidden w-full bg-background md:rounded-tl-[28px] border-t border-l border-shell-border shadow-[inset_0_1px_3px_rgba(0,0,0,0.02)] flex flex-col {{ ($noPadding ?? false) ? '' : 'p-4 sm:p-6 lg:p-8' }}"
                 :class="{ 'opacity-60 transition-opacity duration-150 pointer-events-none': navigating }"
                 id="main-content"
                 data-gsap="page-enter">

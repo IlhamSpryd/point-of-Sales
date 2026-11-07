@@ -72,13 +72,13 @@
                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
                     @forelse ($periods as $period)
                         <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/30 transition-colors">
-                            <td class="px-4 py-3 font-mono font-bold text-zinc-950 dark:text-white">
+                            <td class="px-4 py-3 font-sans font-bold text-zinc-950 dark:text-white">
                                 {{ $period->period_code }}
                             </td>
                             <td class="px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200">
                                 Period #{{ $period->period_number }} ({{ \Carbon\Carbon::parse($period->start_date)->format('F') }})
                             </td>
-                            <td class="px-4 py-3 font-mono text-zinc-600 dark:text-zinc-400">
+                            <td class="px-4 py-3 font-sans text-zinc-600 dark:text-zinc-400">
                                 {{ \Carbon\Carbon::parse($period->start_date)->format('d M Y') }} — {{ \Carbon\Carbon::parse($period->end_date)->format('d M Y') }}
                             </td>
                             <td class="px-4 py-3 text-center">

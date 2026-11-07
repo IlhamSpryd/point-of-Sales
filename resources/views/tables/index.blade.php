@@ -70,9 +70,9 @@
                     $routeToken = $table->qr_token ?? $table->secure_token;
                 @endphp
                 <tr class="hover:bg-gray-50/70 transition-colors duration-150">
-                    <td class="px-6 py-4 font-mono font-bold text-apeiron-ink text-xs whitespace-nowrap">{{ $table->table_code }}</td>
+                    <td class="px-6 py-4 font-sans font-bold text-foreground text-xs whitespace-nowrap">{{ $table->table_code }}</td>
                     <td class="px-6 py-4">
-                        <div class="font-bold text-apeiron-ink text-sm">{{ $table->table_name }}</div>
+                        <div class="font-bold text-foreground text-sm">{{ $table->table_name }}</div>
                         <div class="text-xs text-gray-500 mt-1 flex items-center gap-2">
                             <span class="inline-flex items-center gap-1"><span class="material-symbols-rounded text-[14px]">chair</span> {{ $table->capacity }} pax</span>
                             <span class="text-gray-300">&bull;</span>
@@ -106,7 +106,7 @@
                                 {!! Cache::remember('pos:qr:table:'.$table->id, 86400, fn() => (string) QrCode::size(70)->generate(rtrim(config('app.url'), '/') . route('customer.menu.index', ['token' => $routeToken], false))) !!}
                             </div>
                             <div class="text-xs text-gray-500">
-                                <div class="font-bold text-apeiron-ink">Version #{{ $table->qr_token_version ?? 1 }}</div>
+                                <div class="font-bold text-foreground">Version #{{ $table->qr_token_version ?? 1 }}</div>
                                 @if($table->qr_rotated_at)
                                     <div class="text-[11px] mt-0.5">Rotated: {{ $table->qr_rotated_at->format('M d, H:i') }}</div>
                                 @endif
@@ -126,7 +126,7 @@
                         @endif
                         <a href="{{ route('tables.edit', $routeToken) }}"
                             x-on:click="window.erpMotion?.pulseHighlight($el)"
-                            class="inline-flex items-center justify-center size-9 rounded-lg text-gray-600 hover:text-apeiron-ink hover:bg-gray-100 transition-colors active:scale-90" aria-label="Edit table" wire:navigate>
+                            class="inline-flex items-center justify-center size-9 rounded-lg text-gray-600 hover:text-foreground hover:bg-gray-100 transition-colors active:scale-90" aria-label="Edit table" wire:navigate>
                             <span class="material-symbols-rounded text-[20px]">edit</span>
                         </a>
                         <form action="{{ route('tables.rotate-qr', $routeToken) }}" method="POST" class="inline-block">
@@ -159,8 +159,8 @@
                 <div class="bg-white rounded-2xl border border-gray-200 p-4 shadow-xs" data-gsap="kpi-card">
                     <div class="flex justify-between items-start mb-3">
                         <div class="flex flex-col">
-                            <span class="font-bold text-apeiron-ink text-sm">{{ $table->table_name }}</span>
-                            <span class="text-xs text-gray-500 font-mono">{{ $table->table_code }} &bull; v{{ $table->qr_token_version ?? 1 }}</span>
+                            <span class="font-bold text-foreground text-sm">{{ $table->table_name }}</span>
+                            <span class="text-xs text-gray-500 font-sans">{{ $table->table_code }} &bull; v{{ $table->qr_token_version ?? 1 }}</span>
                         </div>
                         <div class="flex flex-col items-end gap-1">
                             <x-ui.badge :variant="$table->is_active ? 'success' : 'secondary'">
@@ -188,8 +188,8 @@
                             {!! Cache::remember('pos:qr:table:'.$table->id, 86400, fn() => (string) QrCode::size(55)->generate(rtrim(config('app.url'), '/') . route('customer.menu.index', ['token' => $routeToken], false))) !!}
                         </div>
                         <div class="flex-1 min-w-0">
-                            <div class="text-xs font-semibold text-apeiron-ink flex items-center gap-1.5 mb-1"><span class="material-symbols-rounded text-[16px] text-gray-400">chair</span> {{ $table->capacity }} pax</div>
-                            <div class="text-xs font-semibold text-apeiron-ink flex items-center gap-1.5"><span class="material-symbols-rounded text-[16px] text-gray-400">map</span> {{ $table->area }}</div>
+                            <div class="text-xs font-semibold text-foreground flex items-center gap-1.5 mb-1"><span class="material-symbols-rounded text-[16px] text-gray-400">chair</span> {{ $table->capacity }} pax</div>
+                            <div class="text-xs font-semibold text-foreground flex items-center gap-1.5"><span class="material-symbols-rounded text-[16px] text-gray-400">map</span> {{ $table->area }}</div>
                         </div>
                         <div class="flex flex-col gap-1 shrink-0">
                             @if($table->operational_status === 'occupied')
@@ -200,7 +200,7 @@
                                     </button>
                                 </form>
                             @endif
-                            <a href="{{ route('tables.edit', $routeToken) }}" class="size-8 flex items-center justify-center rounded-lg text-gray-600 hover:text-apeiron-ink hover:bg-gray-100 transition-colors" aria-label="Edit table" wire:navigate>
+                            <a href="{{ route('tables.edit', $routeToken) }}" class="size-8 flex items-center justify-center rounded-lg text-gray-600 hover:text-foreground hover:bg-gray-100 transition-colors" aria-label="Edit table" wire:navigate>
                                 <span class="material-symbols-rounded text-[18px]">edit</span>
                             </a>
                             <form action="{{ route('tables.rotate-qr', $routeToken) }}" method="POST">

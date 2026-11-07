@@ -20,7 +20,7 @@
          x-transition:leave="transition ease-in duration-200"
          x-transition:leave-start="opacity-100"
          x-transition:leave-end="opacity-0"
-         class="absolute inset-0 bg-apeiron-ink/40 backdrop-blur-sm sm:border-x sm:border-apeiron-border"></div>
+         class="absolute inset-0 bg-primary/40 backdrop-blur-sm sm:border-x sm:border-border"></div>
 
     {{-- Sheet --}}
     <div x-show="open" x-cloak role="dialog" aria-modal="true" aria-labelledby="variant-title"
@@ -34,17 +34,17 @@
 
         {{-- Handle (mobile) --}}
         <div class="flex shrink-0 justify-center pt-3" aria-hidden="true">
-            <span class="h-1.5 w-12 rounded-full bg-apeiron-border"></span>
+            <span class="h-1.5 w-12 rounded-full bg-border"></span>
         </div>
 
         {{-- Header --}}
-        <div class="flex shrink-0 items-start justify-between gap-3 border-b border-apeiron-border px-5 pb-4 pt-3 sm:pt-5">
+        <div class="flex shrink-0 items-start justify-between gap-3 border-b border-border px-5 pb-4 pt-3 sm:pt-5">
             <div class="min-w-0">
                 <h2 id="variant-title" class="text-[20px] font-bold leading-snug" x-text="product ? product.name : 'Loading…'"></h2>
-                <p x-show="product" x-cloak class="mt-1 text-[17px] font-bold tabular-nums text-apeiron-muted" x-text="rupiah(product ? product.price : 0)"></p>
+                <p x-show="product" x-cloak class="mt-1 text-[17px] font-bold tabular-nums text-muted-foreground" x-text="rupiah(product ? product.price : 0)"></p>
             </div>
             <button type="button" @click="close()" aria-label="Close"
-                    class="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-apeiron-muted transition-all duration-200 hover:bg-apeiron-surface hover:text-apeiron-ink active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink">
+                    class="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition-all duration-200 hover:bg-secondary hover:text-foreground active:scale-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <span class="material-symbols-rounded">close</span>
             </button>
         </div>
@@ -54,21 +54,21 @@
 
             {{-- Loading skeleton --}}
             <div x-show="loading" x-cloak class="space-y-4" aria-hidden="true">
-                <div class="h-4 w-24 animate-pulse rounded bg-apeiron-surface"></div>
+                <div class="h-4 w-24 animate-pulse rounded bg-secondary"></div>
                 <div class="grid grid-cols-2 gap-2">
-                    <div class="h-14 animate-pulse rounded-2xl bg-apeiron-surface"></div>
-                    <div class="h-14 animate-pulse rounded-2xl bg-apeiron-surface"></div>
+                    <div class="h-14 animate-pulse rounded-2xl bg-secondary"></div>
+                    <div class="h-14 animate-pulse rounded-2xl bg-secondary"></div>
                 </div>
-                <div class="h-4 w-32 animate-pulse rounded bg-apeiron-surface"></div>
-                <div class="h-14 animate-pulse rounded-2xl bg-apeiron-surface"></div>
+                <div class="h-4 w-32 animate-pulse rounded bg-secondary"></div>
+                <div class="h-14 animate-pulse rounded-2xl bg-secondary"></div>
             </div>
 
             {{-- Error --}}
             <div x-show="error && !loading" x-cloak role="alert" class="flex flex-col items-center py-10 text-center">
                 <span class="material-symbols-rounded mb-3 text-[32px] text-primary-300">cloud_off</span>
-                <p class="mb-4 max-w-xs text-sm font-medium text-apeiron-muted" x-text="error"></p>
+                <p class="mb-4 max-w-xs text-sm font-medium text-muted-foreground" x-text="error"></p>
                 <button type="button" @click="load()"
-                        class="min-h-11 rounded-xl border border-apeiron-border bg-white px-5 text-sm font-semibold shadow-sm transition-all duration-200 hover:bg-apeiron-bg active:scale-95">
+                        class="min-h-11 rounded-xl border border-border bg-white px-5 text-sm font-semibold shadow-sm transition-all duration-200 hover:bg-card active:scale-95">
                     Retry
                 </button>
             </div>
@@ -78,9 +78,9 @@
                 <template x-for="group in groups" :key="group.id">
                     <div class="mb-6">
                         <div class="mb-3 flex items-center justify-between gap-2">
-                            <h3 class="text-[12px] font-bold uppercase tracking-wider text-apeiron-muted" x-text="group.name"></h3>
+                            <h3 class="text-[12px] font-bold uppercase tracking-wider text-muted-foreground" x-text="group.name"></h3>
                             <span class="rounded-md px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider"
-                                  :class="group.is_required ? 'bg-apeiron-ink text-white' : 'bg-apeiron-surface text-apeiron-muted'"
+                                  :class="group.is_required ? 'bg-primary text-white' : 'bg-secondary text-muted-foreground'"
                                   x-text="(group.is_required ? 'Required' : 'Optional') + ' · ' + (group.selection_type === 'single' ? 'Select 1' : 'Multi-select')"></span>
                         </div>
 
@@ -91,16 +91,16 @@
                                         :role="group.selection_type === 'single' ? 'radio' : 'checkbox'"
                                         :aria-checked="isSelected(group, mod.id).toString()"
                                         @click="toggle(group, mod.id)"
-                                        :class="isSelected(group, mod.id) ? 'border-apeiron-ink bg-apeiron-bg ring-1 ring-apeiron-ink' : 'border-apeiron-border bg-white hover:bg-apeiron-bg'"
-                                        class="flex min-h-14 items-center justify-between gap-3 rounded-2xl border-[1.5px] px-4 py-3 text-left transition-all duration-200 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink">
+                                        :class="isSelected(group, mod.id) ? 'border-foreground bg-card ring-1 ring-ring' : 'border-border bg-white hover:bg-card'"
+                                        class="flex min-h-14 items-center justify-between gap-3 rounded-2xl border-[1.5px] px-4 py-3 text-left transition-all duration-200 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                                     <span class="min-w-0">
                                         <span class="block text-[14px] font-bold leading-tight" x-text="mod.name"></span>
-                                        <span x-show="mod.extra_price > 0" class="mt-0.5 block text-[12px] font-medium text-apeiron-muted" x-text="'+' + rupiah(mod.extra_price)"></span>
+                                        <span x-show="mod.extra_price > 0" class="mt-0.5 block text-[12px] font-medium text-muted-foreground" x-text="'+' + rupiah(mod.extra_price)"></span>
                                     </span>
                                     <span class="flex h-6 w-6 shrink-0 items-center justify-center border-[1.5px] transition-all duration-200"
                                           :class="[
                                               group.selection_type === 'single' ? 'rounded-full' : 'rounded-md',
-                                              isSelected(group, mod.id) ? 'border-apeiron-ink bg-apeiron-ink text-white' : 'border-primary-300 text-transparent'
+                                              isSelected(group, mod.id) ? 'border-foreground bg-primary text-white' : 'border-primary-300 text-transparent'
                                           ]">
                                         <span class="material-symbols-rounded text-[16px]">check</span>
                                     </span>
@@ -111,23 +111,23 @@
                 </template>
 
                 <div>
-                    <label for="variant-notes" class="mb-2 block text-[12px] font-bold uppercase tracking-wider text-apeiron-muted">Special instructions (optional)</label>
+                    <label for="variant-notes" class="mb-2 block text-[12px] font-bold uppercase tracking-wider text-muted-foreground">Special instructions (optional)</label>
                     <textarea id="variant-notes" x-model="notes" rows="2" maxlength="255"
                               placeholder="e.g. less ice, extra napkin"
-                              class="w-full resize-none rounded-2xl border border-apeiron-border bg-apeiron-bg px-4 py-3 text-[15px] placeholder:text-primary-400 transition-all duration-200 focus:border-apeiron-ink focus:bg-white focus:outline-none focus:ring-1 focus:ring-apeiron-ink"></textarea>
+                              class="w-full resize-none rounded-2xl border border-border bg-card px-4 py-3 text-[15px] placeholder:text-primary-400 transition-all duration-200 focus:border-primary focus:bg-white focus:outline-none focus:ring-1 focus:ring-ring"></textarea>
                 </div>
             </div>
         </div>
 
         {{-- Footer --}}
-        <div x-show="product && !error && !loading" x-cloak class="shrink-0 border-t border-apeiron-border bg-white px-5 pt-4 pb-safe">
+        <div x-show="product && !error && !loading" x-cloak class="shrink-0 border-t border-border bg-white px-5 pt-4 pb-safe">
             <p x-show="missing.length" x-cloak class="mb-3 text-xs font-medium text-rose-600"
                x-text="'Please complete required selections: ' + missing.join(', ')"></p>
             
             <div class="flex flex-col gap-3">
                 <div class="flex items-center justify-between">
-                    <span class="text-[14px] font-bold text-apeiron-muted">Quantity:</span>
-                    <div class="flex shrink-0 items-center rounded-full border border-apeiron-border bg-apeiron-surface p-0.5" role="group" aria-label="Quantity">
+                    <span class="text-[14px] font-bold text-muted-foreground">Quantity:</span>
+                    <div class="flex shrink-0 items-center rounded-full border border-border bg-secondary p-0.5" role="group" aria-label="Quantity">
                         <button type="button" @click="qty = Math.max(1, qty - 1)" :disabled="qty <= 1" aria-label="Decrease quantity"
                                 class="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm transition-all duration-200 active:scale-90 disabled:opacity-40">
                             <span class="material-symbols-rounded text-[18px]">remove</span>
@@ -141,7 +141,7 @@
                 </div>
 
                 <button type="button" @click="submit()" :disabled="!canSubmit"
-                        class="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl bg-apeiron-ink px-5 font-bold text-white shadow-lg transition-all duration-200 hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-apeiron-ink">
+                        class="flex min-h-12 w-full items-center justify-between gap-3 rounded-2xl bg-primary px-5 font-bold text-white shadow-lg transition-all duration-200 hover:bg-primary/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                     <span class="flex items-center gap-2 text-[15px]">
                         <span x-show="submitting" x-cloak class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
                         <span x-text="submitting ? 'Adding…' : 'Add to Order'"></span>

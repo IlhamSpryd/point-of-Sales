@@ -72,7 +72,7 @@
                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
                     @forelse ($accounts as $acc)
                         <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/30 transition-colors {{ ! $acc->is_active ? 'opacity-50' : '' }}">
-                            <td class="px-4 py-3 font-mono font-medium text-zinc-900 dark:text-zinc-100">
+                            <td class="px-4 py-3 font-sans font-medium text-zinc-900 dark:text-zinc-100">
                                 {{ $acc->account_code }}
                             </td>
                             <td class="px-4 py-3 text-zinc-950 dark:text-white font-medium">
@@ -94,7 +94,7 @@
                                 </span>
                             </td>
                             <td class="px-4 py-3">
-                                <span class="font-mono text-[11px] {{ $acc->normal_balance->value === 'DEBIT' ? 'text-indigo-600 dark:text-indigo-400' : 'text-teal-600 dark:text-teal-400' }}">
+                                <span class="font-sans text-[11px] {{ $acc->normal_balance->value === 'DEBIT' ? 'text-indigo-600 dark:text-indigo-400' : 'text-teal-600 dark:text-teal-400' }}">
                                     {{ $acc->normal_balance->value }}
                                 </span>
                             </td>
@@ -171,7 +171,7 @@
                             <input type="text"
                                    wire:model="accountCode"
                                    placeholder="e.g. 1101"
-                                   class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-mono">
+                                   class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-sans">
                             @error('accountCode') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                         </div>
 
@@ -200,7 +200,7 @@
                         <div>
                             <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Normal Balance</label>
                             <select wire:model="normalBalance"
-                                    class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-mono">
+                                    class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-sans">
                                 <option value="DEBIT">DEBIT</option>
                                 <option value="CREDIT">CREDIT</option>
                             </select>

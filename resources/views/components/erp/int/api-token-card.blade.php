@@ -35,7 +35,7 @@
     {{-- Masked Token with One-Click Copy --}}
     <div class="flex items-center gap-2 bg-muted p-2 rounded-xl border border-border">
         <span class="material-symbols-rounded text-sm text-muted-foreground pl-1">key</span>
-        <span class="font-mono text-xs text-foreground truncate flex-1" x-text="tokenVal"></span>
+        <span class="font-sans text-xs text-foreground truncate flex-1" x-text="tokenVal"></span>
         <button type="button"
             @click="copyToken()"
             class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-card border border-border text-foreground hover:bg-muted shadow-xs transition-colors cursor-pointer shrink-0 flex items-center gap-1">
@@ -49,7 +49,7 @@
         <div class="flex flex-wrap items-center gap-1.5 pt-1">
             <span class="text-[10px] uppercase font-bold text-muted-foreground mr-1">Izin Scopes:</span>
             @foreach ($scopes as $s)
-                <span class="px-2 py-0.5 rounded text-[10px] font-mono font-medium bg-secondary text-secondary-foreground border border-border">
+                <span class="px-2 py-0.5 rounded text-[10px] font-sans font-medium bg-secondary text-secondary-foreground border border-border">
                     {{ $s }}
                 </span>
             @endforeach

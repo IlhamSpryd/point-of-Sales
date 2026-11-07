@@ -3,7 +3,7 @@
 
     <div class="flex items-center justify-between mb-6" data-gsap="page-enter">
         <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Add Category</h4>
+            <h4 class="text-xl font-bold text-foreground tracking-tight">Add Category</h4>
             <p class="text-sm font-medium text-muted-foreground mt-1">Create a new product commodity category</p>
         </div>
         <a href="{{ route('categories.index') }}" wire:navigate>
@@ -40,7 +40,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <x-form-label for="parent_id">Parent Category (Optional)</x-form-label>
-                    <select id="parent_id" name="parent_id" class="w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 {{ $errors->has('parent_id') ? 'border-rose-500' : '' }}">
+                    <select id="parent_id" name="parent_id" class="w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-foreground focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 {{ $errors->has('parent_id') ? 'border-rose-500' : '' }}">
                         <option value="">-- No Parent (Root Category) --</option>
                         @foreach($parentCategories as $parent)
                             <option value="{{ $parent->id }}" {{ old('parent_id') == $parent->id ? 'selected' : '' }}>
@@ -66,7 +66,7 @@
             <div>
                 <x-form-label for="description">Description (Optional)</x-form-label>
                 <textarea id="description" name="description" rows="3"
-                          class="w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-apeiron-ink focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 {{ $errors->has('description') ? 'border-rose-500' : '' }}"
+                          class="w-full rounded-xl border border-border bg-white px-3.5 py-2.5 text-sm text-foreground focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 {{ $errors->has('description') ? 'border-rose-500' : '' }}"
                           placeholder="Category description...">{{ old('description') }}</textarea>
                 @error('description')
                     <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
@@ -77,7 +77,7 @@
                 <label class="inline-flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
                            class="rounded border-border text-primary-600 focus:ring-primary-500">
-                    <span class="text-sm font-medium text-apeiron-ink">Active</span>
+                    <span class="text-sm font-medium text-foreground">Active</span>
                 </label>
             </div>
 

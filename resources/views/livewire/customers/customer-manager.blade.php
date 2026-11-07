@@ -43,7 +43,7 @@
         <div class="flex-1 max-w-md">
             <div class="relative">
                 <span class="material-symbols-rounded absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search name, code, company, phone, email..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20">
+                <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search name, code, company, phone, email..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20">
             </div>
         </div>
         <div class="flex flex-wrap items-center gap-3">
@@ -91,9 +91,9 @@
         @foreach($customers as $c)
                     <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition">
                         <td class="px-6 py-4">
-                            <div class="font-semibold text-apeiron-ink dark:text-white">{{ $c->name }}</div>
+                            <div class="font-semibold text-foreground dark:text-white">{{ $c->name }}</div>
                             <div class="flex items-center gap-2 mt-0.5">
-                                <span class="text-xs font-mono text-zinc-400">{{ $c->customer_code }}</span>
+                                <span class="text-xs font-sans text-zinc-400">{{ $c->customer_code }}</span>
                                 @if($c->isCompany() && $c->company_name)
                                     <x-ui.badge variant="info" size="xs">
                                         {{ $c->company_name }}
@@ -114,13 +114,13 @@
                         <td class="px-6 py-4">
                             <div class="text-xs space-y-0.5">
                                 @if($c->phone)
-                                    <div class="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-200 font-mono">
+                                    <div class="flex items-center gap-1.5 text-zinc-700 dark:text-zinc-200 font-sans">
                                         <span class="material-symbols-rounded text-xs text-zinc-400">call</span>
                                         {{ $c->phone }}
                                     </div>
                                 @endif
                                 @if($c->email)
-                                    <div class="flex items-center gap-1.5 text-zinc-500 font-mono">
+                                    <div class="flex items-center gap-1.5 text-zinc-500 font-sans">
                                         <span class="material-symbols-rounded text-xs text-zinc-400">mail</span>
                                         {{ $c->email }}
                                     </div>
@@ -261,12 +261,12 @@
 
                 <div class="pt-3 border-t border-zinc-200 dark:border-zinc-800 flex items-center gap-6">
                     <label class="inline-flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" wire:model="is_active" class="rounded border-zinc-300 text-apeiron-primary shadow-xs focus:ring-apeiron-primary">
+                        <input type="checkbox" wire:model="is_active" class="rounded border-zinc-300 text-primary shadow-xs focus:ring-ring">
                         <span class="text-xs font-medium text-zinc-700 dark:text-zinc-300">Active Account Status</span>
                     </label>
 
                     <label class="inline-flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" wire:model="is_loyalty_eligible" class="rounded border-zinc-300 text-apeiron-primary shadow-xs focus:ring-apeiron-primary">
+                        <input type="checkbox" wire:model="is_loyalty_eligible" class="rounded border-zinc-300 text-primary shadow-xs focus:ring-ring">
                         <span class="text-xs font-medium text-zinc-700 dark:text-zinc-300">Eligible for Loyalty Points</span>
                     </label>
                 </div>
@@ -376,11 +376,11 @@
 
                     <div class="flex items-center gap-4 pt-2">
                         <label class="inline-flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400">
-                            <input type="checkbox" wire:model="is_default_shipping" class="rounded border-zinc-300 text-apeiron-primary">
+                            <input type="checkbox" wire:model="is_default_shipping" class="rounded border-zinc-300 text-primary">
                             Default Shipping
                         </label>
                         <label class="inline-flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400">
-                            <input type="checkbox" wire:model="is_default_billing" class="rounded border-zinc-300 text-apeiron-primary">
+                            <input type="checkbox" wire:model="is_default_billing" class="rounded border-zinc-300 text-primary">
                             Default Billing
                         </label>
                     </div>
@@ -442,7 +442,7 @@
                                         <x-ui.badge variant="success" size="xs">Primary</x-ui.badge>
                                     @endif
                                 </div>
-                                <div class="text-[11px] text-zinc-500 flex items-center gap-3 mt-1 font-mono">
+                                <div class="text-[11px] text-zinc-500 flex items-center gap-3 mt-1 font-sans">
                                     @if($contact->phone) <span>{{ $contact->phone }}</span> @endif
                                     @if($contact->email) <span>{{ $contact->email }}</span> @endif
                                 </div>
@@ -489,7 +489,7 @@
 
                     <div class="pt-2">
                         <label class="inline-flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400">
-                            <input type="checkbox" wire:model="contact_is_primary" class="rounded border-zinc-300 text-apeiron-primary">
+                            <input type="checkbox" wire:model="contact_is_primary" class="rounded border-zinc-300 text-primary">
                             Set as Primary Contact Person (Primary PIC)
                         </label>
                     </div>
@@ -608,13 +608,13 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="p-4 rounded-xl bg-zinc-100/70 dark:bg-zinc-800/40 border border-border dark:border-zinc-800">
                         <div class="text-xs font-medium text-zinc-500 uppercase tracking-wider">Opening Balance (Period)</div>
-                        <div class="text-xl font-bold font-mono text-apeiron-ink dark:text-white mt-1">
+                        <div class="text-xl font-bold font-sans text-foreground dark:text-white mt-1">
                             Rp {{ number_format((float) $statementPreview['opening_balance'], 2, ',', '.') }}
                         </div>
                     </div>
                     <div class="p-4 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800">
                         <div class="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">Closing Balance (Balance Due)</div>
-                        <div class="text-xl font-bold font-mono text-emerald-800 dark:text-emerald-300 mt-1">
+                        <div class="text-xl font-bold font-sans text-emerald-800 dark:text-emerald-300 mt-1">
                             Rp {{ number_format((float) $statementPreview['closing_balance'], 2, ',', '.') }}
                         </div>
                     </div>
@@ -641,15 +641,15 @@
                                 <td class="px-3 py-2">
                                     <x-ui.badge variant="neutral" size="xs">{{ $tx['entry_type_label'] }}</x-ui.badge>
                                 </td>
-                                <td class="px-3 py-2 font-mono text-[11px]">{{ $tx['reference_number'] ?: '-' }}</td>
+                                <td class="px-3 py-2 font-sans text-[11px]">{{ $tx['reference_number'] ?: '-' }}</td>
                                 <td class="px-3 py-2 max-w-xs truncate" title="{{ $tx['notes'] }}">{{ $tx['notes'] ?: '-' }}</td>
-                                <td class="px-3 py-2 text-right font-mono tabular-nums {{ (float) $tx['debit_amount'] > 0 ? 'text-rose-600 dark:text-rose-400 font-semibold' : 'text-zinc-400' }}">
+                                <td class="px-3 py-2 text-right font-sans tabular-nums {{ (float) $tx['debit_amount'] > 0 ? 'text-rose-600 dark:text-rose-400 font-semibold' : 'text-zinc-400' }}">
                                     {{ (float) $tx['debit_amount'] > 0 ? 'Rp '.number_format((float) $tx['debit_amount'], 2, ',', '.') : '-' }}
                                 </td>
-                                <td class="px-3 py-2 text-right font-mono tabular-nums {{ (float) $tx['credit_amount'] > 0 ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-zinc-400' }}">
+                                <td class="px-3 py-2 text-right font-sans tabular-nums {{ (float) $tx['credit_amount'] > 0 ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-zinc-400' }}">
                                     {{ (float) $tx['credit_amount'] > 0 ? 'Rp '.number_format((float) $tx['credit_amount'], 2, ',', '.') : '-' }}
                                 </td>
-                                <td class="px-3 py-2 text-right font-mono tabular-nums font-bold text-zinc-800 dark:text-zinc-200">
+                                <td class="px-3 py-2 text-right font-sans tabular-nums font-bold text-zinc-800 dark:text-zinc-200">
                                     Rp {{ number_format((float) $tx['running_balance'], 2, ',', '.') }}
                                 </td>
                             </tr>

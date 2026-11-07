@@ -1,19 +1,16 @@
 <div data-gsap="page-enter">
     @include('inventory.partials.sub-nav')
     @if($showModal)
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">
-                {{ $isEditing ? 'Edit Raw Material' : 'Add Raw Material' }}
-            </h4>
-            <p class="text-sm font-medium text-apeiron-muted mt-1">
-                {{ $isEditing ? 'Update raw material information' : 'Add a new raw material to inventory' }}
-            </p>
-        </div>
-        <x-ui.button type="button" variant="secondary" wire:click="$set('showModal', false)">
-            <span class="material-symbols-rounded text-[18px]">arrow_back</span> Back
-        </x-ui.button>
-    </div>
+    <x-erp.page-header
+        :title="$isEditing ? 'Edit Raw Material' : 'Add Raw Material'"
+        :description="$isEditing ? 'Update raw material information' : 'Add a new raw material to inventory'"
+    >
+        <x-slot:actions>
+            <x-ui.button type="button" variant="secondary" wire:click="$set('showModal', false)">
+                <span class="material-symbols-rounded text-[18px]">arrow_back</span> Back
+            </x-ui.button>
+        </x-slot:actions>
+    </x-erp.page-header>
 
     <div class="card-surface overflow-hidden w-full shrink-0">
         <form wire:submit.prevent="save" class="p-6 md:p-8 space-y-6">
@@ -50,23 +47,10 @@
             </div>
 
             <div class="flex items-center">
-                <label class="flex items-center cursor-pointer">
-                    <div class="relative">
-                        <input type="checkbox" wire:model="is_active" class="sr-only">
-                        <div class="block bg-primary-200 w-10 h-6 rounded-full transition-colors duration-300"></div>
-                        <div class="dot absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-300 shadow-sm"></div>
-                    </div>
-                    <style>
-                        input[type="checkbox"]:checked ~ .block { background-color: #10b981; }
-                        input[type="checkbox"]:checked ~ .dot { transform: translateX(100%); }
-                    </style>
-                    <div class="ml-3 text-sm font-semibold text-apeiron-ink">
-                        Active Material
-                    </div>
-                </label>
+                <x-ui.switch wire:model="is_active" label="Active Material" :checked="(bool)$is_active" />
             </div>
 
-            <div class="pt-4 border-t border-apeiron-border flex justify-end gap-3">
+            <div class="pt-4 border-t border-border flex justify-end gap-3">
                 <x-ui.button type="button" variant="secondary" wire:click="$set('showModal', false)">
                     Cancel
                 </x-ui.button>
@@ -77,20 +61,19 @@
         </form>
     </div>
     @else
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-        <div>
-            <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Raw Materials & Ingredients</h4>
-            <p class="text-sm font-medium text-apeiron-muted mt-1">Manage raw materials inventory and configure Bill of Materials (BOM)</p>
-        </div>
-        <div class="flex items-center gap-3 w-full sm:w-auto">
+    <x-erp.page-header
+        title="Raw Materials & Ingredients"
+        description="Manage raw materials inventory and configure Bill of Materials (BOM)"
+    >
+        <x-slot:actions>
             <div class="w-full sm:w-64">
                 <x-search-input wire:model.live.debounce.300ms="search" placeholder="Search raw materials..." />
             </div>
             <x-ui.button type="button" variant="primary" wire:click="create" x-on:click="window.erpMotion?.pulseHighlight($el)">
                 <span class="material-symbols-rounded text-[18px]">add</span> Add Material
             </x-ui.button>
-        </div>
-    </div>
+        </x-slot:actions>
+    </x-erp.page-header>
 
     @if (session()->has('success'))
         <x-ui.alert variant="success" class="mb-6">
@@ -111,8 +94,8 @@
             >
                 <x-slot:head>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Raw Material</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Current Stock</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Cost/Unit</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Current Stock</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Cost/Unit</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
@@ -124,7 +107,7 @@
                                     <span class="text-xs text-muted-foreground">{{ $item->ingredient_code ?? '-' }}</span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right font-mono tabular-nums numeric">
+                            <td class="px-6 py-4 whitespace-nowrap text-right font-sans tabular-nums numeric">
                                 @php
                                     $displayStock = (float) ($item->store_stock ?? $item->current_stock);
                                 @endphp
@@ -138,7 +121,7 @@
                                 </div>
                                 <div class="text-[10px] text-muted-foreground mt-0.5 tabular-nums">Min: {{ number_format($item->reorder_level, 2) }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right font-mono tabular-nums numeric">
+                            <td class="px-6 py-4 whitespace-nowrap text-right font-sans tabular-nums numeric">
                                 <span class="text-sm text-foreground tabular-nums">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -180,8 +163,8 @@
                 <div class="card-surface p-4">
                     <div class="flex justify-between items-start mb-2">
                         <div class="flex flex-col">
-                            <span class="font-bold text-apeiron-ink text-sm">{{ $item->name }}</span>
-                            <span class="text-xs text-apeiron-muted">{{ $item->ingredient_code ?? '-' }}</span>
+                            <span class="font-bold text-foreground text-sm">{{ $item->name }}</span>
+                            <span class="text-xs text-muted-foreground">{{ $item->ingredient_code ?? '-' }}</span>
                         </div>
                         <div class="flex flex-col items-end gap-1">
                             <x-ui.badge :variant="$item->is_active ? 'success' : 'secondary'">
@@ -189,13 +172,13 @@
                             </x-ui.badge>
                         </div>
                     </div>
-                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-apeiron-border">
+                    <div class="flex items-center justify-between mt-3 pt-3 border-t border-border">
                         <div class="flex-1">
                             @php
                                 $displayStock = (float) ($item->store_stock ?? $item->current_stock);
                             @endphp
-                            <span class="text-[11px] font-semibold text-apeiron-muted uppercase tracking-wider block mb-0.5">Stock: <span class="{{ $displayStock <= $item->reorder_level ? 'text-rose-600' : 'text-apeiron-ink' }}">{{ number_format($displayStock, 2) }} {{ $item->unit }}</span></span>
-                            <span class="text-xs text-apeiron-ink">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }} / {{ $item->unit }}</span>
+                            <span class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-0.5">Stock: <span class="{{ $displayStock <= $item->reorder_level ? 'text-rose-600' : 'text-foreground' }}">{{ number_format($displayStock, 2) }} {{ $item->unit }}</span></span>
+                            <span class="text-xs text-foreground">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }} / {{ $item->unit }}</span>
                         </div>
                         <div class="flex items-center gap-1 shrink-0">
                             <button wire:click="adjustStock({{ $item->id }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Adjust Stock">
@@ -222,7 +205,7 @@
             @endforelse
         </div>
         @if($ingredients->hasPages())
-            <div class="p-4 border-t border-apeiron-border shrink-0">
+            <div class="p-4 border-t border-border shrink-0">
                 {{ $ingredients->links() }}
             </div>
         @endif
@@ -232,7 +215,7 @@
     <!-- Modal Adjust Stock -->
     <x-ui.modal wire:model="showAdjustModal" maxWidth="lg">
         <x-slot:header>
-            <h3 class="text-lg font-bold text-apeiron-ink">
+            <h3 class="text-lg font-bold text-foreground">
                 Adjust Stock
             </h3>
         </x-slot:header>
@@ -241,12 +224,12 @@
                 <div>
                     <x-form-label for="adjustType">Adjustment Type <span class="text-rose-500">*</span></x-form-label>
                     <div class="relative">
-                        <select id="adjustType" wire:model="adjustType" class="form-input w-full px-4 py-2.5 rounded-xl border border-apeiron-border bg-white text-apeiron-ink appearance-none focus:outline-none focus:ring-2 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('adjustType') ? 'input-error' : '' }}">
+                        <select id="adjustType" wire:model="adjustType" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground appearance-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('adjustType') ? 'input-error' : '' }}">
                             <option value="purchase_receipt">Goods Receipt (Purchase)</option>
                             <option value="adjustment">Manual Correction (+ / -)</option>
                             <option value="waste">Damaged Goods / Waste (-)</option>
                         </select>
-                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-apeiron-muted">
+                        <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-muted-foreground">
                             <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
                         </div>
                     </div>
@@ -261,11 +244,11 @@
 
                 <div>
                     <x-form-label for="adjustReason">Reason / Notes (Optional)</x-form-label>
-                    <textarea id="adjustReason" wire:model="adjustReason" rows="3" class="form-input w-full px-4 py-2.5 rounded-xl border border-apeiron-border bg-white text-apeiron-ink placeholder-apeiron-muted focus:outline-none focus:ring-2 focus:ring-apeiron-ink focus:border-apeiron-ink transition-all duration-200 shadow-sm {{ $errors->has('adjustReason') ? 'input-error' : '' }}" placeholder="Additional notes..."></textarea>
+                    <textarea id="adjustReason" wire:model="adjustReason" rows="3" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm {{ $errors->has('adjustReason') ? 'input-error' : '' }}" placeholder="Additional notes..."></textarea>
                     @error('adjustReason') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
                 </div>
 
-                <div class="flex justify-end gap-3 pt-4 border-t border-apeiron-border">
+                <div class="flex justify-end gap-3 pt-4 border-t border-border">
                     <x-ui.button type="button" variant="secondary" wire:click="$set('showAdjustModal', false)">
                         Cancel
                     </x-ui.button>

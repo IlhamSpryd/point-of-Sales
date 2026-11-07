@@ -39,14 +39,14 @@
                 <label for="code" class="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">Authentication Code (6 Digits)</label>
                 <input type="text" id="code" name="code" inputmode="numeric" autocomplete="one-time-code" autofocus
                        placeholder="123456" maxlength="6"
-                       class="w-full text-center tracking-[0.5em] font-mono text-2xl px-4 py-3 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-foreground focus:border-foreground transition-all shadow-sm">
+                       class="w-full text-center tracking-[0.5em] font-sans text-2xl px-4 py-3 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-foreground focus:border-foreground transition-all shadow-sm">
             </div>
 
             <div x-show="recovery" x-cloak>
                 <label for="recovery_code" class="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">Emergency Recovery Code</label>
                 <input type="text" id="recovery_code" name="code"
                        placeholder="XXXXX-XXXXX"
-                       class="w-full text-center tracking-wider font-mono text-lg px-4 py-3 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-foreground focus:border-foreground transition-all shadow-sm">
+                       class="w-full text-center tracking-wider font-sans text-lg px-4 py-3 rounded-xl border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-foreground focus:border-foreground transition-all shadow-sm">
             </div>
 
             <div class="flex items-center justify-between text-xs pt-2">

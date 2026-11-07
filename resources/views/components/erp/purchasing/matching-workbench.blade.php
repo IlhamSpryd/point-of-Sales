@@ -26,7 +26,7 @@
             <div class="text-lg font-bold text-foreground mt-1 truncate">
                 {{ $poNumber }}
             </div>
-            <div class="text-xl font-extrabold text-foreground mt-1 numeric font-mono">
+            <div class="text-xl font-extrabold text-foreground mt-1 numeric font-sans">
                 Rp {{ number_format($poTotalVal, 0, ',', '.') }}
             </div>
         </div>
@@ -38,7 +38,7 @@
             <div class="text-lg font-bold text-foreground mt-1 truncate">
                 {{ $grnNumber }}
             </div>
-            <div class="text-xl font-extrabold text-foreground mt-1 numeric font-mono">
+            <div class="text-xl font-extrabold text-foreground mt-1 numeric font-sans">
                 Rp {{ number_format($grnTotalVal, 0, ',', '.') }}
             </div>
         </div>
@@ -56,7 +56,7 @@
             <div class="text-lg font-bold text-foreground mt-1 truncate">
                 {{ $invoiceNumber }}
             </div>
-            <div class="text-xl font-extrabold text-foreground mt-1 numeric font-mono">
+            <div class="text-xl font-extrabold text-foreground mt-1 numeric font-sans">
                 Rp {{ number_format($invoiceTotalVal, 0, ',', '.') }}
             </div>
         </div>
@@ -69,7 +69,7 @@
                 3-Way Line Item Matching
             </h4>
             @if (!$isMatched)
-                <span class="text-xs font-semibold text-destructive numeric font-mono">
+                <span class="text-xs font-semibold text-destructive numeric font-sans">
                     Variance: Rp {{ number_format(abs($variance), 0, ',', '.') }}
                 </span>
             @endif
@@ -102,19 +102,19 @@
                             <td class="px-4 py-3 font-medium text-foreground">
                                 {{ $line['item_name'] ?? 'Item' }}
                             </td>
-                            <td class="px-3 py-3 text-right numeric font-mono text-muted-foreground">
+                            <td class="px-3 py-3 text-right numeric font-sans text-muted-foreground">
                                 {{ number_format($linePoQty, 0) }}
                             </td>
-                            <td class="px-3 py-3 text-right numeric font-mono font-semibold {{ $lineGrnQty < $linePoQty ? 'text-warning' : 'text-foreground' }}">
+                            <td class="px-3 py-3 text-right numeric font-sans font-semibold {{ $lineGrnQty < $linePoQty ? 'text-warning' : 'text-foreground' }}">
                                 {{ number_format($lineGrnQty, 0) }}
                             </td>
-                            <td class="px-3 py-3 text-right numeric font-mono font-semibold {{ $lineInvQty != $lineGrnQty ? 'text-destructive' : 'text-foreground' }}">
+                            <td class="px-3 py-3 text-right numeric font-sans font-semibold {{ $lineInvQty != $lineGrnQty ? 'text-destructive' : 'text-foreground' }}">
                                 {{ number_format($lineInvQty, 0) }}
                             </td>
-                            <td class="px-3 py-3 text-right numeric font-mono text-muted-foreground">
+                            <td class="px-3 py-3 text-right numeric font-sans text-muted-foreground">
                                 Rp {{ number_format($linePoPrice, 0, ',', '.') }}
                             </td>
-                            <td class="px-3 py-3 text-right numeric font-mono font-semibold {{ $lineInvPrice != $linePoPrice ? 'text-destructive' : 'text-foreground' }}">
+                            <td class="px-3 py-3 text-right numeric font-sans font-semibold {{ $lineInvPrice != $linePoPrice ? 'text-destructive' : 'text-foreground' }}">
                                 Rp {{ number_format($lineInvPrice, 0, ',', '.') }}
                             </td>
                             <td class="px-4 py-3 text-center">

@@ -117,7 +117,7 @@
                 class="group relative w-9 h-9 rounded-xl flex items-center justify-center hover:bg-shell-accent active:scale-95 transition-all duration-150 cursor-pointer text-shell-foreground-active">
                 {{-- Default: Logo Symbol (hides when hovered) --}}
                 <span class="flex items-center justify-center transition-all duration-150 group-hover:hidden">
-                    <x-brand-logo variant="symbol" class="h-4 w-auto text-shell-foreground-active" />
+                    <img src="{{ asset('assets/brand/apeiron-symbol.svg') }}" alt="Apeiron Systems" class="h-4 w-auto object-contain dark:invert" />
                 </span>
                 {{-- Hover: Arrow > icon (replaces logo completely rather than overlaying) --}}
                 <span class="hidden group-hover:flex items-center justify-center transition-all duration-150 text-shell-foreground-active">
@@ -165,7 +165,7 @@
                                 {{ $section }}
                             </span>
                             <div class="flex items-center gap-1.5 shrink-0">
-                                <span class="text-[9px] font-mono px-1.5 py-0.2 rounded-full bg-shell-accent text-shell-foreground group-hover:text-shell-foreground-active border border-shell-border">
+                                <span class="text-[9px] font-sans px-1.5 py-0.2 rounded-full bg-shell-accent text-shell-foreground group-hover:text-shell-foreground-active border border-shell-border">
                                     {{ $sectionItemCount }}
                                 </span>
                                 <span class="material-symbols-rounded text-[14px] text-shell-foreground transition-transform duration-200"
@@ -233,6 +233,7 @@
                         'Cashier & Operations' => 'point_of_sale',
                         'Catalog & Recipes' => 'inventory_2',
                         'Inventory & Supply' => 'warehouse',
+                        'Finance & Accounting' => 'account_balance',
                         'Analytics & Customers' => 'query_stats',
                         'Human Resources & Payroll' => 'badge',
                         'Settings & Governance' => 'settings',

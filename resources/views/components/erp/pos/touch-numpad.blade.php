@@ -79,7 +79,7 @@
         </button>
         @foreach ($quickDenominations as $denom)
             <button type="button" @click="setQuick({{ $denom }})"
-                class="h-11 min-h-[44px] px-3 py-2 rounded-xl text-xs font-bold bg-muted hover:bg-card border border-border text-foreground active:scale-95 transition-all shadow-xs cursor-pointer numeric font-mono">
+                class="h-11 min-h-[44px] px-3 py-2 rounded-xl text-xs font-bold bg-muted hover:bg-card border border-border text-foreground active:scale-95 transition-all shadow-xs cursor-pointer numeric font-sans">
                 Rp {{ number_format($denom, 0, ',', '.') }}
             </button>
         @endforeach
@@ -89,16 +89,16 @@
     <div class="grid grid-cols-3 gap-2">
         @foreach (['1', '2', '3', '4', '5', '6', '7', '8', '9'] as $digit)
             <button type="button" @click="append('{{ $digit }}')"
-                class="h-13 min-h-[44px] rounded-xl text-xl font-bold bg-card hover:bg-muted border border-border text-foreground active:scale-95 transition-all shadow-xs cursor-pointer select-none flex items-center justify-center numeric font-mono">
+                class="h-13 min-h-[44px] rounded-xl text-xl font-bold bg-card hover:bg-muted border border-border text-foreground active:scale-95 transition-all shadow-xs cursor-pointer select-none flex items-center justify-center numeric font-sans">
                 {{ $digit }}
             </button>
         @endforeach
         <button type="button" @click="append('00')"
-            class="h-13 min-h-[44px] rounded-xl text-lg font-bold bg-card hover:bg-muted border border-border text-foreground active:scale-95 transition-all shadow-xs cursor-pointer select-none flex items-center justify-center numeric font-mono">
+            class="h-13 min-h-[44px] rounded-xl text-lg font-bold bg-card hover:bg-muted border border-border text-foreground active:scale-95 transition-all shadow-xs cursor-pointer select-none flex items-center justify-center numeric font-sans">
             00
         </button>
         <button type="button" @click="append('0')"
-            class="h-13 min-h-[44px] rounded-xl text-xl font-bold bg-card hover:bg-muted border border-border text-foreground active:scale-95 transition-all shadow-xs cursor-pointer select-none flex items-center justify-center numeric font-mono">
+            class="h-13 min-h-[44px] rounded-xl text-xl font-bold bg-card hover:bg-muted border border-border text-foreground active:scale-95 transition-all shadow-xs cursor-pointer select-none flex items-center justify-center numeric font-sans">
             0
         </button>
         <button type="button" @click="backspace()"

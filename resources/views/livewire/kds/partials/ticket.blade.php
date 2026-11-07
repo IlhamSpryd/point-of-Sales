@@ -16,8 +16,8 @@
 
     <div class="flex items-start justify-between gap-3">
         <div class="min-w-0">
-            <p class="font-mono text-[10px] 3xl:text-xs font-bold uppercase tracking-widest text-gray-400">{{ $order->order_code }}</p>
-            <p class="mt-0.5 truncate text-base font-black text-apeiron-ink leading-tight">{{ $place }}</p>
+            <p class="font-sans text-[10px] 3xl:text-xs font-bold uppercase tracking-widest text-gray-400">{{ $order->order_code }}</p>
+            <p class="mt-0.5 truncate text-base font-black text-foreground leading-tight">{{ $place }}</p>
         </div>
         <x-ui.badge :variant="$isTakeaway ? 'primary' : 'secondary'">
             {{ $isTakeaway ? 'Takeaway' : 'Dine-in' }}
@@ -25,8 +25,8 @@
     </div>
 
     <div class="mt-2.5 flex items-baseline gap-2">
-        <span class="rounded-lg border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs font-black text-apeiron-ink tabular-nums">{{ $item->qty }}×</span>
-        <span class="text-sm 3xl:text-base font-bold leading-snug text-apeiron-ink">{{ $item->product->product_name }}</span>
+        <span class="rounded-lg border border-gray-200 bg-gray-50 px-2 py-0.5 text-xs font-black text-foreground tabular-nums">{{ $item->qty }}×</span>
+        <span class="text-sm 3xl:text-base font-bold leading-snug text-foreground">{{ $item->product->product_name }}</span>
     </div>
 
     @if ($variant !== 'ready' && $options->isNotEmpty())
@@ -75,7 +75,7 @@
         @if ($canProcess)
             <button type="button" wire:click="claim({{ $item->id }})" wire:loading.attr="disabled" wire:target="claim({{ $item->id }})"
                     x-on:click="window.erpMotion?.pulseHighlight($el)"
-                    class="mt-3.5 flex min-h-10 w-full items-center justify-center rounded-xl bg-apeiron-ink text-xs font-bold text-white shadow-sm transition-all duration-200 hover:bg-primary/90 active:scale-[0.98] disabled:cursor-wait disabled:opacity-60">
+                    class="mt-3.5 flex min-h-10 w-full items-center justify-center rounded-xl bg-primary text-xs font-bold text-white shadow-sm transition-all duration-200 hover:bg-primary/90 active:scale-[0.98] disabled:cursor-wait disabled:opacity-60">
                 <span wire:loading.remove wire:target="claim({{ $item->id }})" class="flex items-center gap-1.5">
                     <span class="material-symbols-rounded text-[16px]">skillet</span> Start Prep
                 </span>

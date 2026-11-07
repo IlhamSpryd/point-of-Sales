@@ -37,7 +37,7 @@
         <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-border dark:border-zinc-800">
             <form method="GET" action="{{ route('roles.index') }}" class="relative w-full sm:w-80">
                 <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search role name or code..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-apeiron-primary/20 text-zinc-800 dark:text-zinc-100">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search role name or code..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-zinc-800 dark:text-zinc-100">
             </form>
         </div>
 
@@ -61,10 +61,10 @@
                 
                 @foreach($roles as $role)
                     <tr class="hover:bg-zinc-50/70 dark:hover:bg-zinc-800/50 transition-colors duration-150">
-                        <td class="px-6 py-4 font-mono font-medium text-apeiron-ink text-sm">{{ $role->role_code }}</td>
+                        <td class="px-6 py-4 font-sans font-medium text-foreground text-sm">{{ $role->role_code }}</td>
                         <td class="px-6 py-4">
                             <div class="flex flex-col">
-                                <span class="text-sm font-semibold text-apeiron-ink dark:text-zinc-100">{{ $role->name }}</span>
+                                <span class="text-sm font-semibold text-foreground dark:text-zinc-100">{{ $role->name }}</span>
                                 <span class="text-xs text-zinc-500">{{ $role->description ?: '—' }}</span>
                             </div>
                         </td>
@@ -84,7 +84,7 @@
                             {{ $role->users_count ?? 0 }} Users
                         </td>
                         <td class="px-6 py-4 text-right space-x-1 whitespace-nowrap">
-                            <a href="{{ route('roles.edit', $role->id) }}" class="inline-flex items-center justify-center size-9 rounded-lg text-zinc-600 hover:text-apeiron-ink hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-90" aria-label="Edit role" wire:navigate>
+                            <a href="{{ route('roles.edit', $role->id) }}" class="inline-flex items-center justify-center size-9 rounded-lg text-zinc-600 hover:text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-90" aria-label="Edit role" wire:navigate>
                                 <span class="material-symbols-rounded text-[18px]">edit</span>
                             </a>
                             <form id="delete-form-{{ $role->id }}" action="{{ route('roles.destroy', $role->id) }}" method="POST" class="inline-block">
@@ -105,8 +105,8 @@
                     <div class="card-surface p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
                         <div class="flex justify-between items-start mb-2">
                             <div class="flex flex-col">
-                                <span class="font-bold text-apeiron-ink dark:text-zinc-100 text-sm">{{ $role->name }}</span>
-                                <span class="text-xs text-zinc-500 font-mono">{{ $role->role_code }}</span>
+                                <span class="font-bold text-foreground dark:text-zinc-100 text-sm">{{ $role->name }}</span>
+                                <span class="text-xs text-zinc-500 font-sans">{{ $role->role_code }}</span>
                             </div>
                             <div class="flex flex-col items-end gap-1">
                                 @php
@@ -121,10 +121,10 @@
                         <div class="flex items-center justify-between mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
                             <div class="flex-1">
                                 <span class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-0.5">Users</span>
-                                <span class="text-xs text-apeiron-ink dark:text-zinc-200">{{ $role->users_count ?? 0 }} Assigned</span>
+                                <span class="text-xs text-foreground dark:text-zinc-200">{{ $role->users_count ?? 0 }} Assigned</span>
                             </div>
                             <div class="flex items-center gap-1 shrink-0">
-                                <a href="{{ route('roles.edit', $role->id) }}" class="size-8 flex items-center justify-center rounded-lg text-zinc-600 hover:text-apeiron-ink hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" aria-label="Edit role" wire:navigate>
+                                <a href="{{ route('roles.edit', $role->id) }}" class="size-8 flex items-center justify-center rounded-lg text-zinc-600 hover:text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" aria-label="Edit role" wire:navigate>
                                     <span class="material-symbols-rounded text-[18px]">edit</span>
                                 </a>
                                 <form id="delete-form-mobile-{{ $role->id }}" action="{{ route('roles.destroy', $role->id) }}" method="POST" class="inline-block">
@@ -176,42 +176,42 @@
                         <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
                             <input type="checkbox" name="permissions[can_access_pos]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
                             <div>
-                                <span class="block text-xs font-semibold text-apeiron-ink dark:text-zinc-200">Cashier Screen (POS)</span>
+                                <span class="block text-xs font-semibold text-foreground dark:text-zinc-200">Cashier Screen (POS)</span>
                                 <span class="block text-[11px] text-zinc-500">Checkout & cashier sales</span>
                             </div>
                         </label>
                         <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
                             <input type="checkbox" name="permissions[can_void_order]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
                             <div>
-                                <span class="block text-xs font-semibold text-apeiron-ink dark:text-zinc-200">Void Authority</span>
+                                <span class="block text-xs font-semibold text-foreground dark:text-zinc-200">Void Authority</span>
                                 <span class="block text-[11px] text-zinc-500">Cancel and void orders</span>
                             </div>
                         </label>
                         <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
                             <input type="checkbox" name="permissions[can_give_discount]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
                             <div>
-                                <span class="block text-xs font-semibold text-apeiron-ink dark:text-zinc-200">Discount Privileges</span>
+                                <span class="block text-xs font-semibold text-foreground dark:text-zinc-200">Discount Privileges</span>
                                 <span class="block text-[11px] text-zinc-500">Manual checkout discounts</span>
                             </div>
                         </label>
                         <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
                             <input type="checkbox" name="permissions[can_access_kds]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
                             <div>
-                                <span class="block text-xs font-semibold text-apeiron-ink dark:text-zinc-200">Kitchen Screen (KDS)</span>
+                                <span class="block text-xs font-semibold text-foreground dark:text-zinc-200">Kitchen Screen (KDS)</span>
                                 <span class="block text-[11px] text-zinc-500">Kitchen Display System queue</span>
                             </div>
                         </label>
                         <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
                             <input type="checkbox" name="permissions[can_manage_menu]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
                             <div>
-                                <span class="block text-xs font-semibold text-apeiron-ink dark:text-zinc-200">Catalog Management</span>
+                                <span class="block text-xs font-semibold text-foreground dark:text-zinc-200">Catalog Management</span>
                                 <span class="block text-[11px] text-zinc-500">Modify items, prices, stock</span>
                             </div>
                         </label>
                         <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
                             <input type="checkbox" name="permissions[can_view_reports]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
                             <div>
-                                <span class="block text-xs font-semibold text-apeiron-ink dark:text-zinc-200">Reports & Shifts</span>
+                                <span class="block text-xs font-semibold text-foreground dark:text-zinc-200">Reports & Shifts</span>
                                 <span class="block text-[11px] text-zinc-500">View financial recaps</span>
                             </div>
                         </label>
@@ -221,7 +221,7 @@
                 <div class="flex items-center gap-2 pt-1">
                     <input type="hidden" name="is_active" value="0">
                     <input type="checkbox" id="role_is_active" name="is_active" value="1" checked class="rounded border-zinc-300 text-primary-600 focus:ring-primary-500">
-                    <label for="role_is_active" class="text-sm font-medium text-apeiron-ink">Active Role</label>
+                    <label for="role_is_active" class="text-sm font-medium text-foreground">Active Role</label>
                 </div>
             </form>
 

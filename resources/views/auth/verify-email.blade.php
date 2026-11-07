@@ -57,7 +57,7 @@
                 required
                 autofocus
                 placeholder="123456"
-                class="w-full text-center tracking-[0.5em] text-2xl font-mono h-12 px-4 rounded-md border border-border bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-foreground transition-all shadow-2xs"
+                class="w-full text-center tracking-[0.5em] text-2xl font-sans h-12 px-4 rounded-md border border-border bg-card text-foreground focus:outline-none focus:ring-1 focus:ring-foreground transition-all shadow-2xs"
             />
         </div>
 

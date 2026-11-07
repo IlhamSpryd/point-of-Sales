@@ -22,7 +22,7 @@
 
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6" data-gsap="page-enter">
             <div>
-                <h4 class="text-xl font-bold text-apeiron-ink tracking-tight">Price Lists & Tiered Pricing</h4>
+                <h4 class="text-xl font-bold text-foreground tracking-tight">Price Lists & Tiered Pricing</h4>
                 <p class="text-sm font-medium text-muted-foreground mt-1">Manage volume-tiered wholesale rules, loyalty tier pricing, and customer contracts</p>
             </div>
 
@@ -57,7 +57,7 @@
                 <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Code & Name</th>
                 <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Rule Type</th>
                 <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Scope / Target</th>
-                <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-mono tabular-nums numeric">Items</th>
+                <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Items</th>
                 <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Validity Period</th>
                 <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
                 @if($canManage)
@@ -85,10 +85,10 @@
                     ];
                 @endphp
                 <tr class="hover:bg-muted transition-colors duration-200">
-                    <td class="px-6 py-4 text-center font-bold text-sm text-apeiron-ink tabular-nums">#{{ $pl->priority }}</td>
+                    <td class="px-6 py-4 text-center font-bold text-sm text-foreground tabular-nums">#{{ $pl->priority }}</td>
                     <td class="px-6 py-4">
-                        <div class="font-semibold text-sm text-apeiron-ink">{{ $pl->name }}</div>
-                        <div class="font-mono text-xs text-muted-foreground">{{ $pl->code }}</div>
+                        <div class="font-semibold text-sm text-foreground">{{ $pl->name }}</div>
+                        <div class="font-sans text-xs text-muted-foreground">{{ $pl->code }}</div>
                     </td>
                     <td class="px-6 py-4">
                         <x-ui.badge :variant="$typeBadgeTypes[$pl->type] ?? 'secondary'">
@@ -97,22 +97,22 @@
                     </td>
                     <td class="px-6 py-4 text-sm text-muted-foreground">
                         @if($pl->customer)
-                            <div class="font-medium text-apeiron-ink">{{ $pl->customer->name }}</div>
+                            <div class="font-medium text-foreground">{{ $pl->customer->name }}</div>
                             <div class="text-xs">Custom Customer</div>
                         @elseif($pl->loyaltyTier)
-                            <div class="font-medium text-apeiron-ink">{{ $pl->loyaltyTier->name }}</div>
+                            <div class="font-medium text-foreground">{{ $pl->loyaltyTier->name }}</div>
                             <div class="text-xs">Member Tier</div>
                         @elseif($pl->store)
-                            <div class="font-medium text-apeiron-ink">{{ $pl->store->name }}</div>
+                            <div class="font-medium text-foreground">{{ $pl->store->name }}</div>
                             <div class="text-xs">Specific Branch</div>
                         @elseif($pl->channel)
-                            <div class="font-medium text-apeiron-ink">{{ strtoupper($pl->channel) }}</div>
+                            <div class="font-medium text-foreground">{{ strtoupper($pl->channel) }}</div>
                             <div class="text-xs">Channel</div>
                         @else
                             <span class="text-xs italic text-muted-foreground">All Customers / Global</span>
                         @endif
                     </td>
-                    <td class="px-6 py-4 text-sm font-semibold text-right text-apeiron-ink tabular-nums">{{ $pl->items_count }} items</td>
+                    <td class="px-6 py-4 text-sm font-semibold text-right text-foreground tabular-nums">{{ $pl->items_count }} items</td>
                     <td class="px-6 py-4 text-xs text-muted-foreground">
                         @if($pl->valid_from || $pl->valid_until)
                             {{ $pl->valid_from?->format('d/m/Y') ?? 'Start' }} to {{ $pl->valid_until?->format('d/m/Y') ?? 'Indefinite' }}
@@ -242,13 +242,13 @@
 
                 <div class="flex items-center gap-2">
                     <input type="checkbox" id="pl_is_active" name="is_active" value="1" checked class="rounded border-border text-primary-600 focus:ring-primary-500">
-                    <label for="pl_is_active" class="text-sm font-medium text-apeiron-ink">Activate this price rule immediately</label>
+                    <label for="pl_is_active" class="text-sm font-medium text-foreground">Activate this price rule immediately</label>
                 </div>
 
                 {{-- Item Pricing Repeater --}}
                 <div class="pt-3 border-t border-border">
                     <div class="flex items-center justify-between mb-2">
-                        <h5 class="text-sm font-bold text-apeiron-ink">Product Pricing Rules</h5>
+                        <h5 class="text-sm font-bold text-foreground">Product Pricing Rules</h5>
                         <button type="button" @click="addItem()" class="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-800 font-semibold">
                             <span class="material-symbols-rounded text-sm">add</span> Add Row
                         </button>

@@ -58,8 +58,8 @@
 
             <p class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
                 Module 7 (Finance & General Ledger) consumes streaming transaction events via accounting outbox tables
-                (<code class="font-mono text-[11px] bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-800 dark:text-zinc-200">accounting_payable_outbox</code> and
-                <code class="font-mono text-[11px] bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-800 dark:text-zinc-200">accounting_receivable_outbox</code>),
+                (<code class="font-sans text-[11px] bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-800 dark:text-zinc-200">accounting_payable_outbox</code> and
+                <code class="font-sans text-[11px] bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-800 dark:text-zinc-200">accounting_receivable_outbox</code>),
                 generating automated balanced journal entries with strict adherence to dual-entry rules, posted record immutability, and full auditability.
             </p>
         </div>
@@ -69,10 +69,10 @@
             <div class="lg:col-span-2 space-y-4">
                 <div class="flex items-center justify-between">
                     <h3 class="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                        <span class="material-symbols-rounded text-apeiron-primary text-base">receipt_long</span>
+                        <span class="material-symbols-rounded text-primary text-base">receipt_long</span>
                         Recent Transaction Journals
                     </h3>
-                    <span class="text-xs text-zinc-400 font-mono">{{ $postedJournalsCount }} Posted Journals</span>
+                    <span class="text-xs text-zinc-400 font-sans">{{ $postedJournalsCount }} Posted Journals</span>
                 </div>
 
                 <div class="card-surface rounded-2xl overflow-hidden border border-border dark:border-zinc-800 shadow-xs">
@@ -99,18 +99,18 @@
                                 <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
                                     @foreach($recentJournals as $journal)
                                         <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
-                                            <td class="px-5 py-3 font-mono font-medium text-zinc-900 dark:text-white">
+                                            <td class="px-5 py-3 font-sans font-medium text-zinc-900 dark:text-white">
                                                 {{ $journal->journal_number }}
                                             </td>
                                             <td class="px-5 py-3 text-xs text-zinc-500">
                                                 {{ $journal->posting_date?->format('d M Y') ?? '-' }}
                                             </td>
                                             <td class="px-5 py-3 text-xs">
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-mono text-[11px]">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-sans text-[11px]">
                                                     {{ $journal->source_module ?? 'General' }}
                                                 </span>
                                             </td>
-                                            <td class="px-5 py-3 text-right font-mono text-xs tabular-nums text-zinc-900 dark:text-white font-medium">
+                                            <td class="px-5 py-3 text-right font-sans text-xs tabular-nums text-zinc-900 dark:text-white font-medium">
                                                 Rp {{ number_format((float) $journal->total_debit, 2, ',', '.') }}
                                             </td>
                                             <td class="px-5 py-3 text-center">
@@ -131,10 +131,10 @@
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <h3 class="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                        <span class="material-symbols-rounded text-apeiron-primary text-base">payments</span>
+                        <span class="material-symbols-rounded text-primary text-base">payments</span>
                         Cash & Bank Accounts
                     </h3>
-                    <span class="text-xs text-zinc-400 font-mono">{{ $cashBankAccounts->count() }} Accounts</span>
+                    <span class="text-xs text-zinc-400 font-sans">{{ $cashBankAccounts->count() }} Accounts</span>
                 </div>
 
                 <div class="card-surface rounded-2xl p-5 border border-border dark:border-zinc-800 space-y-3 shadow-xs">
@@ -150,12 +150,12 @@
                                     <div class="text-xs font-bold text-zinc-900 dark:text-white">
                                         {{ $account->account_name }}
                                     </div>
-                                    <div class="text-[11px] font-mono text-zinc-400">
+                                    <div class="text-[11px] font-sans text-zinc-400">
                                         {{ $account->bank_name ? $account->bank_name . ' • ' : '' }}{{ $account->bank_account_number ?? $account->account_code }}
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <div class="text-xs font-bold font-mono text-zinc-900 dark:text-white tabular-nums">
+                                    <div class="text-xs font-bold font-sans text-zinc-900 dark:text-white tabular-nums">
                                         Rp {{ number_format((float) $account->current_balance, 2, ',', '.') }}
                                     </div>
                                     <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Active</span>

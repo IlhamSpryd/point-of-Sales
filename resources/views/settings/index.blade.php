@@ -40,17 +40,17 @@
 
                 <div class="pt-6 border-t border-zinc-200 dark:border-zinc-800">
                     <h2 class="text-base font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
-                        <span class="material-symbols-rounded text-apeiron-primary text-xl">calculate</span>
+                        <span class="material-symbols-rounded text-primary text-xl">calculate</span>
                         Tax & Cashier Rounding Rules
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
                             <x-ui.label for="tax_rate">Tax Rate (decimal, e.g., 0.11)</x-ui.label>
-                            <x-ui.input type="number" step="0.01" min="0" max="1" id="tax_rate" name="tax_rate" value="{{ old('tax_rate', $settings['tax_rate'] ?? 0.11) }}" class="font-mono" />
+                            <x-ui.input type="number" step="0.01" min="0" max="1" id="tax_rate" name="tax_rate" value="{{ old('tax_rate', $settings['tax_rate'] ?? 0.11) }}" class="font-sans" />
                         </div>
                         <div>
                             <x-ui.label for="rounding_value">Rounding Multiple (e.g., 100)</x-ui.label>
-                            <x-ui.input type="number" step="1" min="1" id="rounding_value" name="rounding_value" value="{{ old('rounding_value', $settings['rounding_value'] ?? 100) }}" class="font-mono" />
+                            <x-ui.input type="number" step="1" min="1" id="rounding_value" name="rounding_value" value="{{ old('rounding_value', $settings['rounding_value'] ?? 100) }}" class="font-sans" />
                         </div>
                         <div>
                             <x-ui.label for="rounding_behavior">Rounding Method</x-ui.label>
