@@ -50,6 +50,7 @@
             <label for="password" class="block text-[13px] font-medium text-foreground mb-1.5">{{ __('New password') }}</label>
             <div class="relative">
                 <input
+                    type="password"
                     :type="showPassword ? 'text' : 'password'"
                     name="password"
                     id="password"
@@ -97,6 +98,7 @@
             <label for="password_confirmation" class="block text-[13px] font-medium text-foreground mb-1.5">{{ __('Confirm new password') }}</label>
             <div class="relative">
                 <input
+                    type="password"
                     :type="showConfirmation ? 'text' : 'password'"
                     name="password_confirmation"
                     id="password_confirmation"

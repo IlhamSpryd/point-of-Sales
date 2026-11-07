@@ -105,6 +105,7 @@
             </div>
             <div class="relative">
                 <input
+                    type="password"
                     :type="show ? 'text' : 'password'"
                     name="password"
                     id="password"
@@ -115,6 +116,7 @@
                 />
                 <button
                     type="button"
+                    id="btn-toggle-password"
                     @click="show = !show"
                     class="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 text-muted-foreground hover:text-foreground focus:outline-none focus:text-foreground rounded-md transition-colors cursor-pointer flex items-center justify-center"
                     :aria-label="show ? '{{ __('Hide password') }}' : '{{ __('Show password') }}'"
@@ -126,7 +128,7 @@
                         <circle cx="12" cy="12" r="3"/>
                     </svg>
                     <!-- Eye Off (Hide Password) -->
-                    <svg x-show="show" style="display: none;" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <svg x-show="show" x-cloak class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
                         <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
                         <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
@@ -180,18 +182,28 @@
 
 @section('scripts')
     <script>
-        function loginForm() {
+        window.loginForm = function () {
             return {
                 isLoading: false,
                 handleSubmit(formEl) {
                     if (this.isLoading) return;
                     this.isLoading = true;
-                    requestAnimationFrame(() => {
-                        formEl.submit();
-                    });
                 }
             };
-        }
+        };
+
+        // Fallback progressive enhancement jika Alpine tertunda
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleBtn = document.getElementById('btn-toggle-password');
+            const passwordInput = document.getElementById('password');
+            if (toggleBtn && passwordInput) {
+                toggleBtn.addEventListener('click', () => {
+                    if (window.Alpine) return;
+                    const isPassword = passwordInput.getAttribute('type') === 'password';
+                    passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+                });
+            }
+        });
 
         document.addEventListener('DOMContentLoaded', () => {
             if (window.erpMotion && typeof window.erpMotion.animateAuthScreen === 'function') {

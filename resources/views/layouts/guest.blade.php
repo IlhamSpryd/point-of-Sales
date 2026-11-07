@@ -14,6 +14,13 @@
     <link rel="preload" href="{{ asset('fonts/plus-jakarta-sans.woff2') }}" as="font" type="font/woff2" crossorigin>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
+
+    <style>
+        [x-cloak] {
+            display: none !important;
+        }
+    </style>
 </head>
 
 <body class="font-sans antialiased text-foreground bg-card min-h-screen overflow-x-hidden selection:bg-selection selection:text-selection-foreground">
@@ -77,7 +84,7 @@
                                     <h4 class="font-bold text-foreground pt-1">2. Retention &amp; Audit Trails</h4>
                                     <p>POS terminal operations, financial movements, and configuration changes are recorded in an immutable Audit Trail for reconciliation and compliance verification.</p>
                                     <h4 class="font-bold text-foreground pt-1">3. Data Protection Contact</h4>
-                                    <p>For inquiries regarding our privacy standards or data management requests, please contact our security team at <span class="font-mono text-foreground">support@apeironsystems.com</span>.</p>
+                                    <p>For inquiries regarding our privacy standards or data management requests, please contact our security team at <span class="font-sans text-foreground">support@apeironsystems.com</span>.</p>
                                 </div>
                             </template>
 
@@ -138,6 +145,7 @@
     <x-ui.toast />
     <x-erp.confirm-dialog />
 
+    @livewireScripts
     @yield('scripts')
 
 </body>
