@@ -19,11 +19,15 @@ class UpdateUserRequest extends FormRequest
 
     public function rules(): array
     {
+        $tenantId = app(TenantContext::class)->requireTenantId();
+
         $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$this->user->id], // Email unik GLOBAL
             // role_id HARUS milik tenant pada konteks aktif — role lintas tenant ditolak.
-            'role_id' => ['required', Rule::exists('roles', 'id')->where('tenant_id', app(TenantContext::class)->requireTenantId())],
+            'role_id' => ['required', Rule::exists('roles', 'id')->where('tenant_id', $tenantId)],
+            'store_ids' => ['nullable', 'array'],
+            'store_ids.*' => ['integer', Rule::exists('stores', 'id')->where('tenant_id', $tenantId)],
             'phone_number' => ['nullable', 'string', 'max:20'],
             'pin_code' => ['nullable', 'string', 'digits_between:4,6'],
             'join_date' => ['nullable', 'date'],

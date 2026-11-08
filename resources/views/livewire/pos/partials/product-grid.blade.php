@@ -82,7 +82,7 @@
         <button type="button" @click="focusSearch()" title="Focus barcode scanner (F2)"
             class="flex items-center gap-2 px-3 h-10 rounded-lg bg-white border border-border hover:border-foreground hover:bg-muted text-muted-foreground shrink-0 shadow-xs transition-colors cursor-pointer">
             <span class="material-symbols-rounded text-[17px] text-foreground">qr_code_scanner</span>
-            <span class="font-label-sm text-[12px] font-medium text-foreground">Barcode Ready</span>
+            <span class="font-label-sm text-[12px] font-medium text-foreground">Barcode</span>
         </button>
     </div>
 
@@ -213,22 +213,18 @@
         @endif
     </div>
 
-    <!-- Quick Modifier / POS Shortcut Helper Tray -->
+    <!-- Quick POS Shortcut Helper Tray -->
     <div class="shrink-0 mt-2 px-3.5 py-2 rounded-lg bg-muted border border-border flex items-center justify-between select-none">
-        <div class="flex items-center gap-2.5">
-            <span class="w-6 h-6 rounded bg-secondary flex items-center justify-center text-foreground">
-                <span class="material-symbols-rounded text-[15px]">tune</span>
+        <div class="flex items-center gap-2">
+            <span class="font-label-md text-[12px] font-medium text-foreground">Shortcuts:</span>
+            <span class="font-label-sm text-[12px] text-muted-foreground">
+                <kbd class="tabular-nums bg-white border border-border px-1.5 py-0.5 rounded text-[10px] text-foreground font-mono">F2</kbd> Search &bull;
+                <kbd class="tabular-nums bg-white border border-border px-1.5 py-0.5 rounded text-[10px] text-foreground font-mono">F4</kbd> Pay &bull;
+                <kbd class="tabular-nums bg-white border border-border px-1.5 py-0.5 rounded text-[10px] text-foreground font-mono">F5</kbd> Exact Cash &bull;
+                <kbd class="tabular-nums bg-white border border-border px-1.5 py-0.5 rounded text-[10px] text-foreground font-mono">F8</kbd> Park &bull;
+                <kbd class="tabular-nums bg-white border border-border px-1.5 py-0.5 rounded text-[10px] text-foreground font-mono">F9</kbd> Parked List &bull;
+                <kbd class="tabular-nums bg-white border border-border px-1.5 py-0.5 rounded text-[10px] text-foreground font-mono">Esc</kbd> Close
             </span>
-            <div class="flex items-center gap-2">
-                <span class="font-label-md text-[12px] font-medium text-foreground">Shortcuts:</span>
-                <span class="font-label-sm text-[12px] text-muted-foreground">
-                    <kbd class="tabular-nums bg-white border border-border px-1 rounded text-[10px]">F2</kbd> Search &bull;
-                    <kbd class="tabular-nums bg-white border border-border px-1 rounded text-[10px]">F4</kbd> Pay &bull;
-                    <kbd class="tabular-nums bg-white border border-border px-1 rounded text-[10px]">F8</kbd> Park &bull;
-                    <kbd class="tabular-nums bg-white border border-border px-1 rounded text-[10px]">F9</kbd> Parked List &bull;
-                    <kbd class="tabular-nums bg-white border border-border px-1 rounded text-[10px]">Esc</kbd> Close
-                </span>
-            </div>
         </div>
         <button type="button" wire:click="$set('isParkModalOpen', true)"
             class="px-2.5 py-1 rounded-[6px] bg-white border border-border hover:bg-muted text-foreground font-label-sm text-[12px] font-medium transition-colors shadow-xs cursor-pointer">

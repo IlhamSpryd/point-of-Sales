@@ -143,6 +143,32 @@ class OrderHistory extends Component
         $this->selectedOrderId = null;
     }
 
+    public function syncMidtransStatus(int $orderId): void
+    {
+        $order = $this->getOrderQuery()->findOrFail($orderId);
+
+        if ($order->order_status !== OrderStatus::Pending) {
+            $this->dispatch('toast', message: "Order {$order->order_code} is already {$order->order_status->label()}.", type: 'info');
+
+            return;
+        }
+
+        try {
+            $updated = app(TransactionService::class)->syncOrderWithMidtrans($order);
+            if ($updated->order_status === OrderStatus::Paid) {
+                session()->flash('success', "Order {$updated->order_code} payment settled via Midtrans.");
+                $this->dispatch('toast', message: "Order {$updated->order_code} payment settled via Midtrans.", type: 'success');
+            } elseif ($updated->order_status->isFinal()) {
+                $this->dispatch('toast', message: "Order {$updated->order_code} transitioned to {$updated->order_status->label()}.", type: 'info');
+            } else {
+                $this->dispatch('toast', message: "Order {$updated->order_code} is still awaiting payment.", type: 'info');
+            }
+        } catch (\Throwable $e) {
+            Log::warning('OrderHistory syncMidtransStatus failed: '.$e->getMessage(), ['order_id' => $orderId]);
+            $this->dispatch('toast', message: 'Unable to synchronize Midtrans status right now.', type: 'error');
+        }
+    }
+
     public function voidOrder(?int $orderId = null, ?string $voidReason = null, ?string $pin = null): void
     {
         $targetOrderId = $orderId ?? $this->voidingOrderId;

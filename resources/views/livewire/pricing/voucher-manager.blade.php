@@ -1,4 +1,6 @@
 <div class="py-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <x-erp.module-sub-nav module="pricing" />
+
     <!-- Header Page & Actions -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>

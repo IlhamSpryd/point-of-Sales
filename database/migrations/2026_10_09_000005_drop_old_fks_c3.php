@@ -8,96 +8,45 @@ return new class extends Migration
 {
     public function up()
     {
-        Schema::table('shifts', function (Blueprint $table) {
-            $table->dropForeign('shifts_user_id_foreign');
-        });
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropForeign('orders_customer_id_foreign');
-        });
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropForeign('orders_discount_id_foreign');
-        });
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropForeign('orders_shift_id_foreign');
-        });
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropForeign('orders_table_id_foreign');
-        });
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropForeign('orders_user_id_foreign');
-        });
-        Schema::table('orders', function (Blueprint $table) {
-            $table->dropForeign('orders_voided_by_foreign');
-        });
-        Schema::table('order_items', function (Blueprint $table) {
-            $table->dropForeign('order_details_product_id_foreign');
-        });
-        Schema::table('order_items', function (Blueprint $table) {
-            $table->dropForeign('order_items_order_id_foreign');
-        });
-        Schema::table('order_items', function (Blueprint $table) {
-            $table->dropForeign('order_items_processed_by_foreign');
-        });
-        Schema::table('order_item_modifiers', function (Blueprint $table) {
-            $table->dropForeign('order_item_modifiers_modifier_id_foreign');
-        });
-        Schema::table('order_item_modifiers', function (Blueprint $table) {
-            $table->dropForeign('order_item_modifiers_order_item_id_foreign');
-        });
-        Schema::table('payments', function (Blueprint $table) {
-            $table->dropForeign('payments_order_id_foreign');
-        });
-        Schema::table('payments', function (Blueprint $table) {
-            $table->dropForeign('payments_processed_by_foreign');
-        });
-        Schema::table('cash_drawer_movements', function (Blueprint $table) {
-            $table->dropForeign('cash_drawer_movements_approved_by_foreign');
-        });
-        Schema::table('cash_drawer_movements', function (Blueprint $table) {
-            $table->dropForeign('cash_drawer_movements_created_by_foreign');
-        });
-        Schema::table('cash_drawer_movements', function (Blueprint $table) {
-            $table->dropForeign('cash_drawer_movements_shift_id_foreign');
-        });
-        Schema::table('stock_movements', function (Blueprint $table) {
-            $table->dropForeign('stock_movements_order_id_foreign');
-        });
-        Schema::table('stock_movements', function (Blueprint $table) {
-            $table->dropForeign('stock_movements_order_item_id_foreign');
-        });
-        Schema::table('stock_movements', function (Blueprint $table) {
-            $table->dropForeign('stock_movements_product_id_foreign');
-        });
-        Schema::table('ingredient_stock_movements', function (Blueprint $table) {
-            $table->dropForeign('ingredient_stock_movements_created_by_foreign');
-        });
-        Schema::table('ingredient_stock_movements', function (Blueprint $table) {
-            $table->dropForeign('ingredient_stock_movements_ingredient_id_foreign');
-        });
-        Schema::table('ingredient_stock_movements', function (Blueprint $table) {
-            $table->dropForeign('ingredient_stock_movements_order_id_foreign');
-        });
-        Schema::table('ingredient_stock_movements', function (Blueprint $table) {
-            $table->dropForeign('ingredient_stock_movements_order_item_id_foreign');
-        });
-        Schema::table('loyalty_ledger', function (Blueprint $table) {
-            $table->dropForeign('loyalty_ledger_created_by_foreign');
-        });
-        Schema::table('loyalty_ledger', function (Blueprint $table) {
-            $table->dropForeign('loyalty_ledger_customer_id_foreign');
-        });
-        Schema::table('loyalty_ledger', function (Blueprint $table) {
-            $table->dropForeign('loyalty_ledger_order_id_foreign');
-        });
-        Schema::table('activity_logs', function (Blueprint $table) {
-            $table->dropForeign('activity_logs_user_id_foreign');
-        });
-        Schema::table('export_tasks', function (Blueprint $table) {
-            $table->dropForeign('export_tasks_requested_by_foreign');
-        });
-        Schema::table('channel_order_logs', function (Blueprint $table) {
-            $table->dropForeign('channel_order_logs_order_id_foreign');
-        });
+        $dropFk = function (string $table, string $fk) {
+            try {
+                Schema::table($table, function (Blueprint $t) use ($fk) {
+                    $t->dropForeign($fk);
+                });
+            } catch (\Throwable) {
+            }
+        };
+
+        $dropFk('shifts', 'shifts_user_id_foreign');
+        $dropFk('orders', 'orders_customer_id_foreign');
+        $dropFk('orders', 'orders_discount_id_foreign');
+        $dropFk('orders', 'orders_shift_id_foreign');
+        $dropFk('orders', 'orders_table_id_foreign');
+        $dropFk('orders', 'orders_user_id_foreign');
+        $dropFk('orders', 'orders_voided_by_foreign');
+        $dropFk('order_items', 'order_details_product_id_foreign');
+        $dropFk('order_items', 'order_items_order_id_foreign');
+        $dropFk('order_items', 'order_items_processed_by_foreign');
+        $dropFk('order_item_modifiers', 'order_item_modifiers_modifier_id_foreign');
+        $dropFk('order_item_modifiers', 'order_item_modifiers_order_item_id_foreign');
+        $dropFk('payments', 'payments_order_id_foreign');
+        $dropFk('payments', 'payments_processed_by_foreign');
+        $dropFk('cash_drawer_movements', 'cash_drawer_movements_approved_by_foreign');
+        $dropFk('cash_drawer_movements', 'cash_drawer_movements_created_by_foreign');
+        $dropFk('cash_drawer_movements', 'cash_drawer_movements_shift_id_foreign');
+        $dropFk('stock_movements', 'stock_movements_order_id_foreign');
+        $dropFk('stock_movements', 'stock_movements_order_item_id_foreign');
+        $dropFk('stock_movements', 'stock_movements_product_id_foreign');
+        $dropFk('ingredient_stock_movements', 'ingredient_stock_movements_created_by_foreign');
+        $dropFk('ingredient_stock_movements', 'ingredient_stock_movements_ingredient_id_foreign');
+        $dropFk('ingredient_stock_movements', 'ingredient_stock_movements_order_id_foreign');
+        $dropFk('ingredient_stock_movements', 'ingredient_stock_movements_order_item_id_foreign');
+        $dropFk('loyalty_ledger', 'loyalty_ledger_created_by_foreign');
+        $dropFk('loyalty_ledger', 'loyalty_ledger_customer_id_foreign');
+        $dropFk('loyalty_ledger', 'loyalty_ledger_order_id_foreign');
+        $dropFk('activity_logs', 'activity_logs_user_id_foreign');
+        $dropFk('export_tasks', 'export_tasks_requested_by_foreign');
+        $dropFk('channel_order_logs', 'channel_order_logs_order_id_foreign');
     }
 
     public function down()

@@ -50,7 +50,9 @@ class HomeController extends Controller
             'Cook' => 'kds.index',
             'Inventory' => 'inventory.ingredients',
             'Supervisor' => 'shifts.index',
-            'Owner' => 'dashboard',
+            'Owner', 'Admin' => 'dashboard',
+            'Finance' => 'finance.index',
+            'Sales' => 'sales.orders.index',
             default => null,
         };
 
@@ -58,7 +60,26 @@ class HomeController extends Controller
             return redirect()->route($roleHome);
         }
 
-        // Role custom atau role tanpa pemetaan — tampilkan halaman aman
+        // Dynamic Custom Role Resolver: cari destinasi pertama yang diizinkan oleh permission peran kustom
+        if ($user->role) {
+            foreach (config('navigation.sections', []) as $items) {
+                foreach ($items as $item) {
+                    $routeName = $item['route'] ?? null;
+                    if (! $routeName || ! Route::has($routeName)) {
+                        continue;
+                    }
+                    $permission = $item['permission'] ?? null;
+                    if (
+                        in_array($roleName, $item['roles'] ?? [], true)
+                        || ($permission && $user->hasPermission($permission))
+                    ) {
+                        return redirect()->route($routeName);
+                    }
+                }
+            }
+        }
+
+        // Role custom tanpa izin atau role tanpa pemetaan — tampilkan halaman aman
         // dengan tombol logout, BUKAN 403 polos tanpa navigasi.
         return view('home.no-access');
     }

@@ -1,4 +1,6 @@
 <div class="space-y-6" data-gsap="page-enter">
+    <x-erp.module-sub-nav module="pos-ops" />
+
     <!-- Header -->
     <x-erp.page-header
         title="Channel Integration (Channel Mapping)"

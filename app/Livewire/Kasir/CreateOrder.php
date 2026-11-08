@@ -508,6 +508,34 @@ class CreateOrder extends Component
         $this->pendingNotes = null;
     }
 
+    public function scanBarcode(string $code): void
+    {
+        $code = trim($code);
+        if ($code === '') {
+            return;
+        }
+
+        $tenantId = app(TenantContext::class)->requireTenantId();
+        $product = Product::where('tenant_id', $tenantId)
+            ->where(function ($q) use ($code) {
+                $q->where('barcode', $code)
+                    ->orWhere('product_code', $code);
+            })
+            ->where('is_active', true)
+            ->first();
+
+        if ($product) {
+            if ($product->modifierGroups()->count() > 0) {
+                $this->openModifierPicker($product->id);
+            } else {
+                $this->addToCartDirectly($product->id);
+                $this->dispatch('toast', message: "Added: {$product->product_name}", type: 'success');
+            }
+        } else {
+            $this->dispatch('toast', message: "Barcode not found: {$code}", type: 'warning');
+        }
+    }
+
     public function closeModifierPicker(): void
     {
         $this->selectingProductId = null;
@@ -1149,14 +1177,132 @@ class CreateOrder extends Component
     }
 
     /**
+     * Fast Cash Tender (1-Tap): Menyelesaikan pesanan tunai instan tanpa membuka modal.
+     */
+    public function fastCashPay(int $amountTendered = 0): void
+    {
+        if (! $this->canCheckout() || count($this->cart) === 0) {
+            return;
+        }
+
+        if (! $this->orderType) {
+            $this->orderType = 'takeaway';
+        }
+
+        $totalDue = $this->totalAmount();
+        $tendered = $amountTendered > 0 ? max($amountTendered, $totalDue) : $totalDue;
+        $change = max(0, $tendered - $totalDue);
+
+        $legs = [
+            [
+                'method' => 'cash',
+                'amount' => $totalDue,
+                'amount_tendered' => $tendered,
+                'change_amount' => $change,
+            ],
+        ];
+
+        $this->submitOrder($legs, (string) Str::uuid());
+    }
+
+    /**
+     * Daftar rekening bank operasional aktif cabang toko untuk transfer.
+     *
+     * @return \Illuminate\Support\Collection<int, \stdClass>
+     */
+    #[Computed]
+    public function storeBankAccounts(): \Illuminate\Support\Collection
+    {
+        $tenantId = app(TenantContext::class)->getTenantId();
+        $storeId = app(TenantContext::class)->getStoreId() ?? $this->activeStoreId;
+
+        if (! $tenantId) {
+            return collect();
+        }
+
+        $query = \Illuminate\Support\Facades\DB::table('cash_bank_accounts')
+            ->where('tenant_id', $tenantId)
+            ->where('is_active', 1)
+            ->where('account_type', 'BANK_ACCOUNT');
+
+        if ($storeId) {
+            $query->where(function ($q) use ($storeId) {
+                $q->where('store_id', $storeId)->orWhereNull('store_id');
+            });
+        }
+
+        /** @var \Illuminate\Support\Collection<int, \stdClass> $accounts */
+        $accounts = $query->get();
+
+        if ($accounts->isEmpty()) {
+            $fallback = new \stdClass();
+            $fallback->id = 0;
+            $fallback->bank_name = 'Bank Central Asia (BCA)';
+            $fallback->account_name = 'Rekening Operasional Toko';
+            $fallback->bank_account_number = '8010 9928 1120';
+            $fallback->bank_account_holder = 'Apeiron System Coffee';
+
+            return collect([$fallback]);
+        }
+
+        return $accounts;
+    }
+
+    /**
+     * Daftar terminal EDC aktif cabang toko untuk transaksi kartu.
+     *
+     * @return \Illuminate\Support\Collection<int, \stdClass>
+     */
+    #[Computed]
+    public function storeEdcTerminals(): \Illuminate\Support\Collection
+    {
+        $tenantId = app(TenantContext::class)->getTenantId();
+        $storeId = app(TenantContext::class)->getStoreId() ?? $this->activeStoreId;
+
+        if (! $tenantId) {
+            return collect();
+        }
+
+        $query = \Illuminate\Support\Facades\DB::table('devices')
+            ->where('tenant_id', $tenantId)
+            ->where('is_active', 1)
+            ->where('device_type', 'pos_terminal');
+
+        if ($storeId) {
+            $query->where(function ($q) use ($storeId) {
+                $q->where('store_id', $storeId)->orWhereNull('store_id');
+            });
+        }
+
+        /** @var \Illuminate\Support\Collection<int, \stdClass> $terminals */
+        $terminals = $query->get();
+
+        if ($terminals->isEmpty()) {
+            $t1 = new \stdClass();
+            $t1->id = 1;
+            $t1->device_name = 'Terminal BCA #01';
+            $t1->device_code = 'BCA-EDC-01';
+
+            $t2 = new \stdClass();
+            $t2->id = 2;
+            $t2->device_name = 'Terminal Mandiri #02';
+            $t2->device_code = 'MDR-EDC-02';
+
+            return collect([$t1, $t2]);
+        }
+
+        return $terminals;
+    }
+
+    /**
      * Menerima $legs dari Alpine (Split Payment modal) untuk
      * skenario Walk-in Baru. Skenario Tarik Pesanan tetap dilayani via
      * $this->paymentMethod/$this->cashReceived seperti sebelumnya --
      * $legs diabaikan sepenuhnya di cabang itu (lihat SYNC ALERT Node 1).
      *
-     * @param  array<int, array{method: string, amount: int, card_number?: string|null, reference_number?: string|null, pin?: string|null}>  $legs
+     * @param  array<int, array{method: string, amount: int, amount_tendered?: int|null, change_amount?: int|null, card_number?: string|null, reference_number?: string|null, pin?: string|null, use_midtrans_gateway?: bool|null}>  $legs
      */
-    public function submitOrder(array $legs = [], ?string $idempotencyKey = null)
+    public function submitOrder(array $legs = [], ?string $idempotencyKey = null, bool $useMidtransGateway = false)
     {
         $this->authorize('create', Order::class);
 
@@ -1231,6 +1377,8 @@ class CreateOrder extends Component
 
             // Normalisasi payment legs untuk KEDUA skenario (Walk-in & Pending)
             $normalizedLegs = [];
+            $isMidtransGatewayOrder = $useMidtransGateway;
+
             if ($this->pendingOrderId && empty($legs)) {
                 // Skenario Tarik Pesanan via form tunai langsung di kasir
                 if ((int) $this->cashReceived < (int) $this->totalAmount) {
@@ -1238,9 +1386,13 @@ class CreateOrder extends Component
                         'cart' => 'Cash received is less than total amount due.',
                     ]);
                 }
+                $tendered = (int) $this->cashReceived;
+                $allocated = (int) $this->totalAmount;
                 $normalizedLegs[] = [
                     'method' => $this->paymentMethod,
-                    'amount' => (int) $this->totalAmount,
+                    'amount' => $allocated,
+                    'amount_tendered' => $tendered,
+                    'change_amount' => max(0, $tendered - $allocated),
                 ];
             } else {
                 foreach ($legs as $leg) {
@@ -1253,9 +1405,22 @@ class CreateOrder extends Component
                         ]);
                     }
 
+                    if (! empty($leg['use_midtrans_gateway'])) {
+                        $isMidtransGatewayOrder = true;
+                    }
+
+                    $tendered = isset($leg['amount_tendered'])
+                        ? (int) $leg['amount_tendered']
+                        : ($method === PaymentMethod::Cash && (int) $this->cashReceived >= $amount ? (int) $this->cashReceived : $amount);
+                    $changeAmount = isset($leg['change_amount'])
+                        ? (int) $leg['change_amount']
+                        : ($method === PaymentMethod::Cash ? max(0, $tendered - $amount) : 0);
+
                     $normalizedLegs[] = [
                         'method' => $method->value,
                         'amount' => $amount,
+                        'amount_tendered' => $tendered,
+                        'change_amount' => $changeAmount,
                         'card_number' => $leg['card_number'] ?? $leg['reference_number'] ?? null,
                         'reference_number' => $leg['reference_number'] ?? $leg['card_number'] ?? null,
                         'pin' => $leg['pin'] ?? null,
@@ -1270,9 +1435,9 @@ class CreateOrder extends Component
             }
 
             $sumLegs = array_sum(array_column($normalizedLegs, 'amount'));
-            if ($sumLegs !== (int) $this->totalAmount) {
+            if ($sumLegs !== (int) $this->totalAmount()) {
                 throw ValidationException::withMessages([
-                    'cart' => 'Total payments (Rp'.number_format($sumLegs, 0, ',', '.').') do not match the total due (Rp'.number_format($this->totalAmount, 0, ',', '.').').',
+                    'cart' => 'Total payments (Rp'.number_format($sumLegs, 0, ',', '.').') do not match the total due (Rp'.number_format($this->totalAmount(), 0, ',', '.').').',
                 ]);
             }
 
@@ -1293,8 +1458,9 @@ class CreateOrder extends Component
                     $shiftId,
                     $this->deviceId
                 );
+                $isMidtransGatewayOrder = false;
             } else {
-                // Skenario 1: Pesanan Walk-in Baru + Split Payment + Loyalti.
+                // Skenario 1: Pesanan Walk-in Baru + Split Payment / Midtrans Gateway + Loyalti.
 
                 // Batch-load produk (pola sama dengan cartLines() di atas) agar
                 // resolveOrderItemLine() tidak memicu N+1 saat membangun payload.
@@ -1325,9 +1491,12 @@ class CreateOrder extends Component
                     ];
                 }
 
-                $order = $transactionService->createTransaction([
+                $canUseMidtransSingleLeg = $isMidtransGatewayOrder
+                    && count($normalizedLegs) === 1
+                    && in_array($normalizedLegs[0]['method'], ['qris', 'ewallet'], true);
+
+                $txPayload = [
                     'items' => $items,
-                    'payments' => $normalizedLegs,
                     'customer_id' => $this->customerId,
                     'table_id' => $this->tableId,
                     'order_type' => $this->orderType,
@@ -1336,13 +1505,36 @@ class CreateOrder extends Component
                     'shift_id' => $shiftId,
                     'discount_id' => $this->selectedDiscountId,
                     'manual_discount_amount' => (int) $this->appliedManualDiscount,
+                    'approval_id' => $this->manualDiscountApprovalId,
+                    'cart_uuid' => $this->voucherCode ? $this->idempotencyKey : null,
                     'idempotency_key' => $idempotencyKey,
-                ], (int) Auth::id());
+                ];
+
+                if ($canUseMidtransSingleLeg) {
+                    $txPayload['payment_method'] = $normalizedLegs[0]['method'];
+                    $txPayload['use_midtrans_gateway'] = true;
+                } else {
+                    $txPayload['payments'] = $normalizedLegs;
+                    $isMidtransGatewayOrder = false;
+                }
+
+                $order = $transactionService->createTransaction($txPayload, (int) Auth::id());
             }
 
             DB::commit();
 
-            $this->dispatch('transaction-success', orderCode: $order->order_code, isCash: collect($normalizedLegs)->contains('method', 'cash'));
+            if ($isMidtransGatewayOrder) {
+                $order->refresh();
+                $this->dispatch(
+                    'midtrans-payment-pending',
+                    orderCode: $order->order_code,
+                    snapToken: $order->snap_token,
+                    totalAmount: (int) $order->order_amount,
+                    syncUrl: route('api.order.sync-status', ['order_number' => $order->order_code])
+                );
+            } else {
+                $this->dispatch('transaction-success', orderCode: $order->order_code, isCash: collect($normalizedLegs)->contains('method', 'cash'));
+            }
 
             // Reset server-side cart & state untuk transaksi berikutnya
             $this->cart = [];
@@ -1354,6 +1546,10 @@ class CreateOrder extends Component
             $this->selectedDiscountId = null;
             $this->appliedManualDiscount = 0;
             $this->appliedManualDiscountReason = '';
+            $this->manualDiscountApprovalId = null;
+            $this->voucherCode = null;
+            $this->voucherInput = '';
+            $this->voucherError = null;
             $this->resumeWarnings = [];
             $this->pendingOrderId = null;
             $this->pendingOrderCode = null;
@@ -1379,6 +1575,58 @@ class CreateOrder extends Component
                 $lock->release();
             }
         }
+    }
+
+    /**
+     * Actively verify and synchronize a pending Midtrans order from the Cashier POS modal.
+     */
+    public function verifyMidtransPayment(string $orderCode): void
+    {
+        $tenantId = app(TenantContext::class)->requireTenantId();
+        $storeId = app(TenantContext::class)->getStoreId();
+
+        $query = Order::where('tenant_id', $tenantId)->where('order_code', $orderCode);
+        if ($storeId) {
+            $query->where('store_id', $storeId);
+        }
+
+        $order = $query->first();
+        if (! $order) {
+            $this->dispatch('toast', message: 'Order not found.', type: 'error');
+
+            return;
+        }
+
+        if ($order->order_status === \App\Enums\OrderStatus::Pending) {
+            try {
+                $order = app(TransactionService::class)->syncOrderWithMidtrans($order);
+            } catch (\Throwable $e) {
+                Log::warning('verifyMidtransPayment sync failed: '.$e->getMessage(), ['order_code' => $orderCode]);
+            }
+        }
+
+        $order->refresh();
+
+        if ($order->order_status === \App\Enums\OrderStatus::Paid) {
+            $this->cart = [];
+            $this->customerId = null;
+            $this->customerName = null;
+            $this->selectedDiscountId = null;
+            $this->dispatch('pos-cart-state-changed', dirty: false);
+            $this->dispatch('transaction-success', orderCode: $order->order_code, isCash: false);
+            $this->dispatch('toast', message: "Payment confirmed for {$order->order_code}.", type: 'success');
+
+            return;
+        }
+
+        if ($order->order_status->isFinal()) {
+            $this->dispatch('midtrans-payment-failed', orderCode: $order->order_code, status: $order->order_status->value);
+            $this->dispatch('toast', message: "Payment status is {$order->order_status->label()} for {$order->order_code}.", type: 'error');
+
+            return;
+        }
+
+        $this->dispatch('midtrans-payment-still-pending', orderCode: $order->order_code);
     }
 
     public function render()

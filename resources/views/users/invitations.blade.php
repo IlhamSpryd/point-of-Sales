@@ -1,5 +1,7 @@
 <x-app-layout>
     <div class="space-y-6" data-gsap="page-enter">
+        <x-erp.module-sub-nav module="governance" />
+
         <!-- Header -->
         <x-erp.page-header
             title="Staff Invitations"

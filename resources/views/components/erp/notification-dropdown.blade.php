@@ -132,7 +132,11 @@
         </div>
 
         {{-- Footer --}}
-        @if (\Illuminate\Support\Facades\Route::has('activity-logs.index'))
+        @php
+            $canViewAuditLogs = in_array(auth()->user()?->role?->name, ['Owner', 'Manager', 'Admin'], true)
+                || (bool) auth()->user()?->hasPermission('audit_logs.view');
+        @endphp
+        @if ($canViewAuditLogs && \Illuminate\Support\Facades\Route::has('activity-logs.index'))
             <div class="p-2 border-t border-shell-border bg-shell text-center">
                 <a href="{{ route('activity-logs.index') }}" wire:navigate
                     @click="open = false"

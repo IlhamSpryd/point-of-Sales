@@ -31,10 +31,63 @@ class RoleMiddleware
         }
 
         // Periksa apakah role user cocok dengan salah satu role yang diizinkan
-        if (! in_array($user->role->name, $roles)) {
-            abort(403, 'Anda tidak memiliki hak akses untuk halaman ini.');
+        if (in_array($user->role->name, $roles, true)) {
+            return $next($request);
         }
 
-        return $next($request);
+        // Dukungan Custom Role berbasis permission kanonikal:
+        // Jika bukan role bawaan tetapi memiliki izin eksplisit pada rute yang sedang diakses
+        $canonicalRoles = ['Owner', 'Admin', 'Manager', 'Finance', 'Sales', 'Kasir', 'Waiter', 'Barista', 'Inventory', 'Supervisor', 'Cook'];
+        if (! in_array($user->role->name, $canonicalRoles, true)) {
+            $routeName = (string) ($request->route()?->getName() ?? '');
+            if ($routeName !== '' && $this->customRoleHasRoutePermission($user, $routeName)) {
+                return $next($request);
+            }
+        }
+
+        abort(403, 'Anda tidak memiliki hak akses untuk halaman ini.');
+    }
+
+    /**
+     * Evaluasi apakah Custom Role memiliki permission kanonikal yang terhubung dengan route aktif.
+     */
+    private function customRoleHasRoutePermission(\App\Models\User $user, string $routeName): bool
+    {
+        foreach (config('navigation.sections', []) as $items) {
+            foreach ($items as $item) {
+                $itemRoute = (string) ($item['route'] ?? '');
+                $permission = (string) ($item['permission'] ?? '');
+                if ($permission !== '' && ($itemRoute === $routeName || $this->matchesRoutePattern($item['active'] ?? null, $routeName))) {
+                    if ($user->hasPermission($permission)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        foreach (config('navigation.sub_nav', []) as $moduleConfig) {
+            foreach ($moduleConfig['items'] ?? [] as $subItem) {
+                $subRoute = (string) ($subItem['route'] ?? '');
+                $permission = (string) ($subItem['permission'] ?? '');
+                if ($permission !== '' && ($subRoute === $routeName || $this->matchesRoutePattern($subItem['active'] ?? null, $routeName))) {
+                    if ($user->hasPermission($permission)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private function matchesRoutePattern(mixed $patterns, string $routeName): bool
+    {
+        foreach ((array) $patterns as $pattern) {
+            if (is_string($pattern) && $pattern !== '' && fnmatch($pattern, $routeName)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

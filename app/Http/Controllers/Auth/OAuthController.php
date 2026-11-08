@@ -164,7 +164,7 @@ class OAuthController extends Controller
             $request->session()->regenerate();
             app(TenantContext::class)->setTenantId($user->tenant_id);
 
-            return redirect()->route('dashboard')
+            return redirect()->route('home')
                 ->with('success', 'Welcome! Your employee account is now active.');
         } catch (HttpException $e) {
             return redirect()->route('login')
@@ -209,7 +209,7 @@ class OAuthController extends Controller
                 return redirect()->route('onboarding.business-profile');
             }
 
-            return redirect()->intended(route('dashboard', absolute: false));
+            return redirect()->intended(route('home', absolute: false));
         }
 
         // KASUS 2: Belum tertaut, tetapi email sudah ada di tabel users (Zero Auto-Linking Guard [REQ-SEC-21])

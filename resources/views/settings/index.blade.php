@@ -1,5 +1,7 @@
 <x-app-layout>
     <div class="space-y-6 max-w-5xl mx-auto" data-gsap="page-enter">
+        <x-erp.module-sub-nav module="organization" />
+
         <x-erp.page-header
             title="System Settings"
             description="Configure Point of Sales preferences, enterprise tax defaults, and transaction rounding rules.">

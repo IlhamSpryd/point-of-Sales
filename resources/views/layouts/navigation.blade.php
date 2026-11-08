@@ -5,7 +5,11 @@
     Inactive items render with a "Coming Soon" badge.
 --}}
 @php
-    $roleName = auth()->user()?->role?->name;
+    $authUser = auth()->user();
+    $roleName = $authUser?->role?->name;
+    $canonicalRoles = ['Owner', 'Admin', 'Manager', 'Finance', 'Sales', 'Kasir', 'Waiter', 'Barista', 'Inventory', 'Supervisor', 'Cook'];
+    $isCustomRole = $roleName !== null && ! in_array($roleName, $canonicalRoles, true);
+
     $tenantId = app(\App\Services\Context\TenantContext::class)->getTenantId();
     $storeId = app(\App\Services\Context\TenantContext::class)->getStoreId();
     $tablesEnabled = ($tenantId && $storeId)
@@ -14,8 +18,10 @@
 
     $menu = config('navigation.sections', []);
     $visibleMenu = collect($menu)
-        ->map(fn($items) => array_values(array_filter($items, function ($i) use ($roleName, $tablesEnabled) {
-            if (! in_array($roleName, $i['roles'], true)) {
+        ->map(fn($items) => array_values(array_filter($items, function ($i) use ($authUser, $roleName, $isCustomRole, $tablesEnabled) {
+            $hasRoleAccess = in_array($roleName, $i['roles'] ?? [], true)
+                || ($isCustomRole && ! empty($i['permission']) && $authUser?->hasPermission((string) $i['permission']));
+            if (! $hasRoleAccess) {
                 return false;
             }
             if (($i['route'] ?? '') === 'tables.index' && ! $tablesEnabled) {

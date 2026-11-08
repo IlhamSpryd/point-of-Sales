@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace App\Modules\Sales\Models;
 
 use App\Casts\OrderTypeCast;
+use App\Enums\OrderFulfillmentStatus;
+use App\Enums\OrderLifecycleStatus;
+use App\Enums\OrderPaymentStatus;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatusEnum;
@@ -16,6 +19,7 @@ use App\Models\Customer;
 use App\Models\Device;
 use App\Models\Discount;
 use App\Models\DiscountRedemption;
+use App\Models\OperationalUnit;
 use App\Models\OrderItem;
 use App\Models\OrderReturn;
 use App\Models\ParkedCart;
@@ -120,6 +124,9 @@ class Order extends Model
             'order_date' => 'date',
             'order_type' => OrderTypeCast::class,
             'order_status' => OrderStatus::class,
+            'order_lifecycle_status' => OrderLifecycleStatus::class,
+            'payment_status' => OrderPaymentStatus::class,
+            'fulfillment_status' => OrderFulfillmentStatus::class,
             'payment_method' => PaymentMethod::class,
             'voided_at' => 'datetime',
             'is_offline_sync' => 'boolean',
@@ -144,6 +151,44 @@ class Order extends Model
     public function device(): BelongsTo
     {
         return $this->belongsTo(Device::class, 'created_by_device_id');
+    }
+
+    /**
+     * @return BelongsTo<OperationalUnit, $this>
+     */
+    public function operationalUnit(): BelongsTo
+    {
+        return $this->belongsTo(OperationalUnit::class);
+    }
+
+    /**
+     * Transition the order lifecycle state safely.
+     */
+    public function transitionOrderLifecycle(OrderLifecycleStatus $status): self
+    {
+        $this->forceFill(['order_lifecycle_status' => $status])->save();
+
+        return $this;
+    }
+
+    /**
+     * Transition the payment state safely.
+     */
+    public function transitionPayment(OrderPaymentStatus $status): self
+    {
+        $this->forceFill(['payment_status' => $status])->save();
+
+        return $this;
+    }
+
+    /**
+     * Transition the fulfillment state safely.
+     */
+    public function transitionFulfillment(OrderFulfillmentStatus $status): self
+    {
+        $this->forceFill(['fulfillment_status' => $status])->save();
+
+        return $this;
     }
 
     /**

@@ -1,5 +1,7 @@
 <x-app-layout>
     <div class="space-y-6" data-gsap="page-enter">
+        <x-erp.module-sub-nav module="governance" />
+
         <x-erp.page-header
             title="Activity Logs &amp; Security Audit"
             description="Track and monitor all user activity, authentication events, and data changes across your enterprise system.">

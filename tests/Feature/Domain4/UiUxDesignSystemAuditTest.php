@@ -18,7 +18,7 @@ use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Context\TenantContext;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -27,7 +27,7 @@ use Tests\TestCase;
 
 class UiUxDesignSystemAuditTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     protected Tenant $tenant;
 

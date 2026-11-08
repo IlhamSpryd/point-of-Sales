@@ -19,7 +19,10 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
         // Pelanggan & B2B CRM (Modul 6)
         Route::get('/customers', CustomerManager::class)->name('customers.index');
         Route::get('/customers/groups', CustomerGroupManager::class)->name('customers.groups.index');
-        Route::get('/customers/credit', CustomerCreditManager::class)->name('customers.credit.index');
         Route::get('/customers/instruments', LoyaltyAndValueInstrumentManager::class)->name('customers.instruments.index');
+    });
+
+    Route::middleware('role:Owner,Manager,Finance,Sales')->group(function () {
+        Route::get('/customers/credit', CustomerCreditManager::class)->name('customers.credit.index');
     });
 });

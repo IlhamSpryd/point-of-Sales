@@ -1,4 +1,6 @@
 <div class="space-y-6 pb-12">
+    <x-erp.module-sub-nav module="reports" />
+
     {{-- Header & Title --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border pb-4">
         <div>

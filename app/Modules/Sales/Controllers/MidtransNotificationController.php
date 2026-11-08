@@ -110,7 +110,20 @@ class MidtransNotificationController extends Controller
             $tenantContext->setTenantId((int) $order->tenant_id);
             $tenantContext->setStoreId($order->store_id !== null ? (int) $order->store_id : null);
 
-            $this->transactionService->handleMidtransWebhook($payload);
+            $transactionId = (string) ($payload['transaction_id'] ?? $orderId);
+            $transactionStatus = (string) ($payload['transaction_status'] ?? 'unknown');
+            $idempotencyKey = "midtrans_{$transactionId}_{$transactionStatus}";
+
+            $result = app(\App\Services\Payment\PaymentInboxDispatcher::class)->dispatch(
+                tenantId: (int) $order->tenant_id,
+                provider: 'midtrans',
+                idempotencyKey: $idempotencyKey,
+                eventType: $transactionStatus,
+                payload: $payload,
+                processor: fn ($p) => $this->transactionService->handleMidtransWebhook($p)
+            );
+
+            return response()->json(['message' => 'ok', 'inbox_status' => $result['status']]);
         } catch (ModelNotFoundException) {
             Log::warning('Midtrans notification: order tidak ditemukan.', ['order_id' => $orderId]);
 

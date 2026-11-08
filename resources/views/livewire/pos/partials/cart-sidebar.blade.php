@@ -1,7 +1,7 @@
-<!-- Persistent Cart & Checkout Summary (380px) -->
-<aside class="w-[360px] xl:w-[380px] shrink-0 flex flex-col h-full bg-white rounded-2xl p-4 shadow-sm border border-border select-none">
+<!-- Persistent Full-Height Cart & Checkout Summary (380px) -->
+<aside class="w-[360px] xl:w-[380px] shrink-0 flex flex-col h-full bg-white rounded-2xl p-3.5 lg:p-4 shadow-sm border border-border select-none overflow-hidden">
     <!-- Cart Header: Current Order, Counter, Mode, Reset -->
-    <div class="flex items-center justify-between pb-3 border-b border-border mb-2 shrink-0">
+    <div class="flex items-center justify-between pb-2.5 border-b border-border mb-2 shrink-0">
         <h2 class="font-headline-sm text-[15px] font-semibold text-foreground">Current Order</h2>
         <div class="flex items-center gap-2.5">
             <span class="text-[12px] text-muted-foreground flex items-center gap-1.5 select-none">

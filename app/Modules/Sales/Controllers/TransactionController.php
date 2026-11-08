@@ -288,14 +288,15 @@ class TransactionController extends Controller
      */
     public function receipt(Request $request, string $orderNumber): View
     {
-        $order = Order::with(['orderItems.product', 'orderItems.modifiers', 'user', 'table', 'payments', 'device', 'shift', 'paymentRefunds'])
+        $order = Order::with(['orderItems.product', 'orderItems.modifiers', 'user', 'table', 'store', 'customer', 'discount', 'payments', 'device', 'shift', 'paymentRefunds'])
             ->where('order_code', $orderNumber)
             ->firstOrFail();
 
         Gate::authorize('view', $order);
 
-        $taxRatePercent = $order->subtotal_amount > 0
-            ? round($order->tax_amount / $order->subtotal_amount * 100, 1)
+        $discountedSubtotal = max(0, (float) $order->subtotal_amount - (float) ($order->discount_amount ?? 0));
+        $taxRatePercent = $discountedSubtotal > 0
+            ? round($order->tax_amount / $discountedSubtotal * 100, 1)
             : 0;
 
         $isReprint = $request->boolean('is_reprint') || ((int) $order->print_count > 1);
@@ -313,37 +314,22 @@ class TransactionController extends Controller
         Gate::authorize('view', $order);
 
         if ($order->order_status !== OrderStatus::Pending || $order->payment_method === PaymentMethod::Cash) {
-            return response()->json(['success' => true]);
-        }
-
-        Config::$serverKey = config('services.midtrans.server_key');
-        Config::$isProduction = config('services.midtrans.is_production', false);
-        if (! Config::$isProduction) {
-            Config::$curlOptions = [
-                CURLOPT_SSL_VERIFYHOST => 0,
-                CURLOPT_SSL_VERIFYPEER => false,
-                CURLOPT_HTTPHEADER => [],
-            ];
+            return response()->json([
+                'success' => true,
+                'order_status' => $order->order_status->value,
+            ]);
         }
 
         try {
-            $status = (object) Transaction::status($orderNumber);
-
-            $grossAmount = isset($status->gross_amount)
-                ? (int) round((float) $status->gross_amount)
-                : null;
-
-            $this->transactionService->updateStatusFromMidtransNotification(
-                orderCode: $orderNumber,
-                transactionStatus: (string) ($status->transaction_status ?? ''),
-                fraudStatus: $status->fraud_status ?? null,
-                grossAmount: $grossAmount,
-            );
-        } catch (\Exception $e) {
+            $order = $this->transactionService->syncOrderWithMidtrans($order);
+        } catch (\Throwable $e) {
             Log::error('syncMidtrans Error: '.$e->getMessage());
         }
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success' => true,
+            'order_status' => $order->order_status->value,
+        ]);
     }
 
     /**

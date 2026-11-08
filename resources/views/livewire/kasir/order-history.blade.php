@@ -379,6 +379,15 @@
                         class="min-h-[40px] px-4 rounded-xl border border-border bg-white text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-all active:scale-95">
                         Close
                     </button>
+                    @if ($detail->order_status->value === 'pending' && $detail->payment_method?->value !== 'cash')
+                        <button type="button" wire:click="syncMidtransStatus({{ $detail->id }})"
+                            wire:loading.attr="disabled" wire:target="syncMidtransStatus"
+                            class="min-h-[40px] px-4 inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary text-white text-xs font-bold hover:bg-primary/90 transition-all active:scale-95 shadow-xs disabled:opacity-50">
+                            <span wire:loading wire:target="syncMidtransStatus" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                            <span wire:loading.remove wire:target="syncMidtransStatus" class="material-symbols-rounded text-[16px]">sync</span>
+                            <span>Sync Midtrans Status</span>
+                        </button>
+                    @endif
                     @if (in_array($detail->order_status->value, ['paid', 'completed'], true))
                         <button type="button" wire:click="openReturnModal({{ $detail->id }})"
                             x-on:click="window.erpMotion?.pulseHighlight($el)"

@@ -63,7 +63,7 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
     });
 
     // Riwayat Pesanan
-    Route::middleware('role:Owner,Manager,Kasir,Waiter')->group(function () {
+    Route::middleware('role:Owner,Manager,Kasir,Waiter,Supervisor')->group(function () {
         Route::get('/orders', [TransactionController::class, 'index'])->name('orders.index');
         Route::get('/orders/{orderNumber}', [TransactionController::class, 'show'])->name('orders.show');
         Route::post('/orders/{orderNumber}/void', [TransactionController::class, 'void'])->name('orders.void');

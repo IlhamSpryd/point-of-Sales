@@ -24,7 +24,10 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
         Route::get('/purchasing/suppliers', SupplierManager::class)->name('purchasing.suppliers.index');
         Route::get('/purchasing/orders', PurchaseOrderManager::class)->name('purchasing.orders.index');
         Route::get('/purchasing/grns', GoodsReceivedNoteManager::class)->name('purchasing.grns.index');
-        Route::get('/purchasing/invoices', SupplierInvoiceManager::class)->name('purchasing.invoices.index');
         Route::get('/purchasing/returns', PurchaseReturnManager::class)->name('purchasing.returns.index');
+    });
+
+    Route::middleware('role:Owner,Manager,Inventory,Finance')->group(function () {
+        Route::get('/purchasing/invoices', SupplierInvoiceManager::class)->name('purchasing.invoices.index');
     });
 });

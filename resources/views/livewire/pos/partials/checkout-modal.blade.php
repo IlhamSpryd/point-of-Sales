@@ -111,51 +111,118 @@
 
                 <!-- Change Display Box -->
                 <div class="p-3.5 rounded-xl border flex items-center justify-between transition-colors"
-                    :class="changePreview >= 0 ? 'border-emerald-200 bg-emerald-50 text-emerald-800' : 'border-rose-200 bg-rose-50 text-rose-700'">
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-rounded text-[20px]" x-text="changePreview >= 0 ? 'savings' : 'error'"></span>
-                        <span class="text-[13px] font-medium" x-text="changePreview >= 0 ? 'Change Due:' : 'Amount Underpaid:'"></span>
-                    </div>
+                    :class="changePreview >= 0 ? 'border-border bg-muted text-foreground' : 'border-rose-200 bg-rose-50 text-rose-700'">
+                    <span class="text-[13px] font-semibold" x-text="changePreview >= 0 ? 'Change Due:' : 'Amount Underpaid:'"></span>
                     <span class="tabular-nums font-bold text-[18px]" x-text="'Rp ' + formatRupiah(Math.abs(changePreview))"></span>
                 </div>
             </div>
 
-            <!-- Tab Pane: QRIS -->
-            <div x-show="method === 'qris'" class="flex flex-col items-center justify-center p-4 bg-muted rounded-xl border border-border space-y-3">
-                <div class="w-44 h-44 bg-white p-2.5 rounded-xl border border-border shadow-xs flex flex-col items-center justify-center">
-                    <div class="w-full h-full border-2 border-dashed border-foreground rounded-lg flex flex-col items-center justify-center text-center p-2">
-                        <span class="material-symbols-rounded text-[44px] text-foreground">qr_code_2</span>
-                        <span class="tabular-nums text-[11px] font-bold text-foreground mt-1">NMID: ID10293847291</span>
-                        <span class="text-[9px] text-muted-foreground">Apeiron Pay &bull; Static QRIS</span>
+            <!-- Tab Pane: QRIS & Digital Payment -->
+            <div x-show="method === 'qris'" class="space-y-3.5 p-4 bg-muted rounded-xl border border-border">
+                <div class="flex items-center justify-between gap-2">
+                    <span class="font-headline-sm text-[12px] font-semibold text-foreground uppercase tracking-wider">
+                        QR Payment Mode
+                    </span>
+                    <div class="inline-flex p-1 bg-white rounded-lg border border-border">
+                        <button type="button" x-on:click="qrisMode = 'midtrans'"
+                            :class="qrisMode === 'midtrans' ? 'bg-primary text-white shadow-2xs' : 'text-muted-foreground hover:text-foreground'"
+                            class="px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer">
+                            Dynamic QRIS
+                        </button>
+                        <button type="button" x-on:click="qrisMode = 'manual'"
+                            :class="qrisMode === 'manual' ? 'bg-primary text-white shadow-2xs' : 'text-muted-foreground hover:text-foreground'"
+                            class="px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer">
+                            Static QR / Counter EDC
+                        </button>
                     </div>
                 </div>
-                <div class="text-center">
-                    <span class="font-medium text-[13px] text-foreground block">Scan via digital wallet or mobile banking app</span>
-                    <span class="text-[11px] text-muted-foreground">Confirm payment verification before finalizing order</span>
+
+                <!-- Mode 1: Dynamic QRIS & Digital Gateway -->
+                <div x-show="qrisMode === 'midtrans'" class="p-4 bg-white rounded-xl border border-border space-y-3">
+                    <template x-if="!awaitingMidtransOrderCode">
+                        <div class="flex items-start gap-3.5">
+                            <div class="w-11 h-11 rounded-xl bg-muted border border-border text-foreground flex items-center justify-center shrink-0">
+                                <span class="material-symbols-rounded text-[24px]">qr_code_scanner</span>
+                            </div>
+                            <div class="space-y-1">
+                                <span class="font-semibold text-[13px] text-foreground block">Dynamic QR Payment (QRIS)</span>
+                                <p class="text-[11px] text-muted-foreground leading-relaxed">
+                                    Generates an official dynamic QRIS payment session (GoPay, ShopeePay, BCA, OVO, Dana). Order automatically updates to Paid upon customer completion.
+                                </p>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="awaitingMidtransOrderCode">
+                        <div class="flex flex-col items-center text-center space-y-2.5 py-3">
+                            <div class="w-11 h-11 rounded-xl bg-muted border border-border text-foreground flex items-center justify-center">
+                                <span class="material-symbols-rounded text-[24px]">qr_code_scanner</span>
+                            </div>
+                            <div class="space-y-0.5">
+                                <span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">Awaiting Customer Payment</span>
+                                <span class="font-sans font-bold text-[15px] text-foreground block tabular-nums" x-text="awaitingMidtransOrderCode"></span>
+                                <span class="text-[12px] text-muted-foreground block max-w-sm">Scan QR on customer terminal or tap Verify Payment below.</span>
+                            </div>
+                            <div class="flex flex-wrap items-center justify-center gap-2 pt-1 w-full">
+                                <button type="button" x-show="awaitingSnapToken" x-on:click="openSnapPopup()"
+                                    class="px-3.5 py-2 rounded-lg bg-white border border-border hover:bg-muted text-foreground text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer">
+                                    <span class="material-symbols-rounded text-[16px]">qr_code_2</span>
+                                    <span>Re-open QR Code</span>
+                                </button>
+                                <button type="button" x-on:click="checkMidtransStatus()" :disabled="verifyingMidtrans"
+                                    class="px-4 py-2 rounded-lg bg-primary hover:bg-primary/90 text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all disabled:opacity-50 cursor-pointer">
+                                    <span x-show="verifyingMidtrans" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                                    <span x-show="!verifyingMidtrans" class="material-symbols-rounded text-[16px]">sync</span>
+                                    <span x-text="verifyingMidtrans ? 'Verifying...' : 'Verify Payment Status'"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Mode 2: Manual Static QRIS -->
+                <div x-show="qrisMode === 'manual'" class="p-4 bg-white rounded-xl border border-border space-y-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-muted border border-border flex items-center justify-center shrink-0">
+                            <span class="material-symbols-rounded text-[24px] text-foreground">qr_code_2</span>
+                        </div>
+                        <div>
+                            <span class="font-semibold text-[13px] text-foreground block">Static QR / Counter Terminal</span>
+                            <span class="text-[11px] text-muted-foreground">Verify payment notification on counter terminal or physical slip before confirming.</span>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[11px] text-muted-foreground block mb-1">Reference Number / RRN (Optional)</label>
+                        <input type="text" x-model="qrisReference" placeholder="e.g. RRN-99283741"
+                            class="w-full h-9 px-3 rounded-lg border border-border text-[12px] text-foreground tabular-nums focus:outline-none focus:border-foreground bg-white">
+                    </div>
                 </div>
             </div>
 
             <!-- Tab Pane: EDC Kartu -->
             <div x-show="method === 'card'" class="space-y-3 p-4 bg-muted rounded-xl border border-border">
                 <label class="font-headline-sm text-[12px] font-semibold text-foreground uppercase tracking-wider block">
-                    Card Terminal & Reference
+                    Select Card Terminal (EDC)
                 </label>
                 <div class="grid grid-cols-2 gap-2">
-                    <button type="button" x-on:click="edcBank = 'BCA'"
-                        :class="edcBank === 'BCA' ? 'border-foreground bg-primary text-white' : 'border-border bg-white text-foreground'"
-                        class="p-2.5 rounded-lg border font-medium text-[12px] flex items-center justify-between transition-colors">
-                        <span>Terminal BCA #01</span>
-                        <span class="text-[10px] opacity-80">Online</span>
-                    </button>
-                    <button type="button" x-on:click="edcBank = 'Mandiri'"
-                        :class="edcBank === 'Mandiri' ? 'border-foreground bg-primary text-white' : 'border-border bg-white text-foreground'"
-                        class="p-2.5 rounded-lg border font-medium text-[12px] flex items-center justify-between transition-colors">
-                        <span>Terminal Mandiri #02</span>
-                        <span class="text-[10px] opacity-80">Online</span>
-                    </button>
+                    @forelse ($this->storeEdcTerminals as $term)
+                        <button type="button" x-on:click="edcBank = '{{ $term->device_name }}'"
+                            :class="edcBank === '{{ $term->device_name }}' ? 'border-foreground bg-primary text-white shadow-xs' : 'border-border bg-white text-foreground hover:bg-muted'"
+                            class="p-2.5 rounded-lg border font-medium text-[12px] flex items-center justify-between transition-colors cursor-pointer">
+                            <span class="truncate">{{ $term->device_name }}</span>
+                            <span class="text-[10px] opacity-80">{{ $term->device_code ?? 'Online' }}</span>
+                        </button>
+                    @empty
+                        <button type="button" x-on:click="edcBank = 'EDC Utama'"
+                            :class="edcBank === 'EDC Utama' ? 'border-foreground bg-primary text-white shadow-xs' : 'border-border bg-white text-foreground hover:bg-muted'"
+                            class="p-2.5 rounded-lg border font-medium text-[12px] flex items-center justify-between transition-colors cursor-pointer">
+                            <span>Main EDC Terminal</span>
+                            <span class="text-[10px] opacity-80">Online</span>
+                        </button>
+                    @endforelse
                 </div>
                 <div>
-                    <label class="text-[11px] text-muted-foreground block mb-1">Approval Code / Trace Number (Terminal Slip)</label>
+                    <label class="text-[11px] text-muted-foreground block mb-1">Approval Code / Trace Number (EDC Slip)</label>
                     <input type="text" x-model="edcTrace" placeholder="e.g. 849201"
                         class="w-full h-9 px-3 rounded-lg border border-border text-[12px] text-foreground tabular-nums focus:outline-none focus:border-foreground bg-white">
                 </div>
@@ -163,20 +230,39 @@
 
             <!-- Tab Pane: Bank Transfer -->
             <div x-show="method === 'store_credit'" class="space-y-3 p-4 bg-muted rounded-xl border border-border">
-                <div class="flex items-center justify-between p-3 rounded-lg bg-white border border-border">
-                    <div class="flex flex-col">
-                        <span class="text-[11px] text-muted-foreground">Operating Account (BCA)</span>
-                        <span class="tabular-nums font-bold text-[14px] text-foreground">8010 9928 1120</span>
-                        <span class="text-[10px] text-muted-foreground">a.n. Apeiron System Coffee</span>
-                    </div>
-                    <button type="button" x-on:click="navigator.clipboard?.writeText('801099281120')"
-                        class="px-2.5 py-1 rounded bg-muted text-[11px] font-medium text-foreground hover:bg-secondary transition-colors">
-                        Copy
-                    </button>
+                <div class="space-y-2">
+                    <label class="font-headline-sm text-[12px] font-semibold text-foreground uppercase tracking-wider block">
+                        Official Store Bank Account
+                    </label>
+                    @forelse ($this->storeBankAccounts as $acc)
+                        <div class="flex items-center justify-between p-3 rounded-lg bg-white border border-border">
+                            <div class="flex flex-col min-w-0 pr-2">
+                                <span class="text-[11px] text-muted-foreground">{{ $acc->bank_name ?? $acc->account_name }}</span>
+                                <span class="tabular-nums font-bold text-[14px] text-foreground font-sans tracking-wide">{{ $acc->bank_account_number }}</span>
+                                <span class="text-[10px] text-muted-foreground truncate">a.n. {{ $acc->bank_account_holder ?? $acc->account_name }}</span>
+                            </div>
+                            <button type="button" x-on:click="navigator.clipboard?.writeText('{{ $acc->bank_account_number }}'); $dispatch('toast', { message: 'Account number copied to clipboard!', type: 'success' })"
+                                class="px-2.5 py-1 rounded bg-muted text-[11px] font-medium text-foreground hover:bg-secondary transition-colors shrink-0 cursor-pointer">
+                                Copy
+                            </button>
+                        </div>
+                    @empty
+                        <div class="flex items-center justify-between p-3 rounded-lg bg-white border border-border">
+                            <div class="flex flex-col min-w-0">
+                                <span class="text-[11px] text-muted-foreground">Bank Central Asia (BCA)</span>
+                                <span class="tabular-nums font-bold text-[14px] text-foreground font-sans">8010 9928 1120</span>
+                                <span class="text-[10px] text-muted-foreground">a.n. Apeiron System Coffee</span>
+                            </div>
+                            <button type="button" x-on:click="navigator.clipboard?.writeText('801099281120'); $dispatch('toast', { message: 'Account number copied to clipboard!', type: 'success' })"
+                                class="px-2.5 py-1 rounded bg-muted text-[11px] font-medium text-foreground hover:bg-secondary transition-colors shrink-0 cursor-pointer">
+                                Copy
+                            </button>
+                        </div>
+                    @endforelse
                 </div>
                 <div>
-                    <label class="text-[11px] text-muted-foreground block mb-1">Sender Name / Reference Note</label>
-                    <input type="text" x-model="transferSender" placeholder="Account holder name or reference..."
+                    <label class="text-[11px] text-muted-foreground block mb-1">Sender Name / Transfer Reference</label>
+                    <input type="text" x-model="transferSender" placeholder="Account holder name or payment note..."
                         class="w-full h-9 px-3 rounded-lg border border-border text-[12px] text-foreground focus:outline-none focus:border-foreground bg-white">
                 </div>
             </div>
@@ -244,16 +330,28 @@
 
         <!-- Footer Modal Checkout -->
         <div class="p-4 bg-muted border-t border-border flex items-center justify-between shrink-0">
-            <button type="button" x-on:click="$dispatch('close')"
-                class="px-4 py-2.5 rounded-lg border border-border hover:bg-white text-foreground font-medium text-[13px] transition-colors">
-                Cancel
+            <button type="button" x-on:click="closeModal()"
+                class="px-4 py-2.5 rounded-lg border border-border hover:bg-white text-foreground font-medium text-[13px] transition-colors cursor-pointer">
+                <span x-text="awaitingMidtransOrderCode ? 'Close Window' : 'Cancel'"></span>
             </button>
-            <button type="button" id="btn-confirm-pay" x-on:click="submit()"
+            <button type="button" id="btn-confirm-pay"
+                x-show="!awaitingMidtransOrderCode"
+                x-on:click="submit()"
                 :disabled="submitting || (method === 'split' ? remaining > 0 : false)"
-                class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-[13px] flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-[13px] flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
                 <span x-show="submitting" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
-                <span class="material-symbols-rounded text-[17px]" x-show="!submitting">check_circle</span>
-                <span x-text="submitting ? 'Processing Payment...' : 'Confirm Payment Received'"></span>
+                <span class="material-symbols-rounded text-[17px]" x-show="!submitting" x-text="(method === 'qris' && qrisMode === 'midtrans') ? 'qr_code_scanner' : 'check_circle'"></span>
+                <span x-text="submitting ? 'Processing Payment...' : ((method === 'qris' && qrisMode === 'midtrans') ? 'Proceed to QR Payment' : 'Confirm & Complete Order')"></span>
+            </button>
+            <button type="button"
+                x-show="awaitingMidtransOrderCode"
+                x-cloak
+                x-on:click="checkMidtransStatus()"
+                :disabled="verifyingMidtrans"
+                class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-[13px] flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                <span x-show="verifyingMidtrans" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
+                <span class="material-symbols-rounded text-[17px]" x-show="!verifyingMidtrans">verified</span>
+                <span x-text="verifyingMidtrans ? 'Verifying...' : 'Verify & Complete Order'"></span>
             </button>
         </div>
     </div>
@@ -269,6 +367,8 @@
             total: 0,
             legs: [],
             method: 'cash',
+            qrisMode: 'midtrans',
+            qrisReference: '',
             splitTargetMethod: 'cash',
             amountRaw: 0,
             amountFormatted: '',
@@ -280,12 +380,31 @@
             submitting: false,
             errorMsg: '',
             idempotencyKey: null,
+            awaitingMidtransOrderCode: null,
+            awaitingSnapToken: null,
+            verifyingMidtrans: false,
+            pollTimer: null,
+
+            getWire() {
+                if (this.$wire) return this.$wire;
+                if (typeof window.Livewire !== 'undefined') {
+                    const el = this.$el?.closest('[wire\\:id]');
+                    if (el) {
+                        return window.Livewire.find(el.getAttribute('wire:id'));
+                    }
+                    return window.Livewire.first();
+                }
+                return null;
+            },
 
             init() {
                 this._openModalHandler = (e) => {
+                    this.stopPolling();
                     this.total = e.detail.total;
                     this.legs = [];
                     this.method = e.detail.method || 'cash';
+                    this.qrisMode = 'midtrans';
+                    this.qrisReference = '';
                     this.splitTargetMethod = 'cash';
                     this.amountRaw = this.total;
                     this.amountFormatted = this.formatRupiah(this.total);
@@ -296,14 +415,111 @@
                     this.transferSender = '';
                     this.errorMsg = '';
                     this.submitting = false;
+                    this.awaitingMidtransOrderCode = null;
+                    this.awaitingSnapToken = null;
+                    this.verifyingMidtrans = false;
                     this.idempotencyKey = (window.crypto && window.crypto.randomUUID) ?
                         window.crypto.randomUUID() :
                         (Date.now().toString(36) + Math.random().toString(36).slice(2));
                 };
                 window.addEventListener('open-checkout-modal', this._openModalHandler);
+
+                if (window.Livewire) {
+                    this.bindMidtransEvents();
+                } else {
+                    document.addEventListener('livewire:init', () => this.bindMidtransEvents());
+                }
+            },
+
+            bindMidtransEvents() {
+                Livewire.on('midtrans-payment-pending', (e) => {
+                    const payload = Array.isArray(e) ? e[0] : (e?.detail ?? e);
+                    if (!payload?.orderCode) return;
+
+                    this.method = 'qris';
+                    this.qrisMode = 'midtrans';
+                    this.awaitingMidtransOrderCode = payload.orderCode;
+                    this.awaitingSnapToken = payload.snapToken || null;
+                    this.errorMsg = '';
+
+                    if (this.awaitingSnapToken) {
+                        setTimeout(() => this.openSnapPopup(), 250);
+                    }
+                    this.startPolling();
+                });
+
+                Livewire.on('midtrans-payment-failed', (e) => {
+                    const payload = Array.isArray(e) ? e[0] : (e?.detail ?? e);
+                    this.stopPolling();
+                    this.verifyingMidtrans = false;
+                    this.errorMsg = 'Midtrans payment was ' + (payload?.status || 'cancelled/expired') + '. Please create a new order.';
+                });
+
+                Livewire.on('midtrans-payment-still-pending', () => {
+                    this.verifyingMidtrans = false;
+                });
+
+                Livewire.on('transaction-success', () => {
+                    this.stopPolling();
+                    this.verifyingMidtrans = false;
+                    this.awaitingMidtransOrderCode = null;
+                    this.awaitingSnapToken = null;
+                    this.closeModal();
+                });
+            },
+
+            openSnapPopup() {
+                if (!this.awaitingSnapToken) return;
+                if (typeof window.snap !== 'undefined' && window.snap?.pay) {
+                    window.snap.pay(this.awaitingSnapToken, {
+                        onSuccess: () => { this.checkMidtransStatus(); },
+                        onPending: () => { this.checkMidtransStatus(); },
+                        onError: () => {
+                            this.errorMsg = 'Midtrans payment attempt encountered an error. You may retry or verify status.';
+                        },
+                        onClose: () => {}
+                    });
+                }
+            },
+
+            async checkMidtransStatus() {
+                if (!this.awaitingMidtransOrderCode || this.verifyingMidtrans) return;
+                this.verifyingMidtrans = true;
+                try {
+                    const wire = this.getWire();
+                    if (wire) {
+                        await wire.call('verifyMidtransPayment', this.awaitingMidtransOrderCode);
+                    }
+                } catch (e) {
+                    // Ignore transient network errors during polling
+                } finally {
+                    this.verifyingMidtrans = false;
+                }
+            },
+
+            startPolling() {
+                this.stopPolling();
+                this.pollTimer = setInterval(() => {
+                    if (this.awaitingMidtransOrderCode && !this.verifyingMidtrans) {
+                        this.checkMidtransStatus();
+                    }
+                }, 4000);
+            },
+
+            stopPolling() {
+                if (this.pollTimer) {
+                    clearInterval(this.pollTimer);
+                    this.pollTimer = null;
+                }
+            },
+
+            closeModal() {
+                this.stopPolling();
+                this.$dispatch('close');
             },
 
             destroy() {
+                this.stopPolling();
                 if (this._openModalHandler) {
                     window.removeEventListener('open-checkout-modal', this._openModalHandler);
                 }
@@ -311,6 +527,7 @@
 
             setMethod(m) {
                 this.method = m;
+                this.errorMsg = '';
                 if (m === 'cash') {
                     this.fillRemaining();
                 } else if (m === 'split') {
@@ -380,11 +597,16 @@
                     return;
                 }
                 const applied = Math.min(this.splitAmountRaw, this.remaining);
+                const tendered = this.splitTargetMethod === 'cash' ? Math.max(applied, this.splitAmountRaw) : applied;
+                const change = this.splitTargetMethod === 'cash' ? Math.max(0, tendered - applied) : 0;
+
                 this.legs.push({
                     uid: Date.now() + Math.random(),
                     method: this.splitTargetMethod,
                     label: this.methodLabel(this.splitTargetMethod),
                     amount: applied,
+                    amount_tendered: tendered,
+                    change_amount: change,
                 });
                 this.splitAmountRaw = 0;
                 this.splitAmountFormatted = '';
@@ -396,8 +618,15 @@
 
             async submit() {
                 if (this.submitting) return;
+                this.errorMsg = '';
 
-                const livewireTotal = await this.$wire.get('totalAmount');
+                const wire = this.getWire();
+                if (!wire) {
+                    this.errorMsg = 'Cashier connection lost. Please refresh the page.';
+                    return;
+                }
+
+                const livewireTotal = await wire.get('totalAmount');
                 if (livewireTotal !== undefined && livewireTotal !== null && livewireTotal !== this.total) {
                     this.total = livewireTotal;
                     if (this.method === 'split' && this.remaining > 0) {
@@ -407,25 +636,72 @@
                 }
 
                 let payload = [];
+                let useMidtransGateway = false;
+
                 if (this.method === 'split') {
                     if (this.remaining > 0 || this.legs.length === 0) {
                         this.errorMsg = 'Split payment incomplete. Remaining: Rp ' + this.formatRupiah(this.remaining);
                         return;
                     }
-                    payload = this.legs.map(l => ({ method: l.method, amount: l.amount }));
+                    payload = this.legs.map(l => ({
+                        method: l.method,
+                        amount: l.amount,
+                        amount_tendered: l.amount_tendered ?? l.amount,
+                        change_amount: l.change_amount ?? 0,
+                        reference_number: l.reference_number ?? null,
+                    }));
                 } else if (this.method === 'cash') {
                     if (this.amountRaw < this.total) {
                         this.errorMsg = 'Cash received is less than total amount due!';
                         return;
                     }
-                    payload = [{ method: 'cash', amount: this.total }];
+                    payload = [{
+                        method: 'cash',
+                        amount: this.total,
+                        amount_tendered: this.amountRaw,
+                        change_amount: Math.max(0, this.amountRaw - this.total),
+                    }];
+                } else if (this.method === 'qris') {
+                    useMidtransGateway = (this.qrisMode === 'midtrans');
+                    payload = [{
+                        method: 'qris',
+                        amount: this.total,
+                        amount_tendered: this.total,
+                        change_amount: 0,
+                        reference_number: this.qrisReference ? ('QRIS-' + this.qrisReference.trim()) : null,
+                        use_midtrans_gateway: useMidtransGateway,
+                    }];
+                } else if (this.method === 'card') {
+                    const cardRef = [this.edcBank, (this.edcTrace || '').trim()].filter(Boolean).join('-');
+                    payload = [{
+                        method: 'card',
+                        amount: this.total,
+                        amount_tendered: this.total,
+                        change_amount: 0,
+                        card_number: cardRef || null,
+                        reference_number: cardRef || null,
+                    }];
+                } else if (this.method === 'store_credit') {
+                    const transferRef = (this.transferSender || '').trim();
+                    payload = [{
+                        method: 'store_credit',
+                        amount: this.total,
+                        amount_tendered: this.total,
+                        change_amount: 0,
+                        reference_number: transferRef ? ('TRF-' + transferRef) : null,
+                    }];
                 } else {
-                    payload = [{ method: this.method, amount: this.total }];
+                    payload = [{
+                        method: this.method,
+                        amount: this.total,
+                        amount_tendered: this.total,
+                        change_amount: 0,
+                    }];
                 }
 
                 this.submitting = true;
                 try {
-                    await $wire.call('submitOrder', payload, this.idempotencyKey);
+                    await wire.call('submitOrder', payload, this.idempotencyKey, useMidtransGateway);
                 } catch (err) {
                     this.errorMsg = err?.message || 'Unable to complete cashier payment. Please try again.';
                 } finally {
@@ -468,7 +744,9 @@
                 window.open(`/transaction/receipt/${orderCode}?autoprint=1`, '_blank', 'width=400,height=600');
             }
 
-            window.location.reload();
+            // [ZERO HARD RELOAD] Tutup modal dan reset dirty flag secara instan tanpa reload halaman
+            window.apeironPosCartDirty = false;
+            window.dispatchEvent(new CustomEvent('close-modal', { detail: 'checkout-payment' }));
         });
     }
 

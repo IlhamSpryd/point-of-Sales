@@ -5,7 +5,7 @@
 <nav aria-label="Breadcrumb" {{ $attributes->merge(['class' => 'flex items-center text-xs text-muted-foreground']) }}>
     <ol class="inline-flex items-center gap-1.5 list-none p-0 m-0">
         <li class="inline-flex items-center">
-            <a href="{{ route('dashboard') }}" wire:navigate class="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors font-medium">
+            <a href="{{ route('home') }}" wire:navigate class="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors font-medium">
                 <x-ui.icon name="home" size="sm" />
                 <span class="sr-only">Beranda</span>
             </a>

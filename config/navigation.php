@@ -3,57 +3,25 @@
 declare(strict_types=1);
 
 /**
- * Single source of truth for sidebar navigation menu — Apeiron POS.
+ * Single source of truth for Enterprise Navigation Architecture (L1 Sidebar, L2 Module Sub-Nav & App Launcher) — Apeiron POS.
  *
- * Every entry MUST have keys: label, icon, route, active, roles, scope.
- * - `roles` MUST be 100% in sync with `role:` middleware in routes/web.php.
+ * Every entry in `sections` MUST have keys: label, icon, route, active, roles, scope, permission.
+ * - `roles` MUST be 100% in sync with `role:` middleware in routes/*.php.
  * - `active` contains pattern string or array of patterns for request()->routeIs().
  * - `scope` marks data boundary: 'store' (active branch) or 'tenant' (organization-wide).
- * - Do not add entries with routes not registered in routes/web.php.
+ * - Do not add entries with routes not registered in routes/*.php.
  *
  * Used by:
- *   1. layouts/navigation.blade.php — renders sidebar & drawer
- *   2. tests/Feature/Navigation/SidebarIntegrityTest.php — automated validation
+ *   1. layouts/navigation.blade.php — renders L1 sidebar & mobile drawer
+ *   2. components/erp/module-sub-nav.blade.php — renders L2 contextual module sub-navigation
+ *   3. components/erp/context-breadcrumbs.blade.php — resolves L1 + L2 breadcrumb hierarchy
+ *   4. components/erp/command-palette.blade.php — indexes L1 + L2 destinations for Cmd+K
+ *   5. tests/Feature/Navigation/SidebarIntegrityTest.php — automated validation
  *
  * @see routes/web.php
  */
 
 return [
-    'pinned' => [
-        [
-            'label' => 'POS Terminal',
-            'icon' => 'point_of_sale',
-            'route' => 'transaction.create',
-            'active' => 'transaction.*',
-            'roles' => ['Owner', 'Manager', 'Kasir'],
-            'scope' => 'store',
-        ],
-        [
-            'label' => 'Cashier Shifts',
-            'icon' => 'lock_clock',
-            'route' => 'shifts.index',
-            'active' => 'shifts.*',
-            'roles' => ['Owner', 'Manager', 'Kasir', 'Supervisor'],
-            'scope' => 'store',
-        ],
-        [
-            'label' => 'Order History',
-            'icon' => 'receipt_long',
-            'route' => 'orders.index',
-            'active' => 'orders.*',
-            'roles' => ['Owner', 'Manager', 'Kasir', 'Waiter'],
-            'scope' => 'store',
-        ],
-        [
-            'label' => 'Raw Materials & Stock',
-            'icon' => 'warehouse',
-            'route' => 'inventory.ingredients',
-            'active' => 'inventory.ingredients*',
-            'roles' => ['Owner', 'Manager', 'Inventory'],
-            'scope' => 'store',
-        ],
-    ],
-
     'modules' => [
         [
             'id' => 'pos',
@@ -63,7 +31,7 @@ return [
             'icon' => 'point_of_sale',
             'badge' => 'Frontline',
             'route' => 'transaction.create',
-            'active_pattern' => ['transaction.*', 'tables.*', 'orders.*', 'shifts.*', 'kds.*', 'kasir.*'],
+            'active_pattern' => ['transaction.*', 'tables.*', 'orders.*', 'shifts.*', 'kds.*', 'kasir.*', 'integrations.channel-mapping'],
             'roles' => ['Owner', 'Manager', 'Kasir', 'Waiter', 'Supervisor', 'Barista', 'Cook'],
             'items' => [
                 ['label' => 'POS Terminal', 'icon' => 'point_of_sale', 'route' => 'transaction.create'],
@@ -71,6 +39,7 @@ return [
                 ['label' => 'Kitchen Display (KDS)', 'icon' => 'countertops', 'route' => 'kds.index'],
                 ['label' => 'Order History', 'icon' => 'receipt_long', 'route' => 'orders.index'],
                 ['label' => 'Cashier Shifts', 'icon' => 'lock_clock', 'route' => 'shifts.index'],
+                ['label' => 'Channel Mapping', 'icon' => 'hub', 'route' => 'integrations.channel-mapping'],
             ],
         ],
         [
@@ -81,7 +50,7 @@ return [
             'icon' => 'inventory_2',
             'badge' => 'Master Data',
             'route' => 'products.index',
-            'active_pattern' => ['products.*', 'categories.*', 'brands.*', 'units-of-measure.*', 'price-lists.*', 'assortments.*'],
+            'active_pattern' => ['products.*', 'categories.*', 'brands.*', 'units-of-measure.*', 'price-lists.*', 'assortments.*', 'tax-classes.*'],
             'roles' => ['Owner', 'Manager', 'Inventory'],
             'items' => [
                 ['label' => 'Product Catalog', 'icon' => 'inventory_2', 'route' => 'products.index'],
@@ -119,6 +88,8 @@ return [
             'items' => [
                 ['label' => 'Customers & CRM', 'icon' => 'groups', 'route' => 'customers.index'],
                 ['label' => 'Discounts & Promotions', 'icon' => 'sell', 'route' => 'discounts.index'],
+                ['label' => 'Promotion Campaigns', 'icon' => 'campaign', 'route' => 'pricing.promotions.index'],
+                ['label' => 'Vouchers & Coupons', 'icon' => 'confirmation_number', 'route' => 'pricing.vouchers.index'],
                 ['label' => 'Quotations', 'icon' => 'request_quote', 'route' => 'sales.quotations.index'],
                 ['label' => 'Sales Orders', 'icon' => 'receipt_long', 'route' => 'sales.orders.index'],
                 ['label' => 'AR Invoices', 'icon' => 'account_balance_wallet', 'route' => 'sales.invoices.index'],
@@ -198,6 +169,553 @@ return [
         ],
     ],
 
+    'sub_nav' => [
+        'pos-ops' => [
+            'label' => 'POS & Store Operations',
+            'aria_label' => 'POS & Store Operations Navigation',
+            'items' => [
+                [
+                    'label' => 'POS Terminal',
+                    'route' => 'transaction.create',
+                    'active' => 'transaction.*',
+                    'icon' => 'point_of_sale',
+                    'roles' => ['Owner', 'Manager', 'Kasir'],
+                    'permission' => 'orders.create',
+                ],
+                [
+                    'label' => 'Order History',
+                    'route' => 'orders.index',
+                    'active' => 'orders.*',
+                    'icon' => 'receipt_long',
+                    'roles' => ['Owner', 'Manager', 'Kasir', 'Waiter', 'Supervisor'],
+                    'permission' => 'orders.view',
+                ],
+                [
+                    'label' => 'Cashier Shifts',
+                    'route' => 'shifts.index',
+                    'active' => 'shifts.*',
+                    'icon' => 'lock_clock',
+                    'roles' => ['Owner', 'Manager', 'Kasir', 'Supervisor'],
+                    'permission' => 'shifts.own',
+                ],
+                [
+                    'label' => 'Table & QR Management',
+                    'route' => 'tables.index',
+                    'active' => 'tables.*',
+                    'icon' => 'table_restaurant',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'tables.view',
+                ],
+                [
+                    'label' => 'Kitchen Display (KDS)',
+                    'route' => 'kds.index',
+                    'active' => 'kds.*',
+                    'icon' => 'countertops',
+                    'roles' => ['Owner', 'Manager', 'Kasir', 'Barista', 'Waiter', 'Cook'],
+                    'permission' => 'kds.access',
+                ],
+                [
+                    'label' => 'Omnichannel Mapping',
+                    'route' => 'integrations.channel-mapping',
+                    'active' => 'integrations.channel-mapping',
+                    'icon' => 'hub',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'products.manage',
+                ],
+            ],
+        ],
+        'catalog' => [
+            'label' => 'Product Catalog',
+            'aria_label' => 'Product Catalog Navigation',
+            'items' => [
+                [
+                    'label' => 'Products',
+                    'route' => 'products.index',
+                    'active' => 'products.*',
+                    'icon' => 'inventory_2',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'products.view',
+                ],
+                [
+                    'label' => 'Categories',
+                    'route' => 'categories.index',
+                    'active' => 'categories.*',
+                    'icon' => 'category',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'products.view',
+                ],
+                [
+                    'label' => 'Brands',
+                    'route' => 'brands.index',
+                    'active' => 'brands.*',
+                    'icon' => 'verified',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'products.view',
+                ],
+                [
+                    'label' => 'Units of Measure',
+                    'route' => 'units-of-measure.index',
+                    'active' => 'units-of-measure.*',
+                    'icon' => 'straighten',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'products.view',
+                ],
+                [
+                    'label' => 'Variants & Modifiers',
+                    'route' => 'inventory.modifiers',
+                    'active' => 'inventory.modifiers',
+                    'icon' => 'tune',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'products.view',
+                ],
+                [
+                    'label' => 'Tax Classes',
+                    'route' => 'tax-classes.index',
+                    'active' => 'tax-classes.*',
+                    'icon' => 'percent',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'products.view',
+                ],
+                [
+                    'label' => 'Branch Assortment',
+                    'route' => 'assortments.index',
+                    'active' => 'assortments.*',
+                    'icon' => 'storefront',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'products.view',
+                ],
+                [
+                    'label' => 'Price Lists',
+                    'route' => 'price-lists.index',
+                    'active' => 'price-lists.*',
+                    'icon' => 'price_change',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'pricing.view',
+                ],
+            ],
+        ],
+        'pricing' => [
+            'label' => 'Promotions & Pricing',
+            'aria_label' => 'Promotions & Pricing Navigation',
+            'items' => [
+                [
+                    'label' => 'Discounts',
+                    'route' => 'discounts.index',
+                    'active' => 'discounts.*',
+                    'icon' => 'sell',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'discounts.manage',
+                ],
+                [
+                    'label' => 'Promotion Campaigns',
+                    'route' => 'pricing.promotions.index',
+                    'active' => 'pricing.promotions.*',
+                    'icon' => 'campaign',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'pricing.promotions.manage',
+                ],
+                [
+                    'label' => 'Vouchers & Coupons',
+                    'route' => 'pricing.vouchers.index',
+                    'active' => 'pricing.vouchers.*',
+                    'icon' => 'confirmation_number',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'pricing.vouchers.manage',
+                ],
+                [
+                    'label' => 'Price Lists',
+                    'route' => 'price-lists.index',
+                    'active' => 'price-lists.*',
+                    'icon' => 'price_change',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'pricing.view',
+                ],
+            ],
+        ],
+        'inventory' => [
+            'label' => 'Inventory Management',
+            'aria_label' => 'Inventory Management Navigation',
+            'items' => [
+                [
+                    'label' => 'Raw Materials',
+                    'route' => 'inventory.ingredients',
+                    'active' => 'inventory.ingredients*',
+                    'icon' => 'egg_alt',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'inventory.view',
+                ],
+                [
+                    'label' => 'Goods Receipt',
+                    'route' => 'inventory.goods-receipts',
+                    'active' => 'inventory.goods-receipts*',
+                    'icon' => 'input',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'inventory.manage',
+                ],
+                [
+                    'label' => 'Stock Adjustments',
+                    'route' => 'inventory.adjustments',
+                    'active' => 'inventory.adjustments*',
+                    'icon' => 'tune',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'inventory.manage',
+                ],
+                [
+                    'label' => 'Stock Count',
+                    'route' => 'inventory.opnames',
+                    'active' => 'inventory.opnames*',
+                    'icon' => 'fact_check',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'inventory.manage',
+                ],
+                [
+                    'label' => 'Inter-Branch Transfer',
+                    'route' => 'inventory.transfers',
+                    'active' => 'inventory.transfers*',
+                    'icon' => 'local_shipping',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'inventory.manage',
+                ],
+                [
+                    'label' => 'Supplier Returns',
+                    'route' => 'inventory.supplier-returns',
+                    'active' => 'inventory.supplier-returns*',
+                    'icon' => 'keyboard_return',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'inventory.manage',
+                ],
+                [
+                    'label' => 'Stock Ledger',
+                    'route' => 'inventory.ledger',
+                    'active' => 'inventory.ledger*',
+                    'icon' => 'history',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'inventory.view',
+                ],
+            ],
+        ],
+        'purchasing' => [
+            'label' => 'Purchasing',
+            'aria_label' => 'Purchasing Navigation',
+            'items' => [
+                [
+                    'label' => 'Suppliers',
+                    'route' => 'purchasing.suppliers.index',
+                    'active' => 'purchasing.suppliers.*',
+                    'icon' => 'local_shipping',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'purchasing.view',
+                ],
+                [
+                    'label' => 'Purchase Orders (PO)',
+                    'route' => 'purchasing.orders.index',
+                    'active' => 'purchasing.orders.*',
+                    'icon' => 'shopping_bag',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'purchasing.orders.manage',
+                ],
+                [
+                    'label' => 'Goods Receipt (GRN)',
+                    'route' => 'purchasing.grns.index',
+                    'active' => 'purchasing.grns.*',
+                    'icon' => 'input',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'purchasing.grns.manage',
+                ],
+                [
+                    'label' => 'Supplier Invoices (3-Way)',
+                    'route' => 'purchasing.invoices.index',
+                    'active' => 'purchasing.invoices.*',
+                    'icon' => 'receipt',
+                    'roles' => ['Owner', 'Manager', 'Inventory', 'Finance'],
+                    'permission' => 'purchasing.invoice.view',
+                ],
+                [
+                    'label' => 'Purchase Returns',
+                    'route' => 'purchasing.returns.index',
+                    'active' => 'purchasing.returns.*',
+                    'icon' => 'keyboard_return',
+                    'roles' => ['Owner', 'Manager', 'Inventory'],
+                    'permission' => 'purchasing.returns.manage',
+                ],
+            ],
+        ],
+        'sales' => [
+            'label' => 'B2B Sales & Accounts Receivable',
+            'aria_label' => 'B2B Sales & Accounts Receivable Navigation',
+            'items' => [
+                [
+                    'label' => 'Sales Orders (SO)',
+                    'route' => 'sales.orders.index',
+                    'active' => 'sales.orders.*',
+                    'icon' => 'shopping_cart',
+                    'roles' => ['Owner', 'Manager', 'Sales', 'Admin', 'Finance'],
+                    'permission' => 'sales.orders.view',
+                ],
+                [
+                    'label' => 'Quotations',
+                    'route' => 'sales.quotations.index',
+                    'active' => 'sales.quotations.*',
+                    'icon' => 'request_quote',
+                    'roles' => ['Owner', 'Manager', 'Sales', 'Admin', 'Finance'],
+                    'permission' => 'sales.quotations.view',
+                ],
+                [
+                    'label' => 'Invoices & Accounts Receivable (AR)',
+                    'route' => 'sales.invoices.index',
+                    'active' => 'sales.invoices.*',
+                    'icon' => 'account_balance_wallet',
+                    'roles' => ['Owner', 'Manager', 'Sales', 'Admin', 'Finance'],
+                    'permission' => 'sales.invoices.view',
+                ],
+                [
+                    'label' => 'Returns & Credit Notes',
+                    'route' => 'sales.returns.index',
+                    'active' => 'sales.returns.*',
+                    'icon' => 'assignment_return',
+                    'roles' => ['Owner', 'Manager', 'Sales', 'Admin', 'Finance'],
+                    'permission' => 'sales.returns.view',
+                ],
+            ],
+        ],
+        'customers' => [
+            'label' => 'Customer & Loyalty',
+            'aria_label' => 'Customer & Loyalty Navigation',
+            'items' => [
+                [
+                    'label' => 'Customer Directory',
+                    'route' => 'customers.index',
+                    'active' => 'customers.index',
+                    'icon' => 'person',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'customers.view',
+                ],
+                [
+                    'label' => 'Customer Groups',
+                    'route' => 'customers.groups.index',
+                    'active' => 'customers.groups.*',
+                    'icon' => 'groups',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'customers.groups.manage',
+                ],
+                [
+                    'label' => 'B2B Credit Control',
+                    'route' => 'customers.credit.index',
+                    'active' => 'customers.credit.*',
+                    'icon' => 'credit_score',
+                    'roles' => ['Owner', 'Manager', 'Finance', 'Sales'],
+                    'permission' => 'customers.credit.view',
+                ],
+                [
+                    'label' => 'Loyalty, Vouchers & Gift Cards',
+                    'route' => 'customers.instruments.index',
+                    'active' => 'customers.instruments.*',
+                    'icon' => 'card_giftcard',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'customers.loyalty.manage',
+                ],
+            ],
+        ],
+        'finance' => [
+            'label' => 'Finance & Accounting',
+            'aria_label' => 'Finance & Accounting Navigation',
+            'items' => [
+                [
+                    'label' => 'Financial Overview',
+                    'route' => 'finance.index',
+                    'active' => 'finance.index',
+                    'icon' => 'account_balance',
+                    'roles' => ['Owner', 'Manager', 'Finance', 'Admin'],
+                    'permission' => 'finance.view',
+                ],
+                [
+                    'label' => 'Chart of Accounts (COA)',
+                    'route' => 'finance.coa.index',
+                    'active' => 'finance.coa.*',
+                    'icon' => 'account_tree',
+                    'roles' => ['Owner', 'Manager', 'Finance', 'Admin'],
+                    'permission' => 'finance.coa.manage',
+                ],
+                [
+                    'label' => 'General Journal',
+                    'route' => 'finance.journals.index',
+                    'active' => 'finance.journals.*',
+                    'icon' => 'menu_book',
+                    'roles' => ['Owner', 'Manager', 'Finance', 'Admin'],
+                    'permission' => 'finance.journals.manage',
+                ],
+                [
+                    'label' => 'Accounting Periods',
+                    'route' => 'finance.periods.index',
+                    'active' => 'finance.periods.*',
+                    'icon' => 'calendar_month',
+                    'roles' => ['Owner', 'Manager', 'Finance', 'Admin'],
+                    'permission' => 'finance.periods.manage',
+                ],
+                [
+                    'label' => 'Bank Reconciliation',
+                    'route' => 'finance.reconciliation.index',
+                    'active' => 'finance.reconciliation.*',
+                    'icon' => 'fact_check',
+                    'roles' => ['Owner', 'Manager', 'Finance', 'Admin'],
+                    'permission' => 'finance.reconciliation.manage',
+                ],
+            ],
+        ],
+        'hr' => [
+            'label' => 'HR & Payroll',
+            'aria_label' => 'HR & Payroll Navigation',
+            'items' => [
+                [
+                    'label' => 'Employees',
+                    'route' => 'hr.employees.index',
+                    'active' => 'hr.employees.*',
+                    'icon' => 'badge',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'hr.employees.view',
+                ],
+                [
+                    'label' => 'Schedules & Shifts',
+                    'route' => 'hr.schedules.index',
+                    'active' => 'hr.schedules.*',
+                    'icon' => 'calendar_month',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'hr.schedules.manage',
+                ],
+                [
+                    'label' => 'Attendance & Overtime',
+                    'route' => 'hr.attendance.index',
+                    'active' => 'hr.attendance.*',
+                    'icon' => 'schedule',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'hr.attendance.manage',
+                ],
+                [
+                    'label' => 'Leave Management',
+                    'route' => 'hr.leaves.index',
+                    'active' => 'hr.leaves.*',
+                    'icon' => 'event_busy',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'hr.leaves.manage',
+                ],
+                [
+                    'label' => 'Sales Commissions',
+                    'route' => 'hr.commissions.index',
+                    'active' => 'hr.commissions.*',
+                    'icon' => 'payments',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'hr.commissions.manage',
+                ],
+                [
+                    'label' => 'Payroll',
+                    'route' => 'hr.payroll.index',
+                    'active' => 'hr.payroll.*',
+                    'icon' => 'account_balance_wallet',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'hr.payroll.manage',
+                ],
+            ],
+        ],
+        'reports' => [
+            'label' => 'Analytics & Reports',
+            'aria_label' => 'Analytics & Reports Navigation',
+            'items' => [
+                [
+                    'label' => 'BI & Analytics',
+                    'route' => 'reports.analytics',
+                    'active' => 'reports.analytics',
+                    'icon' => 'query_stats',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'reports.analytics.view',
+                ],
+                [
+                    'label' => 'Sales Reports',
+                    'route' => 'reports.sales',
+                    'active' => 'reports.sales',
+                    'icon' => 'analytics',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'reports.sales.view',
+                ],
+            ],
+        ],
+        'organization' => [
+            'label' => 'Organization & Branches',
+            'aria_label' => 'Organization & Branch Navigation',
+            'items' => [
+                [
+                    'label' => 'Branches',
+                    'route' => 'stores.index',
+                    'active' => 'stores.*',
+                    'icon' => 'storefront',
+                    'roles' => ['Owner'],
+                    'permission' => 'stores.manage',
+                ],
+                [
+                    'label' => 'POS Devices',
+                    'route' => 'devices.index',
+                    'active' => 'devices.*',
+                    'icon' => 'devices',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'devices.manage',
+                ],
+                [
+                    'label' => 'Omnichannel Mapping',
+                    'route' => 'integrations.channel-mapping',
+                    'active' => 'integrations.channel-mapping',
+                    'icon' => 'hub',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'products.manage',
+                ],
+                [
+                    'label' => 'System Settings',
+                    'route' => 'settings.index',
+                    'active' => 'settings.*',
+                    'icon' => 'settings',
+                    'roles' => ['Owner'],
+                    'permission' => 'settings.manage',
+                ],
+            ],
+        ],
+        'governance' => [
+            'label' => 'Access & Governance',
+            'aria_label' => 'System Governance Navigation',
+            'items' => [
+                [
+                    'label' => 'Users & Staff',
+                    'route' => 'users.index',
+                    'active' => 'users.index',
+                    'icon' => 'group',
+                    'roles' => ['Owner'],
+                    'permission' => 'users.manage',
+                ],
+                [
+                    'label' => 'Staff Invitations',
+                    'route' => 'users.invitations.index',
+                    'active' => 'users.invitations.*',
+                    'icon' => 'mail',
+                    'roles' => ['Owner'],
+                    'permission' => 'users.manage',
+                ],
+                [
+                    'label' => 'Roles & Permissions',
+                    'route' => 'roles.index',
+                    'active' => 'roles.*',
+                    'icon' => 'admin_panel_settings',
+                    'roles' => ['Owner'],
+                    'permission' => 'roles.manage',
+                ],
+                [
+                    'label' => 'Audit Logs',
+                    'route' => 'activity-logs.index',
+                    'active' => 'activity-logs.*',
+                    'icon' => 'manage_search',
+                    'roles' => ['Owner', 'Manager'],
+                    'permission' => 'audit_logs.view',
+                ],
+            ],
+        ],
+    ],
+
     'sections' => [
         'Overview' => [
             [
@@ -207,6 +725,7 @@ return [
                 'active' => 'dashboard',
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'tenant',
+                'permission' => 'dashboard',
             ],
         ],
         'Cashier & Operations' => [
@@ -217,22 +736,25 @@ return [
                 'active' => 'transaction.*',
                 'roles' => ['Owner', 'Manager', 'Kasir'],
                 'scope' => 'store',
+                'permission' => 'orders.create',
             ],
             [
                 'label' => 'Table Management',
                 'icon' => 'table_restaurant',
                 'route' => 'tables.index',
-                'active' => 'tables.*',
+                'active' => ['tables.*', 'integrations.channel-mapping'],
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'store',
+                'permission' => 'tables.view',
             ],
             [
                 'label' => 'Order History',
                 'icon' => 'receipt_long',
                 'route' => 'orders.index',
                 'active' => 'orders.*',
-                'roles' => ['Owner', 'Manager', 'Kasir', 'Waiter'],
+                'roles' => ['Owner', 'Manager', 'Kasir', 'Waiter', 'Supervisor'],
                 'scope' => 'store',
+                'permission' => 'orders.view',
             ],
             [
                 'label' => 'Cashier Shifts',
@@ -241,6 +763,7 @@ return [
                 'active' => 'shifts.*',
                 'roles' => ['Owner', 'Manager', 'Kasir', 'Supervisor'],
                 'scope' => 'store',
+                'permission' => 'shifts.own',
             ],
             [
                 'label' => 'Kitchen Display (KDS)',
@@ -249,6 +772,7 @@ return [
                 'active' => 'kds.*',
                 'roles' => ['Owner', 'Manager', 'Kasir', 'Barista', 'Waiter', 'Cook'],
                 'scope' => 'store',
+                'permission' => 'kds.access',
             ],
         ],
         'Catalog & Recipes' => [
@@ -262,9 +786,11 @@ return [
                     'brands.*',
                     'units-of-measure.*',
                     'inventory.modifiers',
+                    'tax-classes.*',
                 ],
                 'roles' => ['Owner', 'Manager', 'Inventory'],
                 'scope' => 'tenant',
+                'permission' => 'products.view',
             ],
             [
                 'label' => 'Price Lists',
@@ -273,6 +799,7 @@ return [
                 'active' => 'price-lists.*',
                 'roles' => ['Owner', 'Manager', 'Inventory'],
                 'scope' => 'tenant',
+                'permission' => 'pricing.view',
             ],
             [
                 'label' => 'Branch Assortment',
@@ -281,6 +808,7 @@ return [
                 'active' => 'assortments.*',
                 'roles' => ['Owner', 'Manager', 'Inventory'],
                 'scope' => 'store',
+                'permission' => 'products.view',
             ],
         ],
         'Inventory & Supply' => [
@@ -291,6 +819,7 @@ return [
                 'active' => 'inventory.ingredients*',
                 'roles' => ['Owner', 'Manager', 'Inventory'],
                 'scope' => 'store',
+                'permission' => 'inventory.view',
             ],
             [
                 'label' => 'Stock Operations',
@@ -305,6 +834,7 @@ return [
                 ],
                 'roles' => ['Owner', 'Manager', 'Inventory'],
                 'scope' => 'store',
+                'permission' => 'inventory.manage',
             ],
             [
                 'label' => 'Stock Ledger',
@@ -313,6 +843,7 @@ return [
                 'active' => 'inventory.ledger*',
                 'roles' => ['Owner', 'Manager', 'Inventory'],
                 'scope' => 'store',
+                'permission' => 'inventory.view',
             ],
             [
                 'label' => 'Purchasing',
@@ -321,6 +852,7 @@ return [
                 'active' => 'purchasing.*',
                 'roles' => ['Owner', 'Manager', 'Inventory'],
                 'scope' => 'tenant',
+                'permission' => 'purchasing.view',
             ],
         ],
         'Analytics & Customers' => [
@@ -331,6 +863,7 @@ return [
                 'active' => 'reports.analytics',
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'tenant',
+                'permission' => 'reports.analytics.view',
             ],
             [
                 'label' => 'Sales Reports',
@@ -339,6 +872,7 @@ return [
                 'active' => 'reports.sales',
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'tenant',
+                'permission' => 'reports.sales.view',
             ],
             [
                 'label' => 'Customers & CRM',
@@ -347,6 +881,7 @@ return [
                 'active' => 'customers.*',
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'tenant',
+                'permission' => 'customers.view',
             ],
             [
                 'label' => 'Discounts & Promotions',
@@ -358,14 +893,16 @@ return [
                 ],
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'store',
+                'permission' => 'discounts.manage',
             ],
             [
                 'label' => 'B2B Sales Orders',
                 'icon' => 'receipt_long',
                 'route' => 'sales.orders.index',
-                'active' => 'sales.orders.*',
+                'active' => 'sales.*',
                 'roles' => ['Owner', 'Manager', 'Sales', 'Admin', 'Finance'],
                 'scope' => 'tenant',
+                'permission' => 'sales.orders.view',
             ],
         ],
         'Finance & Accounting' => [
@@ -376,6 +913,7 @@ return [
                 'active' => 'finance.*',
                 'roles' => ['Owner', 'Manager', 'Finance', 'Admin'],
                 'scope' => 'tenant',
+                'permission' => 'finance.view',
             ],
         ],
         'Human Resources & Payroll' => [
@@ -386,6 +924,7 @@ return [
                 'active' => 'hr.employees.*',
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'tenant',
+                'permission' => 'hr.employees.view',
             ],
             [
                 'label' => 'Workforce Schedules',
@@ -394,6 +933,7 @@ return [
                 'active' => 'hr.schedules.*',
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'store',
+                'permission' => 'hr.schedules.manage',
             ],
             [
                 'label' => 'Attendance & Overtime',
@@ -402,6 +942,7 @@ return [
                 'active' => 'hr.attendance.*',
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'store',
+                'permission' => 'hr.attendance.manage',
             ],
             [
                 'label' => 'Leave Management',
@@ -410,6 +951,7 @@ return [
                 'active' => 'hr.leaves.*',
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'tenant',
+                'permission' => 'hr.leaves.manage',
             ],
             [
                 'label' => 'Sales Commissions',
@@ -418,6 +960,7 @@ return [
                 'active' => 'hr.commissions.*',
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'store',
+                'permission' => 'hr.commissions.manage',
             ],
             [
                 'label' => 'Payroll Batches',
@@ -426,6 +969,7 @@ return [
                 'active' => 'hr.payroll.*',
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'tenant',
+                'permission' => 'hr.payroll.manage',
             ],
         ],
         'Settings & Governance' => [
@@ -436,6 +980,7 @@ return [
                 'active' => 'stores.*',
                 'roles' => ['Owner'],
                 'scope' => 'tenant',
+                'permission' => 'stores.manage',
             ],
             [
                 'label' => 'Users',
@@ -444,6 +989,7 @@ return [
                 'active' => ['users.*', 'users.invitations.*'],
                 'roles' => ['Owner'],
                 'scope' => 'tenant',
+                'permission' => 'users.manage',
             ],
             [
                 'label' => 'Roles & Permissions',
@@ -452,6 +998,7 @@ return [
                 'active' => 'roles.*',
                 'roles' => ['Owner'],
                 'scope' => 'tenant',
+                'permission' => 'roles.manage',
             ],
             [
                 'label' => 'POS Devices',
@@ -460,6 +1007,7 @@ return [
                 'active' => 'devices.*',
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'store',
+                'permission' => 'devices.manage',
             ],
             [
                 'label' => 'System Settings',
@@ -468,6 +1016,7 @@ return [
                 'active' => ['settings.*', 'tax-classes.*'],
                 'roles' => ['Owner'],
                 'scope' => 'tenant',
+                'permission' => 'settings.manage',
             ],
             [
                 'label' => 'Audit Logs',
@@ -476,6 +1025,7 @@ return [
                 'active' => 'activity-logs.*',
                 'roles' => ['Owner', 'Manager'],
                 'scope' => 'tenant',
+                'permission' => 'audit_logs.view',
             ],
         ],
     ],

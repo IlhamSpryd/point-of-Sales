@@ -9,6 +9,7 @@ use App\Models\Concerns\AssignsStore;
 use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToStore;
 use App\Models\Concerns\ScopedToTenant;
+use App\Models\OperationalUnit;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Scopes\StoreScope;
@@ -74,6 +75,7 @@ class Device extends Model
     protected $fillable = [
         'tenant_id',
         'store_id',
+        'operational_unit_id',
         'device_code',
         'device_name',
         'device_type',
@@ -114,6 +116,14 @@ class Device extends Model
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
+    }
+
+    /**
+     * @return BelongsTo<OperationalUnit, $this>
+     */
+    public function operationalUnit(): BelongsTo
+    {
+        return $this->belongsTo(OperationalUnit::class);
     }
 
     /**

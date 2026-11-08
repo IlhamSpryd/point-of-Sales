@@ -17,8 +17,13 @@
             <div class="flex justify-center mb-1.5">
                 <x-brand-logo variant="symbol" mode="light" class="h-5 w-auto text-black" />
             </div>
-            <p class="font-bold text-base">{{ $order->branch->name ?? 'Apeiron System' }}</p>
-            <p class="text-[10px]">Jl. Dewa No. 16b, Jakarta</p>
+            <p class="font-bold text-base">{{ $order->store?->name ?? 'Apeiron System' }}</p>
+            @if ($order->store?->address)
+                <p class="text-[10px]">{{ $order->store->address }}</p>
+            @endif
+            @if ($order->store?->phone)
+                <p class="text-[10px]">Tel: {{ $order->store->phone }}</p>
+            @endif
             <p class="text-[10px]">{{ $order->created_at->format('d/m/Y H:i') }}</p>
         </div>
 
@@ -31,6 +36,9 @@
         <div class="border-t border-b border-dashed border-foreground py-1 text-[11px]">
             <div class="flex justify-between"><span>Order No.</span><span>{{ $order->order_code }}</span></div>
             <div class="flex justify-between"><span>Cashier</span><span>{{ $order->user->name ?? '-' }}</span></div>
+            @if ($order->customer)
+                <div class="flex justify-between"><span>Customer</span><span>{{ $order->customer->name }}</span></div>
+            @endif
             @if ($order->device)
                 <div class="flex justify-between"><span>Device</span><span>{{ $order->device->device_name }}</span></div>
             @elseif ($order->created_by_device_id)
@@ -116,8 +124,16 @@
             @if ($order->payments && $order->payments->count() > 0)
                 <div class="mt-1 pt-1 border-t border-dotted border-gray-400">
                     @foreach ($order->payments as $payment)
+                        @php
+                            $pmLabel = $payment->payment_method instanceof \App\Enums\PaymentMethod
+                                ? $payment->payment_method->label()
+                                : ucfirst((string) ($payment->payment_method ?? 'Payment'));
+                            $refNum = $payment->reference_number;
+                            $showRef = $refNum && !str_starts_with($refNum, 'payment:') && !str_starts_with($refNum, 'attempt-settle-');
+                        @endphp
                         <div class="flex justify-between">
-                            <span>{{ ucfirst($payment->payment_method?->value ?? 'Payment') }}</span><span>{{ number_format($payment->amount, 0, ',', '.') }}</span>
+                            <span>{{ $pmLabel }}{{ $showRef ? ' (' . $refNum . ')' : '' }}</span>
+                            <span>{{ number_format($payment->amount, 0, ',', '.') }}</span>
                         </div>
                     @endforeach
                 </div>

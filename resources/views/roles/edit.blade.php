@@ -21,12 +21,16 @@
                 @csrf
                 @method('PUT')
 
+                @php
+                    $isOwnerRole = $role->name === 'Owner';
+                @endphp
+
                 <!-- Role Details Row -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <x-form-label for="name">Role Name</x-form-label>
                         <x-form-input type="text" id="name" name="name" value="{{ old('name', $role->name) }}" 
-                               placeholder="e.g. Manager" required class="{{ $errors->has('name') ? 'input-error' : '' }}" />
+                               placeholder="e.g. Manager" required :readonly="$isOwnerRole" class="{{ $errors->has('name') ? 'input-error' : '' }}" />
                         @error('name')
                             <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
@@ -46,69 +50,10 @@
                 <div class="pt-4 border-t border-border dark:border-zinc-800">
                     <div class="mb-4">
                         <h5 class="text-base font-semibold text-foreground dark:text-zinc-100">Module Access Privileges (RBAC)</h5>
-                        <p class="text-sm text-zinc-500">Select specific modules and access permissions granted to this role.</p>
+                        <p class="text-sm text-muted-foreground">Select specific operational domains and granular capabilities granted to this role.</p>
                     </div>
 
-                    <div class="mb-5 flex items-start gap-3 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 px-4 py-3" role="alert">
-                        <span class="material-symbols-rounded text-[20px] text-amber-600 dark:text-amber-400 shrink-0 mt-0.5">info</span>
-                        <div>
-                            <p class="text-sm font-semibold text-amber-800 dark:text-amber-300">Granular module permissions are advisory</p>
-                            <p class="text-xs text-amber-700 dark:text-amber-400/80 mt-0.5">Permissions selected below are stored in the database; however, module authorization currently maps to core standard roles (Owner, Manager, Cashier, etc.). Dynamic per-permission policy enforcement is being rolled out.</p>
-                        </div>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-8">
-                        @php $perms = $role->permissions ?? []; @endphp
-                        <!-- Cashier & Transactions -->
-                        <label class="flex items-start gap-3 cursor-pointer group">
-                            <input type="checkbox" name="permissions[can_access_pos]" value="1" {{ old('permissions.can_access_pos', $perms['can_access_pos'] ?? false) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-ring/20 transition-colors">
-                            <div>
-                                <span class="block text-sm font-medium text-foreground dark:text-zinc-200 group-hover:text-primary transition-colors">POS Screen Access</span>
-                                <span class="block text-xs text-zinc-500">Process checkout transactions and cashier duties.</span>
-                            </div>
-                        </label>
-
-                        <label class="flex items-start gap-3 cursor-pointer group">
-                            <input type="checkbox" name="permissions[can_void_order]" value="1" {{ old('permissions.can_void_order', $perms['can_void_order'] ?? false) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-ring/20 transition-colors">
-                            <div>
-                                <span class="block text-sm font-medium text-foreground dark:text-zinc-200 group-hover:text-primary transition-colors">Void Authority</span>
-                                <span class="block text-xs text-zinc-500">Cancel paid orders and void receipts.</span>
-                            </div>
-                        </label>
-
-                        <label class="flex items-start gap-3 cursor-pointer group">
-                            <input type="checkbox" name="permissions[can_give_discount]" value="1" {{ old('permissions.can_give_discount', $perms['can_give_discount'] ?? false) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-ring/20 transition-colors">
-                            <div>
-                                <span class="block text-sm font-medium text-foreground dark:text-zinc-200 group-hover:text-primary transition-colors">Discount Privileges</span>
-                                <span class="block text-xs text-zinc-500">Apply manual discounts at POS.</span>
-                            </div>
-                        </label>
-
-                        <!-- Kitchen & Operations -->
-                        <label class="flex items-start gap-3 cursor-pointer group">
-                            <input type="checkbox" name="permissions[can_access_kds]" value="1" {{ old('permissions.can_access_kds', $perms['can_access_kds'] ?? false) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-ring/20 transition-colors">
-                            <div>
-                                <span class="block text-sm font-medium text-foreground dark:text-zinc-200 group-hover:text-primary transition-colors">Kitchen Screen (KDS)</span>
-                                <span class="block text-xs text-zinc-500">Manage Kitchen Display System.</span>
-                            </div>
-                        </label>
-
-                        <label class="flex items-start gap-3 cursor-pointer group">
-                            <input type="checkbox" name="permissions[can_manage_menu]" value="1" {{ old('permissions.can_manage_menu', $perms['can_manage_menu'] ?? false) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-ring/20 transition-colors">
-                            <div>
-                                <span class="block text-sm font-medium text-foreground dark:text-zinc-200 group-hover:text-primary transition-colors">Catalog Management</span>
-                                <span class="block text-xs text-zinc-500">Modify items, pricing, and stock.</span>
-                            </div>
-                        </label>
-
-                        <label class="flex items-start gap-3 cursor-pointer group">
-                            <input type="checkbox" name="permissions[can_view_reports]" value="1" {{ old('permissions.can_view_reports', $perms['can_view_reports'] ?? false) ? 'checked' : '' }} class="mt-0.5 w-4 h-4 rounded border-zinc-300 dark:border-zinc-700 text-primary focus:ring-ring/20 transition-colors">
-                            <div>
-                                <span class="block text-sm font-medium text-foreground dark:text-zinc-200 group-hover:text-primary transition-colors">Sales & Shift Reports</span>
-                                <span class="block text-xs text-zinc-500">Access sales summaries and shift reconciliations.</span>
-                            </div>
-                        </label>
-                    </div>
+                    <x-erp.permission-matrix :selected="old('permissions', $role->permissions ?? [])" :readonly="$isOwnerRole" />
                 </div>
 
                 <!-- Status Row -->

@@ -92,6 +92,35 @@
                     </div>
                 </div>
 
+                @if(isset($stores) && $stores->count() > 0)
+                    @php
+                        $assignedStoreIds = (array) old('store_ids', $user->stores->pluck('id')->all());
+                    @endphp
+                    <div class="pt-4 border-t border-border dark:border-zinc-800">
+                        <div class="mb-3">
+                            <x-form-label>Assigned Branches & Outlets (Store Scope)</x-form-label>
+                            <p class="text-xs text-muted-foreground mt-0.5">Select the physical store branches this employee is authorized to operate in.</p>
+                        </div>
+                        <input type="hidden" name="store_ids" value="">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            @foreach($stores as $store)
+                                <label class="flex items-center gap-3 p-3 rounded-xl border border-border bg-card hover:bg-muted/40 transition-colors cursor-pointer">
+                                    <input type="checkbox" name="store_ids[]" value="{{ $store->id }}"
+                                        {{ in_array($store->id, $assignedStoreIds) ? 'checked' : '' }}
+                                        class="w-4 h-4 rounded border-border text-primary focus:ring-ring transition-colors">
+                                    <div class="min-w-0">
+                                        <span class="block text-xs font-semibold text-foreground truncate">{{ $store->name }}</span>
+                                        <span class="block text-[11px] text-muted-foreground">{{ $store->is_active ? 'Active Outlet' : 'Inactive' }}</span>
+                                    </div>
+                                </label>
+                            @endforeach
+                        </div>
+                        @error('store_ids')
+                            <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        @enderror
+                    </div>
+                @endif
+
                 <!-- Security Row -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-border dark:border-zinc-800">
                     <div>

@@ -1,5 +1,7 @@
 <x-app-layout>
     <div x-data="{ createRoleDrawer: {{ $errors->any() ? 'true' : 'false' }} }" class="space-y-6" data-gsap="page-enter">
+        <x-erp.module-sub-nav module="governance" />
+
         <!-- Header -->
         <x-erp.page-header
             title="Roles & Permissions"
@@ -71,9 +73,11 @@
                         <td class="px-6 py-4">
                             <div class="flex flex-col items-start gap-1.5">
                                 @php
-                                    $permsCount = count(array_filter($role->permissions ?? []));
+                                    $rawPerms = is_array($role->permissions) ? $role->permissions : [];
+                                    $isWildcard = in_array('*', $rawPerms, true);
+                                    $permsCount = count(array_filter($rawPerms));
                                 @endphp
-                                <x-ui.badge variant="primary">{{ $permsCount }} Permissions</x-ui.badge>
+                                <x-ui.badge variant="primary">{{ $isWildcard ? 'Full Access (*)' : $permsCount.' Permissions' }}</x-ui.badge>
                                 
                                 <x-ui.badge :variant="$role->is_active ? 'success' : 'destructive'">
                                     {{ $role->is_active ? 'Active' : 'Inactive' }}
@@ -87,13 +91,19 @@
                             <a href="{{ route('roles.edit', $role->id) }}" class="inline-flex items-center justify-center size-9 rounded-lg text-zinc-600 hover:text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-90" aria-label="Edit role" wire:navigate>
                                 <span class="material-symbols-rounded text-[18px]">edit</span>
                             </a>
-                            <form id="delete-form-{{ $role->id }}" action="{{ route('roles.destroy', $role->id) }}" method="POST" class="inline-block">
-                                @csrf
-                                @method('DELETE')
-                                <button type="button" onclick="confirmSubmit('delete-form-{{ $role->id }}', '{{ addslashes($role->name) }}')" class="inline-flex items-center justify-center size-9 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors active:scale-90" aria-label="Delete role">
-                                    <span class="material-symbols-rounded text-[18px]">delete</span>
-                                </button>
-                            </form>
+                            @if ($role->name === 'Owner')
+                                <span class="inline-flex items-center justify-center size-9 rounded-lg text-muted-foreground bg-muted/50 cursor-not-allowed" title="System Owner role is locked and cannot be deleted">
+                                    <span class="material-symbols-rounded text-[18px]">lock</span>
+                                </span>
+                            @else
+                                <form id="delete-form-{{ $role->id }}" action="{{ route('roles.destroy', $role->id) }}" method="POST" class="inline-block">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="button" onclick="confirmSubmit('delete-form-{{ $role->id }}', '{{ addslashes($role->name) }}')" class="inline-flex items-center justify-center size-9 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors active:scale-90" aria-label="Delete role">
+                                        <span class="material-symbols-rounded text-[18px]">delete</span>
+                                    </button>
+                                </form>
+                            @endif
                         </td>
                     </tr>
                 @endforeach
@@ -172,50 +182,7 @@
 
                 <div class="pt-3 border-t border-zinc-200 dark:border-zinc-800">
                     <h5 class="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2">Module Access Privileges (RBAC)</h5>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
-                            <input type="checkbox" name="permissions[can_access_pos]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
-                            <div>
-                                <span class="block text-xs font-semibold text-foreground dark:text-zinc-200">Cashier Screen (POS)</span>
-                                <span class="block text-[11px] text-zinc-500">Checkout & cashier sales</span>
-                            </div>
-                        </label>
-                        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
-                            <input type="checkbox" name="permissions[can_void_order]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
-                            <div>
-                                <span class="block text-xs font-semibold text-foreground dark:text-zinc-200">Void Authority</span>
-                                <span class="block text-[11px] text-zinc-500">Cancel and void orders</span>
-                            </div>
-                        </label>
-                        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
-                            <input type="checkbox" name="permissions[can_give_discount]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
-                            <div>
-                                <span class="block text-xs font-semibold text-foreground dark:text-zinc-200">Discount Privileges</span>
-                                <span class="block text-[11px] text-zinc-500">Manual checkout discounts</span>
-                            </div>
-                        </label>
-                        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
-                            <input type="checkbox" name="permissions[can_access_kds]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
-                            <div>
-                                <span class="block text-xs font-semibold text-foreground dark:text-zinc-200">Kitchen Screen (KDS)</span>
-                                <span class="block text-[11px] text-zinc-500">Kitchen Display System queue</span>
-                            </div>
-                        </label>
-                        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
-                            <input type="checkbox" name="permissions[can_manage_menu]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
-                            <div>
-                                <span class="block text-xs font-semibold text-foreground dark:text-zinc-200">Catalog Management</span>
-                                <span class="block text-[11px] text-zinc-500">Modify items, prices, stock</span>
-                            </div>
-                        </label>
-                        <label class="flex items-start gap-2.5 p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/40 border border-zinc-200 dark:border-zinc-700 cursor-pointer">
-                            <input type="checkbox" name="permissions[can_view_reports]" value="1" class="mt-0.5 rounded text-primary-600 focus:ring-primary-500">
-                            <div>
-                                <span class="block text-xs font-semibold text-foreground dark:text-zinc-200">Reports & Shifts</span>
-                                <span class="block text-[11px] text-zinc-500">View financial recaps</span>
-                            </div>
-                        </label>
-                    </div>
+                    <x-erp.permission-matrix :selected="old('permissions', [])" :compact="true" />
                 </div>
 
                 <div class="flex items-center gap-2 pt-1">

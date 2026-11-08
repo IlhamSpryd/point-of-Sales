@@ -1,5 +1,7 @@
 <x-app-layout>
     <div x-data="{ createDeviceDrawer: {{ $errors->any() ? 'true' : 'false' }} }" class="space-y-6" data-gsap="page-enter">
+        <x-erp.module-sub-nav module="organization" />
+
         <!-- Header -->
         <x-erp.page-header
             title="POS Terminals &amp; Cashier Devices"

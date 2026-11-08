@@ -223,4 +223,106 @@ class ErpSidebarReachabilityTest extends TestCase
         $response = $this->actingAs($this->kasirUser)->get(route('stores.index'));
         $this->assertEquals(403, $response->status());
     }
+
+    public function test_home_controller_dispatches_all_canonical_and_custom_roles_without_dead_loop(): void
+    {
+        $this->actingAs($this->ownerUser)->get(route('home'))->assertRedirect(route('dashboard'));
+        $this->actingAs($this->managerUser)->get(route('home'))->assertRedirect(route('reports.sales'));
+        $this->actingAs($this->kasirUser)->get(route('home'))->assertRedirect(route('transaction.create'));
+        $this->actingAs($this->financeUser)->get(route('home'))->assertRedirect(route('finance.index'));
+        $this->actingAs($this->salesUser)->get(route('home'))->assertRedirect(route('sales.orders.index'));
+        $this->actingAs($this->cookUser)->get(route('home'))->assertRedirect(route('kds.index'));
+        $this->actingAs($this->baristaUser)->get(route('home'))->assertRedirect(route('kds.index'));
+
+        $auditorRole = Role::create([
+            'tenant_id' => $this->tenant->id,
+            'name' => 'Internal Auditor',
+            'permissions' => ['finance.view', 'audit_logs.view'],
+        ]);
+        $auditorUser = User::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'role_id' => $auditorRole->id,
+        ]);
+        DB::table('user_stores')->insert([
+            'tenant_id' => $this->tenant->id,
+            'user_id' => $auditorUser->id,
+            'store_id' => $this->store->id,
+        ]);
+
+        $this->actingAs($auditorUser)->get(route('home'))->assertRedirect(route('finance.index'));
+        $this->actingAs($auditorUser)->get(route('finance.index'))->assertOk();
+        $this->actingAs($auditorUser)->get(route('activity-logs.index'))->assertOk();
+    }
+
+    public function test_rescued_orphan_routes_render_unified_module_sub_nav(): void
+    {
+        $promoResp = $this->actingAs($this->ownerUser)->get(route('pricing.promotions.index'));
+        $promoResp->assertOk();
+        $promoResp->assertSee('Promotions & Pricing Navigation');
+        $promoResp->assertSee('Promotion Campaigns');
+        $promoResp->assertSee('Vouchers &amp; Coupons', false);
+
+        $voucherResp = $this->actingAs($this->ownerUser)->get(route('pricing.vouchers.index'));
+        $voucherResp->assertOk();
+        $voucherResp->assertSee('Promotions & Pricing Navigation');
+
+        $discountResp = $this->actingAs($this->ownerUser)->get(route('discounts.index'));
+        $discountResp->assertOk();
+        $discountResp->assertSee('Promotions & Pricing Navigation');
+    }
+
+    public function test_owner_role_immutability_and_permission_normalization(): void
+    {
+        $roleService = app(\App\Modules\Users\Services\RoleService::class);
+        $ownerRole = $this->ownerUser->role;
+
+        // 1. Attempting to downgrade Owner permissions or deactivate Owner role preserves wildcard & active state
+        $updatedOwner = $roleService->update($ownerRole, [
+            'name' => 'Hacked Name',
+            'is_active' => false,
+            'permissions' => ['orders.view'],
+        ]);
+        $this->assertSame('Owner', $updatedOwner->name);
+        $this->assertTrue((bool) $updatedOwner->is_active);
+        $this->assertSame(['*'], $updatedOwner->permissions);
+
+        // 2. Attempting to delete Owner role throws exception even if no users assigned
+        $emptyOwnerRole = new Role([
+            'tenant_id' => $this->tenant->id,
+            'name' => 'Owner',
+            'permissions' => ['*'],
+        ]);
+        $this->expectException(\Exception::class);
+        $roleService->delete($emptyOwnerRole);
+    }
+
+    public function test_role_service_normalizes_sequential_and_associative_permissions(): void
+    {
+        $roleService = app(\App\Modules\Users\Services\RoleService::class);
+
+        $customRole = $roleService->store([
+            'tenant_id' => $this->tenant->id,
+            'role_code' => 'ROL-CUSTOM',
+            'name' => 'Branch Lead',
+            'permissions' => [
+                'can_access_pos' => '1',
+                'can_void_order' => '0',
+                0 => 'inventory.view',
+            ],
+            'is_active' => true,
+        ]);
+
+        $this->assertContains('can_access_pos', $customRole->permissions);
+        $this->assertContains('orders.create', $customRole->permissions);
+        $this->assertContains('inventory.view', $customRole->permissions);
+        $this->assertNotContains('can_void_order', $customRole->permissions);
+
+        $staff = User::factory()->create([
+            'tenant_id' => $this->tenant->id,
+            'role_id' => $customRole->id,
+        ]);
+        $this->assertTrue($staff->hasPermission('orders.create'));
+        $this->assertTrue($staff->hasPermission('inventory.view'));
+        $this->assertFalse($staff->hasPermission('orders.void'));
+    }
 }

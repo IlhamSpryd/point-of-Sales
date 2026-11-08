@@ -69,15 +69,15 @@
                 @error('manualDiscountReason') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
             </div>
 
-            <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 space-y-1.5">
-                <div class="flex items-center gap-1.5 text-amber-800 text-[11px] font-semibold">
-                    <span class="material-symbols-rounded text-[15px]">lock</span>
+            <div class="p-3 rounded-xl bg-muted border border-border space-y-1.5">
+                <div class="flex items-center gap-1.5 text-foreground text-[11px] font-semibold">
+                    <span class="material-symbols-rounded text-[15px] text-muted-foreground">lock</span>
                     <span>Supervisor PIN Authorization</span>
                 </div>
                 <input type="password" x-model="supervisorPin" maxlength="6"
-                    class="w-full h-9 px-3 bg-white border border-amber-300 rounded-lg text-center font-sans tabular-nums font-bold text-xs tracking-widest text-foreground focus:outline-none focus:border-amber-600 transition-all"
+                    class="w-full h-9 px-3 bg-white border border-border rounded-lg text-center font-sans tabular-nums font-bold text-xs tracking-widest text-foreground focus:outline-none focus:border-foreground transition-all"
                     placeholder="••••••">
-                <span class="text-[10px] text-amber-700 block">Required when discount exceeds cashier authorization limit.</span>
+                <span class="text-[10px] text-muted-foreground block">Required when discount exceeds cashier authorization limit.</span>
                 @error('manualDiscountSupervisorPin') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
             </div>
         </form>

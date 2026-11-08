@@ -2,7 +2,10 @@
 
 namespace App\Modules\Sales\Models;
 
+use App\Enums\FulfillmentChannel;
+use App\Enums\KitchenPrepStatus;
 use App\Enums\PreparationStatus;
+use App\Enums\ShippingDispatchStatus;
 use App\Models\Concerns\AssignsStore;
 use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToStore;
@@ -60,6 +63,9 @@ class OrderItem extends Model
         'options',
         'notes',
         'preparation_status',
+        'fulfillment_channel',
+        'kitchen_prep_status',
+        'shipping_dispatch_status',
         'processed_by',
         'tenant_id',
         'store_id',
@@ -83,6 +89,9 @@ class OrderItem extends Model
         return [
             'options' => 'array',
             'preparation_status' => PreparationStatus::class,
+            'fulfillment_channel' => FulfillmentChannel::class,
+            'kitchen_prep_status' => KitchenPrepStatus::class,
+            'shipping_dispatch_status' => ShippingDispatchStatus::class,
             'item_discount_amount' => 'decimal:2',
             'allocated_order_discount_amount' => 'decimal:2',
             'net_line_total' => 'decimal:2',

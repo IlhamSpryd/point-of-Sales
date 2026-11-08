@@ -30,7 +30,7 @@ class SupplierInvoicePolicy
     public function viewAny(User $user): bool
     {
         return $user->hasPermission('purchasing.invoice.view')
-            || in_array($user->role?->name, ['Owner', 'Manager', 'Accounting', 'Admin'], true)
+            || in_array($user->role?->name, ['Owner', 'Manager', 'Finance', 'Inventory', 'Accounting', 'Admin'], true)
             || (bool) $user->role?->is_admin;
     }
 
@@ -39,14 +39,14 @@ class SupplierInvoicePolicy
         return $this->sameTenant($user, $invoice)
             && $this->hasStoreAccess($user, $invoice)
             && ($user->hasPermission('purchasing.invoice.view')
-                || in_array($user->role?->name, ['Owner', 'Manager', 'Accounting', 'Admin'], true)
+                || in_array($user->role?->name, ['Owner', 'Manager', 'Finance', 'Inventory', 'Accounting', 'Admin'], true)
                 || (bool) $user->role?->is_admin);
     }
 
     public function create(User $user): bool
     {
         return $user->hasPermission('purchasing.invoice.create')
-            || in_array($user->role?->name, ['Owner', 'Manager', 'Accounting', 'Admin'], true)
+            || in_array($user->role?->name, ['Owner', 'Manager', 'Finance', 'Inventory', 'Accounting', 'Admin'], true)
             || (bool) $user->role?->is_admin;
     }
 
@@ -61,7 +61,7 @@ class SupplierInvoicePolicy
         }
 
         return $user->hasPermission('purchasing.invoice.create')
-            || in_array($user->role?->name, ['Owner', 'Manager', 'Accounting', 'Admin'], true)
+            || in_array($user->role?->name, ['Owner', 'Manager', 'Finance', 'Inventory', 'Accounting', 'Admin'], true)
             || (bool) $user->role?->is_admin;
     }
 
@@ -72,7 +72,7 @@ class SupplierInvoicePolicy
         }
 
         return $user->hasPermission('purchasing.invoice.match')
-            || in_array($user->role?->name, ['Owner', 'Manager', 'Accounting', 'Admin'], true)
+            || in_array($user->role?->name, ['Owner', 'Manager', 'Finance', 'Inventory', 'Accounting', 'Admin'], true)
             || (bool) $user->role?->is_admin;
     }
 
@@ -87,7 +87,7 @@ class SupplierInvoicePolicy
         }
 
         return $user->hasPermission('purchasing.invoice.approve_variance')
-            || in_array($user->role?->name, ['Owner', 'Accounting Manager', 'Admin'], true)
+            || in_array($user->role?->name, ['Owner', 'Manager', 'Finance', 'Accounting Manager', 'Admin'], true)
             || (bool) $user->role?->is_admin;
     }
 
@@ -102,7 +102,7 @@ class SupplierInvoicePolicy
         }
 
         return $user->hasPermission('purchasing.invoice.approve_payable')
-            || in_array($user->role?->name, ['Owner', 'Manager', 'Accounting', 'Admin'], true)
+            || in_array($user->role?->name, ['Owner', 'Manager', 'Finance', 'Accounting', 'Admin'], true)
             || (bool) $user->role?->is_admin;
     }
 
@@ -117,7 +117,7 @@ class SupplierInvoicePolicy
         }
 
         return $user->hasPermission('purchasing.invoice.cancel')
-            || in_array($user->role?->name, ['Owner', 'Manager', 'Accounting', 'Admin'], true)
+            || in_array($user->role?->name, ['Owner', 'Manager', 'Finance', 'Accounting', 'Admin'], true)
             || (bool) $user->role?->is_admin;
     }
 }

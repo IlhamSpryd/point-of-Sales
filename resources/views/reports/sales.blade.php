@@ -1,5 +1,7 @@
 <x-app-layout>
     <div x-data="{ openEodModal: false }" class="space-y-6" data-gsap="page-enter">
+        <x-erp.module-sub-nav module="reports" />
+
         <!-- Page header -->
         <x-erp.page-header
             :title="$title"

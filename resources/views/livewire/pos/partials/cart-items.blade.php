@@ -1,12 +1,12 @@
 <!-- Scrollable Products Area in Cart -->
-<div class="flex-1 overflow-y-auto custom-scrollbar space-y-2.5 pr-1 py-1">
+<div class="flex-1 overflow-y-auto custom-scrollbar space-y-2 pr-1 py-1 min-h-[160px]">
     @if ($pendingOrderId)
-        <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-xs font-semibold text-amber-900 flex items-center justify-between shadow-xs">
+        <div class="p-2.5 bg-muted border border-border rounded-lg text-xs font-semibold text-foreground flex items-center justify-between shadow-2xs">
             <span class="flex items-center gap-1.5 truncate">
-                <span class="material-symbols-rounded text-[16px] text-amber-700">lock</span>
+                <span class="material-symbols-rounded text-[16px] text-muted-foreground">lock</span>
                 QR Settlement Mode #{{ $pendingOrderCode }}
             </span>
-            <button type="button" wire:click="cancelPendingOrderMode" class="text-xs font-bold text-rose-600 hover:text-rose-800 transition-colors ml-2 shrink-0">
+            <button type="button" wire:click="cancelPendingOrderMode" class="text-xs font-semibold text-rose-600 hover:text-rose-800 transition-colors ml-2 shrink-0">
                 Cancel
             </button>
         </div>
@@ -14,15 +14,15 @@
 
     {{-- Alert Revalidasi Keranjang Tertunda --}}
     @if(!empty($resumeWarnings))
-        <div class="p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-900 space-y-1">
+        <div class="p-2.5 bg-muted border border-border rounded-lg text-xs text-foreground space-y-1">
             <div class="flex items-center justify-between font-bold">
                 <span class="flex items-center gap-1">
-                    <span class="material-symbols-rounded text-[15px] text-amber-600">warning</span>
+                    <span class="material-symbols-rounded text-[15px] text-muted-foreground">warning</span>
                     Revalidation Warning:
                 </span>
-                <button type="button" wire:click="$set('resumeWarnings', [])" class="text-amber-500 hover:text-amber-800 font-bold">&times;</button>
+                <button type="button" wire:click="$set('resumeWarnings', [])" class="text-muted-foreground hover:text-foreground font-bold">&times;</button>
             </div>
-            <ul class="list-disc list-inside space-y-0.5 text-[11px]">
+            <ul class="list-disc list-inside space-y-0.5 text-[11px] text-muted-foreground">
                 @foreach($resumeWarnings as $warn)
                     <li>{{ $warn }}</li>
                 @endforeach

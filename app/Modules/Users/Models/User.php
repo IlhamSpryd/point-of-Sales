@@ -265,9 +265,154 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
         return $this->belongsTo(Role::class);
     }
 
+    /**
+     * @return HasMany<\App\Models\UserStoreRole, $this>
+     */
+    public function storeRoles(): HasMany
+    {
+        return $this->hasMany(\App\Models\UserStoreRole::class);
+    }
+
+    /**
+     * Retrieve all active roles assigned to this user at the specified or active store.
+     *
+     * @return \Illuminate\Support\Collection<int, Role>
+     */
+    public function rolesForStore(?int $storeId = null): \Illuminate\Support\Collection
+    {
+        $targetStoreId = $storeId ?? (int) (app(\App\Services\Context\TenantContext::class)->getStoreId() ?? $this->store_id ?? 0);
+        $roleName = $this->role?->name;
+
+        // Enterprise Owner and global Admin implicitly possess their authority across all stores
+        if ($roleName === 'Owner' || (bool) ($this->role->is_admin ?? false)) {
+            return collect($this->role ? [$this->role] : []);
+        }
+
+        if ($targetStoreId <= 0) {
+            return collect($this->role ? [$this->role] : []);
+        }
+
+        $activeStoreRoles = \App\Models\UserStoreRole::withoutGlobalScopes()
+            ->where('tenant_id', $this->tenant_id)
+            ->where('user_id', $this->id)
+            ->where('store_id', $targetStoreId)
+            ->where('is_active', true)
+            ->where(function ($q) {
+                $q->whereNull('valid_from')->orWhere('valid_from', '<=', now()->toDateString());
+            })
+            ->where(function ($q) {
+                $q->whereNull('valid_to')->orWhere('valid_to', '>=', now()->toDateString());
+            })
+            ->with('role')
+            ->get()
+            ->map(fn ($assignment) => $assignment->role)
+            ->filter();
+
+        if ($activeStoreRoles->isNotEmpty()) {
+            return $activeStoreRoles->values();
+        }
+
+        // Fallback to primary role if belongs to store
+        return collect($this->role ? [$this->role] : []);
+    }
+
+    /**
+     * Checks if the user holds a specific role in the specified store context.
+     *
+     * @param string|list<string> $roleNames
+     */
+    public function hasRoleInStore(string|array $roleNames, ?int $storeId = null): bool
+    {
+        $allowed = (array) $roleNames;
+        $activeRoles = $this->rolesForStore($storeId);
+
+        return $activeRoles->contains(fn ($r) => in_array($r->name, $allowed, true));
+    }
+
+    /**
+     * Checks whether user holds permission in the specified store context.
+     */
+    public function hasPermissionInStore(string $permission, ?int $storeId = null): bool
+    {
+        $activeRoles = $this->rolesForStore($storeId);
+
+        foreach ($activeRoles as $role) {
+            if ($role->hasPermission($permission)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public function hasPermission(string $permission): bool
     {
         return (bool) $this->role?->hasPermission($permission);
+    }
+
+    /**
+     * Determines whether the user possesses authority to switch between physical branches.
+     * Frontline store personnel (Cashier, Waiter, Barista, Kitchen) cannot switch branches.
+     */
+    public function canSwitchStores(): bool
+    {
+        $roleName = $this->role?->name;
+        $isOwnerOrAdmin = $roleName === 'Owner' || (bool) ($this->role->is_admin ?? false);
+
+        if ($isOwnerOrAdmin) {
+            return true;
+        }
+
+        return $this->hasPermission('stores.switch');
+    }
+
+    /**
+     * Determines whether the user has enterprise authority to view aggregated/consolidated multi-branch data.
+     */
+    public function canViewConsolidatedStores(): bool
+    {
+        $roleName = $this->role?->name;
+        $isOwnerOrAdmin = $roleName === 'Owner' || (bool) ($this->role->is_admin ?? false);
+
+        if ($isOwnerOrAdmin) {
+            return true;
+        }
+
+        return $this->hasPermission('stores.all');
+    }
+
+    /**
+     * Checks whether the user has an open sales shift in the given or current tenant.
+     */
+    public function hasActiveShift(?int $tenantId = null): bool
+    {
+        $tenantId = $tenantId ?? (int) $this->tenant_id;
+        if (! $tenantId) {
+            return false;
+        }
+
+        return \App\Models\Shift::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $this->id)
+            ->where('status', 'open')
+            ->exists();
+    }
+
+    /**
+     * Retrieves the currently open sales shift for this user, if any.
+     */
+    public function getActiveShift(?int $tenantId = null): ?\App\Models\Shift
+    {
+        $tenantId = $tenantId ?? (int) $this->tenant_id;
+        if (! $tenantId) {
+            return null;
+        }
+
+        return \App\Models\Shift::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $this->id)
+            ->where('status', 'open')
+            ->first();
     }
 
     /**

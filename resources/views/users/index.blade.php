@@ -1,5 +1,7 @@
 <x-app-layout>
     <div x-data="{ activeTab: 'users', createUserDrawer: {{ $errors->any() ? 'true' : 'false' }} }" class="space-y-6" data-gsap="page-enter">
+        <x-erp.module-sub-nav module="governance" />
+
         <!-- Header -->
         <x-erp.page-header
             title="User & Staff Management"
@@ -305,6 +307,20 @@
                         <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Confirm Password <span class="text-rose-500">*</span></label>
                         <input type="password" name="password_confirmation" required placeholder="••••••••" class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
                     </div>
+
+                    @if(isset($stores) && $stores->count() > 0)
+                        <div class="md:col-span-2 pt-2 border-t border-border">
+                            <label class="block text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Assigned Branches (Store Scope)</label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                @foreach($stores as $store)
+                                    <label class="flex items-center gap-2.5 p-2.5 rounded-xl border border-border bg-card hover:bg-muted/40 transition-colors cursor-pointer">
+                                        <input type="checkbox" name="store_ids[]" value="{{ $store->id }}" {{ $loop->first ? 'checked' : '' }} class="rounded border-border text-primary focus:ring-ring">
+                                        <span class="text-xs font-semibold text-foreground truncate">{{ $store->name }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
                 </div>
 
                 <div class="flex items-center gap-2 pt-2">

@@ -40,8 +40,9 @@ class StoreSwitchController extends Controller
         $target = $request->input('store_id');
         $allowed = $storeResolver->allowedStoreIdsFor($user, $tenantId);
         $isOwner = $user->role?->name === 'Owner' || (bool) ($user->role?->is_admin ?? false);
+        $canSwitch = $isOwner || $user->role?->name === 'Manager' || $user->canSwitchStores();
 
-        // Cegah beralih cabang jika masih memiliki shift aktif di cabang lain
+        // 1. Cegah beralih cabang jika masih memiliki shift aktif di cabang lain
         $openShift = Shift::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('user_id', $user->id)
@@ -57,8 +58,13 @@ class StoreSwitchController extends Controller
             }
         }
 
+        // 2. Enforce RBAC: Frontline personnel (Cashier, Waiter, Barista, Cook) cannot switch branches
+        if (! $canSwitch) {
+            abort(403, 'Anda tidak memiliki wewenang untuk berpindah cabang.');
+        }
+
         if ($target === 'all') {
-            if (! $isOwner) {
+            if (! $user->canViewConsolidatedStores()) {
                 abort(403, 'Hanya Owner yang dapat mengakses data konsolidasi seluruh cabang.');
             }
             $request->session()->put('active_store_id', 'all');

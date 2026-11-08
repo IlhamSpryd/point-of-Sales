@@ -15,7 +15,7 @@ use App\Policies\RolePolicy;
 use App\Policies\SettingPolicy;
 use App\Policies\UserPolicy;
 use App\Services\Context\TenantContext;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -23,7 +23,7 @@ use Tests\TestCase;
 
 class SidebarIntegrityTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     public function test_all_routes_referenced_by_sidebar_are_registered(): void
     {
@@ -179,6 +179,13 @@ class SidebarIntegrityTest extends TestCase
         $this->assertEqualsCanonicalizing(
             ['kds.index'],
             $baristaRoutes
+        );
+
+        // 9. Supervisor sees Order History and Cashier Shifts
+        $supervisorRoutes = $getVisibleRoutes('Supervisor');
+        $this->assertEqualsCanonicalizing(
+            ['orders.index', 'shifts.index'],
+            $supervisorRoutes
         );
     }
 

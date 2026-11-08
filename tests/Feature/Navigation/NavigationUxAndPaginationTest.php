@@ -30,14 +30,14 @@ use App\Models\Store;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Context\TenantContext;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Livewire\Attributes\Url;
 use ReflectionClass;
 use Tests\TestCase;
 
 class NavigationUxAndPaginationTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private User $adminUser;
 

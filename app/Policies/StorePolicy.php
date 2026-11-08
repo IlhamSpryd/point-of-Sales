@@ -83,6 +83,12 @@ class StorePolicy
             return true;
         }
 
+        // Cannot switch to another branch while holding an active open shift in a different store
+        $activeShift = $user->getActiveShift();
+        if ($activeShift && (int) $activeShift->store_id !== (int) $store->id) {
+            return false;
+        }
+
         return DB::table('user_stores')
             ->where('tenant_id', $user->tenant_id)
             ->where('user_id', $user->id)

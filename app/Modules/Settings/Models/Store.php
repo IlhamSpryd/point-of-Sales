@@ -7,11 +7,14 @@ use App\Models\Concerns\ScopedToTenant;
 use App\Models\Device;
 use App\Models\EodSettlement;
 use App\Models\Ingredient;
+use App\Models\OperationalUnit;
 use App\Models\Product;
+use App\Models\StoreCapability;
 use App\Models\StoreProductAssortment;
 use App\Models\Table;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\UserStoreRole;
 use App\Services\Context\TenantContext;
 use App\Services\EntitlementService;
 use Illuminate\Database\Eloquent\Model;
@@ -48,7 +51,18 @@ class Store extends Model
     protected static function booted()
     {
         static::created(function ($model) {
-            // Pre-create balance rows untuk store baru. Query ke Product/
+            // Auto-create default operational unit for this store
+            DB::table('operational_units')->insertOrIgnore([
+                'tenant_id' => $model->tenant_id,
+                'store_id' => $model->id,
+                'name' => 'Main Operational Unit',
+                'code' => 'MAIN',
+                'unit_type' => 'checkout_retail',
+                'is_default' => true,
+                'is_active' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
             // Ingredient bersifat tenant-scoped, jadi operasi ini hanya aman
             // dijalankan ketika tenant context sudah ada (bukan di harness/boot).
             if (app(TenantContext::class)->getTenantId() !== (int) $model->tenant_id) {
@@ -159,6 +173,30 @@ class Store extends Model
     public function productAssortments(): HasMany
     {
         return $this->hasMany(StoreProductAssortment::class);
+    }
+
+    /**
+     * @return HasMany<OperationalUnit, $this>
+     */
+    public function operationalUnits(): HasMany
+    {
+        return $this->hasMany(OperationalUnit::class);
+    }
+
+    /**
+     * @return HasMany<UserStoreRole, $this>
+     */
+    public function storeRoles(): HasMany
+    {
+        return $this->hasMany(UserStoreRole::class);
+    }
+
+    /**
+     * @return HasMany<StoreCapability, $this>
+     */
+    public function capabilities(): HasMany
+    {
+        return $this->hasMany(StoreCapability::class);
     }
 
     public function isTablesEnabled(): bool

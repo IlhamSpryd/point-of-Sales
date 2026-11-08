@@ -3,7 +3,7 @@
     'variant' => null,
     'status' => null,
     'dot' => true,
-    'asBadge' => false,
+    'asBadge' => true,
     'pill' => false,
 ])
 

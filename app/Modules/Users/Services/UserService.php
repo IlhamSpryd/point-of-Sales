@@ -68,10 +68,16 @@ class UserService
             unset($data['pin_code']);
         }
 
-        return DB::transaction(function () use ($data) {
+        $storeIds = $data['store_ids'] ?? null;
+        unset($data['store_ids']);
+
+        return DB::transaction(function () use ($data, $storeIds) {
+            $tenantId = (int) app(TenantContext::class)->requireTenantId();
             $user = new User($data);
-            $user->tenant_id = app(TenantContext::class)->requireTenantId();
+            $user->tenant_id = $tenantId;
             $user->save();
+
+            $this->syncUserStores($user, is_array($storeIds) ? $storeIds : null);
 
             // Link to existing employee if email matches and not yet linked,
             // or auto-provision baseline Employee profile to prevent orphaned user accounts
@@ -178,7 +184,15 @@ class UserService
                 unset($data['pin_code']);
             }
 
+            $hasStoreIdsInput = array_key_exists('store_ids', $data);
+            $storeIds = $data['store_ids'] ?? [];
+            unset($data['store_ids']);
+
             $user->update($data);
+
+            if ($hasStoreIdsInput && is_array($storeIds)) {
+                $this->syncUserStores($user, $storeIds);
+            }
 
             // Invalidate active sessions if credentials or roles change
             if (isset($data['password_hash']) || (isset($data['is_active']) && ! $data['is_active']) || isset($data['role_id']) || isset($data['status'])) {
@@ -245,5 +259,51 @@ class UserService
             ->where('user_id', $user->id)
             ->where('store_id', $storeId)
             ->delete();
+    }
+
+    /**
+     * Sinkronisasi penugasan multi-cabang (`user_stores`) dengan perlindungan shift aktif.
+     *
+     * @param  array<int, int|string>|null  $storeIds
+     */
+    public function syncUserStores(User $user, ?array $storeIds): void
+    {
+        $tenantId = (int) $user->tenant_id;
+
+        if ($storeIds === null) {
+            $activeStoreId = app(TenantContext::class)->getStoreId();
+            $storeIds = $activeStoreId ? [(int) $activeStoreId] : [];
+        }
+
+        $validStoreIds = \App\Models\Store::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->whereIn('id', array_map('intval', $storeIds))
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+
+        $currentStoreIds = DB::table('user_stores')
+            ->where('tenant_id', $tenantId)
+            ->where('user_id', $user->id)
+            ->pluck('store_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $removedStoreIds = array_diff($currentStoreIds, $validStoreIds);
+        foreach ($removedStoreIds as $removedStoreId) {
+            $this->revokeStoreAccess($user, (int) $removedStoreId);
+        }
+
+        $toInsert = array_diff($validStoreIds, $currentStoreIds);
+        foreach ($toInsert as $storeId) {
+            DB::table('user_stores')->insertOrIgnore([
+                'tenant_id' => $tenantId,
+                'user_id' => $user->id,
+                'store_id' => (int) $storeId,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
     }
 }

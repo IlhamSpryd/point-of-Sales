@@ -132,7 +132,7 @@ class UserInvitationController extends Controller
         $request->session()->regenerate();
         app(TenantContext::class)->setTenantId((int) $user->tenant_id);
 
-        return redirect()->route('dashboard')
+        return redirect()->route('home')
             ->with('success', 'Selamat datang! Akun karyawan Anda telah aktif.');
     }
 }

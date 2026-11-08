@@ -41,12 +41,13 @@ class UserController extends Controller
         }
 
         // Mengambil data pengguna dengan filter dari UserService berserta paginasinya
-        $users = $this->userService->getFilteredQuery($request)->paginate(10)->withQueryString();
+        $users = $this->userService->getFilteredQuery($request)->with('stores')->paginate(10)->withQueryString();
         $roles = Role::orderBy('name')->get();
+        $stores = \App\Models\Store::where('tenant_id', app(TenantContext::class)->requireTenantId())->orderBy('name')->get();
         $invitations = UserInvitation::with(['role', 'invitedBy'])->latest('id')->limit(20)->get();
 
-        // Mengembalikan View dan mengirim data users, roles, invitations
-        return view('users.index', compact('users', 'roles', 'invitations'));
+        // Mengembalikan View dan mengirim data users, roles, stores, invitations
+        return view('users.index', compact('users', 'roles', 'stores', 'invitations'));
     }
 
     /**
@@ -56,8 +57,9 @@ class UserController extends Controller
     {
         // Hanya role milik tenant pada konteks aktif (TenantScope global).
         $roles = Role::orderBy('name')->get();
+        $stores = \App\Models\Store::where('tenant_id', app(TenantContext::class)->requireTenantId())->orderBy('name')->get();
 
-        return view('users.create', compact('roles'));
+        return view('users.create', compact('roles', 'stores'));
     }
 
     /**
@@ -78,12 +80,15 @@ class UserController extends Controller
      */
     public function edit(User $user): View
     {
-        abort_if((int) $user->tenant_id !== (int) app(TenantContext::class)->requireTenantId(), 404);
+        $tenantId = (int) app(TenantContext::class)->requireTenantId();
+        abort_if((int) $user->tenant_id !== $tenantId, 404);
 
         // Hanya role milik tenant pada konteks aktif (TenantScope global).
         $roles = Role::orderBy('name')->get();
+        $stores = \App\Models\Store::where('tenant_id', $tenantId)->orderBy('name')->get();
+        $user->loadMissing('stores');
 
-        return view('users.edit', compact('user', 'roles'));
+        return view('users.edit', compact('user', 'roles', 'stores'));
     }
 
     /**
