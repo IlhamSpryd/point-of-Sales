@@ -54,9 +54,9 @@ class ProductBundleItem extends Model
         'bundle_product_id' => 'integer',
         'component_product_id' => 'integer',
         'component_variant_id' => 'integer',
-        'quantity' => 'float',
+        'quantity' => 'decimal:4',
         'uom_id' => 'integer',
-        'cost_allocation_ratio' => 'float',
+        'cost_allocation_ratio' => 'decimal:4',
         'sort_order' => 'integer',
     ];
 

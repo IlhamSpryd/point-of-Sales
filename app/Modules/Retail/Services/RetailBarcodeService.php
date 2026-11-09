@@ -46,6 +46,61 @@ class RetailBarcodeService
     }
 
     /**
+     * Alias untuk validasi checksum EAN-13.
+     */
+    public function validateEan13(string $barcode): bool
+    {
+        return $this->validateEan13Checksum($barcode);
+    }
+
+    /**
+     * Menghasilkan barcode retail standar EAN-13 internal (prefix '20').
+     */
+    public function generateInternalBarcode(): string
+    {
+        $prefix = '20';
+        $random = str_pad((string) random_int(0, 9999999999), 10, '0', STR_PAD_LEFT);
+        $payload = $prefix . $random;
+
+        $sum = 0;
+        for ($i = 0; $i < 12; $i++) {
+            $digit = (int) $payload[$i];
+            $weight = ($i % 2 === 0) ? 1 : 3;
+            $sum += $digit * $weight;
+        }
+
+        $remainder = $sum % 10;
+        $checkDigit = ($remainder === 0) ? 0 : (10 - $remainder);
+
+        return $payload . $checkDigit;
+    }
+
+    /**
+     * Memasangkan barcode ke varian produk dengan validasi keunikan per-tenant.
+     */
+    public function assignBarcodeToVariant(int $variantId, string $barcode): void
+    {
+        $cleanBarcode = trim($barcode);
+        if (! $this->validateEan13Checksum($cleanBarcode)) {
+            throw new DomainException("Barcode {$cleanBarcode} tidak valid menurut algoritma EAN-13.");
+        }
+
+        $tenantId = (int) $this->tenantContext->getTenantId();
+        $variant = ProductVariant::where('tenant_id', $tenantId)->findOrFail($variantId);
+
+        $exists = ProductVariant::where('tenant_id', $tenantId)
+            ->where('id', '!=', $variantId)
+            ->where('barcode', $cleanBarcode)
+            ->exists();
+
+        if ($exists) {
+            throw new DomainException("Barcode {$cleanBarcode} sudah digunakan oleh varian produk lain.");
+        }
+
+        $variant->update(['barcode' => $cleanBarcode]);
+    }
+
+    /**
      * Pencarian instan scan-to-cart berbasis barcode varian/produk dengan validasi assortment cabang aktif.
      * Dijamin beroperasi pada performa sub-50ms (T-RTL-01).
      *

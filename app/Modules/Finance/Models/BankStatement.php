@@ -34,7 +34,17 @@ class BankStatement extends Model
 
     protected $table = 'bank_statements';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'cash_bank_account_id',
+        'statement_number',
+        'statement_date',
+        'opening_balance',
+        'closing_balance',
+        'imported_file_path',
+        'imported_by_user_id',
+        'status',
+    ];
 
     protected function casts(): array
     {

@@ -42,7 +42,25 @@ class FinancialEventOutbox extends Model
 
     protected $table = 'financial_event_outboxes';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'event_id',
+        'event_type',
+        'source_module',
+        'source_type',
+        'source_id',
+        'source_number',
+        'idempotency_key',
+        'payload',
+        'status',
+        'occurred_at',
+        'processed_at',
+        'journal_entry_id',
+        'retry_count',
+        'next_retry_at',
+        'last_error',
+    ];
 
     protected function casts(): array
     {

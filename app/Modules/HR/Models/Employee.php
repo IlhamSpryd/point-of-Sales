@@ -76,7 +76,36 @@ class Employee extends Model
 
     protected $table = 'employees';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'user_id',
+        'employee_number',
+        'national_id_number',
+        'full_name',
+        'nickname',
+        'email',
+        'phone_number',
+        'gender',
+        'birth_place',
+        'birth_date',
+        'religion',
+        'marital_status',
+        'residential_address',
+        'emergency_contact_name',
+        'emergency_contact_phone',
+        'emergency_contact_relation',
+        'department_id',
+        'job_title_id',
+        'manager_id',
+        'employment_type',
+        'employment_status',
+        'hire_date',
+        'probation_end_date',
+        'contract_start_date',
+        'contract_end_date',
+        'termination_date',
+        'termination_reason',
+    ];
 
     protected static function booted(): void
     {

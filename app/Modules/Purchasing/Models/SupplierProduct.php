@@ -32,7 +32,22 @@ class SupplierProduct extends Model
 
     protected $table = 'supplier_products';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'supplier_id',
+        'purchasable_type',
+        'purchasable_id',
+        'supplier_sku',
+        'purchase_uom',
+        'uom_conversion_factor',
+        'standard_price',
+        'last_purchase_price',
+        'lead_time_days',
+        'min_order_qty',
+        'order_multiple_qty',
+        'is_preferred',
+        'is_active',
+    ];
 
     protected function casts(): array
     {

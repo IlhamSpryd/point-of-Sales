@@ -81,6 +81,23 @@ class ApprovalEngineService
                 ->where('name', $roleName)
                 ->first();
 
+            // Canonical role fallback jika role 'Branch Manager' / 'Area Manager' tidak terdaftar pada tenant
+            if (! $role) {
+                $canonicalFallback = match ($level) {
+                    1 => 'Manager',
+                    2 => 'Manager',
+                    default => 'Owner',
+                };
+                $role = Role::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->where('name', $canonicalFallback)
+                    ->first()
+                    ?? Role::withoutGlobalScopes()
+                        ->where('tenant_id', $tenantId)
+                        ->whereIn('name', ['Owner', 'Supervisor', 'Admin'])
+                        ->first();
+            }
+
             $minAmount = match ($level) {
                 1 => '0.00',
                 2 => bcadd(self::LEVEL_1_BRANCH_MANAGER_MAX, '0.01', 2),

@@ -46,7 +46,22 @@ class Supplier extends Model
 
     protected $table = 'suppliers';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'code',
+        'name',
+        'normalized_name',
+        'email',
+        'phone',
+        'tax_id',
+        'address',
+        'payment_terms_days',
+        'currency_code',
+        'status',
+        'notes',
+        'created_by_user_id',
+        'updated_by_user_id',
+    ];
 
     protected function casts(): array
     {

@@ -33,7 +33,14 @@ class TaxCode extends Model
 
     protected $table = 'tax_codes';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'code',
+        'name',
+        'tax_type',
+        'calculation_type',
+        'is_active',
+    ];
 
     protected function casts(): array
     {

@@ -416,6 +416,12 @@ class ReturnRefundService
                                         'updated_at' => now(),
                                     ]);
                                 }
+
+                                DB::table('product_stock_balances')
+                                    ->where('tenant_id', $lockedOrder->tenant_id)
+                                    ->where('store_id', $lockedOrder->store_id)
+                                    ->where('product_id', $product->id)
+                                    ->increment('quantity', $qty);
                             }
 
                             // Perbarui stok produk dan balance otoritatif
@@ -1000,6 +1006,12 @@ class ReturnRefundService
                                         'updated_at' => now(),
                                     ]);
                                 }
+
+                                DB::table('product_stock_balances')
+                                    ->where('tenant_id', $lockedOrder->tenant_id)
+                                    ->where('store_id', $lockedOrder->store_id)
+                                    ->where('product_id', $product->id)
+                                    ->increment('quantity', $qty);
                             }
 
                             $product->stock = (int) round((float) $product->stock + (float) $qty);

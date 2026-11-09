@@ -41,7 +41,19 @@ class IngredientStockMovement extends Model
 
     public const UPDATED_AT = null;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'ingredient_id',
+        'order_id',
+        'order_item_id',
+        'type',
+        'quantity',
+        'unit_cost',
+        'reason',
+        'idempotency_key',
+        'created_by',
+    ];
 
     protected $casts = [
         'type' => IngredientStockMovementTypeEnum::class,

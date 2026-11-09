@@ -29,7 +29,13 @@ class ExpenseApproval extends Model
 
     protected $table = 'expense_approvals';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'expense_id',
+        'approver_user_id',
+        'action',
+        'notes',
+    ];
 
     /**
      * @return BelongsTo<Tenant, $this>

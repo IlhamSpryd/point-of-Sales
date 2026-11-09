@@ -33,7 +33,15 @@ class BankReconciliationMatch extends Model
 
     protected $table = 'bank_reconciliation_matches';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'reconciliation_session_id',
+        'bank_statement_line_id',
+        'cash_bank_transaction_id',
+        'match_type',
+        'matched_amount',
+        'matched_by_user_id',
+    ];
 
     protected function casts(): array
     {

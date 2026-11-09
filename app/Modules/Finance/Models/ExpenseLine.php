@@ -30,7 +30,15 @@ class ExpenseLine extends Model
 
     protected $table = 'expense_lines';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'expense_id',
+        'line_number',
+        'description',
+        'amount',
+        'tax_code_id',
+        'tax_amount',
+    ];
 
     protected function casts(): array
     {

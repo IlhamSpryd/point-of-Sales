@@ -34,7 +34,15 @@ class EmployeeTaxProfile extends Model
 
     protected $table = 'employee_tax_profiles';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'employee_id',
+        'tax_identification_number',
+        'ptkp_status',
+        'calculation_method',
+        'is_eligible_for_dtp',
+        'effective_from',
+    ];
 
     /**
      * @return array<string, string>

@@ -164,3 +164,5 @@ require __DIR__.'/reports.php';
 require __DIR__.'/settings.php';
 require __DIR__.'/finance.php';
 require __DIR__.'/hr.php';
+require __DIR__.'/retail.php';
+require __DIR__.'/manufacturing.php';

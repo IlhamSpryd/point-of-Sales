@@ -34,7 +34,16 @@ class ApPaymentAllocation extends Model
 
     protected $table = 'ap_payment_allocations';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'ap_payment_id',
+        'supplier_invoice_id',
+        'allocated_amount',
+        'discount_taken_amount',
+        'status',
+        'idempotency_key',
+    ];
 
     protected function casts(): array
     {

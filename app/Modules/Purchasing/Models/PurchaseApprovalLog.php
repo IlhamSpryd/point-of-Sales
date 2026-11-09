@@ -37,7 +37,18 @@ class PurchaseApprovalLog extends Model
 
     protected $table = 'purchase_approval_logs';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'approval_request_id',
+        'approvable_type',
+        'approvable_id',
+        'action',
+        'actor_id',
+        'actor_role_id',
+        'step_order',
+        'reason',
+        'payload_snapshot',
+    ];
 
     protected function casts(): array
     {

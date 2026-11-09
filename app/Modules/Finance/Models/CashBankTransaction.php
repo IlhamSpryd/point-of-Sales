@@ -48,7 +48,29 @@ class CashBankTransaction extends Model
 
     protected $table = 'cash_bank_transactions';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'cash_bank_account_id',
+        'transfer_pair_account_id',
+        'journal_entry_id',
+        'transaction_number',
+        'transaction_type',
+        'transaction_date',
+        'amount',
+        'running_balance_after',
+        'description',
+        'reference_number',
+        'idempotency_key',
+        'status',
+        'is_reconciled',
+        'reconciled_at',
+        'created_by_user_id',
+        'posted_by_user_id',
+        'reversed_by_user_id',
+        'reversed_at',
+        'reversal_reason',
+    ];
 
     protected function casts(): array
     {

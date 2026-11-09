@@ -49,10 +49,10 @@ class LeaveBalance extends Model
     {
         return [
             'year' => 'integer',
-            'allocated_days' => 'float',
-            'used_days' => 'float',
-            'remaining_days' => 'float',
-            'expired_days' => 'float',
+            'allocated_days' => 'decimal:2',
+            'used_days' => 'decimal:2',
+            'remaining_days' => 'decimal:2',
+            'expired_days' => 'decimal:2',
         ];
     }
 

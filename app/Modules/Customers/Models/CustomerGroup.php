@@ -26,7 +26,16 @@ class CustomerGroup extends Model
     use ScopedToTenant;
     use SoftDeletes;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'code',
+        'name',
+        'description',
+        'default_price_list_id',
+        'default_discount_rate',
+        'is_b2b_default',
+        'is_active',
+    ];
 
     protected function casts(): array
     {

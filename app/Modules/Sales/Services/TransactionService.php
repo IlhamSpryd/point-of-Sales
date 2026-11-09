@@ -1024,11 +1024,7 @@ class TransactionService
                 }
 
                 if ($order->order_status === OrderStatus::Paid) {
-                    try {
-                        app(FinancialOutboxDispatcherService::class)->dispatchPosOrderPaid($order);
-                    } catch (\Throwable $e) {
-                        Log::warning("[FINANCE OUTBOX] Gagal dispatch outbox POS paid untuk order #{$order->id}: ".$e->getMessage());
-                    }
+                    app(FinancialOutboxDispatcherService::class)->dispatchPosOrderPaid($order);
                 }
 
                 return $order;
@@ -1462,11 +1458,7 @@ class TransactionService
                 $this->grantLoyaltyPoints((int) $order->customer_id, $order, $dppAmount);
             }
 
-            try {
-                app(FinancialOutboxDispatcherService::class)->dispatchPosOrderPaid($order);
-            } catch (\Throwable $e) {
-                Log::warning("[FINANCE OUTBOX] Gagal dispatch outbox POS paid untuk pending order #{$order->id}: ".$e->getMessage());
-            }
+            app(FinancialOutboxDispatcherService::class)->dispatchPosOrderPaid($order);
 
             return $order;
         }, attempts: 3);
@@ -1754,11 +1746,7 @@ class TransactionService
                             $this->grantLoyaltyPoints((int) $order->customer_id, $order, $dppAmount);
                         }
 
-                        try {
-                            app(FinancialOutboxDispatcherService::class)->dispatchPosOrderPaid($order);
-                        } catch (\Throwable $e) {
-                            Log::warning("[FINANCE OUTBOX] Gagal dispatch outbox POS paid untuk order #{$order->id}: ".$e->getMessage());
-                        }
+                        app(FinancialOutboxDispatcherService::class)->dispatchPosOrderPaid($order);
                     }
                 }
 

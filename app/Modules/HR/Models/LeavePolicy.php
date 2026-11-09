@@ -53,7 +53,7 @@ class LeavePolicy extends Model
     {
         return [
             'is_paid' => 'boolean',
-            'default_days_per_year' => 'float',
+            'default_days_per_year' => 'decimal:2',
             'is_gender_specific' => 'boolean',
             'requires_attachment' => 'boolean',
             'is_active' => 'boolean',

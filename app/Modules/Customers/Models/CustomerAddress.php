@@ -23,7 +23,22 @@ class CustomerAddress extends Model
     use ScopedToTenant;
     use SoftDeletes;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'customer_id',
+        'address_type',
+        'label',
+        'recipient_name',
+        'phone',
+        'address_line1',
+        'address_line2',
+        'city',
+        'province',
+        'postal_code',
+        'country_code',
+        'is_default_billing',
+        'is_default_shipping',
+    ];
 
     protected function casts(): array
     {

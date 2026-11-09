@@ -32,7 +32,15 @@ class EmployeeBpjsProfile extends Model
 
     protected $table = 'employee_bpjs_profiles';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'employee_id',
+        'bpjs_ketenagakerjaan_number',
+        'bpjs_kesehatan_number',
+        'jkk_risk_grade',
+        'is_bpjs_tk_active',
+        'is_bpjs_ks_active',
+    ];
 
     /**
      * @return array<string, string>

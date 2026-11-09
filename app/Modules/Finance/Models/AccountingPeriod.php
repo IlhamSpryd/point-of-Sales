@@ -39,7 +39,21 @@ class AccountingPeriod extends Model
 
     protected $table = 'accounting_periods';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'period_code',
+        'fiscal_year',
+        'period_number',
+        'start_date',
+        'end_date',
+        'status',
+        'is_adjustment_period',
+        'closed_at',
+        'closed_by_user_id',
+        'reopened_at',
+        'reopened_by_user_id',
+        'reopen_reason',
+    ];
 
     protected function casts(): array
     {

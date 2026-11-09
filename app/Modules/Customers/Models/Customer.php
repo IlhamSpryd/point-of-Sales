@@ -42,7 +42,27 @@ class Customer extends Model
     use ScopedToTenant;
     use SoftDeletes;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'customer_code',
+        'name',
+        'customer_type',
+        'customer_group_id',
+        'company_name',
+        'tax_id',
+        'business_registration_no',
+        'default_store_id',
+        'sales_rep_user_id',
+        'price_list_id',
+        'phone',
+        'email',
+        'date_of_birth',
+        'join_date',
+        'is_active',
+        'is_loyalty_eligible',
+        'merged_into_customer_id',
+        'phone_uniqueness_key',
+        'tenant_id',
+    ];
 
     protected function casts(): array
     {

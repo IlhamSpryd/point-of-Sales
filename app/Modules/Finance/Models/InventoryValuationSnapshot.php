@@ -38,7 +38,21 @@ class InventoryValuationSnapshot extends Model
 
     protected $table = 'inventory_valuation_snapshots';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'accounting_period_id',
+        'store_id',
+        'snapshot_date',
+        'item_type',
+        'item_id',
+        'closing_qty',
+        'average_unit_cost',
+        'total_valuation_amount',
+        'gl_account_id',
+        'gl_balance_amount',
+        'variance_amount',
+        'reconciliation_status',
+    ];
 
     protected function casts(): array
     {

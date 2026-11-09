@@ -39,7 +39,16 @@ class Ingredient extends Model
     use ScopedToTenant;
     use SoftDeletes;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'ingredient_code',
+        'name',
+        'unit',
+        'current_stock',
+        'cost_per_unit',
+        'reorder_level',
+        'is_active',
+        'tenant_id',
+    ];
 
     protected $casts = [
         'cost_per_unit' => 'decimal:4',

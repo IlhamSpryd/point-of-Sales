@@ -34,7 +34,17 @@ class FixedAssetCategory extends Model
 
     protected $table = 'fixed_asset_categories';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'category_code',
+        'category_name',
+        'asset_gl_account_id',
+        'accum_depr_gl_account_id',
+        'depr_expense_gl_account_id',
+        'useful_life_months',
+        'depreciation_method',
+        'is_active',
+    ];
 
     protected function casts(): array
     {

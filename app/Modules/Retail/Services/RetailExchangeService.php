@@ -169,4 +169,39 @@ class RetailExchangeService
             ];
         });
     }
+
+    /**
+     * Facade method untuk kemudahan pemanggilan dari Livewire komponen.
+     *
+     * @return array{order_id: int, old_variant_id: int, new_variant_id: int, quantity: int, price_difference: float, status: string}
+     */
+    public function processExchange(
+        int $orderId,
+        int $orderItemId,
+        int $newVariantId,
+        int $quantity,
+        ?string $reason = null
+    ): array {
+        $tenantId = (int) $this->tenantContext->getTenantId();
+        $storeId = (int) $this->tenantContext->getStoreId();
+        $userId = (int) (auth()->id() ?? 1);
+
+        $orderItem = OrderItem::withoutGlobalScopes()
+            ->where('order_id', $orderId)
+            ->where('id', $orderItemId)
+            ->firstOrFail();
+
+        $oldVariantId = (int) ($orderItem->product_variant_id ?? 0);
+
+        return $this->exchangeVariant(
+            tenantId: $tenantId,
+            storeId: $storeId,
+            orderId: $orderId,
+            oldVariantId: $oldVariantId,
+            newVariantId: $newVariantId,
+            quantity: $quantity,
+            userId: $userId,
+            reason: $reason
+        );
+    }
 }

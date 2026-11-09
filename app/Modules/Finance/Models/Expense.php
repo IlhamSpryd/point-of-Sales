@@ -47,7 +47,28 @@ class Expense extends Model
 
     protected $table = 'expenses';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'category_id',
+        'expense_number',
+        'expense_date',
+        'subtotal_amount',
+        'tax_amount',
+        'total_amount',
+        'description',
+        'status',
+        'submitted_by_user_id',
+        'submitted_at',
+        'approved_by_user_id',
+        'approved_at',
+        'rejection_reason',
+        'cash_bank_account_id',
+        'cash_bank_transaction_id',
+        'accrual_journal_id',
+        'payment_journal_id',
+        'paid_at',
+    ];
 
     protected function casts(): array
     {

@@ -42,7 +42,26 @@ class TaxLedgerEntry extends Model
 
     protected $table = 'tax_ledger_entries';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'tax_code_id',
+        'tax_rate_id',
+        'journal_entry_id',
+        'journal_line_id',
+        'entry_number',
+        'transaction_date',
+        'tax_direction',
+        'tax_base_amount',
+        'applied_rate',
+        'tax_amount',
+        'counterparty_type',
+        'counterparty_id',
+        'counterparty_name',
+        'counterparty_tax_id',
+        'invoice_reference',
+        'tax_invoice_number',
+        'notes',
+    ];
 
     protected function casts(): array
     {

@@ -40,7 +40,24 @@ class Payment extends Model
 
     public const UPDATED_AT = null;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'order_id',
+        'shift_id',
+        'payment_method',
+        'amount',
+        'amount_tendered',
+        'change_amount',
+        'reference_number',
+        'status',
+        'is_offline_sync',
+        'offline_synced_at',
+        'captured_at',
+        'processed_by',
+        'idempotency_key',
+        'tenant_id',
+        'store_id',
+        'device_id',
+    ];
 
     protected $casts = [
         'amount' => 'integer',

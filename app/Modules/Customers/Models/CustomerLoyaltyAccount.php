@@ -28,7 +28,13 @@ class CustomerLoyaltyAccount extends Model
     use AssignsTenant;
     use ScopedToTenant;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'customer_id',
+        'current_points',
+        'lifetime_points_earned',
+        'current_tier_id',
+        'tenant_id',
+    ];
 
     /**
      * [D2-BE-009] Kontrak trigger `trg_loyalty_ledger_sync_account`:

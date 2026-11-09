@@ -23,7 +23,15 @@ class CustomerContact extends Model
     use ScopedToTenant;
     use SoftDeletes;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'customer_id',
+        'name',
+        'role_title',
+        'email',
+        'phone',
+        'is_primary',
+    ];
 
     protected function casts(): array
     {

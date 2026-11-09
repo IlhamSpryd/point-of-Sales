@@ -63,8 +63,8 @@ class ProductVariant extends Model
 
     protected $casts = [
         'product_id' => 'integer',
-        'price_override' => 'float',
-        'standard_cost' => 'float',
+        'price_override' => 'decimal:2',
+        'standard_cost' => 'decimal:2',
         'is_active' => 'boolean',
         'sort_order' => 'integer',
         'is_open_price' => 'boolean',

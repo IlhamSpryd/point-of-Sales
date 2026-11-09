@@ -54,7 +54,7 @@ class PayrollAdjustment extends Model
     {
         return [
             'adjustment_type' => PayrollAdjustmentTypeEnum::class,
-            'amount' => 'float',
+            'amount' => 'decimal:2',
         ];
     }
 

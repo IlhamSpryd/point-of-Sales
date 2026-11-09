@@ -30,7 +30,12 @@ class PurchaseOrderLinePrAllocation extends Model
 
     protected $table = 'purchase_order_line_pr_allocations';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'purchase_order_line_id',
+        'purchase_request_line_id',
+        'allocated_qty',
+    ];
 
     protected function casts(): array
     {

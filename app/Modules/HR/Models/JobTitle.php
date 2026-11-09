@@ -35,7 +35,15 @@ class JobTitle extends Model
 
     protected $table = 'job_titles';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'department_id',
+        'title_code',
+        'name',
+        'grade_level',
+        'description',
+        'is_active',
+    ];
 
     /**
      * @return array<string, string>

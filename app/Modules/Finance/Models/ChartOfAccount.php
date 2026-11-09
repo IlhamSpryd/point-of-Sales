@@ -44,7 +44,24 @@ class ChartOfAccount extends Model
 
     protected $table = 'chart_of_accounts';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'account_code',
+        'account_name',
+        'account_type',
+        'account_subtype',
+        'normal_balance',
+        'system_account_key',
+        'parent_id',
+        'level',
+        'is_postable',
+        'is_control_account',
+        'allow_manual_journal',
+        'is_reconcilable',
+        'is_active',
+        'created_by',
+        'updated_by',
+    ];
 
     protected function casts(): array
     {

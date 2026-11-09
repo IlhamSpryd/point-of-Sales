@@ -43,7 +43,22 @@ class SupplierInvoiceGrnMatch extends Model
 
     protected $table = 'supplier_invoice_grn_matches';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'supplier_invoice_id',
+        'supplier_invoice_line_id',
+        'goods_received_note_line_id',
+        'matched_qty',
+        'po_unit_price',
+        'invoice_unit_price',
+        'qty_variance',
+        'price_variance_amount',
+        'tax_variance_amount',
+        'variance_status',
+        'is_variance_approved',
+        'variance_approved_by_user_id',
+        'variance_approval_notes',
+    ];
 
     protected function casts(): array
     {

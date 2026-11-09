@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Human Resources, Workforce & Payroll Routes (Modul 9)
+| Human Resources, Workforce & Payroll Routes (Modul 14 HRM)
 |--------------------------------------------------------------------------
 |
 | Terkoneksi dengan arsitektur multi-tenant, RBAC peran Owner & Manager.

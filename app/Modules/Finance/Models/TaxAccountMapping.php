@@ -27,7 +27,12 @@ class TaxAccountMapping extends Model
 
     protected $table = 'tax_account_mappings';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'tax_code_id',
+        'sales_tax_account_id',
+        'purchase_tax_account_id',
+    ];
 
     /**
      * @return BelongsTo<Tenant, $this>

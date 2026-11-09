@@ -54,7 +54,25 @@ class GoodsReceivedNote extends Model
 
     protected $table = 'goods_received_notes';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'supplier_id',
+        'purchase_order_id',
+        'grn_number',
+        'supplier_delivery_note_no',
+        'status',
+        'received_at',
+        'received_by_user_id',
+        'posted_at',
+        'posted_by_user_id',
+        'reversed_at',
+        'reversed_by_user_id',
+        'reversal_reason',
+        'reversal_of_grn_id',
+        'notes',
+        'idempotency_key',
+    ];
 
     protected function casts(): array
     {

@@ -32,7 +32,15 @@ class PeriodClosingLog extends Model
 
     protected $table = 'period_closing_logs';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'accounting_period_id',
+        'action',
+        'user_id',
+        'reason',
+        'previous_status',
+        'new_status',
+    ];
 
     protected function casts(): array
     {

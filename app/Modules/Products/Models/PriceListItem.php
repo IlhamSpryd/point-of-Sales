@@ -58,10 +58,10 @@ class PriceListItem extends Model
         'product_id' => 'integer',
         'product_variant_id' => 'integer',
         'uom_id' => 'integer',
-        'min_quantity' => 'float',
-        'max_quantity' => 'float',
-        'price' => 'float',
-        'discount_percentage' => 'float',
+        'min_quantity' => 'decimal:4',
+        'max_quantity' => 'decimal:4',
+        'price' => 'decimal:2',
+        'discount_percentage' => 'decimal:2',
     ];
 
     /**

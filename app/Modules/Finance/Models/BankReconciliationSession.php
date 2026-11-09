@@ -38,7 +38,20 @@ class BankReconciliationSession extends Model
 
     protected $table = 'bank_reconciliation_sessions';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'cash_bank_account_id',
+        'session_number',
+        'statement_end_date',
+        'statement_ending_balance',
+        'book_ending_balance',
+        'unreconciled_difference',
+        'status',
+        'started_by_user_id',
+        'completed_by_user_id',
+        'completed_at',
+        'notes',
+    ];
 
     protected function casts(): array
     {

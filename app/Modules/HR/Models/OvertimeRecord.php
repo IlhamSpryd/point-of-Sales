@@ -72,9 +72,9 @@ class OvertimeRecord extends Model
             'start_time' => 'datetime',
             'end_time' => 'datetime',
             'actual_duration_minutes' => 'integer',
-            'payable_hours' => 'float',
-            'hourly_rate_basis' => 'float',
-            'calculated_amount' => 'float',
+            'payable_hours' => 'decimal:2',
+            'hourly_rate_basis' => 'decimal:2',
+            'calculated_amount' => 'decimal:2',
             'status' => OvertimeStatusEnum::class,
         ];
     }

@@ -55,7 +55,7 @@ class LeaveTransaction extends Model
     {
         return [
             'transaction_type' => LeaveTransactionTypeEnum::class,
-            'days_delta' => 'float',
+            'days_delta' => 'decimal:2',
             'created_at' => 'datetime',
         ];
     }

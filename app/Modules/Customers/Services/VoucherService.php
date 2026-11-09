@@ -10,6 +10,7 @@ use App\Modules\Customers\Enums\VoucherDiscountTypeEnum;
 use App\Modules\Customers\Enums\VoucherStatusEnum;
 use App\Modules\Customers\Models\Voucher;
 use App\Modules\Pricing\Models\PromotionReservation;
+use App\Modules\Pricing\Services\PromotionReservationService;
 use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use DomainException;
@@ -210,7 +211,7 @@ class VoucherService
 
             if ($existing) {
                 $existing->update([
-                    'expires_at' => now()->addSeconds(120),
+                    'expires_at' => now()->addMinutes(PromotionReservationService::RESERVATION_LIFETIME_MINUTES),
                     'reserved_amount' => $reservedAmount > 0 ? $reservedAmount : $existing->reserved_amount,
                 ]);
 
@@ -254,7 +255,7 @@ class VoucherService
                 'cart_uuid' => $cartUuid,
                 'reserved_amount' => $reservedAmount,
                 'status' => PromotionReservation::STATUS_RESERVED,
-                'expires_at' => now()->addSeconds(120),
+                'expires_at' => now()->addMinutes(PromotionReservationService::RESERVATION_LIFETIME_MINUTES),
             ]);
         });
     }

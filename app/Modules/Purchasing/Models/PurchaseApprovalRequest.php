@@ -38,7 +38,18 @@ class PurchaseApprovalRequest extends Model
 
     protected $table = 'purchase_approval_requests';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'approvable_type',
+        'approvable_id',
+        'rule_id',
+        'step_order',
+        'status',
+        'submitted_by_user_id',
+        'approved_by_user_id',
+        'rejection_reason',
+        'decided_at',
+    ];
 
     protected function casts(): array
     {

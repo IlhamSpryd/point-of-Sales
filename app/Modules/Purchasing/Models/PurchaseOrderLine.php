@@ -47,7 +47,30 @@ class PurchaseOrderLine extends Model
 
     protected $table = 'purchase_order_lines';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'purchase_order_id',
+        'purchasable_type',
+        'purchasable_id',
+        'purchase_uom',
+        'uom_conversion_factor',
+        'ordered_qty',
+        'base_ordered_qty',
+        'received_qty',
+        'accepted_qty',
+        'rejected_qty',
+        'returned_qty',
+        'invoiced_qty',
+        'unit_price',
+        'discount_pct',
+        'discount_amount',
+        'tax_rate',
+        'tax_inclusive',
+        'tax_amount',
+        'line_total',
+        'over_receipt_tolerance_pct',
+        'notes',
+    ];
 
     protected function casts(): array
     {

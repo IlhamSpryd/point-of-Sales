@@ -65,7 +65,35 @@ class PurchaseOrder extends Model
 
     protected $table = 'purchase_orders';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'supplier_id',
+        'po_number',
+        'revision_number',
+        'source_type',
+        'order_date',
+        'expected_delivery_date',
+        'payment_terms_days',
+        'currency_code',
+        'exchange_rate',
+        'subtotal_amount',
+        'discount_amount',
+        'tax_amount',
+        'additional_cost_estimate',
+        'total_amount',
+        'status',
+        'receiving_status',
+        'invoicing_status',
+        'created_by_user_id',
+        'approved_by_user_id',
+        'approved_at',
+        'released_by_user_id',
+        'released_at',
+        'idempotency_key',
+        'notes',
+        'cancellation_reason',
+    ];
 
     protected function casts(): array
     {

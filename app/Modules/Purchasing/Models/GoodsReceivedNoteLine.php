@@ -53,7 +53,32 @@ class GoodsReceivedNoteLine extends Model
 
     protected $table = 'goods_received_note_lines';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'goods_received_note_id',
+        'purchase_order_line_id',
+        'line_number',
+        'purchasable_type',
+        'purchasable_id',
+        'uom',
+        'uom_conversion_factor',
+        'received_qty',
+        'accepted_qty',
+        'rejected_qty',
+        'damaged_qty',
+        'damage_disposition',
+        'rejection_reason',
+        'base_accepted_qty',
+        'unit_cost_snapshot',
+        'allocated_landed_cost_per_unit',
+        'effective_unit_cost',
+        'batch_number',
+        'expiry_date',
+        'storage_location',
+        'stock_movement_id',
+        'ingredient_stock_movement_id',
+        'notes',
+    ];
 
     protected function casts(): array
     {

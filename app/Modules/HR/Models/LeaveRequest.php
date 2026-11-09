@@ -59,7 +59,7 @@ class LeaveRequest extends Model
         return [
             'start_date' => 'date',
             'end_date' => 'date',
-            'total_days' => 'float',
+            'total_days' => 'decimal:2',
             'status' => LeaveRequestStatusEnum::class,
         ];
     }

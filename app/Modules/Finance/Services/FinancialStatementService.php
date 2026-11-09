@@ -70,6 +70,7 @@ class FinancialStatementService
             // Untuk akun nominal: mutasi dari awal tahun fiskal hingga sebelum start_date periode
             $openingQuery = DB::table('journal_lines')
                 ->join('journal_entries', 'journal_entries.id', '=', 'journal_lines.journal_entry_id')
+                ->where('journal_lines.tenant_id', $tenantId)
                 ->where('journal_entries.tenant_id', $tenantId)
                 ->where('journal_entries.status', 'POSTED')
                 ->where('journal_lines.account_id', $acc->id)
@@ -111,6 +112,7 @@ class FinancialStatementService
             // 2. Mutasi Periode Ini
             $periodQuery = DB::table('journal_lines')
                 ->join('journal_entries', 'journal_entries.id', '=', 'journal_lines.journal_entry_id')
+                ->where('journal_lines.tenant_id', $tenantId)
                 ->where('journal_entries.tenant_id', $tenantId)
                 ->where('journal_entries.status', 'POSTED')
                 ->where('journal_lines.account_id', $acc->id)
@@ -257,6 +259,7 @@ class FinancialStatementService
         foreach ($accounts as $acc) {
             $query = DB::table('journal_lines')
                 ->join('journal_entries', 'journal_entries.id', '=', 'journal_lines.journal_entry_id')
+                ->where('journal_lines.tenant_id', $tenantId)
                 ->where('journal_entries.tenant_id', $tenantId)
                 ->where('journal_entries.status', 'POSTED')
                 ->where('journal_lines.account_id', $acc->id)
@@ -429,6 +432,7 @@ class FinancialStatementService
         foreach ($accounts as $acc) {
             $query = DB::table('journal_lines')
                 ->join('journal_entries', 'journal_entries.id', '=', 'journal_lines.journal_entry_id')
+                ->where('journal_lines.tenant_id', $tenantId)
                 ->where('journal_entries.tenant_id', $tenantId)
                 ->where('journal_entries.status', 'POSTED')
                 ->where('journal_lines.account_id', $acc->id)
@@ -616,6 +620,7 @@ class FinancialStatementService
 
             $query = DB::table('journal_lines')
                 ->join('journal_entries', 'journal_entries.id', '=', 'journal_lines.journal_entry_id')
+                ->where('journal_lines.tenant_id', $tenantId)
                 ->where('journal_entries.tenant_id', $tenantId)
                 ->where('journal_entries.status', 'POSTED')
                 ->whereIn('journal_lines.account_id', $cashAccounts);
@@ -641,6 +646,7 @@ class FinancialStatementService
         // 3. Analisis mutasi jurnal kas selama periode ini
         $journalIds = DB::table('journal_lines')
             ->join('journal_entries', 'journal_entries.id', '=', 'journal_lines.journal_entry_id')
+            ->where('journal_lines.tenant_id', $tenantId)
             ->where('journal_entries.tenant_id', $tenantId)
             ->where('journal_entries.status', 'POSTED')
             ->where('journal_entries.posting_date', '>=', $startDate)
@@ -659,7 +665,11 @@ class FinancialStatementService
 
         if ($journalIds->isNotEmpty()) {
             $lines = DB::table('journal_lines')
-                ->join('chart_of_accounts', 'chart_of_accounts.id', '=', 'journal_lines.account_id')
+                ->join('chart_of_accounts', function ($join) use ($tenantId) {
+                    $join->on('chart_of_accounts.id', '=', 'journal_lines.account_id')
+                        ->where('chart_of_accounts.tenant_id', '=', $tenantId);
+                })
+                ->where('journal_lines.tenant_id', $tenantId)
                 ->whereIn('journal_lines.journal_entry_id', $journalIds)
                 ->select([
                     'journal_lines.journal_entry_id',
@@ -827,6 +837,7 @@ class FinancialStatementService
 
             $movements = DB::table('journal_lines')
                 ->join('journal_entries', 'journal_entries.id', '=', 'journal_lines.journal_entry_id')
+                ->where('journal_lines.tenant_id', $tenantId)
                 ->where('journal_entries.tenant_id', $tenantId)
                 ->where('journal_entries.status', 'POSTED')
                 ->where('journal_entries.posting_date', '>=', $period->start_date->toDateString())

@@ -36,7 +36,19 @@ class FixedAssetDepreciationSchedule extends Model
 
     protected $table = 'fixed_asset_depreciation_schedules';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'fixed_asset_id',
+        'accounting_period_id',
+        'period_year',
+        'period_month',
+        'depreciation_amount',
+        'accumulated_depreciation_after',
+        'net_book_value_after',
+        'status',
+        'journal_entry_id',
+        'posted_at',
+    ];
 
     protected function casts(): array
     {

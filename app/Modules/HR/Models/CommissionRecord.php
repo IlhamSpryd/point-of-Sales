@@ -67,8 +67,8 @@ class CommissionRecord extends Model
     protected function casts(): array
     {
         return [
-            'calculation_basis_amount' => 'float',
-            'commission_amount' => 'float',
+            'calculation_basis_amount' => 'decimal:2',
+            'commission_amount' => 'decimal:2',
             'type' => CommissionRecordTypeEnum::class,
             'status' => CommissionRecordStatusEnum::class,
         ];

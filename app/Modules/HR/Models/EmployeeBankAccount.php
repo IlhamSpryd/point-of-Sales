@@ -34,7 +34,17 @@ class EmployeeBankAccount extends Model
 
     protected $table = 'employee_bank_accounts';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'employee_id',
+        'bank_name',
+        'bank_code',
+        'account_number',
+        'account_holder_name',
+        'branch_name',
+        'is_primary',
+        'is_active',
+    ];
 
     /**
      * @return array<string, string>

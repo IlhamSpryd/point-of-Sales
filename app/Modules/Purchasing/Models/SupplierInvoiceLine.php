@@ -44,7 +44,21 @@ class SupplierInvoiceLine extends Model
 
     protected $table = 'supplier_invoice_lines';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'supplier_invoice_id',
+        'purchase_order_line_id',
+        'line_number',
+        'purchasable_type',
+        'purchasable_id',
+        'invoiced_qty',
+        'unit_price',
+        'discount_amount',
+        'tax_rate',
+        'tax_amount',
+        'line_total',
+        'notes',
+    ];
 
     protected function casts(): array
     {

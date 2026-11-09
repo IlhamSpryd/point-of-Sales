@@ -36,7 +36,14 @@ class Department extends Model
 
     protected $table = 'departments';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'parent_id',
+        'department_code',
+        'name',
+        'description',
+        'is_active',
+    ];
 
     protected static function booted(): void
     {

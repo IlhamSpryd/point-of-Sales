@@ -71,7 +71,41 @@ class SupplierInvoice extends Model
 
     protected $table = 'supplier_invoices';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'supplier_id',
+        'purchase_order_id',
+        'internal_invoice_number',
+        'supplier_invoice_number',
+        'normalized_supplier_invoice_number',
+        'invoice_date',
+        'due_date',
+        'currency_code',
+        'exchange_rate',
+        'subtotal_amount',
+        'discount_amount',
+        'tax_amount',
+        'tax_invoice_serial_number',
+        'tax_invoice_status',
+        'additional_charges_amount',
+        'total_amount',
+        'debit_note_applied_amount',
+        'outstanding_amount',
+        'paid_amount',
+        'gl_journal_entry_id',
+        'status',
+        'matching_status',
+        'settlement_status',
+        'approved_payable_at',
+        'approved_payable_by_user_id',
+        'hold_reason',
+        'hold_approved_by_user_id',
+        'hold_approved_at',
+        'dispute_reason',
+        'notes',
+        'idempotency_key',
+    ];
 
     protected function casts(): array
     {

@@ -23,6 +23,8 @@ class TableController extends Controller
 
     public function index(Request $request): View
     {
+        $this->authorize('viewAny', Table::class);
+
         $tables = $this->tableService->getFilteredQuery($request)->paginate(10)->withQueryString();
 
         return view('tables.index', compact('tables'));
@@ -30,23 +32,38 @@ class TableController extends Controller
 
     public function create(): View
     {
+        $this->authorize('create', Table::class);
+
         return view('tables.create');
     }
 
     public function store(StoreTableRequest $request): RedirectResponse
     {
+        $this->authorize('create', Table::class);
+
         $this->tableService->store($request->validated());
 
         return redirect()->route('tables.index')->with('success', 'Table created successfully.');
     }
 
+    public function show(Table $table): View
+    {
+        $this->authorize('view', $table);
+
+        return view('tables.edit', compact('table'));
+    }
+
     public function edit(Table $table): View
     {
+        $this->authorize('update', $table);
+
         return view('tables.edit', compact('table'));
     }
 
     public function update(UpdateTableRequest $request, Table $table): RedirectResponse
     {
+        $this->authorize('update', $table);
+
         $this->tableService->update($table, $request->validated());
 
         return redirect()->route('tables.index')->with('success', 'Table updated successfully.');
@@ -54,6 +71,8 @@ class TableController extends Controller
 
     public function destroy(Table $table): RedirectResponse
     {
+        $this->authorize('delete', $table);
+
         try {
             $this->tableService->delete($table);
 
@@ -81,8 +100,36 @@ class TableController extends Controller
         }
     }
 
+    public function updateStatus(Request $request, Table $table): RedirectResponse
+    {
+        $this->authorize('update', $table);
+
+        $validated = $request->validate([
+            'operational_status' => 'required|string|in:available,occupied,reserved',
+        ]);
+
+        $this->tableService->update($table, $validated);
+
+        return redirect()->route('tables.index')->with('success', 'Table status updated successfully.');
+    }
+
+    public function updatePosition(Request $request, Table $table): RedirectResponse
+    {
+        $this->authorize('update', $table);
+
+        $validated = $request->validate([
+            'area' => 'nullable|string|max:64',
+        ]);
+
+        $this->tableService->update($table, $validated);
+
+        return redirect()->route('tables.index')->with('success', 'Table position updated successfully.');
+    }
+
     public function rotateQr(Table $table): RedirectResponse
     {
+        $this->authorize('update', $table);
+
         $this->tableService->rotateQrToken($table);
 
         return redirect()->route('tables.index')->with('success', 'Table QR code for "'.$table->table_name.'" was rotated to a new token version successfully.');
@@ -90,6 +137,8 @@ class TableController extends Controller
 
     public function release(Table $table): RedirectResponse
     {
+        $this->authorize('update', $table);
+
         try {
             $this->tableService->releaseTable($table);
 
@@ -103,6 +152,8 @@ class TableController extends Controller
 
     public function regenerateToken(Table $table): RedirectResponse
     {
+        $this->authorize('update', $table);
+
         return $this->rotateQr($table);
     }
 }

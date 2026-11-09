@@ -53,7 +53,33 @@ class JournalEntry extends Model
 
     protected $table = 'journal_entries';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'journal_number',
+        'accounting_period_id',
+        'posting_date',
+        'journal_type',
+        'status',
+        'source_module',
+        'source_type',
+        'source_id',
+        'source_number',
+        'idempotency_key',
+        'posting_rule_version_id',
+        'reversal_of_journal_id',
+        'reversed_by_journal_id',
+        'currency_code',
+        'total_debit',
+        'total_credit',
+        'notes',
+        'reversal_reason',
+        'created_by_user_id',
+        'approved_by_user_id',
+        'posted_by_user_id',
+        'posted_at',
+        'reversed_at',
+    ];
 
     protected function casts(): array
     {

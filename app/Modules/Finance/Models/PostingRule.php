@@ -35,7 +35,17 @@ class PostingRule extends Model
 
     protected $table = 'posting_rules';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'event_code',
+        'rule_name',
+        'source_domain',
+        'description',
+        'is_active',
+        'approval_status',
+        'approved_by_user_id',
+        'approved_at',
+    ];
 
     protected function casts(): array
     {

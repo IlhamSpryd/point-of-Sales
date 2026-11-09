@@ -52,7 +52,7 @@ class PayrollItem extends Model
     {
         return [
             'type' => SalaryComponentTypeEnum::class,
-            'amount' => 'float',
+            'amount' => 'decimal:2',
             'is_taxable' => 'boolean',
         ];
     }

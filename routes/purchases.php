@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Purchases & Supplier Routes (Module 5 P2P Cycle)
+| Purchases & Supplier Routes (Modul 08 PUR — P2P Cycle)
 |--------------------------------------------------------------------------
 |
 | Routing for suppliers, purchase orders, goods received notes,

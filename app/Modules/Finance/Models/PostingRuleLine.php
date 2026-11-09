@@ -33,7 +33,18 @@ class PostingRuleLine extends Model
 
     protected $table = 'posting_rule_lines';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'posting_rule_version_id',
+        'line_sequence',
+        'side',
+        'amount_source_key',
+        'account_resolution_strategy',
+        'account_id',
+        'system_account_key',
+        'zero_amount_behavior',
+        'description_template',
+    ];
 
     protected function casts(): array
     {

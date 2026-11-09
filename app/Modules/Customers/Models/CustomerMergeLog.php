@@ -25,7 +25,14 @@ class CustomerMergeLog extends Model
 
     public $timestamps = false;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'source_customer_id',
+        'target_customer_id',
+        'merged_by_user_id',
+        'reason',
+        'reassigned_records_json',
+    ];
 
     protected function casts(): array
     {

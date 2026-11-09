@@ -19,5 +19,13 @@ class LoyaltyTier extends Model
     use AssignsTenant;
     use ScopedToTenant;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tier_code',
+        'name',
+        'min_points',
+        'points_multiplier',
+        'benefits',
+        'is_active',
+        'tenant_id',
+    ];
 }

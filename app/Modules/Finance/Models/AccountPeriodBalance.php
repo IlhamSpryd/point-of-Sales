@@ -36,7 +36,20 @@ class AccountPeriodBalance extends Model
 
     protected $table = 'account_period_balances';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'accounting_period_id',
+        'account_id',
+        'store_id',
+        'store_scope_key',
+        'opening_debit',
+        'opening_credit',
+        'period_debit',
+        'period_credit',
+        'closing_debit',
+        'closing_credit',
+        'net_movement',
+    ];
 
     protected function casts(): array
     {

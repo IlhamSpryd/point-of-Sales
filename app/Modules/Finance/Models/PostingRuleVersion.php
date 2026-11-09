@@ -33,7 +33,16 @@ class PostingRuleVersion extends Model
 
     protected $table = 'posting_rule_versions';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'posting_rule_id',
+        'version_number',
+        'effective_from',
+        'effective_to',
+        'status',
+        'change_summary',
+        'created_by_user_id',
+    ];
 
     protected function casts(): array
     {

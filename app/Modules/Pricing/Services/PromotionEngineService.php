@@ -136,7 +136,7 @@ class PromotionEngineService
                 'cart_uuid' => $cartUuid,
                 'reserved_amount' => $reservedAmount,
                 'status' => PromotionReservation::STATUS_RESERVED,
-                'expires_at' => now()->addSeconds(120),
+                'expires_at' => now()->addMinutes(PromotionReservationService::RESERVATION_LIFETIME_MINUTES),
             ]);
 
             return (int) $reservation->id;

@@ -31,7 +31,19 @@ class LoyaltyLedger extends Model
 
     protected $table = 'loyalty_ledger';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'customer_id',
+        'order_id',
+        'type',
+        'points',
+        'balance_after',
+        'reference',
+        'prev_hash',
+        'entry_hash',
+        'created_by',
+        'tenant_id',
+        'store_id',
+    ];
 
     protected $casts = [
         'type' => LoyaltyLedgerTypeEnum::class,

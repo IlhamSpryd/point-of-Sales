@@ -66,6 +66,9 @@ class KitchenWasteService
             $totalLoss = bcmul($qtyStr, $unitCost, 4);
 
             $balanceBefore = $balance ? (string) $balance->quantity : '0.0000';
+            if (bccomp($qtyStr, $balanceBefore, 4) > 0) {
+                throw new \DomainException("Jumlah limbah dapur ({$qtyStr}) melebihi saldo stok bahan baku yang tersedia ({$balanceBefore}).");
+            }
             $newQuantity = bcsub($balanceBefore, $qtyStr, 4);
 
             $idempotencyKey = "waste:{$tenantId}:{$storeId}:ing:{$ingredientId}:".Str::uuid()->toString();

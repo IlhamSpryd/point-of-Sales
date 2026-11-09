@@ -29,7 +29,14 @@ class ExpenseAttachment extends Model
 
     protected $table = 'expense_attachments';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'expense_id',
+        'file_path',
+        'file_name',
+        'file_size',
+        'mime_type',
+    ];
 
     protected function casts(): array
     {

@@ -25,7 +25,16 @@ class SupplierContact extends Model
 
     protected $table = 'supplier_contacts';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'supplier_id',
+        'name',
+        'title',
+        'email',
+        'phone',
+        'is_primary',
+        'notes',
+    ];
 
     protected function casts(): array
     {

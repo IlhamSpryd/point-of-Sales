@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Retail\Models;
 
+use App\Models\Concerns\AssignsTenant;
+use App\Models\Concerns\ScopedToTenant;
 use App\Models\Product;
 use App\Models\ProductVariant;
 use App\Models\Store;
@@ -24,6 +26,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ShelfLabel extends Model
 {
+    use AssignsTenant, ScopedToTenant;
+
     public const STATUS_PENDING = 'SHELF_LABEL_PENDING_PRINT';
 
     public const STATUS_PRINTED = 'PRINTED';

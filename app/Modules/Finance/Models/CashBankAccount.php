@@ -39,7 +39,21 @@ class CashBankAccount extends Model
 
     protected $table = 'cash_bank_accounts';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'account_code',
+        'account_name',
+        'account_type',
+        'gl_account_id',
+        'bank_name',
+        'bank_account_number',
+        'bank_account_holder',
+        'currency_code',
+        'opening_balance',
+        'current_balance',
+        'is_active',
+    ];
 
     protected function casts(): array
     {

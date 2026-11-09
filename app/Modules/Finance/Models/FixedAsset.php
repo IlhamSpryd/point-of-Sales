@@ -43,7 +43,24 @@ class FixedAsset extends Model
 
     protected $table = 'fixed_assets';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'category_id',
+        'asset_code',
+        'asset_name',
+        'acquisition_date',
+        'acquisition_cost',
+        'salvage_value',
+        'useful_life_months',
+        'depreciation_method',
+        'status',
+        'accumulated_depreciation',
+        'net_book_value',
+        'acquisition_journal_id',
+        'supplier_id',
+        'location_note',
+    ];
 
     protected function casts(): array
     {

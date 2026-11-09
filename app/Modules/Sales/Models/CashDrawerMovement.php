@@ -34,7 +34,20 @@ class CashDrawerMovement extends Model
 
     public const UPDATED_AT = null;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'shift_id',
+        'type',
+        'category',
+        'amount',
+        'reason',
+        'receipt_reference',
+        'created_by',
+        'approved_by',
+        'idempotency_key',
+        'tenant_id',
+        'store_id',
+        'device_id',
+    ];
 
     protected $casts = [
         'type' => CashDrawerMovementTypeEnum::class,

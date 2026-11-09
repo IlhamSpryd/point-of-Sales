@@ -33,7 +33,17 @@ class PeriodClosingChecklist extends Model
 
     protected $table = 'period_closing_checklists';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'accounting_period_id',
+        'gate_code',
+        'gate_name',
+        'status',
+        'discrepancy_amount',
+        'diagnostics_json',
+        'checked_at',
+        'checked_by_user_id',
+    ];
 
     protected function casts(): array
     {

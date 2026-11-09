@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Finance & Accounting Routes (Modul 7 — General Ledger & Financials)
+| Finance & Accounting Routes (Modul 12 FIN — General Ledger & Financials)
 |--------------------------------------------------------------------------
 |
 | Hub akuntansi dual-entry, buku besar, neraca saldo, dan rekonsiliasi.

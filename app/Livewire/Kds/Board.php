@@ -158,20 +158,37 @@ class Board extends Component
                         ->orWhere('category_name', 'LIKE', '%kopi%')
                         ->orWhere('category_name', 'LIKE', '%drink%')
                         ->orWhere('category_name', 'LIKE', '%tea%')
-                        ->orWhere('category_name', 'LIKE', '%juice%');
+                        ->orWhere('category_name', 'LIKE', '%juice%')
+                        ->orWhere('category_name', 'LIKE', '%mocktail%')
+                        ->orWhere('category_name', 'LIKE', '%boba%')
+                        ->orWhere('category_name', 'LIKE', '%latte%')
+                        ->orWhere('category_name', 'LIKE', '%smoothie%');
                 });
             });
         } elseif ($this->stationFilter === 'kitchen') {
-            $query->whereHas('product.category', function ($q) {
-                $q->where(function ($catQuery) {
-                    $catQuery->where('category_name', 'LIKE', '%food%')
-                        ->orWhere('category_name', 'LIKE', '%makanan%')
-                        ->orWhere('category_name', 'LIKE', '%kitchen%')
-                        ->orWhere('category_name', 'LIKE', '%dapur%')
-                        ->orWhere('category_name', 'LIKE', '%snack%')
-                        ->orWhere('category_name', 'LIKE', '%dessert%')
-                        ->orWhere('category_name', 'LIKE', '%meal%');
-                });
+            $query->where(function ($kitchenQuery) {
+                $kitchenQuery->whereHas('product.category', function ($q) {
+                    $q->where(function ($catQuery) {
+                        $catQuery->where('category_name', 'LIKE', '%food%')
+                            ->orWhere('category_name', 'LIKE', '%makanan%')
+                            ->orWhere('category_name', 'LIKE', '%kitchen%')
+                            ->orWhere('category_name', 'LIKE', '%dapur%')
+                            ->orWhere('category_name', 'LIKE', '%snack%')
+                            ->orWhere('category_name', 'LIKE', '%dessert%')
+                            ->orWhere('category_name', 'LIKE', '%meal%')
+                            ->orWhere('category_name', 'LIKE', '%nasi%')
+                            ->orWhere('category_name', 'LIKE', '%mie%')
+                            ->orWhere('category_name', 'LIKE', '%pasta%')
+                            ->orWhere('category_name', 'LIKE', '%steak%')
+                            ->orWhere('category_name', 'LIKE', '%dimsum%')
+                            ->orWhere('category_name', 'LIKE', '%ramen%')
+                            ->orWhere('category_name', 'LIKE', '%pastry%')
+                            ->orWhere('category_name', 'LIKE', '%bakery%')
+                            ->orWhere('category_name', 'LIKE', '%grill%')
+                            ->orWhere('category_name', 'LIKE', '%western%')
+                            ->orWhere('category_name', 'LIKE', '%nusantara%');
+                    });
+                })->orWhereDoesntHave('product.category');
             });
         }
 

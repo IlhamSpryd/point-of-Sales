@@ -62,9 +62,9 @@ class CommissionRule extends Model
     {
         return [
             'basis_type' => CommissionBasisTypeEnum::class,
-            'rate_percent' => 'float',
-            'rate_amount' => 'float',
-            'min_sales_threshold' => 'float',
+            'rate_percent' => 'decimal:4',
+            'rate_amount' => 'decimal:2',
+            'min_sales_threshold' => 'decimal:2',
             'is_active' => 'boolean',
             'valid_from' => 'date',
             'valid_to' => 'date',

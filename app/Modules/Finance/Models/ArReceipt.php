@@ -50,7 +50,30 @@ class ArReceipt extends Model
 
     protected $table = 'ar_receipts';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'customer_id',
+        'cash_bank_account_id',
+        'receipt_number',
+        'receipt_date',
+        'total_received_amount',
+        'total_allocated_amount',
+        'unapplied_credit_amount',
+        'bank_fee_amount',
+        'payment_method',
+        'payment_reference',
+        'status',
+        'journal_entry_id',
+        'cash_bank_transaction_id',
+        'idempotency_key',
+        'notes',
+        'created_by_user_id',
+        'posted_by_user_id',
+        'voided_by_user_id',
+        'void_reason',
+        'voided_at',
+    ];
 
     protected function casts(): array
     {

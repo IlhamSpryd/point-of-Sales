@@ -36,7 +36,20 @@ class BankStatementLine extends Model
 
     protected $table = 'bank_statement_lines';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'bank_statement_id',
+        'cash_bank_account_id',
+        'line_number',
+        'value_date',
+        'external_reference',
+        'debit_amount',
+        'credit_amount',
+        'running_balance',
+        'description',
+        'line_fingerprint_hash',
+        'match_status',
+    ];
 
     protected function casts(): array
     {

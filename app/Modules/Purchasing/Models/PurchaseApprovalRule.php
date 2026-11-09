@@ -32,7 +32,18 @@ class PurchaseApprovalRule extends Model
 
     protected $table = 'purchase_approval_rules';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'document_type',
+        'currency_code',
+        'min_amount',
+        'max_amount',
+        'step_order',
+        'approver_role_id',
+        'approver_permission',
+        'is_active',
+    ];
 
     protected function casts(): array
     {

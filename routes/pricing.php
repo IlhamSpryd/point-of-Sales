@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Pricing, Discounts & Promotions Routes (Modul 8 — Pricing & Campaigns)
+| Pricing, Discounts & Promotions Routes (Modul 04 PRC — Pricing & Campaigns)
 |--------------------------------------------------------------------------
 */
 

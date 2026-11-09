@@ -45,7 +45,24 @@ class ApLedgerEntry extends Model
 
     protected $table = 'ap_ledger_entries';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'supplier_id',
+        'supplier_invoice_id',
+        'ap_payment_id',
+        'purchase_debit_note_id',
+        'journal_entry_id',
+        'entry_number',
+        'effective_date',
+        'entry_type',
+        'debit_amount',
+        'credit_amount',
+        'running_balance',
+        'idempotency_key',
+        'description',
+        'created_by_user_id',
+    ];
 
     protected function casts(): array
     {

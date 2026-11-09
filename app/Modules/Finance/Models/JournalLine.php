@@ -37,7 +37,23 @@ class JournalLine extends Model
 
     protected $table = 'journal_lines';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'journal_entry_id',
+        'line_number',
+        'account_id',
+        'store_id',
+        'debit_amount',
+        'credit_amount',
+        'foreign_currency_code',
+        'foreign_debit_amount',
+        'foreign_credit_amount',
+        'exchange_rate',
+        'description',
+        'customer_id',
+        'supplier_id',
+        'tax_code_id',
+    ];
 
     protected function casts(): array
     {

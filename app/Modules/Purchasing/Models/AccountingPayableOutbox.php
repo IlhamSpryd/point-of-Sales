@@ -37,7 +37,21 @@ class AccountingPayableOutbox extends Model
 
     protected $table = 'accounting_payable_outbox';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'event_id',
+        'tenant_id',
+        'store_id',
+        'event_type',
+        'idempotency_key',
+        'source_document_type',
+        'source_document_id',
+        'source_document_number',
+        'status',
+        'payload',
+        'retry_count',
+        'last_error',
+        'processed_at',
+    ];
 
     protected function casts(): array
     {

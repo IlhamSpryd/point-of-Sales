@@ -14,7 +14,7 @@ use App\Modules\Customers\Services\CustomerService;
 use App\Modules\Customers\Services\LoyaltyService;
 use App\Modules\Purchasing\Services\DocumentSequenceService;
 use App\Services\Context\TenantContext;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Livewire\Livewire;
 use Tests\Support\TwoTenantFixture;
@@ -22,7 +22,7 @@ use Tests\TestCase;
 
 class CustomerTenantIsolationTest extends TestCase
 {
-    use RefreshDatabase, TwoTenantFixture;
+    use DatabaseTransactions, TwoTenantFixture;
 
     protected CustomerService $service;
 

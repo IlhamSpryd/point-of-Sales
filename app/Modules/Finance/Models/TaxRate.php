@@ -29,7 +29,14 @@ class TaxRate extends Model
 
     protected $table = 'tax_rates';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'tax_code_id',
+        'rate_percent',
+        'effective_from',
+        'effective_to',
+        'is_active',
+    ];
 
     protected function casts(): array
     {

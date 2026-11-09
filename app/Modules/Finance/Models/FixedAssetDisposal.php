@@ -38,7 +38,20 @@ class FixedAssetDisposal extends Model
 
     protected $table = 'fixed_asset_disposals';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'fixed_asset_id',
+        'disposal_date',
+        'disposal_type',
+        'proceeds_amount',
+        'book_value_at_disposal',
+        'gain_loss_amount',
+        'journal_entry_id',
+        'cash_bank_account_id',
+        'reason',
+        'approved_by_user_id',
+    ];
 
     protected function casts(): array
     {

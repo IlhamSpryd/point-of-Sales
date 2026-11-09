@@ -95,8 +95,8 @@ class AttendanceRecord extends Model
             'total_break_minutes' => 'integer',
             'net_work_minutes' => 'integer',
             'is_locked' => 'boolean',
-            'latitude' => 'float',
-            'longitude' => 'float',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
         ];
     }
 

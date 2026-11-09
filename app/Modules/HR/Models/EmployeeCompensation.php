@@ -51,7 +51,7 @@ class EmployeeCompensation extends Model
     protected function casts(): array
     {
         return [
-            'amount' => 'float',
+            'amount' => 'decimal:2',
             'effective_date' => 'date',
             'end_date' => 'date',
             'is_active' => 'boolean',

@@ -46,7 +46,21 @@ class PurchaseRequest extends Model
 
     protected $table = 'purchase_requests';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'pr_number',
+        'requested_by_user_id',
+        'required_by_date',
+        'status',
+        'fulfillment_status',
+        'estimated_total_amount',
+        'currency_code',
+        'notes',
+        'rejection_reason',
+        'approved_at',
+        'approved_by_user_id',
+    ];
 
     protected function casts(): array
     {

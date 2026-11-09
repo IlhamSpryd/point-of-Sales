@@ -29,7 +29,13 @@ class ExpenseCategory extends Model
 
     protected $table = 'expense_categories';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'category_code',
+        'category_name',
+        'expense_gl_account_id',
+        'is_active',
+    ];
 
     protected function casts(): array
     {

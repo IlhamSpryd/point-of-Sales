@@ -36,7 +36,17 @@ class PurchaseOrderRevision extends Model
 
     protected $table = 'purchase_order_revisions';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'purchase_order_id',
+        'revision_number',
+        'amended_by_user_id',
+        'amended_at',
+        'reason',
+        'snapshot_data',
+        'total_amount_before',
+        'total_amount_after',
+    ];
 
     protected function casts(): array
     {

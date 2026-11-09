@@ -38,7 +38,20 @@ class PurchaseRequestLine extends Model
 
     protected $table = 'purchase_request_lines';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'purchase_request_id',
+        'purchasable_type',
+        'purchasable_id',
+        'requested_qty',
+        'approved_qty',
+        'converted_to_po_qty',
+        'uom',
+        'estimated_unit_price',
+        'estimated_subtotal',
+        'preferred_supplier_id',
+        'notes',
+    ];
 
     protected function casts(): array
     {

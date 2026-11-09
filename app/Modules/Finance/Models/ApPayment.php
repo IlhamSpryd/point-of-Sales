@@ -55,7 +55,35 @@ class ApPayment extends Model
 
     protected $table = 'ap_payments';
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'tenant_id',
+        'store_id',
+        'supplier_id',
+        'cash_bank_account_id',
+        'journal_entry_id',
+        'payment_number',
+        'payment_date',
+        'payment_method',
+        'currency_code',
+        'exchange_rate',
+        'total_payment_amount',
+        'allocated_amount',
+        'unapplied_prepayment_amount',
+        'early_discount_amount',
+        'bank_fee_amount',
+        'reference_number',
+        'status',
+        'notes',
+        'idempotency_key',
+        'created_by_user_id',
+        'approved_by_user_id',
+        'approved_at',
+        'posted_by_user_id',
+        'posted_at',
+        'voided_by_user_id',
+        'voided_at',
+        'void_reason',
+    ];
 
     protected function casts(): array
     {
