@@ -698,7 +698,7 @@ option {
 
     /* Subtle editorial lighting for the right-hand brand panel */
     .editorial-surface {
-        background-color: var(--shell);
+        background-color: #09090b;
     }
 }
 

@@ -20,10 +20,18 @@
         [x-cloak] {
             display: none !important;
         }
+        html, body {
+            height: 100%;
+            height: 100dvh;
+            max-height: 100%;
+            max-height: 100dvh;
+            overflow: hidden;
+            overscroll-behavior: none;
+        }
     </style>
 </head>
 
-<body class="font-sans antialiased text-foreground bg-card min-h-screen overflow-x-hidden selection:bg-selection selection:text-selection-foreground">
+<body class="font-sans antialiased text-foreground bg-card h-screen h-[100dvh] max-h-screen max-h-[100dvh] overflow-hidden selection:bg-selection selection:text-selection-foreground">
 
     {{-- Accessibility: Skip to main content (WCAG 2.4.1) --}}
     <a href="#main-content"
@@ -31,18 +39,18 @@
         Skip to main content
     </a>
 
-    <div id="swup" class="transition-fade min-h-screen grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 w-full bg-card overflow-x-hidden">
+    <div id="swup" class="transition-fade h-screen h-[100dvh] max-h-screen max-h-[100dvh] grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 w-full bg-card overflow-hidden">
         <!-- KIRI: KONTEN UTAMA (7 cols di lg, 1 col di md, single col di mobile) -->
-        <div class="md:col-span-1 lg:col-span-7 flex flex-col justify-between p-6 sm:p-10 lg:p-12 xl:p-16 w-full relative bg-card min-h-screen">
+        <div class="md:col-span-1 lg:col-span-7 flex flex-col justify-between p-6 sm:p-8 lg:p-10 xl:p-12 w-full h-full max-h-screen max-h-[100dvh] overflow-hidden relative bg-card">
             <!-- Header Brand Logo -->
-            <div class="w-full max-w-sm mx-auto mb-6" style="max-width: 384px;">
+            <div class="w-full max-w-[400px] mx-auto shrink-0">
                 <a href="{{ url('/') }}" aria-label="Apeiron Systems" class="inline-block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-lg">
                     <x-brand-logo variant="wordmark" class="h-7 w-auto text-foreground" />
                 </a>
             </div>
 
-            <!-- Form Content Mount (Strictly clamped to max-w-sm to prevent horizontal stretching) -->
-            <div id="main-content" class="my-auto py-4 sm:py-6 w-full max-w-sm mx-auto" style="max-width: 384px;">
+            <!-- Form Content Mount (Strictly clamped to max-w-[400px] to ensure visual cohesion with header & footer) -->
+            <div id="main-content" class="my-auto py-2 w-full max-w-[400px] mx-auto flex flex-col justify-center">
                 @hasSection('content')
                     @yield('content')
                 @else
@@ -51,7 +59,7 @@
             </div>
 
             <!-- Footer Bar with Active Legal Modals -->
-            <div x-data="{ modal: null }" class="w-full max-w-sm mx-auto md:max-w-none flex items-center justify-between text-xs text-muted-foreground pt-8 mt-auto border-t border-border" style="max-width: 384px;">
+            <div x-data="{ modal: null }" class="w-full max-w-[400px] mx-auto flex items-center justify-between text-xs text-muted-foreground pt-4 border-t border-border shrink-0">
                 <span>© {{ date('Y') }} Apeiron Systems</span>
                 <div class="flex items-center gap-4">
                     <button type="button" @click="modal = 'privacy'" class="hover:text-foreground transition-colors cursor-pointer font-medium">Privacy</button>
@@ -117,24 +125,25 @@
         @hasSection('panel')
             @yield('panel')
         @else
-            <div class="hidden md:flex md:col-span-1 lg:col-span-5 editorial-surface text-primary-foreground p-8 sm:p-10 lg:p-12 xl:p-14 flex-col justify-between select-none relative overflow-hidden bg-foreground min-h-screen" id="anim-panel-right" aria-hidden="true">
-                <div class="absolute inset-0 bg-cover bg-center opacity-20 mix-blend-luminosity pointer-events-none"
+            <div class="hidden md:flex md:col-span-1 lg:col-span-5 text-white p-8 sm:p-10 lg:p-12 xl:p-14 flex-col justify-between select-none relative overflow-hidden bg-zinc-950 h-full max-h-screen max-h-[100dvh]" id="anim-panel-right" aria-hidden="true">
+                <div class="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-luminosity pointer-events-none"
                     style="background-image: url('{{ asset('assets/images/auth/panelKananLogin.avif') }}');"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-zinc-950/30 pointer-events-none"></div>
 
-                <div class="relative z-10 flex items-center">
-                    <x-brand-logo variant="wordmark" class="h-6 w-auto text-background" />
+                <div class="relative z-10 flex items-center shrink-0">
+                    <x-brand-logo variant="wordmark" class="h-6 w-auto text-white" />
                 </div>
 
                 <div class="relative z-10 my-auto max-w-sm space-y-4">
-                    <p class="text-[19px] lg:text-[21px] font-normal tracking-tight text-background leading-[1.45]">
+                    <p class="text-[20px] lg:text-[22px] font-medium tracking-tight text-white leading-[1.45]">
                         Point of sale, inventory ledger, and shift reconciliation built for multi-branch hospitality.
                     </p>
-                    <p class="text-xs text-shell-foreground leading-relaxed">
+                    <p class="text-xs text-zinc-300 leading-relaxed font-normal">
                         Every order, stock movement, and cash drawer event is recorded with strict branch isolation.
                     </p>
                 </div>
 
-                <div class="relative z-10 flex items-center justify-between text-xs text-shell-foreground pt-6 border-t border-shell-border">
+                <div class="relative z-10 flex items-center justify-between text-xs text-zinc-400 pt-6 border-t border-zinc-800 shrink-0">
                     <span>Enterprise Point of Sale</span>
                     <span>© {{ date('Y') }}</span>
                 </div>
