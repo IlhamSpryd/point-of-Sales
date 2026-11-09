@@ -19,12 +19,12 @@ use App\Modules\Sales\Enums\SalesOrderStatusEnum;
 use App\Modules\Sales\Services\SalesOrderService;
 use App\Services\Context\TenantContext;
 use DomainException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class CustomerCreditServiceTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     protected CustomerCreditService $creditService;
 

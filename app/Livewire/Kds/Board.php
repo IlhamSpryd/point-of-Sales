@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Kds;
 
+use App\Enums\KitchenStation;
 use App\Enums\OrderStatus;
 use App\Enums\PreparationStatus;
 use App\Livewire\Concerns\RequiresTenantContext;
@@ -25,6 +26,10 @@ class Board extends Component
 
     public string $stationFilter = 'all';
 
+    public ?int $tenantId = null;
+
+    public ?int $storeId = null;
+
     public function boot(): void
     {
         $this->bootRequiresTenantContext();
@@ -34,6 +39,38 @@ class Board extends Component
         if (! $role?->is_admin && ! in_array($roleName, ['Owner', 'Manager', 'Kasir', 'Barista', 'Waiter', 'Cook', 'Supervisor', 'Admin'], true)) {
             abort(403, 'Anda tidak memiliki hak akses KDS.');
         }
+
+        $context = app(\App\Services\Context\TenantContext::class);
+        $user = Auth::user();
+        $this->tenantId = $context->getTenantId() ?? (int) $user->tenant_id;
+        $this->storeId = $context->getStoreId();
+    }
+
+    /**
+     * Listen for real-time WebSocket events per DEC-001 tenant & store channel.
+     *
+     * @return array<string, string>
+     */
+    public function getListeners(): array
+    {
+        $tenantId = $this->tenantId ?? (int) Auth::user()?->tenant_id;
+        $storeId = $this->storeId ?? 0;
+
+        $listeners = [
+            'refreshKds' => '$refresh',
+        ];
+
+        if ($tenantId > 0 && $storeId > 0) {
+            $listeners["echo-private:tenant.{$tenantId}.store.{$storeId}.kds,.kds.item.updated"] = '$refresh';
+            $listeners["echo-private:tenant.{$tenantId}.store.{$storeId}.kds,kds.item.updated"] = '$refresh';
+        }
+
+        if ($tenantId > 0) {
+            $listeners["echo-private:tenant.{$tenantId}.kds,.kds.item.updated"] = '$refresh';
+            $listeners["echo-private:tenant.{$tenantId}.kds,kds.item.updated"] = '$refresh';
+        }
+
+        return $listeners;
     }
 
     public function claim(int $itemId): void
@@ -77,7 +114,7 @@ class Board extends Component
     public function setStationFilter(string $station): void
     {
         $normalized = strtolower(trim($station));
-        $this->stationFilter = in_array($normalized, ['kitchen', 'bar'], true) ? $normalized : 'all';
+        $this->stationFilter = in_array($normalized, ['kitchen', 'bar', 'dessert'], true) ? $normalized : 'all';
     }
 
     public function dismissError(): void
@@ -148,47 +185,30 @@ class Board extends Component
             ->with(['product.category', 'order.table'])
             ->whereHas('order', fn ($q) => $q->where('order_status', OrderStatus::Paid->value));
 
-        if ($this->stationFilter === 'bar') {
-            $query->whereHas('product.category', function ($q) {
-                $q->where(function ($catQuery) {
-                    $catQuery->where('category_name', 'LIKE', '%beverage%')
-                        ->orWhere('category_name', 'LIKE', '%minuman%')
-                        ->orWhere('category_name', 'LIKE', '%bar%')
-                        ->orWhere('category_name', 'LIKE', '%coffee%')
-                        ->orWhere('category_name', 'LIKE', '%kopi%')
-                        ->orWhere('category_name', 'LIKE', '%drink%')
-                        ->orWhere('category_name', 'LIKE', '%tea%')
-                        ->orWhere('category_name', 'LIKE', '%juice%')
-                        ->orWhere('category_name', 'LIKE', '%mocktail%')
-                        ->orWhere('category_name', 'LIKE', '%boba%')
-                        ->orWhere('category_name', 'LIKE', '%latte%')
-                        ->orWhere('category_name', 'LIKE', '%smoothie%');
-                });
-            });
-        } elseif ($this->stationFilter === 'kitchen') {
-            $query->where(function ($kitchenQuery) {
-                $kitchenQuery->whereHas('product.category', function ($q) {
-                    $q->where(function ($catQuery) {
-                        $catQuery->where('category_name', 'LIKE', '%food%')
-                            ->orWhere('category_name', 'LIKE', '%makanan%')
-                            ->orWhere('category_name', 'LIKE', '%kitchen%')
-                            ->orWhere('category_name', 'LIKE', '%dapur%')
-                            ->orWhere('category_name', 'LIKE', '%snack%')
-                            ->orWhere('category_name', 'LIKE', '%dessert%')
-                            ->orWhere('category_name', 'LIKE', '%meal%')
-                            ->orWhere('category_name', 'LIKE', '%nasi%')
-                            ->orWhere('category_name', 'LIKE', '%mie%')
-                            ->orWhere('category_name', 'LIKE', '%pasta%')
-                            ->orWhere('category_name', 'LIKE', '%steak%')
-                            ->orWhere('category_name', 'LIKE', '%dimsum%')
-                            ->orWhere('category_name', 'LIKE', '%ramen%')
-                            ->orWhere('category_name', 'LIKE', '%pastry%')
-                            ->orWhere('category_name', 'LIKE', '%bakery%')
-                            ->orWhere('category_name', 'LIKE', '%grill%')
-                            ->orWhere('category_name', 'LIKE', '%western%')
-                            ->orWhere('category_name', 'LIKE', '%nusantara%');
+        if ($this->stationFilter !== 'all') {
+            $station = $this->stationFilter;
+            $query->where(function ($filterQuery) use ($station) {
+                // 1. Explicit product kitchen_station override
+                $filterQuery->whereHas('product', fn ($p) => $p->where('kitchen_station', $station))
+                    // 2. Fallback to product category kitchen_station
+                    ->orWhere(function ($fallback) use ($station) {
+                        $fallback->whereHas('product', function ($p) {
+                            $p->whereNull('kitchen_station')
+                                ->orWhere('kitchen_station', KitchenStation::None->value);
+                        })->whereHas('product.category', function ($c) use ($station) {
+                            $c->where('kitchen_station', $station);
+                        });
                     });
-                })->orWhereDoesntHave('product.category');
+
+                // Default orphan items without category to kitchen
+                if ($station === 'kitchen') {
+                    $filterQuery->orWhere(function ($orphan) {
+                        $orphan->whereHas('product', function ($p) {
+                            $p->whereNull('kitchen_station')
+                                ->orWhere('kitchen_station', KitchenStation::None->value);
+                        })->whereDoesntHave('product.category');
+                    });
+                }
             });
         }
 

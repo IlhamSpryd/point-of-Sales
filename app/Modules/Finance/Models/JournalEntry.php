@@ -49,12 +49,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class JournalEntry extends Model
 {
     use AssignsTenant;
+    use \App\Core\Traits\BelongsToCompany;
     use ScopedToTenant;
 
     protected $table = 'journal_entries';
 
     protected $fillable = [
         'tenant_id',
+        'company_id',
         'store_id',
         'journal_number',
         'accounting_period_id',
@@ -84,6 +86,7 @@ class JournalEntry extends Model
     protected function casts(): array
     {
         return [
+            'company_id' => 'integer',
             'posting_date' => 'date',
             'journal_type' => JournalTypeEnum::class,
             'status' => JournalStatusEnum::class,

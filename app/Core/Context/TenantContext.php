@@ -12,6 +12,8 @@ class TenantContext
 {
     private ?int $tenantId = null;
 
+    private ?int $companyId = null;
+
     private ?int $storeId = null;
 
     private bool $isBypassed = false;
@@ -70,6 +72,25 @@ class TenantContext
         return $this->tenantId;
     }
 
+    public function setCompanyId(?int $companyId): void
+    {
+        $this->companyId = $companyId;
+    }
+
+    public function getCompanyId(): ?int
+    {
+        return $this->companyId;
+    }
+
+    public function requireCompanyId(): int
+    {
+        if ($this->companyId === null) {
+            throw new RuntimeException('Company context has not been set for this request.');
+        }
+
+        return $this->companyId;
+    }
+
     public function requireStoreId(): int
     {
         if ($this->storeId === null) {
@@ -97,11 +118,12 @@ class TenantContext
     public function clear(): void
     {
         $this->tenantId = null;
+        $this->companyId = null;
         $this->storeId = null;
     }
 
     /**
-     * Executes the given callback under the specified tenant (and optional store) context.
+     * Executes the given callback under the specified tenant (and optional store/company) context.
      * Restores the previous context afterwards.
      *
      * Bypass flag SELALU dinonaktifkan selama callback berjalan. Tanpa ini,
@@ -110,13 +132,15 @@ class TenantContext
      * TenantScope tidak aktif dan isolasi tenant fail-open. Flag dipulihkan
      * ke nilai sebelumnya setelah callback selesai.
      */
-    public function runAs(int $tenantId, ?int $storeId, Closure $cb): mixed
+    public function runAs(int $tenantId, ?int $storeId, Closure $cb, ?int $companyId = null): mixed
     {
         $prevTenantId = $this->tenantId;
+        $prevCompanyId = $this->companyId;
         $prevStoreId = $this->storeId;
         $prevBypassed = $this->isBypassed;
 
         $this->tenantId = $tenantId;
+        $this->companyId = $companyId;
         $this->storeId = $storeId;
         $this->isBypassed = false;
 
@@ -124,6 +148,7 @@ class TenantContext
             return $cb();
         } finally {
             $this->tenantId = $prevTenantId;
+            $this->companyId = $prevCompanyId;
             $this->storeId = $prevStoreId;
             $this->isBypassed = $prevBypassed;
         }
@@ -138,19 +163,23 @@ class TenantContext
     {
         Log::warning('Executing operation without tenant context.', [
             'previous_tenant_id' => $this->tenantId,
+            'previous_company_id' => $this->companyId,
             'previous_store_id' => $this->storeId,
             'trace' => debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3),
         ]);
         $prevTenantId = $this->tenantId;
+        $prevCompanyId = $this->companyId;
         $prevStoreId = $this->storeId;
         $prevBypassed = $this->isBypassed;
         $this->tenantId = null;
+        $this->companyId = null;
         $this->storeId = null;
         $this->isBypassed = true;
         try {
             return $cb();
         } finally {
             $this->tenantId = $prevTenantId;
+            $this->companyId = $prevCompanyId;
             $this->storeId = $prevStoreId;
             $this->isBypassed = $prevBypassed;
         }

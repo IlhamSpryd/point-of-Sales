@@ -59,10 +59,13 @@ class InventoryLedgerService
         ?int $orderId = null,
         ?int $orderItemId = null,
         int|string|null $userId = null,
-        ?int $storageLocationId = null // Forward-compatible parameter (OD-01)
+        ?int $storageLocationId = null, // Forward-compatible parameter (OD-01)
+        ?int $variantId = null,
+        ?int $warehouseId = null
     ): array {
         $movementItem = [
             'store_id' => $storeId,
+            'warehouse_id' => $warehouseId,
             'item_type' => $itemType,
             'item_id' => $itemId,
             'quantity_delta' => (string) $quantityDelta,
@@ -74,6 +77,7 @@ class InventoryLedgerService
             'order_item_id' => $orderItemId,
             'user_id' => $userId !== null ? (int) $userId : null,
             'storage_location_id' => $storageLocationId,
+            'variant_id' => $variantId,
         ];
 
         $results = $this->recordBatchMovements($tenantId, [$movementItem]);
@@ -99,6 +103,7 @@ class InventoryLedgerService
      *     variant_id?: ?int,
      *     reference_type?: ?string,
      *     reference_id?: ?int,
+     *     warehouse_id?: ?int,
      *     storage_location_id?: ?int
      * }>  $movements
      * @return array<int, array{movement: object{id: int}, balance: object|null, previous_quantity: string, new_quantity: string}>
@@ -252,7 +257,8 @@ class InventoryLedgerService
                     balanceBefore: $previousQty,
                     balanceAfter: $newQty,
                     referenceType: $m['reference_type'] ?? null,
-                    referenceId: $m['reference_id'] ?? null
+                    referenceId: $m['reference_id'] ?? null,
+                    warehouseId: $m['warehouse_id'] ?? null
                 );
 
                 // 8. Perbarui baris proyeksi balance
@@ -507,12 +513,14 @@ class InventoryLedgerService
         string $balanceBefore = '0.0000',
         string $balanceAfter = '0.0000',
         ?string $referenceType = null,
-        ?int $referenceId = null
+        ?int $referenceId = null,
+        ?int $warehouseId = null
     ): int {
         if ($itemType === 'product') {
             return (int) DB::table('stock_movements')->insertGetId([
                 'tenant_id' => $tenantId,
                 'store_id' => $storeId,
+                'warehouse_id' => $warehouseId,
                 'product_id' => $itemId,
                 'variant_id' => $variantId,
                 'order_id' => $orderId,

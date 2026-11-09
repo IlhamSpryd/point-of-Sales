@@ -26,6 +26,7 @@ use Illuminate\Support\Str;
  * @property string|null $description
  * @property int $sort_order
  * @property bool $is_active
+ * @property \App\Enums\KitchenStation|null $kitchen_station
  * @property-read Category|null $parent
  * @property int|null $name_uniqueness_key
  */
@@ -51,6 +52,7 @@ class Category extends Model
         'description',
         'sort_order',
         'is_active',
+        'kitchen_station',
     ];
 
     public function setNameAttribute(mixed $value): void
@@ -78,6 +80,7 @@ class Category extends Model
         return [
             'is_active' => 'boolean',
             'sort_order' => 'integer',
+            'kitchen_station' => \App\Enums\KitchenStation::class,
         ];
     }
 
@@ -88,6 +91,17 @@ class Category extends Model
                 $latest = static::withoutTenantScope()->latest('id')->first();
                 $nextId = $latest ? $latest->id + 1 : 1;
                 $model->category_code = 'CAT-'.$model->tenant_id.'-'.str_pad((string) $nextId, 3, '0', STR_PAD_LEFT);
+            }
+
+            if (empty($model->kitchen_station)) {
+                $name = strtolower((string) ($model->category_name ?? ''));
+                if (preg_match('/beverage|minuman|bar|coffee|kopi|drink|tea|juice|mocktail|boba|latte|smoothie/', $name)) {
+                    $model->kitchen_station = \App\Enums\KitchenStation::Bar;
+                } elseif (preg_match('/dessert|pastry|bakery|snack|kue/', $name)) {
+                    $model->kitchen_station = \App\Enums\KitchenStation::Dessert;
+                } else {
+                    $model->kitchen_station = \App\Enums\KitchenStation::Kitchen;
+                }
             }
         });
     }

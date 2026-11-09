@@ -46,6 +46,7 @@ class CustomerInvoice extends Model
 {
     use AssignsStore;
     use AssignsTenant;
+    use \App\Core\Traits\BelongsToCompany;
 
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
@@ -56,6 +57,7 @@ class CustomerInvoice extends Model
 
     protected $fillable = [
         'tenant_id',
+        'company_id',
         'store_id',
         'invoice_number',
         'customer_id',
@@ -91,6 +93,7 @@ class CustomerInvoice extends Model
     protected function casts(): array
     {
         return [
+            'company_id' => 'integer',
             'status' => CustomerInvoiceStatusEnum::class,
             'invoice_date' => 'date',
             'due_date' => 'date',

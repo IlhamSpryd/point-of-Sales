@@ -54,6 +54,8 @@ class StockTransfer extends Model
         'tenant_id',
         'from_store_id',
         'to_store_id',
+        'from_warehouse_id',
+        'to_warehouse_id',
         'transfer_number',
         'ship_idempotency_key',
         'receive_idempotency_key',
@@ -69,6 +71,8 @@ class StockTransfer extends Model
     ];
 
     protected $casts = [
+        'from_warehouse_id' => 'integer',
+        'to_warehouse_id' => 'integer',
         'status' => StockTransferStatusEnum::class,
         'shipped_at' => 'datetime',
         'received_at' => 'datetime',
@@ -103,6 +107,26 @@ class StockTransfer extends Model
     public function toStore(): BelongsTo
     {
         return $this->belongsTo(Store::class, 'to_store_id');
+    }
+
+    /**
+     * Gudang pengirim.
+     *
+     * @return BelongsTo<Warehouse, $this>
+     */
+    public function fromWarehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class, 'from_warehouse_id');
+    }
+
+    /**
+     * Gudang penerima.
+     *
+     * @return BelongsTo<Warehouse, $this>
+     */
+    public function toWarehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class, 'to_warehouse_id');
     }
 
     /**

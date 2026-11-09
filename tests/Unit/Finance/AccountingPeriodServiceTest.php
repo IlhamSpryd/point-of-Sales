@@ -10,10 +10,12 @@ use App\Modules\Finance\Enums\AccountingPeriodStatusEnum;
 use App\Modules\Finance\Exceptions\ClosedAccountingPeriodException;
 use App\Modules\Finance\Models\AccountingPeriod;
 use App\Modules\Finance\Services\AccountingPeriodService;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class AccountingPeriodServiceTest extends TestCase
 {
+    use DatabaseTransactions;
     protected AccountingPeriodService $service;
 
     protected Tenant $tenant;

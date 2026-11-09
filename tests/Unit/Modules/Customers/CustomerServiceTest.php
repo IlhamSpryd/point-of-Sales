@@ -10,13 +10,13 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Customers\Services\CustomerService;
 use App\Services\Context\TenantContext;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class CustomerServiceTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     protected CustomerService $service;
 

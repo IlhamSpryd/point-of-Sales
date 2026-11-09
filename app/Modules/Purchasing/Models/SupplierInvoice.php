@@ -67,12 +67,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class SupplierInvoice extends Model
 {
     use AssignsTenant;
+    use \App\Core\Traits\BelongsToCompany;
     use ScopedToTenant;
 
     protected $table = 'supplier_invoices';
 
     protected $fillable = [
         'tenant_id',
+        'company_id',
         'store_id',
         'supplier_id',
         'purchase_order_id',
@@ -110,6 +112,7 @@ class SupplierInvoice extends Model
     protected function casts(): array
     {
         return [
+            'company_id' => 'integer',
             'status' => SupplierInvoiceStatusEnum::class,
             'matching_status' => InvoiceMatchingStatusEnum::class,
             'settlement_status' => InvoiceSettlementStatusEnum::class,

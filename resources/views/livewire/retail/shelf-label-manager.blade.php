@@ -87,12 +87,17 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-6 py-4 text-right space-x-2">
+                                <a href="{{ route('retail.shelf-labels.print-batch', $label->batch_number) }}" target="_blank"
+                                    class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80">
+                                    <span class="material-symbols-rounded text-[16px]">print</span>
+                                    Print Sheet
+                                </a>
                                 @if ($label->status === \App\Modules\Retail\Models\ShelfLabel::STATUS_PENDING || $label->status === 'pending')
                                     <button wire:click="markBatchPrinted('{{ $label->batch_number }}')"
-                                        class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80">
-                                        <span class="material-symbols-rounded text-[16px]">print</span>
-                                        Mark Printed
+                                        class="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground">
+                                        <span class="material-symbols-rounded text-[16px]">check_circle</span>
+                                        Mark Done
                                     </button>
                                 @endif
                             </td>

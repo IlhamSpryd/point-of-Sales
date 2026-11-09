@@ -6,6 +6,7 @@ namespace App\Modules\Sales\Services;
 
 use App\Enums\OrderStatus;
 use App\Enums\PreparationStatus;
+use App\Events\KdsItemUpdated;
 use App\Models\OrderItem;
 use App\Services\TransactionService;
 use Illuminate\Support\Facades\DB;
@@ -46,6 +47,8 @@ class KdsService
                 'processed_by' => $staffId,
             ]);
 
+            KdsItemUpdated::dispatch($item, 'claimed');
+
             return $item;
         });
     }
@@ -80,6 +83,8 @@ class KdsService
 
             $item->update(['preparation_status' => PreparationStatus::Ready]);
 
+            KdsItemUpdated::dispatch($item, 'ready');
+
             return $item;
         });
     }
@@ -110,6 +115,8 @@ class KdsService
                 'preparation_status' => PreparationStatus::Pending,
                 'processed_by' => null,
             ]);
+
+            KdsItemUpdated::dispatch($item, 'released');
 
             return $item;
         });
@@ -144,6 +151,8 @@ class KdsService
 
             $item->update(['preparation_status' => PreparationStatus::Brewing]);
 
+            KdsItemUpdated::dispatch($item, 'recalled');
+
             return $item;
         });
     }
@@ -166,6 +175,8 @@ class KdsService
                 'preparation_status' => PreparationStatus::Ready,
                 'processed_by' => $staffId,
             ]);
+
+            KdsItemUpdated::dispatch($item, 'served');
 
             return $item;
         });

@@ -11,7 +11,9 @@ enum ShippingDispatchStatus: string
     case Picked = 'picked';
     case Packed = 'packed';
     case HandedToCourier = 'handed_to_courier';
+    case InTransit = 'in_transit';
     case Delivered = 'delivered';
+    case Cancelled = 'cancelled';
 
     public function label(): string
     {
@@ -21,7 +23,9 @@ enum ShippingDispatchStatus: string
             self::Picked => 'Picked',
             self::Packed => 'Packed',
             self::HandedToCourier => 'Handed to Courier',
+            self::InTransit => 'In Transit',
             self::Delivered => 'Delivered',
+            self::Cancelled => 'Cancelled',
         };
     }
 }

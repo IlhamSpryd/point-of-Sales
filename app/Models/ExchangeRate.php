@@ -7,6 +7,8 @@ namespace App\Models;
 /**
  * Backward compatibility wrapper.
  *
+ * @deprecated Use canonical modular class instead. Maintained for backward compatibility.
+ *
  * @see \App\Modules\Finance\Models\ExchangeRate
  */
 class ExchangeRate extends \App\Modules\Finance\Models\ExchangeRate

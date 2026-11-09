@@ -129,7 +129,7 @@
                                 <x-ui.button
                                     size="icon"
                                     variant="ghost"
-                                    wire:click="delete({{ $supplier->id }})"
+                                    wire:click="deleteSupplier({{ $supplier->id }})"
                                     wire:confirm="Delete this supplier? All associated catalog entries will be disabled."
                                     title="Delete Supplier"
                                     aria-label="Delete">

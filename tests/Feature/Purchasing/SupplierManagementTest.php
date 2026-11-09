@@ -16,7 +16,7 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Modules\Purchasing\Services\SupplierService;
 use App\Services\Context\TenantContext;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\ValidationException;
 use Livewire\Livewire;
@@ -24,7 +24,7 @@ use Tests\TestCase;
 
 class SupplierManagementTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     protected bool $optOutFromDefaultTenant = true;
 
@@ -310,5 +310,21 @@ class SupplierManagementTest extends TestCase
             ->assertSee('Supplier Livewire Test')
             ->set('search', 'TidakAdaPemasok')
             ->assertDontSee('Supplier Livewire Test');
+    }
+
+    public function test_livewire_supplier_manager_can_delete_supplier_via_delete_supplier_action(): void
+    {
+        $supplier = $this->service->createSupplier([
+            'name' => 'Supplier Yang Akan Dihapus',
+            'email' => 'hapus@test.com',
+            'phone' => '0812349999',
+        ], $this->ownerUser);
+
+        Livewire::actingAs($this->ownerUser)
+            ->test(SupplierManager::class)
+            ->call('deleteSupplier', $supplier->id)
+            ->assertSee("Supplier 'Supplier Yang Akan Dihapus' deleted successfully.");
+
+        $this->assertSoftDeleted('suppliers', ['id' => $supplier->id]);
     }
 }

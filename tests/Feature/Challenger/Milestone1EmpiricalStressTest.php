@@ -16,6 +16,8 @@ use App\Modules\HR\Models\PayrollBatch;
 use App\Modules\HR\Models\PayrollItem;
 use App\Modules\HR\Models\PayrollRecord;
 use App\Modules\Inventory\Models\Ingredient;
+use App\Modules\Products\Models\Category;
+use App\Modules\Products\Models\Product;
 use App\Modules\Purchasing\Models\PurchaseOrder;
 use App\Modules\Purchasing\Models\SupplierInvoice;
 use App\Modules\Retail\Models\ShelfLabel;
@@ -291,9 +293,19 @@ class Milestone1EmpiricalStressTest extends TestCase
 
         // Populate ShelfLabel in Tenant Alpha
         $context->setTenantId($this->tenantAlpha->id);
+        $catAlpha = Category::create([
+            'tenant_id' => $this->tenantAlpha->id,
+            'category_name' => 'General Alpha',
+        ]);
+        $prodAlpha = Product::withoutGlobalScopes()->create([
+            'tenant_id' => $this->tenantAlpha->id,
+            'category_id' => $catAlpha->id,
+            'product_name' => 'Alpha Product 1',
+            'product_price' => '25000.00',
+        ]);
         $labelAlpha = ShelfLabel::create([
             'store_id' => $this->storeAlpha1->id,
-            'product_id' => 1,
+            'product_id' => $prodAlpha->id,
             'old_price' => '25000.00',
             'new_price' => '28000.00',
             'status' => ShelfLabel::STATUS_PENDING,
@@ -303,9 +315,19 @@ class Milestone1EmpiricalStressTest extends TestCase
 
         // Populate ShelfLabel in Tenant Beta
         $context->setTenantId($this->tenantBeta->id);
+        $catBeta = Category::create([
+            'tenant_id' => $this->tenantBeta->id,
+            'category_name' => 'General Beta',
+        ]);
+        $prodBeta = Product::withoutGlobalScopes()->create([
+            'tenant_id' => $this->tenantBeta->id,
+            'category_id' => $catBeta->id,
+            'product_name' => 'Beta Product 1',
+            'product_price' => '35000.00',
+        ]);
         $labelBeta = ShelfLabel::create([
             'store_id' => $this->storeBeta1->id,
-            'product_id' => 1,
+            'product_id' => $prodBeta->id,
             'old_price' => '35000.00',
             'new_price' => '38000.00',
             'status' => ShelfLabel::STATUS_PENDING,

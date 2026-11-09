@@ -27,6 +27,10 @@ class RetailExchangeManager extends Component
 
     public int $exchangeQuantity = 1;
 
+    public string $paymentMethod = 'cash';
+
+    public ?float $amountTendered = null;
+
     public ?string $priceDiffSummary = null;
 
     public function searchOrder(): void
@@ -61,15 +65,24 @@ class RetailExchangeManager extends Component
 
         try {
             $service = app(RetailExchangeService::class);
-            $service->processExchange(
+            $result = $service->processExchange(
                 orderId: $this->order->id,
                 orderItemId: $this->selectedOrderItemId,
                 newVariantId: $this->newVariantId,
-                quantity: $this->exchangeQuantity
+                quantity: $this->exchangeQuantity,
+                paymentMethod: $this->paymentMethod,
+                amountTendered: $this->amountTendered
             );
 
-            session()->flash('message', 'Pertukaran barang retail (ukuran/warna) berhasil diproses dan mutasi stok telah diperbarui.');
-            $this->reset(['selectedOrderItemId', 'newVariantId', 'exchangeQuantity']);
+            $diffMsg = '';
+            if ($result['price_difference'] > 0) {
+                $diffMsg = ' Selisih pembayaran Rp '.number_format($result['price_difference'], 0, ',', '.').' berhasil ditagihkan.';
+            } elseif ($result['price_difference'] < 0) {
+                $diffMsg = ' Selisih pengembalian dana Rp '.number_format(abs($result['price_difference']), 0, ',', '.').' berhasil diproses.';
+            }
+
+            session()->flash('message', 'Pertukaran barang retail (ukuran/warna) berhasil diproses dan mutasi stok telah diperbarui.'.$diffMsg);
+            $this->reset(['selectedOrderItemId', 'newVariantId', 'exchangeQuantity', 'amountTendered']);
             $this->searchOrder();
         } catch (\Throwable $e) {
             session()->flash('error', 'Gagal memproses pertukaran: '.$e->getMessage());

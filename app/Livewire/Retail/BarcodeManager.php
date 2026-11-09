@@ -61,7 +61,7 @@ class BarcodeManager extends Component
                     $sub->where('sku', 'like', "%{$this->search}%")
                         ->orWhere('barcode', 'like', "%{$this->search}%")
                         ->orWhere('variant_name', 'like', "%{$this->search}%")
-                        ->orWhereHas('product', fn ($p) => $p->where('name', 'like', "%{$this->search}%"));
+                        ->orWhereHas('product', fn ($p) => $p->where('product_name', 'like', "%{$this->search}%"));
                 });
             })
             ->orderBy('id')

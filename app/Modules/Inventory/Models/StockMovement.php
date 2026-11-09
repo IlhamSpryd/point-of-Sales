@@ -51,6 +51,7 @@ class StockMovement extends Model
     protected $fillable = [
         'tenant_id',
         'store_id',
+        'warehouse_id',
         'product_id',
         'order_id',
         'order_item_id',
@@ -64,6 +65,7 @@ class StockMovement extends Model
     protected function casts(): array
     {
         return [
+            'warehouse_id' => 'integer',
             'type' => StockMovementType::class,
             'quantity' => 'integer',
             'unit_cost' => 'decimal:4',
@@ -100,5 +102,13 @@ class StockMovement extends Model
     public function store(): BelongsTo
     {
         return $this->belongsTo(Store::class);
+    }
+
+    /**
+     * @return BelongsTo<Warehouse, $this>
+     */
+    public function warehouse(): BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class, 'warehouse_id');
     }
 }

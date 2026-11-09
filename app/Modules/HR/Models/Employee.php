@@ -71,6 +71,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Employee extends Model
 {
     use AssignsTenant;
+    use \App\Core\Traits\BelongsToCompany;
     use ScopedToTenant;
     use SoftDeletes;
 
@@ -78,6 +79,7 @@ class Employee extends Model
 
     protected $fillable = [
         'tenant_id',
+        'company_id',
         'user_id',
         'employee_number',
         'national_id_number',
@@ -125,6 +127,7 @@ class Employee extends Model
     protected function casts(): array
     {
         return [
+            'company_id' => 'integer',
             'national_id_number' => 'encrypted',
             'gender' => GenderEnum::class,
             'religion' => ReligionEnum::class,

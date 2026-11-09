@@ -54,6 +54,7 @@ use Illuminate\Support\Facades\DB;
  * @property int|float $product_price
  * @property string $costing_method
  * @property float|numeric-string $standard_cost
+ * @property \App\Enums\KitchenStation|null $kitchen_station
  * @property int|null $tax_class_id
  * @property bool $is_tax_inclusive
  * @property bool $track_inventory
@@ -117,6 +118,7 @@ class Product extends Model
         'stock',
         'is_active',
         'is_open_price',
+        'kitchen_station',
     ];
 
     public function setNameAttribute(mixed $value): void
@@ -313,6 +315,7 @@ class Product extends Model
             'track_inventory' => 'boolean',
             'standard_cost' => 'decimal:2',
             'is_open_price' => 'boolean',
+            'kitchen_station' => \App\Enums\KitchenStation::class,
         ];
     }
 

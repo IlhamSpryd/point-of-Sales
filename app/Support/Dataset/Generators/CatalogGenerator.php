@@ -41,17 +41,29 @@ final class CatalogGenerator
      */
     public function generate(int $tenantId, array $stores): array
     {
+        $industry = (string) (DB::table('tenants')->where('id', $tenantId)->value('primary_industry') ?? 'fnb');
         $rng = (new SeededRandom($this->config->seed))->derive("catalog:{$tenantId}");
 
-        $this->ensureCategories($tenantId);
-        $this->ensureIngredients($tenantId);
-        $this->ensureProducts($tenantId, $rng);
-        $this->ensureModifiers($tenantId);
-        $this->ensureTables($tenantId, $stores, $rng);
-        $this->ensureDiscounts($tenantId, $stores);
-        $this->ensureLoyaltyTiers($tenantId);
-        $this->ensureSuppliers($tenantId);
-        $customers = $this->ensureCustomers($tenantId, $rng);
+        if ($industry === 'retail') {
+            $this->ensureCategories($tenantId, 'retail');
+            $this->ingredientIds = [];
+            $this->ensureProducts($tenantId, $rng, 'retail');
+            $this->ensureTables($tenantId, $stores, $rng, 'retail');
+            $this->ensureDiscounts($tenantId, $stores);
+            $this->ensureLoyaltyTiers($tenantId);
+            $this->ensureSuppliers($tenantId, 'retail');
+            $customers = $this->ensureCustomers($tenantId, $rng);
+        } else {
+            $this->ensureCategories($tenantId, 'fnb');
+            $this->ensureIngredients($tenantId);
+            $this->ensureProducts($tenantId, $rng, 'fnb');
+            $this->ensureModifiers($tenantId);
+            $this->ensureTables($tenantId, $stores, $rng, 'fnb');
+            $this->ensureDiscounts($tenantId, $stores);
+            $this->ensureLoyaltyTiers($tenantId);
+            $this->ensureSuppliers($tenantId, 'fnb');
+            $customers = $this->ensureCustomers($tenantId, $rng);
+        }
         $this->writer->flushAll();
 
         return [
@@ -68,10 +80,11 @@ final class CatalogGenerator
         ];
     }
 
-    private function ensureCategories(int $tenantId): void
+    private function ensureCategories(int $tenantId, string $industry = 'fnb'): void
     {
-        $limit = max(3, $this->config->volumeInt('categories', count(CatalogFixtures::categories())));
-        $categories = array_slice(CatalogFixtures::categories(), 0, $limit);
+        $rawCategories = $industry === 'retail' ? CatalogFixtures::retailCategories() : CatalogFixtures::categories();
+        $limit = max(3, $this->config->volumeInt('categories', count($rawCategories)));
+        $categories = array_slice($rawCategories, 0, $limit);
         $ts = $this->config->startDate->subDays(40);
 
         foreach ($categories as $idx => $cat) {
@@ -135,8 +148,68 @@ final class CatalogGenerator
         }
     }
 
-    private function ensureProducts(int $tenantId, SeededRandom $rng): void
+    private function ensureProducts(int $tenantId, SeededRandom $rng, string $industry = 'fnb'): void
     {
+        if ($industry === 'retail') {
+            $all = CatalogFixtures::retailProducts();
+            $limit = max(10, $this->config->volumeInt('products', count($all)));
+            $selected = array_slice($all, 0, $limit);
+            $ts = $this->config->startDate->subDays(30);
+
+            foreach ($selected as $def) {
+                $code = sprintf('DS%d-%s', $tenantId, $def['code']);
+                $existing = DB::table('products')
+                    ->where('tenant_id', $tenantId)
+                    ->where('product_code', $code)
+                    ->first();
+
+                if ($existing) {
+                    $productId = (int) $existing->id;
+                    $standardCost = (float) $existing->standard_cost;
+                } else {
+                    $standardCost = (float) ($def['cost'] ?? round($def['price'] * 0.5, 2));
+                    $barcode = $def['barcode'] ?? sprintf('899%09d', $rng->int(100000000, 999999999));
+
+                    $productId = $this->writer->insertGetId('products', [
+                        'tenant_id' => $tenantId,
+                        'product_code' => $code,
+                        'barcode' => $barcode,
+                        'product_type' => 'standard',
+                        'status' => 'active',
+                        'has_variants' => 0,
+                        'track_inventory' => 1,
+                        'category_id' => $this->categoryIds[$def['category']] ?? null,
+                        'product_name' => $def['name'],
+                        'product_price' => (int) $def['price'],
+                        'costing_method' => 'standard',
+                        'standard_cost' => $standardCost,
+                        'is_tax_inclusive' => 0,
+                        'product_description' => null,
+                        'stock' => 0,
+                        'is_active' => 1,
+                        'created_at' => $ts,
+                        'updated_at' => $ts,
+                    ]);
+                }
+
+                $this->products[] = [
+                    'id' => $productId,
+                    'code' => $code,
+                    'name' => $def['name'],
+                    'category' => $def['category'],
+                    'price' => (int) $def['price'],
+                    'cost' => $standardCost,
+                    'retail' => true,
+                    'popularity' => (int) $def['popularity'],
+                    'bom' => [],
+                ];
+            }
+
+            $this->writer->flushAll();
+
+            return;
+        }
+
         $limit = max(10, $this->config->volumeInt('products', count(CatalogFixtures::products())));
         // Pastikan retail disertakan saat limit memotong daftar: ambil BOM dulu,
         // lalu sisakan slot retail.
@@ -362,8 +435,42 @@ final class CatalogGenerator
         }
     }
 
-    private function ensureTables(int $tenantId, array $stores, SeededRandom $rng): void
+    private function ensureTables(int $tenantId, array $stores, SeededRandom $rng, string $industry = 'fnb'): void
     {
+        if ($industry === 'retail') {
+            $retailAreas = ['Kasir Depan', 'Layanan Pelanggan', 'Display Mezzanine'];
+            foreach ($stores as $store) {
+                for ($i = 1; $i <= 3; $i++) {
+                    $tableName = sprintf('POS%02d', $i);
+                    $exists = DB::table('tables')
+                        ->where('tenant_id', $tenantId)
+                        ->where('store_id', $store['id'])
+                        ->where('table_name', $tableName)
+                        ->whereNull('deleted_at')
+                        ->exists();
+                    if ($exists) {
+                        continue;
+                    }
+
+                    DB::table('tables')->insert([
+                        'tenant_id' => $tenantId,
+                        'store_id' => $store['id'],
+                        'table_code' => sprintf('%s-%s', $store['code'], $tableName),
+                        'table_name' => $tableName,
+                        'capacity' => 1,
+                        'area' => $retailAreas[($i - 1) % count($retailAreas)],
+                        'is_active' => 1,
+                        'operational_status' => 'available',
+                        'secure_token' => (string) Str::uuid(),
+                        'created_at' => $store['opened_at'] ?? $this->config->startDate,
+                        'updated_at' => now(),
+                    ]);
+                }
+            }
+
+            return;
+        }
+
         $areas = CatalogFixtures::tableAreas();
 
         foreach ($stores as $store) {
@@ -473,11 +580,12 @@ final class CatalogGenerator
         }
     }
 
-    private function ensureSuppliers(int $tenantId): void
+    private function ensureSuppliers(int $tenantId, string $industry = 'fnb'): void
     {
         $ts = $this->config->startDate->subDays(45);
-        $limit = max(1, $this->config->volumeInt('suppliers', count(CatalogFixtures::suppliers())));
-        $defs = array_slice(CatalogFixtures::suppliers(), 0, $limit, true);
+        $defs = $industry === 'retail' ? CatalogFixtures::retailSuppliers() : CatalogFixtures::suppliers();
+        $limit = max(1, $this->config->volumeInt('suppliers', count($defs)));
+        $defs = array_slice($defs, 0, $limit, true);
 
         foreach ($defs as $code => $sup) {
             $exists = DB::table('suppliers')
@@ -503,34 +611,59 @@ final class CatalogGenerator
             ]);
         }
 
-        // supplier_products: hubungkan ingredient ke pemasoknya.
+        // supplier_products: hubungkan produk ke pemasok jika retail, atau ingredient jika fnb
         $supplierIds = DB::table('suppliers')
             ->where('tenant_id', $tenantId)->whereNull('deleted_at')
             ->pluck('id', 'code')->all();
 
         $rows = [];
-        foreach (array_slice(CatalogFixtures::ingredients(), 0, max(10, $this->config->volumeInt('ingredients', 60))) as $ing) {
-            if (! isset($supplierIds[$ing['supplier']], $this->ingredientIds[$ing['code']])) {
-                continue;
+        if ($industry === 'retail') {
+            $supKeys = array_keys($supplierIds);
+            foreach ($this->products as $idx => $prod) {
+                $supCode = $supKeys[$idx % count($supKeys)];
+                $rows[] = [
+                    'tenant_id' => $tenantId,
+                    'supplier_id' => $supplierIds[$supCode],
+                    'purchasable_type' => 'product',
+                    'purchasable_id' => $prod['id'],
+                    'supplier_sku' => 'SUP-'.$prod['code'],
+                    'purchase_uom' => 'PCS',
+                    'uom_conversion_factor' => 1,
+                    'standard_price' => $prod['cost'],
+                    'last_purchase_price' => $prod['cost'],
+                    'lead_time_days' => 3,
+                    'min_order_qty' => 1,
+                    'order_multiple_qty' => 1,
+                    'is_preferred' => 1,
+                    'is_active' => 1,
+                    'created_at' => $ts,
+                    'updated_at' => $ts,
+                ];
             }
-            $rows[] = [
-                'tenant_id' => $tenantId,
-                'supplier_id' => $supplierIds[$ing['supplier']],
-                'purchasable_type' => 'ingredient',
-                'purchasable_id' => $this->ingredientIds[$ing['code']],
-                'supplier_sku' => 'SUP-'.$ing['code'],
-                'purchase_uom' => $ing['unit'],
-                'uom_conversion_factor' => 1,
-                'standard_price' => $ing['cost'],
-                'last_purchase_price' => $ing['cost'],
-                'lead_time_days' => CatalogFixtures::suppliers()[$ing['supplier']]['lead'] ?? 2,
-                'min_order_qty' => 1,
-                'order_multiple_qty' => 1,
-                'is_preferred' => 1,
-                'is_active' => 1,
-                'created_at' => $ts,
-                'updated_at' => $ts,
-            ];
+        } else {
+            foreach (array_slice(CatalogFixtures::ingredients(), 0, max(10, $this->config->volumeInt('ingredients', 60))) as $ing) {
+                if (! isset($supplierIds[$ing['supplier']], $this->ingredientIds[$ing['code']])) {
+                    continue;
+                }
+                $rows[] = [
+                    'tenant_id' => $tenantId,
+                    'supplier_id' => $supplierIds[$ing['supplier']],
+                    'purchasable_type' => 'ingredient',
+                    'purchasable_id' => $this->ingredientIds[$ing['code']],
+                    'supplier_sku' => 'SUP-'.$ing['code'],
+                    'purchase_uom' => $ing['unit'],
+                    'uom_conversion_factor' => 1,
+                    'standard_price' => $ing['cost'],
+                    'last_purchase_price' => $ing['cost'],
+                    'lead_time_days' => CatalogFixtures::suppliers()[$ing['supplier']]['lead'] ?? 2,
+                    'min_order_qty' => 1,
+                    'order_multiple_qty' => 1,
+                    'is_preferred' => 1,
+                    'is_active' => 1,
+                    'created_at' => $ts,
+                    'updated_at' => $ts,
+                ];
+            }
         }
 
         if ($rows !== []) {

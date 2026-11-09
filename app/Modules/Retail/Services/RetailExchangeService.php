@@ -10,6 +10,7 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
+use App\Modules\Finance\Services\FinancialOutboxDispatcherService;
 use App\Modules\Inventory\Services\InventoryLedgerService;
 use App\Services\AuditTrailService;
 use App\Services\Context\TenantContext;
@@ -22,7 +23,8 @@ class RetailExchangeService
     public function __construct(
         protected InventoryLedgerService $inventoryLedgerService,
         protected AuditTrailService $auditTrail,
-        protected TenantContext $tenantContext
+        protected TenantContext $tenantContext,
+        protected FinancialOutboxDispatcherService $financialOutboxDispatcher
     ) {}
 
     /**
@@ -31,9 +33,10 @@ class RetailExchangeService
      * Invariant:
      * 1. Retur varian lama ke stok karantina (inbound movement).
      * 2. Potong varian baru dari stok cabang (outbound movement).
-     * 3. Jika harga varian sama, selisih bayar = 0.
+     * 3. Jika ada selisih harga > 0: tagih kasir via payments & catat cash drawer + FinancialEventOutbox.
+     * 4. Jika selisih harga < 0: kembalikan uang via payments & catat cash drawer out + FinancialEventOutbox.
      *
-     * @return array{order_id: int, old_variant_id: int, new_variant_id: int, quantity: int, price_difference: float, status: string}
+     * @return array{order_id: int, old_variant_id: int, new_variant_id: int, quantity: int, price_difference: float, status: string, payment_id: int|null}
      *
      * @throws DomainException|InvalidArgumentException
      */
@@ -45,7 +48,10 @@ class RetailExchangeService
         int $newVariantId,
         int $quantity,
         int $userId,
-        ?string $reason = null
+        ?string $reason = null,
+        string $paymentMethod = 'cash',
+        float|int|null $amountTendered = null,
+        ?int $shiftId = null
     ): array {
         if ($quantity <= 0) {
             throw new InvalidArgumentException('Kuantitas tukar guling harus lebih dari 0.');
@@ -56,7 +62,7 @@ class RetailExchangeService
         }
 
         return DB::transaction(function () use (
-            $tenantId, $storeId, $orderId, $oldVariantId, $newVariantId, $quantity, $userId, $reason
+            $tenantId, $storeId, $orderId, $oldVariantId, $newVariantId, $quantity, $userId, $reason, $paymentMethod, $amountTendered, $shiftId
         ) {
             $order = Order::withoutGlobalScopes()
                 ->where('tenant_id', $tenantId)
@@ -120,7 +126,8 @@ class RetailExchangeService
                 unitCost: $oldProductPrice,
                 reason: "Tukar guling varian lama (#{$oldVariant->id}) ke karantina".($reason ? ": {$reason}" : ''),
                 orderId: $order->id,
-                userId: $userId
+                userId: $userId,
+                variantId: (int) $oldVariant->id
             );
 
             // 3. Pemotongan Stok: Kurangi varian baru dari stok cabang
@@ -134,13 +141,151 @@ class RetailExchangeService
                 unitCost: $newProductPrice,
                 reason: "Tukar guling varian baru (#{$newVariant->id}) ke pelanggan".($reason ? ": {$reason}" : ''),
                 orderId: $order->id,
-                userId: $userId
+                userId: $userId,
+                variantId: (int) $newVariant->id
             );
 
             // 4. Hitung Selisih Finansial
             $oldUnitPrice = (float) ($oldVariant->price_override ?? $oldProductPrice);
             $newUnitPrice = (float) ($newVariant->price_override ?? $newProductPrice);
             $priceDiff = ($newUnitPrice - $oldUnitPrice) * $quantity;
+            $absDiff = round(abs($priceDiff), 2);
+            $diffInt = (int) round($absDiff);
+            $paymentId = null;
+
+            // Cari shift aktif kasir jika belum diberikan
+            $activeShiftId = $shiftId;
+            if (! $activeShiftId) {
+                $activeShiftId = DB::table('shifts')
+                    ->where('tenant_id', $tenantId)
+                    ->where('store_id', $storeId)
+                    ->where('status', 'open')
+                    ->latest('id')
+                    ->value('id');
+            }
+
+            // 5. Penagihan atau Pengembalian Finansial (TASK-101 / ACT-05)
+            if ($priceDiff > 0) {
+                // Pelanggan membayar selisih harga lebih mahal
+                $tendered = $amountTendered !== null ? (int) round((float) $amountTendered) : $diffInt;
+                if ($tendered < $diffInt) {
+                    throw new InvalidArgumentException("Jumlah pembayaran (Rp {$tendered}) kurang dari tagihan selisih (Rp {$diffInt}).");
+                }
+                $change = max(0, $tendered - $diffInt);
+
+                $paymentId = DB::table('payments')->insertGetId([
+                    'tenant_id' => $tenantId,
+                    'store_id' => $storeId,
+                    'order_id' => $order->id,
+                    'shift_id' => $activeShiftId,
+                    'payment_method' => strtolower($paymentMethod),
+                    'amount' => $diffInt,
+                    'amount_tendered' => $tendered,
+                    'change_amount' => $change,
+                    'reference_number' => 'EXC-PAY-'.$order->id.'-'.time(),
+                    'status' => 'captured',
+                    'processed_by' => $userId,
+                    'captured_at' => now(),
+                    'idempotency_key' => 'exc-pay:'.$order->id.':'.$oldVariantId.':'.$newVariantId.':'.uniqid(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                if (strtolower($paymentMethod) === 'cash' && $activeShiftId) {
+                    DB::table('cash_drawer_movements')->insert([
+                        'tenant_id' => $tenantId,
+                        'store_id' => $storeId,
+                        'shift_id' => $activeShiftId,
+                        'type' => 'cash_in',
+                        'category' => 'correction',
+                        'amount' => $diffInt,
+                        'reason' => "Pembayaran selisih tukar guling varian #{$oldVariant->sku} -> #{$newVariant->sku}",
+                        'receipt_reference' => $order->order_code ?? (string) $order->id,
+                        'created_by' => $userId,
+                        'idempotency_key' => 'cdm-exc:'.$order->id.':'.$oldVariantId.':'.uniqid(),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+
+                $this->financialOutboxDispatcher->recordOutboxEvent(
+                    tenantId: $tenantId,
+                    storeId: $storeId,
+                    eventType: 'retail.variant_exchange_revenue',
+                    sourceModule: 'retail',
+                    sourceType: 'order',
+                    sourceId: $order->id,
+                    sourceNumber: $order->order_code,
+                    idempotencyKey: 'outbox-exc-rev:'.$order->id.':'.$oldVariantId.':'.$newVariantId.':'.uniqid(),
+                    payload: [
+                        'order_id' => $order->id,
+                        'order_code' => $order->order_code,
+                        'old_variant_id' => $oldVariantId,
+                        'new_variant_id' => $newVariantId,
+                        'price_difference' => $diffInt,
+                        'payment_id' => $paymentId,
+                        'payment_method' => $paymentMethod,
+                        'currency' => 'IDR',
+                    ]
+                );
+            } elseif ($priceDiff < 0) {
+                // Toko mengembalikan uang selisih (tukar ke barang lebih murah)
+                $paymentId = DB::table('payments')->insertGetId([
+                    'tenant_id' => $tenantId,
+                    'store_id' => $storeId,
+                    'order_id' => $order->id,
+                    'shift_id' => $activeShiftId,
+                    'payment_method' => strtolower($paymentMethod),
+                    'amount' => $diffInt,
+                    'amount_tendered' => $diffInt,
+                    'change_amount' => 0,
+                    'reference_number' => 'EXC-REF-'.$order->id.'-'.time(),
+                    'status' => 'refunded',
+                    'processed_by' => $userId,
+                    'captured_at' => now(),
+                    'idempotency_key' => 'exc-ref:'.$order->id.':'.$oldVariantId.':'.$newVariantId.':'.uniqid(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                if (strtolower($paymentMethod) === 'cash' && $activeShiftId) {
+                    DB::table('cash_drawer_movements')->insert([
+                        'tenant_id' => $tenantId,
+                        'store_id' => $storeId,
+                        'shift_id' => $activeShiftId,
+                        'type' => 'cash_out',
+                        'category' => 'refund',
+                        'amount' => $diffInt,
+                        'reason' => "Pengembalian selisih tukar guling varian #{$oldVariant->sku} -> #{$newVariant->sku}",
+                        'receipt_reference' => $order->order_code ?? (string) $order->id,
+                        'created_by' => $userId,
+                        'idempotency_key' => 'cdm-ref:'.$order->id.':'.$oldVariantId.':'.uniqid(),
+                        'created_at' => now(),
+                        'updated_at' => now(),
+                    ]);
+                }
+
+                $this->financialOutboxDispatcher->recordOutboxEvent(
+                    tenantId: $tenantId,
+                    storeId: $storeId,
+                    eventType: 'retail.variant_exchange_refund',
+                    sourceModule: 'retail',
+                    sourceType: 'order',
+                    sourceId: $order->id,
+                    sourceNumber: $order->order_code,
+                    idempotencyKey: 'outbox-exc-ref:'.$order->id.':'.$oldVariantId.':'.$newVariantId.':'.uniqid(),
+                    payload: [
+                        'order_id' => $order->id,
+                        'order_code' => $order->order_code,
+                        'old_variant_id' => $oldVariantId,
+                        'new_variant_id' => $newVariantId,
+                        'refund_amount' => $diffInt,
+                        'payment_id' => $paymentId,
+                        'payment_method' => $paymentMethod,
+                        'currency' => 'IDR',
+                    ]
+                );
+            }
 
             $this->auditTrail->log(
                 tenantId: $tenantId,
@@ -156,6 +301,7 @@ class RetailExchangeService
                     'new_variant_id' => $newVariantId,
                     'quantity' => $quantity,
                     'price_difference' => $priceDiff,
+                    'payment_id' => $paymentId,
                 ]
             );
 
@@ -165,6 +311,7 @@ class RetailExchangeService
                 'new_variant_id' => $newVariantId,
                 'quantity' => $quantity,
                 'price_difference' => round($priceDiff, 2),
+                'payment_id' => $paymentId,
                 'status' => 'COMPLETED',
             ];
         });
@@ -173,14 +320,17 @@ class RetailExchangeService
     /**
      * Facade method untuk kemudahan pemanggilan dari Livewire komponen.
      *
-     * @return array{order_id: int, old_variant_id: int, new_variant_id: int, quantity: int, price_difference: float, status: string}
+     * @return array{order_id: int, old_variant_id: int, new_variant_id: int, quantity: int, price_difference: float, status: string, payment_id: int|null}
      */
     public function processExchange(
         int $orderId,
         int $orderItemId,
         int $newVariantId,
         int $quantity,
-        ?string $reason = null
+        ?string $reason = null,
+        string $paymentMethod = 'cash',
+        float|int|null $amountTendered = null,
+        ?int $shiftId = null
     ): array {
         $tenantId = (int) $this->tenantContext->getTenantId();
         $storeId = (int) $this->tenantContext->getStoreId();
@@ -201,7 +351,10 @@ class RetailExchangeService
             newVariantId: $newVariantId,
             quantity: $quantity,
             userId: $userId,
-            reason: $reason
+            reason: $reason,
+            paymentMethod: $paymentMethod,
+            amountTendered: $amountTendered,
+            shiftId: $shiftId
         );
     }
 }

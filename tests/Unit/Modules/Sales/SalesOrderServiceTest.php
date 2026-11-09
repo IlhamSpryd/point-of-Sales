@@ -19,13 +19,13 @@ use App\Modules\Sales\Models\SalesOrder;
 use App\Modules\Sales\Services\SalesOrderService;
 use App\Services\Context\TenantContext;
 use DomainException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class SalesOrderServiceTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     protected SalesOrderService $salesOrderService;
 

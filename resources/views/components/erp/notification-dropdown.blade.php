@@ -140,8 +140,8 @@
             <div class="p-2 border-t border-shell-border bg-shell text-center">
                 <a href="{{ route('activity-logs.index') }}" wire:navigate
                     @click="open = false"
-                    class="block py-1 text-[11px] font-medium text-shell-foreground hover:text-shell-foreground-active transition-colors">
-                    View Complete Activity Log &rarr;
+    goal teamwork learn boost automation verification-before-completion testing-best-practices test-driven-development systematic-debugging tailwindcss-development spec-driven-development sharp-edges security-and-hardening retrieving-developer-knowledge impeccable frontend-ui-engineering laravel-best-practices modern-web-guidance generative_ui engineering-tools-usage-policy oke sekarang implementasikan mulai dari fase 0 dan 1secara bertahap, gunakan seluruh keahlian anda pastikan pekerjaan anda menhasil kualitas yang sangat sangat tinggi jangang menyelesaikan fase jika belum anda test dan pastikan professional                class="block py-1 text-[11px] font-medium text-shell-foreground hover:text-shell-foreground-active transition-colors">
+                    View Complete Activity Log
                 </a>
             </div>
         @endif

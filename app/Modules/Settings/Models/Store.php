@@ -45,6 +45,7 @@ use Illuminate\Support\Facades\DB;
 class Store extends Model
 {
     use AssignsTenant;
+    use \App\Core\Traits\BelongsToCompany;
     use ScopedToTenant;
     use SoftDeletes;
 
@@ -101,6 +102,7 @@ class Store extends Model
 
     protected $fillable = [
         'tenant_id',
+        'company_id',
         'name',
         'code',
         'timezone',
@@ -113,6 +115,7 @@ class Store extends Model
     ];
 
     protected $casts = [
+        'company_id' => 'integer',
         'is_active' => 'boolean',
         'is_initial' => 'boolean',
     ];

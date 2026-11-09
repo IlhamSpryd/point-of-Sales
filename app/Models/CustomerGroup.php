@@ -7,6 +7,8 @@ namespace App\Models;
 /**
  * Backward compatibility wrapper for modular architecture.
  *
+ * @deprecated Use canonical modular class instead. Maintained for backward compatibility.
+ *
  * @see \App\Modules\Customers\Models\CustomerGroup
  */
 class CustomerGroup extends \App\Modules\Customers\Models\CustomerGroup {}

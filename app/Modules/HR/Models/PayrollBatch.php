@@ -48,12 +48,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class PayrollBatch extends Model
 {
     use AssignsTenant;
+    use \App\Core\Traits\BelongsToCompany;
     use ScopedToTenant;
 
     protected $table = 'payroll_batches';
 
     protected $fillable = [
         'tenant_id',
+        'company_id',
         'batch_number',
         'payroll_period_id',
         'period_start_date',
@@ -79,6 +81,7 @@ class PayrollBatch extends Model
     protected function casts(): array
     {
         return [
+            'company_id' => 'integer',
             'period_start_date' => 'date',
             'period_end_date' => 'date',
             'cutoff_date' => 'date',

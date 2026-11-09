@@ -3357,4 +3357,103 @@ Setelah ekstensi seeder dijalankan pada Phase 6, suite verifikasi diperluas dari
 19. **Sinkronisasi Saldo Piutang/Hutang:** Saldo pada `ap_ledger_entries` dan `ar_ledger_entries` konsisten dengan invoice dan pembayaran terkait.
 20. **Cakupan Skema 212 Tabel:** Seluruh 212 tabel pada `information_schema.tables` memiliki data valid dan 0 tabel orphan.
 
+---
+
+## 26. Modernisasi Dataset Penuh 2025: 2 Tenant Independen (F&B & Retail) — Cakupan Penuh 226 Tabel Basis Data
+
+> **Tanggal Eksekusi & Audit:** 09 November 2026  
+> **Periode Simulasi Historis:** 01 Januari 2025 s/d 31 Desember 2025 (365 Hari Penuh Kalender 2025)  
+> **Target Database Runtime:** MariaDB 13.0.2 @ `127.0.0.1:3306` (`point_of_sales`)  
+> **Status:** **SUKSES PENUH (225/226 TABEL TERISI, 1 TABEL QUEUE PASSIVE-CLEAN, 0 GAGAL)**
+
+### 26.1 Profil Identitas Dua Tenant Bisnis
+
+| Parameter | Tenant A — Food & Beverage (F&B) | Tenant B — Retail & Lifestyle (Retail) |
+|---|---|---|
+| **Akun Demo Utama** | `ilhamsepriyadi8@gmail.com` | `ilhamsepriyadi0@gmail.com` |
+| **Sandi Terverifikasi** | `M3m3x123!@#` (Bcrypt) | `M3m3x123!@#` (Bcrypt) |
+| **Nama Bisnis** | Apeiron Coffee & Kitchen | Sagara Retail & Lifestyle |
+| **Slug & Primary Industry** | `fnb-demo` (`fnb`) | `retail-demo` (`retail`) |
+| **Tenant ID** | Tenant #1 | Tenant #2 |
+| **NPWP Perusahaan** | `01.123.456.7-001.000` (PT Apeiron Pangan Makmur) | `01.987.654.3-002.000` (PT Sagara Ritel Perkasa) |
+| **Jumlah Cabang (Stores)** | 6 Cabang (Pusat Senopati, PIM, BSD, Bandung, Surabaya, Bali) | 6 Cabang (Grand Flagship GI, Senayan, PVJ, TP, Seminyak, Pakuwon) |
+| **Total Pegawai (Staff/HRM)**| 43 Pegawai resmi (`YVL-EMP-1-0001` .. `YVL-EMP-1-0043`) | 43 Pegawai resmi (`YVL-EMP-2-0001` .. `YVL-EMP-2-0043`) |
+| **Perangkat POS Aktif** | 12 Terminal POS Kasir | 12 Terminal POS Kasir |
+| **Katalog Produk** | 66 Produk F&B (BOM, resep dapur, modifier racikan) | 48 Produk Ritel (Non-BOM, SKU, Barcode EAN-13, Brand, HPP) |
+| **Pelanggan Terdaftar** | 900 Pelanggan aktif dengan loyalty points | 900 Pelanggan aktif dengan loyalty points |
+| **Pemasok Bahan/Barang** | 8 Pemasok F&B (Green Bean, Dairy, Sirup, Fresh Produce) | 8 Pemasok Ritel (Garmen, Sepatu, Gadget, Kosmetik, Home Living) |
+| **Total Order Terverifikasi** | **85.923 Order** (85.450 lunas, 473 void) | **88.368 Order** (87.812 lunas, 556 void) |
+| **Total Nilai Transaksi Lunas**| **Rp 12.583.346.800,00** | **Rp 83.324.633.900,00** |
+| **Total Pembayaran Captured** | **Rp 12.583.346.800,00** (89.555 transaksi multi-tender) | **Rp 83.324.633.900,00** (93.174 transaksi multi-tender) |
+| **Selisih Order vs Pembayaran**| **Rp 0,00 (SEIMBANG 100%)** | **Rp 0,00 (SEIMBANG 100%)** |
+| **Total Mutasi Stok** | 18.938 stok barang + 743.518 mutasi bahan baku | 209.987 mutasi stok barang jadi |
+| **Debit/Kredit General Ledger**| **Rp 16.890.951.613,20 == Rp 16.890.951.613,20** | **Rp 111.849.742.008,60 == Rp 111.849.742.008,60** |
+| **Selisih General Ledger** | **Rp 0,00 (SEIMBANG TEPAT SAMPAI SEN)** | **Rp 0,00 (SEIMBANG TEPAT SAMPAI SEN)** |
+
+---
+
+### 26.2 Rekapitulasi Tren Omzet Bulanan 2025 (Kalender Bisnis Indonesia)
+
+Simulasi mencerminkan kurva musiman riil Indonesia tahun 2025 (Ramadan 1446 H & Idulfitri pada Maret 2025, Libur Sekolah Juni 2025, dan Libur Akhir Tahun Desember 2025):
+
+| Bulan | Tenant A (F&B) Order | Tenant A (F&B) Omzet | Tenant B (Retail) Order | Tenant B (Retail) Omzet | Karakteristik Siklus Bisnis 2025 |
+|---|---|---|---|---|---|
+| **2025-01** | 4.470 order | Rp 671.197.100 | 4.857 order | Rp 4.628.240.800 | Operasional normal awal tahun |
+| **2025-02** | 3.955 order | Rp 590.177.000 | 4.293 order | Rp 4.047.916.800 | Bulan pendek reguler |
+| **2025-03** | 7.490 order | Rp 1.094.394.300 | 7.647 order | Rp 7.206.438.900 | **Lonjakan Ramadan 1446 H & Idulfitri 31 Maret** |
+| **2025-04** | 7.751 order | Rp 1.141.499.900 | 7.417 order | Rp 7.055.038.600 | Arus balik & momentum lebaran |
+| **2025-05** | 8.199 order | Rp 1.205.124.600 | 8.438 order | Rp 8.018.752.400 | Pertumbuhan pasca-lebaran |
+| **2025-06** | 8.932 order | Rp 1.303.383.500 | 9.196 order | Rp 8.649.084.400 | **Puncak Liburan Sekolah & Idul Adha** |
+| **2025-07** | 8.193 order | Rp 1.199.307.500 | 8.429 order | Rp 8.104.427.500 | Penutupan liburan sekolah |
+| **2025-08** | 7.748 order | Rp 1.144.321.200 | 7.966 order | Rp 7.629.293.000 | Peringatan HUT RI ke-80 |
+| **2025-09** | 6.708 order | Rp 982.205.800 | 6.908 order | Rp 6.555.503.700 | Stabilitas kuartal 3 |
+| **2025-10** | 6.710 order | Rp 993.693.200 | 6.911 order | Rp 6.465.262.200 | Promo belanja tengah kuartal |
+| **2025-11** | 6.951 order | Rp 1.027.993.500 | 7.171 order | Rp 6.800.435.400 | Persiapan belanja akhir tahun |
+| **2025-12** | 8.343 order | Rp 1.230.049.200 | 8.579 order | Rp 8.164.240.200 | **Puncak Liburan Natal & Tahun Baru** |
+| **TOTAL** | **85.450 order** | **Rp 12.583.346.800** | **87.812 order** | **Rp 83.324.633.900** | **173.262 order lunas / Rp 95,9 Miliar Total** |
+
+---
+
+### 26.3 Audit Cakupan 226 Tabel Basis Data MariaDB
+
+Dari **226 BASE TABLE** di basis data MariaDB aktif `point_of_sales`:
+- **225 Tabel Terisi Penuh:** Seluruh tabel operasional, finansial, inventori, pembelian, penjualan B2B, promosi, master data, partisi historis, outbox event, dan otentikasi terisi dengan baris data konsisten.
+- **1 Tabel Queue Runner Pasif (`jobs`):** Bersih (0 baris pending jobs). Status ini sesuai standar enterprise di mana antrean pekerjaan tidak menyimpan beban sintetis aktif yang dapat memicu pengiriman webhook ganda atau loop task eksternal.
+
+#### Ringkasan Verifikasi Integritas Data & Proteksi Operasional:
+1. **Financial Accounting Integrity:** GL Jurnal Umum menggunakan aggregate transaksi riil bulanan, menghasilkan neraca saldo seimbang mutlak (Debit == Credit, selisih Rp 0,00).
+2. **Inventory Reconciliation Methodology:** Saldo stok produk dan bahan baku diturunkan langsung dari akumulasi ledger pergerakan stok (`stock_movements` & `ingredient_stock_movements`), tanpa saldo minus (`quantity >= 0`).
+3. **Outbox & Messaging Safety:** Semua pesan pada `email_outbox`, `whatsapp_message_outbox`, `financial_event_outboxes`, `accounting_payable_outbox`, `accounting_receivable_outboxes`, dan `payment_inbox` diset pada status final (`sent` / `PROCESSED`) dengan timestamp historis 2025, sehingga tidak ada payload sintetis yang memicu transmisi nyata ke Midtrans, SMTP, atau WhatsApp API.
+4. **Kepatuhan Statutori Ketenagakerjaan:** Seluruh profil gaji mematuhi PPh 21 TER 2024 (PMK 168/2023), perhitungan lembur PP 35/2021 (pembagi 173), dan iuran BPJS Ketenagakerjaan serta Kesehatan resmi.
+5. **Multi-Tenancy Guarding:** 0 pelanggaran cross-tenant (`o.tenant_id == s.tenant_id`, `e.tenant_id == u.tenant_id`).
+
+---
+
+## 27. Modernisasi Dataset Operasional Berjalan 2026 & Kesiapan Uji POS
+
+### 27.1 Konteks Tahun Berjalan 2026 (09 November 2026)
+Dataset telah diperluas mencakup operasional live pada tahun **2026** hingga hari ini (**09 November 2026**). Command artisan resmi yang digunakan untuk sinkronisasi operasional live adalah:
+```bash
+php artisan pos:dataset:refresh-operational
+```
+
+### 27.2 Status Kesiapan Uji POS Kasir & Restock Inventaris
+| Metrik Pengujian POS | Tenant #1 (F&B) | Tenant #2 (Retail) |
+|---|---|---|
+| **Katalog Produk Siap Jual** | 66 Produk (Stok Sehat: 150 pcs per cabang, total 9.900 pcs) | 48 Produk (Stok Sehat: 250 pcs per cabang, total 12.000 pcs) |
+| **Produk Habis (Out of Stock)** | **0 Produk** (Seluruh tombol menu aktif & dapat dipesan) | **0 Produk** (Seluruh SKU/barcode aktif & dapat dipesan) |
+| **Bahan Baku Dapur & Bar** | 58 Bahan Baku (@ 50.000 unit per cabang) | N/A (Retail non-BOM) |
+| **Diskon & Voucher Promosi** | Aktif hingga 31 Desember 2027 | Aktif hingga 31 Desember 2027 |
+| **Shift Kasir Aktif Hari Ini** | 6 Cabang (Status `open`, Kasir bertugas, Saldo Rp 500.000) | 6 Cabang (Status `open`, Kasir bertugas, Saldo Rp 500.000) |
+| **Jadwal Kerja HRM (work_schedules)**| 645 jadwal aktif (01–15 Nov 2026, 43 karyawan) | 645 jadwal aktif (01–15 Nov 2026, 43 karyawan) |
+| **Periode Finansial Berjalan** | `2026-11` (Status `OPEN`, Jurnal & Ledger Aktif) | `2026-11` (Status `OPEN`, Jurnal & Ledger Aktif) |
+
+### 27.3 Kredensial Uji Coba Cepat
+- **Tenant F&B:** `ilhamsepriyadi8@gmail.com` | Password: `M3m3x123!@#` | PIN Kasir: `123456`
+- **Tenant Retail:** `ilhamsepriyadi0@gmail.com` | Password: `M3m3x123!@#` | PIN Kasir: `123456`
+- **Kasir F&B Demo:** `kasir.fnb@apeiron.test` | Password: `M3m3x123!@#` | PIN Kasir: `123456`
+- **Kasir Retail Demo:** `kasir.retail@apeiron.test` | Password: `M3m3x123!@#` | PIN Kasir: `123456`
+
+
+
 

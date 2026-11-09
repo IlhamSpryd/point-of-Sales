@@ -24,12 +24,12 @@ use App\Modules\Sales\Services\AccountsReceivableService;
 use App\Modules\Sales\Services\SalesOrderService;
 use App\Services\Context\TenantContext;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class AccountsReceivableServiceTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     protected AccountsReceivableService $arService;
 

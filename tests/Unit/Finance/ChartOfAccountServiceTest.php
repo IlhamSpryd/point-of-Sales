@@ -13,11 +13,13 @@ use App\Modules\Finance\Exceptions\UnresolvableAccountMappingException;
 use App\Modules\Finance\Models\ChartOfAccount;
 use App\Modules\Finance\Services\ChartOfAccountService;
 use DomainException;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class ChartOfAccountServiceTest extends TestCase
 {
+    use DatabaseTransactions;
     protected ChartOfAccountService $service;
 
     protected Tenant $tenant;

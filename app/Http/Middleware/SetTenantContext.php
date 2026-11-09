@@ -91,6 +91,30 @@ class SetTenantContext
         // 6. Set TenantContext
         $this->tenantContext->setTenantId($tenantId);
 
+        // 6b. Resolve active company under tenant (Tier 2 DEC-001 / Founder Decision 1 & 4)
+        $sessionCompanyId = $request->hasSession() ? $request->session()->get('active_company_id') : null;
+        $activeCompany = null;
+        if ($sessionCompanyId !== null) {
+            $activeCompany = \App\Modules\Core\Models\Company::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('is_active', true)
+                ->find($sessionCompanyId);
+        }
+        if (! $activeCompany) {
+            $activeCompany = \App\Modules\Core\Models\Company::getDefaultCompanyForTenant($tenantId)
+                ?? \App\Modules\Core\Models\Company::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->where('is_active', true)
+                    ->orderByDesc('is_default')
+                    ->first();
+        }
+        if ($activeCompany) {
+            $this->tenantContext->setCompanyId($activeCompany->id);
+            if ($request->hasSession()) {
+                $request->session()->put('active_company_id', $activeCompany->id);
+            }
+        }
+
         // 7. Resolve active store (cabang). TIDAK PERNAH dari input request.
         $allowed = $this->storeResolver->allowedStoreIdsFor($user, $tenantId);
         $sessionStoreId = $request->hasSession() ? $request->session()->get('active_store_id') : null;

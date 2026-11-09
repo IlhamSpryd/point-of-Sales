@@ -31,6 +31,7 @@ return [
             'name' => 'Ilham Sepriyadi',
             'tenant_name' => 'Apeiron Coffee & Kitchen',
             'tenant_slug' => 'apeiron-coffee-kitchen',
+            'industry' => 'fnb',
             'stores' => [
                 ['name' => 'Apeiron Senopati', 'code' => 'SEN-01', 'city' => 'Jakarta Selatan', 'address' => 'Jl. Senopati No. 42, Kebayoran Baru', 'phone' => '021-5208421', 'char' => 'flagship'],
                 ['name' => 'Apeiron Kemang', 'code' => 'KMG-02', 'city' => 'Jakarta Selatan', 'address' => 'Jl. Kemang Raya No. 18, Mampang Prapatan', 'phone' => '021-7192210', 'char' => 'cafe'],
@@ -42,15 +43,17 @@ return [
         ],
         [
             'email' => 'ilhamsepriyadi0@gmail.com',
-            'name' => 'Ilham Sepriyadi (Bakery)',
-            'tenant_name' => 'Sagara Bakehouse',
-            'tenant_slug' => 'sagara-bakehouse',
+            'name' => 'Ilham Sepriyadi (Retail)',
+            'tenant_name' => 'Sagara Retail & Lifestyle',
+            'tenant_slug' => 'sagara-retail-lifestyle',
+            'industry' => 'retail',
             'stores' => [
-                ['name' => 'Sagara Menteng', 'code' => 'MTG-01', 'city' => 'Jakarta Pusat', 'address' => 'Jl. Cikini Raya No. 27, Menteng', 'phone' => '021-31902211', 'char' => 'flagship'],
-                ['name' => 'Sagara Panglima Polim', 'code' => 'PLP-02', 'city' => 'Jakarta Selatan', 'address' => 'Jl. Panglima Polim Raya No. 9, Melawai', 'phone' => '021-7392110', 'char' => 'cafe'],
-                ['name' => 'Sagara Kelapa Gading', 'code' => 'KLG-03', 'city' => 'Jakarta Utara', 'address' => 'Boulevard Raya Blok QA No. 7, Kelapa Gading', 'phone' => '021-4508812', 'char' => 'mall'],
-                ['name' => 'Sagara Bintaro', 'code' => 'BTR-04', 'city' => 'Tangerang Selatan', 'address' => 'Jl. Bintaro Utama 9 Blok JB, Pondok Aren', 'phone' => '021-74862280', 'char' => 'residential'],
-                ['name' => 'Sagara Surabaya Darmo', 'code' => 'SBY-05', 'city' => 'Surabaya', 'address' => 'Jl. Raya Darmo No. 61, Wonokromo', 'phone' => '031-5672210', 'char' => 'tourism'],
+                ['name' => 'Sagara Grand Indonesia', 'code' => 'SGI-01', 'city' => 'Jakarta Pusat', 'address' => 'Grand Indonesia West Mall Lt. 2, Jl. M.H. Thamrin No. 1', 'phone' => '021-23580001', 'char' => 'flagship'],
+                ['name' => 'Sagara Pondok Indah Mall', 'code' => 'PIM-02', 'city' => 'Jakarta Selatan', 'address' => 'Pondok Indah Mall 2 Lt. 1, Kebayoran Lama', 'phone' => '021-75920002', 'char' => 'mall'],
+                ['name' => 'Sagara Kelapa Gading', 'code' => 'MKG-03', 'city' => 'Jakarta Utara', 'address' => 'Mall Kelapa Gading 3 Lt. Ground, Kelapa Gading', 'phone' => '021-45850003', 'char' => 'mall'],
+                ['name' => 'Sagara Bintaro Xchange', 'code' => 'BXC-04', 'city' => 'Tangerang Selatan', 'address' => 'Bintaro Jaya Xchange Mall Lt. 1, Pondok Aren', 'phone' => '021-29860004', 'char' => 'residential'],
+                ['name' => 'Sagara Paris Van Java', 'code' => 'PVJ-05', 'city' => 'Bandung', 'address' => 'Paris Van Java Resort Glamour Level, Sukajadi', 'phone' => '022-82060005', 'char' => 'tourism'],
+                ['name' => 'Sagara Tunjungan Plaza', 'code' => 'TPZ-06', 'city' => 'Surabaya', 'address' => 'Tunjungan Plaza 6 Lt. 3, Tegalsari', 'phone' => '031-51160006', 'char' => 'flagship'],
             ],
         ],
     ],
@@ -63,10 +66,10 @@ return [
     |----------------------------------------------------------------------
     */
     'period' => [
-        // Rentang default 12 bulan penuh yang berakhir pada bulan berjalan (inklusif).
+        // Rentang 12 bulan kalender 2025 (Januari s/d Desember 2025).
         'months' => 12,
-        'start_date' => env('DATASET_START_DATE'), // null => dihitung otomatis
-        'end_date' => env('DATASET_END_DATE'),     // null => hari ini
+        'start_date' => env('DATASET_START_DATE', '2025-01-01'),
+        'end_date' => env('DATASET_END_DATE', '2025-12-31'),
         'timezone' => 'Asia/Jakarta',
         // Jam operasional per karakter cabang (jam lokal, 0-23).
         'opening_hour' => 7,
@@ -94,18 +97,18 @@ return [
         // Jumlah cabang tetap mengikuti daftar `stores` di atas; nilai ini
         // hanya membatasi jumlah maksimum yang dipakai.
         'max_stores' => 6,
-        // Pegawai per cabang (manager, supervisor, kasir, barista, cook, waiter, inventory).
+        // Pegawai per cabang (manager, supervisor, kasir, barista/sales, cook/inventory).
         'employees_per_store' => 7,
         // Produk per tenant (item dari katalog internal generator).
         'products' => 120,
-        // Varian SKU aktif (ukuran/rasa) yang ditambahkan pada subset produk.
+        // Varian SKU aktif (ukuran/rasa/warna) yang ditambahkan pada subset produk.
         'product_variants' => 60,
         'categories' => 12,
         'ingredients' => 60,
         'customers' => 900,
         'suppliers' => 8,
         // Rata-rata transaksi per cabang per hari (weekday).
-        'orders_per_store_per_day' => 60,
+        'orders_per_store_per_day' => 45,
         // Target transaksi per hari per tenant (0 = hitung dari per-cabang).
         'orders_per_day' => 0,
         // Multiplier volume untuk weekend (Sabtu s/d Minggu).
@@ -119,11 +122,11 @@ return [
             'residential' => 0.85,
             'tourism' => 0.90,
         ],
-        // Musim: nama bulan (1-12) => multiplier.
+        // Musim Indonesia 2025: Ramadan & Idulfitri Maret (3), Libur Sekolah Juni-Juli (6-7), Libur Akhir Tahun Des (12).
         'seasonal_multipliers' => [
-            1 => 0.95, 2 => 1.02, 3 => 1.00, 4 => 1.05,
-            5 => 1.02, 6 => 1.10, 7 => 1.08, 8 => 1.00,
-            9 => 1.05, 10 => 1.10, 11 => 1.12, 12 => 1.25,
+            1 => 0.95, 2 => 0.98, 3 => 1.25, 4 => 1.10,
+            5 => 1.00, 6 => 1.15, 7 => 1.12, 8 => 1.05,
+            9 => 1.00, 10 => 1.02, 11 => 1.10, 12 => 1.35,
         ],
         // Aktivitas: multi-branch — sebagian cabang dibuka belakangan.
         'staggered_store_opening' => true,

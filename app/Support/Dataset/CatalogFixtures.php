@@ -221,12 +221,145 @@ final class CatalogFixtures
         ];
     }
 
-    /** Helper pembuat produk retail (non-BOM). */
-    private static function r(string $code, string $name, string $cat, int $price, int $popularity): array
+    /**
+     * Kategori Retail: code => [name, sort, weight].
+     *
+     * @return array<int, array{code:string,name:string,weight:int,income:bool}>
+     */
+    public static function retailCategories(): array
     {
         return [
-            'code' => $code, 'name' => $name, 'category' => $cat,
-            'price' => $price, 'bom' => [], 'popularity' => $popularity,
+            ['code' => 'FSN', 'name' => 'Fashion & Pakaian Pria/Wanita', 'weight' => 95, 'income' => true],
+            ['code' => 'FWR', 'name' => 'Footwear & Sepatu', 'weight' => 85, 'income' => true],
+            ['code' => 'BAG', 'name' => 'Tas & Leather Goods', 'weight' => 80, 'income' => true],
+            ['code' => 'ACC', 'name' => 'Aksesoris & Jam Tangan', 'weight' => 60, 'income' => true],
+            ['code' => 'ELX', 'name' => 'Gadget & Audio Aksesoris', 'weight' => 75, 'income' => true],
+            ['code' => 'HOM', 'name' => 'Home Living & Dekorasi', 'weight' => 55, 'income' => true],
+            ['code' => 'BTY', 'name' => 'Beauty & Perawatan Pribadi', 'weight' => 70, 'income' => true],
+            ['code' => 'STN', 'name' => 'Stationery & Gift Ware', 'weight' => 45, 'income' => true],
+            ['code' => 'TRV', 'name' => 'Travel & Koper', 'weight' => 40, 'income' => true],
+            ['code' => 'SPG', 'name' => 'Sports & Athleisure', 'weight' => 50, 'income' => true],
+        ];
+    }
+
+    /**
+     * Brand Retail lokal ternama.
+     *
+     * @return array<int, array{code:string,name:string}>
+     */
+    public static function retailBrands(): array
+    {
+        return [
+            ['code' => 'SGR', 'name' => 'Sagara Signature'],
+            ['code' => 'UBV', 'name' => 'Urban Voyage'],
+            ['code' => 'BTL', 'name' => 'Botanica Living'],
+            ['code' => 'LMT', 'name' => 'Lumina Tech'],
+            ['code' => 'KCL', 'name' => 'Kencana Leather'],
+            ['code' => 'NST', 'name' => 'Nusantara Threads'],
+            ['code' => 'ARL', 'name' => 'Aerolite Active'],
+            ['code' => 'CRM', 'name' => 'Cerita Rumah'],
+        ];
+    }
+
+    /**
+     * Pemasok Retail resmi.
+     *
+     * @return array<string, array{name:string,terms:int,lead:int}>
+     */
+    public static function retailSuppliers(): array
+    {
+        return [
+            'TNM' => ['name' => 'PT Tekstil Nusantara Megah', 'terms' => 30, 'lead' => 3],
+            'KKP' => ['name' => 'CV Kulit Kreasi Prima', 'terms' => 21, 'lead' => 2],
+            'SED' => ['name' => 'PT Sinar Elektronik Distributor', 'terms' => 14, 'lead' => 2],
+            'NKA' => ['name' => 'CV Natura Kosmetika Alami', 'terms' => 21, 'lead' => 3],
+            'IKE' => ['name' => 'PT Indah Keramik Estetika', 'terms' => 30, 'lead' => 4],
+            'AGM' => ['name' => 'CV Aksara Graha Mediatama', 'terms' => 14, 'lead' => 2],
+            'SPD' => ['name' => 'PT Sumber Prima Distribusi', 'terms' => 30, 'lead' => 3],
+            'LMR' => ['name' => 'PT Logistik Mitra Retail', 'terms' => 14, 'lead' => 1],
+        ];
+    }
+
+    /**
+     * Produk Retail lengkap tanpa BOM (retail => true).
+     *
+     * @return array<int, array<string,mixed>>
+     */
+    public static function retailProducts(): array
+    {
+        return [
+            // Fashion & Pakaian
+            self::r('FSN-01', 'Kemeja Katun Oxford Slim Fit', 'FSN', 279000, 9, 140000, 'SGR', '8991001010012'),
+            self::r('FSN-02', 'Kaos Polos Supima Cotton Heavyweight', 'FSN', 149000, 10, 70000, 'NST', '8991001010029'),
+            self::r('FSN-03', 'Celana Chino Stretch Regular Fit', 'FSN', 329000, 8, 165000, 'UBV', '8991001010036'),
+            self::r('FSN-04', 'Jaket Denim Vintage Wash', 'FSN', 499000, 7, 260000, 'UBV', '8991001010043'),
+            self::r('FSN-05', 'Dress Kasual Linen A-Line', 'FSN', 389000, 8, 195000, 'SGR', '8991001010050'),
+            self::r('FSN-06', 'Blouse Polos V-Neck Rayon', 'FSN', 219000, 7, 105000, 'NST', '8991001010067'),
+            self::r('FSN-07', 'Cardigan Rajut Wool Blend', 'FSN', 349000, 6, 175000, 'SGR', '8991001010074'),
+            self::r('FSN-08', 'Hoodie Fleece Pullover Oversized', 'FSN', 399000, 8, 200000, 'ARL', '8991001010081'),
+            // Footwear & Sepatu
+            self::r('FWR-01', 'Sneakers Kanvas Retro Classic', 'FWR', 429000, 9, 210000, 'UBV', '8991001020011'),
+            self::r('FWR-02', 'Sepatu Kulit Formal Derby', 'FWR', 799000, 6, 420000, 'KCL', '8991001020028'),
+            self::r('FWR-03', 'Loafers Suede Casual Slip-On', 'FWR', 599000, 7, 310000, 'KCL', '8991001020035'),
+            self::r('FWR-04', 'Sandal Slide Kulit Ergonomis', 'FWR', 249000, 8, 110000, 'SGR', '8991001020042'),
+            self::r('FWR-05', 'Sepatu Lari Running Light Pulse', 'FWR', 649000, 8, 330000, 'ARL', '8991001020059'),
+            self::r('FWR-06', 'Flat Shoes Balerina Kulit Sintetis', 'FWR', 299000, 7, 140000, 'SGR', '8991001020066'),
+            // Tas & Leather Goods
+            self::r('BAG-01', 'Backpack Kanvas Laptop 15 Inch', 'BAG', 459000, 9, 225000, 'UBV', '8991001030010'),
+            self::r('BAG-02', 'Tote Bag Kulit Asli Premium', 'BAG', 899000, 7, 490000, 'KCL', '8991001030027'),
+            self::r('BAG-03', 'Crossbody Sling Bag Minimalis', 'BAG', 289000, 8, 135000, 'UBV', '8991001030034'),
+            self::r('BAG-04', 'Dompet Kulit Bifold Slim', 'BAG', 229000, 8, 100000, 'KCL', '8991001030041'),
+            self::r('BAG-05', 'Clutch Pouch Multifungsi Organiser', 'BAG', 189000, 6, 85000, 'SGR', '8991001030058'),
+            // Aksesoris & Jam Tangan
+            self::r('ACC-01', 'Kacamata Hitam Polarized UV400', 'ACC', 249000, 8, 110000, 'UBV', '8991001040019'),
+            self::r('ACC-02', 'Ikat Pinggang Kulit Sapi Asli Reversible', 'ACC', 199000, 7, 90000, 'KCL', '8991001040026'),
+            self::r('ACC-03', 'Jam Tangan Analog Minimalist Leather Strap', 'ACC', 699000, 6, 350000, 'SGR', '8991001040033'),
+            self::r('ACC-04', 'Topi Baseball Katun Washed', 'ACC', 129000, 8, 55000, 'NST', '8991001040040'),
+            self::r('ACC-05', 'Syal Cashmere Blend Lembut', 'ACC', 179000, 5, 80000, 'NST', '8991001040057'),
+            // Gadget & Audio Aksesoris
+            self::r('ELX-01', 'Wireless TWS Earbuds Bass Edition', 'ELX', 399000, 9, 190000, 'LMT', '8991001050018'),
+            self::r('ELX-02', 'Powerbank Fast Charging 20000mAh', 'ELX', 329000, 9, 160000, 'LMT', '8991001050025'),
+            self::r('ELX-03', 'Speaker Bluetooth Portable Waterproof', 'ELX', 489000, 7, 240000, 'LMT', '8991001050032'),
+            self::r('ELX-04', 'Kabel Data Braided Type-C 100W', 'ELX', 89000, 10, 35000, 'LMT', '8991001050049'),
+            self::r('ELX-05', 'Stand Laptop Aluminium Lipat Ergonomis', 'ELX', 199000, 7, 95000, 'LMT', '8991001050056'),
+            // Home Living & Dekorasi
+            self::r('HOM-01', 'Reed Diffuser Aromaterapi 150ml', 'HOM', 169000, 8, 75000, 'BTL', '8991001060017'),
+            self::r('HOM-02', 'Lilin Aromaterapi Soy Wax Jar', 'HOM', 129000, 8, 55000, 'BTL', '8991001060024'),
+            self::r('HOM-03', 'Cangkir Keramik Handmade Artisan', 'HOM', 119000, 7, 50000, 'CRM', '8991001060031'),
+            self::r('HOM-04', 'Selimut Rajut Lembut Throw Blanket', 'HOM', 289000, 6, 135000, 'CRM', '8991001060048'),
+            self::r('HOM-05', 'Bantal Sofa Velvet Linen 45x45', 'HOM', 99000, 7, 42000, 'CRM', '8991001060055'),
+            // Beauty & Perawatan Pribadi
+            self::r('BTY-01', 'Sabun Mandi Alami Botanica Bar 100g', 'BTY', 59000, 9, 22000, 'BTL', '8991001070016'),
+            self::r('BTY-02', 'Lotion Tubuh Bergamot & Shea 250ml', 'BTY', 149000, 8, 65000, 'BTL', '8991001070023'),
+            self::r('BTY-03', 'Hand Cream Pelembap Wangi Lavender 50ml', 'BTY', 79000, 9, 32000, 'BTL', '8991001070030'),
+            self::r('BTY-04', 'Minyak Esensial Aromaterapi Pure 10ml', 'BTY', 99000, 7, 40000, 'BTL', '8991001070047'),
+            // Stationery & Hadiah
+            self::r('STN-01', 'Buku Catatan Hardcover Grid Dotted A5', 'STN', 89000, 8, 38000, 'SGR', '8991001080015'),
+            self::r('STN-02', 'Pulpen Rollerball Logam Premium Gift Box', 'STN', 149000, 7, 65000, 'SGR', '8991001080022'),
+            self::r('STN-03', 'Organizer Meja Kayu Jati Minimalis', 'STN', 179000, 6, 80000, 'CRM', '8991001080039'),
+            // Travel & Sports
+            self::r('TRV-01', 'Travel Pouch Set 6-in-1 Waterproof', 'TRV', 159000, 7, 70000, 'UBV', '8991001090014'),
+            self::r('TRV-02', 'Bantal Leher Memory Foam Ergonomis', 'TRV', 139000, 7, 60000, 'UBV', '8991001090021'),
+            self::r('SPG-01', 'Matras Yoga Anti-Slip TPE 6mm', 'SPG', 229000, 7, 105000, 'ARL', '8991001100010'),
+            self::r('SPG-02', 'Botol Minum Olahraga Stainless 750ml', 'SPG', 169000, 8, 75000, 'ARL', '8991001100027'),
+        ];
+    }
+
+    /**
+     * Helper pembuat produk retail (non-BOM).
+     */
+    private static function r(string $code, string $name, string $cat, int $price, int $popularity, int $cost = 0, string $brand = 'SGR', string $barcode = ''): array
+    {
+        return [
+            'code' => $code,
+            'name' => $name,
+            'category' => $cat,
+            'price' => $price,
+            'cost' => $cost > 0 ? $cost : (int) round($price * 0.50),
+            'brand' => $brand,
+            'barcode' => $barcode ?: sprintf('899%010d', abs(crc32($code)) % 1000000000),
+            'bom' => [],
+            'popularity' => $popularity,
             'retail' => true,
         ];
     }

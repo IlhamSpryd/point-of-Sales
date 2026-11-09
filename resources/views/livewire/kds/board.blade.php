@@ -1,5 +1,19 @@
-@php $pollMs = random_int(4500, 5700); @endphp
-<div wire:poll.{{ $pollMs }}ms.visible="$refresh" class="space-y-6" data-gsap="page-enter">
+<div
+    wire:poll.30s.visible="$refresh"
+    x-data="{
+        init() {
+            if (window.Echo && {{ $tenantId ?? 0 }} > 0) {
+                const channelName = 'tenant.{{ $tenantId }}.' + ({{ $storeId ?? 0 }} > 0 ? 'store.{{ $storeId }}.' : '') + 'kds';
+                window.Echo.private(channelName)
+                    .listen('.kds.item.updated', () => {
+                        $wire.$refresh();
+                    });
+            }
+        }
+    }"
+    class="space-y-6"
+    data-gsap="page-enter"
+>
 
     @error('kds')
         <x-ui.alert variant="destructive" class="mb-4">
@@ -36,6 +50,12 @@
                 wire:click="setStationFilter('bar')"
                 class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer {{ $stationFilter === 'bar' ? 'bg-sky-600 text-white shadow-xs' : 'bg-muted text-muted-foreground hover:text-foreground' }}">
                 Bar (Drinks)
+            </button>
+            <button
+                type="button"
+                wire:click="setStationFilter('dessert')"
+                class="px-3.5 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer {{ $stationFilter === 'dessert' ? 'bg-pink-600 text-white shadow-xs' : 'bg-muted text-muted-foreground hover:text-foreground' }}">
+                Dessert & Pastry
             </button>
         </div>
     </div>

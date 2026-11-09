@@ -54,6 +54,8 @@ class StockTransferService
      *
      * @param  array{
      *     transfer_number?: ?string,
+     *     from_warehouse_id?: ?int,
+     *     to_warehouse_id?: ?int,
      *     ship_idempotency_key?: ?string,
      *     notes?: ?string,
      *     items: array<int, array{
@@ -110,6 +112,8 @@ class StockTransferService
                 'tenant_id' => $tenantId,
                 'from_store_id' => $fromStoreId,
                 'to_store_id' => $toStoreId,
+                'from_warehouse_id' => $data['from_warehouse_id'] ?? null,
+                'to_warehouse_id' => $data['to_warehouse_id'] ?? null,
                 'transfer_number' => $transferNumber,
                 'ship_idempotency_key' => $shipIdempotencyKey,
                 'status' => StockTransferStatusEnum::Draft,
@@ -265,6 +269,7 @@ class StockTransferService
                 // Mutasi keluar cabang asal (TRANSFER_OUT, negatif)
                 $movementsToRecord[] = [
                     'store_id' => (int) $lockedTransfer->from_store_id,
+                    'warehouse_id' => $lockedTransfer->from_warehouse_id,
                     'item_type' => $item->item_type,
                     'item_id' => $rawItemId,
                     'quantity_delta' => bcmul($qtyShipped, '-1', 4),
@@ -436,6 +441,7 @@ class StockTransferService
                 if (bccomp(bc_num($qtyReceived), '0', 4) > 0) {
                     $allMovements[] = [
                         'store_id' => (int) $lockedTransfer->to_store_id,
+                        'warehouse_id' => $lockedTransfer->to_warehouse_id,
                         'item_type' => $item->item_type,
                         'item_id' => $rawItemId,
                         'quantity_delta' => $qtyReceived,
@@ -455,6 +461,7 @@ class StockTransferService
                         // Kembalikan selisih kekurangan ke saldo cabang asal (TRANSFER_RETURN_IN, positif)
                         $allMovements[] = [
                             'store_id' => (int) $lockedTransfer->from_store_id,
+                            'warehouse_id' => $lockedTransfer->from_warehouse_id,
                             'item_type' => $item->item_type,
                             'item_id' => $rawItemId,
                             'quantity_delta' => $discrepancy,

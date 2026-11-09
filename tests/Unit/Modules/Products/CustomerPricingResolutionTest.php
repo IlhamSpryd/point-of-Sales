@@ -18,12 +18,12 @@ use App\Modules\Products\DataTransferObjects\PriceResolutionContextDto;
 use App\Modules\Products\DataTransferObjects\ResolvedPriceDto;
 use App\Modules\Products\Services\CatalogPriceResolverService;
 use App\Services\Context\TenantContext;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class CustomerPricingResolutionTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     protected CatalogPriceResolverService $resolver;
 

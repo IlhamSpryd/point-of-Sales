@@ -15,12 +15,12 @@ use App\Modules\Pricing\Models\PromotionRule;
 use App\Modules\Pricing\Services\Evaluators\BundlePackageEvaluator;
 use App\Services\Context\TenantContext;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class BundlePackageTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private BundlePackageEvaluator $evaluator;
 

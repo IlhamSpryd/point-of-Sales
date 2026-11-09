@@ -15,6 +15,21 @@ use Illuminate\Support\Str;
 
 class CoreTaxDjpGateway implements TaxIntegrationGatewayInterface
 {
+    protected CoreTaxSchemaValidator $validator;
+
+    protected CoreTaxXmlGenerator $xmlGenerator;
+
+    protected CoreTaxJsonGenerator $jsonGenerator;
+
+    public function __construct(
+        ?CoreTaxSchemaValidator $validator = null,
+        ?CoreTaxXmlGenerator $xmlGenerator = null,
+        ?CoreTaxJsonGenerator $jsonGenerator = null
+    ) {
+        $this->validator = $validator ?? app(CoreTaxSchemaValidator::class);
+        $this->xmlGenerator = $xmlGenerator ?? app(CoreTaxXmlGenerator::class);
+        $this->jsonGenerator = $jsonGenerator ?? app(CoreTaxJsonGenerator::class);
+    }
     /**
      * Memvalidasi format NPWP Indonesia (15 digit format lama atau 16 digit format NIK/CoreTax).
      */
@@ -145,22 +160,31 @@ class CoreTaxDjpGateway implements TaxIntegrationGatewayInterface
 
         // Jika tidak ada lines, gunakan subtotal dan tax_amount invoice
         if (empty($items)) {
+            $headerDiscount = (string) ($invoice->discount_amount ?? '0.00');
+            $headerDpp = bcsub((string) $invoice->subtotal, $headerDiscount, 2);
             $items[] = new TaxInvoiceItemDto(
                 code: 'GEN-01',
                 name: 'Penjualan Barang / Jasa',
                 unitPrice: (string) $invoice->subtotal,
                 quantity: '1',
                 totalPrice: (string) $invoice->subtotal,
-                discountAmount: (string) $invoice->discount_amount,
-                dpp: bcsub((string) $invoice->subtotal, (string) $invoice->discount_amount, 2),
+                discountAmount: $headerDiscount,
+                dpp: $headerDpp,
                 ppn: (string) $invoice->tax_amount,
                 ppnbmTariff: '0.00',
                 ppnbm: '0.00'
             );
         }
 
-        $dppAmount = bcsub((string) $invoice->subtotal, (string) $invoice->discount_amount, 2);
-        $ppnAmount = (string) $invoice->tax_amount;
+        // Calculate DPP and PPN totals from items for exact header-line parity
+        $calcDppTotal = '0.00';
+        $calcPpnTotal = '0.00';
+        foreach ($items as $item) {
+            $calcDppTotal = bcadd($calcDppTotal, $item->dpp, 2);
+            $calcPpnTotal = bcadd($calcPpnTotal, $item->ppn, 2);
+        }
+        $dppAmount = $calcDppTotal;
+        $ppnAmount = $calcPpnTotal;
 
         return new TaxInvoiceDocumentDto(
             tenantId: (int) $invoice->tenant_id,
@@ -254,21 +278,98 @@ class CoreTaxDjpGateway implements TaxIntegrationGatewayInterface
     }
 
     /**
-     * Adapter hook untuk sinkronisasi CoreTax DJP API masa depan.
+     * Menghasilkan dokumen XML e-Faktur resmi DJP.
+     *
+     * @param array<string, string>|null $sellerInfo
+     */
+    public function generateXml(TaxInvoiceDocumentDto $document, ?array $sellerInfo = null): string
+    {
+        return $this->xmlGenerator->generateXml($document, $sellerInfo);
+    }
+
+    /**
+     * Menghasilkan dokumen JSON CoreTax REST API resmi DJP.
+     *
+     * @param array<string, string>|null $sellerInfo
+     * @return array<string, mixed>
+     */
+    public function generateJson(TaxInvoiceDocumentDto $document, ?array $sellerInfo = null): array
+    {
+        return $this->jsonGenerator->generatePayload($document, $sellerInfo);
+    }
+
+    /**
+     * Mengekspor seluruh Faktur Pajak Keluaran dalam suatu masa pajak ke format XML batch.
+     */
+    public function exportXml(
+        int $tenantId,
+        int $taxPeriodMonth,
+        int $taxPeriodYear,
+        ?array $sellerInfo = null
+    ): string {
+        $invoices = CustomerInvoice::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->whereYear('invoice_date', $taxPeriodYear)
+            ->whereMonth('invoice_date', $taxPeriodMonth)
+            ->whereNotIn('status', ['void', 'cancelled'])
+            ->with(['customer', 'lines'])
+            ->get();
+
+        $documents = [];
+        foreach ($invoices as $invoice) {
+            $documents[] = $this->buildDocumentFromCustomerInvoice($invoice);
+        }
+
+        return $this->xmlGenerator->generateBatchXml($documents, $sellerInfo);
+    }
+
+    /**
+     * Mengekspor seluruh Faktur Pajak Keluaran dalam suatu masa pajak ke payload JSON batch.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function exportJson(
+        int $tenantId,
+        int $taxPeriodMonth,
+        int $taxPeriodYear,
+        ?array $sellerInfo = null
+    ): array {
+        $invoices = CustomerInvoice::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->whereYear('invoice_date', $taxPeriodYear)
+            ->whereMonth('invoice_date', $taxPeriodMonth)
+            ->whereNotIn('status', ['void', 'cancelled'])
+            ->with(['customer', 'lines'])
+            ->get();
+
+        $payloads = [];
+        foreach ($invoices as $invoice) {
+            $doc = $this->buildDocumentFromCustomerInvoice($invoice);
+            $payloads[] = $this->jsonGenerator->generatePayload($doc, $sellerInfo);
+        }
+
+        return $payloads;
+    }
+
+    /**
+     * Validasi dokumen dan persiapan sinkronisasi resmi CoreTax DJP API.
      *
      * @return array<string, mixed>
      */
-    public function syncWithCoreTax(TaxInvoiceDocumentDto $document): array
+    public function syncWithCoreTax(TaxInvoiceDocumentDto $document, ?array $sellerInfo = null): array
     {
-        $payloadHash = hash('sha256', json_encode($document, JSON_THROW_ON_ERROR));
+        $this->validator->assertValid($document);
+        $payload = $this->jsonGenerator->generatePayload($document, $sellerInfo);
 
         return [
             'status' => 'prepared',
+            'validation_status' => 'validated',
             'protocol' => 'CoreTax_DJP_REST_v1',
             'tax_invoice_serial_number' => $document->taxInvoiceSerialNumber,
-            'payload_hash' => $payloadHash,
+            'payload_hash' => $payload['payload_hash'],
             'timestamp' => now()->toIso8601String(),
             'ready_for_pjap_dispatch' => true,
+            'payload' => $payload,
         ];
     }
 

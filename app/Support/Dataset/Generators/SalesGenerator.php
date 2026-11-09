@@ -51,6 +51,8 @@ final class SalesGenerator
     /** @var array<int, array<int, int>> store_id => table ids */
     private array $tablesByStore = [];
 
+    private string $industry = 'fnb';
+
     private int $orderSeq = 0;
 
     public function __construct(
@@ -63,6 +65,7 @@ final class SalesGenerator
      */
     public function prepare(int $tenantId, array $ctx, array $ingredientIds): void
     {
+        $this->industry = (string) (DB::table('tenants')->where('id', $tenantId)->value('primary_industry') ?? 'fnb');
         $this->ingredientIds = $ingredientIds;
         $this->productsByCode = [];
         $this->bomByProduct = [];
@@ -613,6 +616,10 @@ final class SalesGenerator
 
     private function pickOrderType(SeededRandom $rng): string
     {
+        if ($this->industry === 'retail') {
+            return $rng->bool(0.12) ? 'delivery' : 'takeaway';
+        }
+
         $type = (string) $rng->weighted($this->config->behavior['order_types'] ?? ['dine_in' => 46, 'takeaway' => 44, 'delivery' => 10]);
 
         return in_array($type, ['dine_in', 'takeaway', 'delivery'], true) ? $type : 'takeaway';
@@ -663,7 +670,7 @@ final class SalesGenerator
         $weights = [];
         foreach ($all as $p) {
             $w = max(1, (int) $p['popularity']);
-            if (in_array($p['category'], ['PST'], true) && $hour < 11) {
+            if ($inFnbCategory = in_array($p['category'], ['PST'], true) && $hour < 11) {
                 $w = (int) ($w * 2.2);
             }
             if (in_array($p['category'], ['RIC', 'PAS', 'SNK'], true) && $hour >= 11 && $hour <= 20) {
@@ -672,8 +679,21 @@ final class SalesGenerator
             if (in_array($p['category'], ['ESP', 'SIG', 'MLK'], true) && ($hour <= 10 || $hour >= 15)) {
                 $w = (int) ($w * 1.4);
             }
-            if ($p['retail']) {
-                $w = max(1, (int) round($w * 0.15));
+
+            if ($this->industry === 'retail') {
+                if (in_array($p['category'], ['FSN', 'FWR', 'BAG', 'ACC'], true) && $hour >= 13 && $hour <= 20) {
+                    $w = (int) ($w * 1.8);
+                }
+                if (in_array($p['category'], ['HOM', 'BTY', 'STN'], true) && $hour >= 11 && $hour <= 18) {
+                    $w = (int) ($w * 1.5);
+                }
+                if (in_array($p['category'], ['ELX', 'TRV', 'SPG'], true) && $hour >= 14 && $hour <= 21) {
+                    $w = (int) ($w * 1.6);
+                }
+            } else {
+                if ($p['retail']) {
+                    $w = max(1, (int) round($w * 0.15));
+                }
             }
             $weights[$p['code']] = $w;
         }
@@ -891,10 +911,27 @@ final class SalesGenerator
 
     private function isHoliday(CarbonImmutable $day): bool
     {
-        // Boost volume pada hari libur nasional utama (tanpa mengklaim kalender lengkap).
-        $fixed = ['01-01', '05-01', '08-17', '12-25'];
-        $md = $day->format('m-d');
+        // Kalender Hari Libur Nasional Indonesia Tahun 2025
+        $holidays = [
+            '01-01', // Tahun Baru 2025 Masehi
+            '01-27', // Isra Mikraj Nabi Muhammad SAW
+            '01-29', // Tahun Baru Imlek 2576 Kongzili
+            '03-29', // Hari Suci Nyepi (Tahun Baru Saka 1947)
+            '03-31', // Hari Raya Idulfitri 1446 H
+            '04-01', // Hari Raya Idulfitri 1446 H (Hari Kedua)
+            '04-18', // Wafat Yesus Kristus
+            '04-20', // Kebangkitan Yesus Kristus (Paskah)
+            '05-01', // Hari Buruh Internasional
+            '05-12', // Hari Raya Waisak 2569 BE
+            '05-29', // Kenaikan Yesus Kristus
+            '06-01', // Hari Lahir Pancasila
+            '06-06', // Hari Raya Iduladha 1446 H
+            '06-27', // 1 Muharam Tahun Baru Islam 1447 H
+            '08-17', // Proklamasi Kemerdekaan RI
+            '09-05', // Maulid Nabi Muhammad SAW
+            '12-25', // Kelahiran Yesus Kristus (Natal)
+        ];
 
-        return in_array($md, $fixed, true);
+        return in_array($day->format('m-d'), $holidays, true);
     }
 }

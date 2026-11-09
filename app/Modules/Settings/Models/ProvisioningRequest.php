@@ -49,6 +49,8 @@ class ProvisioningRequest extends Model
         'status',
         'result_tenant_id',
         'result_user_id',
+        'plan_id',
+        'notes',
         'error_message',
         'started_at',
         'completed_at',
@@ -62,6 +64,7 @@ class ProvisioningRequest extends Model
         'completed_at' => 'datetime',
         'lease_expires_at' => 'datetime',
         'attempt_count' => 'integer',
+        'plan_id' => 'integer',
     ];
 
     /**
@@ -70,6 +73,14 @@ class ProvisioningRequest extends Model
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class, 'result_tenant_id');
+    }
+
+    /**
+     * @return BelongsTo<\App\Models\Plan, $this>
+     */
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Plan::class, 'plan_id');
     }
 
     /** Klaim sudah kedaluwarsa (worker pemegangnya dianggap mati). */

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Modules\Core\Services;
 
 use App\Core\Context\TenantContext;
+use App\Models\Company;
 use App\Models\EmailOutbox;
 use App\Models\OwnerOnboardingToken;
 use App\Models\Role;
@@ -98,6 +99,18 @@ class TenantProvisioningService
 
                     // d. Buat role standar bawaan (Manager, Kasir, Barista, dsb)
                     $this->roleService->provisionDefaultRoles($tenant);
+
+                    // d2. Buat Default Legal Company (Tier 2 DEC-001)
+                    $company = Company::firstOrCreate(
+                        ['tenant_id' => $tenant->id, 'is_default' => true],
+                        [
+                            'company_code' => 'CMP-'.str_pad((string) $tenant->id, 4, '0', STR_PAD_LEFT),
+                            'company_name' => $tenantName,
+                            'legal_name' => $tenantName,
+                            'is_active' => true,
+                            'is_default' => true,
+                        ]
+                    );
 
                     // e. Buat Toko / Cabang pertama (Store)
                     $store = Store::create([

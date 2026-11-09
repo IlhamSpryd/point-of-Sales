@@ -9,4 +9,7 @@ use App\Modules\Products\Models\ProductAttributeValue as BaseProductAttributeVal
 /**
  * Catalog ProductAttributeValue Model wrapper.
  */
+/**
+ * @deprecated Use \App\Modules\Products\Models\ProductAttributeValue instead. Consolidated per DEC-002 / TASK-201.
+ */
 class ProductAttributeValue extends BaseProductAttributeValue {}

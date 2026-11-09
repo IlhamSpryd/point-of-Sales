@@ -9,6 +9,8 @@ use App\Modules\Inventory\Models\StockAdjustmentItem as ModularStockAdjustmentIt
 /**
  * Backward compatibility wrapper.
  *
+ * @deprecated Use canonical modular class instead. Maintained for backward compatibility.
+ *
  * @see ModularStockAdjustmentItem
  */
 class StockAdjustmentItem extends ModularStockAdjustmentItem {}

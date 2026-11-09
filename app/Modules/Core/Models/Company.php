@@ -29,13 +29,26 @@ class Company extends Model
         'npwp',
         'tax_address',
         'is_active',
+        'is_default',
     ];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
+            'is_default' => 'boolean',
         ];
+    }
+
+    /**
+     * Get the canonical default company for the given tenant.
+     */
+    public static function getDefaultCompanyForTenant(int $tenantId): ?self
+    {
+        return static::withoutGlobalScopes()
+            ->where('tenant_id', $tenantId)
+            ->where('is_default', true)
+            ->first();
     }
 
     /**

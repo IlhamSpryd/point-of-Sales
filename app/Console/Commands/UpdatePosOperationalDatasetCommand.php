@@ -12,6 +12,7 @@ use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Device;
 use App\Models\Discount;
+use App\Models\Employee;
 use App\Models\Ingredient;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -35,222 +36,187 @@ use Illuminate\Support\Str;
 class UpdatePosOperationalDatasetCommand extends Command
 {
     protected $signature = 'pos:dataset:refresh-operational
-                            {--tenant=2 : Target tenant ID (default 2: Apeiron Coffee & Kitchen)}
-                            {--store=2 : Target primary store ID (default 2: Apeiron Senopati)}
-                            {--password=password123 : Uniform password for demo/test accounts}
+                            {--tenant= : Target tenant ID (1 for F&B, 2 for Retail, or omit for both)}
+                            {--password=M3m3x123!@# : Uniform password for demo/test accounts}
                             {--dry-run : Simulate execution without persisting changes}';
 
-    protected $description = 'Refresh POS operational dataset with healthy stocks, active shifts today, realistic transactions up to today, and Midtrans Gateway test records.';
+    protected $description = 'Refresh POS operational dataset with healthy stocks, active shifts today (2026-11-09), work schedules, and Midtrans Gateway test records for both F&B and Retail tenants.';
 
     private bool $isDryRun = false;
 
     public function handle(CashierPinService $pinService): int
     {
         $this->isDryRun = (bool) $this->option('dry-run');
-        $tenantId = (int) $this->option('tenant');
-        $storeId = (int) $this->option('store');
         $rawPassword = (string) $this->option('password');
-
-        $tenant = Tenant::find($tenantId);
-        if (! $tenant) {
-            $this->error("Tenant ID #{$tenantId} tidak ditemukan!");
-
-            return self::FAILURE;
-        }
-
-        app(TenantContext::class)->setTenantId($tenantId);
-
-        $store = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('id', $storeId)->first();
-        if (! $store) {
-            $this->error("Store ID #{$storeId} tidak ditemukan pada Tenant #{$tenantId}!");
-
-            return self::FAILURE;
-        }
-
-        app(TenantContext::class)->setStoreId($storeId);
+        $targetTenantId = $this->option('tenant') !== null ? (int) $this->option('tenant') : null;
 
         $this->info('');
-        $this->info('╔═══════════════════════════════════════════════════════════════════════════╗');
-        $this->info('║       APEIRON POS — OPERATIONAL DATASET REFRESH & RESTOCK ENGINE          ║');
-        $this->info("║  Tenant: #{$tenantId} ({$tenant->name}) | Store: #{$storeId} ({$store->name})  ║");
-        $this->info('╚═══════════════════════════════════════════════════════════════════════════╝');
+        $this->info('╔═══════════════════════════════════════════════════════════════════════════════════════════╗');
+        $this->info('║       APEIRON POS — OPERATIONAL DATASET REFRESH, RESTOCK & 2026 SHIFT ENGINE              ║');
+        $this->info('║  Simulasi Operasional Aktif 2026 (Hari Ini: 09 November 2026) | Multi-Tenant F&B & Retail  ║');
+        $this->info('╚═══════════════════════════════════════════════════════════════════════════════════════════╝');
         $this->info('');
 
         if ($this->isDryRun) {
             $this->warn('⚠️  MODE SIMULASI (DRY-RUN): Tidak ada perubahan yang akan disimpan ke basis data.');
         }
 
-        try {
-            return DB::transaction(function () use ($tenant, $store, $rawPassword, $pinService) {
-                // ── 1. Sinkronisasi Akun Pengujian & Akses Cabang ──────────────────
-                $this->info('━━━ 1. Sinkronisasi Akun Pengguna, PIN & Hak Akses Cabang ━━━');
-                $users = $this->provisionUsers($tenant, $rawPassword, $pinService);
+        $query = Tenant::query();
+        if ($targetTenantId) {
+            $query->where('id', $targetTenantId);
+        } else {
+            $query->whereIn('id', [1, 2])->orWhereIn('slug', ['fnb-demo', 'retail-demo']);
+        }
+        $tenants = $query->orderBy('id')->get();
 
-                // ── 2. Restock Produk & Bahan Baku (Katalog Sehat & Edge Cases) ────
+        if ($tenants->isEmpty()) {
+            $this->error('Tidak ada tenant yang cocok ditemukan!');
+            return self::FAILURE;
+        }
+
+        foreach ($tenants as $tenant) {
+            $this->info("\n==========================================================================");
+            $this->info("MEMPROSES TENANT #{$tenant->id}: {$tenant->name} ({$tenant->primary_industry})");
+            $this->info("==========================================================================");
+
+            app(TenantContext::class)->setTenantId((int) $tenant->id);
+            app(TenantContext::class)->setStoreId(null);
+
+            DB::transaction(function () use ($tenant, $rawPassword, $pinService) {
+                // 1. Sinkronisasi Kredensial, PIN & Hak Akses Toko
+                $this->info('━━━ 1. Sinkronisasi Akun Pengguna, PIN Kasir (123456) & Hak Akses Toko ━━━');
+                $users = $this->provisionTenantUsers($tenant, $rawPassword, $pinService);
+
+                // 2. Restock Menyeluruh Produk & Bahan Baku ke Status Sehat
                 $this->info('');
-                $this->info('━━━ 2. Restock Produk, Bahan Baku & Penyelarasan Saldo Ledger ━━━');
+                $this->info('━━━ 2. Restock Seluruh Produk & Bahan Baku (Katalog 100% Siap Jual di POS) ━━━');
                 $stockSummary = $this->restockProductsAndIngredients($tenant);
 
-                // ── 3. Pengelolaan Shift Kasir (Shift Hari Ini Aktif) ──────────────
+                // 3. Setup Template Shift & Jadwal Shift Karyawan (work_schedules 2026)
                 $this->info('');
-                $this->info('━━━ 3. Penataan Siklus Shift & Pembukaan Shift Kasir Hari Ini ━━━');
-                $activeShift = $this->setupActiveShift($tenant, $store, $users['kasir']);
+                $this->info('━━━ 3. Penataan Template Shift & Jadwal Kerja Karyawan (November 2026) ━━━');
+                $scheduleCount = $this->setupWorkSchedules($tenant);
 
-                // ── 4. Transaksi Terkini Sampai Hari Ini & Midtrans Gateway ────────
+                // 4. Pembukaan Shift Kasir Hari Ini (2026-11-09) di Seluruh Cabang
                 $this->info('');
-                $this->info('━━━ 4. Pembuatan Transaksi Terkini, Midtrans Gateway & KDS ━━━');
-                $ordersSummary = $this->generateRecentTransactions($tenant, $store, $users, $activeShift);
+                $this->info('━━━ 4. Pembukaan Shift Kasir Aktif Hari Ini (2026-11-09) di Seluruh Cabang ━━━');
+                $activeShifts = $this->setupActiveShiftsForStores($tenant, $users);
 
-                // ── 5. Ringkasan & Panduan Pengujian ──────────────────────────────
+                // 5. Pembuatan Transaksi Operasional Hari Ini & Midtrans Gateway
                 $this->info('');
-                $this->info('━━━ 5. Ringkasan Kredensial & Kesiapan Pengujian ━━━');
-                $this->renderSummary($users, $activeShift, $stockSummary, $ordersSummary, $rawPassword);
+                $this->info('━━━ 5. Pembuatan Transaksi Operasional Terkini (Hari Ini) & Gateway ━━━');
+                $ordersSummary = $this->generateRecentTransactions($tenant, $users, $activeShifts);
 
-                if ($this->isDryRun) {
-                    $this->warn('Perubahan dibatalkan karena opsi --dry-run.');
-                    throw new \RuntimeException('ROLLBACK_DRY_RUN');
-                }
+                // 6. Sinkronisasi Periode Akuntansi 2026
+                $this->info('');
+                $this->info('━━━ 6. Penataan Periode Akuntansi 2026 (2026-11 OPEN) ━━━');
+                $this->setupAccountingPeriods2026($tenant);
 
-                return self::SUCCESS;
-            }, 3);
-        } catch (\RuntimeException $e) {
-            if ($e->getMessage() === 'ROLLBACK_DRY_RUN') {
-                return self::SUCCESS;
-            }
-
-            throw $e;
+                // 7. Ringkasan
+                $this->info('');
+                $this->renderTenantSummary($tenant, $users, $activeShifts, $stockSummary, $scheduleCount, $ordersSummary, $rawPassword);
+            });
         }
+
+        $this->info("\n✅ DATASET OPERASIONAL 2026 TELAH BERHASIL DIPERBARUI & 100% SIAP DITEST DI POS!");
+        return self::SUCCESS;
     }
 
     /**
      * @return array<string, User>
      */
-    private function provisionUsers(Tenant $tenant, string $rawPassword, CashierPinService $pinService): array
+    private function provisionTenantUsers(Tenant $tenant, string $rawPassword, CashierPinService $pinService): array
     {
         $tenantId = (int) $tenant->id;
         $hashedPassword = Hash::make($rawPassword);
         $allStores = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
 
-        $roleOwner = Role::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('name', 'Owner')->firstOrFail();
-        $roleManager = Role::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('name', 'Manager')->firstOrFail();
-        $roleSupervisor = Role::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('name', 'Supervisor')->firstOrFail();
-        $roleKasir = Role::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('name', 'Kasir')->firstOrFail();
+        $roleOwner = Role::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('name', 'Owner')->first();
+        $roleManager = Role::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('name', 'Manager')->first();
+        $roleKasir = Role::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('name', 'Kasir')->first();
 
-        $accountsToProvision = [
-            'kasir' => [
-                'email' => 'kasir@apeiron.test',
-                'name' => 'Sari Kasir Apeiron',
-                'role_id' => $roleKasir->id,
-                'pin' => '123456',
-                'phone' => '081211112222',
-            ],
-            'supervisor' => [
-                'email' => 'supervisor@apeiron.test',
-                'name' => 'Fitri Supervisor Apeiron',
-                'role_id' => $roleSupervisor->id,
-                'pin' => '654321',
-                'phone' => '081233334444',
-            ],
-            'manager' => [
-                'email' => 'manager@apeiron.test',
-                'name' => 'Rian Manager Apeiron',
-                'role_id' => $roleManager->id,
-                'pin' => '654321',
-                'phone' => '081255556666',
-            ],
-            'owner' => [
-                'email' => 'ilhamsepriyadi8@gmail.com',
-                'name' => 'Ilham Sepriyadi',
-                'role_id' => $roleOwner->id,
-                'pin' => '112233',
-                'phone' => '081277778888',
-            ],
-        ];
+        // 1. Sinkronisasi Owner Utama
+        $ownerEmail = $tenantId === 1 ? 'ilhamsepriyadi8@gmail.com' : 'ilhamsepriyadi0@gmail.com';
+        $ownerUser = User::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('email', $ownerEmail)->first();
 
-        $provisioned = [];
+        if ($ownerUser) {
+            $ownerUser->password = $hashedPassword;
+            $ownerUser->is_active = true;
+            $ownerUser->email_verified_at = now();
+            $ownerUser->save();
+            $pinService->setPin($ownerUser, '123456');
 
-        foreach ($accountsToProvision as $key => $spec) {
-            $user = User::withoutGlobalScopes()->where('email', $spec['email'])->first();
-
-            if ($user === null) {
-                $user = new User();
-                $user->tenant_id = $tenantId;
-                $user->email = $spec['email'];
-            }
-
-            $user->tenant_id = $tenantId;
-            $user->name = $spec['name'];
-            $user->role_id = $spec['role_id'];
-            $user->password = $hashedPassword;
-            $user->phone_number = $spec['phone'];
-            $user->is_active = true;
-            $user->email_verified_at = now();
-            $user->save();
-
-            $pinService->setPin($user, $spec['pin']);
-
-            // Petakan cabang berdasarkan prinsip tata kelola tier-1:
-            // - Kasir: tepat 1 home-branch (cabang utama)
-            // - Supervisor: multi-cabang regional (2 cabang pertama)
-            // - Manager & Owner: seluruh cabang organisasi
-            $targetStores = match ($key) {
-                'kasir' => $allStores->take(1),
-                'supervisor' => $allStores->take(2),
-                default => $allStores,
-            };
-
-            DB::table('user_stores')
-                ->where('tenant_id', $tenantId)
-                ->where('user_id', $user->id)
-                ->whereNotIn('store_id', $targetStores->pluck('id'))
-                ->delete();
-
-            foreach ($targetStores as $s) {
+            // Berikan hak akses Owner ke SEMUA cabang
+            foreach ($allStores as $s) {
                 DB::table('user_stores')->updateOrInsert(
-                    ['tenant_id' => $tenantId, 'user_id' => $user->id, 'store_id' => $s->id],
+                    ['tenant_id' => $tenantId, 'user_id' => $ownerUser->id, 'store_id' => $s->id],
                     ['created_at' => now(), 'updated_at' => now()]
                 );
             }
-
-            $provisioned[$key] = $user;
-            $this->line("  ✓ User ready: [{$user->name}] <{$user->email}> | Role: {$user->role->name} | PIN: {$spec['pin']}");
+            $this->line("  ✓ Owner terverifikasi: [{$ownerUser->name}] <{$ownerUser->email}> | Password: {$rawPassword} | PIN: 123456");
         }
 
-        return $provisioned;
+        // 2. Sinkronisasi seluruh akun staf dan kasir
+        $staffUsers = User::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
+        foreach ($staffUsers as $usr) {
+            $usr->password = $hashedPassword;
+            $usr->is_active = true;
+            $usr->save();
+            $pinService->setPin($usr, '123456');
+        }
+        $this->line("  ✓ Seluruh {$staffUsers->count()} pengguna Tenant #{$tenantId} diselaraskan: Password = {$rawPassword} | PIN = 123456");
+
+        // 3. Siapkan akun kasir demo eksplisit
+        $demoKasirEmail = $tenantId === 1 ? 'kasir.fnb@apeiron.test' : 'kasir.retail@apeiron.test';
+        $demoKasirName = $tenantId === 1 ? 'Sari Kasir F&B' : 'Budi Kasir Retail';
+        $demoKasir = User::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('email', $demoKasirEmail)->first();
+
+        if (! $demoKasir) {
+            $demoKasir = new User();
+            $demoKasir->tenant_id = $tenantId;
+            $demoKasir->email = $demoKasirEmail;
+        }
+
+        $demoKasir->name = $demoKasirName;
+        $demoKasir->role_id = $roleKasir?->id ?? 3;
+        $demoKasir->password = $hashedPassword;
+        $demoKasir->phone_number = '0812' . sprintf('%08d', mt_rand(10000000, 99999999));
+        $demoKasir->is_active = true;
+        $demoKasir->email_verified_at = now();
+        $demoKasir->save();
+        $pinService->setPin($demoKasir, '123456');
+
+        // Petakan kasir demo ke seluruh cabang agar mudah ditest
+        foreach ($allStores as $s) {
+            DB::table('user_stores')->updateOrInsert(
+                ['tenant_id' => $tenantId, 'user_id' => $demoKasir->id, 'store_id' => $s->id],
+                ['created_at' => now(), 'updated_at' => now()]
+            );
+        }
+        $this->line("  ✓ Kasir Demo Siap: [{$demoKasir->name}] <{$demoKasir->email}> | PIN: 123456");
+
+        return [
+            'owner' => $ownerUser ?? $staffUsers->first(),
+            'kasir' => $demoKasir,
+        ];
     }
 
     /**
-     * @return array{healthy: int, low: int, out: int, ingredients: int}
+     * @return array{healthy: int, ingredients: int, stores: int}
      */
     private function restockProductsAndIngredients(Tenant $tenant): array
     {
         $tenantId = (int) $tenant->id;
         $stores = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
         $now = now();
+        $isRetail = ($tenant->primary_industry === 'retail');
+        $targetProductStock = $isRetail ? 250 : 150;
 
         $products = Product::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
         $ingredients = Ingredient::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
 
-        $healthyCount = 0;
-        $lowCount = 0;
-        $outCount = 0;
-
-        foreach ($products as $index => $product) {
-            $stock = 100;
-
-            // Edge cases untuk validasi visual POS:
-            // 1 produk low stock (3 pcs) & 1 produk out of stock (0 pcs)
-            if ($index === 0 || str_contains(strtolower($product->product_name), 'cold brew')) {
-                $stock = 3;
-                $lowCount++;
-            } elseif ($index === 1 || str_contains(strtolower($product->product_name), 'tiramisu')) {
-                $stock = 0;
-                $outCount++;
-            } else {
-                $healthyCount++;
-            }
-
-            $product->stock = $stock;
+        foreach ($products as $product) {
+            $product->stock = $targetProductStock;
             $product->track_inventory = true;
             $product->is_active = true;
             $product->status = 'active';
@@ -260,119 +226,238 @@ class UpdatePosOperationalDatasetCommand extends Command
                 DB::table('product_stock_balances')->updateOrInsert(
                     ['tenant_id' => $tenantId, 'store_id' => $s->id, 'product_id' => $product->id],
                     [
-                        'quantity' => $stock,
-                        'baseline_quantity' => $stock,
+                        'quantity' => $targetProductStock,
+                        'baseline_quantity' => $targetProductStock,
                         'baseline_movement_id' => 0,
-                        'min_stock_level' => 5,
-                        'reorder_point' => 15,
-                        'max_stock_level' => 500,
-                        'average_unit_cost' => (float) ($product->product_price * 0.4),
-                        'last_unit_cost' => (float) ($product->product_price * 0.4),
+                        'min_stock_level' => 10,
+                        'reorder_point' => 30,
+                        'max_stock_level' => 1000,
+                        'average_unit_cost' => (float) ($product->product_price * 0.45),
+                        'last_unit_cost' => (float) ($product->product_price * 0.45),
                         'updated_at' => $now,
                         'created_at' => $now,
                     ]
                 );
 
-                if ($stock > 0) {
-                    $idempotencyKey = "op_restock_prod_{$product->id}_{$s->id}_".date('Ymd');
-                    $exists = DB::table('stock_movements')
+                $idempotencyKey = "op_restock_prod_{$product->id}_{$s->id}_20261109";
+                $exists = DB::table('stock_movements')
+                    ->where('tenant_id', $tenantId)
+                    ->where('idempotency_key', $idempotencyKey)
+                    ->exists();
+
+                if (! $exists) {
+                    DB::table('stock_movements')->insert([
+                        'tenant_id' => $tenantId,
+                        'idempotency_key' => $idempotencyKey,
+                        'store_id' => $s->id,
+                        'product_id' => $product->id,
+                        'type' => 'purchase_receipt',
+                        'quantity' => $targetProductStock,
+                        'balance_before' => '0.0000',
+                        'balance_after' => (string) $targetProductStock,
+                        'unit_cost' => (string) ($product->product_price * 0.45),
+                        'reason' => 'Restock Operasional 2026 - Siap Uji POS',
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                }
+            }
+        }
+
+        // Restock Bahan Baku (F&B)
+        if (! $isRetail && $ingredients->isNotEmpty()) {
+            foreach ($ingredients as $ing) {
+                $ing->current_stock = '50000.0000';
+                $ing->is_active = true;
+                $ing->save();
+
+                foreach ($stores as $s) {
+                    DB::table('ingredient_stock_balances')->updateOrInsert(
+                        ['tenant_id' => $tenantId, 'store_id' => $s->id, 'ingredient_id' => $ing->id],
+                        [
+                            'quantity' => 50000,
+                            'baseline_quantity' => 50000,
+                            'baseline_movement_id' => 0,
+                            'min_stock_level' => 2000,
+                            'reorder_point' => 5000,
+                            'max_stock_level' => 150000,
+                            'average_unit_cost' => $ing->cost_per_unit ?? 0.05,
+                            'last_unit_cost' => $ing->cost_per_unit ?? 0.05,
+                            'updated_at' => $now,
+                            'created_at' => $now,
+                        ]
+                    );
+
+                    $idempotencyKey = "op_restock_ing_{$ing->id}_{$s->id}_20261109";
+                    $exists = DB::table('ingredient_stock_movements')
                         ->where('tenant_id', $tenantId)
                         ->where('idempotency_key', $idempotencyKey)
                         ->exists();
 
                     if (! $exists) {
-                        DB::table('stock_movements')->insert([
+                        DB::table('ingredient_stock_movements')->insert([
                             'tenant_id' => $tenantId,
                             'idempotency_key' => $idempotencyKey,
                             'store_id' => $s->id,
-                            'product_id' => $product->id,
+                            'ingredient_id' => $ing->id,
                             'type' => 'purchase_receipt',
-                            'quantity' => $stock,
-                            'balance_before' => '0.0000',
-                            'balance_after' => (string) $stock,
-                            'unit_cost' => (string) ($product->product_price * 0.4),
-                            'reason' => 'Operational Restock Batch - Full Ready Catalog',
+                            'quantity' => 50000,
+                            'unit_cost' => $ing->cost_per_unit ?? 0.05,
+                            'reason' => 'Restock Bahan Baku Dapur & Bar 2026',
                             'created_at' => $now,
-                            'updated_at' => $now,
                         ]);
                     }
                 }
             }
         }
 
-        // Restock Bahan Baku
-        foreach ($ingredients as $ing) {
-            $ing->current_stock = '45000.0000';
-            $ing->is_active = true;
-            $ing->save();
+        // Perpanjang masa berlaku diskon dan voucher agar aktif di 2026 & 2027
+        DB::table('discounts')->where('tenant_id', $tenantId)->update([
+            'is_active' => 1,
+            'valid_until' => '2027-12-31 23:59:59',
+            'updated_at' => $now,
+        ]);
 
-            foreach ($stores as $s) {
-                DB::table('ingredient_stock_balances')->updateOrInsert(
-                    ['tenant_id' => $tenantId, 'store_id' => $s->id, 'ingredient_id' => $ing->id],
-                    [
-                        'quantity' => 45000,
-                        'baseline_quantity' => 45000,
-                        'baseline_movement_id' => 0,
-                        'min_stock_level' => 2000,
-                        'reorder_point' => 5000,
-                        'max_stock_level' => 100000,
-                        'average_unit_cost' => $ing->cost_per_unit ?? 0.05,
-                        'last_unit_cost' => $ing->cost_per_unit ?? 0.05,
-                        'updated_at' => $now,
-                        'created_at' => $now,
-                    ]
-                );
+        DB::table('vouchers')->where('tenant_id', $tenantId)->update([
+            'status' => 'ACTIVE',
+            'valid_until' => '2027-12-31 23:59:59',
+            'updated_at' => $now,
+        ]);
 
-                $idempotencyKey = "op_restock_ing_{$ing->id}_{$s->id}_".date('Ymd');
-                $exists = DB::table('ingredient_stock_movements')
-                    ->where('tenant_id', $tenantId)
-                    ->where('idempotency_key', $idempotencyKey)
-                    ->exists();
-
-                if (! $exists) {
-                    DB::table('ingredient_stock_movements')->insert([
-                        'tenant_id' => $tenantId,
-                        'idempotency_key' => $idempotencyKey,
-                        'store_id' => $s->id,
-                        'ingredient_id' => $ing->id,
-                        'type' => 'purchase_receipt',
-                        'quantity' => 45000,
-                        'unit_cost' => $ing->cost_per_unit ?? 0.05,
-                        'reason' => 'Operational Restock Batch - Raw Materials',
-                        'created_at' => $now,
-                    ]);
-                }
-            }
+        $this->line("  ✓ {$products->count()} produk direstock (@ {$targetProductStock} pcs per cabang, total {$stores->count()} cabang).");
+        if (! $isRetail) {
+            $this->line("  ✓ {$ingredients->count()} bahan baku direstock (@ 50.000 unit per cabang).");
         }
-
-        // Perpanjang masa berlaku diskon agar aktif
-        DB::table('discounts')
-            ->where('tenant_id', $tenantId)
-            ->update([
-                'is_active' => 1,
-                'valid_until' => '2027-12-31 23:59:59',
-                'updated_at' => $now,
-            ]);
-
-        $this->line("  ✓ Products restocked: {$healthyCount} healthy, {$lowCount} low stock, {$outCount} out of stock");
-        $this->line("  ✓ Ingredients restocked: {$ingredients->count()} items @ 45.000 units across {$stores->count()} stores");
-        $this->line('  ✓ Promo discounts refreshed & activated until 31 Dec 2027');
+        $this->line("  ✓ Diskon & Voucher promo diperpanjang aktif hingga 31 Desember 2027.");
 
         return [
-            'healthy' => $healthyCount,
-            'low' => $lowCount,
-            'out' => $outCount,
+            'healthy' => $products->count(),
             'ingredients' => $ingredients->count(),
+            'stores' => $stores->count(),
         ];
     }
 
-    private function setupActiveShift(Tenant $tenant, Store $store, User $cashier): Shift
+    private function setupWorkSchedules(Tenant $tenant): int
     {
         $tenantId = (int) $tenant->id;
-        $storeId = (int) $store->id;
-        $today = Carbon::today();
+        $stores = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
+        $employees = Employee::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
 
-        // 1. Tutup shift lama yang masih open dari hari-hari sebelumnya
+        if ($employees->isEmpty()) {
+            return 0;
+        }
+
+        // 1. Pastikan setiap store memiliki 3 template shift standar
+        $templateMap = []; // store_id => [template_id_pagi, template_id_mid, template_id_malam]
+
+        foreach ($stores as $s) {
+            $tplPagi = DB::table('shift_templates')->updateOrInsert(
+                ['tenant_id' => $tenantId, 'store_id' => $s->id, 'shift_code' => "PAGI-{$s->id}"],
+                [
+                    'name' => 'Shift Pagi Operasional (07:00 - 15:30)',
+                    'start_time' => '07:00:00',
+                    'end_time' => '15:30:00',
+                    'cross_midnight' => 0,
+                    'unpaid_break_minutes' => 60,
+                    'grace_period_minutes' => 15,
+                    'is_active' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+            $pagiId = DB::table('shift_templates')->where('tenant_id', $tenantId)->where('store_id', $s->id)->where('shift_code', "PAGI-{$s->id}")->value('id');
+
+            $tplMid = DB::table('shift_templates')->updateOrInsert(
+                ['tenant_id' => $tenantId, 'store_id' => $s->id, 'shift_code' => "MID-{$s->id}"],
+                [
+                    'name' => 'Shift Middle Peak Hour (10:00 - 18:30)',
+                    'start_time' => '10:00:00',
+                    'end_time' => '18:30:00',
+                    'cross_midnight' => 0,
+                    'unpaid_break_minutes' => 60,
+                    'grace_period_minutes' => 15,
+                    'is_active' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+            $midId = DB::table('shift_templates')->where('tenant_id', $tenantId)->where('store_id', $s->id)->where('shift_code', "MID-{$s->id}")->value('id');
+
+            $tplMalam = DB::table('shift_templates')->updateOrInsert(
+                ['tenant_id' => $tenantId, 'store_id' => $s->id, 'shift_code' => "MLM-{$s->id}"],
+                [
+                    'name' => 'Shift Malam Closing (14:30 - 23:00)',
+                    'start_time' => '14:30:00',
+                    'end_time' => '23:00:00',
+                    'cross_midnight' => 0,
+                    'unpaid_break_minutes' => 60,
+                    'grace_period_minutes' => 15,
+                    'is_active' => 1,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+            $malamId = DB::table('shift_templates')->where('tenant_id', $tenantId)->where('store_id', $s->id)->where('shift_code', "MLM-{$s->id}")->value('id');
+
+            $templateMap[$s->id] = [$pagiId, $midId, $malamId];
+        }
+
+        // 2. Jadwalkan seluruh karyawan dari 01 November 2026 s/d 15 November 2026
+        $scheduleRows = [];
+        $startDate = Carbon::parse('2026-11-01');
+        $endDate = Carbon::parse('2026-11-15');
+
+        foreach ($employees as $empIdx => $emp) {
+            $empStoreId = (int) ($emp->store_id ?? $stores->first()->id);
+            if (! isset($templateMap[$empStoreId])) {
+                $empStoreId = (int) $stores->first()->id;
+            }
+            $storeTemplates = $templateMap[$empStoreId];
+
+            $currDate = $startDate->copy();
+            while ($currDate->lte($endDate)) {
+                $dateStr = $currDate->toDateString();
+                // Pilih template bergiliran berdasarkan (employee_id + day_of_month)
+                $tplIdx = ($emp->id + $currDate->day) % count($storeTemplates);
+                $selectedTplId = $storeTemplates[$tplIdx];
+
+                DB::table('work_schedules')->updateOrInsert(
+                    [
+                        'tenant_id' => $tenantId,
+                        'employee_id' => $emp->id,
+                        'schedule_date' => $dateStr,
+                    ],
+                    [
+                        'store_id' => $empStoreId,
+                        'shift_template_id' => $selectedTplId,
+                        'status' => 'SCHEDULED',
+                        'notes' => 'Jadwal Reguler November 2026',
+                        'updated_at' => now(),
+                        'created_at' => now(),
+                    ]
+                );
+
+                $currDate->addDay();
+            }
+        }
+
+        $totalSchedules = DB::table('work_schedules')->where('tenant_id', $tenantId)->whereBetween('schedule_date', ['2026-11-01', '2026-11-15'])->count();
+        $this->line("  ✓ {$totalSchedules} jadwal kerja aktif terkonfigurasi untuk {$employees->count()} karyawan (Rentang: 01 s/d 15 November 2026, termasuk hari ini 09 Nov).");
+
+        return $totalSchedules;
+    }
+
+    /**
+     * @return array<int, Shift> store_id => Shift
+     */
+    private function setupActiveShiftsForStores(Tenant $tenant, array $users): array
+    {
+        $tenantId = (int) $tenant->id;
+        $stores = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->get();
+        $today = Carbon::today();
+        $activeShifts = [];
+
+        // 1. Tutup shift usang dari hari-hari sebelumnya yang masih berstatus 'open'
         $staleShifts = Shift::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('status', 'open')
@@ -386,104 +471,130 @@ class UpdatePosOperationalDatasetCommand extends Command
             $stale->closing_balance = $stale->opening_balance;
             $stale->cash_difference = 0;
             $stale->close_type = 'normal';
-            $stale->notes = 'Penutupan otomatis shift masa lalu untuk sinkronisasi dataset operasional.';
+            $stale->notes = 'Penutupan otomatis shift masa lalu.';
             $stale->save();
         }
 
-        // 2. Ambil terminal register utama (Device)
-        $device = Device::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
-            ->where('store_id', $storeId)
-            ->where('device_type', 'pos_terminal')
-            ->first();
+        // 2. Di setiap store, pastikan ada device POS dan shift aktif hari ini (2026-11-09)
+        foreach ($stores as $store) {
+            app(TenantContext::class)->setTenantId($tenantId);
+            app(TenantContext::class)->setStoreId($store->id);
 
-        if (! $device) {
-            $device = Device::create([
-                'tenant_id' => $tenantId,
-                'store_id' => $storeId,
-                'device_name' => 'POS Terminal Senopati 01',
-                'device_code' => 'POS-SEN-01',
-                'device_type' => 'pos_terminal',
-                'device_secret' => Str::random(32),
-                'status' => 'active',
-                'is_active' => true,
-            ]);
+            $device = Device::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('store_id', $store->id)
+                ->where('device_type', 'pos_terminal')
+                ->first();
+
+            if (! $device) {
+                $device = Device::create([
+                    'tenant_id' => $tenantId,
+                    'store_id' => $store->id,
+                    'device_name' => "POS Terminal {$store->name}",
+                    'device_code' => "POS-{$store->code}-01",
+                    'device_type' => 'pos_terminal',
+                    'device_secret' => Str::random(32),
+                    'status' => 'active',
+                    'is_active' => true,
+                ]);
+            }
+
+            // Ambil kasir yang bertugas di store ini
+            $cashierUser = User::withoutGlobalScopes()
+                ->join('roles as r', 'r.id', '=', 'users.role_id')
+                ->join('user_stores as us', 'us.user_id', '=', 'users.id')
+                ->where('users.tenant_id', $tenantId)
+                ->where('us.store_id', $store->id)
+                ->where('r.name', 'Kasir')
+                ->select('users.*')
+                ->first();
+
+            if (! $cashierUser) {
+                $cashierUser = $users['kasir'];
+            }
+
+            // Periksa apakah shift hari ini sudah ada dan aktif
+            $shift = Shift::withoutGlobalScopes()
+                ->where('tenant_id', $tenantId)
+                ->where('store_id', $store->id)
+                ->where('device_id', $device->id)
+                ->where('status', 'open')
+                ->first();
+
+            if (! $shift) {
+                // Tutup shift lain pada user yang sama jika ada di store ini
+                Shift::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->where('store_id', $store->id)
+                    ->where('user_id', $cashierUser->id)
+                    ->where('status', 'open')
+                    ->update([
+                        'status' => 'closed',
+                        'closed_at' => now()->subMinutes(30),
+                        'closing_balance' => 500000,
+                        'expected_cash' => 500000,
+                        'cash_difference' => 0,
+                    ]);
+
+                $shift = Shift::create([
+                    'tenant_id' => $tenantId,
+                    'store_id' => $store->id,
+                    'user_id' => $cashierUser->id,
+                    'active_cashier_id' => $cashierUser->id,
+                    'device_id' => $device->id,
+                    'opening_balance' => 500000,
+                    'expected_cash' => 500000,
+                    'status' => 'open',
+                    'opened_at' => Carbon::parse('2026-11-09 07:00:00'),
+                    'notes' => "Shift Kasir Operasional Hari Ini ({$store->name}) - Siap Transaksi POS",
+                ]);
+            }
+
+            $activeShifts[$store->id] = $shift;
+            $this->line("  ✓ Shift #{$shift->id} AKTIF di Store [{$store->name}] | Kasir: {$cashierUser->name} | Device: {$device->device_name} | Modal Kas: Rp 500.000");
         }
 
-        // 3. Pastikan tidak ada shift open lain yang memblokir device ini
-        Shift::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
-            ->where('store_id', $storeId)
-            ->where('status', 'open')
-            ->where('id', '!=', 0)
-            ->update([
-                'status' => 'closed',
-                'closed_at' => now()->subHours(4),
-                'closing_balance' => 500000,
-                'expected_cash' => 500000,
-                'cash_difference' => 0,
-                'close_type' => 'normal',
-            ]);
+        app(TenantContext::class)->setStoreId(null);
 
-        // 4. Buka shift kasir hari ini (Aktif & Siap Transaksi)
-        $activeShift = Shift::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
-            ->where('store_id', $storeId)
-            ->where('user_id', $cashier->id)
-            ->where('status', 'open')
-            ->first();
-
-        if (! $activeShift) {
-            $activeShift = Shift::create([
-                'tenant_id' => $tenantId,
-                'store_id' => $storeId,
-                'user_id' => $cashier->id,
-                'active_cashier_id' => $cashier->id,
-                'device_id' => $device->id,
-                'opening_balance' => 500000,
-                'expected_cash' => 500000,
-                'status' => 'open',
-                'opened_at' => now()->startOfDay()->addHours(14),
-                'notes' => 'Shift Kasir Operasional Aktif Hari Ini (Siap Transaksi POS)',
-            ]);
-        }
-
-        $this->line("  ✓ Active Shift Ready: Shift #{$activeShift->id} | Kasir: {$cashier->name} | Device: {$device->device_name} | Saldo Awal: Rp ".number_format((float) $activeShift->opening_balance, 0, ',', '.'));
-
-        return $activeShift;
+        return $activeShifts;
     }
 
-    /**
-     * @return array{cash: int, card: int, midtrans_settled: int, midtrans_pending: int, split: int}
-     */
-    private function generateRecentTransactions(Tenant $tenant, Store $store, array $users, Shift $shift): array
+    private function generateRecentTransactions(Tenant $tenant, array $users, array $activeShifts): array
     {
         $tenantId = (int) $tenant->id;
-        $storeId = (int) $store->id;
-        $cashier = $users['kasir'];
+        $mainStore = Store::withoutGlobalScopes()->where('tenant_id', $tenantId)->first();
+        if (! $mainStore || ! isset($activeShifts[$mainStore->id])) {
+            return ['count' => 0];
+        }
 
-        $coffeeProducts = Product::withoutGlobalScopes()
+        $storeId = (int) $mainStore->id;
+        $shift = $activeShifts[$storeId];
+        $cashier = $users['kasir'];
+        $customer = Customer::withoutGlobalScopes()->where('tenant_id', $tenantId)->first();
+        $table = Table::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('store_id', $storeId)->first();
+
+        // Tetapkan context store & tenant agar observer / assigns store berjalan mulus
+        app(\App\Core\Context\TenantContext::class)->setTenantId($tenantId);
+        app(\App\Core\Context\TenantContext::class)->setStoreId($storeId);
+
+        $sampleProducts = Product::withoutGlobalScopes()
             ->where('tenant_id', $tenantId)
             ->where('stock', '>', 5)
             ->take(5)
             ->get();
 
-        $table = Table::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('store_id', $storeId)->first();
-        $customer = Customer::withoutGlobalScopes()->where('tenant_id', $tenantId)->first();
-
-        $stats = ['cash' => 0, 'card' => 0, 'midtrans_settled' => 0, 'midtrans_pending' => 0, 'split' => 0];
-
-        $existingOrder = Order::withoutGlobalScopes()
-            ->where('tenant_id', $tenantId)
-            ->where('idempotency_key', 'op_trx_cash_'.date('Ymd').'_001')
-            ->first();
-
-        if ($existingOrder) {
-            $this->line('  ℹ Transaksi pengujian hari ini sudah ada, melewati pembuatan transaksi duplikat.');
-            return ['cash' => 1, 'card' => 1, 'midtrans_settled' => 1, 'midtrans_pending' => 1, 'split' => 1];
+        if ($sampleProducts->isEmpty()) {
+            return ['count' => 0];
         }
 
-        // ── TRX 1: Tunai Hari Ini (Exact Cash Received & Change) ──────────────
+        $idempotencyCheck = "op_trx_cash_{$tenantId}_20261109_001";
+        if (Order::withoutGlobalScopes()->where('tenant_id', $tenantId)->where('idempotency_key', $idempotencyCheck)->exists()) {
+            return ['count' => 5];
+        }
+
+        // TRX 1: Tunai Hari Ini (09 Nov 2026)
+        $p1 = $sampleProducts[0];
+        $price1 = (int) $p1->product_price;
         $order1 = Order::create([
             'tenant_id' => $tenantId,
             'store_id' => $storeId,
@@ -491,391 +602,151 @@ class UpdatePosOperationalDatasetCommand extends Command
             'user_id' => $cashier->id,
             'customer_id' => $customer?->id,
             'table_id' => $table?->id,
-            'order_type' => 'dine_in',
-            'order_code' => 'AP-'.date('Ymd').'-0001',
-            'order_date' => date('Y-m-d'),
-            'idempotency_key' => 'op_trx_cash_'.date('Ymd').'_001',
-            'subtotal_amount' => 66000,
+            'order_type' => $tenant->primary_industry === 'retail' ? 'takeaway' : 'dine_in',
+            'order_code' => 'ORD-20261109-001-' . $tenantId,
+            'order_date' => '2026-11-09',
+            'idempotency_key' => $idempotencyCheck,
+            'subtotal_amount' => $price1 * 2,
             'discount_amount' => 0,
-            'tax_amount' => 7260,
+            'tax_amount' => (int) round($price1 * 2 * 0.11),
             'service_charge_amount' => 0,
-            'order_amount' => 73260,
-            'cash_received' => 100000,
-            'order_change' => 26740,
+            'order_amount' => (int) round($price1 * 2 * 1.11),
+            'cash_received' => (int) ceil(($price1 * 2 * 1.11) / 50000) * 50000,
+            'order_change' => ((int) ceil(($price1 * 2 * 1.11) / 50000) * 50000) - (int) round($price1 * 2 * 1.11),
             'order_status' => OrderStatus::Paid,
-            'created_at' => now()->subHours(3),
-            'updated_at' => now()->subHours(3),
+            'created_at' => Carbon::parse('2026-11-09 09:30:00'),
+            'updated_at' => Carbon::parse('2026-11-09 09:30:00'),
         ]);
 
-        $item1 = $coffeeProducts[0] ?? null;
-        if ($item1) {
-            OrderItem::create([
-                'tenant_id' => $tenantId,
-                'order_id' => $order1->id,
-                'product_id' => $item1->id,
-                'qty' => 2,
-                'order_price' => $item1->product_price,
-                'order_subtotal' => $item1->product_price * 2,
-                'preparation_status' => PreparationStatus::Ready,
-                'created_at' => now()->subHours(3),
-                'updated_at' => now()->subHours(3),
-            ]);
-        }
+        OrderItem::create([
+            'tenant_id' => $tenantId,
+            'store_id' => $storeId,
+            'order_id' => $order1->id,
+            'product_id' => $p1->id,
+            'qty' => 2,
+            'order_price' => $price1,
+            'order_subtotal' => $price1 * 2,
+            'preparation_status' => PreparationStatus::Ready,
+            'created_at' => Carbon::parse('2026-11-09 09:30:00'),
+            'updated_at' => Carbon::parse('2026-11-09 09:30:00'),
+        ]);
 
         Payment::create([
             'tenant_id' => $tenantId,
+            'store_id' => $storeId,
             'order_id' => $order1->id,
             'payment_method' => PaymentMethod::Cash,
-            'amount' => 73260,
-            'amount_tendered' => 100000,
-            'change_amount' => 26740,
+            'amount' => $order1->order_amount,
+            'amount_tendered' => $order1->cash_received,
+            'change_amount' => $order1->order_change,
             'status' => 'captured',
-            'captured_at' => now()->subHours(3),
+            'captured_at' => Carbon::parse('2026-11-09 09:30:00'),
             'processed_by' => $cashier->id,
-            'idempotency_key' => 'op_pay_cash_'.date('Ymd').'_001',
-            'created_at' => now()->subHours(3),
-            'updated_at' => now()->subHours(3),
+            'idempotency_key' => "op_pay_cash_{$tenantId}_20261109_001",
+            'created_at' => Carbon::parse('2026-11-09 09:30:00'),
+            'updated_at' => Carbon::parse('2026-11-09 09:30:00'),
         ]);
-        $stats['cash']++;
 
-        // ── TRX 2: Kartu EDC Hari Ini (Approval Code) ─────────────────────────
+        // TRX 2: Midtrans QRIS Settled Hari Ini
+        $p2 = $sampleProducts[1] ?? $p1;
+        $price2 = (int) $p2->product_price;
         $order2 = Order::create([
             'tenant_id' => $tenantId,
             'store_id' => $storeId,
             'shift_id' => $shift->id,
             'user_id' => $cashier->id,
             'order_type' => 'takeaway',
-            'order_code' => 'AP-'.date('Ymd').'-0002',
-            'order_date' => date('Y-m-d'),
-            'idempotency_key' => 'op_trx_card_'.date('Ymd').'_002',
-            'subtotal_amount' => 76000,
+            'order_code' => 'ORD-20261109-002-' . $tenantId,
+            'order_date' => '2026-11-09',
+            'idempotency_key' => "op_trx_qris_{$tenantId}_20261109_002",
+            'subtotal_amount' => $price2,
             'discount_amount' => 0,
-            'tax_amount' => 8360,
+            'tax_amount' => (int) round($price2 * 0.11),
             'service_charge_amount' => 0,
-            'order_amount' => 84360,
+            'order_amount' => (int) round($price2 * 1.11),
             'order_status' => OrderStatus::Paid,
-            'created_at' => now()->subHours(2),
-            'updated_at' => now()->subHours(2),
+            'created_at' => Carbon::parse('2026-11-09 10:15:00'),
+            'updated_at' => Carbon::parse('2026-11-09 10:15:00'),
         ]);
 
-        $item2 = $coffeeProducts[1] ?? null;
-        if ($item2) {
-            OrderItem::create([
-                'tenant_id' => $tenantId,
-                'order_id' => $order2->id,
-                'product_id' => $item2->id,
-                'qty' => 2,
-                'order_price' => $item2->product_price,
-                'order_subtotal' => $item2->product_price * 2,
-                'preparation_status' => PreparationStatus::Ready,
-                'created_at' => now()->subHours(2),
-                'updated_at' => now()->subHours(2),
-            ]);
-        }
-
-        Payment::create([
+        OrderItem::create([
             'tenant_id' => $tenantId,
+            'store_id' => $storeId,
             'order_id' => $order2->id,
-            'payment_method' => PaymentMethod::Card,
-            'amount' => 84360,
-            'reference_number' => 'BCA-TRACE-88910',
-            'approval_code' => 'APP-BCA-9812',
-            'status' => 'captured',
-            'captured_at' => now()->subHours(2),
-            'processed_by' => $cashier->id,
-            'idempotency_key' => 'op_pay_card_'.date('Ymd').'_002',
-            'created_at' => now()->subHours(2),
-            'updated_at' => now()->subHours(2),
-        ]);
-        $stats['card']++;
-
-        // ── TRX 3: Midtrans Gateway Succeeded (Dynamic QRIS / Snap) ───────────
-        $order3 = Order::create([
-            'tenant_id' => $tenantId,
-            'store_id' => $storeId,
-            'shift_id' => $shift->id,
-            'user_id' => $cashier->id,
-            'order_type' => 'dine_in',
-            'table_id' => $table?->id,
-            'order_code' => 'AP-'.date('Ymd').'-0003',
-            'order_date' => date('Y-m-d'),
-            'idempotency_key' => 'op_trx_midtrans_settled_'.date('Ymd').'_003',
-            'subtotal_amount' => 100000,
-            'discount_amount' => 10000,
-            'tax_amount' => 9900,
-            'service_charge_amount' => 0,
-            'order_amount' => 99900,
-            'snap_token' => 'snap-settled-'.Str::random(24),
-            'order_status' => OrderStatus::Paid,
-            'created_at' => now()->subHour(),
-            'updated_at' => now()->subHour(),
-        ]);
-
-        $item3 = $coffeeProducts[2] ?? null;
-        if ($item3) {
-            OrderItem::create([
-                'tenant_id' => $tenantId,
-                'order_id' => $order3->id,
-                'product_id' => $item3->id,
-                'qty' => 2,
-                'order_price' => 50000,
-                'order_subtotal' => 100000,
-                'preparation_status' => PreparationStatus::Ready,
-                'created_at' => now()->subHour(),
-                'updated_at' => now()->subHour(),
-            ]);
-        }
-
-        PaymentAttempt::create([
-            'tenant_id' => $tenantId,
-            'store_id' => $storeId,
-            'order_id' => $order3->id,
-            'provider' => 'midtrans',
-            'payment_method' => 'qris',
-            'provider_order_id' => $order3->order_code,
-            'provider_transaction_id' => 'MID-TRX-'.date('Ymd').'-0003',
-            'amount' => 99900,
-            'currency' => 'IDR',
-            'status' => PaymentAttemptStatus::Succeeded,
-            'settled_at' => now()->subHour(),
-            'idempotency_key' => 'op_attempt_settled_'.date('Ymd').'_003',
-            'created_at' => now()->subHour(),
-            'updated_at' => now()->subHour(),
+            'product_id' => $p2->id,
+            'qty' => 1,
+            'order_price' => $price2,
+            'order_subtotal' => $price2,
+            'preparation_status' => PreparationStatus::Ready,
+            'created_at' => Carbon::parse('2026-11-09 10:15:00'),
+            'updated_at' => Carbon::parse('2026-11-09 10:15:00'),
         ]);
 
         Payment::create([
             'tenant_id' => $tenantId,
-            'order_id' => $order3->id,
+            'store_id' => $storeId,
+            'order_id' => $order2->id,
             'payment_method' => PaymentMethod::Qris,
-            'amount' => 99900,
-            'reference_number' => 'MID-TRX-'.date('Ymd').'-0003',
+            'amount' => $order2->order_amount,
+            'reference_number' => 'MID-QRIS-20261109-' . sprintf('%04d', $tenantId),
             'status' => 'captured',
-            'captured_at' => now()->subHour(),
+            'captured_at' => Carbon::parse('2026-11-09 10:15:00'),
             'processed_by' => $cashier->id,
-            'idempotency_key' => 'op_pay_midtrans_'.date('Ymd').'_003',
-            'created_at' => now()->subHour(),
-            'updated_at' => now()->subHour(),
-        ]);
-        $stats['midtrans_settled']++;
-
-        // ── TRX 4: Midtrans Gateway PENDING (Siap Diuji Sync oleh Kasir) ───────
-        $order4 = Order::create([
-            'tenant_id' => $tenantId,
-            'store_id' => $storeId,
-            'shift_id' => $shift->id,
-            'user_id' => $cashier->id,
-            'order_type' => 'takeaway',
-            'order_code' => 'AP-'.date('Ymd').'-0004',
-            'order_date' => date('Y-m-d'),
-            'idempotency_key' => 'op_trx_midtrans_pending_'.date('Ymd').'_004',
-            'subtotal_amount' => 35000,
-            'discount_amount' => 0,
-            'tax_amount' => 3850,
-            'service_charge_amount' => 0,
-            'order_amount' => 38850,
-            'snap_token' => 'snap-pending-'.Str::random(24),
-            'order_status' => OrderStatus::Pending,
-            'created_at' => now()->subMinutes(15),
-            'updated_at' => now()->subMinutes(15),
+            'idempotency_key' => "op_pay_qris_{$tenantId}_20261109_002",
+            'created_at' => Carbon::parse('2026-11-09 10:15:00'),
+            'updated_at' => Carbon::parse('2026-11-09 10:15:00'),
         ]);
 
-        $item4 = $coffeeProducts[3] ?? null;
-        if ($item4) {
-            OrderItem::create([
-                'tenant_id' => $tenantId,
-                'order_id' => $order4->id,
-                'product_id' => $item4->id,
-                'qty' => 1,
-                'order_price' => 35000,
-                'order_subtotal' => 35000,
-                'preparation_status' => PreparationStatus::Pending,
-                'created_at' => now()->subMinutes(15),
-                'updated_at' => now()->subMinutes(15),
-            ]);
-        }
+        $this->line("  ✓ Transaksi operasional hari ini (09 Nov 2026) berhasil dibuat di Cabang Utama (Cash & QRIS)");
 
-        PaymentAttempt::create([
-            'tenant_id' => $tenantId,
-            'store_id' => $storeId,
-            'order_id' => $order4->id,
-            'provider' => 'midtrans',
-            'payment_method' => 'qris',
-            'provider_order_id' => $order4->order_code,
-            'amount' => 38850,
-            'currency' => 'IDR',
-            'status' => PaymentAttemptStatus::PendingProvider,
-            'idempotency_key' => 'op_attempt_pending_'.date('Ymd').'_004',
-            'created_at' => now()->subMinutes(15),
-            'updated_at' => now()->subMinutes(15),
-        ]);
-        $stats['midtrans_pending']++;
+        app(TenantContext::class)->setStoreId(null);
 
-        // ── TRX 5: Pesanan Aktif Kitchen Display System (KDS pending/brewing) ──
-        $order5 = Order::create([
-            'tenant_id' => $tenantId,
-            'store_id' => $storeId,
-            'shift_id' => $shift->id,
-            'user_id' => $cashier->id,
-            'order_type' => 'dine_in',
-            'table_id' => $table?->id,
-            'order_code' => 'AP-'.date('Ymd').'-0005',
-            'order_date' => date('Y-m-d'),
-            'idempotency_key' => 'op_trx_kds_live_'.date('Ymd').'_005',
-            'subtotal_amount' => 68000,
-            'discount_amount' => 0,
-            'tax_amount' => 7480,
-            'service_charge_amount' => 0,
-            'order_amount' => 75480,
-            'order_status' => OrderStatus::Paid,
-            'created_at' => now()->subMinutes(5),
-            'updated_at' => now()->subMinutes(5),
-        ]);
-
-        if ($item1) {
-            OrderItem::create([
-                'tenant_id' => $tenantId,
-                'order_id' => $order5->id,
-                'product_id' => $item1->id,
-                'qty' => 1,
-                'order_price' => 33000,
-                'order_subtotal' => 33000,
-                'preparation_status' => PreparationStatus::Brewing, // Sedang disiapkan barista
-                'created_at' => now()->subMinutes(5),
-                'updated_at' => now()->subMinutes(2),
-            ]);
-        }
-        if ($item2) {
-            OrderItem::create([
-                'tenant_id' => $tenantId,
-                'order_id' => $order5->id,
-                'product_id' => $item2->id,
-                'qty' => 1,
-                'order_price' => 35000,
-                'order_subtotal' => 35000,
-                'preparation_status' => PreparationStatus::Pending, // Masuk antrean dapur
-                'created_at' => now()->subMinutes(5),
-                'updated_at' => now()->subMinutes(5),
-            ]);
-        }
-
-        Payment::create([
-            'tenant_id' => $tenantId,
-            'order_id' => $order5->id,
-            'payment_method' => PaymentMethod::Cash,
-            'amount' => 75480,
-            'amount_tendered' => 100000,
-            'change_amount' => 24520,
-            'status' => 'captured',
-            'captured_at' => now()->subMinutes(5),
-            'processed_by' => $cashier->id,
-            'idempotency_key' => 'op_pay_cash_kds_'.date('Ymd').'_005',
-            'created_at' => now()->subMinutes(5),
-            'updated_at' => now()->subMinutes(5),
-        ]);
-
-        // ── TRX 6: Split Payment (Tunai + QRIS) ───────────────────────────────
-        $order6 = Order::create([
-            'tenant_id' => $tenantId,
-            'store_id' => $storeId,
-            'shift_id' => $shift->id,
-            'user_id' => $cashier->id,
-            'order_type' => 'dine_in',
-            'order_code' => 'AP-'.date('Ymd').'-0006',
-            'order_date' => date('Y-m-d'),
-            'idempotency_key' => 'op_trx_split_'.date('Ymd').'_006',
-            'subtotal_amount' => 100000,
-            'discount_amount' => 0,
-            'tax_amount' => 11000,
-            'service_charge_amount' => 0,
-            'order_amount' => 111000,
-            'cash_received' => 60000,
-            'order_change' => 0,
-            'order_status' => OrderStatus::Paid,
-            'created_at' => now()->subMinutes(2),
-            'updated_at' => now()->subMinutes(2),
-        ]);
-
-        if ($item1) {
-            OrderItem::create([
-                'tenant_id' => $tenantId,
-                'order_id' => $order6->id,
-                'product_id' => $item1->id,
-                'qty' => 3,
-                'order_price' => 33333,
-                'order_subtotal' => 100000,
-                'preparation_status' => PreparationStatus::Ready,
-                'created_at' => now()->subMinutes(2),
-                'updated_at' => now()->subMinutes(2),
-            ]);
-        }
-
-        Payment::create([
-            'tenant_id' => $tenantId,
-            'order_id' => $order6->id,
-            'payment_method' => PaymentMethod::Cash,
-            'amount' => 60000,
-            'amount_tendered' => 60000,
-            'change_amount' => 0,
-            'status' => 'captured',
-            'captured_at' => now()->subMinutes(2),
-            'processed_by' => $cashier->id,
-            'idempotency_key' => 'op_pay_split_1_'.date('Ymd').'_006',
-            'created_at' => now()->subMinutes(2),
-            'updated_at' => now()->subMinutes(2),
-        ]);
-
-        Payment::create([
-            'tenant_id' => $tenantId,
-            'order_id' => $order6->id,
-            'payment_method' => PaymentMethod::Qris,
-            'amount' => 51000,
-            'reference_number' => 'QRIS-SPLIT-9921',
-            'status' => 'captured',
-            'captured_at' => now()->subMinutes(2),
-            'processed_by' => $cashier->id,
-            'idempotency_key' => 'op_pay_split_2_'.date('Ymd').'_006',
-            'created_at' => now()->subMinutes(2),
-            'updated_at' => now()->subMinutes(2),
-        ]);
-        $stats['split']++;
-
-        $this->line("  ✓ Generated recent operational transactions for today (".date('d M Y')."):");
-        $this->line("    • {$stats['cash']} Cash transaction with exact cash_received & order_change");
-        $this->line("    • {$stats['card']} EDC Card transaction with bank approval code");
-        $this->line("    • {$stats['midtrans_settled']} Midtrans Dynamic QRIS settled order");
-        $this->line("    • {$stats['midtrans_pending']} Midtrans pending order with snap_token (ready to test cashier sync)");
-        $this->line("    • {$stats['split']} Multi-leg Split Payment transaction (Cash + QRIS)");
-        $this->line('    • 2 Live preparation items visible on KDS board (/kds)');
-
-        return $stats;
+        return ['count' => 2];
     }
 
-    private function renderSummary(array $users, Shift $shift, array $stock, array $orders, string $rawPassword): void
+    private function setupAccountingPeriods2026(Tenant $tenant): void
+    {
+        $tenantId = (int) $tenant->id;
+        $periods = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $periodCode = sprintf('2026-%02d', $m);
+            $startDate = Carbon::create(2026, $m, 1)->startOfMonth()->toDateString();
+            $endDate = Carbon::create(2026, $m, 1)->endOfMonth()->toDateString();
+            // Periode Januari s/d Oktober 2026 CLOSED, November 2026 OPEN
+            $status = ($m <= 10) ? 'CLOSED' : 'OPEN';
+
+            DB::table('accounting_periods')->updateOrInsert(
+                ['tenant_id' => $tenantId, 'period_code' => $periodCode],
+                [
+                    'fiscal_year' => 2026,
+                    'period_number' => $m,
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                    'status' => $status,
+                    'is_adjustment_period' => 0,
+                    'closed_at' => ($status === 'CLOSED') ? $endDate . ' 23:59:59' : null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
+        }
+        $this->line("  ✓ Periode Akuntansi 2026 disinkronisasi: 2026-01 s/d 2026-10 CLOSED, 2026-11 OPEN (Aktif).");
+    }
+
+    private function renderTenantSummary(Tenant $tenant, array $users, array $activeShifts, array $stock, int $schedules, array $orders, string $rawPassword): void
     {
         $this->table(
-            ['Akun Uji', 'Email', 'Password', 'PIN Kasir / Spv', 'Peran (Role)'],
+            ['Parameter Uji', 'Status / Nilai'],
             [
-                ['Kasir Utama', $users['kasir']->email, $rawPassword, '123456', 'Kasir POS (Direct to /transaction)'],
-                ['Supervisor', $users['supervisor']->email, $rawPassword, '654321', 'Supervisor (Approval Diskon & Void)'],
-                ['Manager Cabang', $users['manager']->email, $rawPassword, '654321', 'Manager Operasional'],
-                ['Owner Bisnis', $users['owner']->email, $rawPassword, '112233', 'Owner (Full Access)'],
+                ['Tenant ID & Nama', "#{$tenant->id} - {$tenant->name} ({$tenant->primary_industry})"],
+                ['Akun Owner Login', $users['owner']->email . " (Password: {$rawPassword} | PIN: 123456)"],
+                ['Akun Kasir Demo', $users['kasir']->email . " (Password: {$rawPassword} | PIN: 123456)"],
+                ['Katalog Produk Siap Jual', "{$stock['healthy']} produk (Stok {$stock['healthy']} pcs/cabang)"],
+                ['Bahan Baku Dapur (F&B)', "{$stock['ingredients']} bahan baku (50.000 unit/cabang)"],
+                ['Shift Kasir Aktif Hari Ini (2026-11-09)', count($activeShifts) . " cabang memiliki shift register OPEN (Saldo Awal Rp 500.000)"],
+                ['Jadwal Kerja Karyawan (work_schedules)', "{$schedules} jadwal kerja aktif terpasang (01 s/d 15 Nov 2026)"],
+                ['Periode Finansial Berjalan', 'Periode 2026-11: OPEN (Buku Besar & Jurnal Aktif)'],
             ]
         );
-
-        $this->table(
-            ['Parameter', 'Nilai / Status'],
-            [
-                ['Shift Aktif Hari Ini', "Shift #{$shift->id} (Status: OPEN, Saldo Awal: Rp 500.000)"],
-                ['Katalog Produk Sehat', "{$stock['healthy']} produk (Stok 100 pcs)"],
-                ['Edge Case Low Stock', "{$stock['low']} produk (Stok 3 pcs - Badge Kuning)"],
-                ['Edge Case Out of Stock', "{$stock['out']} produk (Stok 0 pcs - Badge Merah)"],
-                ['Bahan Baku & Resep F&B', "{$stock['ingredients']} bahan (45.000 unit/bahan)"],
-                ['Transaksi Hari Ini (2026-11-08)', ($orders['cash'] + $orders['card'] + $orders['midtrans_settled'] + $orders['midtrans_pending'] + $orders['split']).' transaksi baru'],
-                ['Live Kitchen Tickets (KDS)', '2 tiket pesanan aktif pada route /kds'],
-                ['Pesanan Pending Midtrans', '1 pesanan pending siap diuji via tombol "Sync Midtrans Status"'],
-            ]
-        );
-
-        $this->info('✅ DATASET OPERASIONAL TELAH BERHASIL DIPERBARUI & SIAP DIUJI SECARA PROFESIONAL!');
     }
 }

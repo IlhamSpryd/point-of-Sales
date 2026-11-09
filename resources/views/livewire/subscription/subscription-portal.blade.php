@@ -27,6 +27,23 @@
         </div>
     @endif
 
+    @if ($pendingUpgradeRequest)
+        <div class="p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 text-amber-800 dark:text-amber-300 text-sm font-medium">
+            <div class="flex items-center gap-3">
+                <span class="material-symbols-rounded text-amber-600 dark:text-amber-400 text-[24px]">hourglass_top</span>
+                <div>
+                    <p class="font-bold">Permintaan Upgrade Paket Sedang Diproses</p>
+                    <p class="text-xs text-muted-foreground mt-0.5">
+                        Anda telah mengajukan permohonan upgrade ke paket <span class="font-semibold text-foreground">{{ $pendingUpgradeRequest->plan?->name }}</span>. Tim representatif kami sedang meninjau permintaan Anda.
+                    </p>
+                </div>
+            </div>
+            <span class="inline-flex self-start sm:self-auto px-2.5 py-1 text-xs font-bold rounded-lg bg-amber-500/20 text-amber-700 dark:text-amber-300 uppercase tracking-wide">
+                {{ $pendingUpgradeRequest->status }}
+            </span>
+        </div>
+    @endif
+
     <!-- Active Plan Summary Card -->
     <div class="bg-card rounded-2xl border border-border p-6 shadow-sm space-y-4">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">

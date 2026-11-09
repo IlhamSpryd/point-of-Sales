@@ -36,9 +36,12 @@ class PopulateEnterpriseDatasetCommand extends Command
         $this->info("=== APEIRON SYSTEMS: ENTERPRISE DATASET INJECTION (100% TABLE POPULATION) ===");
         $this->info("Target Database: {$dbName} | Mode: " . ($this->dryRun ? 'DRY-RUN' : 'LIVE EXECUTION'));
 
-        $tenants = Tenant::whereIn('id', [2, 3])->get();
+        $tenants = Tenant::whereIn('slug', ['fnb-demo', 'retail-demo'])
+            ->orWhereIn('id', DB::table('users')->whereIn('email', ['ilhamsepriyadi8@gmail.com', 'ilhamsepriyadi0@gmail.com'])->pluck('tenant_id'))
+            ->orWhereIn('id', [1, 2])
+            ->get();
         if ($tenants->isEmpty()) {
-            $this->error("Tenant 2 dan Tenant 3 tidak ditemukan di database!");
+            $this->error("Tenant F&B dan Retail tidak ditemukan di database!");
             return self::FAILURE;
         }
 
@@ -102,20 +105,7 @@ class PopulateEnterpriseDatasetCommand extends Command
         // 1. Chart of Accounts
         $existingCoa = DB::table('chart_of_accounts')->where('tenant_id', $tenant->id)->pluck('id', 'account_code')->toArray();
         if (empty($existingCoa)) {
-            $t1Coa = DB::table('chart_of_accounts')->where('tenant_id', 1)->get();
-            $insertData = [];
-            $now = Carbon::now();
-            foreach ($t1Coa as $item) {
-                $row = (array) $item;
-                unset($row['id']);
-                $row['tenant_id'] = $tenant->id;
-                $row['created_at'] = $now;
-                $row['updated_at'] = $now;
-                $insertData[] = $row;
-            }
-            if (!$this->dryRun && !empty($insertData)) {
-                DB::table('chart_of_accounts')->insert($insertData);
-            }
+            (new \Database\Seeders\ChartOfAccountsSeeder())->seedForTenant($tenant->id);
             $existingCoa = DB::table('chart_of_accounts')->where('tenant_id', $tenant->id)->pluck('id', 'account_code')->toArray();
         }
 
@@ -265,8 +255,8 @@ class PopulateEnterpriseDatasetCommand extends Command
     private function seedAccountingPeriods(Tenant $tenant, int $userId): array
     {
         $periods = [];
-        $start = Carbon::parse('2025-11-01');
-        $end = Carbon::parse('2026-11-30');
+        $start = Carbon::parse('2025-01-01');
+        $end = Carbon::parse('2025-12-31');
 
         $curr = $start->copy();
         while ($curr->lte($end)) {
@@ -275,7 +265,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             $periodNumber = (int) $curr->format('m');
             $startDate = $curr->copy()->startOfMonth()->toDateString();
             $endDate = $curr->copy()->endOfMonth()->toDateString();
-            $isClosed = $curr->format('Y-m') < '2026-11';
+            $isClosed = $curr->format('Y-m') <= '2025-12';
 
             $existing = DB::table('accounting_periods')->where('tenant_id', $tenant->id)->where('period_code', $periodCode)->first();
             if ($existing) {
@@ -787,10 +777,23 @@ class PopulateEnterpriseDatasetCommand extends Command
             $monthDate = Carbon::parse($p->start_date);
             $txDate = $monthDate->copy()->addDays(14)->toDateString();
 
-            // POS Sales Revenue Journal (Balanced: Debit Bank = Credit Sales + Credit Tax)
-            $salesAmount = 180000000.00 + (mt_rand(5, 25) * 1000000);
-            $taxAmount = round($salesAmount * 0.10, 2);
-            $totalDebit = $salesAmount + $taxAmount;
+            // POS Sales Revenue Journal dari order aktual yang terekonsiliasi
+            $actualOrders = DB::table('orders')
+                ->where('tenant_id', $tenant->id)
+                ->where('order_status', 'paid')
+                ->whereBetween('order_date', [$p->start_date, $p->end_date])
+                ->selectRaw('COALESCE(SUM(subtotal_amount - discount_amount), 0) as actual_sales, COALESCE(SUM(tax_amount), 0) as actual_tax, COALESCE(SUM(order_amount), 0) as actual_total')
+                ->first();
+
+            $salesAmount = (float) ($actualOrders->actual_sales ?? 0);
+            $taxAmount = (float) ($actualOrders->actual_tax ?? 0);
+            $totalDebit = (float) ($actualOrders->actual_total ?? ($salesAmount + $taxAmount));
+
+            if ($totalDebit <= 0) {
+                $salesAmount = 180000000.00 + (mt_rand(5, 25) * 1000000);
+                $taxAmount = round($salesAmount * 0.10, 2);
+                $totalDebit = $salesAmount + $taxAmount;
+            }
 
             $je1Id = DB::table('journal_entries')->insertGetId([
                 'tenant_id' => $tenant->id,
@@ -2112,12 +2115,145 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'portal_url' => 'https://pos.apeiron.id/employee/payslip/view',
                 ]),
                 'status' => 'sent',
-                'sent_at' => '2026-10-31 18:30:00',
+                'sent_at' => '2025-10-31 18:30:00',
                 'provider_message_id' => 'wamid.HBgMOTEzOTk4ODc3NjYFQIAEhgWM0VFRDI5QjE4' . $tenant->id,
-                'created_at' => '2026-10-31 18:29:50',
-                'updated_at' => '2026-10-31 18:30:00',
+                'created_at' => '2025-10-31 18:29:50',
+                'updated_at' => '2025-10-31 18:30:00',
             ],
         ]);
+
+        // 5. Vouchers
+        $disc = DB::table('discounts')->where('tenant_id', $tenant->id)->first();
+        if ($disc && DB::table('vouchers')->where('tenant_id', $tenant->id)->count() === 0) {
+            DB::table('vouchers')->insert([
+                [
+                    'tenant_id' => $tenant->id,
+                    'code' => 'VOUCHER-NEWYEAR-' . $tenant->id,
+                    'name' => 'Voucher Promo Tahun Baru 2025',
+                    'discount_id' => $disc->id,
+                    'customer_id' => null,
+                    'customer_group_id' => null,
+                    'discount_type' => 'FIXED_AMOUNT',
+                    'discount_value' => 25000.00,
+                    'max_discount_amount' => 25000.00,
+                    'min_order_amount' => 100000.00,
+                    'max_uses' => 500,
+                    'max_uses_per_customer' => 2,
+                    'used_count' => 124,
+                    'valid_from' => '2025-01-01 00:00:00',
+                    'valid_until' => '2025-12-31 23:59:59',
+                    'status' => 'ACTIVE',
+                    'created_at' => '2025-01-01 00:00:00',
+                    'updated_at' => '2025-01-01 00:00:00',
+                ],
+                [
+                    'tenant_id' => $tenant->id,
+                    'code' => 'VOUCHER-VIP-' . $tenant->id,
+                    'name' => 'Voucher Spesial Pelanggan Setia 20%',
+                    'discount_id' => $disc->id,
+                    'customer_id' => null,
+                    'customer_group_id' => null,
+                    'discount_type' => 'PERCENTAGE',
+                    'discount_value' => 20.00,
+                    'max_discount_amount' => 50000.00,
+                    'min_order_amount' => 150000.00,
+                    'max_uses' => 1000,
+                    'max_uses_per_customer' => 5,
+                    'used_count' => 312,
+                    'valid_from' => '2025-01-01 00:00:00',
+                    'valid_until' => '2025-12-31 23:59:59',
+                    'status' => 'ACTIVE',
+                    'created_at' => '2025-01-01 00:00:00',
+                    'updated_at' => '2025-01-01 00:00:00',
+                ],
+            ]);
+        }
+
+        // 6. Manufacturing Orders
+        $prod = DB::table('products')->where('tenant_id', $tenant->id)->first();
+        if ($prod && DB::table('manufacturing_orders')->where('tenant_id', $tenant->id)->count() === 0) {
+            DB::table('manufacturing_orders')->insert([
+                [
+                    'tenant_id' => $tenant->id,
+                    'store_id' => $mainStore->id,
+                    'order_number' => 'MO-202506-' . sprintf('%03d', $tenant->id) . '-001',
+                    'product_id' => $prod->id,
+                    'planned_quantity' => 150.0000,
+                    'produced_quantity' => 150.0000,
+                    'status' => 'COMPLETED',
+                    'planned_start_date' => '2025-06-10',
+                    'completed_at' => '2025-06-10 16:30:00',
+                    'notes' => 'Batch produksi reguler dapur pusat',
+                    'created_by' => $userId,
+                    'created_at' => '2025-06-10 08:00:00',
+                    'updated_at' => '2025-06-10 16:30:00',
+                ],
+                [
+                    'tenant_id' => $tenant->id,
+                    'store_id' => $mainStore->id,
+                    'order_number' => 'MO-202511-' . sprintf('%03d', $tenant->id) . '-002',
+                    'product_id' => $prod->id,
+                    'planned_quantity' => 200.0000,
+                    'produced_quantity' => 200.0000,
+                    'status' => 'COMPLETED',
+                    'planned_start_date' => '2025-11-20',
+                    'completed_at' => '2025-11-20 17:00:00',
+                    'notes' => 'Batch produksi persiapan libur akhir tahun',
+                    'created_by' => $userId,
+                    'created_at' => '2025-11-20 08:00:00',
+                    'updated_at' => '2025-11-20 17:00:00',
+                ],
+            ]);
+        }
+
+        // 7. Payment Inbox (Webhook gateway yang sudah diproses)
+        if (DB::table('payment_inbox')->where('tenant_id', $tenant->id)->count() === 0) {
+            $recentPayment = DB::table('payments')->where('tenant_id', $tenant->id)->where('payment_method', 'qris')->first();
+            $order = $recentPayment ? DB::table('orders')->where('tenant_id', $tenant->id)->where('id', $recentPayment->order_id)->first() : null;
+            $orderCode = $order ? $order->order_code : 'ORD-202506-001';
+            $payAmount = $recentPayment ? (int) $recentPayment->amount : 75000;
+
+            DB::table('payment_inbox')->insert([
+                [
+                    'tenant_id' => $tenant->id,
+                    'provider' => 'midtrans',
+                    'idempotency_key' => 'midtrans-hook-' . $tenant->id . '-20250615-01',
+                    'event_type' => 'payment.capture',
+                    'payload' => json_encode([
+                        'transaction_status' => 'settlement',
+                        'order_id' => $orderCode,
+                        'gross_amount' => (string) $payAmount,
+                        'payment_type' => 'qris',
+                        'transaction_time' => '2025-06-15 13:45:00',
+                        'fraud_status' => 'accept',
+                    ]),
+                    'status' => 'processed',
+                    'error_message' => null,
+                    'processed_at' => '2025-06-15 13:45:05',
+                    'created_at' => '2025-06-15 13:45:01',
+                    'updated_at' => '2025-06-15 13:45:05',
+                ],
+                [
+                    'tenant_id' => $tenant->id,
+                    'provider' => 'midtrans',
+                    'idempotency_key' => 'midtrans-hook-' . $tenant->id . '-20251120-02',
+                    'event_type' => 'payment.capture',
+                    'payload' => json_encode([
+                        'transaction_status' => 'settlement',
+                        'order_id' => $orderCode . '-2',
+                        'gross_amount' => (string) ($payAmount * 2),
+                        'payment_type' => 'qris',
+                        'transaction_time' => '2025-11-20 19:20:00',
+                        'fraud_status' => 'accept',
+                    ]),
+                    'status' => 'processed',
+                    'error_message' => null,
+                    'processed_at' => '2025-11-20 19:20:06',
+                    'created_at' => '2025-11-20 19:20:01',
+                    'updated_at' => '2025-11-20 19:20:06',
+                ],
+            ]);
+        }
     }
 
     private function seedPartitionedHistoricalLedgers(): void
@@ -2163,7 +2299,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             return;
         }
 
-        $users = DB::table('users')->whereIn('tenant_id', [2, 3])->limit(5)->get();
+        $users = DB::table('users')->limit(10)->get();
         foreach ($users as $user) {
             DB::table('personal_access_tokens')->insert([
                 'tokenable_type' => 'App\Models\User',
@@ -2171,7 +2307,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'name' => 'POS Terminal Tablet #' . $user->id,
                 'token' => hash('sha256', 'token_' . $user->id . '_' . Str::random(40)),
                 'abilities' => json_encode(['pos:checkout', 'orders:read', 'orders:create']),
-                'last_used_at' => '2026-11-06 14:30:00',
+                'last_used_at' => '2025-12-30 14:30:00',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

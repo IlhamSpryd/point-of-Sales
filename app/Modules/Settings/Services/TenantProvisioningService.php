@@ -2,6 +2,7 @@
 
 namespace App\Modules\Settings\Services;
 
+use App\Models\Company;
 use App\Models\Order;
 use App\Models\Plan;
 use App\Models\Role;
@@ -70,6 +71,18 @@ class TenantProvisioningService
             // 2. Store pertama sudah dibuat pemanggil; di sini hanya baseline
             //    setting yang bergantung pada store tersebut.
             $store = Store::query()->where('tenant_id', $tenant->id)->orderBy('id')->first();
+
+            // 2b. Default Company (Tier 2 DEC-001)
+            Company::firstOrCreate(
+                ['tenant_id' => $tenant->id, 'is_default' => true],
+                [
+                    'company_code' => 'CMP-'.str_pad((string) $tenant->id, 4, '0', STR_PAD_LEFT),
+                    'company_name' => $tenant->name,
+                    'legal_name' => $tenant->name,
+                    'is_active' => true,
+                    'is_default' => true,
+                ]
+            );
 
             // 3. User sistem: kanal order masuk & self-order pelanggan.
             $systemRoleId = Role::query()->where('tenant_id', $tenant->id)->where('name', 'Kasir')->value('id')

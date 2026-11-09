@@ -15,12 +15,12 @@ use App\Modules\Pricing\Models\PromotionReward;
 use App\Modules\Pricing\Models\PromotionRule;
 use App\Modules\Pricing\Services\MarginSimulationService;
 use App\Services\Context\TenantContext;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class MarginSimulationCalculationTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     protected Tenant $tenant;
 

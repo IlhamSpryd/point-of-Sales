@@ -15,12 +15,12 @@ use App\Modules\Pricing\Models\PromotionRule;
 use App\Modules\Pricing\Services\Evaluators\BxgyRewardEvaluator;
 use App\Services\Context\TenantContext;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class BxgyPromotionTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     private BxgyRewardEvaluator $evaluator;
 

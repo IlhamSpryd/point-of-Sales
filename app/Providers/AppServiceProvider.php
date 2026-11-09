@@ -51,6 +51,16 @@ class AppServiceProvider extends ServiceProvider
         );
 
         $this->app->bind(
+            \App\Modules\Finance\Contracts\TaxCalculationServiceInterface::class,
+            \App\Modules\Finance\Services\TaxCalculationService::class
+        );
+
+        $this->app->singleton(
+            \App\Modules\Finance\Contracts\TaxIntegrationServiceInterface::class,
+            \App\Modules\Finance\Services\TaxIntegrationService::class
+        );
+
+        $this->app->bind(
             \App\Modules\Integration\Contracts\WhatsAppGatewayInterface::class,
             \App\Modules\Integration\Services\Adapters\QiscusWhatsAppAdapter::class
         );

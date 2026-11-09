@@ -20,12 +20,12 @@ use App\Modules\Sales\Services\SalesOrderService;
 use App\Services\Context\TenantContext;
 use Carbon\Carbon;
 use DomainException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class QuotationServiceTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     protected QuotationService $quotationService;
 

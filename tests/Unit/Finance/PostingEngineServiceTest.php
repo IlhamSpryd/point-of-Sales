@@ -25,12 +25,12 @@ use App\Modules\Finance\Models\FinancialEventOutbox;
 use App\Modules\Finance\Services\JournalEntryService;
 use App\Modules\Finance\Services\PostingEngineService;
 use Carbon\Carbon;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Tests\TestCase;
 
 class PostingEngineServiceTest extends TestCase
 {
-    use RefreshDatabase;
+    use DatabaseTransactions;
 
     protected $tenant;
 
