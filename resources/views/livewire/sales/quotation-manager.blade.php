@@ -68,7 +68,7 @@
                         <th class="py-3.5 px-6">Customer</th>
                         <th class="py-3.5 px-6">Date / Validity</th>
                         <th class="py-3.5 px-6 text-right">Total Value</th>
-                        <th class="py-3.5 px-6 text-center">Status</th>
+                        <th class="py-3.5 px-6">Status</th>
                         <th class="py-3.5 px-6 text-right">Action</th>
                     </tr>
                 </thead>
@@ -78,7 +78,7 @@
                             <td class="py-4 px-6">
                                 <div class="font-medium text-foreground dark:text-white flex items-center gap-1.5 font-sans">
                                     <span>{{ $qtn->quotation_number }}</span>
-                                    <span class="text-xs px-1.5 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 font-sans">v{{ $qtn->version_number }}</span>
+                                    <span class="text-xs text-muted-foreground font-medium font-sans">v{{ $qtn->version_number }}</span>
                                 </div>
                                 <div class="text-xs text-zinc-400 mt-0.5">Branch: {{ $qtn->store?->name ?? 'Headquarters' }}</div>
                             </td>
@@ -93,39 +93,37 @@
                             <td class="py-4 px-6 text-right font-medium text-zinc-900 dark:text-white tabular-nums">
                                 Rp {{ number_format((float) $qtn->total_amount, 2, ',', '.') }}
                             </td>
-                            <td class="py-4 px-6 text-center">
+                            <td class="py-4 px-6">
                                 @php
-                                    $statusVariant = match($qtn->status->value) {
-                                        'DRAFT' => 'neutral',
-                                        'PENDING_APPROVAL' => 'warning',
-                                        'APPROVED' => 'info',
-                                        'SENT' => 'info',
-                                        'ACCEPTED' => 'success',
-                                        'CONVERTED' => 'neutral',
-                                        'REJECTED' => 'danger',
-                                        'EXPIRED' => 'warning',
-                                        'SUPERSEDED' => 'neutral',
-                                        default => 'neutral',
+                                    $statusDot = match($qtn->status->value) {
+                                        'DRAFT' => 'bg-neutral',
+                                        'PENDING_APPROVAL' => 'bg-warning',
+                                        'APPROVED', 'SENT' => 'bg-info',
+                                        'ACCEPTED' => 'bg-success',
+                                        'CONVERTED', 'SUPERSEDED' => 'bg-neutral',
+                                        'REJECTED' => 'bg-destructive',
+                                        'EXPIRED' => 'bg-warning',
+                                        default => 'bg-neutral',
                                     };
                                 @endphp
-                                <x-ui.badge variant="{{ $statusVariant }}" size="sm">
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $statusDot }}"></span>
                                     {{ $qtn->status->value }}
-                                </x-ui.badge>
+                                </span>
                             </td>
-                            <td class="py-4 px-6 text-right">
-                                <div class="flex items-center justify-end gap-1.5">
-                                    <button wire:click="viewQuotation({{ $qtn->id }})" class="p-1.5 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition" title="View Details">
-                                        <span class="material-symbols-rounded text-lg">visibility</span>
-                                    </button>
-
+                            <td class="py-4 px-6 text-right whitespace-nowrap">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="visibility" wire:click="viewQuotation({{ $qtn->id }})" aria-label="View Quotation Details">
+                                        View Details
+                                    </x-ui.table-action-item>
                                     @if($qtn->status->value === 'ACCEPTED' && $qtn->converted_sales_order_id === null)
                                         @can('convert', $qtn)
-                                        <button wire:click="convertToSalesOrder({{ $qtn->id }})" class="p-1.5 text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition" title="Convert to Sales Order">
-                                            <span class="material-symbols-rounded text-lg">shopping_bag</span>
-                                        </button>
+                                        <x-ui.table-action-item icon="shopping_bag" wire:click="convertToSalesOrder({{ $qtn->id }})" aria-label="Convert to Sales Order">
+                                            Convert to Sales Order
+                                        </x-ui.table-action-item>
                                         @endcan
                                     @endif
-                                </div>
+                                </x-ui.table-actions>
                             </td>
                         </tr>
                     @empty
@@ -252,7 +250,7 @@
             @if($selectedQuotation)
                 <div class="flex items-center gap-2">
                     <span>{{ $selectedQuotation->quotation_number }}</span>
-                    <x-ui.badge variant="neutral" size="xs">Version {{ $selectedQuotation->version_number }}</x-ui.badge>
+                    <span class="text-xs text-muted-foreground font-medium font-sans">(v{{ $selectedQuotation->version_number }})</span>
                 </div>
             @else
                 Price Quotation Details
@@ -272,7 +270,10 @@
                         <span class="text-xs font-semibold text-zinc-500 uppercase">Status:</span>
                         <span class="font-bold text-zinc-900 dark:text-white">{{ $selectedQuotation->status->value }}</span>
                         @if($selectedQuotation->requires_approval)
-                            <x-ui.badge variant="warning" size="xs">Requires Discount Approval</x-ui.badge>
+                            <span class="inline-flex items-center gap-1.5 text-xs text-warning font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full bg-warning"></span>
+                                Requires Discount Approval
+                            </span>
                         @endif
                     </div>
 

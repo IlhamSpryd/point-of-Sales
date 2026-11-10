@@ -83,7 +83,7 @@
                 <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Unit Name</th>
                 <th scope="col" class="px-6 py-3.5 text-right text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Decimal Precision</th>
                 <th scope="col" class="px-6 py-3.5 text-right text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Products</th>
-                <th scope="col" class="px-6 py-3.5 text-center text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
                 @if($canManage)
                     <th scope="col" class="px-6 py-3.5 text-right text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                 @endif
@@ -95,10 +95,11 @@
                     <td class="px-6 py-4 text-sm font-semibold text-foreground">{{ $uom->name }}</td>
                     <td class="px-6 py-4 text-sm text-muted-foreground text-right font-sans tabular-nums">{{ $uom->precision_scale }} decimals</td>
                     <td class="px-6 py-4 text-sm font-medium text-right text-foreground font-sans tabular-nums">{{ $uom->products_count }}</td>
-                    <td class="px-6 py-4 text-center">
-                        <x-ui.badge variant="{{ $uom->is_active ? 'success' : 'neutral' }}" size="sm">
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                            <span class="w-1.5 h-1.5 rounded-full {{ $uom->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                             {{ $uom->is_active ? 'Active' : 'Inactive' }}
-                        </x-ui.badge>
+                        </span>
                     </td>
                     @if($canManage)
                         <td class="px-6 py-4 text-right">

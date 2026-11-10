@@ -64,7 +64,7 @@
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Items</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Timestamps</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Actions</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
 
                 @foreach ($transfers as $transfer)
@@ -84,10 +84,19 @@
                                 </span>
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                            <x-ui.badge :variant="$transfer->status->badgeType()">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @php
+                                $transferDot = match($transfer->status->badgeType()) {
+                                    'success' => 'bg-success',
+                                    'warning' => 'bg-warning',
+                                    'danger' => 'bg-destructive',
+                                    default => 'bg-neutral',
+                                };
+                            @endphp
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $transferDot }}"></span>
                                 {{ $transfer->status->label() }}
-                            </x-ui.badge>
+                            </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-foreground text-right">
                             {{ $transfer->items_count }} items
@@ -100,30 +109,27 @@
                                 <div>Received: <span class="font-medium text-emerald-700">{{ $transfer->received_at->format('d M H:i') }}</span></div>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                            <div class="flex items-center justify-center gap-2">
-                                <button type="button" wire:click="viewDetail({{ $transfer->id }})" class="p-1 hover:text-foreground text-muted-foreground transition-colors" title="View Details">
-                                    <span class="material-symbols-rounded text-[20px]">visibility</span>
-                                </button>
-
+                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                            <x-ui.table-actions>
+                                <x-ui.table-action-item icon="visibility" wire:click="viewDetail({{ $transfer->id }})" aria-label="View Details">
+                                    View Details
+                                </x-ui.table-action-item>
                                 @if ($transfer->status === \App\Enums\StockTransferStatusEnum::Draft && $transfer->from_store_id === $currentStoreId)
-                                    <button type="button" wire:click="shipTransfer({{ $transfer->id }})" wire:confirm="Dispatch this stock transfer now? Stock at origin branch will be deducted." class="p-1 text-amber-600 hover:text-amber-800 transition-colors" title="Dispatch Goods">
-                                        <span class="material-symbols-rounded text-[20px]">local_shipping</span>
-                                    </button>
+                                    <x-ui.table-action-item icon="local_shipping" wire:click="shipTransfer({{ $transfer->id }})" wire:confirm="Dispatch this stock transfer now? Stock at origin branch will be deducted." aria-label="Dispatch Goods">
+                                        Dispatch Goods
+                                    </x-ui.table-action-item>
                                 @endif
-
                                 @if ($transfer->status === \App\Enums\StockTransferStatusEnum::InTransit && $transfer->to_store_id === $currentStoreId)
-                                    <button type="button" wire:click="openReceiveModal({{ $transfer->id }})" class="p-1 text-emerald-600 hover:text-emerald-800 transition-colors" title="Receive Goods at Destination">
-                                        <span class="material-symbols-rounded text-[20px]">inventory</span>
-                                    </button>
+                                    <x-ui.table-action-item icon="inventory" wire:click="openReceiveModal({{ $transfer->id }})" aria-label="Receive Goods">
+                                        Receive Goods
+                                    </x-ui.table-action-item>
                                 @endif
-
                                 @if ($transfer->status->canCancel())
-                                    <button type="button" wire:click="cancelTransfer({{ $transfer->id }})" wire:confirm="Cancel this stock transfer? If already in transit, stock will be returned to origin branch." class="p-1 text-rose-500 hover:text-rose-700 transition-colors" title="Cancel Transfer">
-                                        <span class="material-symbols-rounded text-[20px]">cancel</span>
-                                    </button>
+                                    <x-ui.table-action-item icon="cancel" variant="destructive" wire:click="cancelTransfer({{ $transfer->id }})" wire:confirm="Cancel this stock transfer? If already in transit, stock will be returned to origin branch." aria-label="Cancel Transfer">
+                                        Cancel Transfer
+                                    </x-ui.table-action-item>
                                 @endif
-                            </div>
+                            </x-ui.table-actions>
                         </td>
                     </tr>
                 @endforeach
@@ -355,7 +361,7 @@
                                     <td class="p-3 text-right font-semibold tabular-nums text-foreground">{{ $item->quantity_received !== null ? number_format((float) $item->quantity_received, 2) : '-' }}</td>
                                     <td class="p-3 text-right text-xs font-sans tabular-nums">Rp {{ number_format((float) $item->carrying_unit_cost, 0, ',', '.') }}</td>
                                     <td class="p-3 text-center text-xs">
-                                        <span class="px-2 py-1 rounded bg-secondary border border-border">
+                                        <span class="text-xs text-muted-foreground font-medium">
                                             {{ $item->discrepancy_resolution->value }}
                                         </span>
                                     </td>

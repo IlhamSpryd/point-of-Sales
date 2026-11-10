@@ -60,7 +60,7 @@
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Items</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Counter / Approver</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Actions</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
 
                 @foreach ($opnames as $opname)
@@ -76,10 +76,19 @@
                                 <span class="text-xs text-muted-foreground italic">Not started</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                            <x-ui.badge :variant="$opname->status->badgeType()">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @php
+                                $opnameDot = match($opname->status->badgeType()) {
+                                    'success' => 'bg-success',
+                                    'warning' => 'bg-warning',
+                                    'danger' => 'bg-destructive',
+                                    default => 'bg-neutral',
+                                };
+                            @endphp
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $opnameDot }}"></span>
                                 {{ $opname->status->label() }}
-                            </x-ui.badge>
+                            </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-foreground text-right">
                             {{ $opname->items_count }} items
@@ -88,39 +97,35 @@
                             <div>Count: <span class="font-medium">{{ $opname->submitter->name ?? '-' }}</span></div>
                             <div>Approve: <span class="font-medium">{{ $opname->approver->name ?? '-' }}</span></div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                            <div class="flex items-center justify-center gap-2">
-                                <button type="button" wire:click="viewDetail({{ $opname->id }})" class="p-1 hover:text-foreground text-muted-foreground transition-colors" title="View Details">
-                                    <span class="material-symbols-rounded text-[20px]">visibility</span>
-                                </button>
-
+                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                            <x-ui.table-actions>
+                                <x-ui.table-action-item icon="visibility" wire:click="viewDetail({{ $opname->id }})" aria-label="View Details">
+                                    View Details
+                                </x-ui.table-action-item>
                                 @if ($opname->status === \App\Enums\StockOpnameStatusEnum::Draft)
-                                    <button type="button" wire:click="startCounting({{ $opname->id }})" class="p-1 text-amber-600 hover:text-amber-800 transition-colors" title="Start Counting (Pin Snapshot)">
-                                        <span class="material-symbols-rounded text-[20px]">play_circle</span>
-                                    </button>
+                                    <x-ui.table-action-item icon="play_circle" wire:click="startCounting({{ $opname->id }})" aria-label="Start Counting">
+                                        Start Counting
+                                    </x-ui.table-action-item>
                                 @endif
-
                                 @if ($opname->status === \App\Enums\StockOpnameStatusEnum::Counting)
-                                    <button type="button" wire:click="openCountModal({{ $opname->id }})" class="p-1 text-blue-600 hover:text-blue-800 transition-colors" title="Record Physical Counts">
-                                        <span class="material-symbols-rounded text-[20px]">edit_note</span>
-                                    </button>
-                                    <button type="button" wire:click="submitForApproval({{ $opname->id }})" class="p-1 text-emerald-600 hover:text-emerald-800 transition-colors" title="Submit for Approval">
-                                        <span class="material-symbols-rounded text-[20px]">send</span>
-                                    </button>
+                                    <x-ui.table-action-item icon="edit_note" wire:click="openCountModal({{ $opname->id }})" aria-label="Record Physical Counts">
+                                        Record Physical Counts
+                                    </x-ui.table-action-item>
+                                    <x-ui.table-action-item icon="send" wire:click="submitForApproval({{ $opname->id }})" aria-label="Submit for Approval">
+                                        Submit for Approval
+                                    </x-ui.table-action-item>
                                 @endif
-
                                 @if ($opname->status === \App\Enums\StockOpnameStatusEnum::PendingApproval)
-                                    <button type="button" wire:click="approveOpname({{ $opname->id }})" class="p-1 text-emerald-700 hover:text-emerald-900 transition-colors" title="Approve Reconciliation (Enforce Drift Gate)">
-                                        <span class="material-symbols-rounded text-[20px]">check_circle</span>
-                                    </button>
+                                    <x-ui.table-action-item icon="check_circle" wire:click="approveOpname({{ $opname->id }})" aria-label="Approve Reconciliation">
+                                        Approve Reconciliation
+                                    </x-ui.table-action-item>
                                 @endif
-
                                 @if ($opname->status->canCancel())
-                                    <button type="button" wire:click="cancelOpname({{ $opname->id }})" wire:confirm="Cancel this stock opname session?" class="p-1 text-rose-500 hover:text-rose-700 transition-colors" title="Cancel Session">
-                                        <span class="material-symbols-rounded text-[20px]">cancel</span>
-                                    </button>
+                                    <x-ui.table-action-item icon="cancel" variant="destructive" wire:click="cancelOpname({{ $opname->id }})" wire:confirm="Cancel this stock opname session?" aria-label="Cancel Session">
+                                        Cancel Session
+                                    </x-ui.table-action-item>
                                 @endif
-                            </div>
+                            </x-ui.table-actions>
                         </td>
                     </tr>
                 @endforeach
@@ -328,7 +333,7 @@
                                         {{ $item->variance_quantity !== null ? number_format((float) $item->variance_quantity, 2) : '-' }}
                                     </td>
                                     <td class="p-3 text-center text-xs">
-                                        <span class="px-2 py-1 rounded bg-secondary border border-border">
+                                        <span class="text-xs text-muted-foreground font-medium">
                                             {{ $item->drift_resolution_mode->value }}
                                         </span>
                                     </td>

@@ -66,7 +66,7 @@
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Status</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Items</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right font-sans tabular-nums numeric">Total Value</th>
-                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-center">Actions</th>
+                    <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                 </x-slot:head>
 
                 @foreach ($adjustments as $adjustment)
@@ -81,10 +81,19 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                             <span class="font-semibold">{{ $adjustment->reason_code->label() }}</span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                            <x-ui.badge :variant="$adjustment->status->badgeType()">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @php
+                                $adjDot = match($adjustment->status->badgeType()) {
+                                    'success' => 'bg-success',
+                                    'warning' => 'bg-warning',
+                                    'danger' => 'bg-destructive',
+                                    default => 'bg-neutral',
+                                };
+                            @endphp
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $adjDot }}"></span>
                                 {{ $adjustment->status->label() }}
-                            </x-ui.badge>
+                            </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-foreground">
                             {{ $adjustment->items->count() }} items
@@ -92,19 +101,20 @@
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold text-foreground">
                             Rp {{ number_format((float) $adjustment->calculateTotalValue(), 2, ',', '.') }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
-                            <button wire:click="viewDetails({{ $adjustment->id }})" class="text-foreground hover:text-muted-foreground transition-colors" title="View Details">
-                                <span class="material-symbols-rounded text-[20px]">visibility</span>
-                            </button>
-
-                            @if($adjustment->isDraft())
-                                <button wire:click="post({{ $adjustment->id }})" wire:confirm="Post this stock adjustment to branch balance?" class="text-emerald-600 hover:text-emerald-800 transition-colors" title="Post to Stock">
-                                    <span class="material-symbols-rounded text-[20px]">task_alt</span>
-                                </button>
-                                <button wire:click="cancel({{ $adjustment->id }})" wire:confirm="Cancel this draft stock adjustment?" class="text-rose-500 hover:text-rose-700 transition-colors" title="Cancel">
-                                    <span class="material-symbols-rounded text-[20px]">cancel</span>
-                                </button>
-                            @endif
+                        <td class="px-6 py-4 whitespace-nowrap text-right">
+                            <x-ui.table-actions>
+                                <x-ui.table-action-item icon="visibility" wire:click="viewDetails({{ $adjustment->id }})" aria-label="View Details">
+                                    View Details
+                                </x-ui.table-action-item>
+                                @if($adjustment->isDraft())
+                                    <x-ui.table-action-item icon="task_alt" wire:click="post({{ $adjustment->id }})" wire:confirm="Post this stock adjustment to branch balance?" aria-label="Post to Stock">
+                                        Post Adjustment
+                                    </x-ui.table-action-item>
+                                    <x-ui.table-action-item icon="cancel" variant="destructive" wire:click="cancel({{ $adjustment->id }})" wire:confirm="Cancel this draft stock adjustment?" aria-label="Cancel Adjustment">
+                                        Cancel Adjustment
+                                    </x-ui.table-action-item>
+                                @endif
+                            </x-ui.table-actions>
                         </td>
                     </tr>
                 @endforeach
@@ -246,10 +256,11 @@
                 <div class="py-2 space-y-4">
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-50 text-xs">
                         <div>
-                            <span class="text-muted-foreground block">Status:</span>
-                            <x-ui.badge :variant="$selectedAdjustment->status->badgeType()">
+                            <span class="text-muted-foreground block mb-0.5">Status:</span>
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ match($selectedAdjustment->status->value) { 'approved' => 'bg-success', 'pending' => 'bg-warning', 'rejected' => 'bg-destructive', default => 'bg-neutral' } }}"></span>
                                 {{ $selectedAdjustment->status->label() }}
-                            </x-ui.badge>
+                            </span>
                         </div>
                         <div>
                             <span class="text-muted-foreground block">Reason Code:</span>

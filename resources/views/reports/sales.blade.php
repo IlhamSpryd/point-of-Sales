@@ -48,9 +48,10 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-4 mb-4">
                     <div>
                         <div class="flex items-center gap-2">
-                            <x-ui.badge variant="success" size="sm">
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium font-sans">
+                                <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
                                 CLOSED (LOCKED)
-                            </x-ui.badge>
+                            </span>
                             <h3 class="text-base font-bold text-foreground">End-of-Day (Z-Report) — {{ $eodSettlement->business_date->format('d M Y') }}</h3>
                         </div>
                         <p class="text-xs text-muted-foreground mt-1">
@@ -85,9 +86,10 @@
             <div class="card-surface p-6 rounded-2xl border-l-4 border-l-warning border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
                 <div>
                     <div class="flex items-center gap-2">
-                        <x-ui.badge variant="warning" size="sm">
+                        <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium font-sans">
+                            <span class="w-1.5 h-1.5 rounded-full bg-warning"></span>
                             OPEN REGISTER (ACTIVE)
-                        </x-ui.badge>
+                        </span>
                         <h3 class="text-base font-bold text-foreground">End-of-Day Register Closing (EOD / Z-Report)</h3>
                     </div>
                     <p class="text-xs text-muted-foreground mt-1">

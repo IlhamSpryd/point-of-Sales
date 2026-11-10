@@ -2,6 +2,7 @@
     'href' => null,
     'icon' => null,
     'variant' => 'default',
+    'type' => 'button',
 ])
 
 @php
@@ -21,7 +22,7 @@
         <span class="truncate">{{ $slot }}</span>
     </a>
 @else
-    <button type="button" {{ $attributes->twMerge($classes) }}>
+    <button type="{{ $type }}" {{ $attributes->twMerge($classes) }}>
         @if ($icon)
             <span class="material-symbols-rounded text-[16px] leading-none shrink-0 opacity-70" aria-hidden="true">{{ $icon }}</span>
         @endif

@@ -95,15 +95,16 @@
                         </form>
 
                         <!-- Switch Ketersediaan -->
-                        <td class="px-6 py-4 text-center">
+                        <td class="px-6 py-4">
                             <input type="hidden" name="is_available" value="0" form="form-assortment-{{ $prod->id }}">
-                            <label class="inline-flex items-center justify-center cursor-pointer gap-2">
+                            <label class="inline-flex items-center cursor-pointer gap-2">
                                 <input type="checkbox" name="is_available" value="1" {{ $isAvailable ? 'checked' : '' }}
                                     form="form-assortment-{{ $prod->id }}"
                                     class="rounded border-border text-primary shadow-xs focus:ring-ring h-4 w-4">
-                                <x-ui.badge variant="{{ $isAvailable ? 'success' : 'danger' }}" size="xs">
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $isAvailable ? 'bg-success' : 'bg-destructive' }}"></span>
                                     {{ $isAvailable ? 'Available' : 'Disabled' }}
-                                </x-ui.badge>
+                                </span>
                             </label>
                         </td>
 
@@ -122,10 +123,11 @@
                             </x-ui.button>
                         </td>
                     @else
-                        <td class="px-6 py-4 text-center">
-                            <x-ui.badge variant="{{ $isAvailable ? 'success' : 'danger' }}" size="sm">
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $isAvailable ? 'bg-success' : 'bg-destructive' }}"></span>
                                 {{ $isAvailable ? 'Available' : 'Disabled' }}
-                            </x-ui.badge>
+                            </span>
                         </td>
                         <td class="px-6 py-4 text-right text-sm font-semibold text-foreground font-sans tabular-nums">
                             {{ $overridePrice ? 'Rp ' . number_format((float)$overridePrice, 0, ',', '.') : 'Base Price' }}

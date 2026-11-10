@@ -117,16 +117,16 @@
                             <td class="px-3 py-3 text-right numeric font-sans font-semibold {{ $lineInvPrice != $linePoPrice ? 'text-destructive' : 'text-foreground' }}">
                                 Rp {{ number_format($lineInvPrice, 0, ',', '.') }}
                             </td>
-                            <td class="px-4 py-3 text-center">
+                            <td class="px-4 py-3">
                                 @if ($lineMatch)
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-success-muted text-success border border-success-border">
-                                        <span class="material-symbols-rounded text-xs">check</span>
-                                        <span>Match</span>
+                                    <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                                        Match
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-destructive-muted text-destructive border border-destructive-border">
-                                        <span class="material-symbols-rounded text-xs">close</span>
-                                        <span>Variance</span>
+                                    <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-destructive"></span>
+                                        Variance
                                     </span>
                                 @endif
                             </td>

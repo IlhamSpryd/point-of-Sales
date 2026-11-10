@@ -165,23 +165,17 @@
                                 {{ $order->order_status->label() }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <button type="button" wire:click="viewDetail({{ $order->id }})"
-                                    x-on:click="window.erpMotion?.pulseHighlight($el)"
-                                    title="View Details" aria-label="View Order Details"
-                                    class="size-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-foreground hover:bg-gray-100 transition-colors active:scale-90">
-                                    <span class="material-symbols-rounded text-[20px]">visibility</span>
-                                </button>
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <x-ui.table-actions>
+                                <x-ui.table-action-item icon="visibility" wire:click="viewDetail({{ $order->id }})" aria-label="View Order Details">
+                                    View Details
+                                </x-ui.table-action-item>
                                 @if (in_array($stVal, ['paid', 'completed'], true))
-                                    <a href="{{ route('transaction.receipt', $order->order_code) }}"
-                                        target="_blank" rel="noopener" title="Reprint Receipt" aria-label="Reprint Receipt"
-                                        x-on:click="window.erpMotion?.pulseHighlight($el)"
-                                        class="size-8 flex items-center justify-center rounded-lg text-gray-500 hover:text-foreground hover:bg-gray-100 transition-colors active:scale-90">
-                                        <span class="material-symbols-rounded text-[20px]">print</span>
-                                    </a>
+                                    <x-ui.table-action-item icon="print" href="{{ route('transaction.receipt', $order->order_code) }}" target="_blank" rel="noopener" aria-label="Reprint Receipt">
+                                        Reprint Receipt
+                                    </x-ui.table-action-item>
                                 @endif
-                            </div>
+                            </x-ui.table-actions>
                         </td>
                     </tr>
                 @endforeach
@@ -316,9 +310,7 @@
                                     <p class="font-bold text-foreground">
                                         {{ $item->qty }}&times; {{ $item->product->product_name ?? 'Deleted Product' }}
                                         @if ($returnedQty > 0)
-                                            <x-ui.badge variant="warning" class="ml-1 text-[10px]">
-                                                Returned ({{ $returnedQty }}x)
-                                            </x-ui.badge>
+                                            <span class="text-warning font-semibold text-[11px] ml-1.5">(Returned: {{ $returnedQty }}x)</span>
                                         @endif
                                     </p>
                                     @if (!empty($item->options))

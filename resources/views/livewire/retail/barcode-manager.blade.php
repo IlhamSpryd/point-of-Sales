@@ -78,12 +78,12 @@
                             <td class="px-6 py-4 font-mono text-xs font-semibold text-foreground">
                                 {{ $variant->barcode ?? '-' }}
                             </td>
-                            <td class="px-6 py-4 text-right">
-                                <button wire:click="generateInternalBarcodeForVariant({{ $variant->id }})"
-                                    class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80">
-                                    <span class="material-symbols-rounded text-[16px]">autorenew</span>
-                                    Assign Internal Barcode
-                                </button>
+                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="autorenew" wire:click="generateInternalBarcodeForVariant({{ $variant->id }})" aria-label="Assign Internal Barcode">
+                                        Assign Barcode
+                                    </x-ui.table-action-item>
+                                </x-ui.table-actions>
                             </td>
                         </tr>
                     @empty

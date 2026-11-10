@@ -105,9 +105,18 @@
                                 <div class="text-2xs text-muted-foreground">to {{ $voucher->expires_at ? \Carbon\Carbon::parse($voucher->expires_at)->format('d M Y') : 'Unlimited' }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <x-ui.badge :variant="strtolower($statusVal)">
+                                @php
+                                    $vDot = match(strtoupper($statusVal)) {
+                                        'ACTIVE' => 'bg-success',
+                                        'EXPIRED' => 'bg-warning',
+                                        'DEPLETED', 'DISABLED' => 'bg-destructive',
+                                        default => 'bg-neutral',
+                                    };
+                                @endphp
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $vDot }}"></span>
                                     {{ $statusVal }}
-                                </x-ui.badge>
+                                </span>
                             </td>
                             <td class="px-6 py-4 text-right whitespace-nowrap">
                                 <x-ui.table-actions>

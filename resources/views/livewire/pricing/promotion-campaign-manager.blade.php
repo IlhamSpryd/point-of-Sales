@@ -76,8 +76,7 @@
                                 <div class="text-xs font-sans text-primary mt-0.5">{{ $campaign->campaign_code }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold
-                                    {{ $campaign->type === 'HAPPY_HOUR' ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400' : 'bg-primary/10 text-primary' }}">
+                                <span class="text-xs text-foreground font-medium">
                                     {{ str_replace('_', ' ', $campaign->type) }}
                                 </span>
                                 @if($campaign->type === 'HAPPY_HOUR' && $campaign->start_time && $campaign->end_time)
@@ -100,9 +99,18 @@
                                 <div class="text-muted-foreground text-2xs">Limit: {{ $campaign->max_usage_limit ?: 'Unlimited' }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <x-ui.badge :variant="strtolower($campaign->status)">
+                                @php
+                                    $campDot = match(strtoupper($campaign->status)) {
+                                        'ACTIVE' => 'bg-success',
+                                        'PAUSED', 'EXPIRED' => 'bg-warning',
+                                        'CANCELLED' => 'bg-destructive',
+                                        default => 'bg-neutral',
+                                    };
+                                @endphp
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $campDot }}"></span>
                                     {{ $campaign->status }}
-                                </x-ui.badge>
+                                </span>
                             </td>
                             <td class="px-6 py-4 text-right whitespace-nowrap">
                                 <x-ui.table-actions>

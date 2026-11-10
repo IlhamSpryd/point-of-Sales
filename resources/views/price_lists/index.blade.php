@@ -90,9 +90,9 @@
                         <div class="font-sans text-xs text-muted-foreground">{{ $pl->code }}</div>
                     </td>
                     <td class="px-6 py-4">
-                        <x-ui.badge :variant="$typeBadgeTypes[$pl->type] ?? 'secondary'">
+                        <span class="text-xs text-muted-foreground font-medium">
                             {{ $typeLabels[$pl->type] ?? $pl->type }}
-                        </x-ui.badge>
+                        </span>
                     </td>
                     <td class="px-6 py-4 text-sm text-muted-foreground">
                         @if($pl->customer)
@@ -120,27 +120,24 @@
                         @endif
                     </td>
                     <td class="px-6 py-4">
-                        @if($pl->is_active)
-                            <x-ui.badge variant="success" :dot="true">Active</x-ui.badge>
-                        @else
-                            <x-ui.badge variant="secondary" :dot="true">Inactive</x-ui.badge>
-                        @endif
+                        <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                            <span class="w-1.5 h-1.5 rounded-full {{ $pl->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
+                            {{ $pl->is_active ? 'Active' : 'Inactive' }}
+                        </span>
                     </td>
                     @if($canManage)
-                        <td class="px-6 py-4 text-right space-x-1">
-                            <a href="{{ route('price-lists.edit', $pl->id) }}" wire:navigate
-                                class="inline-flex items-center justify-center min-w-9 min-h-9 rounded-lg text-primary-500 hover:text-primary-700 hover:bg-primary-100 transition-colors"
-                                aria-label="Edit price list">
-                                <span class="material-symbols-rounded text-[20px]">edit</span>
-                            </a>
-                            <form id="delete-pl-{{ $pl->id }}" action="{{ route('price-lists.destroy', $pl->id) }}" method="POST" class="inline-block">
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <x-ui.table-actions>
+                                <x-ui.table-action-item icon="edit" href="{{ route('price-lists.edit', $pl->id) }}" wire:navigate aria-label="Edit Price List">
+                                    Edit Price List
+                                </x-ui.table-action-item>
+                                <x-ui.table-action-item icon="delete" variant="destructive" onclick="confirmSubmit('delete-pl-{{ $pl->id }}', '{{ addslashes($pl->name) }}')" aria-label="Delete Price List">
+                                    Delete Price List
+                                </x-ui.table-action-item>
+                            </x-ui.table-actions>
+                            <form id="delete-pl-{{ $pl->id }}" action="{{ route('price-lists.destroy', $pl->id) }}" method="POST" class="hidden">
                                 @csrf
                                 @method('DELETE')
-                                <button type="button" onclick="confirmSubmit('delete-pl-{{ $pl->id }}', '{{ addslashes($pl->name) }}')"
-                                    class="inline-flex items-center justify-center min-w-9 min-h-9 rounded-lg text-danger-500 hover:text-danger-700 hover:bg-danger-50 transition-colors"
-                                    aria-label="Delete price list">
-                                    <span class="material-symbols-rounded text-[20px]">delete</span>
-                                </button>
                             </form>
                         </td>
                     @endif

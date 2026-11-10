@@ -81,12 +81,17 @@
                             <td class="px-4 py-3 font-sans text-muted-foreground">
                                 {{ \Carbon\Carbon::parse($period->start_date)->format('d M Y') }} — {{ \Carbon\Carbon::parse($period->end_date)->format('d M Y') }}
                             </td>
-                            <td class="px-4 py-3 text-center">
-                                <span class="px-2.5 py-1 rounded-full text-2xs font-bold tracking-wide
-                                    @if($period->status->value === 'OPEN') bg-emerald-500/10 text-emerald-600 dark:text-emerald-400
-                                    @elseif($period->status->value === 'SOFT_CLOSED') bg-amber-500/10 text-amber-600 dark:text-amber-400
-                                    @elseif($period->status->value === 'CLOSED') bg-blue-500/10 text-blue-600 dark:text-blue-400
-                                    @else bg-muted text-muted-foreground @endif">
+                            <td class="px-4 py-3">
+                                @php
+                                    $periodDot = match($period->status->value) {
+                                        'OPEN' => 'bg-success',
+                                        'SOFT_CLOSED' => 'bg-warning',
+                                        'CLOSED' => 'bg-info',
+                                        default => 'bg-neutral',
+                                    };
+                                @endphp
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $periodDot }}"></span>
                                     {{ $period->status->value }}
                                 </span>
                             </td>
@@ -101,52 +106,34 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-4 py-3 text-right">
-                                <div class="inline-flex items-center gap-1.5">
-                                    <button type="button"
-                                            wire:click="evaluateGates({{ $period->id }})"
-                                            class="px-2 py-1 rounded-lg bg-muted hover:bg-muted/80 text-foreground font-medium transition-colors"
-                                            title="Evaluate Closing Gates">
-                                        Gates
-                                    </button>
-
+                            <td class="px-4 py-3 text-right whitespace-nowrap">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="fact_check" wire:click="evaluateGates({{ $period->id }})" aria-label="Evaluate Closing Gates">
+                                        Closing Gates
+                                    </x-ui.table-action-item>
                                     @if ($period->status->value === 'OPEN')
-                                        <button type="button"
-                                                wire:click="softClose({{ $period->id }})"
-                                                class="px-2 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-600 dark:text-amber-400 font-medium transition-colors">
+                                        <x-ui.table-action-item icon="lock_clock" wire:click="softClose({{ $period->id }})" aria-label="Soft Close Period">
                                             Soft Close
-                                        </button>
-                                        <button type="button"
-                                                wire:click="hardClose({{ $period->id }})"
-                                                class="px-2 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-medium transition-colors">
-                                            Close
-                                        </button>
+                                        </x-ui.table-action-item>
+                                        <x-ui.table-action-item icon="lock" wire:click="hardClose({{ $period->id }})" aria-label="Hard Close Period">
+                                            Close Period
+                                        </x-ui.table-action-item>
                                     @elseif ($period->status->value === 'SOFT_CLOSED')
-                                        <button type="button"
-                                                wire:click="hardClose({{ $period->id }})"
-                                                class="px-2 py-1 rounded-lg bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 font-medium transition-colors">
-                                            Close
-                                        </button>
-                                        <button type="button"
-                                                wire:click="openReopenModal({{ $period->id }})"
-                                                class="px-2 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium transition-colors">
-                                            Reopen
-                                        </button>
+                                        <x-ui.table-action-item icon="lock" wire:click="hardClose({{ $period->id }})" aria-label="Hard Close Period">
+                                            Close Period
+                                        </x-ui.table-action-item>
+                                        <x-ui.table-action-item icon="lock_open" wire:click="openReopenModal({{ $period->id }})" aria-label="Reopen Period">
+                                            Reopen Period
+                                        </x-ui.table-action-item>
                                     @elseif ($period->status->value === 'CLOSED')
-                                        <button type="button"
-                                                wire:click="lock({{ $period->id }})"
-                                                class="px-2 py-1 rounded-lg bg-foreground hover:bg-foreground/90 text-background font-medium transition-colors">
+                                        <x-ui.table-action-item icon="lock_person" variant="destructive" wire:click="lock({{ $period->id }})" aria-label="Permanent Lock Period">
                                             Permanent Lock
-                                        </button>
-                                        <button type="button"
-                                                wire:click="openReopenModal({{ $period->id }})"
-                                                class="px-2 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 font-medium transition-colors">
-                                            Reopen
-                                        </button>
-                                    @else
-                                        <span class="text-[11px] text-muted-foreground italic">Locked</span>
+                                        </x-ui.table-action-item>
+                                        <x-ui.table-action-item icon="lock_open" wire:click="openReopenModal({{ $period->id }})" aria-label="Reopen Period">
+                                            Reopen Period
+                                        </x-ui.table-action-item>
                                     @endif
-                                </div>
+                                </x-ui.table-actions>
                             </td>
                         </tr>
                     @empty

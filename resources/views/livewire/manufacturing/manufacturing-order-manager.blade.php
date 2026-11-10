@@ -80,33 +80,41 @@
                                 {{ number_format((float) $mo->produced_quantity, 2) }}
                             </td>
                             <td class="px-6 py-4">
-                                @if ($mo->status === 'COMPLETED')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                                        Completed
-                                    </span>
-                                @elseif ($mo->status === 'IN_PROGRESS')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-primary/10 text-primary">
-                                        In Progress
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                                        {{ $mo->status }}
-                                    </span>
-                                @endif
+                                @php
+                                    $moDot = match($mo->status) {
+                                        'COMPLETED' => 'bg-success',
+                                        'IN_PROGRESS' => 'bg-info',
+                                        'PLANNED' => 'bg-warning',
+                                        'CANCELLED' => 'bg-destructive',
+                                        default => 'bg-neutral',
+                                    };
+                                    $moLabel = match($mo->status) {
+                                        'COMPLETED' => 'Completed',
+                                        'IN_PROGRESS' => 'In Progress',
+                                        'PLANNED' => 'Planned',
+                                        default => $mo->status,
+                                    };
+                                @endphp
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $moDot }}"></span>
+                                    {{ $moLabel }}
+                                </span>
                             </td>
-                            <td class="px-6 py-4 text-right space-x-2">
+                            <td class="px-6 py-4 text-right whitespace-nowrap">
                                 @if ($mo->status === 'PLANNED')
-                                    <button wire:click="startOrder({{ $mo->id }})"
-                                        class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80">
-                                        <span class="material-symbols-rounded text-base">play_arrow</span>
-                                        Start
-                                    </button>
+                                    <x-ui.table-actions>
+                                        <x-ui.table-action-item icon="play_arrow" wire:click="startOrder({{ $mo->id }})" aria-label="Start Manufacturing Order">
+                                            Start Order
+                                        </x-ui.table-action-item>
+                                    </x-ui.table-actions>
                                 @elseif ($mo->status === 'IN_PROGRESS')
-                                    <button wire:click="completeOrder({{ $mo->id }})"
-                                        class="inline-flex items-center gap-1 text-xs font-semibold text-emerald-600 hover:text-emerald-700">
-                                        <span class="material-symbols-rounded text-base">check</span>
-                                        Complete & Deduct BOM
-                                    </button>
+                                    <x-ui.table-actions>
+                                        <x-ui.table-action-item icon="check" wire:click="completeOrder({{ $mo->id }})" aria-label="Complete & Deduct BOM">
+                                            Complete & Deduct BOM
+                                        </x-ui.table-action-item>
+                                    </x-ui.table-actions>
+                                @else
+                                    <span class="text-xs text-muted-foreground">-</span>
                                 @endif
                             </td>
                         </tr>

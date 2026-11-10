@@ -58,45 +58,55 @@
                         <td class="px-6 py-4 text-sm text-zinc-600 dark:text-zinc-300">{{ $invitation->email }}</td>
                         <td class="px-6 py-4 text-sm">
                             <div class="flex flex-col gap-1 items-start">
-                                <x-ui.badge variant="primary">{{ $invitation->role->name ?? 'Staff' }}</x-ui.badge>
-                                <span class="text-xs text-zinc-500">
+                                <span class="text-xs text-foreground font-medium">{{ $invitation->role->name ?? 'Staff' }}</span>
+                                <span class="text-xs text-muted-foreground">
                                     {{ $invitation->stores->pluck('name')->join(', ') ?: 'All Branches' }}
                                 </span>
                             </div>
                         </td>
                         <td class="px-6 py-4">
-                            @if($invitation->status === 'pending')
-                                <x-ui.badge variant="warning">Pending Confirmation</x-ui.badge>
-                            @elseif($invitation->status === 'accepted')
-                                <x-ui.badge variant="success">Accepted</x-ui.badge>
-                            @elseif($invitation->status === 'revoked')
-                                <x-ui.badge variant="destructive">Revoked</x-ui.badge>
-                            @elseif($invitation->status === 'superseded')
-                                <x-ui.badge variant="secondary">Superseded</x-ui.badge>
-                            @else
-                                <x-ui.badge variant="secondary">{{ ucfirst($invitation->status) }}</x-ui.badge>
-                            @endif
+                            @php
+                                $dotColor = match($invitation->status) {
+                                    'pending' => 'bg-warning',
+                                    'accepted' => 'bg-success',
+                                    'revoked' => 'bg-destructive',
+                                    default => 'bg-neutral',
+                                };
+                                $statusLabel = match($invitation->status) {
+                                    'pending' => 'Pending Confirmation',
+                                    'accepted' => 'Accepted',
+                                    'revoked' => 'Revoked',
+                                    'superseded' => 'Superseded',
+                                    default => ucfirst($invitation->status),
+                                };
+                            @endphp
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $dotColor }}"></span>
+                                {{ $statusLabel }}
+                            </span>
                         </td>
                         <td class="px-6 py-4 text-sm text-zinc-500">
                             {{ $invitation->expires_at ? $invitation->expires_at->format('M d, Y H:i') : '—' }}
                         </td>
-                        <td class="px-6 py-4 text-right space-x-1 whitespace-nowrap">
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
                             @if($invitation->status === 'pending' && $invitation->expires_at->isFuture())
-                                <form action="{{ route('users.invitations.resend', $invitation->id) }}" method="POST" class="inline-block">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="forward_to_inbox" onclick="document.getElementById('resend-invite-{{ $invitation->id }}').submit()" aria-label="Resend Invitation">
+                                        Resend Invitation
+                                    </x-ui.table-action-item>
+                                    <x-ui.table-action-item icon="cancel" variant="destructive" onclick="if(confirm('Are you sure you want to revoke this invitation?')) document.getElementById('revoke-invite-{{ $invitation->id }}').submit()" aria-label="Revoke Invitation">
+                                        Revoke Invitation
+                                    </x-ui.table-action-item>
+                                </x-ui.table-actions>
+                                <form id="resend-invite-{{ $invitation->id }}" action="{{ route('users.invitations.resend', $invitation->id) }}" method="POST" class="hidden">
                                     @csrf
-                                    <button type="submit" class="text-xs font-medium text-primary hover:text-primary p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" title="Resend">
-                                        <span class="material-symbols-rounded text-sm align-middle">forward_to_inbox</span> Resend
-                                    </button>
                                 </form>
-                                <form action="{{ route('users.invitations.revoke', $invitation->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to revoke this invitation?')">
+                                <form id="revoke-invite-{{ $invitation->id }}" action="{{ route('users.invitations.revoke', $invitation->id) }}" method="POST" class="hidden">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-xs font-medium text-rose-600 hover:text-rose-800 p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors" title="Revoke Invitation">
-                                        <span class="material-symbols-rounded text-sm align-middle">cancel</span> Revoke
-                                    </button>
                                 </form>
                             @else
-                                <span class="text-xs text-zinc-400">Completed</span>
+                                <span class="text-xs text-muted-foreground">Completed</span>
                             @endif
                         </td>
                     </tr>

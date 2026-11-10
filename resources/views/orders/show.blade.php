@@ -8,16 +8,17 @@
                     </h2>
                     @php
                         $statusVal = $order->order_status->value ?? (string) $order->order_status;
-                        $statusVariant = match($statusVal) {
-                            'paid', 'completed' => 'success',
-                            'pending' => 'warning',
-                            'void', 'cancelled' => 'destructive',
-                            default => 'secondary'
+                        $statusDot = match($statusVal) {
+                            'paid', 'completed' => 'bg-success',
+                            'pending' => 'bg-warning',
+                            'void', 'cancelled' => 'bg-destructive',
+                            default => 'bg-neutral'
                         };
                     @endphp
-                    <x-ui.badge :variant="$statusVariant">
+                    <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                        <span class="w-1.5 h-1.5 rounded-full {{ $statusDot }}"></span>
                         {{ ucfirst($statusVal) }}
-                    </x-ui.badge>
+                    </span>
                 </div>
                 <p class="text-xs text-gray-500 mt-1">
                     {{ $order->created_at->format('d M Y, H:i') }} WIB &bull; Cashier: {{ $order->user->name ?? 'POS Cashier' }}
@@ -53,14 +54,14 @@
                         <p class="text-xs text-gray-500">{{ $order->created_at->format('d M Y, H:i') }} WIB</p>
                     </div>
                     <div class="flex items-center gap-2">
-                        <x-ui.badge :variant="$statusVariant">
+                        <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                            <span class="w-1.5 h-1.5 rounded-full {{ $statusDot }}"></span>
                             {{ ucfirst($statusVal) }}
-                        </x-ui.badge>
+                        </span>
                         @if ($order->orderReturns && $order->orderReturns->isNotEmpty())
-                            <x-ui.badge variant="warning">
-                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
-                                {{ __('Returns Recorded') }} ({{ $order->orderReturns->count() }}x)
-                            </x-ui.badge>
+                            <span class="text-xs text-warning font-medium">
+                                ({{ __('Returns Recorded:') }} {{ $order->orderReturns->count() }}x)
+                            </span>
                         @endif
                     </div>
                 </div>
@@ -77,9 +78,9 @@
                                     <span class="font-bold text-foreground text-sm">{{ $item->product->product_name ?? 'Product' }}</span>
                                     <span class="text-gray-400 font-semibold"> &times; {{ $item->qty }} pcs</span>
                                     @if ($returnedQty > 0)
-                                        <x-ui.badge variant="warning" class="ml-2 text-[10px]">
-                                            Returned ({{ $returnedQty }} pcs)
-                                        </x-ui.badge>
+                                        <span class="text-warning font-semibold text-[11px] ml-1.5">
+                                            (Returned: {{ $returnedQty }} pcs)
+                                        </span>
                                     @endif
                                     @if($item->notes)
                                         <p class="text-gray-400 italic text-[11px] mt-0.5">{{ $item->notes }}</p>
@@ -101,7 +102,7 @@
                                     <div class="flex justify-between items-center font-bold text-amber-900 border-b border-amber-200 pb-2">
                                         <div class="flex items-center gap-2">
                                             <span class="font-sans text-sm">{{ $ret->return_number }}</span>
-                                            <x-ui.badge variant="warning">{{ $ret->return_type }}</x-ui.badge>
+                                            <span class="text-xs text-muted-foreground font-medium">({{ $ret->return_type }})</span>
                                         </div>
                                         <span class="text-gray-500 font-normal">{{ $ret->created_at->format('d/m/Y H:i') }}</span>
                                     </div>
@@ -111,13 +112,7 @@
                                             <div class="flex justify-between items-center bg-white p-2 rounded-lg border border-amber-100">
                                                 <span class="font-medium">{{ $retItem->quantity_returned }}× {{ $retItem->orderItem->product->product_name ?? 'Item' }}</span>
                                                 <div class="flex items-center gap-2">
-                                                    <x-ui.badge :variant="match($retItem->disposition) {
-                                                        'restock' => 'success',
-                                                        'quarantine' => 'warning',
-                                                        default => 'destructive'
-                                                    }">
-                                                        {{ $retItem->disposition }}
-                                                    </x-ui.badge>
+                                                    <span class="text-xs text-muted-foreground font-medium">({{ $retItem->disposition }})</span>
                                                     <span class="font-bold tabular-nums">Rp {{ number_format($retItem->refund_amount, 0, ',', '.') }}</span>
                                                 </div>
                                             </div>

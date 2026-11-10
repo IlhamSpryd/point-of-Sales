@@ -80,9 +80,9 @@
                         @forelse($mappings as $mapping)
                             <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
                                 <td class="px-6 py-4">
-                                    <x-ui.badge variant="{{ $mapping->provider === 'grabfood' ? 'success' : 'danger' }}" size="sm">
+                                    <span class="text-xs text-foreground font-medium font-sans">
                                         {{ strtoupper($mapping->provider) }}
-                                    </x-ui.badge>
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 font-sans font-semibold text-zinc-900 dark:text-white text-xs">
                                     {{ $mapping->external_product_id }}
@@ -90,14 +90,15 @@
                                 <td class="px-6 py-4 text-sm text-zinc-700 dark:text-zinc-300">
                                     {{ $mapping->product->product_name ?? 'Product Deleted' }}
                                 </td>
-                                <td class="px-6 py-4 text-right">
-                                    <button type="button"
-                                        wire:click="deleteMapping({{ $mapping->id }})"
-                                        wire:confirm="SKU {{ $mapping->external_product_id }} will be deleted. New orders with this external SKU will fail until re-mapped. Continue?"
-                                        title="Delete Mapping"
-                                        class="p-1.5 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition">
-                                        <span class="material-symbols-rounded text-lg">delete</span>
-                                    </button>
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    <x-ui.table-actions>
+                                        <x-ui.table-action-item icon="delete" variant="destructive"
+                                            wire:click="deleteMapping({{ $mapping->id }})"
+                                            wire:confirm="SKU {{ $mapping->external_product_id }} will be deleted. New orders with this external SKU will fail until re-mapped. Continue?"
+                                            aria-label="Delete Mapping">
+                                            Delete Mapping
+                                        </x-ui.table-action-item>
+                                    </x-ui.table-actions>
                                 </td>
                             </tr>
                         @empty

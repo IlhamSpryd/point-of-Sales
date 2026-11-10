@@ -95,17 +95,13 @@
                             <div class="flex items-center gap-2 mt-0.5">
                                 <span class="text-xs font-sans text-zinc-400">{{ $c->customer_code }}</span>
                                 @if($c->isCompany() && $c->company_name)
-                                    <x-ui.badge variant="info" size="xs">
-                                        {{ $c->company_name }}
-                                    </x-ui.badge>
+                                    <span class="text-xs text-muted-foreground font-medium">({{ $c->company_name }})</span>
                                 @endif
                             </div>
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex flex-col gap-1">
-                                <x-ui.badge variant="{{ $c->isCompany() ? 'info' : 'neutral' }}" size="sm">
-                                    {{ $c->isCompany() ? 'B2B (Company)' : 'B2C (Individual)' }}
-                                </x-ui.badge>
+                                <span class="text-xs text-foreground font-medium">{{ $c->isCompany() ? 'B2B (Company)' : 'B2C (Individual)' }}</span>
                                 @if($c->group)
                                     <span class="text-xs text-zinc-500 font-medium">{{ $c->group->name }}</span>
                                 @endif
@@ -142,10 +138,11 @@
                                 <span class="text-xs text-zinc-400 italic">No address yet</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 text-center">
-                            <x-ui.badge variant="{{ $c->is_active ? 'success' : 'neutral' }}" size="sm">
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $c->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                                 {{ $c->is_active ? 'Active' : 'Inactive' }}
-                            </x-ui.badge>
+                            </span>
                         </td>
                         <td class="px-6 py-4 text-right whitespace-nowrap">
                             <x-ui.table-actions>
@@ -313,12 +310,12 @@
                             <div>
                                 <div class="flex items-center gap-2">
                                     <span class="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{{ $addr->label ?: 'Address' }}</span>
-                                    <x-ui.badge variant="neutral" size="xs">{{ $addr->address_type }}</x-ui.badge>
+                                    <span class="text-xs text-muted-foreground font-medium">({{ $addr->address_type }})</span>
                                     @if($addr->is_default_shipping)
-                                        <x-ui.badge variant="success" size="xs">Default Shipping</x-ui.badge>
+                                        <span class="text-xs text-muted-foreground font-medium">(Default Shipping)</span>
                                     @endif
                                     @if($addr->is_default_billing)
-                                        <x-ui.badge variant="info" size="xs">Default Billing</x-ui.badge>
+                                        <span class="text-xs text-muted-foreground font-medium">(Default Billing)</span>
                                     @endif
                                 </div>
                                 <p class="text-xs text-zinc-600 dark:text-zinc-400 mt-1">{{ $addr->formatted_address }}</p>
@@ -436,10 +433,10 @@
                                 <div class="flex items-center gap-2">
                                     <span class="text-xs font-bold text-zinc-800 dark:text-zinc-200">{{ $contact->name }}</span>
                                     @if($contact->role_title)
-                                        <x-ui.badge variant="info" size="xs">{{ $contact->role_title }}</x-ui.badge>
+                                        <span class="text-xs text-muted-foreground font-medium">({{ $contact->role_title }})</span>
                                     @endif
                                     @if($contact->is_primary)
-                                        <x-ui.badge variant="success" size="xs">Primary</x-ui.badge>
+                                        <span class="text-xs text-muted-foreground font-medium">(Primary)</span>
                                     @endif
                                 </div>
                                 <div class="text-[11px] text-zinc-500 flex items-center gap-3 mt-1 font-sans">
@@ -639,7 +636,7 @@
                             <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
                                 <td class="px-3 py-2 whitespace-nowrap">{{ \Carbon\Carbon::parse($tx['entry_date'])->format('d/m/Y H:i') }}</td>
                                 <td class="px-3 py-2">
-                                    <x-ui.badge variant="neutral" size="xs">{{ $tx['entry_type_label'] }}</x-ui.badge>
+                                    <span class="text-xs text-muted-foreground font-medium">{{ $tx['entry_type_label'] }}</span>
                                 </td>
                                 <td class="px-3 py-2 font-sans text-[11px]">{{ $tx['reference_number'] ?: '-' }}</td>
                                 <td class="px-3 py-2 max-w-xs truncate" title="{{ $tx['notes'] }}">{{ $tx['notes'] ?: '-' }}</td>

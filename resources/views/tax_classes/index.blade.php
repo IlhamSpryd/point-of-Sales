@@ -82,7 +82,7 @@
                 <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Code</th>
                 <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Tax Class Name</th>
                 <th scope="col" class="px-6 py-3.5 text-right text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Rate (%)</th>
-                <th scope="col" class="px-6 py-3.5 text-center text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
                 @if($canManage)
                     <th scope="col" class="px-6 py-3.5 text-right text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
                 @endif
@@ -93,10 +93,11 @@
                     <td class="px-6 py-4 font-sans text-xs font-semibold text-foreground">{{ $tax->code }}</td>
                     <td class="px-6 py-4 text-sm font-semibold text-foreground">{{ $tax->name }}</td>
                     <td class="px-6 py-4 text-sm font-semibold text-right text-foreground font-sans tabular-nums">{{ number_format((float) $tax->rate, 2) }}%</td>
-                    <td class="px-6 py-4 text-center">
-                        <x-ui.badge variant="{{ $tax->is_active ? 'success' : 'neutral' }}" size="sm">
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                            <span class="w-1.5 h-1.5 rounded-full {{ $tax->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                             {{ $tax->is_active ? 'Active' : 'Inactive' }}
-                        </x-ui.badge>
+                        </span>
                     </td>
                     @if($canManage)
                         <td class="px-6 py-4 text-right">

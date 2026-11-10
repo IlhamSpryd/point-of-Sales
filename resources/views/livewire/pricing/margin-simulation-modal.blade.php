@@ -84,11 +84,17 @@
                                     <td class="px-3 py-2.5 text-right font-bold @if($item['is_negative_margin']) text-destructive @else text-emerald-600 dark:text-emerald-400 @endif">
                                         {{ number_format($item['proposed_margin_percent'], 1) }}%
                                     </td>
-                                    <td class="px-3 py-2.5 text-center">
+                                    <td class="px-3 py-2.5">
                                         @if ($item['is_negative_margin'])
-                                            <span class="px-2 py-0.5 rounded-full text-2xs font-bold bg-destructive/10 text-destructive">NEGATIVE</span>
+                                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-destructive"></span>
+                                                Negative
+                                            </span>
                                         @else
-                                            <span class="px-2 py-0.5 rounded-full text-2xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">PROFITABLE</span>
+                                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                                                Profitable
+                                            </span>
                                         @endif
                                     </td>
                                 </tr>

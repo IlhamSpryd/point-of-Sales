@@ -75,18 +75,12 @@
                                         'waste' => 'Waste / Damaged',
                                         'adjustment' => 'Manual Adjustment',
                                         'restore_compensation' => 'Order Reversal',
-                                        default => ucwords(str_replace('_', ' ', $typeVal))
-                                    };
-                                    $typeVariant = match($typeVal) {
-                                        'purchase_receipt', 'restore_compensation' => 'success',
-                                        'sale_deduction', 'waste' => 'danger',
-                                        'adjustment' => 'warning',
-                                        default => 'secondary'
+                                        default => ucwords(str_replace('_', ' ', (string) $typeVal))
                                     };
                                 @endphp
-                                <x-ui.badge :variant="$typeVariant">
+                                <span class="text-xs text-muted-foreground font-medium">
                                     {{ $typeStr }}
-                                </x-ui.badge>
+                                </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right tabular-nums">
                                 @if($movement->quantity > 0)

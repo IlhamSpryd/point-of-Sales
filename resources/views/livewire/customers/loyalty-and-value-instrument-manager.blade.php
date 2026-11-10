@@ -108,14 +108,14 @@
                             <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/50 transition">
                                 <td class="px-6 py-4">
                                     <div class="font-bold text-zinc-900 dark:text-white flex items-center gap-2 font-sans">
-                                        <span class="px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-xs">{{ $voucher->voucher_code }}</span>
+                                        <span class="text-xs font-mono font-bold text-foreground">{{ $voucher->voucher_code }}</span>
                                     </div>
                                     <div class="text-xs text-zinc-500 mt-1">{{ $voucher->name }}</div>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <x-ui.badge variant="{{ $voucher->discount_type->value === 'PERCENTAGE' ? 'info' : 'success' }}" size="sm">
+                                    <span class="text-xs text-muted-foreground font-medium">
                                         {{ $voucher->discount_type->value === 'PERCENTAGE' ? 'Percentage (%)' : 'Fixed Amount (Rp)' }}
-                                    </x-ui.badge>
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 font-semibold text-right text-zinc-900 dark:text-white font-sans tabular-nums">
                                     @if ($voucher->discount_type->value === 'PERCENTAGE')
@@ -142,10 +142,11 @@
                                         No Expiry
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 text-center">
-                                    <x-ui.badge variant="{{ $voucher->is_active ? 'success' : 'neutral' }}" size="sm">
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $voucher->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                                         {{ $voucher->is_active ? 'Active' : 'Inactive' }}
-                                    </x-ui.badge>
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 text-right whitespace-nowrap">
                                     <x-ui.table-actions>
@@ -221,10 +222,18 @@
                                         No Expiry
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 text-center">
-                                    <x-ui.badge variant="{{ $card->status->value === 'ACTIVE' ? 'success' : ($card->status->value === 'BLOCKED' ? 'danger' : 'neutral') }}" size="sm">
+                                <td class="px-6 py-4">
+                                    @php
+                                        $gcDot = match($card->status->value) {
+                                            'ACTIVE' => 'bg-success',
+                                            'BLOCKED' => 'bg-destructive',
+                                            default => 'bg-neutral',
+                                        };
+                                    @endphp
+                                    <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $gcDot }}"></span>
                                         {{ $card->status->value }}
-                                    </x-ui.badge>
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 text-right whitespace-nowrap">
                                     <x-ui.table-actions>
@@ -278,10 +287,11 @@
                                     <div class="font-bold text-zinc-900 dark:text-white">{{ $sc->customer->name ?? '-' }}</div>
                                     <div class="text-xs text-zinc-400 font-sans">{{ $sc->customer->customer_code ?? '' }}</div>
                                 </td>
-                                <td class="px-6 py-4 text-center">
-                                    <x-ui.badge variant="{{ $sc->status->value === 'ACTIVE' ? 'success' : 'danger' }}" size="sm">
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $sc->status->value === 'ACTIVE' ? 'bg-success' : 'bg-destructive' }}"></span>
                                         {{ $sc->status->value }}
-                                    </x-ui.badge>
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 text-right font-bold text-emerald-700 dark:text-emerald-400 font-sans tabular-nums text-base">
                                     Rp {{ number_format((float) $sc->current_balance, 2, ',', '.') }}

@@ -103,11 +103,10 @@
                         </td>
                         <td class="px-6 py-4 text-sm text-muted-foreground">{{ $category->parent?->category_name ?? '— (Primary Category)' }}</td>
                         <td class="px-6 py-4">
-                            @if($category->is_active ?? true)
-                                <x-ui.badge variant="success" :dot="true">Active</x-ui.badge>
-                            @else
-                                <x-ui.badge variant="secondary" :dot="true">Inactive</x-ui.badge>
-                            @endif
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ ($category->is_active ?? true) ? 'bg-success' : 'bg-neutral' }}"></span>
+                                {{ ($category->is_active ?? true) ? 'Active' : 'Inactive' }}
+                            </span>
                         </td>
                         @if($canManage)
                             <td class="px-6 py-4 text-right">

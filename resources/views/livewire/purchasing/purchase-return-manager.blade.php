@@ -95,51 +95,37 @@
                                 <span class="text-xs text-zinc-400 italic">Not Issued</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 text-center">
+                        <td class="px-6 py-4">
                             @php
                                 $retStatusVal = $ret->status?->value ?? (string) $ret->status;
-                                $statusVariant = match($retStatusVal) {
-                                    'POSTED', 'posted' => 'info',
-                                    'COMPLETED', 'completed' => 'success',
-                                    'CANCELLED', 'cancelled' => 'danger',
-                                    default => 'neutral'
+                                $statusDot = match($retStatusVal) {
+                                    'POSTED', 'posted' => 'bg-info',
+                                    'COMPLETED', 'completed' => 'bg-success',
+                                    'CANCELLED', 'cancelled' => 'bg-destructive',
+                                    default => 'bg-neutral'
                                 };
                             @endphp
-                            <x-ui.badge :variant="$statusVariant">
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $statusDot }}"></span>
                                 {{ $ret->status?->label() ?? $retStatusVal }}
-                            </x-ui.badge>
+                            </span>
                         </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <x-ui.button
-                                    size="icon"
-                                    variant="ghost"
-                                    wire:click="viewReturn({{ $ret->id }})"
-                                    title="View Return Details"
-                                    aria-label="Details">
-                                    <span class="material-symbols-rounded text-base text-zinc-600 dark:text-zinc-400">visibility</span>
-                                </x-ui.button>
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <x-ui.table-actions>
+                                <x-ui.table-action-item icon="visibility" wire:click="viewReturn({{ $ret->id }})" aria-label="View Return Details">
+                                    View Return Details
+                                </x-ui.table-action-item>
                                 @if($ret->isDraft())
-                                    <x-ui.button
-                                        size="icon"
-                                        variant="ghost"
-                                        wire:click="postReturn({{ $ret->id }})"
-                                        title="Post Return (Deduct Stock & Issue Debit Note)"
-                                        aria-label="Post">
-                                        <span class="material-symbols-rounded text-base text-emerald-600">publish</span>
-                                    </x-ui.button>
+                                    <x-ui.table-action-item icon="publish" wire:click="postReturn({{ $ret->id }})" aria-label="Post Return">
+                                        Post Return
+                                    </x-ui.table-action-item>
                                 @endif
                                 @if($ret->debitNote && $ret->debitNote->getRemainingUnappliedAmount() > 0)
-                                    <x-ui.button
-                                        size="icon"
-                                        variant="ghost"
-                                        wire:click="openApplyModal({{ $ret->debitNote->id }})"
-                                        title="Apply Debit Note to Supplier Invoice"
-                                        aria-label="Apply to Invoice">
-                                        <span class="material-symbols-rounded text-base text-amber-600">credit_card</span>
-                                    </x-ui.button>
+                                    <x-ui.table-action-item icon="credit_card" wire:click="openApplyModal({{ $ret->debitNote->id }})" aria-label="Apply Debit Note to Invoice">
+                                        Apply Debit Note
+                                    </x-ui.table-action-item>
                                 @endif
-                            </div>
+                            </x-ui.table-actions>
                         </td>
                     </tr>
                     @empty
@@ -264,8 +250,9 @@
             @if($selectedReturn)
                 <div>
                     <span class="font-sans">{{ $selectedReturn->return_number }}</span>
-                    <span class="ml-2">
-                        <x-ui.badge variant="primary">{{ $selectedReturn->status?->label() ?? $selectedReturn->status }}</x-ui.badge>
+                    <span class="ml-2 inline-flex items-center gap-1.5 text-xs text-foreground font-medium font-sans">
+                        <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                        {{ $selectedReturn->status?->label() ?? $selectedReturn->status }}
                     </span>
                 </div>
             @else

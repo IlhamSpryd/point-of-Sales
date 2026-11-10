@@ -246,19 +246,18 @@
                                 <td class="px-4 py-2.5 text-right font-sans font-bold text-emerald-600 dark:text-emerald-400">
                                     Rp {{ number_format((float) $match->matched_amount, 2) }}
                                 </td>
-                                <td class="px-4 py-2.5 text-center">
-                                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold {{ $match->match_type === 'AUTO' ? 'bg-blue-500/10 text-blue-600' : 'bg-purple-500/10 text-purple-600' }}">
+                                <td class="px-4 py-2.5">
+                                    <span class="text-xs text-muted-foreground font-medium">
                                         {{ $match->match_type }}
                                     </span>
                                 </td>
-                                <td class="px-4 py-2.5 text-right">
+                                <td class="px-4 py-2.5 text-right whitespace-nowrap">
                                     @if ($session->status->value === 'IN_PROGRESS')
-                                        <button type="button"
-                                                wire:click="unmatch({{ $match->id }})"
-                                                class="p-1 rounded text-zinc-400 hover:text-rose-500 transition-colors"
-                                                title="Unmatch">
-                                            <span class="material-symbols-rounded text-sm">link_off</span>
-                                        </button>
+                                        <x-ui.table-actions>
+                                            <x-ui.table-action-item icon="link_off" variant="destructive" wire:click="unmatch({{ $match->id }})" aria-label="Unmatch Transaction">
+                                                Unmatch
+                                            </x-ui.table-action-item>
+                                        </x-ui.table-actions>
                                     @endif
                                 </td>
                             </tr>

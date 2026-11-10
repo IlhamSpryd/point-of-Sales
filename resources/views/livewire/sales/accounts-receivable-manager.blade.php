@@ -112,7 +112,7 @@
                             <th class="py-3.5 px-6 text-right">Total Amount</th>
                             <th class="py-3.5 px-6 text-right">Amount Paid</th>
                             <th class="py-3.5 px-6 text-right">Balance Due</th>
-                            <th class="py-3.5 px-6 text-center">Status</th>
+                            <th class="py-3.5 px-6">Status</th>
                             <th class="py-3.5 px-6 text-right">Action</th>
                         </tr>
                     </thead>
@@ -136,7 +136,7 @@
                                     <div class="font-semibold {{ $inv->isOverdue() ? 'text-rose-600 dark:text-rose-400' : 'text-zinc-500' }}">
                                         Due: {{ $inv->due_date?->format('d/m/Y') }}
                                         @if($inv->isOverdue())
-                                            <span class="inline-block ml-1 px-1.5 py-0.5 rounded bg-rose-100 text-rose-800 text-[10px]">Overdue by {{ $inv->daysOverdue() }}d</span>
+                                            <span class="inline-block ml-1 text-destructive font-semibold text-[10px]">(Overdue by {{ $inv->daysOverdue() }}d)</span>
                                         @endif
                                     </div>
                                 </td>
@@ -149,37 +149,38 @@
                                 <td class="py-4 px-6 text-right font-sans tabular-nums font-bold text-xs {{ (float) $inv->balance_due > 0 ? 'text-rose-600 dark:text-rose-400' : 'text-zinc-400' }}">
                                     Rp {{ number_format((float) $inv->balance_due, 2, ',', '.') }}
                                 </td>
-                                <td class="py-4 px-6 text-center">
+                                <td class="py-4 px-6">
                                     @php
-                                        $invVariant = match($inv->status->value) {
-                                            'DRAFT' => 'neutral',
-                                            'POSTED' => 'warning',
-                                            'PARTIALLY_PAID' => 'info',
-                                            'PAID' => 'success',
-                                            'VOIDED' => 'danger',
-                                            default => 'neutral',
+                                        $invDot = match($inv->status->value) {
+                                            'DRAFT' => 'bg-neutral',
+                                            'POSTED' => 'bg-warning',
+                                            'PARTIALLY_PAID' => 'bg-info',
+                                            'PAID' => 'bg-success',
+                                            'VOIDED' => 'bg-destructive',
+                                            default => 'bg-neutral',
                                         };
                                     @endphp
-                                    <x-ui.badge variant="{{ $invVariant }}" size="sm">
+                                    <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $invDot }}"></span>
                                         {{ $inv->status->label() }}
-                                    </x-ui.badge>
+                                    </span>
                                 </td>
-                                <td class="py-4 px-6 text-right">
-                                    <div class="flex items-center justify-end gap-1.5">
-                                        <button wire:click="viewInvoice({{ $inv->id }})" class="p-1.5 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition" title="View Invoice Details">
-                                            <span class="material-symbols-rounded text-lg">visibility</span>
-                                        </button>
+                                <td class="py-4 px-6 text-right whitespace-nowrap">
+                                    <x-ui.table-actions>
+                                        <x-ui.table-action-item icon="visibility" wire:click="viewInvoice({{ $inv->id }})" aria-label="View Invoice Details">
+                                            View Invoice
+                                        </x-ui.table-action-item>
                                         @if(in_array($inv->status->value, ['POSTED', 'PARTIALLY_PAID']))
-                                            <button wire:click="openPaymentModal({{ $inv->customer_id }})" class="p-1.5 text-emerald-600 hover:text-emerald-700 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition" title="Allocate Payment">
-                                                <span class="material-symbols-rounded text-lg">add_card</span>
-                                            </button>
+                                            <x-ui.table-action-item icon="add_card" wire:click="openPaymentModal({{ $inv->customer_id }})" aria-label="Allocate Payment">
+                                                Allocate Payment
+                                            </x-ui.table-action-item>
                                         @endif
                                         @if($inv->canBeVoided())
-                                            <button wire:click="openVoidModal({{ $inv->id }})" class="p-1.5 text-rose-600 hover:text-rose-700 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/40 transition" title="Void Invoice">
-                                                <span class="material-symbols-rounded text-lg">cancel</span>
-                                            </button>
+                                            <x-ui.table-action-item icon="cancel" variant="destructive" wire:click="openVoidModal({{ $inv->id }})" aria-label="Void Invoice">
+                                                Void Invoice
+                                            </x-ui.table-action-item>
                                         @endif
-                                    </div>
+                                    </x-ui.table-actions>
                                 </td>
                             </tr>
                         @empty
@@ -272,7 +273,7 @@
                                     <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30">
                                         <td class="py-2.5 px-4 font-sans text-xs">{{ \Carbon\Carbon::parse($tx['entry_date'])->format('d/m/Y H:i') }}</td>
                                         <td class="py-2.5 px-4 text-xs font-medium">
-                                            <x-ui.badge variant="neutral" size="xs">{{ $tx['entry_type_label'] }}</x-ui.badge>
+                                            <span class="text-xs text-muted-foreground font-medium">{{ $tx['entry_type_label'] }}</span>
                                         </td>
                                         <td class="py-2.5 px-4 font-sans text-xs text-zinc-600 dark:text-zinc-300">{{ $tx['reference_number'] }}</td>
                                         <td class="py-2.5 px-4 text-right font-sans tabular-nums text-xs text-rose-600 font-semibold">
@@ -304,9 +305,10 @@
             @if($selectedInvoice)
                 <div class="flex items-center gap-2">
                     <span>{{ $selectedInvoice->invoice_number }}</span>
-                    <x-ui.badge variant="{{ $selectedInvoice->status->value === 'PAID' ? 'success' : 'warning' }}" size="sm">
+                    <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium font-sans">
+                        <span class="w-1.5 h-1.5 rounded-full {{ $selectedInvoice->status->value === 'PAID' ? 'bg-success' : 'bg-warning' }}"></span>
                         {{ $selectedInvoice->status->label() }}
-                    </x-ui.badge>
+                    </span>
                 </div>
             @else
                 Invoice Details
@@ -424,10 +426,11 @@
                                             <td class="py-2 px-3 font-sans text-zinc-600 dark:text-zinc-300">{{ $alloc->payment_reference ?: '-' }}</td>
                                             <td class="py-2 px-3">{{ $alloc->allocatedBy?->name }}</td>
                                             <td class="py-2 px-3 text-right font-sans font-bold text-emerald-600 tabular-nums">Rp {{ number_format((float) $alloc->allocated_amount, 2, ',', '.') }}</td>
-                                            <td class="py-2 px-3 text-center">
-                                                <x-ui.badge variant="{{ $alloc->is_reversed ? 'danger' : 'success' }}" size="xs">
+                                            <td class="py-2 px-3">
+                                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                                    <span class="w-1.5 h-1.5 rounded-full {{ $alloc->is_reversed ? 'bg-destructive' : 'bg-success' }}"></span>
                                                     {{ $alloc->is_reversed ? 'Reversed' : 'Active' }}
-                                                </x-ui.badge>
+                                                </span>
                                             </td>
                                         </tr>
                                     @endforeach

@@ -85,7 +85,7 @@
                         <th class="py-3 px-4 text-center">Terms &amp; Grace</th>
                         <th class="py-3 px-4 text-right">Reserved SO</th>
                         <th class="py-3 px-4 text-right">Available Limit</th>
-                        <th class="py-3 px-4 text-center">Credit Status</th>
+                        <th class="py-3 px-4">Credit Status</th>
                         <th class="py-3 px-4 text-right">Actions</th>
                     </tr>
                 </thead>
@@ -117,18 +117,19 @@
                             <td class="py-3.5 px-4 text-right font-sans tabular-nums text-xs font-semibold {{ $availVal > 0 ? 'text-success' : 'text-destructive' }}">
                                 Rp {{ number_format($availVal, 2, ',', '.') }}
                             </td>
-                            <td class="py-3.5 px-4 text-center">
+                            <td class="py-3.5 px-4">
                                 @php
-                                    $stBadge = match($statusVal) {
-                                        'ACTIVE' => 'success',
-                                        'ON_HOLD' => 'warning',
-                                        'SUSPENDED' => 'danger',
-                                        default => 'neutral'
+                                    $stDot = match($statusVal) {
+                                        'ACTIVE' => 'bg-success',
+                                        'ON_HOLD' => 'bg-warning',
+                                        'SUSPENDED' => 'bg-destructive',
+                                        default => 'bg-neutral'
                                     };
                                 @endphp
-                                <x-ui.badge :variant="$stBadge">
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $stDot }}"></span>
                                     {{ $statusVal }}
-                                </x-ui.badge>
+                                </span>
                             </td>
                             <td class="py-3.5 px-4 text-right whitespace-nowrap">
                                 <x-ui.table-actions>

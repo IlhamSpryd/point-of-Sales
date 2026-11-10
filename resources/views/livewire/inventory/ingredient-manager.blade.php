@@ -120,7 +120,7 @@
                                         {{ number_format($displayStock, 2) }} {{ $item->unit }}
                                     </span>
                                     @if($displayStock <= $item->reorder_level)
-                                        <span class="inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-destructive/10 text-destructive" title="Low Stock">!</span>
+                                        <span class="text-xs font-bold text-destructive" title="Low Stock">(!)</span>
                                     @endif
                                 </div>
                                 <div class="text-[10px] text-muted-foreground mt-0.5 tabular-nums">Min: {{ number_format($item->reorder_level, 2) }}</div>
@@ -129,9 +129,10 @@
                                 <span class="text-sm text-foreground tabular-nums">Rp {{ number_format($item->cost_per_unit, 0, ',', '.') }}</span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <x-ui.badge :variant="$item->is_active ? 'success' : 'secondary'">
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $item->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                                     {{ $item->is_active ? 'Active' : 'Inactive' }}
-                                </x-ui.badge>
+                                </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right">
                                 <x-ui.table-actions>
@@ -176,9 +177,10 @@
                             <span class="text-xs text-muted-foreground">{{ $item->ingredient_code ?? '-' }}</span>
                         </div>
                         <div class="flex flex-col items-end gap-1">
-                            <x-ui.badge :variant="$item->is_active ? 'success' : 'secondary'">
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $item->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                                 {{ $item->is_active ? 'Active' : 'Inactive' }}
-                            </x-ui.badge>
+                            </span>
                         </div>
                     </div>
                     <div class="flex items-center justify-between mt-3 pt-3 border-t border-border">

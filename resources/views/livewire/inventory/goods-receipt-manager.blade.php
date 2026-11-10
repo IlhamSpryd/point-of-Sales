@@ -94,10 +94,19 @@
                                 <div class="text-xs text-muted-foreground">PO: {{ $receipt->purchase_order_reference }}</div>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center">
-                            <x-ui.badge :variant="$receipt->status->badgeType()">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @php
+                                $grDot = match($receipt->status->badgeType()) {
+                                    'success' => 'bg-success',
+                                    'warning' => 'bg-warning',
+                                    'danger' => 'bg-destructive',
+                                    default => 'bg-neutral',
+                                };
+                            @endphp
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $grDot }}"></span>
                                 {{ $receipt->status->label() }}
-                            </x-ui.badge>
+                            </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-foreground">
                             {{ $receipt->items->count() }} items
@@ -265,10 +274,11 @@
                 <div class="py-2 space-y-4">
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-50 text-xs">
                         <div>
-                            <span class="text-muted-foreground block">Status:</span>
-                            <x-ui.badge :variant="$selectedReceipt->status->badgeType()">
+                            <span class="text-muted-foreground block mb-0.5">Status:</span>
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ match($selectedReceipt->status->value) { 'posted' => 'bg-success', 'draft' => 'bg-warning', 'cancelled' => 'bg-destructive', default => 'bg-neutral' } }}"></span>
                                 {{ $selectedReceipt->status->label() }}
-                            </x-ui.badge>
+                            </span>
                         </div>
                         <div>
                             <span class="text-muted-foreground block">Supplier:</span>

@@ -83,17 +83,18 @@
                                                 {{ $journal->posting_date?->format('d M Y') ?? '-' }}
                                             </td>
                                             <td class="px-5 py-3 text-xs">
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-muted text-muted-foreground font-sans text-[11px]">
+                                                <span class="text-xs text-muted-foreground font-medium font-sans">
                                                     {{ $journal->source_module ?? 'General' }}
                                                 </span>
                                             </td>
                                             <td class="px-5 py-3 text-right font-sans text-xs tabular-nums text-foreground font-medium">
                                                 Rp {{ number_format((float) $journal->total_debit, 2, ',', '.') }}
                                             </td>
-                                            <td class="px-5 py-3 text-center">
-                                                <x-ui.badge :variant="$journal->status->value === 'POSTED' ? 'success' : 'neutral'">
+                                            <td class="px-5 py-3">
+                                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                                    <span class="w-1.5 h-1.5 rounded-full {{ $journal->status->value === 'POSTED' ? 'bg-success' : 'bg-neutral' }}"></span>
                                                     {{ $journal->status->value }}
-                                                </x-ui.badge>
+                                                </span>
                                             </td>
                                         </tr>
                                     @endforeach

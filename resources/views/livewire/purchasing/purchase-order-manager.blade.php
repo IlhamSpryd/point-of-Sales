@@ -100,45 +100,32 @@
                             <div class="font-bold text-foreground">Rp {{ number_format((float) $po->total_amount, 2) }}</div>
                             <div class="text-[11px] text-muted-foreground">Tax: Rp {{ number_format((float) $po->tax_amount, 2) }}</div>
                         </td>
-                        <td class="px-6 py-4 text-center">
-                            @php
-                                $recVariant = match($po->receiving_status?->value ?? (string) $po->receiving_status) {
-                                    'FULL', 'received', 'fully_received' => 'success',
-                                    'PARTIAL', 'partially_received' => 'warning',
-                                    default => 'neutral'
-                                };
-                            @endphp
-                            <x-ui.badge :variant="$recVariant">
+                        <td class="px-6 py-4">
+                            <span class="text-xs text-muted-foreground font-medium">
                                 {{ $po->receiving_status?->label() ?? $po->receiving_status ?? 'UNRECEIVED' }}
-                            </x-ui.badge>
+                            </span>
                         </td>
-                        <td class="px-6 py-4 text-center">
-                            @php
-                                $invVariant = match($po->invoicing_status?->value ?? (string) $po->invoicing_status) {
-                                    'FULL', 'invoiced', 'matched' => 'success',
-                                    'PARTIAL', 'partially_invoiced', 'partially_matched' => 'warning',
-                                    default => 'neutral'
-                                };
-                            @endphp
-                            <x-ui.badge :variant="$invVariant">
+                        <td class="px-6 py-4">
+                            <span class="text-xs text-muted-foreground font-medium">
                                 {{ $po->invoicing_status?->label() ?? $po->invoicing_status ?? 'UNINVOICED' }}
-                            </x-ui.badge>
+                            </span>
                         </td>
-                        <td class="px-6 py-4 text-center">
+                        <td class="px-6 py-4">
                             @php
                                 $poStatusVal = $po->status?->value ?? (string) $po->status;
-                                $statusVariant = match($poStatusVal) {
-                                    'APPROVED', 'approved' => 'info',
-                                    'ISSUED', 'released' => 'primary',
-                                    'COMPLETED', 'closed' => 'success',
-                                    'CANCELLED', 'cancelled' => 'danger',
-                                    'PENDING_APPROVAL', 'pending_approval' => 'warning',
-                                    default => 'neutral'
+                                $statusDot = match($poStatusVal) {
+                                    'APPROVED', 'approved' => 'bg-info',
+                                    'ISSUED', 'released' => 'bg-primary',
+                                    'COMPLETED', 'closed' => 'bg-success',
+                                    'CANCELLED', 'cancelled' => 'bg-destructive',
+                                    'PENDING_APPROVAL', 'pending_approval' => 'bg-warning',
+                                    default => 'bg-neutral'
                                 };
                             @endphp
-                            <x-ui.badge :variant="$statusVariant">
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $statusDot }}"></span>
                                 {{ $po->status?->label() ?? $poStatusVal }}
-                            </x-ui.badge>
+                            </span>
                         </td>
                         <td class="px-6 py-4 text-right whitespace-nowrap">
                             <x-ui.table-actions>
@@ -303,8 +290,9 @@
             @if($selectedPo)
                 <div>
                     <span class="font-sans">{{ $selectedPo->po_number }}</span>
-                    <span class="ml-2">
-                        <x-ui.badge variant="primary">{{ $selectedPo->status?->label() ?? $selectedPo->status }}</x-ui.badge>
+                    <span class="ml-2 inline-flex items-center gap-1.5 text-xs text-foreground font-medium font-sans">
+                        <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                        {{ $selectedPo->status?->label() ?? $selectedPo->status }}
                     </span>
                 </div>
             @else

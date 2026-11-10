@@ -349,7 +349,7 @@
                                                 {{ $ds['days_without_sale'] }} days
                                             </td>
                                             <td class="py-2 text-right">
-                                                <span class="inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full bg-warning-muted text-warning border border-warning-border">
+                                                <span class="text-xs text-muted-foreground font-medium">
                                                     {{ $ds['recommended_action'] }}
                                                 </span>
                                             </td>

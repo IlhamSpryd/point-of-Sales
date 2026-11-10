@@ -112,43 +112,36 @@
                                 Rp {{ number_format((float) $batch->total_net_amount, 2, ',', '.') }}
                             </td>
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border {{ $batch->status->badgeClasses() }}">
+                                @php
+                                    $batchDot = match($batch->status) {
+                                        \App\Modules\HR\Enums\PayrollBatchStatusEnum::PAID => 'bg-success',
+                                        \App\Modules\HR\Enums\PayrollBatchStatusEnum::APPROVED, \App\Modules\HR\Enums\PayrollBatchStatusEnum::FINALIZED => 'bg-info',
+                                        \App\Modules\HR\Enums\PayrollBatchStatusEnum::PENDING_APPROVAL, \App\Modules\HR\Enums\PayrollBatchStatusEnum::CALCULATING, \App\Modules\HR\Enums\PayrollBatchStatusEnum::PAYMENT_PENDING => 'bg-warning',
+                                        \App\Modules\HR\Enums\PayrollBatchStatusEnum::VOIDED => 'bg-destructive',
+                                        default => 'bg-neutral',
+                                    };
+                                @endphp
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $batchDot }}"></span>
                                     {{ $batch->status->label() }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end gap-2">
-                                    <x-ui.button
-                                        variant="secondary"
-                                        size="sm"
-                                        wire:click="viewDetails({{ $batch->id }})"
-                                        class="h-8 px-2.5 text-xs gap-1">
-                                        <span class="material-symbols-rounded text-sm">visibility</span>
-                                        <span>Details</span>
-                                    </x-ui.button>
-
+                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="visibility" wire:click="viewDetails({{ $batch->id }})" aria-label="View Batch Details">
+                                        View Details
+                                    </x-ui.table-action-item>
                                     @if ($batch->status === \App\Modules\HR\Enums\PayrollBatchStatusEnum::DRAFT || $batch->status === \App\Modules\HR\Enums\PayrollBatchStatusEnum::CALCULATED)
-                                        <x-ui.button
-                                            variant="secondary"
-                                            size="sm"
-                                            wire:click="calculate({{ $batch->id }})"
-                                            class="h-8 px-2.5 text-xs gap-1 bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100">
-                                            <span class="material-symbols-rounded text-sm">calculate</span>
-                                            <span>Calculate</span>
-                                        </x-ui.button>
+                                        <x-ui.table-action-item icon="calculate" wire:click="calculate({{ $batch->id }})" aria-label="Calculate Payroll Batch">
+                                            Calculate Batch
+                                        </x-ui.table-action-item>
                                     @endif
-
                                     @if ($batch->status === \App\Modules\HR\Enums\PayrollBatchStatusEnum::CALCULATED)
-                                        <x-ui.button
-                                            variant="primary"
-                                            size="sm"
-                                            wire:click="finalize({{ $batch->id }})"
-                                            class="h-8 px-2.5 text-xs gap-1">
-                                            <span class="material-symbols-rounded text-sm">lock</span>
-                                            <span>Finalize</span>
-                                        </x-ui.button>
+                                        <x-ui.table-action-item icon="lock" wire:click="finalize({{ $batch->id }})" aria-label="Finalize Payroll Batch">
+                                            Finalize Batch
+                                        </x-ui.table-action-item>
                                     @endif
-                                </div>
+                                </x-ui.table-actions>
                             </td>
                         </tr>
                     @empty
@@ -251,7 +244,7 @@
                                 Rp {{ number_format((float) $rec->net_pay_amount, 2, ',', '.') }}
                             </td>
                             <td class="px-4 py-3 text-right">
-                                <span class="text-[11px] text-primary bg-primary/10 px-2 py-0.5 rounded-lg border border-primary/20 tabular-nums">
+                                <span class="text-[11px] font-mono text-muted-foreground tabular-nums">
                                     {{ substr($rec->payslip_token, 0, 8) }}...
                                 </span>
                             </td>

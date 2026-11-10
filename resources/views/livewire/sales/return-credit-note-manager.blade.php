@@ -77,7 +77,7 @@
                             <th class="px-6 py-3.5 text-right">Total Amount</th>
                             <th class="px-6 py-3.5 text-right">Applied</th>
                             <th class="px-6 py-3.5 text-right">Remaining Balance</th>
-                            <th class="px-6 py-3.5 text-center">Status</th>
+                            <th class="px-6 py-3.5">Status</th>
                             <th class="px-6 py-3.5 text-right">Action</th>
                         </tr>
                     </thead>
@@ -103,30 +103,33 @@
                                 <td class="px-6 py-4 text-right font-semibold text-emerald-700 dark:text-emerald-400 tabular-nums">
                                     Rp {{ number_format((float) $cn->remaining_amount, 2, ',', '.') }}
                                 </td>
-                                <td class="px-6 py-4 text-center">
+                                <td class="px-6 py-4">
                                     @php
-                                        $badgeVariant = match($cn->status->value) {
-                                            'APPLIED' => 'success',
-                                            'PARTIALLY_APPLIED' => 'info',
-                                            'CONVERTED_TO_STORE_CREDIT' => 'neutral',
-                                            'VOIDED' => 'danger',
-                                            default => 'warning',
+                                        $dotColor = match($cn->status->value) {
+                                            'APPLIED' => 'bg-success',
+                                            'PARTIALLY_APPLIED' => 'bg-info',
+                                            'CONVERTED_TO_STORE_CREDIT' => 'bg-neutral',
+                                            'VOIDED' => 'bg-destructive',
+                                            default => 'bg-warning',
                                         };
                                     @endphp
-                                    <x-ui.badge variant="{{ $badgeVariant }}" size="sm">
+                                    <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $dotColor }}"></span>
                                         {{ $cn->status->label() }}
-                                    </x-ui.badge>
+                                    </span>
                                 </td>
-                                <td class="px-6 py-4 text-right space-x-2">
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
                                     @if ((float) $cn->remaining_amount > 0 && in_array($cn->status->value, ['ISSUED', 'PARTIALLY_APPLIED']))
-                                        <x-ui.button variant="primary" size="xs" wire:click="openApplyModal({{ $cn->id }})">
-                                            Apply to Invoice
-                                        </x-ui.button>
-                                        <x-ui.button variant="secondary" size="xs" wire:click="convertToStoreCredit({{ $cn->id }})">
-                                            To Store Credit
-                                        </x-ui.button>
+                                        <x-ui.table-actions>
+                                            <x-ui.table-action-item icon="receipt_long" wire:click="openApplyModal({{ $cn->id }})" aria-label="Apply to Invoice">
+                                                Apply to Invoice
+                                            </x-ui.table-action-item>
+                                            <x-ui.table-action-item icon="account_balance_wallet" wire:click="convertToStoreCredit({{ $cn->id }})" aria-label="Convert to Store Credit">
+                                                Convert to Store Credit
+                                            </x-ui.table-action-item>
+                                        </x-ui.table-actions>
                                     @else
-                                        <span class="text-xs text-zinc-400">-</span>
+                                        <span class="text-xs text-muted-foreground">-</span>
                                     @endif
                                 </td>
                             </tr>
@@ -161,7 +164,7 @@
                             <th class="px-6 py-3.5">Type</th>
                             <th class="px-6 py-3.5 text-right">Goods Value</th>
                             <th class="px-6 py-3.5 text-right">Total Refund / CN</th>
-                            <th class="px-6 py-3.5 text-center">Status</th>
+                            <th class="px-6 py-3.5">Status</th>
                             <th class="px-6 py-3.5">Completed At</th>
                         </tr>
                     </thead>
@@ -186,10 +189,11 @@
                                 <td class="px-6 py-4 text-right font-medium text-zinc-900 dark:text-white tabular-nums">
                                     Rp {{ number_format((float) $ret->total_refundable_amount, 2, ',', '.') }}
                                 </td>
-                                <td class="px-6 py-4 text-center">
-                                    <x-ui.badge variant="success" size="sm">
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
                                         {{ $ret->status }}
-                                    </x-ui.badge>
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 text-xs text-zinc-500">
                                     {{ $ret->completed_at?->format('d/m/Y H:i') ?? '-' }}

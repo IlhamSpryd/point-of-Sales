@@ -96,10 +96,19 @@
                             <td class="px-4 py-3 text-right font-sans font-semibold text-foreground tabular-nums">
                                 Rp {{ number_format((float) $journal->total_credit, 2) }}
                             </td>
-                            <td class="px-4 py-3 text-center">
-                                <x-ui.badge :variant="strtolower($journal->status->value)">
+                            <td class="px-4 py-3">
+                                @php
+                                    $journalDot = match(strtoupper($journal->status->value)) {
+                                        'POSTED' => 'bg-success',
+                                        'REVERSED' => 'bg-destructive',
+                                        'DRAFT' => 'bg-neutral',
+                                        default => 'bg-neutral',
+                                    };
+                                @endphp
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $journalDot }}"></span>
                                     {{ $journal->status->value }}
-                                </x-ui.badge>
+                                </span>
                             </td>
                             <td class="px-4 py-3 text-right whitespace-nowrap">
                                 <x-ui.table-actions>

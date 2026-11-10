@@ -76,12 +76,7 @@
                                 </span>
                             </td>
                             <td class="px-4 py-3">
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide
-                                    @if($acc->account_type->value === 'ASSET') bg-blue-500/10 text-blue-600 dark:text-blue-400
-                                    @elseif($acc->account_type->value === 'LIABILITY') bg-rose-500/10 text-rose-600 dark:text-rose-400
-                                    @elseif($acc->account_type->value === 'EQUITY') bg-purple-500/10 text-purple-600 dark:text-purple-400
-                                    @elseif($acc->account_type->value === 'REVENUE') bg-emerald-500/10 text-emerald-600 dark:text-emerald-400
-                                    @else bg-amber-500/10 text-amber-600 dark:text-amber-400 @endif">
+                                <span class="text-xs text-muted-foreground font-medium">
                                     {{ $acc->account_type->value }}
                                 </span>
                             </td>
@@ -102,25 +97,24 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3">
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold {{ $acc->is_active ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-zinc-500/10 text-zinc-500' }}">
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $acc->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                                     {{ $acc->is_active ? 'Active' : 'Inactive' }}
                                 </span>
                             </td>
-                            <td class="px-4 py-3 text-right">
-                                <div class="inline-flex items-center gap-1">
-                                    <button type="button"
-                                            wire:click="openEditModal({{ $acc->id }})"
-                                            class="p-1 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-600 dark:text-zinc-300 transition-colors"
-                                            title="Edit Account">
-                                        <span class="material-symbols-rounded text-base">edit</span>
-                                    </button>
-                                    <button type="button"
-                                            wire:click="toggleActive({{ $acc->id }})"
-                                            class="p-1 rounded-lg hover:bg-zinc-200 dark:hover:bg-zinc-700 {{ $acc->is_active ? 'text-rose-500' : 'text-emerald-500' }} transition-colors"
-                                            title="{{ $acc->is_active ? 'Deactivate' : 'Activate' }}">
-                                        <span class="material-symbols-rounded text-base">{{ $acc->is_active ? 'block' : 'check_circle' }}</span>
-                                    </button>
-                                </div>
+                            <td class="px-4 py-3 text-right whitespace-nowrap">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="edit" wire:click="openEditModal({{ $acc->id }})" aria-label="Edit Account">
+                                        Edit Account
+                                    </x-ui.table-action-item>
+                                    <x-ui.table-action-item
+                                        :icon="$acc->is_active ? 'block' : 'check_circle'"
+                                        :variant="$acc->is_active ? 'destructive' : 'default'"
+                                        wire:click="toggleActive({{ $acc->id }})"
+                                        aria-label="{{ $acc->is_active ? 'Deactivate Account' : 'Activate Account' }}">
+                                        {{ $acc->is_active ? 'Deactivate Account' : 'Activate Account' }}
+                                    </x-ui.table-action-item>
+                                </x-ui.table-actions>
                             </td>
                         </tr>
                     @empty

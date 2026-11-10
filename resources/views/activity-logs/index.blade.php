@@ -42,9 +42,9 @@
                         <div class="text-[11px] text-muted-foreground ml-9">{{ $log->user->role->name ?? '-' }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <x-ui.badge variant="neutral" size="xs">
+                        <span class="text-xs text-muted-foreground font-medium font-sans">
                             {{ $log->action }}
-                        </x-ui.badge>
+                        </span>
                     </td>
                     <td class="px-6 py-4">
                         <p class="font-medium text-xs text-foreground">{{ $log->description }}</p>

@@ -70,8 +70,8 @@
                         <th class="py-3.5 px-6">Customer & PO</th>
                         <th class="py-3.5 px-6">Order Date</th>
                         <th class="py-3.5 px-6 text-right">Total Amount</th>
-                        <th class="py-3.5 px-6 text-center">Order Status</th>
-                        <th class="py-3.5 px-6 text-center">Fulfillment</th>
+                        <th class="py-3.5 px-6">Order Status</th>
+                        <th class="py-3.5 px-6">Fulfillment</th>
                         <th class="py-3.5 px-6 text-right">Action</th>
                     </tr>
                 </thead>
@@ -101,49 +101,41 @@
                             <td class="py-4 px-6 text-right font-medium text-zinc-900 dark:text-white tabular-nums">
                                 Rp {{ number_format((float) $so->total_amount, 2, ',', '.') }}
                             </td>
-                            <td class="py-4 px-6 text-center">
+                            <td class="py-4 px-6">
                                 @php
-                                    $statusVariant = match($so->status->value) {
-                                        'DRAFT' => 'neutral',
-                                        'CONFIRMED' => 'info',
-                                        'PARTIALLY_FULFILLED' => 'warning',
-                                        'FULFILLED' => 'success',
-                                        'CLOSED' => 'neutral',
-                                        'CANCELLED' => 'danger',
-                                        default => 'neutral',
+                                    $statusDot = match($so->status->value) {
+                                        'DRAFT' => 'bg-neutral',
+                                        'CONFIRMED' => 'bg-info',
+                                        'PARTIALLY_FULFILLED' => 'bg-warning',
+                                        'FULFILLED' => 'bg-success',
+                                        'CLOSED' => 'bg-neutral',
+                                        'CANCELLED' => 'bg-destructive',
+                                        default => 'bg-neutral',
                                     };
                                 @endphp
-                                <x-ui.badge variant="{{ $statusVariant }}" size="sm">
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $statusDot }}"></span>
                                     {{ $so->status->value }}
-                                </x-ui.badge>
+                                </span>
                             </td>
-                            <td class="py-4 px-6 text-center">
-                                @php
-                                    $fulfillVariant = match($so->fulfillment_status->value) {
-                                        'UNFULFILLED' => 'neutral',
-                                        'PARTIALLY_FULFILLED' => 'warning',
-                                        'FULFILLED' => 'success',
-                                        default => 'neutral',
-                                    };
-                                @endphp
-                                <x-ui.badge variant="{{ $fulfillVariant }}" size="xs">
+                            <td class="py-4 px-6">
+                                <span class="text-xs text-muted-foreground font-medium">
                                     {{ $so->fulfillment_status->value }}
-                                </x-ui.badge>
+                                </span>
                             </td>
-                            <td class="py-4 px-6 text-right">
-                                <div class="flex items-center justify-end gap-1.5">
-                                    <button wire:click="viewOrder({{ $so->id }})" class="p-1.5 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition" title="View SO Details">
-                                        <span class="material-symbols-rounded text-lg">visibility</span>
-                                    </button>
-
+                            <td class="py-4 px-6 text-right whitespace-nowrap">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="visibility" wire:click="viewOrder({{ $so->id }})" aria-label="View SO Details">
+                                        View SO Details
+                                    </x-ui.table-action-item>
                                     @if(in_array($so->status->value, ['CONFIRMED', 'PARTIALLY_FULFILLED']))
                                         @can('fulfill', $so)
-                                        <button wire:click="openFulfillModal({{ $so->id }})" class="p-1.5 text-emerald-600 hover:text-emerald-700 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-950/40 transition" title="Process Fulfillment / Dispatch">
-                                            <span class="material-symbols-rounded text-lg">local_shipping</span>
-                                        </button>
+                                        <x-ui.table-action-item icon="local_shipping" wire:click="openFulfillModal({{ $so->id }})" aria-label="Process Fulfillment / Dispatch">
+                                            Fulfill / Dispatch
+                                        </x-ui.table-action-item>
                                         @endcan
                                     @endif
-                                </div>
+                                </x-ui.table-actions>
                             </td>
                         </tr>
                     @empty
@@ -171,7 +163,7 @@
                 <div class="flex items-center gap-2">
                     <span>{{ $selectedSO->so_number }}</span>
                     @if($selectedSO->customer_po_number)
-                        <x-ui.badge variant="info" size="xs">PO: {{ $selectedSO->customer_po_number }}</x-ui.badge>
+                        <span class="text-xs text-muted-foreground font-medium font-sans">(PO: {{ $selectedSO->customer_po_number }})</span>
                     @endif
                 </div>
             @else

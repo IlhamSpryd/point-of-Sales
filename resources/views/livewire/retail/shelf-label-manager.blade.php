@@ -73,29 +73,25 @@
                                 Rp {{ number_format((float) $label->new_price, 0, ',', '.') }}
                             </td>
                             <td class="px-6 py-4">
-                                @if ($label->status === \App\Modules\Retail\Models\ShelfLabel::STATUS_PRINTED || $label->status === 'printed')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
-                                        Printed
-                                    </span>
-                                @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-2xs font-semibold bg-amber-500/10 text-amber-600 dark:text-amber-400">
-                                        Pending
-                                    </span>
-                                @endif
+                                @php
+                                    $isPrinted = ($label->status === \App\Modules\Retail\Models\ShelfLabel::STATUS_PRINTED || $label->status === 'printed');
+                                @endphp
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $isPrinted ? 'bg-success' : 'bg-warning' }}"></span>
+                                    {{ $isPrinted ? 'Printed' : 'Pending' }}
+                                </span>
                             </td>
-                            <td class="px-6 py-4 text-right space-x-2">
-                                <a href="{{ route('retail.shelf-labels.print-batch', $label->batch_number) }}" target="_blank"
-                                    class="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80">
-                                    <span class="material-symbols-rounded text-base">print</span>
-                                    Print Sheet
-                                </a>
-                                @if ($label->status === \App\Modules\Retail\Models\ShelfLabel::STATUS_PENDING || $label->status === 'pending')
-                                    <button wire:click="markBatchPrinted('{{ $label->batch_number }}')"
-                                        class="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground">
-                                        <span class="material-symbols-rounded text-base">check_circle</span>
-                                        Mark Done
-                                    </button>
-                                @endif
+                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="print" href="{{ route('retail.shelf-labels.print-batch', $label->batch_number) }}" target="_blank" aria-label="Print Sheet">
+                                        Print Sheet
+                                    </x-ui.table-action-item>
+                                    @if ($label->status === \App\Modules\Retail\Models\ShelfLabel::STATUS_PENDING || $label->status === 'pending')
+                                        <x-ui.table-action-item icon="check_circle" wire:click="markBatchPrinted('{{ $label->batch_number }}')" aria-label="Mark Done">
+                                            Mark Done
+                                        </x-ui.table-action-item>
+                                    @endif
+                                </x-ui.table-actions>
                             </td>
                         </tr>
                     @empty

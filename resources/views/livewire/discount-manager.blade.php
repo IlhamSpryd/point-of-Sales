@@ -72,15 +72,16 @@
                                     {{ $discount->redemptions_count }} / {{ $discount->usage_limit ?? '∞' }}
                                 </div>
                                 <div class="mt-1">
-                                    <x-ui.badge variant="{{ $discount->is_stackable ? 'info' : 'neutral' }}" size="xs">
+                                    <span class="text-xs text-muted-foreground font-medium">
                                         {{ $discount->is_stackable ? 'Stackable' : 'Single' }}
-                                    </x-ui.badge>
+                                    </span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-center">
-                                <x-ui.badge variant="{{ $discount->is_active ? 'success' : 'neutral' }}" size="sm">
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $discount->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                                     {{ $discount->is_active ? 'Active' : 'Inactive' }}
-                                </x-ui.badge>
+                                </span>
                                 @if($discount->valid_from || $discount->valid_until)
                                     <div class="text-[11px] text-zinc-400 mt-1">
                                         {{ $discount->valid_from ? $discount->valid_from->format('d/m/y') : '∞' }} – {{ $discount->valid_until ? $discount->valid_until->format('d/m/y') : '∞' }}

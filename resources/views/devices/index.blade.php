@@ -76,7 +76,7 @@
                 <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Code</th>
                 <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Device &amp; Branch</th>
                 <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
-                <th scope="col" class="px-6 py-3.5 text-center text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Connection Status</th>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Connection Status</th>
                 <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Last Activity</th>
                 <th scope="col" class="px-6 py-3.5 text-right text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
             </x-slot:head>
@@ -105,13 +105,13 @@
                             {{ $typeLabel }}
                         </span>
                     </td>
-                    <td class="px-6 py-4 text-center whitespace-nowrap">
+                    <td class="px-6 py-4 whitespace-nowrap">
                         @php
-                            $statusVariant = match($device->pairing_status) {
-                                'paired' => 'success',
-                                'pending' => 'warning',
-                                'revoked' => 'danger',
-                                default => 'neutral',
+                            $statusDot = match($device->pairing_status) {
+                                'paired' => 'bg-success',
+                                'pending' => 'bg-warning',
+                                'revoked' => 'bg-destructive',
+                                default => 'bg-neutral',
                             };
                             $statusLabel = match($device->pairing_status) {
                                 'paired' => 'Paired',
@@ -120,9 +120,10 @@
                                 default => $device->pairing_status,
                             };
                         @endphp
-                        <x-ui.badge variant="{{ $statusVariant }}" size="sm">
+                        <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                            <span class="w-1.5 h-1.5 rounded-full {{ $statusDot }}"></span>
                             {{ $statusLabel }}
-                        </x-ui.badge>
+                        </span>
                     </td>
                     <td class="px-6 py-4 text-xs text-muted-foreground whitespace-nowrap">
                         {{ $device->last_seen_at ? $device->last_seen_at->diffForHumans() : 'Never active' }}

@@ -58,7 +58,7 @@
                             <div class="font-semibold text-zinc-900 dark:text-white flex items-center gap-2">
                                 {{ $grp->name }}
                                 @if($grp->is_b2b_default)
-                                    <x-ui.badge variant="info">Default B2B</x-ui.badge>
+                                    <span class="text-xs text-muted-foreground font-medium">(Default B2B)</span>
                                 @endif
                             </div>
                             <div class="text-xs font-sans text-zinc-400 mt-0.5">{{ $grp->code }}</div>
@@ -72,12 +72,11 @@
                         <td class="px-6 py-4 text-right">
                             <span class="text-xs text-zinc-600 dark:text-zinc-300 font-sans tabular-nums">{{ $grp->customers_count }} customers</span>
                         </td>
-                        <td class="px-6 py-4 text-center">
-                            @if($grp->is_active)
-                                <x-ui.badge variant="success">Active</x-ui.badge>
-                            @else
-                                <x-ui.badge variant="neutral">Inactive</x-ui.badge>
-                            @endif
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $grp->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
+                                {{ $grp->is_active ? 'Active' : 'Inactive' }}
+                            </span>
                         </td>
                         <td class="px-6 py-4 text-right whitespace-nowrap">
                             @can('manageGroups', \App\Models\Customer::class)

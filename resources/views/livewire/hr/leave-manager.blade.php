@@ -119,30 +119,29 @@
                                     {{ (float) $req->total_days }} Days
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border {{ $req->status->badgeClasses() }}">
+                                    @php
+                                        $leaveDot = match($req->status) {
+                                            \App\Modules\HR\Enums\LeaveRequestStatusEnum::APPROVED => 'bg-success',
+                                            \App\Modules\HR\Enums\LeaveRequestStatusEnum::PENDING => 'bg-warning',
+                                            \App\Modules\HR\Enums\LeaveRequestStatusEnum::REJECTED => 'bg-destructive',
+                                            default => 'bg-neutral',
+                                        };
+                                    @endphp
+                                    <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                        <span class="w-1.5 h-1.5 rounded-full {{ $leaveDot }}"></span>
                                         {{ $req->status->label() }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-right">
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
                                     @if ($req->status === \App\Modules\HR\Enums\LeaveRequestStatusEnum::PENDING)
-                                        <div class="flex items-center justify-end gap-2">
-                                            <x-ui.button
-                                                variant="primary"
-                                                size="sm"
-                                                wire:click="approve({{ $req->id }})"
-                                                class="h-8 px-3 text-xs gap-1 bg-emerald-600 hover:bg-emerald-700 text-white">
-                                                <span class="material-symbols-rounded text-sm">check</span>
-                                                <span>Approve</span>
-                                            </x-ui.button>
-                                            <x-ui.button
-                                                variant="destructive"
-                                                size="sm"
-                                                wire:click="reject({{ $req->id }})"
-                                                class="h-8 px-3 text-xs gap-1">
-                                                <span class="material-symbols-rounded text-sm">close</span>
-                                                <span>Reject</span>
-                                            </x-ui.button>
-                                        </div>
+                                        <x-ui.table-actions>
+                                            <x-ui.table-action-item icon="check" wire:click="approve({{ $req->id }})" aria-label="Approve Leave Request">
+                                                Approve Request
+                                            </x-ui.table-action-item>
+                                            <x-ui.table-action-item icon="close" variant="destructive" wire:click="reject({{ $req->id }})" aria-label="Reject Leave Request">
+                                                Reject Request
+                                            </x-ui.table-action-item>
+                                        </x-ui.table-actions>
                                     @else
                                         <span class="text-xs text-muted-foreground">Completed</span>
                                     @endif

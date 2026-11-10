@@ -123,22 +123,29 @@
                                 {{ $rec->clock_out_at ? $rec->clock_out_at->format('d M Y, H:i') : '-' }}
                             </td>
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border {{ $rec->status ? $rec->status->badgeClasses() : 'bg-muted text-muted-foreground border-border' }}">
+                                @php
+                                    $attDot = match($rec->status) {
+                                        \App\Modules\HR\Enums\AttendanceStatusEnum::PRESENT => 'bg-success',
+                                        \App\Modules\HR\Enums\AttendanceStatusEnum::LATE, \App\Modules\HR\Enums\AttendanceStatusEnum::EARLY_LEAVE => 'bg-warning',
+                                        \App\Modules\HR\Enums\AttendanceStatusEnum::CORRECTED => 'bg-info',
+                                        \App\Modules\HR\Enums\AttendanceStatusEnum::ABSENT, \App\Modules\HR\Enums\AttendanceStatusEnum::SICK => 'bg-destructive',
+                                        default => 'bg-neutral',
+                                    };
+                                @endphp
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $attDot }}"></span>
                                     {{ $rec->status ? $rec->status->label() : 'Pending' }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-xs text-muted-foreground max-w-xs truncate">
                                 {{ $rec->notes ?: '-' }}
                             </td>
-                            <td class="px-6 py-4 text-right">
-                                <x-ui.button
-                                    variant="secondary"
-                                    size="sm"
-                                    wire:click="openCorrectionModal({{ $rec->id }})"
-                                    class="h-8 px-3 text-xs gap-1">
-                                    <span class="material-symbols-rounded text-sm">edit</span>
-                                    <span>Correction</span>
-                                </x-ui.button>
+                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="edit" wire:click="openCorrectionModal({{ $rec->id }})" aria-label="Attendance Time Correction">
+                                        Correction
+                                    </x-ui.table-action-item>
+                                </x-ui.table-actions>
                             </td>
                         </tr>
                     @empty

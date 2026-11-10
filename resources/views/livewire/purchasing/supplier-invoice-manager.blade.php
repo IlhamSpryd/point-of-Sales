@@ -89,65 +89,45 @@
                             <div class="font-bold text-zinc-900 dark:text-white">Rp {{ number_format((float) $inv->total_amount, 2) }}</div>
                             <div class="text-[11px] text-zinc-400">Tax: Rp {{ number_format((float) $inv->tax_amount, 2) }}</div>
                         </td>
-                        <td class="px-6 py-4 text-center">
+                        <td class="px-6 py-4">
                             @php
                                 $matchVal = $inv->matching_status?->value ?? (string) $inv->matching_status;
-                                $matchBadge = match($matchVal) {
-                                    'MATCHED', 'matched' => 'success',
-                                    'VARIANCE_HELD', 'variance_held' => 'warning',
-                                    'FAILED', 'failed' => 'danger',
-                                    default => 'neutral'
-                                };
                             @endphp
-                            <x-ui.badge :variant="$matchBadge">
+                            <span class="text-xs text-muted-foreground font-medium">
                                 {{ $inv->matching_status?->label() ?? $matchVal }}
-                            </x-ui.badge>
+                            </span>
                         </td>
-                        <td class="px-6 py-4 text-center">
+                        <td class="px-6 py-4">
                             @php
                                 $invStatusVal = $inv->status?->value ?? (string) $inv->status;
-                                $statusBadge = match($invStatusVal) {
-                                    'APPROVED_FOR_PAYMENT', 'approved_for_payment' => 'success',
-                                    'PAID', 'paid' => 'info',
-                                    'CANCELLED', 'cancelled' => 'danger',
-                                    default => 'neutral'
+                                $statusDot = match($invStatusVal) {
+                                    'APPROVED_FOR_PAYMENT', 'approved_for_payment' => 'bg-success',
+                                    'PAID', 'paid' => 'bg-info',
+                                    'CANCELLED', 'cancelled' => 'bg-destructive',
+                                    default => 'bg-neutral'
                                 };
                             @endphp
-                            <x-ui.badge :variant="$statusBadge">
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $statusDot }}"></span>
                                 {{ $inv->status?->label() ?? $invStatusVal }}
-                            </x-ui.badge>
+                            </span>
                         </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <x-ui.button
-                                    size="icon"
-                                    variant="ghost"
-                                    wire:click="viewInvoice({{ $inv->id }})"
-                                    title="View Invoice Details"
-                                    aria-label="Details">
-                                    <span class="material-symbols-rounded text-base text-zinc-600 dark:text-zinc-400">visibility</span>
-                                </x-ui.button>
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <x-ui.table-actions>
+                                <x-ui.table-action-item icon="visibility" wire:click="viewInvoice({{ $inv->id }})" aria-label="View Invoice Details">
+                                    View Invoice Details
+                                </x-ui.table-action-item>
                                 @if(! $inv->isApprovedPayable() && ! $inv->isCancelled())
-                                    <x-ui.button
-                                        size="icon"
-                                        variant="ghost"
-                                        wire:click="openMatchWorkbench({{ $inv->id }})"
-                                        title="3-Way Match Workbench"
-                                        aria-label="Match">
-                                        <span class="material-symbols-rounded text-base text-amber-600">compare_arrows</span>
-                                    </x-ui.button>
+                                    <x-ui.table-action-item icon="compare_arrows" wire:click="openMatchWorkbench({{ $inv->id }})" aria-label="3-Way Match Workbench">
+                                        3-Way Match
+                                    </x-ui.table-action-item>
                                 @endif
                                 @if(($inv->matching_status?->value === 'MATCHED' || $inv->matching_status === 'matched') && ! $inv->isApprovedPayable())
-                                    <x-ui.button
-                                        size="icon"
-                                        variant="ghost"
-                                        wire:click="approvePayable({{ $inv->id }})"
-                                        title="Approve for Payment (Post AP & GL)"
-                                        aria-label="Approve">
-                                        <span class="material-symbols-rounded text-base text-emerald-600">verified</span>
-                                    </x-ui.button>
+                                    <x-ui.table-action-item icon="verified" wire:click="approvePayable({{ $inv->id }})" aria-label="Approve for Payment">
+                                        Approve Payable
+                                    </x-ui.table-action-item>
                                 @endif
-                            </div>
+                            </x-ui.table-actions>
                         </td>
                     </tr>
                     @empty
@@ -368,8 +348,8 @@
             @if($selectedInvoice)
                 <div>
                     <span class="font-sans">{{ $selectedInvoice->supplier_invoice_number }}</span>
-                    <span class="ml-2">
-                        <x-ui.badge variant="primary">{{ $selectedInvoice->matching_status?->label() ?? $selectedInvoice->matching_status }}</x-ui.badge>
+                    <span class="ml-2 text-xs text-muted-foreground font-medium font-sans">
+                        ({{ $selectedInvoice->matching_status?->label() ?? $selectedInvoice->matching_status }})
                     </span>
                 </div>
             @else

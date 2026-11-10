@@ -86,57 +86,42 @@
                             <span class="text-xs text-zinc-400 ml-1">({{ $supplier->currency_code }})</span>
                         </td>
                         <td class="px-6 py-4 text-center">
-                            <button wire:click="openCatalog({{ $supplier->id }})" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 transition-colors">
-                                <span class="material-symbols-rounded text-sm">inventory_2</span>
-                                <span class="tabular-nums">{{ $supplier->supplier_products_count }}</span> Items
+                            <button wire:click="openCatalog({{ $supplier->id }})" class="inline-flex items-center gap-1.5 text-xs font-medium text-foreground hover:text-primary transition-colors cursor-pointer">
+                                <span class="material-symbols-rounded text-sm text-muted-foreground">inventory_2</span>
+                                <span><span class="tabular-nums font-semibold">{{ $supplier->supplier_products_count }}</span> Items</span>
                             </button>
                         </td>
-                        <td class="px-6 py-4 text-center">
+                        <td class="px-6 py-4">
                             @php
-                                $badgeVariant = match($supplier->status->value) {
-                                    'active' => 'success',
-                                    'on_hold' => 'warning',
-                                    'inactive' => 'neutral',
-                                    'archived' => 'danger',
-                                    default => 'neutral'
+                                $statusDot = match($supplier->status->value) {
+                                    'active' => 'bg-success',
+                                    'on_hold' => 'bg-warning',
+                                    'inactive' => 'bg-neutral',
+                                    'archived' => 'bg-destructive',
+                                    default => 'bg-neutral'
                                 };
                             @endphp
-                            <x-ui.badge :variant="$badgeVariant">
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $statusDot }}"></span>
                                 {{ $supplier->status->label() }}
-                            </x-ui.badge>
+                            </span>
                         </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <x-ui.button
-                                    size="icon"
-                                    variant="ghost"
-                                    wire:click="openContacts({{ $supplier->id }})"
-                                    title="Manage Contacts"
-                                    aria-label="Contacts">
-                                    <span class="material-symbols-rounded text-base text-zinc-600 dark:text-zinc-400">contacts</span>
-                                </x-ui.button>
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <x-ui.table-actions>
+                                <x-ui.table-action-item icon="contacts" wire:click="openContacts({{ $supplier->id }})" aria-label="Manage Contacts">
+                                    Manage Contacts
+                                </x-ui.table-action-item>
                                 @can('update', $supplier)
-                                <x-ui.button
-                                    size="icon"
-                                    variant="ghost"
-                                    wire:click="edit({{ $supplier->id }})"
-                                    title="Edit Supplier"
-                                    aria-label="Edit">
-                                    <span class="material-symbols-rounded text-base text-zinc-600 dark:text-zinc-400">edit</span>
-                                </x-ui.button>
+                                <x-ui.table-action-item icon="edit" wire:click="edit({{ $supplier->id }})" aria-label="Edit Supplier">
+                                    Edit Supplier
+                                </x-ui.table-action-item>
                                 @endcan
                                 @can('delete', $supplier)
-                                <x-ui.button
-                                    size="icon"
-                                    variant="ghost"
-                                    wire:click="deleteSupplier({{ $supplier->id }})"
-                                    wire:confirm="Delete this supplier? All associated catalog entries will be disabled."
-                                    title="Delete Supplier"
-                                    aria-label="Delete">
-                                    <span class="material-symbols-rounded text-base text-rose-500">delete</span>
-                                </x-ui.button>
+                                <x-ui.table-action-item icon="delete" variant="destructive" wire:click="deleteSupplier({{ $supplier->id }})" wire:confirm="Delete this supplier? All associated catalog entries will be disabled." aria-label="Delete Supplier">
+                                    Delete Supplier
+                                </x-ui.table-action-item>
                                 @endcan
-                            </div>
+                            </x-ui.table-actions>
                         </td>
                     </tr>
                     @empty
@@ -308,7 +293,7 @@
                                 <div class="font-medium text-sm text-zinc-900 dark:text-white flex items-center gap-2">
                                     {{ $contact->name }}
                                     @if($contact->is_primary)
-                                        <x-ui.badge variant="success">Primary</x-ui.badge>
+                                        <span class="text-xs text-muted-foreground font-medium">(Primary)</span>
                                     @endif
                                     @if($contact->title)
                                         <span class="text-xs text-zinc-400">({{ $contact->title }})</span>
@@ -446,9 +431,9 @@
                             <div>
                                 <div class="font-medium text-zinc-900 dark:text-white flex items-center gap-1.5">
                                     {{ $item->purchasable?->name ?? 'Item #' . $item->purchasable_id }}
-                                    <x-ui.badge variant="neutral">{{ strtoupper($item->purchasable_type) }}</x-ui.badge>
+                                    <span class="text-xs text-muted-foreground font-medium">({{ strtoupper($item->purchasable_type) }})</span>
                                     @if($item->is_preferred)
-                                        <x-ui.badge variant="warning">Preferred</x-ui.badge>
+                                        <span class="text-xs text-muted-foreground font-medium">(Preferred)</span>
                                     @endif
                                 </div>
                                 <div class="text-zinc-500 mt-0.5">

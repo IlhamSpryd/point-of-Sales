@@ -46,7 +46,7 @@
                 <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Store Info</th>
                 <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Timezone</th>
                 <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Statistics</th>
-                <th scope="col" class="px-6 py-3.5 text-center text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
                 <th scope="col" class="px-6 py-3.5 text-right text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
             </x-slot:head>
 
@@ -59,7 +59,7 @@
                         <div class="flex items-center gap-2">
                             <span class="font-bold text-foreground text-sm">{{ $store->name }}</span>
                             @if($store->is_initial)
-                                <x-ui.badge variant="info" size="xs">Primary Branch</x-ui.badge>
+                                <span class="text-xs text-muted-foreground font-medium">(Primary Branch)</span>
                             @endif
                         </div>
                         <div class="text-xs text-muted-foreground mt-1 flex flex-col gap-0.5">
@@ -92,10 +92,11 @@
                             </span>
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-center whitespace-nowrap">
-                        <x-ui.badge variant="{{ $store->is_active ? 'success' : 'neutral' }}" size="sm">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                            <span class="w-1.5 h-1.5 rounded-full {{ $store->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                             {{ $store->is_active ? 'Active' : 'Inactive' }}
-                        </x-ui.badge>
+                        </span>
                     </td>
                     <td class="px-6 py-4 text-right whitespace-nowrap">
                         <x-ui.table-actions>

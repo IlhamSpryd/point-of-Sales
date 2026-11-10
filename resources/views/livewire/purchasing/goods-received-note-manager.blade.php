@@ -88,63 +88,42 @@
                         <td class="px-6 py-4">
                             <span class="text-zinc-700 dark:text-zinc-300 font-medium">{{ $grn->store?->name ?? 'All Branches' }}</span>
                         </td>
-                        <td class="px-6 py-4 text-center">
-                            @php
-                                $matchVariant = match($grn->matching_status?->value ?? (string) $grn->matching_status) {
-                                    'MATCHED', 'matched' => 'success',
-                                    'PARTIALLY_MATCHED', 'partial' => 'warning',
-                                    default => 'neutral'
-                                };
-                            @endphp
-                            <x-ui.badge :variant="$matchVariant">
+                        <td class="px-6 py-4">
+                            <span class="text-xs text-muted-foreground font-medium">
                                 {{ $grn->matching_status?->label() ?? $grn->matching_status ?? 'UNMATCHED' }}
-                            </x-ui.badge>
+                            </span>
                         </td>
-                        <td class="px-6 py-4 text-center">
+                        <td class="px-6 py-4">
                             @php
                                 $grnStatusVal = $grn->status?->value ?? (string) $grn->status;
-                                $statusVariant = match($grnStatusVal) {
-                                    'POSTED', 'posted' => 'success',
-                                    'REVERSED', 'reversed' => 'danger',
-                                    'CANCELLED', 'cancelled' => 'neutral',
-                                    default => 'warning'
+                                $dotColor = match($grnStatusVal) {
+                                    'POSTED', 'posted' => 'bg-success',
+                                    'REVERSED', 'reversed' => 'bg-destructive',
+                                    'CANCELLED', 'cancelled' => 'bg-neutral',
+                                    default => 'bg-warning'
                                 };
                             @endphp
-                            <x-ui.badge :variant="$statusVariant">
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $dotColor }}"></span>
                                 {{ $grn->status?->label() ?? $grnStatusVal }}
-                            </x-ui.badge>
+                            </span>
                         </td>
-                        <td class="px-6 py-4 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <x-ui.button
-                                    size="icon"
-                                    variant="ghost"
-                                    wire:click="viewGrn({{ $grn->id }})"
-                                    title="View GRN Details"
-                                    aria-label="Details">
-                                    <span class="material-symbols-rounded text-base text-zinc-600 dark:text-zinc-400">visibility</span>
-                                </x-ui.button>
+                        <td class="px-6 py-4 text-right whitespace-nowrap">
+                            <x-ui.table-actions>
+                                <x-ui.table-action-item icon="visibility" wire:click="viewGrn({{ $grn->id }})" aria-label="View GRN Details">
+                                    View GRN Details
+                                </x-ui.table-action-item>
                                 @if($grn->isDraft())
-                                    <x-ui.button
-                                        size="icon"
-                                        variant="ghost"
-                                        wire:click="postGrn({{ $grn->id }})"
-                                        title="Post Goods Receipt (Stock In)"
-                                        aria-label="Post">
-                                        <span class="material-symbols-rounded text-base text-emerald-600">publish</span>
-                                    </x-ui.button>
+                                    <x-ui.table-action-item icon="publish" wire:click="postGrn({{ $grn->id }})" aria-label="Post Goods Receipt">
+                                        Post Goods Receipt
+                                    </x-ui.table-action-item>
                                 @endif
                                 @if(($grn->status?->value === 'POSTED' || $grn->status === 'posted') && ! $grn->isReversed())
-                                    <x-ui.button
-                                        size="icon"
-                                        variant="ghost"
-                                        wire:click="confirmReverseGrn({{ $grn->id }})"
-                                        title="Reverse GRN (Reverse Stock)"
-                                        aria-label="Reverse">
-                                        <span class="material-symbols-rounded text-base text-rose-500">undo</span>
-                                    </x-ui.button>
+                                    <x-ui.table-action-item icon="undo" variant="destructive" wire:click="confirmReverseGrn({{ $grn->id }})" aria-label="Reverse GRN">
+                                        Reverse GRN
+                                    </x-ui.table-action-item>
                                 @endif
-                            </div>
+                            </x-ui.table-actions>
                         </td>
                     </tr>
         @endforeach
@@ -273,8 +252,9 @@
             @if($selectedGrn)
                 <div>
                     <span class="font-sans">{{ $selectedGrn->grn_number }}</span>
-                    <span class="ml-2">
-                        <x-ui.badge variant="success">{{ $selectedGrn->status?->label() ?? $selectedGrn->status }}</x-ui.badge>
+                    <span class="ml-2 inline-flex items-center gap-1.5 text-xs text-foreground font-medium font-sans">
+                        <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                        {{ $selectedGrn->status?->label() ?? $selectedGrn->status }}
                     </span>
                 </div>
             @else

@@ -97,9 +97,10 @@
                         <td class="px-6 py-4">
                             <div class="flex flex-col items-start gap-1">
                                 <span class="text-xs font-medium text-foreground">{{ $user->role ? $user->role->name : 'Unassigned' }}</span>
-                                <x-ui.badge :variant="$user->is_active ? 'success' : 'destructive'">
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $user->is_active ? 'bg-success' : 'bg-destructive' }}"></span>
                                     {{ $user->is_active ? 'Active' : 'Inactive' }}
-                                </x-ui.badge>
+                                </span>
                             </div>
                         </td>
                         <td class="px-6 py-4 text-sm text-muted-foreground">{{ $user->join_date ? $user->join_date->format('M d, Y') : ($user->created_at?->format('M d, Y') ?? '—') }}</td>
@@ -145,14 +146,11 @@
                                 </div>
                             </div>
                             <div class="flex flex-col items-end gap-1">
-                                @if($user->role)
-                                    <x-ui.badge variant="primary">{{ $user->role->name }}</x-ui.badge>
-                                @else
-                                    <x-ui.badge variant="secondary">Unassigned</x-ui.badge>
-                                @endif
-                                <x-ui.badge :variant="$user->is_active ? 'success' : 'destructive'">
+                                <span class="text-xs font-medium text-foreground">{{ $user->role ? $user->role->name : 'Unassigned' }}</span>
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $user->is_active ? 'bg-success' : 'bg-destructive' }}"></span>
                                     {{ $user->is_active ? 'Active' : 'Inactive' }}
-                                </x-ui.badge>
+                                </span>
                             </div>
                         </div>
                         <div class="flex items-center gap-4 mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
@@ -229,23 +227,25 @@
                                             <span class="text-amber-600 font-medium">Pending (exp. {{ $invitation->expires_at->diffForHumans() }})</span>
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 text-right space-x-2">
+                                    <td class="px-6 py-4 text-right whitespace-nowrap">
                                         @if(!$invitation->accepted_at)
-                                            <form action="{{ route('users.invitations.resend', $invitation->id) }}" method="POST" class="inline-block">
+                                            <x-ui.table-actions>
+                                                <x-ui.table-action-item icon="forward_to_inbox" onclick="document.getElementById('resend-invite-modal-{{ $invitation->id }}').submit()" aria-label="Resend Invitation">
+                                                    Resend Invitation
+                                                </x-ui.table-action-item>
+                                                <x-ui.table-action-item icon="cancel" variant="destructive" onclick="if(confirm('Are you sure you want to cancel this invitation?')) document.getElementById('revoke-invite-modal-{{ $invitation->id }}').submit()" aria-label="Cancel Invitation">
+                                                    Cancel Invitation
+                                                </x-ui.table-action-item>
+                                            </x-ui.table-actions>
+                                            <form id="resend-invite-modal-{{ $invitation->id }}" action="{{ route('users.invitations.resend', $invitation->id) }}" method="POST" class="hidden">
                                                 @csrf
-                                                <button type="submit" class="text-xs text-primary-600 hover:text-primary-800 font-semibold" title="Resend Invitation">
-                                                    Resend
-                                                </button>
                                             </form>
-                                            <form action="{{ route('users.invitations.revoke', $invitation->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Are you sure you want to cancel this invitation?')">
+                                            <form id="revoke-invite-modal-{{ $invitation->id }}" action="{{ route('users.invitations.revoke', $invitation->id) }}" method="POST" class="hidden">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="text-xs text-rose-500 hover:text-rose-700 font-semibold" title="Cancel Invitation">
-                                                    Cancel
-                                                </button>
                                             </form>
                                         @else
-                                            <span class="text-xs text-zinc-400">—</span>
+                                            <span class="text-xs text-muted-foreground">—</span>
                                         @endif
                                     </td>
                                 </tr>

@@ -92,7 +92,7 @@
                             </td>
                             <td class="px-6 py-4 text-xs text-muted-foreground">
                                 @if($ret->goodsReceipt)
-                                    <span class="inline-flex items-center gap-1 font-sans text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                                    <span class="inline-flex items-center gap-1 font-sans text-xs text-foreground font-medium">
                                         <span class="material-symbols-rounded text-[14px]">receipt_long</span>
                                         {{ $ret->goodsReceipt->receipt_number }}
                                     </span>
@@ -103,9 +103,18 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4">
-                                <x-ui.badge :variant="$ret->status->badgeType()">
+                                @php
+                                    $retDot = match($ret->status->badgeType()) {
+                                        'success' => 'bg-success',
+                                        'warning' => 'bg-warning',
+                                        'danger' => 'bg-destructive',
+                                        default => 'bg-neutral',
+                                    };
+                                @endphp
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $retDot }}"></span>
                                     {{ $ret->status->label() }}
-                                </x-ui.badge>
+                                </span>
                             </td>
                             <td class="px-6 py-4 text-xs text-muted-foreground">
                                 <div>Created: {{ $ret->creator?->name ?? 'System' }}</div>
@@ -113,33 +122,25 @@
                                     <div class="text-[11px] text-emerald-600">Posted: {{ $ret->poster->name }}</div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex items-center justify-end gap-1.5">
-                                    <button wire:click="viewDetail({{ $ret->id }})" title="View Details"
-                                            class="p-1.5 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors">
-                                        <span class="material-symbols-rounded text-[20px]">visibility</span>
-                                    </button>
-
+                            <td class="px-6 py-4 text-right whitespace-nowrap">
+                                <x-ui.table-actions>
+                                    <x-ui.table-action-item icon="visibility" wire:click="viewDetail({{ $ret->id }})" aria-label="View Details">
+                                        View Details
+                                    </x-ui.table-action-item>
                                     @if($ret->isDraft())
-                                        <button wire:click="postReturn({{ $ret->id }})" title="Post Return"
-                                                wire:confirm="Post this return? Physical stock will be deducted immediately from the branch."
-                                                class="p-1.5 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg transition-colors">
-                                            <span class="material-symbols-rounded text-[20px]">send</span>
-                                        </button>
-                                        <button wire:click="cancelReturn({{ $ret->id }})" title="Cancel Draft"
-                                                wire:confirm="Cancel this draft return?"
-                                                class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors">
-                                            <span class="material-symbols-rounded text-[20px]">cancel</span>
-                                        </button>
+                                        <x-ui.table-action-item icon="send" wire:click="postReturn({{ $ret->id }})" wire:confirm="Post this return? Physical stock will be deducted immediately from the branch." aria-label="Post Return">
+                                            Post Return
+                                        </x-ui.table-action-item>
+                                        <x-ui.table-action-item icon="cancel" variant="destructive" wire:click="cancelReturn({{ $ret->id }})" wire:confirm="Cancel this draft return?" aria-label="Cancel Draft">
+                                            Cancel Draft
+                                        </x-ui.table-action-item>
                                     @endif
-
                                     @if($ret->isPosted() && auth()->user()->role?->name === 'Owner')
-                                        <button wire:click="openReverseModal({{ $ret->id }})" title="Reverse Return"
-                                                class="p-1.5 text-amber-600 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition-colors">
-                                            <span class="material-symbols-rounded text-[20px]">undo</span>
-                                        </button>
+                                        <x-ui.table-action-item icon="undo" variant="destructive" wire:click="openReverseModal({{ $ret->id }})" aria-label="Reverse Return">
+                                            Reverse Return
+                                        </x-ui.table-action-item>
                                     @endif
-                                </div>
+                                </x-ui.table-actions>
                             </td>
                         </tr>
                 @endforeach
@@ -299,10 +300,11 @@
                 <div class="flex flex-col gap-4">
                     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-secondary p-4 rounded-2xl text-xs">
                         <div>
-                            <span class="text-muted-foreground block">Status:</span>
-                            <x-ui.badge :variant="$selectedReturn->status->badgeType()">
+                            <span class="text-muted-foreground block mb-0.5">Status:</span>
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ match($selectedReturn->status->value) { 'completed' => 'bg-success', 'draft' => 'bg-warning', 'cancelled' => 'bg-destructive', default => 'bg-neutral' } }}"></span>
                                 {{ $selectedReturn->status->label() }}
-                            </x-ui.badge>
+                            </span>
                         </div>
                         <div>
                             <span class="text-muted-foreground block">Date:</span>

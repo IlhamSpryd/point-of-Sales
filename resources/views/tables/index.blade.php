@@ -78,10 +78,11 @@
                         </div>
                     </td>
                     <td class="px-6 py-4">
-                        <div class="flex flex-col gap-1.5 items-start">
-                            <x-ui.badge :variant="$table->is_active ? 'success' : 'secondary'">
+                        <div class="flex flex-col gap-1 items-start">
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $table->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                                 {{ $table->is_active ? 'Active' : 'Inactive' }}
-                            </x-ui.badge>
+                            </span>
                             @php
                                 $opLabels = [
                                     'available' => 'Available',
@@ -90,12 +91,18 @@
                                     'reserved' => 'Reserved',
                                     'disabled' => 'Disabled',
                                 ];
+                                $opDot = match($table->operational_status) {
+                                    'available' => 'bg-success',
+                                    'occupied' => 'bg-destructive',
+                                    'cleaning' => 'bg-warning',
+                                    'reserved' => 'bg-info',
+                                    default => 'bg-neutral',
+                                };
                             @endphp
-                            <x-ui.badge :variant="match($table->operational_status) {
-                                'available' => 'success', 'occupied' => 'destructive', 'cleaning' => 'warning', 'reserved' => 'primary', default => 'secondary'
-                            }">
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $opDot }}"></span>
                                 {{ $opLabels[$table->operational_status] ?? $table->operational_status }}
-                            </x-ui.badge>
+                            </span>
                         </div>
                     </td>
                     <td class="px-6 py-4">
@@ -111,37 +118,35 @@
                             </div>
                         </div>
                     </td>
-                    <td class="px-6 py-4 text-right space-x-1">
+                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <x-ui.table-actions>
+                            @if($table->operational_status === 'occupied')
+                                <x-ui.table-action-item icon="meeting_room" onclick="if(confirm('Release table {{ addslashes($table->table_name) }}? Please ensure all active orders are settled.')) document.getElementById('release-form-{{ $table->id }}').submit()" aria-label="Release Table">
+                                    Release Table
+                                </x-ui.table-action-item>
+                            @endif
+                            <x-ui.table-action-item icon="edit" href="{{ route('tables.edit', $routeToken) }}" wire:navigate aria-label="Edit Table">
+                                Edit Table
+                            </x-ui.table-action-item>
+                            <x-ui.table-action-item icon="sync" onclick="if(confirm('Rotate QR token for table {{ addslashes($table->table_name) }}? The physical QR code will need to be reprinted, and any existing customer sessions will be invalidated.')) document.getElementById('rotate-qr-form-{{ $table->id }}').submit()" aria-label="Rotate QR">
+                                Rotate QR Code
+                            </x-ui.table-action-item>
+                            <x-ui.table-action-item icon="delete" variant="destructive" onclick="confirmSubmit('delete-form-{{ $table->id }}', '{{ addslashes($table->table_name) }}')" aria-label="Delete Table">
+                                Delete Table
+                            </x-ui.table-action-item>
+                        </x-ui.table-actions>
+
                         @if($table->operational_status === 'occupied')
-                            <form action="{{ route('tables.release', $routeToken) }}" method="POST" class="inline-block">
+                            <form id="release-form-{{ $table->id }}" action="{{ route('tables.release', $routeToken) }}" method="POST" class="hidden">
                                 @csrf
-                                <button type="submit" onclick="return confirm('Release table {{ $table->table_name }}? Please ensure all active orders are settled.')"
-                                    x-on:click="window.erpMotion?.pulseHighlight($el)"
-                                    class="inline-flex items-center justify-center size-9 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors active:scale-90" aria-label="Release Table" title="Release Table (Mark Available)">
-                                    <span class="material-symbols-rounded text-[20px]">meeting_room</span>
-                                </button>
                             </form>
                         @endif
-                        <a href="{{ route('tables.edit', $routeToken) }}"
-                            x-on:click="window.erpMotion?.pulseHighlight($el)"
-                            class="inline-flex items-center justify-center size-9 rounded-lg text-gray-600 hover:text-foreground hover:bg-gray-100 transition-colors active:scale-90" aria-label="Edit table" wire:navigate>
-                            <span class="material-symbols-rounded text-[20px]">edit</span>
-                        </a>
-                        <form action="{{ route('tables.rotate-qr', $routeToken) }}" method="POST" class="inline-block">
+                        <form id="rotate-qr-form-{{ $table->id }}" action="{{ route('tables.rotate-qr', $routeToken) }}" method="POST" class="hidden">
                             @csrf
-                            <button type="submit" onclick="return confirm('Rotate QR token for table {{ $table->table_name }}? The physical QR code will need to be reprinted, and any existing customer sessions will be invalidated.')"
-                                x-on:click="window.erpMotion?.pulseHighlight($el)"
-                                class="inline-flex items-center justify-center size-9 rounded-lg text-gray-600 hover:text-amber-600 hover:bg-amber-50 transition-colors active:scale-90" aria-label="Rotate QR" title="Rotate Table QR Code">
-                                <span class="material-symbols-rounded text-[20px]">sync</span>
-                            </button>
                         </form>
-                        <form id="delete-form-{{ $table->id }}" action="{{ route('tables.destroy', $routeToken) }}" method="POST" class="inline-block">
+                        <form id="delete-form-{{ $table->id }}" action="{{ route('tables.destroy', $routeToken) }}" method="POST" class="hidden">
                             @csrf
                             @method('DELETE')
-                            <button type="button" onclick="confirmSubmit('delete-form-{{ $table->id }}', '{{ $table->table_name }}')"
-                                class="inline-flex items-center justify-center size-9 rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors active:scale-90" aria-label="Delete table">
-                                <span class="material-symbols-rounded text-[20px]">delete</span>
-                            </button>
                         </form>
                     </td>
                 </tr>
@@ -166,9 +171,10 @@
                             <span class="text-xs text-gray-500 font-sans">{{ $table->table_code }} &bull; v{{ $table->qr_token_version ?? 1 }}</span>
                         </div>
                         <div class="flex flex-col items-end gap-1">
-                            <x-ui.badge :variant="$table->is_active ? 'success' : 'secondary'">
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $table->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                                 {{ $table->is_active ? 'Active' : 'Inactive' }}
-                            </x-ui.badge>
+                            </span>
                             @php
                                 $opLabels = [
                                     'available' => 'Available',
@@ -177,12 +183,18 @@
                                     'reserved' => 'Reserved',
                                     'disabled' => 'Disabled',
                                 ];
+                                $opDot = match($table->operational_status) {
+                                    'available' => 'bg-success',
+                                    'occupied' => 'bg-destructive',
+                                    'cleaning' => 'bg-warning',
+                                    'reserved' => 'bg-primary',
+                                    default => 'bg-neutral',
+                                };
                             @endphp
-                            <x-ui.badge :variant="match($table->operational_status) {
-                                'available' => 'success', 'occupied' => 'destructive', 'cleaning' => 'warning', 'reserved' => 'primary', default => 'secondary'
-                            }">
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $opDot }}"></span>
                                 {{ $opLabels[$table->operational_status] ?? $table->operational_status }}
-                            </x-ui.badge>
+                            </span>
                         </div>
                     </div>
                     

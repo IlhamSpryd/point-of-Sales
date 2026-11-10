@@ -125,7 +125,17 @@
                                 {{ $isReversal ? '-' : '+' }} Rp {{ number_format($amountAbs, 2, ',', '.') }}
                             </td>
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold border {{ $record->status->badgeClasses() }}">
+                                @php
+                                    $commDot = match($record->status) {
+                                        \App\Modules\HR\Enums\CommissionRecordStatusEnum::APPROVED, \App\Modules\HR\Enums\CommissionRecordStatusEnum::EARNED, \App\Modules\HR\Enums\CommissionRecordStatusEnum::PAID => 'bg-success',
+                                        \App\Modules\HR\Enums\CommissionRecordStatusEnum::PENDING => 'bg-warning',
+                                        \App\Modules\HR\Enums\CommissionRecordStatusEnum::PROCESSED_IN_PAYROLL => 'bg-info',
+                                        \App\Modules\HR\Enums\CommissionRecordStatusEnum::REVERSED => 'bg-destructive',
+                                        default => 'bg-neutral',
+                                    };
+                                @endphp
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full {{ $commDot }}"></span>
                                     {{ $record->status->label() }}
                                 </span>
                             </td>

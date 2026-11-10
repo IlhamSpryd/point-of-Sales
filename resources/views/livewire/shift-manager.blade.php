@@ -70,15 +70,15 @@
                         <div class="flex items-center gap-2.5">
                             <h3 class="text-lg font-bold text-foreground">Shift #{{ $activeShift->id }}</h3>
                             @if($activeShift->status === 'handover_pending')
-                                <x-ui.badge variant="warning">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mr-1.5"></span>
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-warning"></span>
                                     Handover Pending
-                                </x-ui.badge>
+                                </span>
                             @else
-                                <x-ui.badge variant="success">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse mr-1.5"></span>
+                                <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse"></span>
                                     Active
-                                </x-ui.badge>
+                                </span>
                             @endif
                         </div>
                         <p class="text-xs text-gray-500 mt-1">
@@ -223,11 +223,9 @@
                                 <tr class="hover:bg-gray-50/50 transition-colors">
                                     <td class="py-2.5 px-3 text-gray-500">{{ $move->created_at->format('H:i:s') }}</td>
                                     <td class="py-2.5 px-3">
-                                        @if($move->type->value === 'cash_in')
-                                            <x-ui.badge variant="success">Cash In</x-ui.badge>
-                                        @else
-                                            <x-ui.badge variant="destructive">Cash Out</x-ui.badge>
-                                        @endif
+                                        <span class="text-xs text-foreground font-medium font-sans">
+                                            {{ $move->type->value === 'cash_in' ? 'Cash In' : 'Cash Out' }}
+                                        </span>
                                     </td>
                                     <td class="py-2.5 px-3 font-medium text-gray-700">{{ $move->category->value }}</td>
                                     <td class="py-2.5 px-3 font-sans font-bold text-right tabular-nums {{ $move->type->value === 'cash_in' ? 'text-emerald-600' : 'text-rose-600' }}">
@@ -261,7 +259,7 @@
                                     <th class="py-2.5 px-3">To Cashier</th>
                                     <th class="py-2.5 px-3 text-right">Counted Cash</th>
                                     <th class="py-2.5 px-3 text-right">Discrepancy</th>
-                                    <th class="py-2.5 px-3 text-center">Status</th>
+                                    <th class="py-2.5 px-3">Status</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-50">
@@ -274,14 +272,18 @@
                                         <td class="py-2.5 px-3 font-sans text-right tabular-nums {{ $ho->cash_discrepancy != 0 ? 'text-rose-600 font-bold' : 'text-gray-500' }}">
                                             Rp {{ number_format($ho->cash_discrepancy, 0, ',', '.') }}
                                         </td>
-                                        <td class="py-2.5 px-3 text-center">
-                                            @if($ho->status === 'accepted')
-                                                <x-ui.badge variant="success">Accepted</x-ui.badge>
-                                            @elseif($ho->status === 'cancelled')
-                                                <x-ui.badge variant="secondary">Cancelled</x-ui.badge>
-                                            @else
-                                                <x-ui.badge variant="warning">Pending</x-ui.badge>
-                                            @endif
+                                        <td class="py-2.5 px-3">
+                                            @php
+                                                $hoDot = match($ho->status) {
+                                                    'accepted' => 'bg-success',
+                                                    'cancelled' => 'bg-destructive',
+                                                    default => 'bg-warning',
+                                                };
+                                            @endphp
+                                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                                <span class="w-1.5 h-1.5 rounded-full {{ $hoDot }}"></span>
+                                                {{ ucfirst($ho->status) }}
+                                            </span>
                                         </td>
                                     </tr>
                                 @endforeach

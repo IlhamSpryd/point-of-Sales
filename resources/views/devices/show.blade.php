@@ -12,11 +12,20 @@
             <x-slot:actions>
                 <div class="flex items-center gap-3">
                     @if($device->status === 'paired')
-                        <x-ui.badge variant="success">Connected (Paired)</x-ui.badge>
+                        <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                            <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+                            Connected (Paired)
+                        </span>
                     @elseif($device->status === 'pending')
-                        <x-ui.badge variant="warning">Pending Pairing</x-ui.badge>
+                        <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                            <span class="w-1.5 h-1.5 rounded-full bg-warning"></span>
+                            Pending Pairing
+                        </span>
                     @else
-                        <x-ui.badge variant="destructive">Revoked</x-ui.badge>
+                        <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                            <span class="w-1.5 h-1.5 rounded-full bg-destructive"></span>
+                            Revoked
+                        </span>
                     @endif
 
                     <x-ui.button variant="secondary" href="{{ route('devices.edit', $device) }}" class="gap-2" wire:navigate>
@@ -185,9 +194,10 @@
                         </div>
                         <div>
                             <span class="text-xs text-zinc-500 block mb-1">Operational Status</span>
-                            <x-ui.badge :variant="$device->is_active ? 'success' : 'secondary'">
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $device->is_active ? 'bg-success' : 'bg-neutral' }}"></span>
                                 {{ $device->is_active ? 'Active' : 'Inactive' }}
-                            </x-ui.badge>
+                            </span>
                         </div>
                         <div>
                             <span class="text-xs text-zinc-500 block">Registered On</span>
