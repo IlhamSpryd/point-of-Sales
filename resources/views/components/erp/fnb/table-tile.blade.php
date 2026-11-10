@@ -48,7 +48,7 @@
                     {{ $code }}
                 </span>
                 <span class="text-[11px] font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded-md flex items-center gap-1">
-                    <span class="material-symbols-rounded text-[13px]">group</span>
+                    <span class="material-symbols-rounded text-[14px]">group</span>
                     <span>{{ $capacity }} Seats</span>
                 </span>
             </div>

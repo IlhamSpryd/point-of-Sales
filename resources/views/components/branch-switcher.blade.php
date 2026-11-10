@@ -18,7 +18,7 @@
     }
     
     $currentSession = session('active_store_id');
-    $isAll = ($currentSession === 'all' || $currentSession === null) && $isOwner;
+    $isAll = $isOwner && count($stores) > 1 && ($currentSession === 'all' || $currentSession === null);
     $currentStore = ! $isAll ? $stores->firstWhere('id', (int) $currentSession) : null;
     $activeLabel = $isAll ? 'All Branches (Consolidated)' : ($currentStore?->name ?? ($stores->first()?->name ?? 'Select Branch'));
 

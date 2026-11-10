@@ -69,20 +69,21 @@ return new class extends Migration
                     continue;
                 }
 
-                $currentFk = $this->getTenantForeignKeyName($tableName) ?? $defaultConstraintName;
-                $currentRule = $this->getDeleteRule($tableName, $currentFk);
+                $existingFk = $this->getTenantForeignKeyName($tableName);
+                if ($existingFk !== null) {
+                    $currentRule = $this->getDeleteRule($tableName, $existingFk);
+                    if ($currentRule === 'RESTRICT') {
+                        continue;
+                    }
 
-                // Lewati jika sudah RESTRICT (idempoten)
-                if ($currentRule === 'RESTRICT') {
-                    continue;
+                    Schema::table($tableName, function (Blueprint $table) use ($existingFk) {
+                        $table->dropForeign($existingFk);
+                    });
                 }
 
-                Schema::table($tableName, function (Blueprint $table) use ($currentFk) {
-                    $table->dropForeign($currentFk);
-                });
-
-                Schema::table($tableName, function (Blueprint $table) use ($currentFk) {
-                    $table->foreign('tenant_id', $currentFk)
+                $fkToCreate = $existingFk ?? $defaultConstraintName;
+                Schema::table($tableName, function (Blueprint $table) use ($fkToCreate) {
+                    $table->foreign('tenant_id', $fkToCreate)
                         ->references('id')
                         ->on('tenants')
                         ->onDelete('restrict');
@@ -113,20 +114,21 @@ return new class extends Migration
                     continue;
                 }
 
-                $currentFk = $this->getTenantForeignKeyName($tableName) ?? $defaultConstraintName;
-                $currentRule = $this->getDeleteRule($tableName, $currentFk);
+                $existingFk = $this->getTenantForeignKeyName($tableName);
+                if ($existingFk !== null) {
+                    $currentRule = $this->getDeleteRule($tableName, $existingFk);
+                    if ($currentRule === 'CASCADE') {
+                        continue;
+                    }
 
-                // Lewati jika sudah CASCADE (idempoten)
-                if ($currentRule === 'CASCADE') {
-                    continue;
+                    Schema::table($tableName, function (Blueprint $table) use ($existingFk) {
+                        $table->dropForeign($existingFk);
+                    });
                 }
 
-                Schema::table($tableName, function (Blueprint $table) use ($currentFk) {
-                    $table->dropForeign($currentFk);
-                });
-
-                Schema::table($tableName, function (Blueprint $table) use ($currentFk) {
-                    $table->foreign('tenant_id', $currentFk)
+                $fkToCreate = $existingFk ?? $defaultConstraintName;
+                Schema::table($tableName, function (Blueprint $table) use ($fkToCreate) {
+                    $table->foreign('tenant_id', $fkToCreate)
                         ->references('id')
                         ->on('tenants')
                         ->onDelete('cascade');
@@ -166,6 +168,8 @@ return new class extends Migration
             if (! empty($fk)) {
                 return (string) $fk[0]->CONSTRAINT_NAME;
             }
+
+            return null;
         }
 
         return $this->tableConstraints[$tableName] ?? null;

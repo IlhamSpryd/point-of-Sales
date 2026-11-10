@@ -17,7 +17,7 @@
             </x-ui.alert>
         @endif
 
-        <div class="card-surface rounded-2xl border border-border dark:border-zinc-800 p-6 shadow-xs">
+        <div class="card-surface rounded-2xl border border-border p-6 shadow-xs">
             <form action="{{ route('settings.update') }}" method="POST" class="space-y-6">
                 @csrf
 
@@ -40,9 +40,8 @@
                     </a>
                 </div>
 
-                <div class="pt-6 border-t border-zinc-200 dark:border-zinc-800">
-                    <h2 class="text-base font-bold text-zinc-900 dark:text-white mb-4 flex items-center gap-2">
-                        <span class="material-symbols-rounded text-primary text-xl">calculate</span>
+                <div class="pt-6 border-t border-border">
+                    <h2 class="text-base font-bold text-foreground mb-4">
                         Tax & Cashier Rounding Rules
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -65,7 +64,7 @@
                     </div>
                 </div>
 
-                <div class="pt-4 border-t border-zinc-200 dark:border-zinc-800 flex justify-end">
+                <div class="pt-4 border-t border-border flex justify-end">
                     <x-ui.button type="submit" variant="primary" class="gap-2">
                         <span class="material-symbols-rounded text-base">save</span>
                         Save Settings

@@ -33,7 +33,7 @@
         aria-haspopup="true"
         aria-label="System notifications"
         class="relative w-8 h-8 flex items-center justify-center rounded-lg text-shell-foreground bg-shell-accent hover:bg-shell-border hover:text-shell-foreground-active border border-shell-border active:scale-95 transition-all cursor-pointer">
-        <span class="material-symbols-rounded text-[18px]" aria-hidden="true">notifications</span>
+        <span class="material-symbols-rounded text-[20px]" aria-hidden="true">notifications</span>
 
         {{-- Unread Badge Dot --}}
         <template x-if="unreadTotal > 0">
@@ -103,7 +103,7 @@
                             'bg-info-muted/40 text-info border-info-border/40': item.variant === 'blue',
                             'bg-warning-muted/40 text-warning border-warning-border/40': item.variant === 'amber'
                         }">
-                        <span class="material-symbols-rounded text-[17px]" x-text="item.icon"></span>
+                        <span class="material-symbols-rounded text-[16px]" x-text="item.icon"></span>
                     </div>
 
                     {{-- Text Content --}}

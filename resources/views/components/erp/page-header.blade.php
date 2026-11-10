@@ -13,23 +13,6 @@
 
 <div {{ $attributes->twMerge('flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-6 shrink-0') }}>
     <div class="min-w-0">
-        @if (! empty($breadcrumbs))
-            <x-ui.breadcrumbs class="mb-2">
-                @if (is_array($breadcrumbs))
-                    @foreach ($breadcrumbs as $crumb)
-                        <x-ui.breadcrumbs.item
-                            :href="$crumb['href'] ?? ($crumb['url'] ?? null)"
-                            :active="$loop->last"
-                        >
-                            {{ $crumb['label'] ?? '' }}
-                        </x-ui.breadcrumbs.item>
-                    @endforeach
-                @else
-                    {{ $breadcrumbs }}
-                @endif
-            </x-ui.breadcrumbs>
-        @endif
-
         <div class="flex items-center gap-2.5 flex-wrap">
             <h1 class="text-lg sm:text-xl font-bold text-foreground tracking-tight truncate">
                 {{ $title }}

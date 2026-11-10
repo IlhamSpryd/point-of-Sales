@@ -10,21 +10,18 @@
         </div>
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
             <x-ui.button type="button" variant="primary" wire:click="openCreateModal" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                <span class="material-symbols-rounded text-[18px]">add</span> New Goods Receipt
+                <span class="material-symbols-rounded text-[20px]">add</span> New Goods Receipt
             </x-ui.button>
         </div>
     </div>
 
     {{-- Enterprise Inbound Notice --}}
     <div class="mb-5 p-4 rounded-2xl border border-border bg-muted/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div class="flex items-start gap-3">
-            <span class="material-symbols-rounded text-primary text-2xl mt-0.5">local_shipping</span>
-            <div>
-                <h5 class="text-sm font-semibold text-foreground">Penerimaan Barang Pembelian Vendor (Enterprise P2P)</h5>
-                <p class="text-xs text-muted-foreground mt-0.5">
-                    Penerimaan Purchase Order (PO) resmi dengan rekonsiliasi 3-Way Matching dan posting jurnal kliring GR/IR ke Akuntansi dikelola terpusat di Modul Purchasing.
-                </p>
-            </div>
+        <div>
+            <h5 class="text-sm font-semibold text-foreground">Penerimaan Barang Pembelian Vendor (Enterprise P2P)</h5>
+            <p class="text-xs text-muted-foreground mt-0.5">
+                Penerimaan Purchase Order (PO) resmi dengan rekonsiliasi 3-Way Matching dan posting jurnal kliring GR/IR ke Akuntansi dikelola terpusat di Modul Purchasing.
+            </p>
         </div>
         <a href="{{ route('purchasing.grns.index') }}" wire:navigate class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-background border border-border hover:bg-muted text-foreground transition-colors shrink-0 shadow-xs">
             <span>Buka Purchasing GRN</span>
@@ -46,43 +43,32 @@
     @endif
 
     {{-- Filter & Search Bar --}}
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
-        <div class="relative w-full sm:w-80">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search GRN number, supplier, PO..."
-                   class="form-input w-full pl-10 pr-4 py-2 rounded-2xl border border-border bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring shadow-sm text-sm">
-            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
-                <span class="material-symbols-rounded text-[18px]">search</span>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-3 w-full sm:w-auto">
-            <div class="relative w-full sm:w-48">
-                <select wire:model.live="statusFilter"
-                        class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-sm appearance-none">
-                    <option value="ALL">All Statuses</option>
-                    <option value="DRAFT">Draft</option>
-                    <option value="POSTED">Posted</option>
-                    <option value="REVERSED">Reversed</option>
-                    <option value="CANCELLED">Cancelled</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-muted-foreground">
-                    <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    <x-erp.filter-bar
+        search-placeholder="Search GRN number, supplier, PO..."
+        search-model="search"
+        :reset-method="null"
+    >
+        <x-slot:filters>
+            <select wire:model.live="statusFilter"
+                    class="h-9 px-3 rounded-medium border border-input bg-background text-foreground text-xs font-semibold focus-visible:ring-1 focus-visible:ring-ring outline-none">
+                <option value="ALL">All Statuses</option>
+                <option value="DRAFT">Draft</option>
+                <option value="POSTED">Posted</option>
+                <option value="REVERSED">Reversed</option>
+                <option value="CANCELLED">Cancelled</option>
+            </select>
+        </x-slot:filters>
+    </x-erp.filter-bar>
 
     {{-- Tabel Goods Receipts --}}
-    <div class="card-surface overflow-hidden w-full shrink-0">
-        <div class="overflow-x-auto">
-            <x-erp.data-table
-                loading-target="search, statusFilter"
-                :is-empty="$receipts->isEmpty()"
-                empty-title="No goods receipt documents match the selected criteria."
-                empty-description="Record incoming stock items from local suppliers or direct receipts."
-                empty-icon="move_to_inbox"
-                :colspan="7"
-            >
+    <x-erp.data-table
+        loading-target="search, statusFilter"
+        :is-empty="$receipts->isEmpty()"
+        empty-title="No goods receipt documents match the selected criteria."
+        empty-description="Record incoming stock items from local suppliers or direct receipts."
+        empty-icon="move_to_inbox"
+        :colspan="7"
+    >
                 <x-slot:head>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Receipt No.</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Received At</th>
@@ -141,14 +127,12 @@
                         </td>
                     </tr>
                 @endforeach
+                @if ($receipts->hasPages())
+                    <x-slot:pagination>
+                        {{ $receipts->links() }}
+                    </x-slot:pagination>
+                @endif
             </x-erp.data-table>
-        </div>
-        @if ($receipts->hasPages())
-            <div class="p-4 border-t border-border">
-                {{ $receipts->links() }}
-            </div>
-        @endif
-    </div>
 
     {{-- Modal Buat / Edit Draft --}}
     <x-ui.modal wire:model="showFormModal" maxWidth="4xl">
@@ -233,7 +217,7 @@
 
                                     <div class="col-span-12 sm:col-span-1 text-right">
                                         <button type="button" wire:click="removeItemLine({{ $index }})" class="text-rose-500 hover:text-rose-700">
-                                            <span class="material-symbols-rounded text-[18px]">delete</span>
+                                            <span class="material-symbols-rounded text-[20px]">delete</span>
                                         </button>
                                     </div>
                                 </div>

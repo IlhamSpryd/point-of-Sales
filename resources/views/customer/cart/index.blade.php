@@ -103,7 +103,7 @@
 
             <template x-if="menuUrl">
                 <a :href="menuUrl" class="mt-4 inline-flex items-center gap-1.5 text-[14px] font-semibold text-muted-foreground hover:text-foreground active:scale-95 transition-all duration-200 min-h-11">
-                    <span class="material-symbols-rounded text-[18px]">add_circle</span> Add more items
+                    <span class="material-symbols-rounded text-[20px]">add_circle</span> Add more items
                 </a>
             </template>
 

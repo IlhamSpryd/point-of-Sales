@@ -31,130 +31,121 @@
         @endif
 
         {{-- Filter Bar --}}
-        <div class="card-surface p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 border border-border dark:border-zinc-800">
-            <form method="GET" action="{{ route('devices.index') }}" class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                <div class="w-48">
-                    <select name="store_id" onchange="this.form.submit()" class="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-xs focus:outline-hidden focus:ring-2 focus:ring-ring/20">
+        <x-erp.filter-bar search-action="{{ route('devices.index') }}" search-placeholder="Search devices...">
+            <x-slot:filters>
+                <form id="devices-filter-form" method="GET" action="{{ route('devices.index') }}" class="flex flex-wrap items-center gap-2">
+                    <input type="hidden" name="search" value="{{ request('search') }}">
+                    <select name="store_id" onchange="this.form.submit()" class="h-9 px-3 rounded-medium border border-input bg-background text-foreground text-xs focus:ring-1 focus:ring-ring outline-none">
                         <option value="">All Branches</option>
                         @foreach($stores as $st)
                             <option value="{{ $st->id }}" {{ request('store_id') == $st->id ? 'selected' : '' }}>{{ $st->name }}</option>
                         @endforeach
                     </select>
-                </div>
-                <div class="w-44">
-                    <select name="device_type" onchange="this.form.submit()" class="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-xs focus:outline-hidden focus:ring-2 focus:ring-ring/20">
+                    <select name="device_type" onchange="this.form.submit()" class="h-9 px-3 rounded-medium border border-input bg-background text-foreground text-xs focus:ring-1 focus:ring-ring outline-none">
                         <option value="">All Types</option>
                         <option value="pos_terminal" {{ request('device_type') === 'pos_terminal' ? 'selected' : '' }}>POS Terminal</option>
                         <option value="kds_display" {{ request('device_type') === 'kds_display' ? 'selected' : '' }}>KDS Screen</option>
                         <option value="waiter_tablet" {{ request('device_type') === 'waiter_tablet' ? 'selected' : '' }}>Waiter Tablet</option>
                     </select>
-                </div>
-                <div class="w-40">
-                    <select name="status" onchange="this.form.submit()" class="w-full px-3 py-2 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-200 text-xs focus:outline-hidden focus:ring-2 focus:ring-ring/20">
+                    <select name="status" onchange="this.form.submit()" class="h-9 px-3 rounded-medium border border-input bg-background text-foreground text-xs focus:ring-1 focus:ring-ring outline-none">
                         <option value="">All Statuses</option>
                         <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending Pairing</option>
                         <option value="paired" {{ request('status') === 'paired' ? 'selected' : '' }}>Paired</option>
                         <option value="revoked" {{ request('status') === 'revoked' ? 'selected' : '' }}>Revoked</option>
                     </select>
-                </div>
-                @if(request()->hasAny(['store_id', 'device_type', 'status', 'search']))
-                    <a href="{{ route('devices.index') }}" class="text-xs text-zinc-500 hover:text-primary font-medium underline">Reset Filter</a>
-                @endif
-            </form>
+                </form>
+            </x-slot:filters>
 
-            <form method="GET" action="{{ route('devices.index') }}" class="relative w-full sm:w-64">
-                <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search devices..." class="w-full pl-10 pr-4 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-zinc-800 dark:text-zinc-100">
-            </form>
-        </div>
-
-        <div class="card-surface overflow-hidden rounded-2xl border border-border dark:border-zinc-800 shadow-xs">
-            <div class="overflow-x-auto">
-                <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
-                    <thead>
-                        <tr class="border-b border-border bg-muted/30 text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            <th class="px-6 py-3.5">Code</th>
-                            <th class="px-6 py-3.5">Device &amp; Branch</th>
-                            <th class="px-6 py-3.5">Type</th>
-                            <th class="px-6 py-3.5 text-center">Connection Status</th>
-                            <th class="px-6 py-3.5">Last Activity</th>
-                            <th class="px-6 py-3.5 text-right">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-border">
-                        @forelse($devices as $device)
-                            <tr class="hover:bg-muted/40 transition-colors">
-                                <td class="px-6 py-4 font-sans font-medium text-foreground text-sm whitespace-nowrap">
-                                    {{ $device->device_code }}
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="font-semibold text-foreground text-sm">{{ $device->device_name }}</div>
-                                    <div class="text-xs text-muted-foreground mt-0.5">
-                                        {{ $device->store?->name ?? 'Unknown branch' }}
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-xs text-foreground whitespace-nowrap">
-                                    @php
-                                        $typeLabel = match($device->device_type) {
-                                            'pos_terminal' => 'POS Cashier Terminal',
-                                            'kds_display' => 'Kitchen Display (KDS)',
-                                            'waiter_tablet' => 'Waiter Tablet',
-                                            default => $device->device_type,
-                                        };
-                                    @endphp
-                                    <span class="font-medium text-foreground">
-                                        {{ $typeLabel }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-center whitespace-nowrap">
-                                    @php
-                                        $statusVariant = match($device->pairing_status) {
-                                            'paired' => 'success',
-                                            'pending' => 'warning',
-                                            'revoked' => 'danger',
-                                            default => 'neutral',
-                                        };
-                                        $statusLabel = match($device->pairing_status) {
-                                            'paired' => 'Paired',
-                                            'pending' => 'Pending Pairing',
-                                            'revoked' => 'Revoked',
-                                            default => $device->pairing_status,
-                                        };
-                                    @endphp
-                                    <x-ui.badge variant="{{ $statusVariant }}" size="sm">
-                                        {{ $statusLabel }}
-                                    </x-ui.badge>
-                                </td>
-                                <td class="px-6 py-4 text-xs text-muted-foreground whitespace-nowrap">
-                                    {{ $device->last_seen_at ? $device->last_seen_at->diffForHumans() : 'Never active' }}
-                                </td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap">
-                                    <x-ui.table-actions>
-                                        <x-ui.table-action-item icon="visibility" href="{{ route('devices.show', $device) }}" wire:navigate>
-                                            View Details
-                                        </x-ui.table-action-item>
-                                        <x-ui.table-action-item icon="edit" href="{{ route('devices.edit', $device) }}" wire:navigate>
-                                            Edit Device
-                                        </x-ui.table-action-item>
-                                    </x-ui.table-actions>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="6" class="px-6 py-12 text-center text-muted-foreground text-xs">
-                                    No cashier devices registered yet.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            @if($devices->hasPages())
-                <div class="p-4 border-t border-border dark:border-zinc-800">
-                    {{ $devices->links() }}
-                </div>
+            @if(request()->hasAny(['store_id', 'device_type', 'status', 'search']))
+                <x-slot:actions>
+                    <a href="{{ route('devices.index') }}">
+                        <x-ui.button variant="ghost" size="sm" icon="restart_alt">Reset</x-ui.button>
+                    </a>
+                </x-slot:actions>
             @endif
-        </div>
+        </x-erp.filter-bar>
+
+        <x-erp.data-table
+            :is-empty="$devices->isEmpty()"
+            empty-title="No cashier devices registered yet."
+            empty-description="Register POS terminals, KDS screens, and tablets for branch operations."
+            empty-icon="devices"
+            :colspan="6"
+        >
+            <x-slot:head>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Code</th>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Device &amp; Branch</th>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Type</th>
+                <th scope="col" class="px-6 py-3.5 text-center text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Connection Status</th>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Last Activity</th>
+                <th scope="col" class="px-6 py-3.5 text-right text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+            </x-slot:head>
+
+            @foreach($devices as $device)
+                <tr class="hover:bg-muted/40 transition-colors">
+                    <td class="px-6 py-4 font-sans font-medium text-foreground text-sm whitespace-nowrap">
+                        {{ $device->device_code }}
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="font-semibold text-foreground text-sm">{{ $device->device_name }}</div>
+                        <div class="text-xs text-muted-foreground mt-0.5">
+                            {{ $device->store?->name ?? 'Unknown branch' }}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-xs text-foreground whitespace-nowrap">
+                        @php
+                            $typeLabel = match($device->device_type) {
+                                'pos_terminal' => 'POS Cashier Terminal',
+                                'kds_display' => 'Kitchen Display (KDS)',
+                                'waiter_tablet' => 'Waiter Tablet',
+                                default => $device->device_type,
+                            };
+                        @endphp
+                        <span class="font-medium text-foreground">
+                            {{ $typeLabel }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-center whitespace-nowrap">
+                        @php
+                            $statusVariant = match($device->pairing_status) {
+                                'paired' => 'success',
+                                'pending' => 'warning',
+                                'revoked' => 'danger',
+                                default => 'neutral',
+                            };
+                            $statusLabel = match($device->pairing_status) {
+                                'paired' => 'Paired',
+                                'pending' => 'Pending Pairing',
+                                'revoked' => 'Revoked',
+                                default => $device->pairing_status,
+                            };
+                        @endphp
+                        <x-ui.badge variant="{{ $statusVariant }}" size="sm">
+                            {{ $statusLabel }}
+                        </x-ui.badge>
+                    </td>
+                    <td class="px-6 py-4 text-xs text-muted-foreground whitespace-nowrap">
+                        {{ $device->last_seen_at ? $device->last_seen_at->diffForHumans() : 'Never active' }}
+                    </td>
+                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                        <x-ui.table-actions>
+                            <x-ui.table-action-item icon="visibility" href="{{ route('devices.show', $device) }}" wire:navigate>
+                                View Details
+                            </x-ui.table-action-item>
+                            <x-ui.table-action-item icon="edit" href="{{ route('devices.edit', $device) }}" wire:navigate>
+                                Edit Device
+                            </x-ui.table-action-item>
+                        </x-ui.table-actions>
+                    </td>
+                </tr>
+            @endforeach
+
+            @if($devices->hasPages())
+                <x-slot:pagination>
+                    {{ $devices->links() }}
+                </x-slot:pagination>
+            @endif
+        </x-erp.data-table>
 
         {{-- Contextual Drawer for PAGE-065 (Register Device) --}}
         <x-ui.drawer x-model="createDeviceDrawer" maxWidth="lg">

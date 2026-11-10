@@ -8,7 +8,7 @@
         </div>
         <a href="{{ route('products.index') }}" wire:navigate>
             <x-ui.button variant="outline" type="button" class="h-10">
-                <span class="material-symbols-rounded text-[18px]">arrow_back</span> Back
+                <span class="material-symbols-rounded text-[20px]">arrow_back</span> Back
             </x-ui.button>
         </a>
     </div>
@@ -41,7 +41,7 @@
                             @endforeach
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
-                            <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                            <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                         </div>
                     </div>
                     @error('category_id')
@@ -65,7 +65,7 @@
                             @endforeach
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
-                            <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                            <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                         </div>
                     </div>
                     @error('brand_id')
@@ -86,7 +86,7 @@
                             @endforeach
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
-                            <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                            <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                         </div>
                     </div>
                     @error('base_uom_id')
@@ -129,7 +129,7 @@
                             <option value="bundle" {{ old('product_type') == 'bundle' ? 'selected' : '' }}>Bundle / Kit (Bundle)</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
-                            <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                            <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                         </div>
                     </div>
                     @error('product_type')
@@ -148,7 +148,7 @@
                             <option value="discontinued" {{ old('status') == 'discontinued' ? 'selected' : '' }}>Discontinued</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
-                            <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                            <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                         </div>
                     </div>
                     @error('status')
@@ -169,7 +169,7 @@
                             <option value="moving_average" {{ old('costing_method') == 'moving_average' ? 'selected' : '' }}>Moving Average</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
-                            <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                            <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                         </div>
                     </div>
                     @error('costing_method')
@@ -225,7 +225,7 @@
                             @endif
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-primary-400">
-                            <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                            <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                         </div>
                     </div>
                     @error('tax_class_id')
@@ -299,7 +299,7 @@
                                 <input type="number" step="0.0001" x-model="item.quantity" :name="'ingredients['+index+'][quantity]'" placeholder="Quantity" class="form-input w-full px-3 py-2 rounded-xl border border-border bg-white text-foreground text-sm focus:ring-2 focus:ring-ring focus:border-primary shadow-sm" required>
                             </div>
                             <button type="button" @click="removeItem(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors" title="Remove row">
-                                <span class="material-symbols-rounded text-[18px]">close</span>
+                                <span class="material-symbols-rounded text-[20px]">close</span>
                             </button>
                         </div>
                     </template>
@@ -343,7 +343,7 @@
                                 </select>
                             </div>
                             <button type="button" @click="removeGroup(index)" class="inline-flex items-center justify-center w-9 h-9 rounded-lg text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors" title="Remove row">
-                                <span class="material-symbols-rounded text-[18px]">close</span>
+                                <span class="material-symbols-rounded text-[20px]">close</span>
                             </button>
                         </div>
                     </template>
@@ -378,7 +378,7 @@
             <div class="pt-4 border-t border-border flex justify-end">
                 <x-ui.button type="submit" variant="primary" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''" x-on:click="window.erpMotion?.pulseHighlight($el)">
                     <span x-show="!submitting" class="flex items-center gap-1.5">
-                        <span class="material-symbols-rounded text-[18px]">save</span> Save Product
+                        <span class="material-symbols-rounded text-[20px]">save</span> Save Product
                     </span>
                     <span x-show="submitting" x-cloak>Saving...</span>
                 </x-ui.button>

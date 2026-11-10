@@ -4,7 +4,7 @@
     @if(count($this->cartLines) > 0)
         <div class="fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-border px-4 py-3 shadow-lg flex items-center justify-between gap-3 select-none">
             <div class="min-w-0">
-                <span class="text-[11px] font-medium text-muted-foreground block">Total ({{ count($this->cartLines) }} {{ count($this->cartLines) === 1 ? 'Item' : 'Items' }})</span>
+                <span class="text-xs font-medium text-muted-foreground block">Total ({{ count($this->cartLines) }} {{ count($this->cartLines) === 1 ? 'Item' : 'Items' }})</span>
                 <span class="text-base font-bold text-foreground font-sans tabular-nums">
                     Rp {{ number_format($this->totalAmount, 0, ',', '.') }}
                 </span>
@@ -13,9 +13,9 @@
             <button type="button"
                 @click="$dispatch('open-drawer', 'pos-mobile-cart-drawer')"
                 class="px-4 py-2.5 bg-primary hover:bg-primary/90 text-white font-medium text-xs rounded-xl shadow-sm active:scale-95 transition-all flex items-center gap-2">
-                <span class="material-symbols-rounded text-[18px]">shopping_bag</span>
+                <span class="material-symbols-rounded text-[20px]">shopping_bag</span>
                 <span>View Order</span>
-                <span class="bg-white/20 text-white text-[10px] px-1.5 py-0.5 rounded-full font-sans tabular-nums font-bold">
+                <span class="bg-white/20 text-white text-xs px-1.5 py-0.5 rounded-full font-sans tabular-nums font-bold">
                     {{ count($this->cartLines) }}
                 </span>
             </button>
@@ -26,9 +26,8 @@
     <x-ui.drawer id="pos-mobile-cart-drawer" position="right" maxWidth="md">
         <x-slot:header>
             <div class="flex items-center gap-2">
-                <span class="material-symbols-rounded text-foreground text-[20px]">shopping_bag</span>
-                <span class="font-headline-sm text-[16px] font-semibold text-foreground">Current Order</span>
-                <span class="bg-primary text-white text-[11px] font-sans tabular-nums px-2 py-0.5 rounded-full font-bold">
+                <span class="text-base font-semibold text-foreground">Current Order</span>
+                <span class="bg-primary text-white text-xs font-sans tabular-nums px-2 py-0.5 rounded-full font-bold">
                     {{ count($this->cartLines) }}
                 </span>
             </div>
@@ -67,7 +66,7 @@
                                             x-on:click="showResults = false"
                                             class="w-full flex items-center justify-between gap-2 px-3 py-2 text-left hover:bg-muted transition-colors border-b border-border last:border-0 text-xs">
                                             <span class="font-medium text-foreground">{{ $c->name }}</span>
-                                            <span class="text-[11px] text-muted-foreground font-sans tabular-nums">{{ $c->phone ?? '-' }}</span>
+                                            <span class="text-xs text-muted-foreground font-sans tabular-nums">{{ $c->phone ?? '-' }}</span>
                                         </button>
                                     @empty
                                         <div class="px-3 py-2 text-xs text-muted-foreground text-center">No customers found.</div>

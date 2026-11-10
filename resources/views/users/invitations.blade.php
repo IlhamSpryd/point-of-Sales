@@ -36,8 +36,7 @@
             </x-ui.alert>
         @endif
 
-        <div class="card-surface flex flex-col flex-1 min-h-0 rounded-2xl border border-border overflow-hidden shadow-xs">
-            <x-erp.data-table
+        <x-erp.data-table
                 :is-empty="$invitations->isEmpty()"
                 empty-title="No staff invitations have been issued yet."
                 empty-description="Send candidate invitations to add team members to your store."
@@ -102,11 +101,11 @@
                         </td>
                     </tr>
                 @endforeach
+                @if($invitations->hasPages())
+                    <x-slot:pagination>
+                        {{ $invitations->links() }}
+                    </x-slot:pagination>
+                @endif
             </x-erp.data-table>
-
-            <div class="p-4 border-t border-border shrink-0">
-                {{ $invitations->links() }}
-            </div>
-        </div>
     </div>
 </x-app-layout>

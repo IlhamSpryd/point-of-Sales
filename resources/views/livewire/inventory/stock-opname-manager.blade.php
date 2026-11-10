@@ -10,7 +10,7 @@
         </div>
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
             <x-ui.button type="button" variant="primary" wire:click="openCreateModal" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                <span class="material-symbols-rounded text-[18px]">add</span> New Stock Opname Session
+                <span class="material-symbols-rounded text-[20px]">add</span> New Stock Opname Session
             </x-ui.button>
         </div>
     </div>
@@ -29,42 +29,31 @@
     @endif
 
     {{-- Filter & Search Bar --}}
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
-        <div class="relative w-full sm:w-80">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search opname number, notes..."
-                   class="form-input w-full pl-10 pr-4 py-2 rounded-2xl border border-border bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring shadow-sm text-sm">
-            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
-                <span class="material-symbols-rounded text-[18px]">search</span>
-            </div>
-        </div>
-
-        <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-            <div class="relative w-full sm:w-60">
-                <select wire:model.live="statusFilter"
-                        class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-sm appearance-none">
-                    <option value="ALL">All Statuses</option>
-                    @foreach ($statusOptions as $s)
-                        <option value="{{ $s->value }}">{{ $s->label() }}</option>
-                    @endforeach
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-muted-foreground">
-                    <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    <x-erp.filter-bar
+        search-placeholder="Search opname number, notes..."
+        search-model="search"
+        :reset-method="null"
+    >
+        <x-slot:filters>
+            <select wire:model.live="statusFilter"
+                    class="h-9 px-3 rounded-medium border border-input bg-background text-foreground text-xs font-semibold focus-visible:ring-1 focus-visible:ring-ring outline-none">
+                <option value="ALL">All Statuses</option>
+                @foreach ($statusOptions as $s)
+                    <option value="{{ $s->value }}">{{ $s->label() }}</option>
+                @endforeach
+            </select>
+        </x-slot:filters>
+    </x-erp.filter-bar>
 
     {{-- Stock Opnames Table --}}
-    <div class="card-surface overflow-hidden w-full shrink-0">
-        <div class="overflow-x-auto">
-            <x-erp.data-table
-                loading-target="search, statusFilter"
-                :is-empty="$opnames->isEmpty()"
-                empty-title="No stock opname sessions found"
-                empty-description="Start a new opname session to count and audit physical inventory."
-                empty-icon="inventory"
-                :colspan="6"
-            >
+    <x-erp.data-table
+        loading-target="search, statusFilter"
+        :is-empty="$opnames->isEmpty()"
+        empty-title="No stock opname sessions found"
+        empty-description="Start a new opname session to count and audit physical inventory."
+        empty-icon="inventory"
+        :colspan="6"
+    >
                 <x-slot:head>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Opname #</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Snapshot Date</th>
@@ -135,15 +124,12 @@
                         </td>
                     </tr>
                 @endforeach
+                @if ($opnames->hasPages())
+                    <x-slot:pagination>
+                        {{ $opnames->links() }}
+                    </x-slot:pagination>
+                @endif
             </x-erp.data-table>
-        </div>
-
-        @if ($opnames->hasPages())
-            <div class="px-6 py-4 border-t border-border">
-                {{ $opnames->links() }}
-            </div>
-        @endif
-    </div>
 
     {{-- MODAL 1: Create Opname Session Form --}}
     <x-ui.modal wire:model="showFormModal" maxWidth="2xl">
@@ -240,9 +226,8 @@
     {{-- MODAL 3: Drift Detection Alert & Item-Level Resolution (OD-04) --}}
     <x-ui.modal wire:model="showDriftModal" maxWidth="3xl">
         <x-slot:header>
-            <div class="flex items-center gap-3">
-                <span class="material-symbols-rounded text-rose-600 text-2xl">warning</span>
-                <h5 class="text-lg font-bold text-rose-900">Drift Detected (Intervening Transactions Occurred)</h5>
+            <div class="text-rose-900">
+                <h5 class="text-lg font-bold">Drift Detected (Intervening Transactions Occurred)</h5>
             </div>
         </x-slot:header>
         <x-slot:content>

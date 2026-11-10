@@ -203,9 +203,8 @@
 
     <!-- TAB 2: REKENING KORAN (STATEMENT) -->
     @if($activeTab === 'statement')
-        <div class="card-surface p-6 rounded-2xl border border-border dark:border-zinc-800 space-y-6">
-            <h2 class="text-base font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                <span class="material-symbols-rounded text-primary">tune</span>
+        <div class="card-surface p-6 rounded-2xl border border-border space-y-6">
+            <h2 class="text-base font-bold text-foreground">
                 Select Statement Parameters
             </h2>
 

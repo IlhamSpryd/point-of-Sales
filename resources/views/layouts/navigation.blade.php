@@ -56,7 +56,7 @@
     aria-controls="main-sidebar"
     :aria-expanded="sidebarMobileOpen.toString()" aria-label="Open main navigation menu"
     class="md:hidden fixed top-2 left-2 z-40 w-[40px] h-[40px] flex items-center justify-center text-shell-foreground-active bg-shell hover:bg-shell-accent border border-shell-border active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-200 rounded-lg cursor-pointer shadow-xs">
-    <span class="material-symbols-rounded text-[22px]">menu</span>
+    <span class="material-symbols-rounded text-[24px]">menu</span>
 </button>
 
 <aside id="main-sidebar"
@@ -260,7 +260,7 @@
                         aria-label="{{ $section }}"
                         @if ($isSectionActive) aria-current="page" @endif
                         class="w-9 h-9 rounded-xl flex items-center justify-center transition-all duration-150 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring {{ $isSectionActive ? 'bg-shell-foreground-active text-white shadow-xs font-bold' : 'text-shell-foreground hover:text-shell-foreground-active hover:bg-shell-accent' }}">
-                        <span class="material-symbols-rounded text-[19px] {{ $isSectionActive ? 'text-white' : 'text-shell-foreground group-hover:text-shell-foreground-active' }}">
+                        <span class="material-symbols-rounded text-[20px] {{ $isSectionActive ? 'text-white' : 'text-shell-foreground group-hover:text-shell-foreground-active' }}">
                             {{ $sectionIcon }}
                         </span>
                     </a>
@@ -318,14 +318,14 @@
                     @click="if (window.apeironPosCartDirty && !confirm('You have an active cart in POS. Leaving this page will cancel the current cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; } if (sidebarMobileOpen) { sidebarMobileOpen = false; }"
                     role="menuitem"
                     class="flex items-center gap-2.5 px-2.5 min-h-[36px] rounded-xl text-xs font-medium text-shell-foreground hover:text-shell-foreground-active hover:bg-shell-accent active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-150">
-                    <span class="material-symbols-rounded text-[17px]">person</span> My Profile
+                    <span class="material-symbols-rounded text-[16px]">person</span> My Profile
                 </a>
                 @if(auth()->user()->role?->name === 'Owner')
                 <a href="{{ route('settings.index') }}" wire:navigate
                     @click="if (window.apeironPosCartDirty && !confirm('You have an active cart in POS. Leaving this page will cancel the current cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; } if (sidebarMobileOpen) { sidebarMobileOpen = false; }"
                     role="menuitem"
                     class="flex items-center gap-2.5 px-2.5 min-h-[36px] rounded-xl text-xs font-medium text-shell-foreground hover:text-shell-foreground-active hover:bg-shell-accent active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring transition-all duration-150">
-                    <span class="material-symbols-rounded text-[17px]">settings</span> Settings
+                    <span class="material-symbols-rounded text-[16px]">settings</span> Settings
                 </a>
                 @endif
                 <form method="POST" action="{{ route('logout') }}"
@@ -334,7 +334,7 @@
                     <button type="submit"
                         role="menuitem"
                         class="flex w-full items-center gap-2.5 px-2.5 min-h-[36px] rounded-xl text-xs font-semibold text-destructive hover:bg-destructive/10 hover:text-destructive active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/40 transition-all duration-150 cursor-pointer">
-                        <span class="material-symbols-rounded text-[17px]">logout</span> Sign Out
+                        <span class="material-symbols-rounded text-[16px]">logout</span> Sign Out
                     </button>
                 </form>
             </div>

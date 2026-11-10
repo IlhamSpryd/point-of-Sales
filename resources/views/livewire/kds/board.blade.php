@@ -110,7 +110,7 @@
         <section aria-labelledby="kds-ready" class="bg-white border border-gray-200 rounded-2xl flex flex-col overflow-hidden shadow-xs">
             <header class="flex items-center justify-between border-b border-gray-100 bg-gray-50/70 px-5 py-3.5">
                 <h3 id="kds-ready" class="flex items-center gap-2 font-bold text-sm text-emerald-700">
-                    <span class="material-symbols-rounded text-[18px]">check_circle</span> Ready to Serve
+                    <span class="size-2.5 rounded-full bg-emerald-500"></span> Ready to Serve
                 </h3>
                 <span class="rounded-lg bg-emerald-600 px-2.5 py-0.5 text-xs font-black text-white tabular-nums">{{ $this->readyItems->count() }}</span>
             </header>

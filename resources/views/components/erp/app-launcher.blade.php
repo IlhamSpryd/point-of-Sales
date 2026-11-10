@@ -51,7 +51,7 @@
         aria-label="Open ERP App Launcher"
         title="Open App Launcher (Alt+A)"
         class="inline-flex items-center gap-2 px-2.5 py-1.5 text-xs font-semibold text-shell-foreground bg-shell-accent hover:bg-shell-border hover:text-shell-foreground-active border border-shell-border rounded-lg transition-all focus:outline-none focus:ring-1 focus:ring-shell-ring cursor-pointer group shadow-xs">
-        <span class="material-symbols-rounded text-[18px] text-shell-foreground-active transition-transform group-hover:scale-110" aria-hidden="true">apps</span>
+        <span class="material-symbols-rounded text-[20px] text-shell-foreground-active transition-transform group-hover:scale-110" aria-hidden="true">apps</span>
         <span class="hidden md:inline-flex items-center gap-1.5 max-w-[130px] truncate text-[12px]">
             <span class="truncate">{{ $currentModuleName }}</span>
         </span>
@@ -114,7 +114,7 @@
                                 class="flex flex-col h-full p-3.5 rounded-xl border transition-all duration-150 group cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shell-ring {{ $isModActive ? 'bg-shell-accent border-shell-foreground-active/40 shadow-sm ring-1 ring-shell-foreground-active/30' : 'bg-shell hover:bg-shell-accent/80 border-shell-border hover:border-shell-border/80' }}">
                                 <div class="flex items-start justify-between mb-2.5">
                                     <div class="w-10 h-10 rounded-xl flex items-center justify-center transition-transform group-hover:scale-105 {{ $isModActive ? 'bg-shell-accent border border-shell-border text-shell-foreground-active' : 'bg-shell-accent/70 text-shell-foreground group-hover:text-shell-foreground-active border border-shell-border/80' }}">
-                                        <span class="material-symbols-rounded text-[22px]">{{ $module['icon'] }}</span>
+                                        <span class="material-symbols-rounded text-[24px]">{{ $module['icon'] }}</span>
                                     </div>
                                     @if (!empty($module['badge']))
                                         <span class="text-[10px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded-full {{ $isModActive ? 'bg-shell-accent text-shell-foreground-active border border-shell-border' : 'bg-shell-accent text-shell-foreground border border-shell-border' }}">
@@ -133,7 +133,7 @@
                             <div class="flex flex-col h-full p-3.5 rounded-xl border border-shell-border/50 bg-shell-accent/20 opacity-60 cursor-not-allowed">
                                 <div class="flex items-start justify-between mb-2.5">
                                     <div class="w-10 h-10 rounded-xl flex items-center justify-center bg-shell-accent/40 text-shell-foreground border border-shell-border/40">
-                                        <span class="material-symbols-rounded text-[22px]">{{ $module['icon'] }}</span>
+                                        <span class="material-symbols-rounded text-[24px]">{{ $module['icon'] }}</span>
                                     </div>
                                     <span class="text-[10px] font-semibold tracking-wide uppercase px-2 py-0.5 rounded-full bg-shell-accent text-shell-foreground border border-shell-border">
                                         Soon

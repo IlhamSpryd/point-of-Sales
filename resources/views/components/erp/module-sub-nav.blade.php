@@ -57,10 +57,7 @@
                 <a href="{{ route($tab['route']) }}" wire:navigate
                     @click="if (window.apeironPosCartDirty && !confirm('You have an active order in the POS terminal. Navigating away will discard the active cart. Continue?')) { $event.preventDefault(); return false; } else if (window.apeironPosCartDirty) { window.apeironPosCartDirty = false; }"
                     @if ($isActive) aria-current="page" @endif
-                    class="inline-flex items-center gap-2 px-3.5 py-2 min-h-[40px] rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring {{ $isActive ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground hover:bg-muted' }}">
-                    @if (! empty($tab['icon']))
-                        <span class="material-symbols-rounded text-[18px] shrink-0 {{ $isActive ? 'text-primary-foreground' : 'text-muted-foreground' }}">{{ $tab['icon'] }}</span>
-                    @endif
+                    class="inline-flex items-center px-3.5 py-2 min-h-[40px] rounded-lg text-xs font-medium whitespace-nowrap transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring {{ $isActive ? 'bg-primary text-primary-foreground shadow-xs' : 'text-muted-foreground hover:text-foreground hover:bg-muted' }}">
                     <span>{{ $tab['label'] }}</span>
                 </a>
             @endforeach

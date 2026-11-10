@@ -55,14 +55,12 @@
         <!-- Users Tab Content -->
         <div x-show="activeTab === 'users'" class="space-y-6">
             <!-- Filter & Search Toolbar -->
-            <div class="card-surface p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <form method="GET" action="{{ route('users.index') }}" class="relative w-full sm:w-80">
-                    <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search name, email, employee ID..." class="w-full pl-10 pr-4 py-2 text-sm rounded-lg border border-border dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-zinc-800 dark:text-zinc-100">
-                </form>
-            </div>
+            <x-erp.filter-bar
+                search-action="{{ route('users.index') }}"
+                search-placeholder="Search name, email, employee ID..."
+            />
 
-        <div class="card-surface flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div class="flex flex-col flex-1 min-h-0 space-y-4">
             {{-- Desktop/tablet-landscape: existing table --}}
             <x-erp.data-table
                 :hideOnMobile="true"
@@ -125,6 +123,11 @@
                         </td>
                     </tr>
                 @endforeach
+                @if($users->hasPages())
+                    <x-slot:pagination>
+                        {{ $users->links() }}
+                    </x-slot:pagination>
+                @endif
             </x-erp.data-table>
 
             {{-- Mobile/tablet-portrait: card list --}}
@@ -160,14 +163,14 @@
                             </div>
                             <div class="flex items-center gap-1 shrink-0">
                                 <a href="{{ route('users.edit', $user->id) }}" class="size-8 flex items-center justify-center rounded-lg text-zinc-600 hover:text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" aria-label="Edit user" wire:navigate>
-                                    <span class="material-symbols-rounded text-[18px]">edit</span>
+                                    <span class="material-symbols-rounded text-[20px]">edit</span>
                                 </a>
                                 @if(auth()->id() !== $user->id)
                                     <form id="delete-form-mobile-{{ $user->id }}" action="{{ route('users.destroy', $user->id) }}" method="POST" class="inline-block">
                                         @csrf
                                         @method('DELETE')
                                         <button type="button" onclick="confirmSubmit('delete-form-mobile-{{ $user->id }}', '{{ addslashes($user->name) }}')" class="size-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" aria-label="Delete user">
-                                            <span class="material-symbols-rounded text-[18px]">delete</span>
+                                            <span class="material-symbols-rounded text-[20px]">delete</span>
                                         </button>
                                     </form>
                                 @endif
@@ -183,9 +186,11 @@
                     </div>
                 @endforelse
             </div>
-            <div class="p-4 border-t border-border dark:border-zinc-800 shrink-0">
-                {{ $users->links() }}
-            </div>
+            @if($users->hasPages())
+                <div class="lg:hidden p-4 border-t border-border shrink-0">
+                    {{ $users->links() }}
+                </div>
+            @endif
         </div>
         </div>
 

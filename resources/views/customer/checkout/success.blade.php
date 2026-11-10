@@ -36,7 +36,7 @@
             @if ($snapToken)
                 <button type="button" x-show="isPending" @click="pay()" x-cloak
                         class="mt-6 flex min-h-12 w-full max-w-[200px] items-center justify-center gap-2 rounded-xl bg-primary font-semibold text-white shadow-md transition-all hover:bg-primary/90 active:scale-[0.98]">
-                    <span class="material-symbols-rounded text-[18px]">payments</span> <span class="text-[15px]">Pay Now</span>
+                    <span class="material-symbols-rounded text-[20px]">payments</span> <span class="text-[16px]">Pay Now</span>
                 </button>
             @endif
 
@@ -68,7 +68,7 @@
             @if ($menuUrl)
                 <a href="{{ $menuUrl }}" x-show="!isPending" x-cloak
                    class="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl border border-border bg-white font-semibold shadow-sm transition-all hover:bg-card active:scale-[0.98]">
-                    <span class="material-symbols-rounded text-[20px]">restaurant_menu</span> <span class="text-[15px]">Back to Menu</span>
+                    <span class="material-symbols-rounded text-[20px]">restaurant_menu</span> <span class="text-[16px]">Back to Menu</span>
                 </a>
                 
                 {{-- PATCH FOR F-10: Connect reorder() UI --}}
@@ -76,7 +76,7 @@
                     @csrf
                     <button type="submit"
                             class="flex min-h-14 w-full items-center justify-center gap-2 rounded-2xl bg-secondary font-semibold shadow-sm transition-all hover:bg-card active:scale-[0.98]">
-                        <span class="material-symbols-rounded text-[20px]">replay</span> <span class="text-[15px]">Reorder Items</span>
+                        <span class="material-symbols-rounded text-[20px]">replay</span> <span class="text-[16px]">Reorder Items</span>
                     </button>
                 </form>
             @endif

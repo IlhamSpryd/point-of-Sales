@@ -19,7 +19,7 @@
 
             @if (session('error'))
                 <div role="alert" class="mb-5 flex items-start gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700">
-                    <span class="material-symbols-rounded text-[18px] mt-0.5">error</span>
+                    <span class="material-symbols-rounded text-[20px] mt-0.5">error</span>
                     <span>{{ session('error') }}</span>
                 </div>
             @endif
@@ -74,7 +74,7 @@
                                 :class="method === '{{ $value }}' ? 'border-foreground ring-1 ring-ring bg-white' : 'border-border bg-white hover:bg-card'"
                                 class="w-full min-h-16 flex items-center gap-4 rounded-2xl border-[1.5px] px-4 py-3 text-left transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                             <span class="w-11 h-11 rounded-xl bg-secondary flex items-center justify-center shrink-0">
-                                <span class="material-symbols-rounded text-[22px]">{{ $icon }}</span>
+                                <span class="material-symbols-rounded text-[24px]">{{ $icon }}</span>
                             </span>
                             <span class="flex-1 min-w-0">
                                 <span class="block text-[15px] font-bold">{{ $label }}</span>

@@ -8,12 +8,13 @@
     'iconPosition' => 'before',
     'pill' => false,
     'chip' => false,
-    'asBadge' => false,
-    'dot' => true,
+    'asBadge' => null,
+    'dot' => false,
 ])
 
 @php
-    if ($variant === 'dot') {
+    $isDotVariant = $variant === 'dot';
+    if ($isDotVariant) {
         $dot = true;
         $variant = null;
     }
@@ -39,9 +40,15 @@
     $areStructural = in_array(strtolower((string) $variant), ['primary', 'outline'], true);
     $semantic = \App\Support\Color\StatusPalette::variant($variant ?? 'neutral');
 
-    // Only render chunky pill/chip if explicitly requested or structural
-    $isBadge = $pill || $chip || $asBadge || $areStructural;
-    $showDot = $dot && ! $isBadge;
+    // Only render chunky pill/chip if explicitly requested, structural, or legacy badge variant/color/type
+    if ($asBadge === false || $isDotVariant) {
+        $isBadge = false;
+    } elseif ($asBadge === true || $pill || $chip || $areStructural) {
+        $isBadge = true;
+    } else {
+        $isBadge = ($variant !== null || $color !== null || $type !== null);
+    }
+    $showDot = $dot || $isDotVariant;
 
     $structure = 'border rounded-md px-2 py-0.5 text-xs';
 

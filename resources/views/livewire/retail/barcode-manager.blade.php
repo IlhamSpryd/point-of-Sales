@@ -3,8 +3,7 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
-                <span class="material-symbols-rounded text-primary text-[28px]">qr_code</span>
+            <h1 class="text-2xl font-bold text-foreground tracking-tight">
                 Retail Barcode Management
             </h1>
             <p class="text-sm text-muted-foreground mt-1">
@@ -22,8 +21,7 @@
 
     <!-- Barcode Validator Tool Card -->
     <div class="bg-card p-6 rounded-2xl border border-border shadow-sm space-y-4">
-        <h3 class="text-base font-semibold text-foreground flex items-center gap-2">
-            <span class="material-symbols-rounded text-primary text-[20px]">fact_check</span>
+        <h3 class="text-base font-semibold text-foreground">
             EAN-13 Checksum Validator
         </h3>
         <div class="flex flex-col sm:flex-row gap-3 items-center">
@@ -37,9 +35,9 @@
         @if ($isValidEan13 !== null)
             <div class="p-3 rounded-xl text-sm font-medium {{ $isValidEan13 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-red-50 text-red-800 border border-red-200' }}">
                 @if ($isValidEan13)
-                    <span class="flex items-center gap-2"><span class="material-symbols-rounded text-[18px]">verified</span> Valid EAN-13 barcode format and checksum.</span>
+                    <span class="flex items-center gap-2"><span class="material-symbols-rounded text-[20px]">verified</span> Valid EAN-13 barcode format and checksum.</span>
                 @else
-                    <span class="flex items-center gap-2"><span class="material-symbols-rounded text-[18px]">error</span> Invalid EAN-13 barcode checksum or structure.</span>
+                    <span class="flex items-center gap-2"><span class="material-symbols-rounded text-[20px]">error</span> Invalid EAN-13 barcode checksum or structure.</span>
                 @endif
             </div>
         @endif

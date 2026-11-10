@@ -74,7 +74,7 @@
                                 @endforeach
                             </select>
                             <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-zinc-400">
-                                <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                                <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                             </div>
                         </div>
                         @error('role_id')

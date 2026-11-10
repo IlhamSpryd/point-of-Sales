@@ -63,6 +63,12 @@ samp,
     font-family: 'Material Symbols Rounded', sans-serif !important;
 }
 
+/* Canonical Icon Scale: xs (14px), sm (16px), md (20px), lg (24px) */
+.icon-xs { font-size: 14px !important; }
+.icon-sm { font-size: 16px !important; }
+.icon-md { font-size: 20px !important; }
+.icon-lg { font-size: 24px !important; }
+
 body {
     font-family: var(--font-sans) !important;
     background-color: var(--color-background);

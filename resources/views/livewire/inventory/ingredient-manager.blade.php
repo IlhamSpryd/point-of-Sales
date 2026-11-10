@@ -7,7 +7,7 @@
     >
         <x-slot:actions>
             <x-ui.button type="button" variant="secondary" wire:click="$set('showModal', false)">
-                <span class="material-symbols-rounded text-[18px]">arrow_back</span> Back
+                <span class="material-symbols-rounded text-[20px]">arrow_back</span> Back
             </x-ui.button>
         </x-slot:actions>
     </x-erp.page-header>
@@ -55,7 +55,7 @@
                     Cancel
                 </x-ui.button>
                 <x-ui.button type="submit" variant="primary" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                    <span class="material-symbols-rounded text-[18px]">save</span> Save
+                    <span class="material-symbols-rounded text-[20px]">save</span> Save
                 </x-ui.button>
             </div>
         </form>
@@ -66,14 +66,18 @@
         description="Manage raw materials inventory and configure Bill of Materials (BOM)"
     >
         <x-slot:actions>
-            <div class="w-full sm:w-64">
-                <x-search-input wire:model.live.debounce.300ms="search" placeholder="Search raw materials..." />
-            </div>
             <x-ui.button type="button" variant="primary" wire:click="create" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                <span class="material-symbols-rounded text-[18px]">add</span> Add Material
+                <span class="material-symbols-rounded text-[20px]">add</span> Add Material
             </x-ui.button>
         </x-slot:actions>
     </x-erp.page-header>
+
+    <x-erp.filter-bar
+        search-placeholder="Search raw materials..."
+        search-model="search"
+        :reset-method="null"
+        class="mb-4"
+    />
 
     @if (session()->has('success'))
         <x-ui.alert variant="success" class="mb-6">
@@ -81,9 +85,9 @@
         </x-ui.alert>
     @endif
 
-    <div class="card-surface flex flex-col flex-1 min-h-0 w-full shrink-0">
+    <div class="flex flex-col flex-1 min-h-0 space-y-4">
         {{-- Desktop/tablet-landscape: existing table --}}
-        <div class="hidden lg:block overflow-x-auto flex-1 table-scroll-shadow">
+        <div class="hidden lg:block">
             <x-erp.data-table
                 loading-target="search, filterCategory"
                 :is-empty="$ingredients->isEmpty()"
@@ -154,6 +158,11 @@
                             </td>
                         </tr>
                     @endforeach
+                    @if($ingredients->hasPages())
+                        <x-slot:pagination>
+                            {{ $ingredients->links() }}
+                        </x-slot:pagination>
+                    @endif
             </x-erp.data-table>
         </div>
 
@@ -182,10 +191,10 @@
                         </div>
                         <div class="flex items-center gap-1 shrink-0">
                             <button wire:click="adjustStock({{ $item->id }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors" title="Adjust Stock">
-                                <span class="material-symbols-rounded text-[18px]">inventory</span>
+                                <span class="material-symbols-rounded text-[20px]">inventory</span>
                             </button>
                             <button wire:click="edit({{ $item->id }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-blue-600 hover:bg-blue-50 transition-colors" title="Edit">
-                                <span class="material-symbols-rounded text-[18px]">edit</span>
+                                <span class="material-symbols-rounded text-[20px]">edit</span>
                             </button>
                             <button type="button"
                                 data-swal-delete
@@ -193,7 +202,7 @@
                                 data-swal-text="Raw material &quot;{{ $item->name }}&quot; will be permanently deleted."
                                 data-wire-action="delete({{ $item->id }})"
                                 class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-rose-600 hover:bg-rose-50 transition-colors" title="Delete">
-                                <span class="material-symbols-rounded text-[18px]">delete</span>
+                                <span class="material-symbols-rounded text-[20px]">delete</span>
                             </button>
                         </div>
                     </div>
@@ -205,7 +214,7 @@
             @endforelse
         </div>
         @if($ingredients->hasPages())
-            <div class="p-4 border-t border-border shrink-0">
+            <div class="lg:hidden p-4 border-t border-border shrink-0">
                 {{ $ingredients->links() }}
             </div>
         @endif
@@ -230,7 +239,7 @@
                             <option value="waste">Damaged Goods / Waste (-)</option>
                         </select>
                         <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-muted-foreground">
-                            <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                            <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                         </div>
                     </div>
                     @error('adjustType') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror

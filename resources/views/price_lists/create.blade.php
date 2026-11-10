@@ -142,7 +142,7 @@
                     </div>
                     <button type="button" @click="addItem()"
                         class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-muted hover:bg-accent text-xs font-semibold text-foreground transition-colors">
-                        <span class="material-symbols-rounded text-[18px]">add</span> Add Row
+                        <span class="material-symbols-rounded text-[20px]">add</span> Add Row
                     </button>
                 </div>
 

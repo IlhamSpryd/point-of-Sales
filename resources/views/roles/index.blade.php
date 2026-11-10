@@ -36,14 +36,12 @@
         @endif
 
         <!-- Filter & Search Toolbar -->
-        <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-border dark:border-zinc-800">
-            <form method="GET" action="{{ route('roles.index') }}" class="relative w-full sm:w-80">
-                <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search role name or code..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-zinc-800 dark:text-zinc-100">
-            </form>
-        </div>
+        <x-erp.filter-bar
+            search-action="{{ route('roles.index') }}"
+            search-placeholder="Search role name or code..."
+        />
 
-        <div class="card-surface flex flex-col flex-1 min-h-0 rounded-2xl border border-border dark:border-zinc-800 overflow-hidden shadow-xs">
+        <div class="flex flex-col flex-1 min-h-0 space-y-4">
             {{-- Desktop/tablet-landscape: existing table --}}
             <x-erp.data-table
                 :hideOnMobile="true"
@@ -89,34 +87,39 @@
                         </td>
                         <td class="px-6 py-4 text-right space-x-1 whitespace-nowrap">
                             <a href="{{ route('roles.edit', $role->id) }}" class="inline-flex items-center justify-center size-9 rounded-lg text-zinc-600 hover:text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors active:scale-90" aria-label="Edit role" wire:navigate>
-                                <span class="material-symbols-rounded text-[18px]">edit</span>
+                                <span class="material-symbols-rounded text-[20px]">edit</span>
                             </a>
                             @if ($role->name === 'Owner')
                                 <span class="inline-flex items-center justify-center size-9 rounded-lg text-muted-foreground bg-muted/50 cursor-not-allowed" title="System Owner role is locked and cannot be deleted">
-                                    <span class="material-symbols-rounded text-[18px]">lock</span>
+                                    <span class="material-symbols-rounded text-[20px]">lock</span>
                                 </span>
                             @else
                                 <form id="delete-form-{{ $role->id }}" action="{{ route('roles.destroy', $role->id) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')
                                     <button type="button" onclick="confirmSubmit('delete-form-{{ $role->id }}', '{{ addslashes($role->name) }}')" class="inline-flex items-center justify-center size-9 rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors active:scale-90" aria-label="Delete role">
-                                        <span class="material-symbols-rounded text-[18px]">delete</span>
+                                        <span class="material-symbols-rounded text-[20px]">delete</span>
                                     </button>
                                 </form>
                             @endif
                         </td>
                     </tr>
                 @endforeach
+                @if($roles->hasPages())
+                    <x-slot:pagination>
+                        {{ $roles->links() }}
+                    </x-slot:pagination>
+                @endif
             </x-erp.data-table>
 
             {{-- Mobile/tablet-portrait: card list --}}
             <div class="lg:hidden flex flex-col gap-3 p-4 overflow-y-auto flex-1">
                 @forelse($roles as $role)
-                    <div class="card-surface p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                    <div class="card-surface p-4 rounded-xl border border-border">
                         <div class="flex justify-between items-start mb-2">
                             <div class="flex flex-col">
-                                <span class="font-bold text-foreground dark:text-zinc-100 text-sm">{{ $role->name }}</span>
-                                <span class="text-xs text-zinc-500 font-sans">{{ $role->role_code }}</span>
+                                <span class="font-bold text-foreground text-sm">{{ $role->name }}</span>
+                                <span class="text-xs text-muted-foreground font-sans">{{ $role->role_code }}</span>
                             </div>
                             <div class="flex flex-col items-end gap-1">
                                 @php
@@ -128,37 +131,39 @@
                                 </x-ui.badge>
                             </div>
                         </div>
-                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+                        <div class="flex items-center justify-between mt-3 pt-3 border-t border-border">
                             <div class="flex-1">
-                                <span class="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider block mb-0.5">Users</span>
-                                <span class="text-xs text-foreground dark:text-zinc-200">{{ $role->users_count ?? 0 }} Assigned</span>
+                                <span class="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider block mb-0.5">Users</span>
+                                <span class="text-xs text-foreground">{{ $role->users_count ?? 0 }} Assigned</span>
                             </div>
                             <div class="flex items-center gap-1 shrink-0">
-                                <a href="{{ route('roles.edit', $role->id) }}" class="size-8 flex items-center justify-center rounded-lg text-zinc-600 hover:text-foreground hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors" aria-label="Edit role" wire:navigate>
-                                    <span class="material-symbols-rounded text-[18px]">edit</span>
+                                <a href="{{ route('roles.edit', $role->id) }}" class="size-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" aria-label="Edit role" wire:navigate>
+                                    <span class="material-symbols-rounded text-[20px]">edit</span>
                                 </a>
                                 <form id="delete-form-mobile-{{ $role->id }}" action="{{ route('roles.destroy', $role->id) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="button" onclick="confirmSubmit('delete-form-mobile-{{ $role->id }}', '{{ addslashes($role->name) }}')" class="size-8 flex items-center justify-center rounded-lg text-zinc-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" aria-label="Delete role">
-                                        <span class="material-symbols-rounded text-[18px]">delete</span>
+                                    <button type="button" onclick="confirmSubmit('delete-form-mobile-{{ $role->id }}', '{{ addslashes($role->name) }}')" class="size-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" aria-label="Delete role">
+                                        <span class="material-symbols-rounded text-[20px]">delete</span>
                                     </button>
                                 </form>
                             </div>
                         </div>
                     </div>
                 @empty
-                    <div class="py-8 text-center text-zinc-400 text-sm flex flex-col items-center justify-center">
-                        <div class="w-12 h-12 rounded-2xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center mb-3">
-                            <span class="material-symbols-rounded text-[24px] text-zinc-400">admin_panel_settings</span>
+                    <div class="py-8 text-center text-muted-foreground text-sm flex flex-col items-center justify-center">
+                        <div class="w-12 h-12 rounded-2xl bg-muted flex items-center justify-center mb-3">
+                            <span class="material-symbols-rounded text-[24px] text-muted-foreground">admin_panel_settings</span>
                         </div>
-                        <p class="font-medium text-zinc-600 dark:text-zinc-300">No roles found.</p>
+                        <p class="font-medium text-foreground">No roles found.</p>
                     </div>
                 @endforelse
             </div>
-            <div class="p-4 border-t border-border dark:border-zinc-800 shrink-0">
-                {{ $roles->links() }}
-            </div>
+            @if($roles->hasPages())
+                <div class="lg:hidden p-4 border-t border-border shrink-0">
+                    {{ $roles->links() }}
+                </div>
+            @endif
         </div>
 
         {{-- Contextual Drawer for PAGE-078 (Create Role) --}}

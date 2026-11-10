@@ -7,7 +7,7 @@
     >
         <x-slot:actions>
             <x-ui.button type="button" variant="primary" wire:click="openCreateModal" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                <span class="material-symbols-rounded text-[18px]">add</span> New Stock Adjustment
+                <span class="material-symbols-rounded text-[20px]">add</span> New Stock Adjustment
             </x-ui.button>
         </x-slot:actions>
     </x-erp.page-header>
@@ -26,55 +26,39 @@
     @endif
 
     {{-- Filter & Search Bar --}}
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
-        <div class="relative w-full sm:w-80">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search adjustment number, notes..."
-                   class="form-input w-full pl-10 pr-4 py-2 rounded-2xl border border-border bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring shadow-sm text-sm">
-            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
-                <span class="material-symbols-rounded text-[18px]">search</span>
-            </div>
-        </div>
+    <x-erp.filter-bar
+        search-placeholder="Search adjustment number, notes..."
+        search-model="search"
+        :reset-method="null"
+    >
+        <x-slot:filters>
+            <select wire:model.live="statusFilter"
+                    class="h-9 px-3 rounded-medium border border-input bg-background text-foreground text-xs font-semibold focus-visible:ring-1 focus-visible:ring-ring outline-none">
+                <option value="ALL">All Statuses</option>
+                <option value="DRAFT">Draft</option>
+                <option value="POSTED">Posted</option>
+                <option value="CANCELLED">Cancelled</option>
+            </select>
 
-        <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-            <div class="relative w-full sm:w-44">
-                <select wire:model.live="statusFilter"
-                        class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-sm appearance-none">
-                    <option value="ALL">All Statuses</option>
-                    <option value="DRAFT">Draft</option>
-                    <option value="POSTED">Posted</option>
-                    <option value="CANCELLED">Cancelled</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-muted-foreground">
-                    <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
-                </div>
-            </div>
-
-            <div class="relative w-full sm:w-52">
-                <select wire:model.live="reasonFilter"
-                        class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-sm appearance-none">
-                    <option value="ALL">All Reasons</option>
-                    @foreach ($reasons as $r)
-                        <option value="{{ $r->value }}">{{ $r->label() }}</option>
-                    @endforeach
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-muted-foreground">
-                    <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
-                </div>
-            </div>
-        </div>
-    </div>
+            <select wire:model.live="reasonFilter"
+                    class="h-9 px-3 rounded-medium border border-input bg-background text-foreground text-xs font-semibold focus-visible:ring-1 focus-visible:ring-ring outline-none">
+                <option value="ALL">All Reasons</option>
+                @foreach ($reasons as $r)
+                    <option value="{{ $r->value }}">{{ $r->label() }}</option>
+                @endforeach
+            </select>
+        </x-slot:filters>
+    </x-erp.filter-bar>
 
     {{-- Stock Adjustments Table --}}
-    <div class="card-surface overflow-hidden w-full shrink-0">
-        <div class="overflow-x-auto">
-            <x-erp.data-table
-                loading-target="search, statusFilter"
-                :is-empty="$adjustments->isEmpty()"
-                empty-title="No stock adjustment documents recorded."
-                empty-description="Create an adjustment to rectify stock discrepancies or record shrinkage."
-                empty-icon="tune"
-                :colspan="7"
-            >
+    <x-erp.data-table
+        loading-target="search, statusFilter"
+        :is-empty="$adjustments->isEmpty()"
+        empty-title="No stock adjustment documents recorded."
+        empty-description="Create an adjustment to rectify stock discrepancies or record shrinkage."
+        empty-icon="tune"
+        :colspan="7"
+    >
                 <x-slot:head>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Adjustment #</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Adjustment Date</th>
@@ -110,28 +94,26 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium space-x-2">
                             <button wire:click="viewDetails({{ $adjustment->id }})" class="text-foreground hover:text-muted-foreground transition-colors" title="View Details">
-                                <span class="material-symbols-rounded text-[18px]">visibility</span>
+                                <span class="material-symbols-rounded text-[20px]">visibility</span>
                             </button>
 
                             @if($adjustment->isDraft())
                                 <button wire:click="post({{ $adjustment->id }})" wire:confirm="Post this stock adjustment to branch balance?" class="text-emerald-600 hover:text-emerald-800 transition-colors" title="Post to Stock">
-                                    <span class="material-symbols-rounded text-[18px]">task_alt</span>
+                                    <span class="material-symbols-rounded text-[20px]">task_alt</span>
                                 </button>
                                 <button wire:click="cancel({{ $adjustment->id }})" wire:confirm="Cancel this draft stock adjustment?" class="text-rose-500 hover:text-rose-700 transition-colors" title="Cancel">
-                                    <span class="material-symbols-rounded text-[18px]">cancel</span>
+                                    <span class="material-symbols-rounded text-[20px]">cancel</span>
                                 </button>
                             @endif
                         </td>
                     </tr>
                 @endforeach
+                @if ($adjustments->hasPages())
+                    <x-slot:pagination>
+                        {{ $adjustments->links() }}
+                    </x-slot:pagination>
+                @endif
             </x-erp.data-table>
-        </div>
-        @if ($adjustments->hasPages())
-            <div class="p-4 border-t border-border">
-                {{ $adjustments->links() }}
-            </div>
-        @endif
-    </div>
 
     {{-- Create / Edit Draft Modal --}}
     <x-ui.modal wire:model="showFormModal" maxWidth="4xl">
@@ -217,7 +199,7 @@
 
                                     <div class="col-span-12 sm:col-span-1 text-right">
                                         <button type="button" wire:click="removeItemLine({{ $index }})" class="text-rose-500 hover:text-rose-700">
-                                            <span class="material-symbols-rounded text-[18px]">delete</span>
+                                            <span class="material-symbols-rounded text-[20px]">delete</span>
                                         </button>
                                     </div>
                                 </div>

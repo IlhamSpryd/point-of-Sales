@@ -135,10 +135,9 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Left: Bank Statement Lines -->
                 <div class="card-surface rounded-2xl border border-border overflow-hidden shadow-xs">
-                    <div class="p-3 bg-zinc-50 dark:bg-zinc-900/60 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
-                        <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
-                            <span class="material-symbols-rounded text-sm text-blue-500">account_balance</span>
-                            <span>Bank Statement Lines (Unreconciled: {{ $unreconciledStatementLines->count() }})</span>
+                    <div class="p-3 bg-muted/40 border-b border-border flex items-center justify-between">
+                        <h4 class="text-xs font-bold text-foreground">
+                            Bank Statement Lines (Unreconciled: {{ $unreconciledStatementLines->count() }})
                         </h4>
                     </div>
 
@@ -177,10 +176,9 @@
 
                 <!-- Right: Cash/Bank Journal Transactions -->
                 <div class="card-surface rounded-2xl border border-border overflow-hidden shadow-xs">
-                    <div class="p-3 bg-zinc-50 dark:bg-zinc-900/60 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
-                        <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-1.5">
-                            <span class="material-symbols-rounded text-sm text-purple-500">menu_book</span>
-                            <span>General Ledger Transactions (Unreconciled: {{ $unreconciledTransactions->count() }})</span>
+                    <div class="p-3 bg-muted/40 border-b border-border flex items-center justify-between">
+                        <h4 class="text-xs font-bold text-foreground">
+                            General Ledger Transactions (Unreconciled: {{ $unreconciledTransactions->count() }})
                         </h4>
                     </div>
 
@@ -215,10 +213,9 @@
 
         <!-- Matched Pairs List -->
         <div class="card-surface rounded-2xl border border-border overflow-hidden shadow-xs">
-            <div class="p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
-                <h4 class="text-xs font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                    <span class="material-symbols-rounded text-base text-emerald-500">check_circle</span>
-                    <span>Reconciled Transactions ({{ $matches->count() }} Matched)</span>
+            <div class="p-4 border-b border-border flex items-center justify-between">
+                <h4 class="text-xs font-bold text-foreground">
+                    Reconciled Transactions ({{ $matches->count() }} Matched)
                 </h4>
             </div>
 
@@ -291,69 +288,58 @@
     @endif
 
     <!-- Start New Session Modal -->
-    @if ($showStartSessionModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-            <div class="card-surface w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-2xl space-y-4"
-                 @click.outside="$wire.set('showStartSessionModal', false)">
-                
-                <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
-                    <h3 class="text-base font-bold text-zinc-950 dark:text-white">Start Bank Reconciliation Session</h3>
-                    <button type="button" wire:click="$set('showStartSessionModal', false)" class="text-zinc-400 hover:text-zinc-600">
-                        <span class="material-symbols-rounded text-lg">close</span>
-                    </button>
-                </div>
-
-                <form wire:submit="startNewSession" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Cash / Bank Account</label>
-                        <select wire:model="selectedAccountId"
-                                class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-                            @foreach ($accounts as $acc)
-                                <option value="{{ $acc->id }}">[{{ $acc->account_code }}] {{ $acc->account_name }} ({{ $acc->bank_name ?: 'Cash' }})</option>
-                            @endforeach
-                        </select>
-                        @error('selectedAccountId') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Statement Ending Date</label>
-                        <input type="date"
-                               wire:model="statementEndDate"
-                               class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-sans">
-                        @error('statementEndDate') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Statement Ending Balance</label>
-                        <input type="number"
-                               step="0.01"
-                               wire:model="statementEndingBalance"
-                               placeholder="e.g. 15000000.00"
-                               class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-sans font-bold">
-                        @error('statementEndingBalance') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Session Notes (Optional)</label>
-                        <input type="text"
-                               wire:model="sessionNotes"
-                               placeholder="e.g. Monthly reconciliation for operational account..."
-                               class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-                    </div>
-
-                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
-                        <button type="button"
-                                wire:click="$set('showStartSessionModal', false)"
-                                class="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white rounded-xl transition-colors">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                                class="px-4 py-2 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-xl transition-colors shadow-xs">
-                            Start Session
-                        </button>
-                    </div>
-                </form>
+    <x-ui.modal wire:model="showStartSessionModal" title="Start Bank Reconciliation Session" maxWidth="md" onClose="$wire.set('showStartSessionModal', false)">
+        <form id="start-session-form" wire:submit="startNewSession" class="space-y-4">
+            <div>
+                <label class="block text-xs font-semibold text-muted-foreground mb-1">Cash / Bank Account</label>
+                <select wire:model="selectedAccountId"
+                        class="w-full px-3 py-2 text-xs rounded-xl border border-input bg-background text-foreground">
+                    @foreach ($accounts as $acc)
+                        <option value="{{ $acc->id }}">[{{ $acc->account_code }}] {{ $acc->account_name }} ({{ $acc->bank_name ?: 'Cash' }})</option>
+                    @endforeach
+                </select>
+                @error('selectedAccountId') <span class="text-[10px] text-destructive mt-1 block">{{ $message }}</span> @enderror
             </div>
-        </div>
-    @endif
+
+            <div>
+                <label class="block text-xs font-semibold text-muted-foreground mb-1">Statement Ending Date</label>
+                <input type="date"
+                       wire:model="statementEndDate"
+                       class="w-full px-3 py-2 text-xs rounded-xl border border-input bg-background text-foreground font-sans">
+                @error('statementEndDate') <span class="text-[10px] text-destructive mt-1 block">{{ $message }}</span> @enderror
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-muted-foreground mb-1">Statement Ending Balance</label>
+                <input type="number"
+                       step="0.01"
+                       wire:model="statementEndingBalance"
+                       placeholder="e.g. 15000000.00"
+                       class="w-full px-3 py-2 text-xs rounded-xl border border-input bg-background text-foreground font-sans font-bold">
+                @error('statementEndingBalance') <span class="text-[10px] text-destructive mt-1 block">{{ $message }}</span> @enderror
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-muted-foreground mb-1">Session Notes (Optional)</label>
+                <input type="text"
+                       wire:model="sessionNotes"
+                       placeholder="e.g. Monthly reconciliation for operational account..."
+                       class="w-full px-3 py-2 text-xs rounded-xl border border-input bg-background text-foreground">
+            </div>
+        </form>
+
+        <x-slot:footer>
+            <div class="flex items-center justify-end gap-2 w-full">
+                <button type="button"
+                        wire:click="$set('showStartSessionModal', false)"
+                        class="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground rounded-xl transition-colors">
+                    Cancel
+                </button>
+                <button type="submit" form="start-session-form"
+                        class="px-4 py-2 text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl transition-colors shadow-xs">
+                    Start Session
+                </button>
+            </div>
+        </x-slot:footer>
+    </x-ui.modal>
 </div>

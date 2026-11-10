@@ -35,12 +35,12 @@
                 {{-- DEMURE Dark Action Pill Buttons --}}
                 <a href="{{ route('orders.index') }}" wire:navigate
                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-primary-foreground bg-primary hover:opacity-90 shadow-xs active:scale-95 transition-all">
-                    <span class="material-symbols-rounded text-[17px]">receipt_long</span>
+                    <span class="material-symbols-rounded text-[16px]">receipt_long</span>
                     <span>All Orders</span>
                 </a>
                 <a href="{{ route('transaction.create') }}" wire:navigate
                    class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-primary-foreground bg-primary hover:opacity-90 shadow-xs active:scale-95 transition-all">
-                    <span class="material-symbols-rounded text-[17px]">point_of_sale</span>
+                    <span class="material-symbols-rounded text-[16px]">point_of_sale</span>
                     <span>POS Terminal</span>
                 </a>
             </div>
@@ -91,22 +91,10 @@
                      get currentData() {
                          return this.datasets[this.period] || this.datasets.monthly || [];
                      },
-                     get activeItem() {
-                         if (this.hoveredBar !== null && this.currentData[this.hoveredBar]) {
-                             return this.currentData[this.hoveredBar];
-                         }
-                         const found = this.currentData.find(d => d.is_active);
-                         return found || this.currentData[Math.floor(this.currentData.length / 2)] || this.currentData[0] || null;
-                     },
                      get activeIndex() {
                          if (this.hoveredBar !== null) return this.hoveredBar;
                          const idx = this.currentData.findIndex(d => d.is_active);
                          return idx !== -1 ? idx : Math.floor(this.currentData.length / 2);
-                     },
-                     get tooltipLeftPercent() {
-                         const n = this.currentData.length;
-                         if (n <= 1) return 50;
-                         return Math.min(95, Math.max(5, ((this.activeIndex + 0.5) / n) * 100));
                      },
                      get periodTotalFormatted() {
                          const sum = this.currentData.reduce((acc, curr) => acc + (Number(curr.total) || 0), 0);
@@ -171,6 +159,10 @@
                              hit.addEventListener('mouseenter', () => this.hoveredBar = idx);
                              hit.addEventListener('mouseleave', () => this.hoveredBar = null);
 
+                             const titleEl = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+                             titleEl.textContent = `${pt.data.label}: ${pt.data.formatted} (${pt.data.count} tx)`;
+                             hit.appendChild(titleEl);
+
                              const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
                              dot.setAttribute('cx', pt.x);
                              dot.setAttribute('cy', pt.y);
@@ -194,7 +186,7 @@
                             Rp {{ number_format($totalEarnings, 0, ',', '.') }}
                         </div>
                         <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-success-muted text-success border border-success-border">
-                            <span class="material-symbols-rounded text-[15px]">trending_up</span> +1.9%
+                            <span class="material-symbols-rounded text-[16px]">trending_up</span> +1.9%
                         </span>
                     </div>
                     <div class="text-xs text-muted-foreground mt-1 tabular-nums numeric" x-text="periodVolumeText">
@@ -211,14 +203,14 @@
                             :class="chartType === 'bar' ? 'bg-card text-foreground shadow-2xs font-semibold' : 'text-muted-foreground hover:text-foreground'"
                             class="w-8 h-8 rounded-md flex items-center justify-center cursor-pointer transition-all"
                             title="Bar Chart" aria-label="Switch to Bar Chart">
-                            <span class="material-symbols-rounded text-[18px]">bar_chart</span>
+                            <span class="material-symbols-rounded text-[20px]">bar_chart</span>
                         </button>
                         <button type="button"
                             @click="chartType = 'spline'"
                             :class="chartType === 'spline' ? 'bg-card text-foreground shadow-2xs font-semibold' : 'text-muted-foreground hover:text-foreground'"
                             class="size-8 rounded-md flex items-center justify-center cursor-pointer transition-all"
                             title="Spline Chart" aria-label="Switch to Spline Chart">
-                            <span class="material-symbols-rounded text-[18px]">show_chart</span>
+                            <span class="material-symbols-rounded text-[20px]">show_chart</span>
                         </button>
                     </div>
 
@@ -247,18 +239,7 @@
             </div>
 
             {{-- Responsive Chart Area --}}
-            <div class="relative w-full pt-16 pb-2 overflow-x-auto scrollbar-hide">
-                {{-- Floating Tooltip Speech Bubble (Directly above active day/item) --}}
-                <div class="absolute top-1 -translate-x-1/2 pointer-events-none transition-all duration-200 z-10 hidden sm:block"
-                     :style="`left: ${tooltipLeftPercent}%;`">
-                    <div class="bg-card text-foreground border border-border rounded-lg px-3.5 py-2 shadow-lg text-center whitespace-nowrap">
-                        <div class="text-[11px] font-semibold text-muted-foreground" x-text="activeItem?.date || ''"></div>
-                        <div class="text-xs font-bold text-foreground mt-0.5">Revenue <span x-text="activeItem?.formatted || ''"></span></div>
-                    </div>
-                    {{-- Triangle Indicator --}}
-                    <div class="w-0 h-0 border-x-[6px] border-x-transparent border-t-[7px] border-t-border mx-auto"></div>
-                </div>
-
+            <div class="relative w-full pt-4 pb-2 overflow-x-auto scrollbar-hide">
                 {{-- MODE 1: BAR CHART HISTOGRAM --}}
                 <div x-show="chartType === 'bar'" x-transition:enter="transition-opacity duration-150" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100">
                     <div class="items-end h-56 lg:h-64 min-w-[680px]"
@@ -346,7 +327,7 @@
                             Rp {{ number_format($quarterEarnings, 0, ',', '.') }}
                         </div>
                         <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-destructive-muted text-destructive border border-destructive-border">
-                            <span class="material-symbols-rounded text-[13px]">trending_down</span> {{ $quarterDeltaPercent }}%
+                            <span class="material-symbols-rounded text-[14px]">trending_down</span> {{ $quarterDeltaPercent }}%
                         </span>
                     </div>
                     <div class="text-[11px] text-muted-foreground mt-0.5 tabular-nums">
@@ -376,33 +357,37 @@
                                 {{ $lowStockCount }} Critical Items
                             </div>
                             <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-success-muted text-success border border-success-border">
-                                <span class="material-symbols-rounded text-[13px]">trending_up</span> +2.1%
+                                <span class="material-symbols-rounded text-[14px]">trending_up</span> +2.1%
                             </span>
                         </div>
                         <div class="text-[11px] text-muted-foreground mt-0.5 tabular-nums">
                             {{ $productsCount }} Monitored Products
                         </div>
                     </div>
-                    {{-- Mini icons --}}
-                    <div class="flex items-center gap-1 text-muted-foreground">
-                        <span class="material-symbols-rounded text-[18px]">bar_chart</span>
-                        <span class="material-symbols-rounded text-[18px] text-foreground">show_chart</span>
-                    </div>
                 </div>
 
-                {{-- Smooth Curved Area Spline SVG --}}
-                <div class="h-32 mt-4 pt-2 border-t border-border/60">
-                    <svg class="w-full h-full overflow-visible" viewBox="0 0 300 100" preserveAspectRatio="none">
-                        <defs>
-                            <linearGradient id="logisticsGradient" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="0%" stop-color="currentColor" class="text-primary" stop-opacity="0.10" />
-                                <stop offset="100%" stop-color="currentColor" class="text-primary" stop-opacity="0.0" />
-                            </linearGradient>
-                        </defs>
-                        <path d="M 0,85 Q 50,40 100,75 T 200,35 T 300,55 L 300,100 L 0,100 Z" fill="url(#logisticsGradient)" />
-                        <path d="M 0,85 Q 50,40 100,75 T 200,35 T 300,55" fill="none" stroke="currentColor" class="text-primary" stroke-width="2" stroke-linecap="round" />
-                        <circle cx="200" cy="35" r="4.5" fill="currentColor" class="text-primary" stroke="var(--card)" stroke-width="1.5" />
-                    </svg>
+                {{-- Real-Data Stock Health Progress Bar & Breakdown --}}
+                <div class="h-32 mt-4 pt-2 border-t border-border/60 flex flex-col justify-center space-y-3">
+                    <div>
+                        <div class="flex items-center justify-between text-xs mb-1.5">
+                            <span class="text-muted-foreground">Stock Health Index</span>
+                            <span class="font-semibold text-foreground tabular-nums">{{ $productsCount > 0 ? (100 - $lowStockPercent) . '% Safe' : '0% Monitored' }}</span>
+                        </div>
+                        <div class="w-full bg-muted rounded-full h-2 overflow-hidden flex">
+                            <div class="bg-primary h-full transition-all duration-300" style="width: {{ $productsCount > 0 ? max(0, 100 - $lowStockPercent) : 0 }}%"></div>
+                            <div class="bg-destructive h-full transition-all duration-300" style="width: {{ $productsCount > 0 ? $lowStockPercent : 0 }}%"></div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-2 pt-1 text-xs">
+                        <div class="p-2 rounded-lg bg-muted/40 border border-border/60">
+                            <div class="text-[10px] text-muted-foreground font-medium">Safe Stock</div>
+                            <div class="font-bold text-foreground tabular-nums mt-0.5">{{ max(0, $productsCount - $lowStockCount) }} Items</div>
+                        </div>
+                        <div class="p-2 rounded-lg bg-muted/40 border border-border/60">
+                            <div class="text-[10px] text-muted-foreground font-medium">Critical / Low</div>
+                            <div class="font-bold text-destructive tabular-nums mt-0.5">{{ $lowStockCount }} Items</div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -416,27 +401,55 @@
                                 {{ number_format($totalPaidOrders, 0, ',', '.') }} Transactions
                             </div>
                             <span class="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-xs font-semibold bg-success-muted text-success border border-success-border">
-                                <span class="material-symbols-rounded text-[13px]">trending_up</span> +0.4%
+                                <span class="material-symbols-rounded text-[14px]">trending_up</span> +0.4%
                             </span>
                         </div>
                         <div class="text-[11px] text-muted-foreground mt-0.5 tabular-nums">
                             QRIS {{ $paymentBreakdown['qris']['percent'] ?? 0 }}% · Cash {{ $paymentBreakdown['cash']['percent'] ?? 0 }}%
                         </div>
                     </div>
-                    {{-- Mini icons --}}
-                    <div class="flex items-center gap-1 text-muted-foreground">
-                        <span class="material-symbols-rounded text-[18px]">bar_chart</span>
-                        <span class="material-symbols-rounded text-[18px] text-foreground">show_chart</span>
-                    </div>
                 </div>
 
-                {{-- Smooth Dual-Spline Curve with active marker dot --}}
-                <div class="h-32 mt-4 pt-2 border-t border-border/60">
-                    <svg class="w-full h-full overflow-visible" viewBox="0 0 300 100" preserveAspectRatio="none">
-                        <path d="M 0,90 C 70,85 120,40 180,60 C 230,75 260,20 300,45" fill="none" stroke="currentColor" class="text-border" stroke-width="2" stroke-linecap="round" />
-                        <path d="M 0,80 C 60,70 120,30 180,50 C 220,65 260,15 300,35" fill="none" stroke="currentColor" class="text-primary" stroke-width="2.5" stroke-linecap="round" />
-                        <circle cx="180" cy="50" r="5" fill="currentColor" class="text-primary" stroke="var(--card)" stroke-width="2" />
-                    </svg>
+                {{-- Real-Data Payment Channel Progress Bars & Tabular Breakdown --}}
+                <div class="h-32 mt-4 pt-2 border-t border-border/60 flex flex-col justify-center space-y-2.5">
+                    {{-- Multi-segment progress bar --}}
+                    <div class="w-full bg-muted rounded-full h-2 overflow-hidden flex">
+                        <div class="bg-primary h-full transition-all duration-300" style="width: {{ $paymentBreakdown['qris']['percent'] ?? 0 }}%" title="QRIS: {{ $paymentBreakdown['qris']['percent'] ?? 0 }}%"></div>
+                        <div class="bg-accent-foreground/70 h-full transition-all duration-300" style="width: {{ $paymentBreakdown['cash']['percent'] ?? 0 }}%" title="Cash: {{ $paymentBreakdown['cash']['percent'] ?? 0 }}%"></div>
+                        <div class="bg-muted-foreground/60 h-full transition-all duration-300" style="width: {{ $paymentBreakdown['ewallet']['percent'] ?? 0 }}%" title="E-Wallet: {{ $paymentBreakdown['ewallet']['percent'] ?? 0 }}%"></div>
+                        <div class="bg-muted-foreground/30 h-full transition-all duration-300" style="width: {{ $paymentBreakdown['card']['percent'] ?? 0 }}%" title="Card: {{ $paymentBreakdown['card']['percent'] ?? 0 }}%"></div>
+                    </div>
+                    {{-- Clean tabular breakdown of channels --}}
+                    <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div class="flex items-center justify-between p-1.5 rounded-lg bg-muted/40 border border-border/50">
+                            <span class="text-muted-foreground flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-primary inline-block"></span>
+                                <span>QRIS</span>
+                            </span>
+                            <span class="font-bold text-foreground tabular-nums">{{ $paymentBreakdown['qris']['percent'] ?? 0 }}% <span class="text-[10px] text-muted-foreground font-normal">({{ $paymentBreakdown['qris']['count'] ?? 0 }})</span></span>
+                        </div>
+                        <div class="flex items-center justify-between p-1.5 rounded-lg bg-muted/40 border border-border/50">
+                            <span class="text-muted-foreground flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-accent-foreground/70 inline-block"></span>
+                                <span>Cash</span>
+                            </span>
+                            <span class="font-bold text-foreground tabular-nums">{{ $paymentBreakdown['cash']['percent'] ?? 0 }}% <span class="text-[10px] text-muted-foreground font-normal">({{ $paymentBreakdown['cash']['count'] ?? 0 }})</span></span>
+                        </div>
+                        <div class="flex items-center justify-between p-1.5 rounded-lg bg-muted/40 border border-border/50">
+                            <span class="text-muted-foreground flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-muted-foreground/60 inline-block"></span>
+                                <span>E-Wallet</span>
+                            </span>
+                            <span class="font-bold text-foreground tabular-nums">{{ $paymentBreakdown['ewallet']['percent'] ?? 0 }}% <span class="text-[10px] text-muted-foreground font-normal">({{ $paymentBreakdown['ewallet']['count'] ?? 0 }})</span></span>
+                        </div>
+                        <div class="flex items-center justify-between p-1.5 rounded-lg bg-muted/40 border border-border/50">
+                            <span class="text-muted-foreground flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-muted-foreground/30 inline-block"></span>
+                                <span>Card</span>
+                            </span>
+                            <span class="font-bold text-foreground tabular-nums">{{ $paymentBreakdown['card']['percent'] ?? 0 }}% <span class="text-[10px] text-muted-foreground font-normal">({{ $paymentBreakdown['card']['count'] ?? 0 }})</span></span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -446,9 +459,8 @@
             {{-- Left: Recent Orders --}}
             <div class="card-surface rounded-xl border border-border p-5 shadow-xs">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
-                        <x-ui.icon name="receipt_long" size="sm" class="text-muted-foreground" />
-                        <span>Recent Orders</span>
+                    <h2 class="text-sm font-bold text-foreground">
+                        Recent Orders
                     </h2>
                     <a href="{{ route('orders.index') }}" wire:navigate class="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5">
                         View all <span class="material-symbols-rounded text-[14px]">chevron_right</span>
@@ -506,9 +518,8 @@
             {{-- Right: Restock Forecast --}}
             <div class="card-surface rounded-xl border border-border p-5 shadow-xs">
                 <div class="flex items-center justify-between mb-4">
-                    <h2 class="text-sm font-bold text-foreground flex items-center gap-2">
-                        <x-ui.icon name="warehouse" size="sm" class="text-muted-foreground" />
-                        <span>Restock Forecast <span class="sr-only">Prakiraan restock</span></span>
+                    <h2 class="text-sm font-bold text-foreground">
+                        Restock Forecast <span class="sr-only">Prakiraan restock</span>
                     </h2>
                     <a href="{{ route('inventory.ingredients') }}" wire:navigate class="text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-0.5">
                         Manage inventory <span class="material-symbols-rounded text-[14px]">chevron_right</span>

@@ -60,7 +60,7 @@
                             .catch(() => notify('Connection error. Please wave to a staff member.'))
                             .finally(() => busy = false)"
                         class="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-border text-muted-foreground hover:text-foreground active:scale-90 transition-all shadow-sm">
-                        <span class="material-symbols-rounded text-[18px]">room_service</span>
+                        <span class="material-symbols-rounded text-[20px]">room_service</span>
                     </button>
                 @endif
 
@@ -70,7 +70,7 @@
                     <a href="{{ route('customer.checkout.success', end($activeOrders)) }}"
                         class="flex items-center justify-center w-11 h-11 rounded-full bg-white border border-border text-muted-foreground hover:text-foreground active:scale-90 transition-all shadow-sm"
                         aria-label="Order Status">
-                        <span class="material-symbols-rounded text-[18px]">receipt_long</span>
+                        <span class="material-symbols-rounded text-[20px]">receipt_long</span>
                     </a>
                 @endif
 
@@ -196,7 +196,7 @@
                                     @unless ($soldOut)
                                         <span
                                             class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-white shadow-sm transition-colors group-hover:bg-primary/90">
-                                            <span class="material-symbols-rounded text-[18px]">add</span>
+                                            <span class="material-symbols-rounded text-[20px]">add</span>
                                         </span>
                                     @endunless
                                 </span>

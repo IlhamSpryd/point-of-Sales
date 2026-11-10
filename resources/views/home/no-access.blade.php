@@ -12,7 +12,7 @@
             @csrf
             <button type="submit"
                 class="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-muted transition-all active:scale-95 shadow-sm">
-                <span class="material-symbols-rounded text-[18px]">logout</span> Log Out
+                <span class="material-symbols-rounded text-[20px]">logout</span> Log Out
             </button>
         </form>
     </div>

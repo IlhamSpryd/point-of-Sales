@@ -1,23 +1,18 @@
 {{-- SPLIT PAYMENT & CHECKOUT MODAL --}}
-<x-modal name="checkout-payment" max-width="2xl" focusable>
-    <div x-data="checkoutPayment()" x-init="init()" class="bg-white rounded-2xl w-full shadow-2xl border border-border flex flex-col overflow-hidden max-h-[92vh]">
+<x-ui.modal name="checkout-payment" maxWidth="2xl" :closeButton="false" class="p-0 overflow-hidden">
+    <div x-data="checkoutPayment()" x-init="init()" class="bg-card text-card-foreground w-full flex flex-col overflow-hidden max-h-[92vh]">
         <!-- Header Modal Checkout -->
         <div class="p-4 border-b border-border flex items-center justify-between bg-muted shrink-0">
-            <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center">
-                    <span class="material-symbols-rounded text-[18px]">payments</span>
-                </div>
-                <div>
-                    <h3 class="font-headline-sm text-[16px] font-semibold text-foreground">Complete Payment (Cashier)</h3>
-                    <span class="text-[11px] text-muted-foreground">
-                        {{ $pendingOrderCode ? 'Order: #' . $pendingOrderCode : ($this->activeShift ? 'Shift #' . $this->activeShift->id : 'POS Terminal') }}
-                        @if($tableId) &bull; Table {{ $this->activeTables->firstWhere('id', $tableId)?->table_name ?? $tableId }} @endif
-                    </span>
-                </div>
+            <div>
+                <h3 class="text-base font-semibold text-foreground">Complete Payment (Cashier)</h3>
+                <span class="text-xs text-muted-foreground">
+                    {{ $pendingOrderCode ? 'Order: #' . $pendingOrderCode : ($this->activeShift ? 'Shift #' . $this->activeShift->id : 'POS Terminal') }}
+                    @if($tableId) &bull; Table {{ $this->activeTables->firstWhere('id', $tableId)?->table_name ?? $tableId }} @endif
+                </span>
             </div>
             <button type="button" x-on:click="$dispatch('close')" aria-label="Close payment (Esc)"
                 class="w-8 h-8 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors">
-                <span class="material-symbols-rounded text-[18px]">close</span>
+                <span class="material-symbols-rounded text-[20px]">close</span>
             </button>
         </div>
 
@@ -25,31 +20,31 @@
         <div class="grid grid-cols-5 p-2 bg-muted border-b border-border gap-1 shrink-0">
             <button type="button" x-on:click="setMethod('cash')"
                 :class="method === 'cash' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'"
-                class="px-3 py-2 rounded-lg font-medium text-[12px] transition-all flex items-center justify-center gap-1">
+                class="px-3 py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-1">
                 <span class="material-symbols-rounded text-[14px]">payments</span>
                 <span>Cash</span>
             </button>
             <button type="button" x-on:click="setMethod('qris')"
                 :class="method === 'qris' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'"
-                class="px-3 py-2 rounded-lg font-medium text-[12px] transition-all flex items-center justify-center gap-1">
+                class="px-3 py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-1">
                 <span class="material-symbols-rounded text-[14px]">qr_code_2</span>
                 <span>QRIS</span>
             </button>
             <button type="button" x-on:click="setMethod('card')"
                 :class="method === 'card' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'"
-                class="px-3 py-2 rounded-lg font-medium text-[12px] transition-all flex items-center justify-center gap-1">
+                class="px-3 py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-1">
                 <span class="material-symbols-rounded text-[14px]">credit_card</span>
                 <span>Card</span>
             </button>
             <button type="button" x-on:click="setMethod('store_credit')"
                 :class="method === 'store_credit' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'"
-                class="px-3 py-2 rounded-lg font-medium text-[12px] transition-all flex items-center justify-center gap-1">
+                class="px-3 py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-1">
                 <span class="material-symbols-rounded text-[14px]">account_balance</span>
                 <span>Transfer</span>
             </button>
             <button type="button" x-on:click="setMethod('split')"
                 :class="method === 'split' ? 'bg-primary text-white' : 'text-muted-foreground hover:text-foreground'"
-                class="px-3 py-2 rounded-lg font-medium text-[12px] transition-all flex items-center justify-center gap-1">
+                class="px-3 py-2 rounded-lg font-medium text-xs transition-all flex items-center justify-center gap-1">
                 <span class="material-symbols-rounded text-[14px]">call_split</span>
                 <span>Split Bill</span>
             </button>
@@ -60,13 +55,13 @@
             <!-- Net Total Due Banner -->
             <div class="flex items-center justify-between p-3.5 rounded-xl bg-muted border border-border">
                 <div>
-                    <span class="text-[11px] text-muted-foreground font-medium uppercase tracking-wider block">Net Total Due</span>
-                    <span class="font-numeric-metric text-[24px] font-bold text-foreground tabular-nums" x-text="'Rp ' + formatRupiah(total)"></span>
+                    <span class="text-xs text-muted-foreground font-medium uppercase tracking-wider block">Net Total Due</span>
+                    <span class="text-2xl font-bold text-foreground tabular-nums" x-text="'Rp ' + formatRupiah(total)"></span>
                 </div>
                 <div class="flex items-center gap-2">
                     <button type="button" wire:click="$set('isManualDiscountModalOpen', true)"
-                        class="px-3 py-1.5 rounded-lg bg-white border border-border text-foreground hover:bg-muted text-[12px] font-medium flex items-center gap-1.5 transition-colors">
-                        <span class="material-symbols-rounded text-[15px] text-amber-500">sell</span>
+                        class="px-3 py-1.5 rounded-lg bg-white border border-border text-foreground hover:bg-muted text-xs font-medium flex items-center gap-1.5 transition-colors">
+                        <span class="material-symbols-rounded text-[16px] text-amber-500">sell</span>
                         <span>Apply Discount</span>
                     </button>
                 </div>
@@ -74,17 +69,17 @@
 
             <!-- Tab Pane: Tunai (Cash) -->
             <div x-show="method === 'cash'" class="space-y-3.5">
-                <label class="font-headline-sm text-[12px] font-semibold text-foreground uppercase tracking-wider block">
+                <label class="text-xs font-semibold text-foreground uppercase tracking-wider block">
                     Cash Received
                 </label>
                 <div class="relative">
-                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold text-[16px]">Rp</span>
+                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold text-base">Rp</span>
                     <input type="text" inputmode="numeric" :value="amountFormatted"
                         x-on:input="setAmountInput($event)"
                         placeholder="0"
-                        class="w-full h-12 pl-12 pr-24 rounded-xl border-2 border-foreground tabular-nums text-[20px] font-bold text-foreground focus:outline-none bg-white">
+                        class="w-full h-12 pl-12 pr-24 rounded-xl border-2 border-foreground tabular-nums text-xl font-bold text-foreground focus:outline-none bg-white">
                     <button type="button" x-on:click="fillRemaining()"
-                        class="absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1.5 rounded-lg bg-muted text-foreground font-label-sm text-[11px] hover:bg-secondary transition-colors font-medium">
+                        class="absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1.5 rounded-lg bg-muted text-foreground text-xs hover:bg-secondary transition-colors font-medium">
                         Exact Amount
                     </button>
                 </div>
@@ -92,19 +87,19 @@
                 <!-- Quick Cash Buttons -->
                 <div class="flex flex-wrap gap-2">
                     <button type="button" x-on:click="addQuick(20000)"
-                        class="px-3 py-1.5 rounded-lg bg-muted border border-border hover:border-foreground tabular-nums text-[12px] text-foreground font-medium">
+                        class="px-3 py-1.5 rounded-lg bg-muted border border-border hover:border-foreground tabular-nums text-xs text-foreground font-medium">
                         +Rp20.000
                     </button>
                     <button type="button" x-on:click="addQuick(50000)"
-                        class="px-3 py-1.5 rounded-lg bg-muted border border-border hover:border-foreground tabular-nums text-[12px] text-foreground font-medium">
+                        class="px-3 py-1.5 rounded-lg bg-muted border border-border hover:border-foreground tabular-nums text-xs text-foreground font-medium">
                         +Rp50.000
                     </button>
                     <button type="button" x-on:click="addQuick(100000)"
-                        class="px-3 py-1.5 rounded-lg bg-muted border border-border hover:border-foreground tabular-nums text-[12px] text-foreground font-medium">
+                        class="px-3 py-1.5 rounded-lg bg-muted border border-border hover:border-foreground tabular-nums text-xs text-foreground font-medium">
                         +Rp100.000
                     </button>
                     <button type="button" x-on:click="addQuick(200000)"
-                        class="px-3 py-1.5 rounded-lg bg-muted border border-border hover:border-foreground tabular-nums text-[12px] text-foreground font-medium">
+                        class="px-3 py-1.5 rounded-lg bg-muted border border-border hover:border-foreground tabular-nums text-xs text-foreground font-medium">
                         +Rp200.000
                     </button>
                 </div>
@@ -112,26 +107,26 @@
                 <!-- Change Display Box -->
                 <div class="p-3.5 rounded-xl border flex items-center justify-between transition-colors"
                     :class="changePreview >= 0 ? 'border-border bg-muted text-foreground' : 'border-rose-200 bg-rose-50 text-rose-700'">
-                    <span class="text-[13px] font-semibold" x-text="changePreview >= 0 ? 'Change Due:' : 'Amount Underpaid:'"></span>
-                    <span class="tabular-nums font-bold text-[18px]" x-text="'Rp ' + formatRupiah(Math.abs(changePreview))"></span>
+                    <span class="text-sm font-semibold" x-text="changePreview >= 0 ? 'Change Due:' : 'Amount Underpaid:'"></span>
+                    <span class="tabular-nums font-bold text-lg" x-text="'Rp ' + formatRupiah(Math.abs(changePreview))"></span>
                 </div>
             </div>
 
             <!-- Tab Pane: QRIS & Digital Payment -->
             <div x-show="method === 'qris'" class="space-y-3.5 p-4 bg-muted rounded-xl border border-border">
                 <div class="flex items-center justify-between gap-2">
-                    <span class="font-headline-sm text-[12px] font-semibold text-foreground uppercase tracking-wider">
+                    <span class="text-xs font-semibold text-foreground uppercase tracking-wider">
                         QR Payment Mode
                     </span>
                     <div class="inline-flex p-1 bg-white rounded-lg border border-border">
                         <button type="button" x-on:click="qrisMode = 'midtrans'"
                             :class="qrisMode === 'midtrans' ? 'bg-primary text-white shadow-2xs' : 'text-muted-foreground hover:text-foreground'"
-                            class="px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer">
+                            class="px-2.5 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer">
                             Dynamic QRIS
                         </button>
                         <button type="button" x-on:click="qrisMode = 'manual'"
                             :class="qrisMode === 'manual' ? 'bg-primary text-white shadow-2xs' : 'text-muted-foreground hover:text-foreground'"
-                            class="px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer">
+                            class="px-2.5 py-1 rounded-md text-xs font-semibold transition-all cursor-pointer">
                             Static QR / Counter EDC
                         </button>
                     </div>
@@ -145,8 +140,8 @@
                                 <span class="material-symbols-rounded text-[24px]">qr_code_scanner</span>
                             </div>
                             <div class="space-y-1">
-                                <span class="font-semibold text-[13px] text-foreground block">Dynamic QR Payment (QRIS)</span>
-                                <p class="text-[11px] text-muted-foreground leading-relaxed">
+                                <span class="font-semibold text-sm text-foreground block">Dynamic QR Payment (QRIS)</span>
+                                <p class="text-xs text-muted-foreground leading-relaxed">
                                     Generates an official dynamic QRIS payment session (GoPay, ShopeePay, BCA, OVO, Dana). Order automatically updates to Paid upon customer completion.
                                 </p>
                             </div>
@@ -159,9 +154,9 @@
                                 <span class="material-symbols-rounded text-[24px]">qr_code_scanner</span>
                             </div>
                             <div class="space-y-0.5">
-                                <span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">Awaiting Customer Payment</span>
-                                <span class="font-sans font-bold text-[15px] text-foreground block tabular-nums" x-text="awaitingMidtransOrderCode"></span>
-                                <span class="text-[12px] text-muted-foreground block max-w-sm">Scan QR on customer terminal or tap Verify Payment below.</span>
+                                <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground block">Awaiting Customer Payment</span>
+                                <span class="font-sans font-bold text-base text-foreground block tabular-nums" x-text="awaitingMidtransOrderCode"></span>
+                                <span class="text-xs text-muted-foreground block max-w-sm">Scan QR on customer terminal or tap Verify Payment below.</span>
                             </div>
                             <div class="flex flex-wrap items-center justify-center gap-2 pt-1 w-full">
                                 <button type="button" x-show="awaitingSnapToken" x-on:click="openSnapPopup()"
@@ -187,91 +182,91 @@
                             <span class="material-symbols-rounded text-[24px] text-foreground">qr_code_2</span>
                         </div>
                         <div>
-                            <span class="font-semibold text-[13px] text-foreground block">Static QR / Counter Terminal</span>
-                            <span class="text-[11px] text-muted-foreground">Verify payment notification on counter terminal or physical slip before confirming.</span>
+                            <span class="font-semibold text-sm text-foreground block">Static QR / Counter Terminal</span>
+                            <span class="text-xs text-muted-foreground">Verify payment notification on counter terminal or physical slip before confirming.</span>
                         </div>
                     </div>
                     <div>
-                        <label class="text-[11px] text-muted-foreground block mb-1">Reference Number / RRN (Optional)</label>
+                        <label class="text-xs text-muted-foreground block mb-1">Reference Number / RRN (Optional)</label>
                         <input type="text" x-model="qrisReference" placeholder="e.g. RRN-99283741"
-                            class="w-full h-9 px-3 rounded-lg border border-border text-[12px] text-foreground tabular-nums focus:outline-none focus:border-foreground bg-white">
+                            class="w-full h-9 px-3 rounded-lg border border-border text-xs text-foreground tabular-nums focus:outline-none focus:border-foreground bg-white">
                     </div>
                 </div>
             </div>
 
             <!-- Tab Pane: EDC Kartu -->
             <div x-show="method === 'card'" class="space-y-3 p-4 bg-muted rounded-xl border border-border">
-                <label class="font-headline-sm text-[12px] font-semibold text-foreground uppercase tracking-wider block">
+                <label class="text-xs font-semibold text-foreground uppercase tracking-wider block">
                     Select Card Terminal (EDC)
                 </label>
                 <div class="grid grid-cols-2 gap-2">
                     @forelse ($this->storeEdcTerminals as $term)
                         <button type="button" x-on:click="edcBank = '{{ $term->device_name }}'"
                             :class="edcBank === '{{ $term->device_name }}' ? 'border-foreground bg-primary text-white shadow-xs' : 'border-border bg-white text-foreground hover:bg-muted'"
-                            class="p-2.5 rounded-lg border font-medium text-[12px] flex items-center justify-between transition-colors cursor-pointer">
+                            class="p-2.5 rounded-lg border font-medium text-xs flex items-center justify-between transition-colors cursor-pointer">
                             <span class="truncate">{{ $term->device_name }}</span>
-                            <span class="text-[10px] opacity-80">{{ $term->device_code ?? 'Online' }}</span>
+                            <span class="text-xs opacity-80">{{ $term->device_code ?? 'Online' }}</span>
                         </button>
                     @empty
                         <button type="button" x-on:click="edcBank = 'EDC Utama'"
                             :class="edcBank === 'EDC Utama' ? 'border-foreground bg-primary text-white shadow-xs' : 'border-border bg-white text-foreground hover:bg-muted'"
-                            class="p-2.5 rounded-lg border font-medium text-[12px] flex items-center justify-between transition-colors cursor-pointer">
+                            class="p-2.5 rounded-lg border font-medium text-xs flex items-center justify-between transition-colors cursor-pointer">
                             <span>Main EDC Terminal</span>
-                            <span class="text-[10px] opacity-80">Online</span>
+                            <span class="text-xs opacity-80">Online</span>
                         </button>
                     @endforelse
                 </div>
                 <div>
-                    <label class="text-[11px] text-muted-foreground block mb-1">Approval Code / Trace Number (EDC Slip)</label>
+                    <label class="text-xs text-muted-foreground block mb-1">Approval Code / Trace Number (EDC Slip)</label>
                     <input type="text" x-model="edcTrace" placeholder="e.g. 849201"
-                        class="w-full h-9 px-3 rounded-lg border border-border text-[12px] text-foreground tabular-nums focus:outline-none focus:border-foreground bg-white">
+                        class="w-full h-9 px-3 rounded-lg border border-border text-xs text-foreground tabular-nums focus:outline-none focus:border-foreground bg-white">
                 </div>
             </div>
 
             <!-- Tab Pane: Bank Transfer -->
             <div x-show="method === 'store_credit'" class="space-y-3 p-4 bg-muted rounded-xl border border-border">
                 <div class="space-y-2">
-                    <label class="font-headline-sm text-[12px] font-semibold text-foreground uppercase tracking-wider block">
+                    <label class="text-xs font-semibold text-foreground uppercase tracking-wider block">
                         Official Store Bank Account
                     </label>
                     @forelse ($this->storeBankAccounts as $acc)
                         <div class="flex items-center justify-between p-3 rounded-lg bg-white border border-border">
                             <div class="flex flex-col min-w-0 pr-2">
-                                <span class="text-[11px] text-muted-foreground">{{ $acc->bank_name ?? $acc->account_name }}</span>
-                                <span class="tabular-nums font-bold text-[14px] text-foreground font-sans tracking-wide">{{ $acc->bank_account_number }}</span>
-                                <span class="text-[10px] text-muted-foreground truncate">a.n. {{ $acc->bank_account_holder ?? $acc->account_name }}</span>
+                                <span class="text-xs text-muted-foreground">{{ $acc->bank_name ?? $acc->account_name }}</span>
+                                <span class="tabular-nums font-bold text-sm text-foreground font-sans tracking-wide">{{ $acc->bank_account_number }}</span>
+                                <span class="text-xs text-muted-foreground truncate">a.n. {{ $acc->bank_account_holder ?? $acc->account_name }}</span>
                             </div>
                             <button type="button" x-on:click="navigator.clipboard?.writeText('{{ $acc->bank_account_number }}'); $dispatch('toast', { message: 'Account number copied to clipboard!', type: 'success' })"
-                                class="px-2.5 py-1 rounded bg-muted text-[11px] font-medium text-foreground hover:bg-secondary transition-colors shrink-0 cursor-pointer">
+                                class="px-2.5 py-1 rounded bg-muted text-xs font-medium text-foreground hover:bg-secondary transition-colors shrink-0 cursor-pointer">
                                 Copy
                             </button>
                         </div>
                     @empty
                         <div class="flex items-center justify-between p-3 rounded-lg bg-white border border-border">
                             <div class="flex flex-col min-w-0">
-                                <span class="text-[11px] text-muted-foreground">Bank Central Asia (BCA)</span>
-                                <span class="tabular-nums font-bold text-[14px] text-foreground font-sans">8010 9928 1120</span>
-                                <span class="text-[10px] text-muted-foreground">a.n. Apeiron System Coffee</span>
+                                <span class="text-xs text-muted-foreground">Bank Central Asia (BCA)</span>
+                                <span class="tabular-nums font-bold text-sm text-foreground font-sans">8010 9928 1120</span>
+                                <span class="text-xs text-muted-foreground">a.n. Apeiron System Coffee</span>
                             </div>
                             <button type="button" x-on:click="navigator.clipboard?.writeText('801099281120'); $dispatch('toast', { message: 'Account number copied to clipboard!', type: 'success' })"
-                                class="px-2.5 py-1 rounded bg-muted text-[11px] font-medium text-foreground hover:bg-secondary transition-colors shrink-0 cursor-pointer">
+                                class="px-2.5 py-1 rounded bg-muted text-xs font-medium text-foreground hover:bg-secondary transition-colors shrink-0 cursor-pointer">
                                 Copy
                             </button>
                         </div>
                     @endforelse
                 </div>
                 <div>
-                    <label class="text-[11px] text-muted-foreground block mb-1">Sender Name / Transfer Reference</label>
+                    <label class="text-xs text-muted-foreground block mb-1">Sender Name / Transfer Reference</label>
                     <input type="text" x-model="transferSender" placeholder="Account holder name or payment note..."
-                        class="w-full h-9 px-3 rounded-lg border border-border text-[12px] text-foreground focus:outline-none focus:border-foreground bg-white">
+                        class="w-full h-9 px-3 rounded-lg border border-border text-xs text-foreground focus:outline-none focus:border-foreground bg-white">
                 </div>
             </div>
 
             <!-- Tab Pane: Split Bill (Multi-Payment Legs) -->
             <div x-show="method === 'split'" class="space-y-3 p-4 bg-muted rounded-xl border border-border">
                 <div class="flex items-center justify-between">
-                    <span class="text-[12px] font-medium text-foreground">Split Payment Allocation</span>
-                    <span class="tabular-nums text-[12px] font-bold"
+                    <span class="text-xs font-medium text-foreground">Split Payment Allocation</span>
+                    <span class="tabular-nums text-xs font-bold"
                         :class="remaining > 0 ? 'text-rose-600' : 'text-emerald-600'"
                         x-text="remaining > 0 ? 'Remaining: Rp ' + formatRupiah(remaining) : 'Fully Allocated'"></span>
                 </div>
@@ -284,7 +279,7 @@
                                 <span class="material-symbols-rounded text-[16px] text-foreground">check_circle</span>
                                 <div>
                                     <span class="font-medium text-xs text-foreground" x-text="leg.label"></span>
-                                    <span class="block text-[11px] text-muted-foreground tabular-nums" x-text="'Rp ' + formatRupiah(leg.amount)"></span>
+                                    <span class="block text-xs text-muted-foreground tabular-nums" x-text="'Rp ' + formatRupiah(leg.amount)"></span>
                                 </div>
                             </div>
                             <button type="button" x-on:click="removeLeg(leg.uid)"
@@ -300,16 +295,16 @@
                     <div class="grid grid-cols-4 gap-1.5">
                         <button type="button" x-on:click="splitTargetMethod = 'cash'"
                             :class="splitTargetMethod === 'cash' ? 'bg-primary text-white' : 'bg-white border-border text-foreground'"
-                            class="px-2 py-1.5 rounded-md border text-[11px] font-medium">Cash</button>
+                            class="px-2 py-1.5 rounded-md border text-xs font-medium">Cash</button>
                         <button type="button" x-on:click="splitTargetMethod = 'qris'"
                             :class="splitTargetMethod === 'qris' ? 'bg-primary text-white' : 'bg-white border-border text-foreground'"
-                            class="px-2 py-1.5 rounded-md border text-[11px] font-medium">QRIS</button>
+                            class="px-2 py-1.5 rounded-md border text-xs font-medium">QRIS</button>
                         <button type="button" x-on:click="splitTargetMethod = 'card'"
                             :class="splitTargetMethod === 'card' ? 'bg-primary text-white' : 'bg-white border-border text-foreground'"
-                            class="px-2 py-1.5 rounded-md border text-[11px] font-medium">Card</button>
+                            class="px-2 py-1.5 rounded-md border text-xs font-medium">Card</button>
                         <button type="button" x-on:click="splitTargetMethod = 'store_credit'"
                             :class="splitTargetMethod === 'store_credit' ? 'bg-primary text-white' : 'bg-white border-border text-foreground'"
-                            class="px-2 py-1.5 rounded-md border text-[11px] font-medium">Transfer</button>
+                            class="px-2 py-1.5 rounded-md border text-xs font-medium">Transfer</button>
                     </div>
                     <div class="flex gap-2">
                         <input type="text" inputmode="numeric" :value="splitAmountFormatted"
@@ -331,16 +326,16 @@
         <!-- Footer Modal Checkout -->
         <div class="p-4 bg-muted border-t border-border flex items-center justify-between shrink-0">
             <button type="button" x-on:click="closeModal()"
-                class="px-4 py-2.5 rounded-lg border border-border hover:bg-white text-foreground font-medium text-[13px] transition-colors cursor-pointer">
+                class="px-4 py-2.5 rounded-lg border border-border hover:bg-white text-foreground font-medium text-sm transition-colors cursor-pointer">
                 <span x-text="awaitingMidtransOrderCode ? 'Close Window' : 'Cancel'"></span>
             </button>
             <button type="button" id="btn-confirm-pay"
                 x-show="!awaitingMidtransOrderCode"
                 x-on:click="submit()"
                 :disabled="submitting || (method === 'split' ? remaining > 0 : false)"
-                class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-[13px] flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-sm flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
                 <span x-show="submitting" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
-                <span class="material-symbols-rounded text-[17px]" x-show="!submitting" x-text="(method === 'qris' && qrisMode === 'midtrans') ? 'qr_code_scanner' : 'check_circle'"></span>
+                <span class="material-symbols-rounded text-[16px]" x-show="!submitting" x-text="(method === 'qris' && qrisMode === 'midtrans') ? 'qr_code_scanner' : 'check_circle'"></span>
                 <span x-text="submitting ? 'Processing Payment...' : ((method === 'qris' && qrisMode === 'midtrans') ? 'Proceed to QR Payment' : 'Confirm & Complete Order')"></span>
             </button>
             <button type="button"
@@ -348,14 +343,14 @@
                 x-cloak
                 x-on:click="checkMidtransStatus()"
                 :disabled="verifyingMidtrans"
-                class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-[13px] flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary/90 text-white font-medium text-sm flex items-center gap-2 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
                 <span x-show="verifyingMidtrans" class="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" aria-hidden="true"></span>
-                <span class="material-symbols-rounded text-[17px]" x-show="!verifyingMidtrans">verified</span>
+                <span class="material-symbols-rounded text-[16px]" x-show="!verifyingMidtrans">verified</span>
                 <span x-text="verifyingMidtrans ? 'Verifying...' : 'Verify & Complete Order'"></span>
             </button>
         </div>
     </div>
-</x-modal>
+</x-ui.modal>
 
 <script>
     function registerCheckoutPayment() {

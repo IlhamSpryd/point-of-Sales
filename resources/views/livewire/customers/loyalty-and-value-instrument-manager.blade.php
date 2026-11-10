@@ -76,14 +76,11 @@
     @if ($activeTab === 'vouchers')
         {{-- Enterprise Pricing Engine Guidance --}}
         <div class="p-4 rounded-2xl border border-border bg-muted/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div class="flex items-start gap-3">
-                <span class="material-symbols-rounded text-primary text-2xl mt-0.5">campaign</span>
-                <div>
-                    <h5 class="text-sm font-semibold text-foreground">Manajemen Kampanye Voucher & Promosi (Modul Pricing)</h5>
-                    <p class="text-xs text-muted-foreground mt-0.5 leading-relaxed">
-                        Konfigurasi kuota penukaran, kuota per pelanggan, masa aktif berulang, dan aturan otomatisasi promosi dikelola secara terpusat pada Modul 04 Pricing & Promotions.
-                    </p>
-                </div>
+            <div>
+                <h5 class="text-sm font-semibold text-foreground">Manajemen Kampanye Voucher & Promosi (Modul Pricing)</h5>
+                <p class="text-xs text-muted-foreground mt-0.5 leading-relaxed">
+                    Konfigurasi kuota penukaran, kuota per pelanggan, masa aktif berulang, dan aturan otomatisasi promosi dikelola secara terpusat pada Modul 04 Pricing & Promotions.
+                </p>
             </div>
             <a href="{{ route('pricing.vouchers.index') }}" wire:navigate class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-background border border-border hover:bg-muted text-foreground transition-colors shrink-0 shadow-xs">
                 <span>Buka Master Vouchers</span>

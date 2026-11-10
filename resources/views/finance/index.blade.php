@@ -3,8 +3,6 @@
         <x-erp.page-header
             title="Finance & Accounting (General Ledger)"
             description="Dual-entry accounting hub, chart of accounts (COA), cash & bank flow monitoring, and multi-branch general ledger audit trail."
-            badge="Modul 7"
-            badgeVariant="neutral"
             :breadcrumbs="[['label' => 'Dashboard', 'href' => route('dashboard')], ['label' => 'Finance & Accounting']]"
         />
     </x-slot:header>
@@ -44,50 +42,29 @@
             />
         </div>
 
-        <!-- Section Info Card -->
-        <div class="card-surface p-6 rounded-2xl border border-border dark:border-zinc-800 space-y-4 shadow-xs">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-900 dark:text-zinc-100">
-                    <span class="material-symbols-rounded text-xl">account_balance_wallet</span>
-                </div>
-                <div>
-                    <h3 class="text-base font-bold text-zinc-950 dark:text-white">Financial Accounting & Reconciliation Center</h3>
-                    <p class="text-xs text-zinc-500">Captures general ledger mutations from POS cashier sales, inventory receipts, supplier bills, customer receivables, and returns.</p>
-                </div>
-            </div>
-
-            <p class="text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
-                Module 7 (Finance & General Ledger) consumes streaming transaction events via accounting outbox tables
-                (<code class="font-sans text-[11px] bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-800 dark:text-zinc-200">accounting_payable_outbox</code> and
-                <code class="font-sans text-[11px] bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded text-zinc-800 dark:text-zinc-200">accounting_receivable_outbox</code>),
-                generating automated balanced journal entries with strict adherence to dual-entry rules, posted record immutability, and full auditability.
-            </p>
-        </div>
-
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <!-- Recent Journal Entries List (2 Cols) -->
             <div class="lg:col-span-2 space-y-4">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                        <span class="material-symbols-rounded text-primary text-base">receipt_long</span>
+                    <h3 class="text-sm font-bold text-foreground">
                         Recent Transaction Journals
                     </h3>
-                    <span class="text-xs text-zinc-400 font-sans">{{ $postedJournalsCount }} Posted Journals</span>
+                    <span class="text-xs text-muted-foreground font-sans">{{ $postedJournalsCount }} Posted Journals</span>
                 </div>
 
-                <div class="card-surface rounded-2xl overflow-hidden border border-border dark:border-zinc-800 shadow-xs">
+                <div class="card-surface rounded-2xl overflow-hidden border border-border shadow-xs">
                     @if($recentJournals->isEmpty())
                         <div class="p-8 text-center space-y-2">
-                            <span class="material-symbols-rounded text-3xl text-zinc-300 dark:text-zinc-600">hourglass_empty</span>
-                            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">No transaction journals recorded yet</p>
-                            <p class="text-xs text-zinc-400 max-w-sm mx-auto">
+                            <span class="material-symbols-rounded text-3xl text-muted-foreground/60">hourglass_empty</span>
+                            <p class="text-sm font-medium text-foreground">No transaction journals recorded yet</p>
+                            <p class="text-xs text-muted-foreground max-w-sm mx-auto">
                                 Journals are automatically posted upon cashier checkout, goods receipt (GRN) approval, or customer invoice verification.
                             </p>
                         </div>
                     @else
                         <div class="overflow-x-auto">
-                            <table class="table-standard w-full min-w-full text-left text-sm text-zinc-600 dark:text-zinc-300">
-                                <thead class="bg-zinc-50 dark:bg-zinc-900/50 text-xs font-semibold uppercase text-zinc-500 border-b border-zinc-200 dark:border-zinc-800">
+                            <table class="table-standard w-full min-w-full text-left text-sm text-foreground">
+                                <thead class="bg-muted/50 text-xs font-semibold uppercase text-muted-foreground border-b border-border">
                                     <tr>
                                         <th class="px-5 py-3">Journal No.</th>
                                         <th class="px-5 py-3">Posting Date</th>
@@ -96,21 +73,21 @@
                                         <th class="px-5 py-3 text-center">Status</th>
                                     </tr>
                                 </thead>
-                                <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+                                <tbody class="divide-y divide-border">
                                     @foreach($recentJournals as $journal)
-                                        <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/40 transition-colors">
-                                            <td class="px-5 py-3 font-sans font-medium text-zinc-900 dark:text-white">
+                                        <tr class="hover:bg-muted/40 transition-colors">
+                                            <td class="px-5 py-3 font-sans font-medium text-foreground">
                                                 {{ $journal->journal_number }}
                                             </td>
-                                            <td class="px-5 py-3 text-xs text-zinc-500">
+                                            <td class="px-5 py-3 text-xs text-muted-foreground">
                                                 {{ $journal->posting_date?->format('d M Y') ?? '-' }}
                                             </td>
                                             <td class="px-5 py-3 text-xs">
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-sans text-[11px]">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-muted text-muted-foreground font-sans text-[11px]">
                                                     {{ $journal->source_module ?? 'General' }}
                                                 </span>
                                             </td>
-                                            <td class="px-5 py-3 text-right font-sans text-xs tabular-nums text-zinc-900 dark:text-white font-medium">
+                                            <td class="px-5 py-3 text-right font-sans text-xs tabular-nums text-foreground font-medium">
                                                 Rp {{ number_format((float) $journal->total_debit, 2, ',', '.') }}
                                             </td>
                                             <td class="px-5 py-3 text-center">
@@ -130,35 +107,34 @@
             <!-- Cash & Bank Accounts Sidebar (1 Col) -->
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-bold text-zinc-900 dark:text-white flex items-center gap-2">
-                        <span class="material-symbols-rounded text-primary text-base">payments</span>
+                    <h3 class="text-sm font-bold text-foreground">
                         Cash & Bank Accounts
                     </h3>
-                    <span class="text-xs text-zinc-400 font-sans">{{ $cashBankAccounts->count() }} Accounts</span>
+                    <span class="text-xs text-muted-foreground font-sans">{{ $cashBankAccounts->count() }} Accounts</span>
                 </div>
 
-                <div class="card-surface rounded-2xl p-5 border border-border dark:border-zinc-800 space-y-3 shadow-xs">
+                <div class="card-surface rounded-2xl p-5 border border-border space-y-3 shadow-xs">
                     @if($cashBankAccounts->isEmpty())
                         <div class="text-center py-6 space-y-2">
-                            <span class="material-symbols-rounded text-2xl text-zinc-300 dark:text-zinc-600">account_balance</span>
-                            <p class="text-xs text-zinc-500">No bank or cash accounts configured.</p>
+                            <span class="material-symbols-rounded text-2xl text-muted-foreground/60">account_balance</span>
+                            <p class="text-xs text-muted-foreground">No bank or cash accounts configured.</p>
                         </div>
                     @else
                         @foreach($cashBankAccounts as $account)
-                            <div class="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200/60 dark:border-zinc-800 flex items-center justify-between">
+                            <div class="p-3 rounded-xl bg-muted/30 border border-border flex items-center justify-between">
                                 <div class="space-y-0.5">
-                                    <div class="text-xs font-bold text-zinc-900 dark:text-white">
+                                    <div class="text-xs font-bold text-foreground">
                                         {{ $account->account_name }}
                                     </div>
-                                    <div class="text-[11px] font-sans text-zinc-400">
+                                    <div class="text-[11px] font-sans text-muted-foreground">
                                         {{ $account->bank_name ? $account->bank_name . ' • ' : '' }}{{ $account->bank_account_number ?? $account->account_code }}
                                     </div>
                                 </div>
                                 <div class="text-right">
-                                    <div class="text-xs font-bold font-sans text-zinc-900 dark:text-white tabular-nums">
+                                    <div class="text-xs font-bold font-sans text-foreground tabular-nums">
                                         Rp {{ number_format((float) $account->current_balance, 2, ',', '.') }}
                                     </div>
-                                    <span class="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium">Active</span>
+                                    <span class="text-[10px] text-success font-medium">Active</span>
                                 </div>
                             </div>
                         @endforeach

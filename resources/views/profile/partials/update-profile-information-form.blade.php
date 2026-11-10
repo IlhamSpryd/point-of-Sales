@@ -44,7 +44,7 @@
 
         <div class="flex items-center gap-4">
             <x-ui.button type="submit" variant="primary">
-                <span class="material-symbols-rounded text-[18px]">save</span> {{ __('Save Name') }}
+                <span class="material-symbols-rounded text-[20px]">save</span> {{ __('Save Name') }}
             </x-ui.button>
 
             @if (session('status') === 'profile-updated')
@@ -130,7 +130,7 @@
 
                 <div>
                     <x-ui.button type="submit" variant="secondary">
-                        <span class="material-symbols-rounded text-[18px]">forward_to_inbox</span> {{ __('Send Verification Code to New Email') }}
+                        <span class="material-symbols-rounded text-[20px]">forward_to_inbox</span> {{ __('Send Verification Code to New Email') }}
                     </x-ui.button>
                 </div>
             </form>

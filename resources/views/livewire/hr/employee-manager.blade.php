@@ -159,19 +159,21 @@
                     <div class="text-xs text-muted-foreground">{{ $emp->jobTitle?->name ?? '-' }}</div>
                 </td>
                 <td class="px-6 py-4">
-                    <x-ui.badge variant="secondary" size="sm">
+                    <span class="text-xs text-muted-foreground font-medium">
                         {{ $emp->employment_type->label() }}
-                    </x-ui.badge>
+                    </span>
                 </td>
                 <td class="px-6 py-4 text-center">
                     @if ($emp->employment_status === \App\Modules\HR\Enums\EmploymentStatusEnum::ACTIVE)
-                        <x-ui.badge variant="success" size="sm">
+                        <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                            <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
                             Active
-                        </x-ui.badge>
+                        </span>
                     @else
-                        <x-ui.badge variant="danger" size="sm">
+                        <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                            <span class="w-1.5 h-1.5 rounded-full bg-destructive"></span>
                             Inactive
-                        </x-ui.badge>
+                        </span>
                     @endif
                 </td>
                 <td class="px-6 py-4 tabular-nums text-xs text-muted-foreground">

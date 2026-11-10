@@ -13,7 +13,7 @@
         variant="destructive"
         x-data=""
         x-on:click.prevent="$dispatch('open-modal', 'confirm-user-deletion')"
-    ><span class="material-symbols-rounded text-[18px]">delete</span> {{ __('Delete Account') }}</x-ui.button>
+    ><span class="material-symbols-rounded text-[20px]">delete</span> {{ __('Delete Account') }}</x-ui.button>
 
     <x-ui.modal name="confirm-user-deletion" :show="$errors->userDeletion->isNotEmpty()" maxWidth="md">
         <form method="post" action="{{ route('profile.destroy') }}" class="p-6">

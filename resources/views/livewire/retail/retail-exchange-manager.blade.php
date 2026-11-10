@@ -3,8 +3,7 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
-                <span class="material-symbols-rounded text-primary text-[28px]">published_with_changes</span>
+            <h1 class="text-2xl font-bold text-foreground tracking-tight">
                 Retail Item Exchange
             </h1>
             <p class="text-sm text-muted-foreground mt-1">
@@ -35,7 +34,7 @@
                 class="flex-1 bg-background border border-border rounded-xl px-4 py-2 text-sm text-foreground focus:ring-2 focus:ring-primary focus:border-transparent">
             <button wire:click="searchOrder"
                 class="px-5 py-2 bg-primary text-primary-foreground text-sm font-semibold rounded-xl hover:bg-primary/90 transition-colors flex items-center gap-2">
-                <span class="material-symbols-rounded text-[18px]">search</span>
+                <span class="material-symbols-rounded text-[20px]">search</span>
                 Find Order
             </button>
         </div>
@@ -93,7 +92,7 @@
                     <div class="flex justify-end pt-2">
                         <button wire:click="processExchange"
                             class="px-5 py-2.5 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 flex items-center gap-2">
-                            <span class="material-symbols-rounded text-[18px]">swap_horiz</span>
+                            <span class="material-symbols-rounded text-[20px]">swap_horiz</span>
                             Complete Item Exchange
                         </button>
                     </div>

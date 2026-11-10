@@ -10,21 +10,18 @@
         </div>
         <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
             <x-ui.button type="button" variant="primary" wire:click="openCreateModal" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                <span class="material-symbols-rounded text-[18px]">add</span> New Supplier Return
+                <span class="material-symbols-rounded text-[20px]">add</span> New Supplier Return
             </x-ui.button>
         </div>
     </div>
 
     {{-- Enterprise Vendor Return Notice --}}
     <div class="mb-5 p-4 rounded-2xl border border-border bg-muted/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div class="flex items-start gap-3">
-            <span class="material-symbols-rounded text-primary text-2xl mt-0.5">assignment_return</span>
-            <div>
-                <h5 class="text-sm font-semibold text-foreground">Retur Pembelian Vendor & Nota Debet (Enterprise P2P)</h5>
-                <p class="text-xs text-muted-foreground mt-0.5">
-                    Pengembalian barang ke vendor yang terhubung dengan Purchase Order dan penerbitan Nota Debet Hutang (AP Debit Note) dikelola terpusat di Modul Purchasing.
-                </p>
-            </div>
+        <div>
+            <h5 class="text-sm font-semibold text-foreground">Retur Pembelian Vendor & Nota Debet (Enterprise P2P)</h5>
+            <p class="text-xs text-muted-foreground mt-0.5">
+                Pengembalian barang ke vendor yang terhubung dengan Purchase Order dan penerbitan Nota Debet Hutang (AP Debit Note) dikelola terpusat di Modul Purchasing.
+            </p>
         </div>
         <a href="{{ route('purchasing.returns.index') }}" wire:navigate class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-background border border-border hover:bg-muted text-foreground transition-colors shrink-0 shadow-xs">
             <span>Buka Purchasing Returns</span>
@@ -46,31 +43,22 @@
     @endif
 
     {{-- Filter & Search Bar --}}
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-4 mb-4">
-        <div class="relative w-full sm:w-80">
-            <input type="text" wire:model.live.debounce.300ms="search" placeholder="Search return number, supplier name..."
-                   class="form-input w-full pl-10 pr-4 py-2 rounded-2xl border border-border bg-white text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring shadow-sm text-sm">
-            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
-                <span class="material-symbols-rounded text-[18px]">search</span>
-            </div>
-        </div>
-
-        <div class="flex items-center gap-3 w-full sm:w-auto">
-            <div class="relative w-full sm:w-48">
-                <select wire:model.live="statusFilter"
-                        class="form-input w-full pl-4 pr-8 py-2 rounded-2xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-ring text-sm shadow-sm appearance-none">
-                    <option value="ALL">All Statuses</option>
-                    <option value="DRAFT">Draft</option>
-                    <option value="POSTED">Posted</option>
-                    <option value="REVERSED">Reversed</option>
-                    <option value="CANCELLED">Cancelled</option>
-                </select>
-                <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-muted-foreground">
-                    <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
-                </div>
-            </div>
-        </div>
-    </div>
+    <x-erp.filter-bar
+        search-placeholder="Search return number, supplier name..."
+        search-model="search"
+        :reset-method="null"
+    >
+        <x-slot:filters>
+            <select wire:model.live="statusFilter"
+                    class="h-9 px-3 rounded-medium border border-input bg-background text-foreground text-xs font-semibold focus-visible:ring-1 focus-visible:ring-ring outline-none">
+                <option value="ALL">All Statuses</option>
+                <option value="DRAFT">Draft</option>
+                <option value="POSTED">Posted</option>
+                <option value="REVERSED">Reversed</option>
+                <option value="CANCELLED">Cancelled</option>
+            </select>
+        </x-slot:filters>
+    </x-erp.filter-bar>
 
     {{-- Supplier Returns Table --}}
     <x-erp.data-table
@@ -129,32 +117,37 @@
                                 <div class="flex items-center justify-end gap-1.5">
                                     <button wire:click="viewDetail({{ $ret->id }})" title="View Details"
                                             class="p-1.5 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-lg transition-colors">
-                                        <span class="material-symbols-rounded text-[18px]">visibility</span>
+                                        <span class="material-symbols-rounded text-[20px]">visibility</span>
                                     </button>
 
                                     @if($ret->isDraft())
                                         <button wire:click="postReturn({{ $ret->id }})" title="Post Return"
                                                 wire:confirm="Post this return? Physical stock will be deducted immediately from the branch."
                                                 class="p-1.5 text-emerald-600 hover:text-emerald-800 hover:bg-emerald-50 rounded-lg transition-colors">
-                                            <span class="material-symbols-rounded text-[18px]">send</span>
+                                            <span class="material-symbols-rounded text-[20px]">send</span>
                                         </button>
                                         <button wire:click="cancelReturn({{ $ret->id }})" title="Cancel Draft"
                                                 wire:confirm="Cancel this draft return?"
                                                 class="p-1.5 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg transition-colors">
-                                            <span class="material-symbols-rounded text-[18px]">cancel</span>
+                                            <span class="material-symbols-rounded text-[20px]">cancel</span>
                                         </button>
                                     @endif
 
                                     @if($ret->isPosted() && auth()->user()->role?->name === 'Owner')
                                         <button wire:click="openReverseModal({{ $ret->id }})" title="Reverse Return"
                                                 class="p-1.5 text-amber-600 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition-colors">
-                                            <span class="material-symbols-rounded text-[18px]">undo</span>
+                                            <span class="material-symbols-rounded text-[20px]">undo</span>
                                         </button>
                                     @endif
                                 </div>
                             </td>
                         </tr>
                 @endforeach
+                @if($returns->hasPages())
+                    <x-slot:pagination>
+                        {{ $returns->links() }}
+                    </x-slot:pagination>
+                @endif
     </x-erp.data-table>
 
     {{-- Return Draft Form Modal --}}
@@ -273,7 +266,7 @@
                                         </td>
                                         <td class="p-2 text-center">
                                             <button type="button" wire:click="removeItemRow({{ $index }})" class="text-rose-500 hover:text-rose-700">
-                                                <span class="material-symbols-rounded text-[18px]">delete</span>
+                                                <span class="material-symbols-rounded text-[20px]">delete</span>
                                             </button>
                                         </td>
                                     </tr>

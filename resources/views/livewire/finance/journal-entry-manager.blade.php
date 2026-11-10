@@ -29,35 +29,27 @@
     </div>
 
     <!-- Filter & Search Toolbar -->
-    <div class="card-surface p-4 rounded-2xl border border-border flex flex-col lg:flex-row gap-3 items-center justify-between shadow-xs">
-        <div class="relative w-full lg:w-72">
-            <span class="material-symbols-rounded absolute left-3 top-2.5 text-zinc-400 text-sm">search</span>
-            <input type="text"
-                   wire:model.live.debounce.300ms="search"
-                   placeholder="Search journal number, reference..."
-                   class="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none">
-        </div>
-
-        <div class="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-            <select wire:model.live="statusFilter" class="text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 px-3 py-1.5 focus:outline-none">
+    <x-erp.filter-bar search-placeholder="Search journal number, reference...">
+        <x-slot:filters>
+            <select wire:model.live="statusFilter" class="h-9 text-xs rounded-xl border border-input bg-background text-foreground px-3 outline-none">
                 <option value="">All Statuses</option>
                 @foreach ($statuses as $status)
                     <option value="{{ $status->value }}">{{ $status->value }}</option>
                 @endforeach
             </select>
 
-            <div class="flex items-center gap-1.5 text-xs text-zinc-500">
+            <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <span>From:</span>
                 <input type="date"
                        wire:model.live="dateFrom"
-                       class="px-2.5 py-1.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none font-sans">
+                       class="h-9 px-2.5 text-xs rounded-xl border border-input bg-background text-foreground focus:outline-none font-sans">
                 <span>To:</span>
                 <input type="date"
                        wire:model.live="dateTo"
-                       class="px-2.5 py-1.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none font-sans">
+                       class="h-9 px-2.5 text-xs rounded-xl border border-input bg-background text-foreground focus:outline-none font-sans">
             </div>
-        </div>
-    </div>
+        </x-slot:filters>
+    </x-erp.filter-bar>
 
     @php
         $journalColumns = [
@@ -126,22 +118,15 @@
     </x-erp.data-table>
 
     <!-- Workbench Modal: Manual Journal Creation -->
-    @if ($showWorkbenchModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-            <div class="card-surface w-full max-w-4xl rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto"
-                 @click.outside="$wire.set('showWorkbenchModal', false)">
-                
-                <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
-                    <div>
-                        <h3 class="text-base font-bold text-zinc-950 dark:text-white">Manual Journal Workbench (Dual-Entry)</h3>
-                        <p class="text-xs text-zinc-500">Real-time debit and credit balance validation before posting to General Ledger.</p>
-                    </div>
-                    <button type="button" wire:click="$set('showWorkbenchModal', false)" class="text-zinc-400 hover:text-zinc-600">
-                        <span class="material-symbols-rounded text-lg">close</span>
-                    </button>
-                </div>
+    <x-ui.modal wire:model="showWorkbenchModal" maxWidth="4xl" onClose="$wire.set('showWorkbenchModal', false)">
+        <x-slot:header>
+            <div>
+                <h3 class="text-base font-bold text-foreground">Manual Journal Workbench (Dual-Entry)</h3>
+                <p class="text-xs text-muted-foreground">Real-time debit and credit balance validation before posting to General Ledger.</p>
+            </div>
+        </x-slot:header>
 
-                <form wire:submit="postManualJournal" class="space-y-4">
+        <form id="workbench-form" wire:submit="postManualJournal" class="space-y-4">
                     <x-erp.dirty-guard watch="lines" />
                     <!-- General Header Information -->
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -286,148 +271,139 @@
                         </div>
                     </div>
 
-                    <!-- Form Footer Buttons -->
-                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
-                        <button type="button"
-                                wire:click="$set('showWorkbenchModal', false)"
-                                class="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white rounded-xl transition-colors">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                                wire:loading.attr="disabled"
-                                wire:target="postManualJournal"
-                                @if(! $balance['isBalanced']) disabled @endif
-                                class="inline-flex items-center gap-2 px-5 py-2 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-xl transition-colors shadow-xs disabled:opacity-40 disabled:cursor-not-allowed">
-                            <span class="material-symbols-rounded text-sm">send</span>
-                            <span>Post to General Ledger</span>
-                        </button>
-                    </div>
-                </form>
+        </form>
+
+        <x-slot:footer>
+            <div class="flex items-center justify-end gap-2 w-full">
+                <button type="button"
+                        wire:click="$set('showWorkbenchModal', false)"
+                        class="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground rounded-xl transition-colors">
+                    Cancel
+                </button>
+                <button type="submit"
+                        form="workbench-form"
+                        wire:loading.attr="disabled"
+                        wire:target="postManualJournal"
+                        @if(! $balance['isBalanced']) disabled @endif
+                        class="inline-flex items-center gap-2 px-5 py-2 text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl transition-colors shadow-xs disabled:opacity-40 disabled:cursor-not-allowed">
+                    <span class="material-symbols-rounded text-sm">send</span>
+                    <span>Post to General Ledger</span>
+                </button>
             </div>
-        </div>
-    @endif
+        </x-slot:footer>
+    </x-ui.modal>
 
     <!-- Journal Detail Modal -->
     @if ($showDetailModal && $selectedJournal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-            <div class="card-surface w-full max-w-3xl rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto"
-                 @click.outside="$wire.set('showDetailModal', false)">
-                
-                <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
-                    <div>
-                        <h3 class="text-base font-bold text-zinc-950 dark:text-white font-sans">
-                            {{ $selectedJournal->journal_number }}
-                        </h3>
-                        <p class="text-xs text-zinc-500">Posting Date: {{ $selectedJournal->posting_date->format('d M Y') }} • Type: {{ $selectedJournal->journal_type->value }}</p>
+        <x-ui.modal :open="true" maxWidth="3xl" onClose="$wire.set('showDetailModal', false)">
+            <x-slot:title>
+                <div>
+                    <h3 class="text-base font-bold text-foreground font-sans">
+                        {{ $selectedJournal->journal_number }}
+                    </h3>
+                    <p class="text-xs text-muted-foreground">Posting Date: {{ $selectedJournal->posting_date->format('d M Y') }} • Type: {{ $selectedJournal->journal_type->value }}</p>
+                </div>
+            </x-slot:title>
+
+            <div class="space-y-3">
+                <div class="p-3 bg-muted/50 rounded-xl text-xs space-y-1 border border-border">
+                    <div class="flex justify-between">
+                        <span class="text-muted-foreground">Notes:</span>
+                        <span class="text-foreground font-medium">{{ $selectedJournal->notes ?: '-' }}</span>
                     </div>
-                    <button type="button" wire:click="$set('showDetailModal', false)" class="text-zinc-400 hover:text-zinc-600">
-                        <span class="material-symbols-rounded text-lg">close</span>
-                    </button>
+                    <div class="flex justify-between">
+                        <span class="text-muted-foreground">Posted By:</span>
+                        <span class="text-foreground font-medium">{{ $selectedJournal->createdByUser?->name ?? 'System Auto' }}</span>
+                    </div>
+                    @if($selectedJournal->reversed_by_journal_id)
+                        <div class="flex justify-between text-destructive">
+                            <span>Reversal Status:</span>
+                            <span>Reversed by #{{ $selectedJournal->reversed_by_journal_id }} ({{ $selectedJournal->reversal_reason }})</span>
+                        </div>
+                    @endif
                 </div>
 
-                <div class="space-y-3">
-                    <div class="p-3 bg-zinc-50 dark:bg-zinc-900 rounded-xl text-xs space-y-1">
-                        <div class="flex justify-between">
-                            <span class="text-zinc-500">Notes:</span>
-                            <span class="text-zinc-900 dark:text-zinc-100 font-medium">{{ $selectedJournal->notes ?: '-' }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-zinc-500">Posted By:</span>
-                            <span class="text-zinc-900 dark:text-zinc-100 font-medium">{{ $selectedJournal->createdByUser?->name ?? 'System Auto' }}</span>
-                        </div>
-                        @if($selectedJournal->reversed_by_journal_id)
-                            <div class="flex justify-between text-rose-500">
-                                <span>Reversal Status:</span>
-                                <span>Reversed by #{{ $selectedJournal->reversed_by_journal_id }} ({{ $selectedJournal->reversal_reason }})</span>
-                            </div>
-                        @endif
-                    </div>
-
-                    <div class="border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden">
-                        <table class="w-full text-left text-xs">
-                            <thead class="bg-zinc-50 dark:bg-zinc-900 text-zinc-500 font-semibold border-b border-zinc-200 dark:border-zinc-800">
+                <div class="border border-border rounded-xl overflow-hidden">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-muted/50 text-muted-foreground font-semibold border-b border-border">
+                            <tr>
+                                <th class="px-3 py-2">Account Code</th>
+                                <th class="px-3 py-2">Account Name</th>
+                                <th class="px-3 py-2">Line Description</th>
+                                <th class="px-3 py-2 text-right">Debit</th>
+                                <th class="px-3 py-2 text-right">Credit</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-border">
+                            @foreach ($selectedJournal->lines as $line)
                                 <tr>
-                                    <th class="px-3 py-2">Account Code</th>
-                                    <th class="px-3 py-2">Account Name</th>
-                                    <th class="px-3 py-2">Line Description</th>
-                                    <th class="px-3 py-2 text-right">Debit</th>
-                                    <th class="px-3 py-2 text-right">Credit</th>
+                                    <td class="px-3 py-2 font-sans text-foreground font-medium">{{ $line->account?->account_code ?? $line->account_id }}</td>
+                                    <td class="px-3 py-2 text-foreground">{{ $line->account?->account_name ?? '-' }}</td>
+                                    <td class="px-3 py-2 text-muted-foreground">{{ $line->description ?: '-' }}</td>
+                                    <td class="px-3 py-2 text-right font-sans font-medium text-foreground">
+                                        {{ (float) $line->debit_amount > 0 ? 'Rp ' . number_format((float) $line->debit_amount, 2) : '-' }}
+                                    </td>
+                                    <td class="px-3 py-2 text-right font-sans font-medium text-foreground">
+                                        {{ (float) $line->credit_amount > 0 ? 'Rp ' . number_format((float) $line->credit_amount, 2) : '-' }}
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
-                                @foreach ($selectedJournal->lines as $line)
-                                    <tr>
-                                        <td class="px-3 py-2 font-sans text-zinc-900 dark:text-zinc-100 font-medium">{{ $line->account?->account_code ?? $line->account_id }}</td>
-                                        <td class="px-3 py-2 text-zinc-800 dark:text-zinc-200">{{ $line->account?->account_name ?? '-' }}</td>
-                                        <td class="px-3 py-2 text-zinc-500">{{ $line->description ?: '-' }}</td>
-                                        <td class="px-3 py-2 text-right font-sans font-medium text-zinc-900 dark:text-zinc-100">
-                                            {{ (float) $line->debit_amount > 0 ? 'Rp ' . number_format((float) $line->debit_amount, 2) : '-' }}
-                                        </td>
-                                        <td class="px-3 py-2 text-right font-sans font-medium text-zinc-900 dark:text-zinc-100">
-                                            {{ (float) $line->credit_amount > 0 ? 'Rp ' . number_format((float) $line->credit_amount, 2) : '-' }}
-                                        </td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                            <tfoot class="bg-zinc-50 dark:bg-zinc-900 font-sans font-bold text-xs border-t border-zinc-200 dark:border-zinc-800">
-                                <tr>
-                                    <td colspan="3" class="px-3 py-2 text-right">Total</td>
-                                    <td class="px-3 py-2 text-right">Rp {{ number_format((float) $selectedJournal->total_debit, 2) }}</td>
-                                    <td class="px-3 py-2 text-right">Rp {{ number_format((float) $selectedJournal->total_credit, 2) }}</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
+                            @endforeach
+                        </tbody>
+                        <tfoot class="bg-muted/50 font-sans font-bold text-xs border-t border-border">
+                            <tr>
+                                <td colspan="3" class="px-3 py-2 text-right">Total</td>
+                                <td class="px-3 py-2 text-right">Rp {{ number_format((float) $selectedJournal->total_debit, 2) }}</td>
+                                <td class="px-3 py-2 text-right">Rp {{ number_format((float) $selectedJournal->total_credit, 2) }}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
+            </div>
 
-                <div class="flex justify-end pt-3 border-t border-zinc-200 dark:border-zinc-800">
+            <x-slot:footer>
+                <div class="flex justify-end w-full">
                     <button type="button"
                             wire:click="$set('showDetailModal', false)"
-                            class="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white rounded-xl transition-colors">
+                            class="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground rounded-xl transition-colors">
                         Close
                     </button>
                 </div>
-            </div>
-        </div>
+            </x-slot:footer>
+        </x-ui.modal>
     @endif
 
     <!-- Reversal Confirmation Modal -->
     @if ($showReversalModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-            <div class="card-surface w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-2xl space-y-4"
-                 @click.outside="$wire.set('showReversalModal', false)">
-                
-                <div class="flex items-center gap-3 text-rose-600 dark:text-rose-400">
-                    <span class="material-symbols-rounded text-2xl">undo</span>
-                    <h3 class="text-base font-bold text-zinc-950 dark:text-white">Confirm Journal Reversal</h3>
-                </div>
-
-                <p class="text-xs text-zinc-600 dark:text-zinc-400">
+        <x-ui.modal wire:model="showReversalModal" title="Confirm Journal Reversal" maxWidth="md" onClose="$wire.set('showReversalModal', false)">
+            <div class="space-y-4">
+                <p class="text-xs text-muted-foreground">
                     This action will automatically generate a symmetric reversal journal (swapping debits and credits) in the General Ledger and mark this journal as REVERSED.
                 </p>
 
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Reversal Reason (Required)</label>
+                    <label class="block text-xs font-semibold text-foreground mb-1">Reversal Reason (Required)</label>
                     <textarea wire:model="reversalReason"
                               rows="3"
                               placeholder="Enter reason for journal cancellation or adjustment..."
-                              class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none"></textarea>
-                    @error('reversalReason') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                              class="w-full px-3 py-2 text-xs rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"></textarea>
+                    @error('reversalReason') <span class="text-2xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
+            </div>
 
-                <div class="flex items-center justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+            <x-slot:footer>
+                <div class="flex items-center justify-end gap-2 w-full">
                     <button type="button"
                             wire:click="$set('showReversalModal', false)"
-                            class="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white rounded-xl transition-colors">
+                            class="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground rounded-xl transition-colors">
                         Cancel
                     </button>
                     <button type="button"
                             wire:click="confirmReversal"
-                            class="px-4 py-2 text-xs font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-xl transition-colors shadow-xs">
+                            class="px-4 py-2 text-xs font-semibold text-destructive-foreground bg-destructive hover:bg-destructive/90 rounded-xl transition-colors shadow-xs">
                         Confirm Reversal
                     </button>
                 </div>
-            </div>
-        </div>
+            </x-slot:footer>
+        </x-ui.modal>
     @endif
 </div>

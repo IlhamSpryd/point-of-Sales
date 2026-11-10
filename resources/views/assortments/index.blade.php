@@ -42,111 +42,106 @@
             </x-ui.alert>
         @endif
 
-        <div class="card-surface overflow-hidden rounded-xl border border-border shadow-xs">
-            <div class="overflow-x-auto">
-                <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
-                    <thead>
-                        <tr class="border-b border-border bg-muted/30 text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            <th class="px-6 py-3.5">Product</th>
-                            <th class="px-6 py-3.5">Category</th>
-                            <th class="px-6 py-3.5 text-right">Base Price</th>
-                            <th class="px-6 py-3.5 text-center">Available in Branch</th>
-                            <th class="px-6 py-3.5 text-right">Branch Price Override</th>
-                            @if($canManage)
-                                <th class="px-6 py-3.5 text-right">Save</th>
+        <x-erp.data-table
+            :is-empty="$products->isEmpty()"
+            empty-title="No products found for this branch."
+            empty-description="Configure products to assign pricing and availability for this outlet."
+            empty-icon="storefront"
+            :colspan="$canManage ? 6 : 5"
+        >
+            <x-slot:head>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Product</th>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Category</th>
+                <th scope="col" class="px-6 py-3.5 text-right text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Base Price</th>
+                <th scope="col" class="px-6 py-3.5 text-center text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Available in Branch</th>
+                <th scope="col" class="px-6 py-3.5 text-right text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Branch Price Override</th>
+                @if($canManage)
+                    <th scope="col" class="px-6 py-3.5 text-right text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Save</th>
+                @endif
+            </x-slot:head>
+
+            @foreach($products as $prod)
+                @php
+                    $assortment = $prod->storeAssortments->first();
+                    $isAvailable = $assortment ? $assortment->is_available : true;
+                    $overridePrice = $assortment ? $assortment->store_price_override : null;
+                @endphp
+                <tr class="hover:bg-muted/40 transition-colors">
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            @if($prod->photo_url)
+                                <img src="{{ $prod->photo_url }}" alt="{{ $prod->product_name }}" class="w-10 h-10 rounded-xl object-cover border border-border">
+                            @else
+                                <div class="w-10 h-10 rounded-xl bg-muted flex items-center justify-center text-muted-foreground">
+                                    <span class="material-symbols-rounded">inventory_2</span>
+                                </div>
                             @endif
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-border">
-                        @forelse($products as $prod)
-                            @php
-                                $assortment = $prod->storeAssortments->first();
-                                $isAvailable = $assortment ? $assortment->is_available : true;
-                                $overridePrice = $assortment ? $assortment->store_price_override : null;
-                            @endphp
-                            <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-3">
-                                        @if($prod->photo_url)
-                                            <img src="{{ $prod->photo_url }}" alt="{{ $prod->product_name }}" class="w-10 h-10 rounded-xl object-cover border border-zinc-200 dark:border-zinc-700">
-                                        @else
-                                            <div class="w-10 h-10 rounded-xl bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-zinc-400">
-                                                <span class="material-symbols-rounded">inventory_2</span>
-                                            </div>
-                                        @endif
-                                        <div>
-                                            <div class="font-semibold text-sm text-foreground dark:text-white">{{ $prod->product_name }}</div>
-                                            <div class="font-sans text-xs text-zinc-400">{{ $prod->product_code }}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-zinc-600 dark:text-zinc-400">{{ $prod->category?->category_name ?? '—' }}</td>
-                                <td class="px-6 py-4 text-sm font-medium text-right text-zinc-900 dark:text-white font-sans tabular-nums">
-                                    Rp {{ number_format((float) $prod->product_price, 0, ',', '.') }}
-                                </td>
+                            <div>
+                                <div class="font-semibold text-sm text-foreground">{{ $prod->product_name }}</div>
+                                <div class="font-sans text-xs text-muted-foreground">{{ $prod->product_code }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-muted-foreground">{{ $prod->category?->category_name ?? '—' }}</td>
+                    <td class="px-6 py-4 text-sm font-medium text-right text-foreground font-sans tabular-nums">
+                        Rp {{ number_format((float) $prod->product_price, 0, ',', '.') }}
+                    </td>
 
-                                @if($canManage && $selectedStoreId)
-                                    <form id="form-assortment-{{ $prod->id }}" action="{{ route('assortments.update') }}" method="POST" class="hidden">
-                                        @csrf
-                                        <input type="hidden" name="store_id" value="{{ $selectedStoreId }}">
-                                        <input type="hidden" name="product_id" value="{{ $prod->id }}">
-                                    </form>
+                    @if($canManage && $selectedStoreId)
+                        <form id="form-assortment-{{ $prod->id }}" action="{{ route('assortments.update') }}" method="POST" class="hidden">
+                            @csrf
+                            <input type="hidden" name="store_id" value="{{ $selectedStoreId }}">
+                            <input type="hidden" name="product_id" value="{{ $prod->id }}">
+                        </form>
 
-                                    <!-- Switch Ketersediaan -->
-                                    <td class="px-6 py-4 text-center">
-                                        <input type="hidden" name="is_available" value="0" form="form-assortment-{{ $prod->id }}">
-                                        <label class="inline-flex items-center justify-center cursor-pointer gap-2">
-                                            <input type="checkbox" name="is_available" value="1" {{ $isAvailable ? 'checked' : '' }}
-                                                form="form-assortment-{{ $prod->id }}"
-                                                class="rounded border-zinc-300 text-primary shadow-xs focus:ring-ring h-4 w-4">
-                                            <x-ui.badge variant="{{ $isAvailable ? 'success' : 'danger' }}" size="xs">
-                                                {{ $isAvailable ? 'Available' : 'Disabled' }}
-                                            </x-ui.badge>
-                                        </label>
-                                    </td>
+                        <!-- Switch Ketersediaan -->
+                        <td class="px-6 py-4 text-center">
+                            <input type="hidden" name="is_available" value="0" form="form-assortment-{{ $prod->id }}">
+                            <label class="inline-flex items-center justify-center cursor-pointer gap-2">
+                                <input type="checkbox" name="is_available" value="1" {{ $isAvailable ? 'checked' : '' }}
+                                    form="form-assortment-{{ $prod->id }}"
+                                    class="rounded border-border text-primary shadow-xs focus:ring-ring h-4 w-4">
+                                <x-ui.badge variant="{{ $isAvailable ? 'success' : 'danger' }}" size="xs">
+                                    {{ $isAvailable ? 'Available' : 'Disabled' }}
+                                </x-ui.badge>
+                            </label>
+                        </td>
 
-                                    <!-- Branch Price Override -->
-                                    <td class="px-6 py-4 text-right">
-                                        <input type="number" name="store_price_override" value="{{ $overridePrice }}" step="0.01" min="0"
-                                            form="form-assortment-{{ $prod->id }}"
-                                            placeholder="Use Base Price"
-                                            class="w-48 inline-block text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 p-2 text-right font-sans tabular-nums text-zinc-800 dark:text-zinc-100 focus:outline-hidden focus:ring-2 focus:ring-ring/20">
-                                    </td>
+                        <!-- Branch Price Override -->
+                        <td class="px-6 py-4 text-right">
+                            <input type="number" name="store_price_override" value="{{ $overridePrice }}" step="0.01" min="0"
+                                form="form-assortment-{{ $prod->id }}"
+                                placeholder="Use Base Price"
+                                class="w-48 inline-block text-xs rounded-lg border border-border bg-background p-2 text-right font-sans tabular-nums text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring/20">
+                        </td>
 
-                                    <!-- Save Row Button -->
-                                    <td class="px-6 py-4 text-right">
-                                        <x-ui.button variant="secondary" size="xs" type="submit" form="form-assortment-{{ $prod->id }}">
-                                            Save
-                                        </x-ui.button>
-                                    </td>
-                                @else
-                                    <td class="px-6 py-4 text-center">
-                                        <x-ui.badge variant="{{ $isAvailable ? 'success' : 'danger' }}" size="sm">
-                                            {{ $isAvailable ? 'Available' : 'Disabled' }}
-                                        </x-ui.badge>
-                                    </td>
-                                    <td class="px-6 py-4 text-right text-sm font-semibold text-zinc-900 dark:text-white font-sans tabular-nums">
-                                        {{ $overridePrice ? 'Rp ' . number_format((float)$overridePrice, 0, ',', '.') : 'Base Price' }}
-                                    </td>
-                                    @if($canManage)
-                                        <td class="px-6 py-4 text-right text-zinc-400 text-xs">—</td>
-                                    @endif
-                                @endif
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="{{ $canManage ? 6 : 5 }}" class="px-6 py-12 text-center text-muted-foreground text-xs">
-                                    No products found for this branch.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                        <!-- Save Row Button -->
+                        <td class="px-6 py-4 text-right">
+                            <x-ui.button variant="secondary" size="xs" type="submit" form="form-assortment-{{ $prod->id }}">
+                                Save
+                            </x-ui.button>
+                        </td>
+                    @else
+                        <td class="px-6 py-4 text-center">
+                            <x-ui.badge variant="{{ $isAvailable ? 'success' : 'danger' }}" size="sm">
+                                {{ $isAvailable ? 'Available' : 'Disabled' }}
+                            </x-ui.badge>
+                        </td>
+                        <td class="px-6 py-4 text-right text-sm font-semibold text-foreground font-sans tabular-nums">
+                            {{ $overridePrice ? 'Rp ' . number_format((float)$overridePrice, 0, ',', '.') : 'Base Price' }}
+                        </td>
+                        @if($canManage)
+                            <td class="px-6 py-4 text-right text-muted-foreground text-xs">—</td>
+                        @endif
+                    @endif
+                </tr>
+            @endforeach
 
-            <div class="p-4 border-t border-border dark:border-zinc-800">
-                {{ $products->links() }}
-            </div>
-        </div>
+            @if($products->hasPages())
+                <x-slot:pagination>
+                    {{ $products->links() }}
+                </x-slot:pagination>
+            @endif
+        </x-erp.data-table>
     </div>
 </x-app-layout>

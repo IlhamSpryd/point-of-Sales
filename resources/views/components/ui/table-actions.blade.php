@@ -48,7 +48,7 @@
         :aria-expanded="dropdownOpen.toString()"
         aria-label="{{ $label }}"
     >
-        <span class="material-symbols-rounded text-[18px] leading-none shrink-0" aria-hidden="true">{{ $icon }}</span>
+        <span class="material-symbols-rounded text-[20px] leading-none shrink-0" aria-hidden="true">{{ $icon }}</span>
     </button>
 
     <template x-teleport="body">

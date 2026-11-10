@@ -110,7 +110,7 @@
                                     <form action="{{ route('devices.revoke', $device) }}" method="POST" onsubmit="return confirm('Revoking access will immediately disconnect this physical cashier terminal. Proceed?');">
                                         @csrf
                                         <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-rose-600 bg-white dark:bg-zinc-900 hover:bg-rose-50 dark:hover:bg-rose-950/30 border border-rose-200 dark:border-rose-900 text-sm font-semibold transition-colors duration-200 shadow-xs active:scale-95">
-                                            <span class="material-symbols-rounded text-[18px]">phonelink_erase</span> Disconnect (Revoke)
+                                            <span class="material-symbols-rounded text-[20px]">phonelink_erase</span> Disconnect (Revoke)
                                         </button>
                                     </form>
                                 </div>
@@ -200,7 +200,7 @@
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-rose-600 bg-rose-50 dark:bg-rose-950/20 hover:bg-rose-100 dark:hover:bg-rose-950/40 text-xs font-semibold transition-colors duration-200">
-                                <span class="material-symbols-rounded text-[18px]">delete</span> Delete Device
+                                <span class="material-symbols-rounded text-[20px]">delete</span> Delete Device
                             </button>
                         </form>
                     </div>

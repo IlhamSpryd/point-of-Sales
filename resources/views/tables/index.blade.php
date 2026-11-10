@@ -41,14 +41,12 @@
         @endif
 
         <!-- Filter & Search Toolbar -->
-        <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-border">
-            <form method="GET" action="{{ route('tables.index') }}" class="relative w-full sm:w-80">
-                <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-lg">search</span>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search table code or name..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-border bg-card text-foreground focus:outline-hidden focus:ring-2 focus:ring-primary/20">
-            </form>
-        </div>
+        <x-erp.filter-bar
+            search-action="{{ route('tables.index') }}"
+            search-placeholder="Search table code or name..."
+        />
 
-        <div class="card-surface flex flex-col flex-1 min-h-0 rounded-2xl border border-border overflow-hidden shadow-xs">
+        <div class="flex flex-col flex-1 min-h-0 space-y-4">
         {{-- Desktop/tablet-landscape: existing table --}}
         <x-erp.data-table
             :hideOnMobile="true"
@@ -148,6 +146,11 @@
                     </td>
                 </tr>
             @endforeach
+            @if($tables->hasPages())
+                <x-slot:pagination>
+                    {{ $tables->links() }}
+                </x-slot:pagination>
+            @endif
         </x-erp.data-table>
 
         {{-- Mobile/tablet-portrait: card list --}}
@@ -196,24 +199,24 @@
                                 <form action="{{ route('tables.release', $routeToken) }}" method="POST">
                                     @csrf
                                     <button type="submit" onclick="return confirm('Release table {{ $table->table_name }}?')" class="size-8 flex items-center justify-center rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50 transition-colors" aria-label="Release Table" title="Release Table">
-                                        <span class="material-symbols-rounded text-[18px]">meeting_room</span>
+                                        <span class="material-symbols-rounded text-[20px]">meeting_room</span>
                                     </button>
                                 </form>
                             @endif
                             <a href="{{ route('tables.edit', $routeToken) }}" class="size-8 flex items-center justify-center rounded-lg text-gray-600 hover:text-foreground hover:bg-gray-100 transition-colors" aria-label="Edit table" wire:navigate>
-                                <span class="material-symbols-rounded text-[18px]">edit</span>
+                                <span class="material-symbols-rounded text-[20px]">edit</span>
                             </a>
                             <form action="{{ route('tables.rotate-qr', $routeToken) }}" method="POST">
                                 @csrf
                                 <button type="submit" onclick="return confirm('Rotate QR token for table {{ $table->table_name }}?')" class="size-8 flex items-center justify-center rounded-lg text-gray-600 hover:text-amber-600 hover:bg-amber-50 transition-colors" aria-label="Rotate QR" title="Rotate QR">
-                                    <span class="material-symbols-rounded text-[18px]">sync</span>
+                                    <span class="material-symbols-rounded text-[20px]">sync</span>
                                 </button>
                             </form>
                             <form id="delete-form-mobile-{{ $table->id }}" action="{{ route('tables.destroy', $routeToken) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
                                 <button type="button" onclick="confirmSubmit('delete-form-mobile-{{ $table->id }}', '{{ $table->table_name }}')" class="size-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" aria-label="Delete table">
-                                    <span class="material-symbols-rounded text-[18px]">delete</span>
+                                    <span class="material-symbols-rounded text-[20px]">delete</span>
                                 </button>
                             </form>
                         </div>
@@ -228,6 +231,8 @@
                 </div>
             @endforelse
         </div>
-        <div class="p-4 border-t border-gray-100 shrink-0">{{ $tables->links() }}</div>
+        @if($tables->hasPages())
+            <div class="lg:hidden p-4 border-t border-border shrink-0">{{ $tables->links() }}</div>
+        @endif
     </div>
 </x-app-layout>

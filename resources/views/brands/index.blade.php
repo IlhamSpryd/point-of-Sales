@@ -68,75 +68,63 @@
         @endif
 
         <!-- Filter & Search Toolbar -->
-        <div class="card-surface p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-border dark:border-zinc-800">
-            <form method="GET" action="{{ route('brands.index') }}" class="relative w-full sm:w-80">
-                <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-lg">search</span>
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Search brands..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 focus:outline-hidden focus:ring-2 focus:ring-ring/20 text-zinc-800 dark:text-zinc-100">
-            </form>
-        </div>
+        <x-erp.filter-bar search-action="{{ route('brands.index') }}" search-placeholder="Search brands..." />
 
         <!-- Table -->
-        <div class="card-surface overflow-hidden rounded-2xl border border-border dark:border-zinc-800 shadow-xs">
-            <div class="overflow-x-auto">
-                <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
-                    <thead>
-                        <tr class="border-b border-border bg-muted/30 text-2xs font-semibold text-muted-foreground uppercase tracking-wider">
-                            <th class="px-6 py-3.5">Code</th>
-                            <th class="px-6 py-3.5">Brand Name</th>
-                            <th class="px-6 py-3.5">Description</th>
-                            <th class="px-6 py-3.5 text-right">Products</th>
-                            <th class="px-6 py-3.5 text-center">Status</th>
-                            @if($canManage)
-                                <th class="px-6 py-3.5 text-right">Actions</th>
-                            @endif
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-border">
-                        @forelse($brands as $brand)
-                            <tr class="hover:bg-muted/40 transition-colors">
-                                <td class="px-6 py-4 font-sans text-xs font-semibold text-foreground">{{ $brand->code }}</td>
-                                <td class="px-6 py-4 text-sm font-semibold text-foreground">{{ $brand->name }}</td>
-                                <td class="px-6 py-4 text-sm text-muted-foreground">{{ $brand->description ?? '—' }}</td>
-                                <td class="px-6 py-4 text-sm font-medium text-right text-foreground font-sans tabular-nums">{{ $brand->products_count }}</td>
-                                <td class="px-6 py-4 text-center">
-                                    <x-ui.badge variant="{{ $brand->is_active ? 'success' : 'neutral' }}" size="sm">
-                                        {{ $brand->is_active ? 'Active' : 'Inactive' }}
-                                    </x-ui.badge>
-                                </td>
-                                @if($canManage)
-                                    <td class="px-6 py-4 text-right">
-                                        <x-ui.table-actions>
-                                            <x-ui.table-action-item icon="edit" @click="openEdit({{ json_encode($brand) }})">
-                                                Edit
-                                            </x-ui.table-action-item>
-                                            <x-ui.table-action-item icon="delete" variant="destructive" onclick="confirmSubmit('delete-brand-{{ $brand->id }}', '{{ addslashes($brand->name) }}')">
-                                                Delete
-                                            </x-ui.table-action-item>
-                                        </x-ui.table-actions>
-                                        <form id="delete-brand-{{ $brand->id }}" action="{{ route('brands.destroy', $brand->id) }}" method="POST" class="hidden">
-                                            @csrf
-                                            @method('DELETE')
-                                        </form>
-                                    </td>
-                                @endif
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="{{ $canManage ? 6 : 5 }}" class="px-6 py-12 text-center text-muted-foreground text-xs">
-                                    No product brands registered.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+        <x-erp.data-table
+            :is-empty="$brands->isEmpty()"
+            empty-title="No product brands registered."
+            empty-description="Register brands to classify products across your catalog."
+            empty-icon="label"
+            :colspan="$canManage ? 6 : 5"
+        >
+            <x-slot:head>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Code</th>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Brand Name</th>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
+                <th scope="col" class="px-6 py-3.5 text-right text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Products</th>
+                <th scope="col" class="px-6 py-3.5 text-center text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Status</th>
+                @if($canManage)
+                    <th scope="col" class="px-6 py-3.5 text-right text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Actions</th>
+                @endif
+            </x-slot:head>
+
+            @foreach($brands as $brand)
+                <tr class="hover:bg-muted/40 transition-colors">
+                    <td class="px-6 py-4 font-sans text-xs font-semibold text-foreground">{{ $brand->code }}</td>
+                    <td class="px-6 py-4 text-sm font-semibold text-foreground">{{ $brand->name }}</td>
+                    <td class="px-6 py-4 text-sm text-muted-foreground">{{ $brand->description ?? '—' }}</td>
+                    <td class="px-6 py-4 text-sm font-medium text-right text-foreground font-sans tabular-nums">{{ $brand->products_count }}</td>
+                    <td class="px-6 py-4 text-center">
+                        <x-ui.badge variant="{{ $brand->is_active ? 'success' : 'neutral' }}" size="sm">
+                            {{ $brand->is_active ? 'Active' : 'Inactive' }}
+                        </x-ui.badge>
+                    </td>
+                    @if($canManage)
+                        <td class="px-6 py-4 text-right">
+                            <x-ui.table-actions>
+                                <x-ui.table-action-item icon="edit" @click="openEdit({{ json_encode($brand) }})">
+                                    Edit
+                                </x-ui.table-action-item>
+                                <x-ui.table-action-item icon="delete" variant="destructive" onclick="confirmSubmit('delete-brand-{{ $brand->id }}', '{{ addslashes($brand->name) }}')">
+                                    Delete
+                                </x-ui.table-action-item>
+                            </x-ui.table-actions>
+                            <form id="delete-brand-{{ $brand->id }}" action="{{ route('brands.destroy', $brand->id) }}" method="POST" class="hidden">
+                                @csrf
+                                @method('DELETE')
+                            </form>
+                        </td>
+                    @endif
+                </tr>
+            @endforeach
 
             @if($brands->hasPages())
-                <div class="p-4 border-t border-border dark:border-zinc-800">
+                <x-slot:pagination>
                     {{ $brands->links() }}
-                </div>
+                </x-slot:pagination>
             @endif
-        </div>
+        </x-erp.data-table>
 
         <!-- Add / Edit Brand Modal -->
         <x-ui.modal x-model="showModal" maxWidth="md">

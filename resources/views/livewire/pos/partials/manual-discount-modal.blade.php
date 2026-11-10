@@ -1,9 +1,8 @@
 {{-- MODAL MANUAL DISCOUNT OVERRIDE (SUPERVISOR PIN) --}}
 <x-ui.modal wire:model="isManualDiscountModalOpen" maxWidth="md">
     <x-slot:header>
-        <div class="flex items-center gap-2 text-foreground">
-            <span class="material-symbols-rounded text-[20px] text-amber-500">percent</span>
-            <span class="font-headline-sm text-[16px] font-semibold">Configure Discount & Authorization</span>
+        <div class="text-foreground">
+            <h3 class="text-base font-semibold">Configure Discount & Authorization</h3>
         </div>
     </x-slot:header>
 
@@ -16,30 +15,30 @@
             $wire.set('manualDiscountReason', 'Special Discount ' + pct + '%');
         }
     }">
-        <p class="text-[12px] text-muted-foreground">
+        <p class="text-xs text-muted-foreground">
             Manual discounts require a valid business reason and supervisor PIN authorization.
         </p>
 
         <!-- Quick Percent Preset Buttons -->
         <div class="space-y-1.5">
-            <label class="font-headline-sm text-[11px] font-semibold text-foreground uppercase tracking-wider block">
+            <label class="text-xs font-semibold text-foreground uppercase tracking-wider block">
                 Quick Discount Presets
             </label>
             <div class="grid grid-cols-4 gap-1.5">
                 <button type="button" x-on:click="setPercent(5)"
-                    class="h-8 rounded-lg border border-border hover:border-foreground bg-muted text-foreground font-sans font-medium text-[11px] tabular-nums transition-colors">
+                    class="h-8 rounded-lg border border-border hover:border-foreground bg-muted text-foreground font-sans font-medium text-xs tabular-nums transition-colors">
                     5%
                 </button>
                 <button type="button" x-on:click="setPercent(10)"
-                    class="h-8 rounded-lg border border-border hover:border-foreground bg-muted text-foreground font-sans font-medium text-[11px] tabular-nums transition-colors">
+                    class="h-8 rounded-lg border border-border hover:border-foreground bg-muted text-foreground font-sans font-medium text-xs tabular-nums transition-colors">
                     10% (VIP)
                 </button>
                 <button type="button" x-on:click="setPercent(15)"
-                    class="h-8 rounded-lg border border-border hover:border-foreground bg-muted text-foreground font-sans font-medium text-[11px] tabular-nums transition-colors">
+                    class="h-8 rounded-lg border border-border hover:border-foreground bg-muted text-foreground font-sans font-medium text-xs tabular-nums transition-colors">
                     15% (Promo)
                 </button>
                 <button type="button" x-on:click="setPercent(25)"
-                    class="h-8 rounded-lg border border-border hover:border-foreground bg-muted text-foreground font-sans font-medium text-[11px] tabular-nums transition-colors">
+                    class="h-8 rounded-lg border border-border hover:border-foreground bg-muted text-foreground font-sans font-medium text-xs tabular-nums transition-colors">
                     25% (Staff)
                 </button>
             </div>
@@ -47,38 +46,38 @@
 
         <form id="manual-discount-form" wire:submit.prevent="applyManualDiscount(supervisorPin)" class="space-y-3.5">
             <div>
-                <label class="font-headline-sm text-[11px] font-semibold text-foreground uppercase tracking-wider block mb-1">
+                <label class="text-xs font-semibold text-foreground uppercase tracking-wider block mb-1">
                     Discount Amount (Rp)
                 </label>
                 <div class="relative">
-                    <span class="absolute left-3 top-1/2 -translate-y-1/2 font-sans text-muted-foreground font-semibold text-[13px]">Rp</span>
+                    <span class="absolute left-3 top-1/2 -translate-y-1/2 font-sans text-muted-foreground font-semibold text-xs">Rp</span>
                     <input type="number" wire:model="manualDiscountAmount" required min="1" max="{{ $this->subtotal }}"
                         class="w-full h-10 pl-10 pr-3 bg-white border border-border rounded-lg font-sans tabular-nums font-bold text-sm text-foreground focus:outline-none focus:border-foreground transition-all"
                         placeholder="0">
                 </div>
-                @error('manualDiscountAmount') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                @error('manualDiscountAmount') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
             </div>
 
             <div>
-                <label class="font-headline-sm text-[11px] font-semibold text-foreground uppercase tracking-wider block mb-1">
+                <label class="text-xs font-semibold text-foreground uppercase tracking-wider block mb-1">
                     Reason for Discount
                 </label>
                 <input type="text" wire:model="manualDiscountReason" required
                     class="w-full h-10 px-3 bg-white border border-border rounded-lg text-xs text-foreground focus:outline-none focus:border-foreground transition-all"
                     placeholder="e.g. VIP guest discount, service compensation...">
-                @error('manualDiscountReason') <span class="text-[11px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                @error('manualDiscountReason') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
             </div>
 
             <div class="p-3 rounded-xl bg-muted border border-border space-y-1.5">
-                <div class="flex items-center gap-1.5 text-foreground text-[11px] font-semibold">
-                    <span class="material-symbols-rounded text-[15px] text-muted-foreground">lock</span>
+                <div class="flex items-center gap-1.5 text-foreground text-xs font-semibold">
+                    <span class="material-symbols-rounded text-[16px] text-muted-foreground">lock</span>
                     <span>Supervisor PIN Authorization</span>
                 </div>
                 <input type="password" x-model="supervisorPin" maxlength="6"
                     class="w-full h-9 px-3 bg-white border border-border rounded-lg text-center font-sans tabular-nums font-bold text-xs tracking-widest text-foreground focus:outline-none focus:border-foreground transition-all"
                     placeholder="••••••">
-                <span class="text-[10px] text-muted-foreground block">Required when discount exceeds cashier authorization limit.</span>
-                @error('manualDiscountSupervisorPin') <span class="text-[11px] text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
+                <span class="text-xs text-muted-foreground block">Required when discount exceeds cashier authorization limit.</span>
+                @error('manualDiscountSupervisorPin') <span class="text-xs text-rose-500 mt-0.5 block">{{ $message }}</span> @enderror
             </div>
         </form>
     </div>

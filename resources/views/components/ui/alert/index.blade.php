@@ -42,7 +42,7 @@
     @if (\Illuminate\Support\Facades\View::exists('components.'.str_replace('.', '/', $iconName)))
         <x-dynamic-component class="size-4 shrink-0 mt-0.5" :component="$iconName" />
     @else
-        <span class="material-symbols-rounded text-[18px] leading-none shrink-0 mt-0.5" aria-hidden="true">{{ $iconName }}</span>
+        <span class="material-symbols-rounded text-[20px] leading-none shrink-0 mt-0.5" aria-hidden="true">{{ $iconName }}</span>
     @endif
 
     <div class="flex-1 min-w-0">

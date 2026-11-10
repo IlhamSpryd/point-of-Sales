@@ -19,40 +19,43 @@
             }
         }
     }">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div>
                 <h4 class="text-xl font-bold text-foreground tracking-tight">Products</h4>
                 <p class="text-sm font-medium text-muted-foreground mt-1">Manage master catalog, product types, pricing, and inventory</p>
             </div>
+        </div>
 
-            <x-list-toolbar search-action="{{ route('products.index') }}" search-placeholder="Search by name, SKU, or barcode...">
-                <x-slot:actions>
-                    <a href="{{ route('products.export') }}" class="flex-1 sm:flex-none">
-                        <x-ui.button variant="secondary" type="button" class="w-full h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                            <span class="material-symbols-rounded text-[18px]">download</span> Export Excel <span class="sr-only">Export</span>
+        <x-erp.filter-bar
+            search-action="{{ route('products.index') }}"
+            search-placeholder="Search by name, SKU, or barcode..."
+        >
+            <x-slot:actions>
+                <a href="{{ route('products.export') }}" class="flex-1 sm:flex-none">
+                    <x-ui.button variant="secondary" type="button" class="w-full h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
+                        <span class="material-symbols-rounded text-[20px]">download</span> Export Excel <span class="sr-only">Export</span>
+                    </x-ui.button>
+                </a>
+
+                @if($canManage)
+                    <x-ui.button variant="secondary" type="button" @click="showImportModal = true" class="flex-1 sm:flex-none h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
+                        <span class="material-symbols-rounded text-[20px]">upload</span> Import CSV <span class="sr-only">Import</span>
+                    </x-ui.button>
+
+                    <button type="button" x-show="selectedIds.length > 0" x-cloak @click="showBulkModal = true"
+                        class="inline-flex items-center gap-1.5 px-3.5 h-10 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-semibold shadow-xs transition-all animate-pulse">
+                        <span class="material-symbols-rounded text-[20px]">edit_note</span>
+                        <span>Bulk Edit (<span x-text="selectedIds.length"></span>)</span>
+                    </button>
+
+                    <a href="{{ route('products.create') }}" class="flex-1 sm:flex-none" wire:navigate>
+                        <x-ui.button variant="primary" type="button" class="w-full h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
+                            <span class="material-symbols-rounded text-[20px]">add</span> Add Product <span class="sr-only">Add Product</span>
                         </x-ui.button>
                     </a>
-
-                    @if($canManage)
-                        <x-ui.button variant="secondary" type="button" @click="showImportModal = true" class="flex-1 sm:flex-none h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                            <span class="material-symbols-rounded text-[18px]">upload</span> Import CSV <span class="sr-only">Import</span>
-                        </x-ui.button>
-
-                        <button type="button" x-show="selectedIds.length > 0" x-cloak @click="showBulkModal = true"
-                            class="inline-flex items-center gap-1.5 px-3.5 h-10 rounded-xl bg-primary text-white hover:bg-black text-xs font-semibold shadow-sm transition-all animate-pulse">
-                            <span class="material-symbols-rounded text-[18px]">edit_note</span>
-                            <span>Bulk Edit (<span x-text="selectedIds.length"></span>)</span>
-                        </button>
-
-                        <a href="{{ route('products.create') }}" class="flex-1 sm:flex-none" wire:navigate>
-                            <x-ui.button variant="primary" type="button" class="w-full h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                                <span class="material-symbols-rounded text-[18px]">add</span> Add Product <span class="sr-only">Add Product</span>
-                            </x-ui.button>
-                        </a>
-                    @endif
-                </x-slot:actions>
-            </x-list-toolbar>
-        </div>
+                @endif
+            </x-slot:actions>
+        </x-erp.filter-bar>
 
         @if(session('success'))
             <x-ui.alert variant="success" class="mb-4">{{ session('success') }}</x-ui.alert>
@@ -73,8 +76,7 @@
             <x-ui.alert variant="destructive" class="mb-4">{{ session('error') }}</x-ui.alert>
         @endif
 
-        <div class="card-surface flex flex-col flex-1 min-h-0">
-            <x-erp.data-table
+        <x-erp.data-table
                 :is-empty="$products->isEmpty()"
                 empty-title="No products found."
                 empty-description="Create products or import them using CSV."
@@ -113,8 +115,15 @@
                             'inactive' => ['label' => 'Inactive', 'type' => 'warning'],
                             'discontinued' => ['label' => 'Discontinued', 'type' => 'danger'],
                         ];
+                        $statusDotColors = [
+                            'draft' => 'bg-neutral',
+                            'active' => 'bg-success',
+                            'inactive' => 'bg-warning',
+                            'discontinued' => 'bg-destructive',
+                        ];
                         $prodType = $product->product_type ?? 'standard';
                         $prodStatus = $product->status ?? ($product->is_active ? 'active' : 'inactive');
+                        $statusDotColor = $statusDotColors[$prodStatus] ?? 'bg-neutral';
                     @endphp
                     <tr class="hover:bg-muted/40 transition-colors duration-200">
                         @if($canManage)
@@ -144,9 +153,9 @@
                             </div>
                         </td>
                         <td class="px-6 py-4">
-                            <x-ui.badge :variant="$typeBadges[$prodType]['type'] ?? 'secondary'">
-                                {{ $typeBadges[$prodType]['label'] ?? $prodType }}
-                            </x-ui.badge>
+                            <span class="text-xs text-muted-foreground font-medium">
+                                {{ $typeBadges[$prodType]['label'] ?? ucwords(str_replace('_', ' ', (string) $prodType)) }}
+                            </span>
                         </td>
                         <td class="px-6 py-4 text-sm text-muted-foreground">
                             <div class="font-medium text-foreground">{{ $product->category?->category_name ?? '—' }}</div>
@@ -166,9 +175,10 @@
                             @endif
                         </td>
                         <td class="px-6 py-4">
-                            <x-ui.badge :variant="$statusBadges[$prodStatus]['type'] ?? 'secondary'" :dot="true">
+                            <span class="inline-flex items-center gap-1.5 text-xs text-foreground font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full {{ $statusDotColor }}"></span>
                                 {{ $statusBadges[$prodStatus]['label'] ?? $prodStatus }}
-                            </x-ui.badge>
+                            </span>
                         </td>
                         @if($canManage)
                             <td class="px-6 py-4 text-right">
@@ -188,12 +198,12 @@
                         @endif
                     </tr>
                 @endforeach
+                @if($products->hasPages())
+                    <x-slot:pagination>
+                        {{ $products->links() }}
+                    </x-slot:pagination>
+                @endif
             </x-erp.data-table>
-
-            <div class="p-4 border-t border-border">
-                {{ $products->links() }}
-            </div>
-        </div>
 
         {{-- Modal Impor CSV --}}
         <x-ui.modal x-model="showImportModal" maxWidth="md">

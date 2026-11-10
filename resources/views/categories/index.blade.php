@@ -42,27 +42,27 @@
     }">
         @include('catalog.partials.sub-nav')
 
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
             <div>
                 <h4 class="text-xl font-bold text-foreground tracking-tight">Categories & Subcategories</h4>
                 <p class="text-sm font-medium text-muted-foreground mt-1">Manage commodity classification hierarchies and product taxonomy</p>
             </div>
-            
-            <x-list-toolbar search-action="{{ route('categories.index') }}" search-placeholder="Search categories...">
-                <x-slot:actions>
-                    <a href="{{ route('categories.export') }}" class="flex-1 sm:flex-none">
-                        <x-ui.button variant="secondary" class="w-full h-10">
-                            <span class="material-symbols-rounded text-[18px]">download</span> Export Excel
-                        </x-ui.button>
-                    </a>
-                    @if($canManage)
-                        <x-ui.button variant="primary" class="w-full sm:w-auto h-10" @click="openCreate()">
-                            <span class="material-symbols-rounded text-[18px]">add</span> Add Category
-                        </x-ui.button>
-                    @endif
-                </x-slot:actions>
-            </x-list-toolbar>
         </div>
+        
+        <x-erp.filter-bar search-action="{{ route('categories.index') }}" search-placeholder="Search categories...">
+            <x-slot:actions>
+                <a href="{{ route('categories.export') }}" class="flex-1 sm:flex-none">
+                    <x-ui.button variant="secondary" class="w-full h-10">
+                        <span class="material-symbols-rounded text-[20px]">download</span> Export Excel
+                    </x-ui.button>
+                </a>
+                @if($canManage)
+                    <x-ui.button variant="primary" class="w-full sm:w-auto h-10" @click="openCreate()">
+                        <span class="material-symbols-rounded text-[20px]">add</span> Add Category
+                    </x-ui.button>
+                @endif
+            </x-slot:actions>
+        </x-erp.filter-bar>
 
         @if(session('success'))
             <x-ui.alert variant="success" class="mb-4">{{ session('success') }}</x-ui.alert>
@@ -72,7 +72,7 @@
             <x-ui.alert variant="destructive" class="mb-4">{{ session('error') }}</x-ui.alert>
         @endif
 
-        <div class="card-surface flex flex-col flex-1 min-h-0">
+        <div class="flex flex-col flex-1 min-h-0 space-y-4">
             {{-- Desktop/tablet-landscape: data table --}}
             <x-erp.data-table
                 :hide-on-mobile="true"
@@ -127,6 +127,11 @@
                         @endif
                     </tr>
                 @endforeach
+                @if($categories->hasPages())
+                    <x-slot:pagination>
+                        {{ $categories->links() }}
+                    </x-slot:pagination>
+                @endif
             </x-erp.data-table>
 
             {{-- Mobile/tablet-portrait: card list --}}
@@ -143,13 +148,13 @@
                         @if($canManage)
                             <div class="flex items-center justify-end gap-1 mt-3 pt-3 border-t border-border">
                                 <button type="button" @click="openEdit({{ json_encode($category) }})" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-primary-700 hover:bg-primary-100 transition-colors duration-200" aria-label="Edit category">
-                                    <span class="material-symbols-rounded text-[18px]">edit</span>
+                                    <span class="material-symbols-rounded text-[20px]">edit</span>
                                 </button>
                                 <form id="delete-form-mobile-{{ $category->id }}" action="{{ route('categories.destroy', $category->id) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('DELETE')
                                     <button type="button" onclick="confirmSubmit('delete-form-mobile-{{ $category->id }}', '{{ addslashes($category->category_name) }}')" class="min-w-[36px] min-h-[36px] flex items-center justify-center rounded-lg text-primary-400 hover:text-danger-600 hover:bg-danger-50 transition-colors duration-200" aria-label="Delete">
-                                        <span class="material-symbols-rounded text-[18px]">delete</span>
+                                        <span class="material-symbols-rounded text-[20px]">delete</span>
                                     </button>
                                 </form>
                             </div>
@@ -164,9 +169,11 @@
                     </div>
                 @endforelse
             </div>
-            <div class="p-4 border-t border-border shrink-0">
-                {{ $categories->links() }}
-            </div>
+            @if($categories->hasPages())
+                <div class="lg:hidden p-4 border-t border-border shrink-0">
+                    {{ $categories->links() }}
+                </div>
+            @endif
         </div>
 
         {{-- Contextual Drawer for PAGE-029 & PAGE-030 --}}

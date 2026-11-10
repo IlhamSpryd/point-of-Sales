@@ -20,9 +20,8 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Form Pemetaan Baru -->
-        <div class="card-surface p-6 rounded-2xl border border-border dark:border-zinc-800 lg:col-span-1 h-fit shadow-xs">
-            <h2 class="text-sm font-bold text-zinc-900 dark:text-white mb-5 tracking-tight border-b border-border dark:border-zinc-800 pb-3 flex items-center gap-2">
-                <span class="material-symbols-rounded text-primary text-lg">add_link</span>
+        <div class="card-surface p-6 rounded-2xl border border-border lg:col-span-1 h-fit shadow-xs">
+            <h2 class="text-sm font-bold text-foreground mb-5 tracking-tight border-b border-border pb-3">
                 Add New Mapping
             </h2>
 
@@ -60,10 +59,9 @@
         </div>
 
         <!-- Channel Mapping Table -->
-        <div class="card-surface overflow-hidden rounded-2xl border border-border dark:border-zinc-800 lg:col-span-2 flex flex-col shadow-xs">
-            <div class="px-6 py-4 border-b border-border dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
-                <h2 class="text-sm font-bold text-zinc-900 dark:text-white tracking-tight flex items-center gap-2">
-                    <span class="material-symbols-rounded text-primary text-lg">sync_alt</span>
+        <div class="card-surface overflow-hidden rounded-2xl border border-border lg:col-span-2 flex flex-col shadow-xs">
+            <div class="px-6 py-4 border-b border-border bg-muted/30 flex items-center justify-between">
+                <h2 class="text-sm font-bold text-foreground tracking-tight">
                     Active Channel Mappings
                 </h2>
                 <span class="text-xs text-zinc-400">Total: {{ $mappings->total() }} SKUs</span>

@@ -8,7 +8,7 @@
         </div>
         <a href="{{ route('categories.index') }}" wire:navigate>
             <x-ui.button variant="outline" type="button" class="h-10">
-                <span class="material-symbols-rounded text-[18px]">arrow_back</span> Back
+                <span class="material-symbols-rounded text-[20px]">arrow_back</span> Back
             </x-ui.button>
         </a>
     </div>
@@ -84,7 +84,7 @@
             <div class="pt-4 border-t border-border flex justify-end">
                 <x-ui.button type="submit" variant="primary" x-bind:disabled="submitting" x-bind:class="submitting ? 'opacity-60 cursor-not-allowed' : ''" x-on:click="window.erpMotion?.pulseHighlight($el)">
                     <span x-show="!submitting" class="flex items-center gap-1.5">
-                        <span class="material-symbols-rounded text-[18px]">save</span> Save Category
+                        <span class="material-symbols-rounded text-[20px]">save</span> Save Category
                     </span>
                     <span x-show="submitting" x-cloak>Saving...</span>
                 </x-ui.button>

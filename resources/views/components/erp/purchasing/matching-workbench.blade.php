@@ -49,7 +49,7 @@
                     3. Supplier Invoice (AP)
                 </span>
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border {{ $isMatched ? 'bg-success-muted text-success border-success-border' : 'bg-destructive-muted text-destructive border-destructive-border' }}">
-                    <span class="material-symbols-rounded text-[13px]">{{ $isMatched ? 'check_circle' : 'warning' }}</span>
+                    <span class="material-symbols-rounded text-[14px]">{{ $isMatched ? 'check_circle' : 'warning' }}</span>
                     <span>{{ $isMatched ? 'Matched' : 'Discrepancy' }}</span>
                 </span>
             </div>

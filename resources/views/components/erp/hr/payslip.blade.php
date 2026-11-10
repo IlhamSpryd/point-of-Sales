@@ -61,9 +61,8 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {{-- Column 1: Penghasilan / Earnings --}}
         <div class="space-y-3">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-success border-b border-border pb-1.5 flex items-center justify-between">
-                <span>Earnings</span>
-                <span class="material-symbols-rounded text-sm">add_circle</span>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-success border-b border-border pb-1.5">
+                Earnings
             </h4>
             <div class="space-y-1.5 text-xs">
                 @foreach ($earnings as $earn)
@@ -85,9 +84,8 @@
 
         {{-- Column 2: Potongan / Deductions --}}
         <div class="space-y-3">
-            <h4 class="text-xs font-bold uppercase tracking-wider text-destructive border-b border-border pb-1.5 flex items-center justify-between">
-                <span>Deductions</span>
-                <span class="material-symbols-rounded text-sm">remove_circle</span>
+            <h4 class="text-xs font-bold uppercase tracking-wider text-destructive border-b border-border pb-1.5">
+                Deductions
             </h4>
             <div class="space-y-1.5 text-xs">
                 @foreach ($deductions as $deduct)

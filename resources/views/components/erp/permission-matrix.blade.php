@@ -149,14 +149,14 @@
     {{-- Toolbar: Search + Summary + Bulk Actions --}}
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-muted/40 border border-border">
         <div class="relative flex-1 max-w-md">
-            <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[18px]">search</span>
+            <span class="material-symbols-rounded absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-[20px]">search</span>
             <input type="text" x-model="search" placeholder="Filter permissions by module or capability..."
                 class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-border bg-background text-foreground focus:outline-hidden focus:ring-2 focus:ring-ring">
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
             <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-background border border-border text-xs font-semibold text-foreground">
-                <span class="material-symbols-rounded text-[15px] text-primary">verified_user</span>
+                <span class="material-symbols-rounded text-[16px] text-primary">verified_user</span>
                 <span x-text="selected.length"></span> / {{ count($allCodes) }} Capabilities Granted
             </span>
 
@@ -193,7 +193,7 @@
                 {{-- Domain Header --}}
                 <div class="px-4 py-3 bg-muted/30 border-b border-border flex items-center justify-between gap-2">
                     <div class="flex items-center gap-2 min-w-0">
-                        <span class="material-symbols-rounded text-[18px] text-primary shrink-0">{{ $domain['icon'] }}</span>
+                        <span class="material-symbols-rounded text-[20px] text-primary shrink-0">{{ $domain['icon'] }}</span>
                         <h6 class="text-xs font-bold text-foreground truncate">{{ $domain['title'] }}</h6>
                         <span class="px-2 py-0.5 rounded text-[10px] font-semibold bg-muted text-muted-foreground border border-border">
                             {{ $domain['scope'] }}

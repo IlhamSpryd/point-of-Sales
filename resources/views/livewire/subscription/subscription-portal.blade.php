@@ -3,8 +3,7 @@
 
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-foreground tracking-tight flex items-center gap-2">
-                <span class="material-symbols-rounded text-primary text-[28px]">workspace_premium</span>
+            <h1 class="text-2xl font-bold text-foreground tracking-tight">
                 SaaS Subscription & Quota Portal
             </h1>
             <p class="text-sm text-muted-foreground mt-1">
@@ -14,7 +13,7 @@
         <div class="flex items-center gap-2">
             <button wire:click="$set('isUpgradeModalOpen', true)"
                 class="inline-flex items-center gap-2 px-4 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold rounded-xl shadow-sm transition-colors">
-                <span class="material-symbols-rounded text-[18px]">upgrade</span>
+                <span class="material-symbols-rounded text-[20px]">upgrade</span>
                 Upgrade Plan
             </button>
         </div>
@@ -118,38 +117,33 @@
 
     <!-- Upgrade Modal -->
     @if ($isUpgradeModalOpen)
-        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-            <div class="bg-card border border-border rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-xl">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-lg font-bold text-foreground">Upgrade Subscription Tier</h3>
-                    <button wire:click="$set('isUpgradeModalOpen', false)" class="text-muted-foreground hover:text-foreground">
-                        <span class="material-symbols-rounded">close</span>
-                    </button>
-                </div>
-                <div class="space-y-3">
-                    <label class="block text-xs font-semibold text-foreground">Select Target Tier</label>
-                    @foreach ($allPlans as $plan)
-                        <div wire:click="$set('selectedPlanId', {{ $plan->id }})"
-                            class="p-4 rounded-xl border cursor-pointer transition-all {{ $selectedPlanId === $plan->id ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-border bg-background hover:border-primary/50' }}">
-                            <div class="flex justify-between items-center">
-                                <div>
-                                    <h4 class="font-bold text-foreground text-sm">{{ $plan->name }}</h4>
-                                    <p class="text-xs text-muted-foreground">{{ $plan->description ?? 'Enterprise-grade features' }}</p>
-                                </div>
-                                <span class="text-sm font-bold text-foreground">Rp {{ number_format((float) $plan->price, 0, ',', '.') }}/mo</span>
+        <x-ui.modal wire:model="isUpgradeModalOpen" title="Upgrade Subscription Tier" maxWidth="lg" onClose="$wire.set('isUpgradeModalOpen', false)">
+            <div class="space-y-3">
+                <label class="block text-xs font-semibold text-foreground">Select Target Tier</label>
+                @foreach ($allPlans as $plan)
+                    <div wire:click="$set('selectedPlanId', {{ $plan->id }})"
+                        class="p-4 rounded-xl border cursor-pointer transition-all {{ $selectedPlanId === $plan->id ? 'border-primary bg-primary/5 ring-2 ring-primary/20' : 'border-border bg-card hover:border-primary/50' }}">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h4 class="font-bold text-foreground text-sm">{{ $plan->name }}</h4>
+                                <p class="text-xs text-muted-foreground">{{ $plan->description ?? 'Enterprise-grade features' }}</p>
                             </div>
+                            <span class="text-sm font-bold text-foreground">Rp {{ number_format((float) $plan->price, 0, ',', '.') }}/mo</span>
                         </div>
-                    @endforeach
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button wire:click="$set('isUpgradeModalOpen', false)" class="px-4 py-2 border border-border text-foreground rounded-xl text-sm font-medium hover:bg-muted">
+                    </div>
+                @endforeach
+            </div>
+
+            <x-slot:footer>
+                <div class="flex justify-end gap-2 w-full">
+                    <button type="button" wire:click="$set('isUpgradeModalOpen', false)" class="px-4 py-2 text-muted-foreground hover:text-foreground rounded-xl text-sm font-medium transition-colors">
                         Cancel
                     </button>
-                    <button wire:click="requestPlanUpgrade" class="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90">
+                    <button type="button" wire:click="requestPlanUpgrade" class="px-4 py-2 bg-primary text-primary-foreground rounded-xl text-sm font-semibold hover:bg-primary/90 transition-colors shadow-xs">
                         Request Upgrade
                     </button>
                 </div>
-            </div>
-        </div>
+            </x-slot:footer>
+        </x-ui.modal>
     @endif
 </div>

@@ -39,7 +39,7 @@
 
         <div class="flex items-center gap-4">
             <x-ui.button type="submit" variant="primary">
-                <span class="material-symbols-rounded text-[18px]">key</span> {{ __('Update Password') }}
+                <span class="material-symbols-rounded text-[20px]">key</span> {{ __('Update Password') }}
             </x-ui.button>
 
             @if (session('status') === 'password-updated')

@@ -49,7 +49,7 @@
                                 <option value="VIP Room" {{ old('area', $table->area) === 'VIP Room' ? 'selected' : '' }}>VIP Room</option>
                             </select>
                             <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-zinc-400">
-                                <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                                <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                             </div>
                         </div>
                         @error('area')
@@ -68,7 +68,7 @@
                                 <option value="disabled" {{ old('operational_status', $table->operational_status) === 'disabled' ? 'selected' : '' }}>Disabled</option>
                             </select>
                             <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-zinc-400">
-                                <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                                <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                             </div>
                         </div>
                         @error('operational_status')

@@ -130,12 +130,12 @@
                     <div class="flex shrink-0 items-center rounded-full border border-border bg-secondary p-0.5" role="group" aria-label="Quantity">
                         <button type="button" @click="qty = Math.max(1, qty - 1)" :disabled="qty <= 1" aria-label="Decrease quantity"
                                 class="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm transition-all duration-200 active:scale-90 disabled:opacity-40">
-                            <span class="material-symbols-rounded text-[18px]">remove</span>
+                            <span class="material-symbols-rounded text-[20px]">remove</span>
                         </button>
                         <span class="w-8 text-center text-[15px] font-bold tabular-nums" x-text="qty" aria-live="polite"></span>
                         <button type="button" @click="qty = Math.min(20, qty + 1)" :disabled="qty >= 20" aria-label="Increase quantity"
                                 class="flex h-11 w-11 items-center justify-center rounded-full bg-white shadow-sm transition-all duration-200 active:scale-90 disabled:opacity-40">
-                            <span class="material-symbols-rounded text-[18px]">add</span>
+                            <span class="material-symbols-rounded text-[20px]">add</span>
                         </button>
                     </div>
                 </div>

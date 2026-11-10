@@ -9,6 +9,8 @@
     'maxWidth' => 'lg',
     'sheet' => false,
     'zIndex' => 50,
+    'onClose' => null,
+    'role' => 'dialog',
 ])
 
 @php
@@ -17,6 +19,7 @@
     $attributes = $attributes->whereDoesntStartWith('wire:model');
     $initialOpen = $open || $show;
     $openExpression = $wireModel ? "\$wire.\$entangle('{$wireModel}', true)" : ($initialOpen ? 'true' : 'false');
+    $closeAction = 'modalOpen = false;' . ($onClose ? ' ' . rtrim($onClose, ';') . ';' : '');
 
     $maxWidthClass = match ($maxWidth) {
         'sm' => 'sm:max-w-sm',
@@ -49,17 +52,25 @@
 <div
     x-data="{ modalOpen: {!! $openExpression !!}, modalId: @js($modalId) }"
     x-modelable="modalOpen"
-    x-init="$watch('modalOpen', function (value) {
-        if (value) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
+    x-init="
+        $watch('modalOpen', function (value) {
+            if (value) {
+                document.body.style.overflow = 'hidden';
+            } else {
+                document.body.style.overflow = '';
+            }
+        });
+        if (typeof $cleanup === 'function') {
+            $cleanup(function () {
+                document.body.style.overflow = '';
+            });
         }
-    });"
+    "
     class="relative h-auto w-auto"
-    @keydown.escape.window="if (modalOpen) modalOpen = false"
+    @keydown.escape.window="if (modalOpen) { {!! $closeAction !!} }"
     @open-modal.window="if ($event.detail === modalId || ($event.detail && $event.detail.id === modalId)) modalOpen = true"
-    @close-modal.window="if ($event.detail === modalId || ($event.detail && $event.detail.id === modalId)) modalOpen = false"
+    @close-modal.window="if ($event.detail === modalId || ($event.detail && $event.detail.id === modalId)) { {!! $closeAction !!} }"
+    @close="{!! $closeAction !!}"
 >
     @unless ($wireModel || $name)
         @if (isset($trigger))
@@ -83,8 +94,8 @@
                 x-transition:leave="ease-in duration-150"
                 x-transition:leave-start="opacity-100"
                 x-transition:leave-end="opacity-0"
-                class="absolute inset-0 h-full w-full bg-overlay-scrim backdrop-blur-[2px]"
-                @click="modalOpen = false"
+                class="absolute inset-0 h-full w-full bg-black/60 backdrop-blur-[2px]"
+                @click="{!! $closeAction !!}"
                 aria-hidden="true"
             ></div>
 
@@ -101,7 +112,7 @@
                 class="flex h-full w-full overflow-y-auto {{ $alignClasses }}"
             >
                 <div
-                    role="dialog"
+                    role="{{ $role }}"
                     aria-modal="true"
                     @if(isset($header) || $title) aria-labelledby="{{ $titleId }}" @endif
                     @if($description) aria-describedby="{{ $descId }}" @endif
@@ -132,7 +143,7 @@
                         <div class="absolute right-3.5 top-3.5 z-50">
                             <button
                                 class="inline-flex size-8 items-center justify-center rounded-lg bg-transparent text-muted-foreground transition hover:bg-secondary hover:text-foreground focus:outline-none focus-visible:ring-2 focus-visible:ring-ring cursor-pointer"
-                                @click="modalOpen = false"
+                                @click="{!! $closeAction !!}"
                                 type="button"
                                 aria-label="Close dialog"
                             >

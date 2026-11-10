@@ -1,29 +1,33 @@
 <div data-gsap="page-enter">
     @include('inventory.partials.sub-nav')
-    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-4">
         <div>
             <h4 class="text-xl font-bold text-foreground tracking-tight">Raw Material Stock History</h4>
             <p class="text-sm font-medium text-muted-foreground mt-1">Historical stock movement ledger and immutable audit trail</p>
         </div>
-        <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+        <div class="flex items-center gap-3">
             <x-ui.button type="button" variant="secondary" wire:navigate href="{{ route('inventory.ingredients') }}">
-                <span class="material-symbols-rounded text-[18px]">arrow_back</span> Back
+                <span class="material-symbols-rounded text-[20px]">arrow_back</span> Back
             </x-ui.button>
+        </div>
+    </div>
 
-            <div class="relative w-full sm:w-48">
-                <select wire:model.live="ingredient_id" class="form-input w-full pl-3.5 pr-8 py-2 rounded-lg border border-border bg-white text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-primary transition-all shadow-xs appearance-none">
+    <x-erp.filter-bar :search-model="false" :reset-method="null" class="mb-4">
+        <x-slot:filters>
+            <div class="relative w-full sm:w-56">
+                <select wire:model.live="ingredient_id" class="h-9 w-full px-3 pr-8 rounded-medium border border-input bg-background text-foreground text-xs font-semibold focus-visible:ring-1 focus-visible:ring-ring outline-none appearance-none">
                     <option value="">All Raw Materials</option>
                     @foreach($ingredients as $ing)
                         <option value="{{ $ing->id }}">{{ $ing->name }}</option>
                     @endforeach
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-muted-foreground">
-                    <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                    <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                 </div>
             </div>
             
-            <div class="relative w-full sm:w-48">
-                <select wire:model.live="type" class="form-input w-full pl-3.5 pr-8 py-2 rounded-lg border border-border bg-white text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-ring focus:border-primary transition-all shadow-xs appearance-none">
+            <div class="relative w-full sm:w-56">
+                <select wire:model.live="type" class="h-9 w-full px-3 pr-8 rounded-medium border border-input bg-background text-foreground text-xs font-semibold focus-visible:ring-1 focus-visible:ring-ring outline-none appearance-none">
                     <option value="">All Movement Types</option>
                     <option value="sale_deduction">Sales Deduction (Out)</option>
                     <option value="purchase_receipt">Purchase Receipt (In)</option>
@@ -32,22 +36,20 @@
                     <option value="restore_compensation">Order Cancellation (In)</option>
                 </select>
                 <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-muted-foreground">
-                    <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                    <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                 </div>
             </div>
-        </div>
-    </div>
+        </x-slot:filters>
+    </x-erp.filter-bar>
 
-    <div class="card-surface overflow-hidden w-full shrink-0">
-        <div class="overflow-x-auto">
-            <x-erp.data-table
-                loading-target="filterIngredient, filterType, startDate, endDate"
-                :is-empty="$movements->isEmpty()"
-                empty-title="No Movement History"
-                empty-description="Stock movement history will appear automatically when transactions, goods receipts, or adjustments occur."
-                empty-icon="history"
-                :colspan="5"
-            >
+    <x-erp.data-table
+        loading-target="filterIngredient, filterType, startDate, endDate"
+        :is-empty="$movements->isEmpty()"
+        empty-title="No Movement History"
+        empty-description="Stock movement history will appear automatically when transactions, goods receipts, or adjustments occur."
+        empty-icon="history"
+        :colspan="5"
+    >
                 <x-slot:head>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Timestamp</th>
                     <th scope="col" class="px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">Raw Material</th>
@@ -100,12 +102,10 @@
                             </td>
                         </tr>
                     @endforeach
+                    @if($movements->hasPages())
+                        <x-slot:pagination>
+                            {{ $movements->links() }}
+                        </x-slot:pagination>
+                    @endif
             </x-erp.data-table>
-        </div>
-        @if($movements->hasPages())
-            <div class="p-4 border-t border-border shrink-0">
-                {{ $movements->links() }}
-            </div>
-        @endif
-    </div>
 </div>

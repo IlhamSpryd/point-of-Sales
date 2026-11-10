@@ -42,10 +42,10 @@
     x-transition:leave-start="opacity-100 translate-y-0"
     x-transition:leave-end="opacity-0 -translate-y-2">
     <span class="flex items-center gap-2">
-        <span class="material-symbols-rounded text-[18px] shrink-0" aria-hidden="true">{{ $config['icon'] }}</span>
+        <span class="material-symbols-rounded text-[20px] shrink-0" aria-hidden="true">{{ $config['icon'] }}</span>
         <span>{{ $slot }}</span>
     </span>
     <button @click="show = false" aria-label="Close notification" class="{{ $config['btn'] }} transition-colors duration-200 active:scale-90 cursor-pointer p-1 rounded-md">
-        <span class="material-symbols-rounded text-[18px]" aria-hidden="true">close</span>
+        <span class="material-symbols-rounded text-[20px]" aria-hidden="true">close</span>
     </button>
 </div>

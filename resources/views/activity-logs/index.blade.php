@@ -11,67 +11,59 @@
             </x-slot:breadcrumbs>
         </x-erp.page-header>
 
-        <div class="card-surface rounded-xl border border-border dark:border-zinc-800 shadow-xs overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="table-standard w-full min-w-full text-left border-collapse text-sm">
-                    <thead>
-                        <tr class="border-b border-border dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50 text-xs font-semibold text-zinc-500 uppercase tracking-wider">
-                            <th class="px-6 py-4">Timestamp</th>
-                            <th class="px-6 py-4">User</th>
-                            <th class="px-6 py-4">Action</th>
-                            <th class="px-6 py-4">Description</th>
-                            <th class="px-6 py-4">IP / Device</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-border dark:divide-zinc-800/70">
-                        @forelse ($logs as $log)
-                            <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/40 transition">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="font-medium text-zinc-900 dark:text-white text-xs">{{ $log->created_at->format('M d, Y') }}</div>
-                                    <div class="text-[11px] text-zinc-400 font-sans">{{ $log->created_at->format('H:i:s') }}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="font-bold flex items-center gap-2 text-zinc-900 dark:text-white text-xs">
-                                        <div class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs uppercase">
-                                            {{ substr($log->user->name ?? 'S', 0, 1) }}
-                                        </div>
-                                        {{ $log->user->name ?? 'System' }}
-                                    </div>
-                                    <div class="text-[11px] text-zinc-400 ml-9">{{ $log->user->role->name ?? '-' }}</div>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <x-ui.badge variant="neutral" size="xs">
-                                        {{ $log->action }}
-                                    </x-ui.badge>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <p class="font-medium text-xs text-zinc-800 dark:text-zinc-200">{{ $log->description }}</p>
-                                    @if($log->subject_type)
-                                        <p class="text-[11px] text-zinc-400 mt-0.5">Target: {{ class_basename($log->subject_type) }} #{{ $log->subject_id }}</p>
-                                    @endif
-                                </td>
-                                <td class="px-6 py-4 text-xs text-zinc-500">
-                                    <div class="font-sans text-zinc-600 dark:text-zinc-300">{{ $log->ip_address }}</div>
-                                    <div class="truncate max-w-[150px] text-[11px]" title="{{ $log->user_agent }}">{{ Str::limit($log->user_agent, 20) }}</div>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr>
-                                <td colspan="5" class="px-6 py-12 text-center text-zinc-400 text-sm">
-                                    <span class="material-symbols-rounded text-4xl mb-2 block">manage_search</span>
-                                    No activity logs recorded yet.
-                                </td>
-                            </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
-            
+        <x-erp.data-table
+            :is-empty="$logs->isEmpty()"
+            empty-title="No activity logs recorded yet."
+            empty-description="User actions and system audits will appear here."
+            empty-icon="manage_search"
+            :colspan="5"
+        >
+            <x-slot:head>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Timestamp</th>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">User</th>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Action</th>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">Description</th>
+                <th scope="col" class="px-6 py-3.5 text-left text-2xs font-semibold text-muted-foreground uppercase tracking-wider">IP / Device</th>
+            </x-slot:head>
+
+            @foreach ($logs as $log)
+                <tr class="hover:bg-muted/40 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="font-medium text-foreground text-xs">{{ $log->created_at->format('M d, Y') }}</div>
+                        <div class="text-[11px] text-muted-foreground font-sans">{{ $log->created_at->format('H:i:s') }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="font-bold flex items-center gap-2 text-foreground text-xs">
+                            <div class="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs uppercase">
+                                {{ substr($log->user->name ?? 'S', 0, 1) }}
+                            </div>
+                            {{ $log->user->name ?? 'System' }}
+                        </div>
+                        <div class="text-[11px] text-muted-foreground ml-9">{{ $log->user->role->name ?? '-' }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <x-ui.badge variant="neutral" size="xs">
+                            {{ $log->action }}
+                        </x-ui.badge>
+                    </td>
+                    <td class="px-6 py-4">
+                        <p class="font-medium text-xs text-foreground">{{ $log->description }}</p>
+                        @if($log->subject_type)
+                            <p class="text-[11px] text-muted-foreground mt-0.5">Target: {{ class_basename($log->subject_type) }} #{{ $log->subject_id }}</p>
+                        @endif
+                    </td>
+                    <td class="px-6 py-4 text-xs text-muted-foreground">
+                        <div class="font-sans text-foreground">{{ $log->ip_address }}</div>
+                        <div class="truncate max-w-[150px] text-[11px]" title="{{ $log->user_agent }}">{{ Str::limit($log->user_agent, 20) }}</div>
+                    </td>
+                </tr>
+            @endforeach
+
             @if($logs->hasPages())
-                <div class="p-4 border-t border-border dark:border-zinc-800">
+                <x-slot:pagination>
                     {{ $logs->links() }}
-                </div>
+                </x-slot:pagination>
             @endif
-        </div>
+        </x-erp.data-table>
     </div>
 </x-app-layout>

@@ -29,15 +29,15 @@
     <!-- Header Action Bar -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h1 class="text-xl font-bold text-zinc-950 dark:text-white tracking-tight">Accounting Periods & Book Closing</h1>
-            <p class="text-xs text-zinc-500">Manage monthly book closing cycles (soft-close / hard-close) and permanent fiscal year locking.</p>
+            <h1 class="text-xl font-bold text-foreground tracking-tight">Accounting Periods & Book Closing</h1>
+            <p class="text-xs text-muted-foreground">Manage monthly book closing cycles (soft-close / hard-close) and permanent fiscal year locking.</p>
         </div>
 
         <div class="flex items-center gap-3">
             <div class="flex items-center gap-2 text-xs">
-                <span class="text-zinc-500 font-medium">Fiscal Year:</span>
+                <span class="text-muted-foreground font-medium">Fiscal Year:</span>
                 <select wire:model.live="selectedFiscalYear"
-                        class="px-3 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-bold focus:outline-none">
+                        class="px-3 py-1.5 rounded-xl border border-border bg-card text-foreground font-bold focus:outline-none focus:ring-1 focus:ring-ring">
                     @foreach ($availableYears as $year)
                         <option value="{{ $year }}">{{ $year }}</option>
                     @endforeach
@@ -47,7 +47,7 @@
             @if ($periods->isEmpty())
                 <button type="button"
                         wire:click="generateFiscalYearPeriods"
-                        class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-xl transition-colors shadow-xs">
+                        class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl transition-colors shadow-xs">
                     <span class="material-symbols-rounded text-base">calendar_month</span>
                     <span>Generate 12 Periods ({{ $selectedFiscalYear }})</span>
                 </button>
@@ -59,7 +59,7 @@
     <div class="card-surface rounded-2xl border border-border overflow-hidden shadow-xs">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-xs">
-                <thead class="bg-zinc-50 dark:bg-zinc-900/60 text-zinc-500 font-semibold border-b border-zinc-200 dark:border-zinc-800">
+                <thead class="bg-muted/50 text-muted-foreground font-semibold border-b border-border">
                     <tr>
                         <th class="px-4 py-3">Period Code</th>
                         <th class="px-4 py-3">Period / Month</th>
@@ -69,24 +69,24 @@
                         <th class="px-4 py-3 text-right">Cycle Actions</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                <tbody class="divide-y divide-border">
                     @forelse ($periods as $period)
-                        <tr class="hover:bg-zinc-50/60 dark:hover:bg-zinc-800/30 transition-colors">
-                            <td class="px-4 py-3 font-sans font-bold text-zinc-950 dark:text-white">
+                        <tr class="hover:bg-muted/30 transition-colors">
+                            <td class="px-4 py-3 font-sans font-bold text-foreground">
                                 {{ $period->period_code }}
                             </td>
-                            <td class="px-4 py-3 font-medium text-zinc-800 dark:text-zinc-200">
+                            <td class="px-4 py-3 font-medium text-foreground">
                                 Period #{{ $period->period_number }} ({{ \Carbon\Carbon::parse($period->start_date)->format('F') }})
                             </td>
-                            <td class="px-4 py-3 font-sans text-zinc-600 dark:text-zinc-400">
+                            <td class="px-4 py-3 font-sans text-muted-foreground">
                                 {{ \Carbon\Carbon::parse($period->start_date)->format('d M Y') }} — {{ \Carbon\Carbon::parse($period->end_date)->format('d M Y') }}
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <span class="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide
+                                <span class="px-2.5 py-1 rounded-full text-2xs font-bold tracking-wide
                                     @if($period->status->value === 'OPEN') bg-emerald-500/10 text-emerald-600 dark:text-emerald-400
                                     @elseif($period->status->value === 'SOFT_CLOSED') bg-amber-500/10 text-amber-600 dark:text-amber-400
                                     @elseif($period->status->value === 'CLOSED') bg-blue-500/10 text-blue-600 dark:text-blue-400
-                                    @else bg-zinc-500/10 text-zinc-500 dark:text-zinc-400 @endif">
+                                    @else bg-muted text-muted-foreground @endif">
                                     {{ $period->status->value }}
                                 </span>
                             </td>
@@ -96,7 +96,7 @@
                                         <span class="material-symbols-rounded text-sm">lock_open</span> Allowed
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center gap-1 text-[11px] text-rose-500 font-medium">
+                                    <span class="inline-flex items-center gap-1 text-[11px] text-destructive font-medium">
                                         <span class="material-symbols-rounded text-sm">lock</span> Locked (Posting Rejected)
                                     </span>
                                 @endif
@@ -105,7 +105,7 @@
                                 <div class="inline-flex items-center gap-1.5">
                                     <button type="button"
                                             wire:click="evaluateGates({{ $period->id }})"
-                                            class="px-2 py-1 rounded-lg bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-medium transition-colors"
+                                            class="px-2 py-1 rounded-lg bg-muted hover:bg-muted/80 text-foreground font-medium transition-colors"
                                             title="Evaluate Closing Gates">
                                         Gates
                                     </button>
@@ -135,7 +135,7 @@
                                     @elseif ($period->status->value === 'CLOSED')
                                         <button type="button"
                                                 wire:click="lock({{ $period->id }})"
-                                                class="px-2 py-1 rounded-lg bg-zinc-900 hover:bg-black text-white dark:bg-zinc-700 dark:hover:bg-zinc-600 font-medium transition-colors">
+                                                class="px-2 py-1 rounded-lg bg-foreground hover:bg-foreground/90 text-background font-medium transition-colors">
                                             Permanent Lock
                                         </button>
                                         <button type="button"
@@ -144,19 +144,19 @@
                                             Reopen
                                         </button>
                                     @else
-                                        <span class="text-[11px] text-zinc-400 italic">Locked</span>
+                                        <span class="text-[11px] text-muted-foreground italic">Locked</span>
                                     @endif
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-12 text-center text-zinc-400">
-                                <span class="material-symbols-rounded text-3xl mb-1 text-zinc-300">event_busy</span>
+                            <td colspan="6" class="px-4 py-12 text-center text-muted-foreground">
+                                <span class="material-symbols-rounded text-3xl mb-1 text-muted-foreground/60">event_busy</span>
                                 <p class="text-xs">No accounting periods found for fiscal year {{ $selectedFiscalYear }}.</p>
                                 <button type="button"
                                         wire:click="generateFiscalYearPeriods"
-                                        class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-xl transition-colors shadow-xs">
+                                        class="mt-3 inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl transition-colors shadow-xs">
                                     <span class="material-symbols-rounded text-base">add</span>
                                     <span>Generate 12 Periods Now</span>
                                 </button>
@@ -170,91 +170,81 @@
 
     <!-- Reopen Modal -->
     @if ($showReopenModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-            <div class="card-surface w-full max-w-md rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-2xl space-y-4"
-                 @click.outside="$wire.set('showReopenModal', false)">
-                
-                <div class="flex items-center gap-3 text-emerald-600 dark:text-emerald-400">
-                    <span class="material-symbols-rounded text-2xl">lock_open</span>
-                    <h3 class="text-base font-bold text-zinc-950 dark:text-white">Reopen Accounting Period</h3>
-                </div>
-
-                <p class="text-xs text-zinc-600 dark:text-zinc-400">
+        <x-ui.modal wire:model="showReopenModal" title="Reopen Accounting Period" maxWidth="md" onClose="$wire.set('showReopenModal', false)">
+            <div class="space-y-4">
+                <p class="text-xs text-muted-foreground">
                     Reopening a closed accounting period requires authorization and official audit log recording. Enter reopening justification:
                 </p>
 
                 <div>
-                    <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Reopen Reason (Required)</label>
+                    <label class="block text-xs font-semibold text-foreground mb-1">Reopen Reason (Required)</label>
                     <textarea wire:model="reopenReason"
                               rows="3"
                               placeholder="e.g. External audit adjustment correction..."
-                              class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 focus:outline-none"></textarea>
-                    @error('reopenReason') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
+                              class="w-full px-3 py-2 text-xs rounded-xl border border-border bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"></textarea>
+                    @error('reopenReason') <span class="text-2xs text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
+            </div>
 
-                <div class="flex items-center justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
+            <x-slot:footer>
+                <div class="flex items-center justify-end gap-2 w-full">
                     <button type="button"
                             wire:click="$set('showReopenModal', false)"
-                            class="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white rounded-xl transition-colors">
+                            class="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground rounded-xl transition-colors">
                         Cancel
                     </button>
                     <button type="button"
                             wire:click="confirmReopen"
-                            class="px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition-colors shadow-xs">
+                            class="px-4 py-2 text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl transition-colors shadow-xs">
                         Confirm Reopen Period
                     </button>
                 </div>
-            </div>
-        </div>
+            </x-slot:footer>
+        </x-ui.modal>
     @endif
 
     <!-- Gates Evaluation Modal -->
     @if ($showGatesModal && $gatesPeriod)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-            <div class="card-surface w-full max-w-lg rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto"
-                 @click.outside="$wire.set('showGatesModal', false)">
-                
-                <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
-                    <div>
-                        <h3 class="text-base font-bold text-zinc-950 dark:text-white">
-                            Closing Gates Checklist — Period {{ $gatesPeriod->period_code }}
-                        </h3>
-                        <p class="text-xs text-zinc-500">Pre-requisite evaluations for General Ledger book closing.</p>
+        <x-ui.modal :open="true" maxWidth="lg" onClose="$wire.set('showGatesModal', false)">
+            <x-slot:title>
+                <div>
+                    <h3 class="text-base font-bold text-foreground">
+                        Closing Gates Checklist — Period {{ $gatesPeriod->period_code }}
+                    </h3>
+                    <p class="text-xs text-muted-foreground">Pre-requisite evaluations for General Ledger book closing.</p>
+                </div>
+            </x-slot:title>
+
+            <div class="space-y-2">
+                @forelse ($gatesResults as $gate => $result)
+                    <div class="p-3 rounded-xl border border-border flex items-center justify-between text-xs bg-muted/30">
+                        <span class="font-medium text-foreground">{{ ucwords(str_replace('_', ' ', (string) $gate)) }}</span>
+                        @if (is_array($result) ? ($result['passed'] ?? false) : (bool) $result)
+                            <span class="px-2 py-0.5 rounded-full text-2xs font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1">
+                                <span class="material-symbols-rounded text-xs">check</span> PASSED
+                            </span>
+                        @else
+                            <span class="px-2 py-0.5 rounded-full text-2xs font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 inline-flex items-center gap-1">
+                                <span class="material-symbols-rounded text-xs">warning</span> PENDING
+                            </span>
+                        @endif
                     </div>
-                    <button type="button" wire:click="$set('showGatesModal', false)" class="text-zinc-400 hover:text-zinc-600">
-                        <span class="material-symbols-rounded text-lg">close</span>
-                    </button>
-                </div>
+                @empty
+                    <div class="p-4 text-center text-muted-foreground text-xs">
+                        All closing gates satisfied.
+                    </div>
+                @endforelse
+            </div>
 
-                <div class="space-y-2">
-                    @forelse ($gatesResults as $gate => $result)
-                        <div class="p-3 rounded-xl border border-zinc-200 dark:border-zinc-800 flex items-center justify-between text-xs">
-                            <span class="font-medium text-zinc-800 dark:text-zinc-200">{{ ucwords(str_replace('_', ' ', (string) $gate)) }}</span>
-                            @if (is_array($result) ? ($result['passed'] ?? false) : (bool) $result)
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 inline-flex items-center gap-1">
-                                    <span class="material-symbols-rounded text-xs">check</span> PASSED
-                                </span>
-                            @else
-                                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 inline-flex items-center gap-1">
-                                    <span class="material-symbols-rounded text-xs">warning</span> PENDING
-                                </span>
-                            @endif
-                        </div>
-                    @empty
-                        <div class="p-4 text-center text-zinc-400 text-xs">
-                            All closing gates satisfied.
-                        </div>
-                    @endforelse
-                </div>
-
-                <div class="flex justify-end pt-3 border-t border-zinc-200 dark:border-zinc-800">
+            <x-slot:footer>
+                <div class="flex justify-end w-full">
                     <button type="button"
                             wire:click="$set('showGatesModal', false)"
-                            class="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white rounded-xl transition-colors">
+                            class="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground rounded-xl transition-colors">
                         Close
                     </button>
                 </div>
-            </div>
-        </div>
+            </x-slot:footer>
+        </x-ui.modal>
     @endif
 </div>

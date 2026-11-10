@@ -2,9 +2,9 @@
 <aside class="w-[360px] xl:w-[380px] shrink-0 flex flex-col h-full bg-white rounded-2xl p-3.5 lg:p-4 shadow-sm border border-border select-none overflow-hidden">
     <!-- Cart Header: Current Order, Counter, Mode, Reset -->
     <div class="flex items-center justify-between pb-2.5 border-b border-border mb-2 shrink-0">
-        <h2 class="font-headline-sm text-[15px] font-semibold text-foreground">Current Order</h2>
+        <h2 class="text-sm font-semibold text-foreground">Current Order</h2>
         <div class="flex items-center gap-2.5">
-            <span class="text-[12px] text-muted-foreground flex items-center gap-1.5 select-none">
+            <span class="text-xs text-muted-foreground flex items-center gap-1.5 select-none">
                 <span class="font-medium text-muted-foreground">{{ count($this->cartLines) }} {{ Str::plural('item', count($this->cartLines)) }}</span>
                 <span class="text-muted-foreground">|</span>
                 <span class="capitalize text-muted-foreground">{{ $orderType === 'dine_in' ? ($tableId ? 'Table ' . ($this->activeTables->firstWhere('id', $tableId)?->table_name ?? $tableId) : 'dine in') : 'takeaway' }}</span>
@@ -13,7 +13,7 @@
                 title="Clear Cart" type="button"
                 @if (count($this->cartLines) === 0) disabled @endif
                 x-on:click="if (confirm('Clear all items from the current cart?')) { $wire.clearCart(); }">
-                <span class="material-symbols-rounded text-[17px] block">delete_sweep</span>
+                <span class="material-symbols-rounded text-[16px] block">delete_sweep</span>
             </button>
         </div>
     </div>
@@ -48,7 +48,7 @@
                                 x-on:click="showResults = false"
                                 class="w-full flex items-center justify-between gap-2 px-3 py-2 text-left hover:bg-muted transition-colors border-b border-border last:border-0 text-xs">
                                 <span class="font-medium text-foreground">{{ $c->name }}</span>
-                                <span class="text-[11px] text-muted-foreground font-sans tabular-nums">{{ $c->phone ?? '-' }}</span>
+                                <span class="text-xs text-muted-foreground font-sans tabular-nums">{{ $c->phone ?? '-' }}</span>
                             </button>
                         @empty
                             <div class="px-3 py-2 text-xs text-muted-foreground text-center">No customers found.</div>

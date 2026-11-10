@@ -20,6 +20,6 @@
         @click="$dispatch('command-open')"
         aria-label="Open search dialog"
         class="md:hidden flex items-center justify-center w-8 h-8 rounded-lg text-shell-foreground bg-shell-accent hover:bg-shell-border hover:text-shell-foreground-active border border-shell-border transition-all cursor-pointer">
-        <span class="material-symbols-rounded text-[18px]" aria-hidden="true">search</span>
+        <span class="material-symbols-rounded text-[20px]" aria-hidden="true">search</span>
     </button>
 </div>

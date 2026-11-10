@@ -149,7 +149,7 @@ class ErpSidebarReachabilityTest extends TestCase
 
         $response->assertOk();
         $response->assertSee('Finance & Accounting');
-        $response->assertSee('Modul 7');
+        $response->assertSee('General Ledger');
     }
 
     public function test_kds_is_reachable_by_kitchen_and_frontline_staff(): void

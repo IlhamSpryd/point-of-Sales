@@ -29,30 +29,22 @@
     </div>
 
     <!-- Filter & Search Toolbar -->
-    <div class="card-surface p-4 rounded-2xl border border-border flex flex-col md:flex-row gap-3 items-center justify-between shadow-xs">
-        <div class="relative w-full md:w-80">
-            <span class="material-symbols-rounded absolute left-3 top-2.5 text-zinc-400 text-sm">search</span>
-            <input type="text"
-                   wire:model.live.debounce.300ms="search"
-                   placeholder="Search account code or name..."
-                   class="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 focus:outline-none focus:ring-1 focus:ring-zinc-900 dark:focus:ring-zinc-100">
-        </div>
-
-        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
-            <select wire:model.live="typeFilter" class="text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 px-3 py-1.5 focus:outline-none">
+    <x-erp.filter-bar search-placeholder="Search account code or name...">
+        <x-slot:filters>
+            <select wire:model.live="typeFilter" class="h-9 text-xs rounded-xl border border-input bg-background text-foreground px-3 outline-none">
                 <option value="">All Account Types</option>
                 @foreach ($accountTypes as $type)
                     <option value="{{ $type->value }}">{{ $type->value }}</option>
                 @endforeach
             </select>
 
-            <select wire:model.live="statusFilter" class="text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 px-3 py-1.5 focus:outline-none">
+            <select wire:model.live="statusFilter" class="h-9 text-xs rounded-xl border border-input bg-background text-foreground px-3 outline-none">
                 <option value="">All Statuses</option>
                 <option value="active">Active Only</option>
                 <option value="inactive">Inactive</option>
             </select>
-        </div>
-    </div>
+        </x-slot:filters>
+    </x-erp.filter-bar>
 
     <!-- Table Container -->
     <div class="card-surface rounded-2xl border border-border overflow-hidden shadow-xs">
@@ -151,107 +143,101 @@
     </div>
 
     <!-- Form Modal (Create / Edit) -->
-    @if ($showFormModal)
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-            <div class="card-surface w-full max-w-lg rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto"
-                 @click.outside="$wire.set('showFormModal', false)">
-                <div class="flex items-center justify-between pb-3 border-b border-zinc-200 dark:border-zinc-800">
-                    <h3 class="text-base font-bold text-zinc-950 dark:text-white">
-                        {{ $editingAccountId ? 'Edit Account' : 'Add New Account' }}
-                    </h3>
-                    <button type="button" wire:click="$set('showFormModal', false)" class="text-zinc-400 hover:text-zinc-600">
-                        <span class="material-symbols-rounded text-lg">close</span>
-                    </button>
+    <x-ui.modal wire:model="showFormModal" maxWidth="lg" onClose="$wire.set('showFormModal', false)">
+        <x-slot:header>
+            <h3 class="text-base font-bold text-foreground">
+                {{ $editingAccountId ? 'Edit Account' : 'Add New Account' }}
+            </h3>
+        </x-slot:header>
+
+        <form id="save-account-form" wire:submit="saveAccount" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-muted-foreground mb-1">Account Code</label>
+                    <input type="text"
+                           wire:model="accountCode"
+                           placeholder="e.g. 1101"
+                           class="w-full px-3 py-2 text-xs rounded-xl border border-input bg-background text-foreground font-sans">
+                    @error('accountCode') <span class="text-[10px] text-destructive mt-1 block">{{ $message }}</span> @enderror
                 </div>
 
-                <form wire:submit="saveAccount" class="space-y-4">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Account Code</label>
-                            <input type="text"
-                                   wire:model="accountCode"
-                                   placeholder="e.g. 1101"
-                                   class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-sans">
-                            @error('accountCode') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Classification Type</label>
-                            <select wire:model.live="accountType"
-                                    class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-                                @foreach ($accountTypes as $type)
-                                    <option value="{{ $type->value }}">{{ $type->value }}</option>
-                                @endforeach
-                            </select>
-                            @error('accountType') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Account Name</label>
-                        <input type="text"
-                               wire:model="accountName"
-                               placeholder="e.g. Operating Petty Cash"
-                               class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-                        @error('accountName') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
-                    </div>
-
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Normal Balance</label>
-                            <select wire:model="normalBalance"
-                                    class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100 font-sans">
-                                <option value="DEBIT">DEBIT</option>
-                                <option value="CREDIT">CREDIT</option>
-                            </select>
-                            @error('normalBalance') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">Parent Account</label>
-                            <select wire:model="parentId"
-                                    class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
-                                <option value="">(None - Top Level Account)</option>
-                                @foreach ($parentOptions as $parent)
-                                    <option value="{{ $parent->id }}">[{{ $parent->account_code }}] {{ $parent->account_name }}</option>
-                                @endforeach
-                            </select>
-                            @error('parentId') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-
-                    <div class="space-y-2 pt-2 border-t border-zinc-200 dark:border-zinc-800 text-xs">
-                        <label class="flex items-center gap-2 text-zinc-700 dark:text-zinc-300 cursor-pointer">
-                            <input type="checkbox" wire:model="isPostable" class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900">
-                            <span>Postable Account (Allows direct journal line posting)</span>
-                        </label>
-                        <label class="flex items-center gap-2 text-zinc-700 dark:text-zinc-300 cursor-pointer">
-                            <input type="checkbox" wire:model="allowManualJournal" class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900">
-                            <span>Allow Manual Journal (Not restricted to system automated posting)</span>
-                        </label>
-                        <label class="flex items-center gap-2 text-zinc-700 dark:text-zinc-300 cursor-pointer">
-                            <input type="checkbox" wire:model="isReconcilable" class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900">
-                            <span>Reconcilable (Cash/Bank Account)</span>
-                        </label>
-                        <label class="flex items-center gap-2 text-zinc-700 dark:text-zinc-300 cursor-pointer">
-                            <input type="checkbox" wire:model="isActive" class="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900">
-                            <span>Active Account</span>
-                        </label>
-                    </div>
-
-                    <div class="flex items-center justify-end gap-2 pt-3 border-t border-zinc-200 dark:border-zinc-800">
-                        <button type="button"
-                                wire:click="$set('showFormModal', false)"
-                                class="px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-white rounded-xl transition-colors">
-                            Cancel
-                        </button>
-                        <button type="submit"
-                                class="px-4 py-2 text-xs font-semibold text-white bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:text-zinc-950 dark:hover:bg-zinc-200 rounded-xl transition-colors shadow-xs">
-                            Save Account
-                        </button>
-                    </div>
-                </form>
+                <div>
+                    <label class="block text-xs font-semibold text-muted-foreground mb-1">Classification Type</label>
+                    <select wire:model.live="accountType"
+                            class="w-full px-3 py-2 text-xs rounded-xl border border-input bg-background text-foreground">
+                        @foreach ($accountTypes as $type)
+                            <option value="{{ $type->value }}">{{ $type->value }}</option>
+                        @endforeach
+                    </select>
+                    @error('accountType') <span class="text-[10px] text-destructive mt-1 block">{{ $message }}</span> @enderror
+                </div>
             </div>
-        </div>
-    @endif
+
+            <div>
+                <label class="block text-xs font-semibold text-muted-foreground mb-1">Account Name</label>
+                <input type="text"
+                       wire:model="accountName"
+                       placeholder="e.g. Operating Petty Cash"
+                       class="w-full px-3 py-2 text-xs rounded-xl border border-input bg-background text-foreground">
+                @error('accountName') <span class="text-[10px] text-destructive mt-1 block">{{ $message }}</span> @enderror
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-muted-foreground mb-1">Normal Balance</label>
+                    <select wire:model="normalBalance"
+                            class="w-full px-3 py-2 text-xs rounded-xl border border-input bg-background text-foreground font-sans">
+                        <option value="DEBIT">DEBIT</option>
+                        <option value="CREDIT">CREDIT</option>
+                    </select>
+                    @error('normalBalance') <span class="text-[10px] text-destructive mt-1 block">{{ $message }}</span> @enderror
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-muted-foreground mb-1">Parent Account</label>
+                    <select wire:model="parentId"
+                            class="w-full px-3 py-2 text-xs rounded-xl border border-input bg-background text-foreground">
+                        <option value="">(None - Top Level Account)</option>
+                        @foreach ($parentOptions as $parent)
+                            <option value="{{ $parent->id }}">[{{ $parent->account_code }}] {{ $parent->account_name }}</option>
+                        @endforeach
+                    </select>
+                    @error('parentId') <span class="text-[10px] text-destructive mt-1 block">{{ $message }}</span> @enderror
+                </div>
+            </div>
+
+            <div class="space-y-2 pt-2 border-t border-border text-xs">
+                <label class="flex items-center gap-2 text-foreground cursor-pointer">
+                    <input type="checkbox" wire:model="isPostable" class="rounded border-input text-primary focus:ring-ring">
+                    <span>Postable Account (Allows direct journal line posting)</span>
+                </label>
+                <label class="flex items-center gap-2 text-foreground cursor-pointer">
+                    <input type="checkbox" wire:model="allowManualJournal" class="rounded border-input text-primary focus:ring-ring">
+                    <span>Allow Manual Journal (Not restricted to system automated posting)</span>
+                </label>
+                <label class="flex items-center gap-2 text-foreground cursor-pointer">
+                    <input type="checkbox" wire:model="isReconcilable" class="rounded border-input text-primary focus:ring-ring">
+                    <span>Reconcilable (Cash/Bank Account)</span>
+                </label>
+                <label class="flex items-center gap-2 text-foreground cursor-pointer">
+                    <input type="checkbox" wire:model="isActive" class="rounded border-input text-primary focus:ring-ring">
+                    <span>Active Account</span>
+                </label>
+            </div>
+        </form>
+
+        <x-slot:footer>
+            <div class="flex items-center justify-end gap-2 w-full">
+                <button type="button"
+                        wire:click="$set('showFormModal', false)"
+                        class="px-4 py-2 text-xs font-semibold text-muted-foreground hover:text-foreground rounded-xl transition-colors">
+                    Cancel
+                </button>
+                <button type="submit" form="save-account-form"
+                        class="px-4 py-2 text-xs font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl transition-colors shadow-xs">
+                    Save Account
+                </button>
+            </div>
+        </x-slot:footer>
+    </x-ui.modal>
 </div>

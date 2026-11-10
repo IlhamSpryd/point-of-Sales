@@ -15,7 +15,7 @@
                         </p>
                     </div>
                     <x-ui.button type="button" variant="secondary" wire:click="resetGroupForm">
-                        <span class="material-symbols-rounded text-[18px]">arrow_back</span> Back
+                        <span class="material-symbols-rounded text-[20px]">arrow_back</span> Back
                     </x-ui.button>
                 </div>
 
@@ -36,7 +36,7 @@
                                         <option value="multiple">Multiple (Choose multiple options)</option>
                                     </select>
                                     <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-muted-foreground">
-                                        <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                                        <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                                     </div>
                                 </div>
                                 @error('groupForm.selection_type') <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p> @enderror
@@ -61,7 +61,7 @@
                                 Cancel
                             </x-ui.button>
                             <x-ui.button type="submit" variant="primary" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                                <span class="material-symbols-rounded text-[18px]">save</span> Save Group
+                                <span class="material-symbols-rounded text-[20px]">save</span> Save Group
                             </x-ui.button>
                         </div>
                     </form>
@@ -79,7 +79,7 @@
                         </p>
                     </div>
                     <x-ui.button type="button" variant="secondary" wire:click="resetModifierForm">
-                        <span class="material-symbols-rounded text-[18px]">arrow_back</span> Back
+                        <span class="material-symbols-rounded text-[20px]">arrow_back</span> Back
                     </x-ui.button>
                 </div>
 
@@ -143,14 +143,14 @@
                                                 @endforeach
                                             </select>
                                             <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-muted-foreground">
-                                                <span class="material-symbols-rounded text-[18px]">keyboard_arrow_down</span>
+                                                <span class="material-symbols-rounded text-[20px]">keyboard_arrow_down</span>
                                             </div>
                                         </div>
                                         <div class="w-32">
                                             <input type="number" step="0.0001" x-model="ing.quantity" placeholder="Quantity" class="form-input w-full px-4 py-2.5 rounded-xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-primary transition-all duration-200 shadow-sm" required>
                                         </div>
                                         <button type="button" @click="removeIngredient(index)" class="inline-flex items-center justify-center w-[46px] h-[46px] rounded-xl text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors" title="Remove line">
-                                            <span class="material-symbols-rounded text-[18px]">close</span>
+                                            <span class="material-symbols-rounded text-[20px]">close</span>
                                         </button>
                                     </div>
                                 </template>
@@ -166,7 +166,7 @@
                                 Cancel
                             </x-ui.button>
                             <x-ui.button type="submit" variant="primary" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                                <span class="material-symbols-rounded text-[18px]">save</span> Save Modifier
+                                <span class="material-symbols-rounded text-[20px]">save</span> Save Modifier
                             </x-ui.button>
                         </div>
                     </form>
@@ -183,7 +183,7 @@
                 <x-list-toolbar>
                     <x-slot name="actions">
                         <x-ui.button wire:click="createGroup" variant="primary" type="button" class="w-full sm:w-auto h-10" x-on:click="window.erpMotion?.pulseHighlight($el)">
-                            <span class="material-symbols-rounded text-[18px]">add</span> Add Modifier Group
+                            <span class="material-symbols-rounded text-[20px]">add</span> Add Modifier Group
                         </x-ui.button>
                     </x-slot>
                 </x-list-toolbar>
@@ -202,7 +202,7 @@
                     </div>
                     <div class="flex space-x-2">
                         <button wire:click="editGroup({{ $group->id }})" class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors" title="Edit Group">
-                            <span class="material-symbols-rounded text-[18px]">edit</span>
+                            <span class="material-symbols-rounded text-[20px]">edit</span>
                         </button>
                         <button type="button"
                             x-on:click="$dispatch('erp-confirm', {

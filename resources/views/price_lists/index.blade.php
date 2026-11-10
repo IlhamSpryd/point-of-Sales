@@ -20,31 +20,30 @@
     }">
         @include('catalog.partials.sub-nav')
 
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6" data-gsap="page-enter">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4" data-gsap="page-enter">
             <div>
                 <h4 class="text-xl font-bold text-foreground tracking-tight">Price Lists & Tiered Pricing</h4>
                 <p class="text-sm font-medium text-muted-foreground mt-1">Manage volume-tiered wholesale rules, loyalty tier pricing, and customer contracts</p>
             </div>
-
-            <x-list-toolbar search-action="{{ route('price-lists.index') }}" search-placeholder="Search price lists...">
-                <x-slot:actions>
-                    @if($canManage)
-                        <x-ui.button variant="primary" type="button" class="w-full sm:w-auto h-10" @click="createDrawerOpen = true">
-                            <span class="material-symbols-rounded text-[18px]">add</span> Create Price List
-                        </x-ui.button>
-                    @endif
-                </x-slot:actions>
-            </x-list-toolbar>
         </div>
 
-    @if(session('success'))
-        <x-ui.alert variant="success" class="mb-4">{{ session('success') }}</x-ui.alert>
-    @endif
-    @if(session('error'))
-        <x-ui.alert variant="destructive" class="mb-4">{{ session('error') }}</x-ui.alert>
-    @endif
+        <x-erp.filter-bar search-action="{{ route('price-lists.index') }}" search-placeholder="Search price lists...">
+            <x-slot:actions>
+                @if($canManage)
+                    <x-ui.button variant="primary" type="button" class="w-full sm:w-auto h-10" @click="createDrawerOpen = true">
+                        <span class="material-symbols-rounded text-[20px]">add</span> Create Price List
+                    </x-ui.button>
+                @endif
+            </x-slot:actions>
+        </x-erp.filter-bar>
 
-    <div class="card-surface flex flex-col flex-1 min-h-0">
+        @if(session('success'))
+            <x-ui.alert variant="success" class="mb-4">{{ session('success') }}</x-ui.alert>
+        @endif
+        @if(session('error'))
+            <x-ui.alert variant="destructive" class="mb-4">{{ session('error') }}</x-ui.alert>
+        @endif
+
         <x-erp.data-table
             :is-empty="$priceLists->isEmpty()"
             empty-title="No custom price lists or wholesale rules registered."
@@ -147,12 +146,12 @@
                     @endif
                 </tr>
             @endforeach
+            @if($priceLists->hasPages())
+                <x-slot:pagination>
+                    {{ $priceLists->links() }}
+                </x-slot:pagination>
+            @endif
         </x-erp.data-table>
-
-        <div class="p-4 border-t border-border">
-            {{ $priceLists->links() }}
-        </div>
-    </div>
 
         {{-- Contextual Drawer for PAGE-035 (Create Price List) --}}
         <x-ui.drawer x-model="createDrawerOpen" maxWidth="xl">

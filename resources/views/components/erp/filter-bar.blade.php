@@ -10,7 +10,7 @@
     <div class="flex flex-1 flex-col sm:flex-row sm:items-center gap-2.5">
         @if ($searchAction)
             <form action="{{ $searchAction }}" method="GET" class="relative w-full sm:max-w-xs">
-                <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-muted-foreground" aria-hidden="true">search</span>
+                <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-muted-foreground" aria-hidden="true">search</span>
                 <input
                     type="search"
                     name="{{ $searchName }}"
@@ -22,7 +22,7 @@
             </form>
         @elseif ($searchModel)
             <div class="relative w-full sm:max-w-xs">
-                <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[18px] text-muted-foreground" aria-hidden="true">search</span>
+                <span class="material-symbols-rounded pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[20px] text-muted-foreground" aria-hidden="true">search</span>
                 <input
                     type="search"
                     wire:model.live.debounce.300ms="{{ $searchModel }}"
