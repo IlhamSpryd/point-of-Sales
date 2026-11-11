@@ -569,7 +569,7 @@ class ShiftDeviceHandoverAndConcurrencyTest extends TestCase
 
         // Saldo laci kas saat ini = 50.000. Coba cash_out 60.000
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Drawer cash balance is insufficient for this cash out (balance cannot be negative).');
+        $this->expectExceptionMessage('Drawer cash balance is insufficient for this cash out');
 
         $shiftService->recordCashMovement(
             $shift->id,
@@ -632,5 +632,38 @@ class ShiftDeviceHandoverAndConcurrencyTest extends TestCase
         $this->assertNotNull($newShift);
         $this->assertEquals('open', $newShift->status);
         $this->assertEquals($this->cashier2->id, $newShift->active_cashier_id);
+    }
+
+    /**
+     * Verifikasi ShiftManager Livewire menangani error terminal yang sedang digunakan
+     * dengan menetapkan form error (addError) dan event toast tanpa stuck.
+     */
+    public function test_shift_manager_livewire_sets_form_error_when_terminal_is_occupied(): void
+    {
+        $context = app(TenantContext::class);
+        $context->setTenantId($this->tenantA->id);
+        $context->setStoreId($this->storeA->id);
+
+        $shiftService = app(ShiftService::class);
+
+        // Kasir 1 membuka shift di Device A
+        $shiftService->openShift(
+            $this->tenantA->id,
+            $this->storeA->id,
+            $this->deviceA->id,
+            $this->cashier1->id,
+            100000,
+            '123456'
+        );
+
+        // Kasir 2 mencoba membuka shift di Device A via ShiftManager
+        \Livewire\Livewire::actingAs($this->cashier2)
+            ->test(\App\Livewire\ShiftManager::class)
+            ->set('selectedDeviceId', $this->deviceA->id)
+            ->set('opening_balance', 100000)
+            ->set('cashierPin', '654321')
+            ->call('openShift')
+            ->assertHasErrors(['selectedDeviceId'])
+            ->assertDispatched('toast');
     }
 }

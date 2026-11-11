@@ -10,6 +10,13 @@
     </x-slot:header>
 
     <div class="space-y-3">
+        @if ($errors->has('cart'))
+            <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs flex items-center gap-2" role="alert">
+                <span class="material-symbols-rounded text-[18px] shrink-0">error</span>
+                <span>{{ $errors->first('cart') }}</span>
+            </div>
+        @endif
+
         <p class="text-xs text-muted-foreground">
             Active parked orders held at this branch register.
         </p>

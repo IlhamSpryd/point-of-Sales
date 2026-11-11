@@ -1530,7 +1530,8 @@ class CreateOrder extends Component
         })->where('status', 'open')->first();
 
         if (! $activeShift) {
-            $this->addError('cart', 'Register shift must be active to resume parked orders.');
+            $this->addError('cart', 'Register shift must be active to resume parked orders. Silakan buka shift kasir terlebih dahulu.');
+            $this->dispatch('toast', message: 'Register shift must be active to resume parked orders.', type: 'error');
 
             return;
         }
@@ -1579,6 +1580,7 @@ class CreateOrder extends Component
             $this->dispatch('toast', message: 'Parked order resumed successfully.', type: 'success');
         } catch (\Throwable $e) {
             $this->addError('cart', $e->getMessage());
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
         }
     }
 
@@ -1592,6 +1594,7 @@ class CreateOrder extends Component
             $this->dispatch('toast', message: 'Parked order discarded.', type: 'info');
         } catch (\Throwable $e) {
             $this->addError('cart', $e->getMessage());
+            $this->dispatch('toast', message: $e->getMessage(), type: 'error');
         }
     }
 

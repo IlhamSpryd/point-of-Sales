@@ -12,6 +12,13 @@
             <h3 class="text-xl font-bold text-foreground mb-2">Open Cashier Shift</h3>
             <p class="text-sm text-gray-500 mb-8">Select an active terminal, count physical opening cash in the drawer, and verify your PIN.</p>
 
+            @if ($errors->any())
+                <div class="p-3.5 mb-5 rounded-xl bg-rose-50 border border-rose-200 text-rose-600 text-xs flex items-center gap-2 text-left" role="alert">
+                    <span class="material-symbols-rounded text-[18px] shrink-0">error</span>
+                    <span>{{ $errors->first('selectedDeviceId') ?: ($errors->first('deviceId') ?: $errors->first()) }}</span>
+                </div>
+            @endif
+
             <form wire:submit.prevent="openShift" class="text-left space-y-5">
                 {{-- Terminal / Device Selection --}}
                 <div>
@@ -20,12 +27,16 @@
                         <select wire:model="selectedDeviceId" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-1 focus:ring-gray-900 focus:border-primary transition-all text-xs font-bold text-foreground outline-none">
                             <option value="">-- Select Terminal Device --</option>
                             @foreach($devices as $device)
+                                @php
+                                    $isOccupied = in_array((int) $device->id, $occupiedDeviceIds ?? [], true);
+                                @endphp
                                 <option value="{{ $device->id }}">
-                                    {{ $device->device_name }} ({{ $device->device_code }})
+                                    {{ $device->device_name }} ({{ $device->device_code }}) {{ $isOccupied ? '— [Sedang Aktif / Digunakan]' : '— [Tersedia]' }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
+                    @error('selectedDeviceId') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                     @error('deviceId') <span class="text-xs text-rose-500 mt-1 block">{{ $message }}</span> @enderror
                 </div>
 

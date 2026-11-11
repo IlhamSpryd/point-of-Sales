@@ -162,11 +162,16 @@ class ShiftManager extends Component
                 $opened = $shiftService->openShift((int) $user->id, (int) $this->opening_balance);
             }
         } catch (\DomainException $e) {
+            $this->addError('selectedDeviceId', $e->getMessage());
+            $this->addError('deviceId', $e->getMessage());
             $this->dispatch('toast', message: $e->getMessage(), type: 'error');
 
             return;
         } catch (ValidationException $e) {
-            $this->dispatch('toast', message: collect($e->errors())->flatten()->first(), type: 'error');
+            $msg = collect($e->errors())->flatten()->first();
+            $this->addError('selectedDeviceId', $msg);
+            $this->addError('deviceId', $msg);
+            $this->dispatch('toast', message: $msg, type: 'error');
 
             return;
         }
@@ -486,6 +491,16 @@ class ShiftManager extends Component
         }
         $devices = $deviceQuery->where('is_active', true)->get();
 
+        $occupiedQuery = Shift::whereIn('status', ['open', 'handover_pending', 'closing'])
+            ->whereNotNull('device_id');
+        if ($tenantId !== null) {
+            $occupiedQuery->where('tenant_id', $tenantId);
+        }
+        if ($storeId !== null) {
+            $occupiedQuery->where('store_id', $storeId);
+        }
+        $occupiedDeviceIds = $occupiedQuery->pluck('device_id')->map(fn ($id) => (int) $id)->toArray();
+
         $userQuery = User::query();
         if ($tenantId !== null) {
             $userQuery->where('tenant_id', $tenantId);
@@ -499,6 +514,7 @@ class ShiftManager extends Component
             'handovers' => $handovers,
             'pendingHandover' => $pendingHandover,
             'devices' => $devices,
+            'occupiedDeviceIds' => $occupiedDeviceIds,
             'eligibleCashiers' => $eligibleCashiers,
         ]);
     }

@@ -68,8 +68,8 @@ return [
     ],
 
     'marketing' => [
-        'url' => env('MARKETING_URL', 'http://localhost:8080'),
-        'register_url' => env('MARKETING_REGISTER_URL', 'http://localhost:8080/register'),
+        'url' => env('MARKETING_URL', 'https://apeironsystem.web.id'),
+        'register_url' => env('MARKETING_REGISTER_URL', 'https://apeironsystem.web.id/register'),
     ],
 
     'google' => [

@@ -173,7 +173,7 @@
     <!-- Footer Register Link -->
     <div class="mt-7 pt-5 border-t border-border text-xs text-muted-foreground text-center leading-relaxed js-anim" id="anim-footer-link">
         {{ __('Need a business account?') }}
-        <a href="{{ config('services.marketing.register_url', env('MARKETING_REGISTER_URL', rtrim(env('MARKETING_URL', 'http://localhost:8080'), '/') . '/register')) }}"
+        <a href="{{ config('services.marketing.register_url', env('MARKETING_REGISTER_URL', rtrim(env('MARKETING_URL', 'https://apeironsystem.web.id'), '/') . '/register')) }}"
             class="text-foreground font-semibold hover:underline underline-offset-4 ml-1">
             {{ __('Register your business') }}
         </a>
