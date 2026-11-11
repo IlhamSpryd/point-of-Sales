@@ -40,6 +40,16 @@ class MetricRegistryTest extends TestCase
             MetricRegistry::KPI_SHRINKAGE_PCT,
             MetricRegistry::KPI_LABOR_COST_PCT,
             MetricRegistry::KPI_OEE,
+            MetricRegistry::KPI_ARPC,
+            MetricRegistry::KPI_REPEAT_PURCHASE_RATE,
+            MetricRegistry::KPI_BOM_VARIANCE,
+            MetricRegistry::KPI_ORDER_CHANNEL_MIX,
+            MetricRegistry::KPI_TABLE_OCCUPANCY_RATE,
+            MetricRegistry::KPI_KDS_SLA_BREACH,
+            MetricRegistry::KPI_GMROI,
+            MetricRegistry::KPI_ABC_ANALYSIS,
+            MetricRegistry::KPI_NEAR_EXPIRED_ALERT,
+            MetricRegistry::KPI_SALES_TARGET_ATTAINMENT,
         ];
 
         foreach ($expectedCodes as $code) {
@@ -124,5 +134,73 @@ class MetricRegistryTest extends TestCase
         // Growth & Contribution
         $this->assertSame('50.00', $this->registry->calculateGrowthPct('300000.00', '200000.00'));
         $this->assertSame('25.00', $this->registry->calculateContributionPct('25000.00', '100000.00'));
+    }
+
+    public function test_shrinkage_calculation_from_adjustments(): void
+    {
+        // 50k damage + 30k expired + 20k opname loss = 100k shrinkage over 2.000.000 stock valuation = 5.00%
+        $rate = $this->registry->calculateShrinkageFromAdjustments([
+            ['type' => 'DAMAGE', 'loss_value' => '50000.00'],
+            ['type' => 'EXPIRED', 'loss_value' => '30000.00'],
+            ['type' => 'OPNAME_LOSS', 'loss_value' => '20000.00'],
+        ], '2000000.00');
+        $this->assertSame('5.00', $rate);
+
+        // Zero valuation edge case
+        $zeroVal = $this->registry->calculateShrinkageFromAdjustments([
+            ['type' => 'DAMAGE', 'loss_value' => '10000.00'],
+        ], '0.00');
+        $this->assertSame('0.00', $zeroVal);
+    }
+
+    public function test_crm_arpc_and_repeat_purchase_rate(): void
+    {
+        // ARPC: Rp 1.500.000 / 10 unique customers = Rp 150.000
+        $arpc = $this->registry->calculateArpc('1500000.00', 10);
+        $this->assertSame('150000.00', $arpc);
+        $this->assertSame('0.00', $this->registry->calculateArpc('1500000.00', 0));
+
+        // Repeat Rate: 25 repeat customers / 100 total customers = 25.00%
+        $repeatRate = $this->registry->calculateRepeatPurchaseRate(25, 100);
+        $this->assertSame('25.00', $repeatRate);
+        $this->assertSame('0.00', $this->registry->calculateRepeatPurchaseRate(5, 0));
+    }
+
+    public function test_fnb_intelligence_bom_variance_spend_per_cover_and_sla(): void
+    {
+        // BOM Variance: Actual 550.000 - Theoretical 500.000 = +50.000 variance (over-portioning/waste)
+        $variance = $this->registry->calculateBomVariance('550000.00', '500000.00');
+        $this->assertSame('50000.00', $variance);
+
+        // Spend Per Cover: Rp 1.200.000 / 8 covers = Rp 150.000 per pax
+        $spend = $this->registry->calculateSpendPerCover('1200000.00', 8);
+        $this->assertSame('150000.00', $spend);
+        $this->assertSame('0.00', $this->registry->calculateSpendPerCover('100000.00', 0));
+
+        // SLA Breach: 3 breached tickets / 30 total tickets = 10.00%
+        $sla = $this->registry->calculateSlaBreachRate(3, 30);
+        $this->assertSame('10.00', $sla);
+        $this->assertSame('0.00', $this->registry->calculateSlaBreachRate(2, 0));
+    }
+
+    public function test_retail_gmroi(): void
+    {
+        // GMROI: Gross Profit 250.000 / Average Inventory 100.000 = 2.50
+        $gmroi = $this->registry->calculateGmroi('250000.00', '100000.00');
+        $this->assertSame('2.50', $gmroi);
+        $this->assertSame('0.00', $this->registry->calculateGmroi('250000.00', '0.00'));
+    }
+
+    public function test_target_attainment_and_run_rate_projection(): void
+    {
+        // Target Attainment: Actual 75.000.000 / Target 100.000.000 = 75.00%
+        $attainment = $this->registry->calculateTargetAttainment('75000000.00', '100000000.00');
+        $this->assertSame('75.00', $attainment);
+        $this->assertSame('0.00', $this->registry->calculateTargetAttainment('1000000.00', '0.00'));
+
+        // Run-rate projection: On day 10 of a 30-day month, current revenue is 30.000.000 -> (30.000.000 / 10) * 30 = 90.000.000
+        $projected = $this->registry->calculateRunRateProjection('30000000.00', 10, 30);
+        $this->assertSame('90000000.00', $projected);
+        $this->assertSame('0.00', $this->registry->calculateRunRateProjection('30000000.00', 0, 30));
     }
 }

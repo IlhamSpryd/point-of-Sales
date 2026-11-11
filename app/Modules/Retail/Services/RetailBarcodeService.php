@@ -54,6 +54,55 @@ class RetailBarcodeService
     }
 
     /**
+     * Memeriksa apakah barcode merupakan barcode timbangan elektronik (variable measure / scale barcode).
+     * Standar GS1 Retail: Prefix 02 (weight-embedded) atau 20 (price-embedded) dengan panjang 13 digit numerik.
+     */
+    public function isScaleBarcode(string $barcode): bool
+    {
+        $clean = trim($barcode);
+        if (! preg_match('/^\d{13}$/', $clean)) {
+            return false;
+        }
+
+        $prefix = substr($clean, 0, 2);
+        $validPrefixes = ['02', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29'];
+
+        return in_array($prefix, $validPrefixes, true);
+    }
+
+    /**
+     * Mengurai barcode timbangan digital supermarket (TASK-P2-02).
+     *
+     * @return array{is_scale: bool, prefix: string, item_code: string, weight_grams: int, weight_kg: numeric-string, embedded_price: int, check_digit: int}|null
+     */
+    public function parseScaleBarcode(string $barcode): ?array
+    {
+        $clean = trim($barcode);
+        if (! $this->isScaleBarcode($clean)) {
+            return null;
+        }
+
+        $prefix = substr($clean, 0, 2);
+        $itemCode = substr($clean, 2, 5); // 5 digit kode PLU / produk
+        $dataPart = substr($clean, 7, 5); // 5 digit bobot atau harga
+        $checkDigit = (int) substr($clean, 12, 1);
+
+        $dataInt = (int) $dataPart;
+        // Konversi ke bobot kilogram dengan presisi 3 desimal
+        $weightKg = bcdiv((string) $dataInt, '1000', 3);
+
+        return [
+            'is_scale' => true,
+            'prefix' => $prefix,
+            'item_code' => $itemCode,
+            'weight_grams' => $dataInt,
+            'weight_kg' => $weightKg,
+            'embedded_price' => $dataInt,
+            'check_digit' => $checkDigit,
+        ];
+    }
+
+    /**
      * Menghasilkan barcode retail standar EAN-13 internal (prefix '20').
      */
     public function generateInternalBarcode(): string

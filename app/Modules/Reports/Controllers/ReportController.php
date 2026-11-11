@@ -36,20 +36,10 @@ class ReportController extends Controller
         $startOfWeek = Carbon::now()->startOfWeek();
         $startOfMonth = Carbon::now()->startOfMonth();
 
-        // Classic Data Recapitulation
-        $dailySales = $this->reportService->getSalesSummary($today->copy()->startOfDay(), $today->copy()->endOfDay());
-        $weeklySales = $this->reportService->getSalesSummary($startOfWeek, $today);
-        $monthlySales = $this->reportService->getSalesSummary($startOfMonth, $today);
-        $recentOrders = $this->reportService->getRecentPaidOrders($startOfMonth, $today);
-
-        // Date Range Filter
+        // Date Range Filter & Data Recapitulation (TASK-P1-05: Cleaned up orphan unused summary queries)
         $customStart = ($request->filled('start')) ? Carbon::parse($request->start)->startOfDay() : $startOfMonth;
         $customEnd = ($request->filled('end')) ? Carbon::parse($request->end)->endOfDay() : $today->copy()->endOfDay();
-
-        if ($request->filled('start') && $request->filled('end')) {
-            $monthlySales = $this->reportService->getSalesSummary($customStart, $customEnd);
-            $recentOrders = $this->reportService->getRecentPaidOrders($customStart, $customEnd);
-        }
+        $recentOrders = $this->reportService->getRecentPaidOrders($customStart, $customEnd);
 
         if ($request->has('export') && $request->export === 'csv') {
             return $this->reportService->exportCsv($customStart, $customEnd);
@@ -82,9 +72,6 @@ class ReportController extends Controller
 
         return view('reports.sales', compact(
             'title',
-            'dailySales',
-            'weeklySales',
-            'monthlySales',
             'recentOrders',
             'detailedSummary',
             'paymentBreakdown',

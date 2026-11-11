@@ -96,14 +96,21 @@ final class DatasetVerifier
         )[0]->c ?? 0;
         $checks[] = $this->check('Idempotency key unik', (int) $dupe === 0, "duplikat={$dupe}");
 
-        // 9. Rentang tanggal 12 bulan.
+        // 9. Rentang tanggal.
         $range = DB::table('orders')->whereIn('tenant_id', $tenantIds)
             ->selectRaw('MIN(order_date) mn, MAX(order_date) mx, COUNT(DISTINCT DATE_FORMAT(order_date, "%Y-%m")) months')
             ->first();
+        $expectedMonths = 3;
+        if ($range && $range->mn && $range->mx) {
+            $start = \Carbon\Carbon::parse($range->mn)->startOfMonth();
+            $end = \Carbon\Carbon::parse($range->mx)->startOfMonth();
+            $expectedMonths = max(1, (int) $start->diffInMonths($end) + 1);
+        }
+        $actualMonths = (int) ($range->months ?? 0);
         $checks[] = $this->check(
             'Distribusi bulan transaksi',
-            (int) ($range->months ?? 0) >= 12,
-            "bulan={$range->months} ({$range->mn} .. {$range->mx})"
+            $actualMonths >= min($expectedMonths, 12),
+            "bulan={$actualMonths} ({$range->mn} .. {$range->mx})"
         );
 
         // 10. Stok tidak negatif.

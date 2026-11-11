@@ -27,8 +27,6 @@ class DashboardV2RedesignTest extends TestCase
 
     private Store $store1;
 
-    private Store $store2;
-
     private User $ownerUser;
 
     protected function afterSubclassSetUp(): void
@@ -51,7 +49,7 @@ class DashboardV2RedesignTest extends TestCase
             'is_active' => true,
         ]);
 
-        $this->store2 = Store::create([
+        Store::create([
             'tenant_id' => $this->tenant->id,
             'name' => 'Cabang Senopati',
             'code' => 'SNP-02',

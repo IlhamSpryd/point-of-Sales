@@ -128,9 +128,12 @@
                                     <x-ui.table-action-item icon="visibility" wire:click="viewOrder({{ $so->id }})" aria-label="View SO Details">
                                         View SO Details
                                     </x-ui.table-action-item>
+                                    <x-ui.table-action-item icon="local_shipping" wire:click="openShippingRateModal({{ $so->id }})" aria-label="Kalkulator Ongkir 3PL">
+                                        Kalkulator Ongkir 3PL
+                                    </x-ui.table-action-item>
                                     @if(in_array($so->status->value, ['CONFIRMED', 'PARTIALLY_FULFILLED']))
                                         @can('fulfill', $so)
-                                        <x-ui.table-action-item icon="local_shipping" wire:click="openFulfillModal({{ $so->id }})" aria-label="Process Fulfillment / Dispatch">
+                                        <x-ui.table-action-item icon="check_circle" wire:click="openFulfillModal({{ $so->id }})" aria-label="Process Fulfillment / Dispatch">
                                             Fulfill / Dispatch
                                         </x-ui.table-action-item>
                                         @endcan
@@ -263,9 +266,14 @@
                                     <td class="p-3 text-zinc-400">{{ $line->line_number }}</td>
                                     <td class="p-3 font-sans">
                                         <div class="font-medium text-zinc-800 dark:text-zinc-200">{{ $line->description ?: ($line->product?->product_name ?? $line->product?->name) }}</div>
-                                        <div class="text-[10px] text-zinc-400 font-sans">{{ $line->product?->product_code ?? $line->product?->sku }}</div>
+                                        <div class="text-[10px] text-zinc-400 font-sans flex items-center gap-1.5">
+                                            <span>{{ $line->product?->product_code ?? $line->product?->sku }}</span>
+                                            @if($line->uom)
+                                                <span class="text-[10px] uppercase font-medium text-muted-foreground">({{ $line->uom->code ?? $line->uom->name }})</span>
+                                            @endif
+                                        </div>
                                     </td>
-                                    <td class="p-3 text-right tabular-nums">{{ number_format((float) $line->ordered_qty, 2) }}</td>
+                                    <td class="p-3 text-right tabular-nums">{{ number_format((float) $line->ordered_qty, 2) }} <span class="text-[10px] text-zinc-400">{{ $line->uom?->code }}</span></td>
                                     <td class="p-3 text-right text-blue-600 tabular-nums">{{ number_format((float) $line->reserved_qty, 2) }}</td>
                                     <td class="p-3 text-right text-emerald-600 tabular-nums">{{ number_format((float) $line->fulfilled_qty, 2) }}</td>
                                     <td class="p-3 text-right text-rose-600 tabular-nums">{{ number_format((float) $line->cancelled_qty, 2) }}</td>
@@ -356,6 +364,99 @@
                 </x-ui.button>
                 <x-ui.button variant="danger" wire:click="executeCancellation">
                     Confirm Cancellation
+                </x-ui.button>
+            </div>
+        </x-slot:footer>
+    </x-ui.modal>
+
+    <!-- Modal 4: 3PL Shipping Rate Calculator (TASK-P1-04) -->
+    <x-ui.modal wire:model="showShippingRateModal" maxWidth="2xl">
+        <x-slot:title>
+            Kalkulator Ongkir Kurir 3PL (JNE, SiCepat, J&T, POS)
+        </x-slot:title>
+
+        <x-slot:content>
+            <div class="space-y-4">
+                @if ($selectedSO)
+                    <div class="p-3 rounded-xl bg-muted border border-border text-xs flex justify-between items-center">
+                        <div>
+                            <span class="font-bold text-foreground">SO: {{ $selectedSO->so_number }}</span>
+                            <span class="text-muted-foreground ml-2">({{ $selectedSO->customer->name ?? 'Customer' }})</span>
+                        </div>
+                        <span class="text-muted-foreground">Kanal: B2B Sales</span>
+                    </div>
+                @endif
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <div>
+                        <x-ui.label for="originCity">Kota Asal (Gudang/Toko)</x-ui.label>
+                        <input id="originCity" type="text" wire:model="shippingOriginCity" class="form-input w-full p-2.5 rounded-xl border border-border text-xs font-semibold">
+                    </div>
+                    <div>
+                        <x-ui.label for="originPostalCode">Kode Pos Asal</x-ui.label>
+                        <input id="originPostalCode" type="text" wire:model="shippingOriginPostalCode" class="form-input w-full p-2.5 rounded-xl border border-border text-xs font-mono">
+                    </div>
+                    <div>
+                        <x-ui.label for="destCity">Kota Tujuan (Customer)</x-ui.label>
+                        <input id="destCity" type="text" wire:model="shippingDestCity" class="form-input w-full p-2.5 rounded-xl border border-border text-xs font-semibold">
+                    </div>
+                    <div>
+                        <x-ui.label for="destPostalCode">Kode Pos Tujuan</x-ui.label>
+                        <input id="destPostalCode" type="text" wire:model="shippingDestPostalCode" class="form-input w-full p-2.5 rounded-xl border border-border text-xs font-mono">
+                    </div>
+                    <div class="sm:col-span-2">
+                        <x-ui.label for="weightGrams">Estimasi Berat Paket (Gram)</x-ui.label>
+                        <input id="weightGrams" type="number" step="100" min="100" wire:model="shippingWeightGrams" class="form-input w-full p-2.5 rounded-xl border border-border text-xs font-semibold font-sans tabular-nums">
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-2">
+                    <x-ui.button variant="primary" wire:click="calculateShippingRates" wire:loading.attr="disabled" class="gap-1.5 text-xs">
+                        <span wire:loading wire:target="calculateShippingRates" class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/30 border-t-white"></span>
+                        <span class="material-symbols-rounded text-[16px]">calculate</span>
+                        Hitung Tarif Seluruh Ekspedisi
+                    </x-ui.button>
+                </div>
+
+                @if (!empty($calculatedShippingRates))
+                    <div class="pt-3 border-t border-border space-y-2">
+                        <span class="text-xs font-bold text-foreground uppercase tracking-wider block">Hasil Perbandingan Tarif Kurir 3PL</span>
+                        <div class="space-y-1.5 max-h-56 overflow-y-auto">
+                            @foreach ($calculatedShippingRates as $rate)
+                                <div class="p-2.5 rounded-xl border border-border bg-card flex justify-between items-center text-xs">
+                                    <div class="flex items-center gap-2.5">
+                                        <span class="px-2 py-0.5 rounded bg-muted text-[11px] font-bold uppercase text-foreground">
+                                            {{ $rate->courierCode }}
+                                        </span>
+                                        <div>
+                                            <span class="font-bold text-foreground block">{{ $rate->serviceName }}</span>
+                                            <span class="text-[11px] text-muted-foreground">{{ $rate->etd ?? '1-3 hari' }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <div class="text-right">
+                                            <span class="font-bold font-sans tabular-nums text-foreground text-sm block">
+                                                Rp {{ number_format((float) ($rate->totalCost ?? $rate->cost), 0, ',', '.') }}
+                                            </span>
+                                        </div>
+                                        <button type="button" 
+                                                wire:click="applyShippingRate('{{ $rate->courierCode }}', '{{ $rate->serviceName }}', {{ (float) ($rate->totalCost ?? $rate->cost) }})" 
+                                                class="inline-flex items-center px-2.5 py-1 rounded-lg bg-primary text-primary-foreground font-semibold text-[11px] hover:bg-primary/90 transition-colors">
+                                            Pilih
+                                        </button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </x-slot:content>
+
+        <x-slot:footer>
+            <div class="flex justify-end">
+                <x-ui.button variant="secondary" wire:click="closeShippingRateModal">
+                    Tutup
                 </x-ui.button>
             </div>
         </x-slot:footer>

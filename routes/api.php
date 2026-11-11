@@ -2,6 +2,11 @@
 
 use App\Http\Controllers\Api\ProvisioningController;
 use App\Http\Controllers\Api\WebhookController;
+use App\Http\Controllers\Api\V1\AiAssistantApiController;
+use App\Http\Controllers\Api\V1\InventoryApiController;
+use App\Http\Controllers\Api\V1\OrderApiController;
+use App\Http\Controllers\Api\V1\ProductApiController;
+use App\Http\Controllers\Api\V1\WebhookSubscriptionApiController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\HealthCheckController;
 use App\Modules\Integration\Controllers\PaymentNotificationController;
@@ -40,14 +45,26 @@ Route::get('/health/ready', [HealthCheckController::class, 'ready'])->name('api.
 Route::post('/payment/notification', [PaymentNotificationController::class, 'handle'])
     ->name('api.payment.notification');
 
-// Scoped Sanctum REST API for external integrations (e.g. n8n)
-Route::middleware(['auth:sanctum', 'tenant.context'])->group(function () {
-    Route::get('/v1/orders', function (Request $request, SanctumScopeGuardService $guard) {
-        $guard->authorize($request, 'orders:read');
+// Scoped Sanctum REST API for external integrations (e.g. n8n & external ERP)
+Route::middleware(['auth:sanctum', 'tenant.context'])->prefix('v1')->group(function () {
+    // Orders API
+    Route::get('/orders', [OrderApiController::class, 'index'])->name('api.v1.orders.index');
+    Route::get('/orders/{id}', [OrderApiController::class, 'show'])->name('api.v1.orders.show');
 
-        return response()->json([
-            'status' => 'OK',
-            'orders' => [],
-        ]);
-    })->name('api.v1.orders');
+    // Products Catalog API
+    Route::get('/products', [ProductApiController::class, 'index'])->name('api.v1.products.index');
+
+    // Inventory Balances API
+    Route::get('/inventory/balances', [InventoryApiController::class, 'balances'])->name('api.v1.inventory.balances');
+
+    // Webhook Subscriptions API
+    Route::get('/webhooks/subscriptions', [WebhookSubscriptionApiController::class, 'index'])->name('api.v1.webhooks.subscriptions.index');
+    Route::post('/webhooks/subscriptions', [WebhookSubscriptionApiController::class, 'store'])->name('api.v1.webhooks.subscriptions.store');
+    Route::delete('/webhooks/subscriptions/{id}', [WebhookSubscriptionApiController::class, 'destroy'])->name('api.v1.webhooks.subscriptions.destroy');
+
+    // AI Business Assistant API (Human-in-the-Loop & Read-Only Insights)
+    Route::get('/ai/insights/sales-trends', [AiAssistantApiController::class, 'salesTrends'])->name('api.v1.ai.sales-trends');
+    Route::get('/ai/insights/inventory-anomalies', [AiAssistantApiController::class, 'inventoryAnomalies'])->name('api.v1.ai.inventory-anomalies');
+    Route::get('/ai/recommendations', [AiAssistantApiController::class, 'recommendations'])->name('api.v1.ai.recommendations');
+    Route::post('/ai/query', [AiAssistantApiController::class, 'query'])->name('api.v1.ai.query');
 });

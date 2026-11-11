@@ -174,7 +174,7 @@ class JournalEntryManager extends Component
         $this->validate([
             'postingDate' => ['required', 'date'],
             'notes' => ['required', 'string', 'max:500'],
-            'journalType' => ['required', 'in:MANUAL_ADJUSTMENT,OPENING_BALANCE'],
+            'journalType' => ['required', 'in:MANUAL_ADJUSTMENT,OPENING_BALANCE,GENERAL'],
             'lines' => ['required', 'array', 'min:2'],
             'lines.*.account_id' => ['required', 'integer'],
             'lines.*.debit_amount' => ['required', 'numeric', 'min:0'],

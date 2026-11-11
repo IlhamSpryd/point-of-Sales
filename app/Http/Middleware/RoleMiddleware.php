@@ -30,8 +30,22 @@ class RoleMiddleware
             abort(403, 'Anda tidak memiliki hak akses untuk halaman ini.');
         }
 
+        // Full access untuk Super Admin / Owner dengan wildcard permission
+        if ($user->hasPermission('*') || (bool) ($user->role->is_admin ?? false)) {
+            return $next($request);
+        }
+
         // Periksa apakah role user cocok dengan salah satu role yang diizinkan
         if (in_array($user->role->name, $roles, true)) {
+            return $next($request);
+        }
+
+        $routeName = (string) ($request->route()?->getName() ?? '');
+
+        // Dynamic Dashboard RBAC: Izinkan seluruh role (default & custom) yang memiliki permission 'dashboard'
+        // atau konfigurasi dashboard_archetype untuk mengakses endpoint dasbor
+        if (in_array($routeName, ['dashboard', 'dashboard.approve-ticket', 'dashboard.store-targets.save'], true)
+            && ($user->hasPermission('dashboard') || $user->hasPermission('dashboard.action.approve_void_discount') || ! empty($user->role->dashboard_archetype))) {
             return $next($request);
         }
 
@@ -39,7 +53,6 @@ class RoleMiddleware
         // Jika bukan role bawaan tetapi memiliki izin eksplisit pada rute yang sedang diakses
         $canonicalRoles = ['Owner', 'Admin', 'Manager', 'Finance', 'Sales', 'Kasir', 'Waiter', 'Barista', 'Inventory', 'Supervisor', 'Cook'];
         if (! in_array($user->role->name, $canonicalRoles, true)) {
-            $routeName = (string) ($request->route()?->getName() ?? '');
             if ($routeName !== '' && $this->customRoleHasRoutePermission($user, $routeName)) {
                 return $next($request);
             }

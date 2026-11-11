@@ -1,6 +1,7 @@
 import focus from '@alpinejs/focus';
 import gsap from 'gsap';
 import Swal from './vendor/swal-bridge';
+import erpChart from './components/erpChart';
 import { erpMotion, initErpMotion, registerGsapAlpineDirectives } from './motion/erp-motion';
 import { initSidebarPersistence } from './navigation/sidebar-persistence';
 
@@ -9,6 +10,7 @@ if (typeof window !== 'undefined') {
     window.Swal = Swal;
     window.erpMotion = erpMotion;
     window.ApeironMotion = erpMotion;
+    window.erpChart = erpChart;
 }
 
 initErpMotion();
@@ -21,6 +23,7 @@ document.addEventListener('alpine:init', () => {
         } catch (_) {
             // Plugin already registered
         }
+        window.Alpine.data('erpChart', erpChart);
         registerGsapAlpineDirectives(window.Alpine);
     }
 });

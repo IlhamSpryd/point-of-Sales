@@ -71,6 +71,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        ini_set('unserialize_callback_func', 'spl_autoload_call');
+
         Auth::provider('eloquent', function ($app, array $config) {
             return new TenantAwareUserProvider($app['hash'], $config['model']);
         });

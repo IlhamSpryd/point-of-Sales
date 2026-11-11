@@ -28,6 +28,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * @property int $id
  * @property int $tenant_id
+ * @property int|null $company_id
  * @property string $name
  * @property string|null $code
  * @property string $timezone
@@ -53,17 +54,19 @@ class Store extends Model
     {
         static::created(function ($model) {
             // Auto-create default operational unit for this store
-            DB::table('operational_units')->insertOrIgnore([
-                'tenant_id' => $model->tenant_id,
-                'store_id' => $model->id,
-                'name' => 'Main Operational Unit',
-                'code' => 'MAIN',
-                'unit_type' => 'checkout_retail',
-                'is_default' => true,
-                'is_active' => true,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            if (\Illuminate\Support\Facades\Schema::hasTable('operational_units')) {
+                DB::table('operational_units')->insertOrIgnore([
+                    'tenant_id' => $model->tenant_id,
+                    'store_id' => $model->id,
+                    'name' => 'Main Operational Unit',
+                    'code' => 'MAIN',
+                    'unit_type' => 'checkout_retail',
+                    'is_default' => true,
+                    'is_active' => true,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
             // Ingredient bersifat tenant-scoped, jadi operasi ini hanya aman
             // dijalankan ketika tenant context sudah ada (bukan di harness/boot).
             if (app(TenantContext::class)->getTenantId() !== (int) $model->tenant_id) {

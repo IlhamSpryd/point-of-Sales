@@ -85,7 +85,7 @@
                             </td>
                             <td class="px-4 py-3">
                                 <span class="font-semibold text-foreground text-xs">{{ $journal->source_module }}</span>
-                                <span class="text-[10px] text-muted-foreground block">{{ $journal->journal_type->value }}</span>
+                                <span class="text-[10px] text-muted-foreground block">{{ $journal->journal_type instanceof \BackedEnum ? $journal->journal_type->value : ($journal->journal_type ?? '-') }}</span>
                             </td>
                             <td class="px-4 py-3 text-muted-foreground max-w-xs truncate text-xs" title="{{ $journal->notes }}">
                                 {{ $journal->notes ?: '-' }}
@@ -152,6 +152,7 @@
                             <select wire:model="journalType"
                                     class="w-full px-3 py-2 text-xs rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-900 dark:text-zinc-100">
                                 <option value="MANUAL_ADJUSTMENT">MANUAL_ADJUSTMENT (Adjusting Journal)</option>
+                                <option value="GENERAL">GENERAL (General Journal)</option>
                                 <option value="OPENING_BALANCE">OPENING_BALANCE (Opening Balance)</option>
                             </select>
                             @error('journalType') <span class="text-[10px] text-rose-500 mt-1 block">{{ $message }}</span> @enderror

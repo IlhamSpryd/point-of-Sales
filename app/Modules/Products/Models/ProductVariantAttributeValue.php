@@ -6,9 +6,6 @@ namespace App\Modules\Products\Models;
 
 use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
-use App\Models\ProductAttribute;
-use App\Models\ProductAttributeValue;
-use App\Models\ProductVariant;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

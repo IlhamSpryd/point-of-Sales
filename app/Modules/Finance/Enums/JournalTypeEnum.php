@@ -6,6 +6,7 @@ namespace App\Modules\Finance\Enums;
 
 enum JournalTypeEnum: string
 {
+    case GENERAL = 'GENERAL';
     case SYSTEM_AUTO = 'SYSTEM_AUTO';
     case MANUAL_ADJUSTMENT = 'MANUAL_ADJUSTMENT';
     case REVERSAL = 'REVERSAL';

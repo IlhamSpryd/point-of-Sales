@@ -22,6 +22,22 @@
             ],
         ],
         [
+            'id' => 'dashboard_widgets',
+            'title' => 'Dashboard Widgets & Operational Scope',
+            'icon' => 'dashboard_customize',
+            'scope' => 'Tenant / Branch',
+            'permissions' => [
+                ['code' => 'dashboard.scope.all_stores', 'label' => 'Multi-Branch Scope Access', 'desc' => 'Allow viewing consolidated multi-branch data instead of single assigned branch.', 'sod' => true],
+                ['code' => 'dashboard.metric.revenue', 'label' => 'Revenue & Net Sales Metric', 'desc' => 'Display gross/net sales, average transaction value, and target attainment.', 'sod' => false],
+                ['code' => 'dashboard.metric.profit_margin', 'label' => 'Gross Profit & Margin Metric', 'desc' => 'Display gross profit, COGS analysis, and margin percentage metrics.', 'sod' => true],
+                ['code' => 'dashboard.metric.cash_variance', 'label' => 'Cash Drawer Variance Metric', 'desc' => 'Monitor shift cash drawer overages/shortages and variance alerts.', 'sod' => true],
+                ['code' => 'dashboard.metric.inventory_valuation', 'label' => 'Inventory Valuation & Low Stock', 'desc' => 'View inventory asset value, low stock warnings, and out-of-stock items.', 'sod' => false],
+                ['code' => 'dashboard.metric.finance_gl', 'label' => 'General Ledger Financial Health', 'desc' => 'Access operating cash, AR/AP balances, and pending reconciliation totals.', 'sod' => true],
+                ['code' => 'dashboard.metric.hr_payroll', 'label' => 'HR & Workforce Cost Metric', 'desc' => 'Display active shift headcounts, overtime hours, and monthly payroll budget.', 'sod' => true],
+                ['code' => 'dashboard.action.approve_void_discount', 'label' => 'Supervisor Approval Authorization', 'desc' => 'Authorize supervisor PIN overrides for void orders, discounts, and shift variances.', 'sod' => true],
+            ],
+        ],
+        [
             'id' => 'pos',
             'title' => 'POS & Frontline Operations',
             'icon' => 'point_of_sale',

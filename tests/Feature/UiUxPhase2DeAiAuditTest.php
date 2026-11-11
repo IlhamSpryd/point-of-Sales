@@ -14,6 +14,12 @@ class UiUxPhase2DeAiAuditTest extends TestCase
         $dashboardPath = resource_path('views/dashboard.blade.php');
         $this->assertFileExists($dashboardPath);
         $content = File::get($dashboardPath);
+        $partialsDir = resource_path('views/dashboard/partials');
+        if (File::isDirectory($partialsDir)) {
+            foreach (File::allFiles($partialsDir) as $partial) {
+                $content .= "\n" . File::get($partial->getPathname());
+            }
+        }
 
         // 1. Remove fake hardcoded SVG Bezier curves and dummy marker dots
         $this->assertStringNotContainsString('logisticsGradient', $content);

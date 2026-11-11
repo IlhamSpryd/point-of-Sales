@@ -9,7 +9,7 @@ use App\Models\PriceList;
 use App\Models\PriceListItem;
 use App\Models\Product;
 use App\Models\ProductVariant;
-use App\Models\StoreProductAssortment;
+use App\Modules\Products\Models\StoreProductAssortment;
 use App\Modules\Products\DataTransferObjects\PriceResolutionContextDto;
 use App\Modules\Products\DataTransferObjects\ResolvedPriceDto;
 use Carbon\Carbon;
@@ -77,17 +77,14 @@ class CatalogPriceResolverService
                 ->find($variantId);
         }
 
-        // 0. Prioritas 0 — Harga Terbuka (Open Price)
+        // 0. Prioritas 0 — Harga Khusus / Terbuka / Timbangan Digital (Custom / Open Price)
         if ($context->customPrice !== null) {
-            $isOpenPrice = (bool) ($variant?->is_open_price ?? $product?->is_open_price ?? false);
-            if ($isOpenPrice) {
-                return new ResolvedPriceDto(
-                    unitPrice: (float) $context->customPrice,
-                    baseUnitPrice: (float) $context->customPrice,
-                    pricingSource: ResolvedPriceDto::SOURCE_OPEN_PRICE,
-                    meta: ['tier' => 0, 'open_price' => true]
-                );
-            }
+            return new ResolvedPriceDto(
+                unitPrice: (float) $context->customPrice,
+                baseUnitPrice: (float) $context->customPrice,
+                pricingSource: ResolvedPriceDto::SOURCE_OPEN_PRICE,
+                meta: ['tier' => 0, 'custom_price' => true]
+            );
         }
 
         // Resolusi Customer Group jika customerId ada namun customerGroupId belum dioper
@@ -448,7 +445,7 @@ class CatalogPriceResolverService
     /**
      * Memeriksa ketersediaan produk di cabang tertentu.
      */
-    public function isAvailableInStore(Product $product, int|string|null $storeId = null, ?string $channel = null): bool
+    public function isAvailableInStore(Product|\App\Modules\Products\Models\Product $product, int|string|null $storeId = null, ?string $channel = null): bool
     {
         if (! $product->is_active || $product->status !== 'active') {
             return false;

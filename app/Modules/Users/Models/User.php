@@ -378,7 +378,12 @@ class User extends Authenticatable implements \Illuminate\Contracts\Auth\MustVer
             return true;
         }
 
-        return $this->hasPermission('stores.all');
+        return $this->hasPermission('stores.all') || $this->hasPermission('dashboard.scope.all_stores');
+    }
+
+    public function getDashboardArchetype(): string
+    {
+        return $this->role?->getDashboardArchetype() ?? 'executive';
     }
 
     /**

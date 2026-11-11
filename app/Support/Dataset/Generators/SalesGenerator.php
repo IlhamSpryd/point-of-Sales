@@ -493,7 +493,12 @@ final class SalesGenerator
 
         // ── Tutup shift: expected_cash dihitung dari ledger pembayaran ──
         foreach ($shifts as $shift) {
-            $cashSales = $paymentsByShift[$shift['id']] ?? 0;
+            $cashSales = $paymentsByShift[$shift['id']] ?? (int) DB::table('payments')
+                ->where('tenant_id', $tenantId)
+                ->where('shift_id', $shift['id'])
+                ->where('payment_method', 'cash')
+                ->where('status', 'captured')
+                ->sum('amount');
             $cashOut = (int) DB::table('cash_drawer_movements')
                 ->where('tenant_id', $tenantId)
                 ->where('shift_id', $shift['id'])

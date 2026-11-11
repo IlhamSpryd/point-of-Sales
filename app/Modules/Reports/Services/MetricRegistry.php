@@ -42,13 +42,47 @@ class MetricRegistry
 
     public const KPI_CUSTOMER_LIFETIME_VALUE = 'KPI-CRM-01';
 
+    public const KPI_ARPC = self::KPI_CUSTOMER_LIFETIME_VALUE;
+
+    public const KPI_REPEAT_PURCHASE_RATE = 'KPI-CRM-02';
+
     public const KPI_FOOD_COST_PCT = 'KPI-FNB-01';
 
+    public const KPI_BOM_VARIANCE = 'KPI-FNB-01-VAR';
+
+    public const KPI_CHANNEL_MIX = 'KPI-FNB-02';
+
+    public const KPI_ORDER_CHANNEL_MIX = self::KPI_CHANNEL_MIX;
+
+    public const KPI_TABLE_OCCUPANCY = 'KPI-FNB-03';
+
+    public const KPI_TABLE_OCCUPANCY_RATE = self::KPI_TABLE_OCCUPANCY;
+
+    public const KPI_KDS_SLA = 'KPI-FNB-04';
+
+    public const KPI_KDS_SLA_BREACH = self::KPI_KDS_SLA;
+
     public const KPI_SHRINKAGE_PCT = 'KPI-RTL-01';
+
+    public const KPI_SHRINKAGE_INV = 'KPI-INV-04';
+
+    public const KPI_GMROI = 'KPI-RTL-01-GMROI';
+
+    public const KPI_DEAD_STOCK = 'KPI-RTL-02';
+
+    public const KPI_ABC_ANALYSIS = self::KPI_DEAD_STOCK;
+
+    public const KPI_NEAR_EXPIRED = 'KPI-RTL-03';
+
+    public const KPI_NEAR_EXPIRED_ALERT = self::KPI_NEAR_EXPIRED;
 
     public const KPI_LABOR_COST_PCT = 'KPI-HRM-01';
 
     public const KPI_OEE = 'KPI-MFG-01';
+
+    public const KPI_TARGET_ATTAINMENT = 'KPI-PLN-01';
+
+    public const KPI_SALES_TARGET_ATTAINMENT = self::KPI_TARGET_ATTAINMENT;
 
     public function __construct(
         protected TenantContext $tenantContext,
@@ -184,10 +218,20 @@ class MetricRegistry
             self::KPI_CUSTOMER_LIFETIME_VALUE => [
                 'code' => self::KPI_CUSTOMER_LIFETIME_VALUE,
                 'key' => 'customer_lifetime_value',
-                'name' => 'Customer Lifetime Value (CLV)',
-                'formula' => 'Total Customer Revenue / Total Tracked Customers',
+                'name' => 'Customer Lifetime Value (CLV / ARPC)',
+                'formula' => 'Total Registered Customer Net Sales / Total Tracked Customers',
                 'authoritative_source' => 'orders, customers',
                 'unit' => 'IDR',
+                'scale' => 2,
+                'gl_account_code' => null,
+            ],
+            self::KPI_REPEAT_PURCHASE_RATE => [
+                'code' => self::KPI_REPEAT_PURCHASE_RATE,
+                'key' => 'repeat_purchase_rate',
+                'name' => 'Customer Repeat Purchase Rate (%)',
+                'formula' => '(Customers with >= 2 Orders / Total Transacting Customers) * 100',
+                'authoritative_source' => 'orders, customers',
+                'unit' => '%',
                 'scale' => 2,
                 'gl_account_code' => null,
             ],
@@ -201,15 +245,105 @@ class MetricRegistry
                 'scale' => 2,
                 'gl_account_code' => '5102',
             ],
+            self::KPI_BOM_VARIANCE => [
+                'code' => self::KPI_BOM_VARIANCE,
+                'key' => 'bom_food_cost_variance',
+                'name' => 'BOM Food Cost Variance',
+                'formula' => 'Actual Food Cost (Usage + Spoilage) - Theoretical Food Cost (Sales * Recipe)',
+                'authoritative_source' => 'product_ingredients, ingredient_stock_movements',
+                'unit' => 'IDR',
+                'scale' => 2,
+                'gl_account_code' => '5102',
+            ],
+            self::KPI_CHANNEL_MIX => [
+                'code' => self::KPI_CHANNEL_MIX,
+                'key' => 'channel_order_mix',
+                'name' => 'Order Type & Channel Mix (%)',
+                'formula' => '(Channel Net Sales / Total Net Sales) * 100',
+                'authoritative_source' => 'orders.order_type, orders.channel',
+                'unit' => '%',
+                'scale' => 2,
+                'gl_account_code' => null,
+            ],
+            self::KPI_TABLE_OCCUPANCY => [
+                'code' => self::KPI_TABLE_OCCUPANCY,
+                'key' => 'table_occupancy_revpash',
+                'name' => 'Table Occupancy & Spend Per Cover',
+                'formula' => 'Dine-In Net Sales / Total Pax Count',
+                'authoritative_source' => 'tables, orders.pax_count',
+                'unit' => 'IDR/Pax',
+                'scale' => 2,
+                'gl_account_code' => null,
+            ],
+            self::KPI_KDS_SLA => [
+                'code' => self::KPI_KDS_SLA,
+                'key' => 'kds_sla_breach_rate',
+                'name' => 'KDS SLA Breach Rate (%)',
+                'formula' => '(Tickets > 15 Mins / Total Kitchen Tickets) * 100',
+                'authoritative_source' => 'order_items.kds_status, order_items.kds_completed_at',
+                'unit' => '%',
+                'scale' => 2,
+                'gl_account_code' => null,
+            ],
             self::KPI_SHRINKAGE_PCT => [
                 'code' => self::KPI_SHRINKAGE_PCT,
                 'key' => 'shrinkage_pct',
                 'name' => 'Inventory Shrinkage (%)',
-                'formula' => '(Damaged or Lost Stock Value / Gross Sales) * 100',
-                'authoritative_source' => 'stock_adjustments',
+                'formula' => '(Damaged, Expired or Opname Lost Stock Value / Total Stock Valuation) * 100',
+                'authoritative_source' => 'stock_adjustments (DAMAGE, EXPIRED, OPNAME_LOSS)',
                 'unit' => '%',
                 'scale' => 2,
                 'gl_account_code' => '5201',
+            ],
+            self::KPI_SHRINKAGE_INV => [
+                'code' => self::KPI_SHRINKAGE_INV,
+                'key' => 'shrinkage_inv_pct',
+                'name' => 'Inventory Shrinkage Rate (%)',
+                'formula' => '(Damaged, Expired or Opname Lost Stock Value / Total Stock Valuation) * 100',
+                'authoritative_source' => 'stock_adjustments (DAMAGE, EXPIRED, OPNAME_LOSS)',
+                'unit' => '%',
+                'scale' => 2,
+                'gl_account_code' => '5201',
+            ],
+            self::KPI_GMROI => [
+                'code' => self::KPI_GMROI,
+                'key' => 'gmroi',
+                'name' => 'Gross Margin Return on Inventory Investment (GMROI)',
+                'formula' => 'Gross Profit / Average Inventory Valuation',
+                'authoritative_source' => 'order_items, product_stock_balances',
+                'unit' => 'Ratio',
+                'scale' => 2,
+                'gl_account_code' => null,
+            ],
+            self::KPI_DEAD_STOCK => [
+                'code' => self::KPI_DEAD_STOCK,
+                'key' => 'dead_stock_valuation',
+                'name' => 'Dead Stock Risk Valuation',
+                'formula' => 'SUM(Current Stock Qty * Unit Cost) for SKUs with 0 sales in 60+ days',
+                'authoritative_source' => 'product_stock_balances, orders',
+                'unit' => 'IDR',
+                'scale' => 2,
+                'gl_account_code' => '1140',
+            ],
+            self::KPI_NEAR_EXPIRED => [
+                'code' => self::KPI_NEAR_EXPIRED,
+                'key' => 'near_expired_valuation',
+                'name' => 'Near-Expired Batches Risk Valuation',
+                'formula' => 'SUM(Batch Quantity * Unit Cost) for Expiry <= 30 days',
+                'authoritative_source' => 'product_batches, ingredient_batches',
+                'unit' => 'IDR',
+                'scale' => 2,
+                'gl_account_code' => '1140',
+            ],
+            self::KPI_TARGET_ATTAINMENT => [
+                'code' => self::KPI_TARGET_ATTAINMENT,
+                'key' => 'target_attainment_pct',
+                'name' => 'Target Attainment & Run-Rate Projection',
+                'formula' => '(Actual Net Sales / Store Target Sales) * 100',
+                'authoritative_source' => 'store_targets, orders',
+                'unit' => '%',
+                'scale' => 2,
+                'gl_account_code' => null,
             ],
             self::KPI_LABOR_COST_PCT => [
                 'code' => self::KPI_LABOR_COST_PCT,
@@ -442,7 +576,8 @@ class MetricRegistry
     }
 
     /**
-     * KPI-CRM-01: Customer Lifetime Value (CLV) = Total Customer Revenue / Total Tracked Customers.
+     * KPI-CRM-01: Customer Lifetime Value (CLV) / ARPC.
+     * Menggunakan penjualan bersih (Net Sales) pelanggan terdaftar (bukan order_amount yang mengandung PPN/PB1 & Service Charge).
      */
     public function calculateClv(mixed $totalCustomerRevenue, int $totalTrackedCustomers): string
     {
@@ -457,6 +592,26 @@ class MetricRegistry
     }
 
     /**
+     * KPI-CRM-01: Average Net Revenue Per Customer (ARPC).
+     */
+    public function calculateArpc(mixed $registeredCustomerNetSales, int $uniqueRegisteredCustomers): string
+    {
+        return $this->calculateClv($registeredCustomerNetSales, $uniqueRegisteredCustomers);
+    }
+
+    /**
+     * KPI-CRM-02: Tingkat Pembelian Berulang (Repeat Purchase Rate %) = (Pelanggan Transaksi >= 2 / Total Pelanggan Transaksi) * 100.
+     */
+    public function calculateRepeatPurchaseRate(int $repeatCustomerCount, int $totalCustomerCount): string
+    {
+        if ($totalCustomerCount <= 0) {
+            return '0.00';
+        }
+
+        return $this->calculateContributionPct($repeatCustomerCount, $totalCustomerCount);
+    }
+
+    /**
      * KPI-FNB-01: Food Cost % = (Recipe Ingredient Cost / Net F&B Sales) * 100.
      */
     public function calculateFoodCostPct(mixed $recipeIngredientCost, mixed $netFnbSales): string
@@ -465,11 +620,110 @@ class MetricRegistry
     }
 
     /**
-     * KPI-RTL-01: Shrinkage % = (Lost or Damaged Stock Value / Gross Sales) * 100.
+     * KPI-FNB-01-VAR: BOM Food Cost Variance = Actual Food Cost - Theoretical Food Cost.
      */
-    public function calculateShrinkagePct(mixed $lostDamagedStockValue, mixed $grossSales): string
+    public function calculateBomVariance(mixed $actualCost, mixed $theoreticalCost): string
     {
-        return $this->calculateContributionPct($lostDamagedStockValue, $grossSales);
+        $act = $this->toNumericString($actualCost, 2);
+        $theo = $this->toNumericString($theoreticalCost, 2);
+
+        return bcsub($act, $theo, 2);
+    }
+
+    /**
+     * KPI-FNB-03: Average Spend Per Cover (Pax) = Net Dine-In Sales / Total Pax.
+     */
+    public function calculateSpendPerCover(mixed $netSales, int $coverCount): string
+    {
+        if ($coverCount <= 0) {
+            return '0.00';
+        }
+
+        $net = $this->toNumericString($netSales, 2);
+
+        return bcdiv($net, (string) $coverCount, 2);
+    }
+
+    /**
+     * KPI-FNB-04: KDS SLA Breach Rate % = (Tiket Melebihi SLA > 15 Menit / Total Tiket) * 100.
+     */
+    public function calculateSlaBreachRate(int $breachedTickets, int $totalTickets): string
+    {
+        if ($totalTickets <= 0) {
+            return '0.00';
+        }
+
+        return $this->calculateContributionPct($breachedTickets, $totalTickets);
+    }
+
+    /**
+     * KPI-INV-04 / KPI-RTL-01: Shrinkage % = (Lost or Damaged Stock Value / Stock Valuation or COGS) * 100.
+     * Mengukur kerugian modal akibat barang rusak (DAMAGE), kadaluwarsa (EXPIRED),
+     * atau selisih fisik stok opname (OPNAME_LOSS) terhadap nilai modal persediaan atau COGS.
+     * DILARANG membandingkan terhadap Gross Sales!
+     */
+    public function calculateShrinkagePct(mixed $lostDamagedStockValue, mixed $stockValuationOrCogs): string
+    {
+        return $this->calculateContributionPct($lostDamagedStockValue, $stockValuationOrCogs);
+    }
+
+    /**
+     * Menghitung nilai rasio penyusutan dari daftar mutasi penyesuaian stok (DAMAGE, EXPIRED, OPNAME_LOSS).
+     *
+     * @param  array<int, array{adjustment_type?: string, type?: string, loss_value?: mixed, cost_amount?: mixed}>  $adjustments
+     */
+    public function calculateShrinkageFromAdjustments(array $adjustments, mixed $stockValuationOrCogs): string
+    {
+        $allowedTypes = ['DAMAGE', 'EXPIRED', 'OPNAME_LOSS', 'SPOILAGE'];
+        $totalLoss = '0.00';
+
+        foreach ($adjustments as $adj) {
+            $type = strtoupper((string) ($adj['adjustment_type'] ?? $adj['type'] ?? ''));
+            if (in_array($type, $allowedTypes, true)) {
+                $loss = $this->toNumericString($adj['loss_value'] ?? $adj['cost_amount'] ?? '0.00', 2);
+                $totalLoss = bcadd($totalLoss, $loss, 2);
+            }
+        }
+
+        return $this->calculateShrinkagePct($totalLoss, $stockValuationOrCogs);
+    }
+
+    /**
+     * KPI-RTL-01-GMROI: Gross Margin Return on Inventory Investment = Gross Profit / Average Inventory Valuation.
+     */
+    public function calculateGmroi(mixed $grossProfit, mixed $averageInventoryValuation, int $scale = 2): string
+    {
+        $profit = $this->toNumericString($grossProfit, 4);
+        $avgInv = $this->toNumericString($averageInventoryValuation, 4);
+
+        if (bccomp($avgInv, '0.0000', 4) <= 0) {
+            return $this->toNumericString('0', $scale);
+        }
+
+        return bcdiv($profit, $avgInv, $scale);
+    }
+
+    /**
+     * KPI-PLN-01: Target Attainment % = (Actual Net Sales / Store Target Sales) * 100.
+     */
+    public function calculateTargetAttainment(mixed $actualNetSales, mixed $targetNetSales): string
+    {
+        return $this->calculateContributionPct($actualNetSales, $targetNetSales);
+    }
+
+    /**
+     * KPI-PLN-01: Run-Rate Projection = (Actual to date / Elapsed Days) * Total Days in Month.
+     */
+    public function calculateRunRateProjection(mixed $actualNetSalesToDate, int $elapsedDays, int $totalDaysInMonth): string
+    {
+        if ($elapsedDays <= 0 || $totalDaysInMonth <= 0) {
+            return '0.00';
+        }
+
+        $act = $this->toNumericString($actualNetSalesToDate, 2);
+        $dailyPace = bcdiv($act, (string) $elapsedDays, 4);
+
+        return bcmul($dailyPace, (string) $totalDaysInMonth, 2);
     }
 
     /**
@@ -677,5 +931,124 @@ class MetricRegistry
         ?string $accountCode = null
     ): string {
         return $this->computeGlRevenueBreakdown($start, $end, $storeId, $tenantId, $accountCode)['net_sales'];
+    }
+
+    /**
+     * Agregasi Penjualan Bersih Harian Akrual Standar PSAK / SAP S/4HANA (UNION ALL Terindeks).
+     *
+     * 1. Penjualan Kotor & Diskon diakui pada tanggal operasional pesanan (orders.order_date).
+     * 2. Retur Penjualan diakui pada tanggal retur diselesaikan (order_returns.completed_at / status='completed'),
+     *    bukan mengubah laporan penjualan masa lalu secara retroaktif.
+     * 3. Batas waktu menggunakan timezone lokal tenant/cabang (default Asia/Jakarta) dan dikonversi
+     *    ke rentang UTC untuk memindai indeks timestamp tanpa evaluasi baris fungsi DATE() MySQL.
+     *
+     * @return array<string, array{
+     *     date: string,
+     *     gross_sales: string,
+     *     discounts: string,
+     *     returns: string,
+     *     net_sales: string,
+     *     order_count: int
+     * }>
+     */
+    public function computeAccrualDailySales(
+        Carbon $start,
+        Carbon $end,
+        ?int $storeId = null,
+        ?int $tenantId = null,
+        ?int $companyId = null,
+        string $timezone = 'Asia/Jakarta'
+    ): array {
+        $resolvedTenantId = $tenantId ?? $this->tenantContext->requireTenantId();
+
+        // Konversi batas tanggal lokal ke batas UTC
+        $localStart = $start->copy()->setTimezone($timezone)->startOfDay();
+        $localEnd = $end->copy()->setTimezone($timezone)->endOfDay();
+        $startUtc = $localStart->copy()->utc()->toDateTimeString();
+        $endUtc = $localEnd->copy()->utc()->toDateTimeString();
+
+        $startDateStr = $localStart->toDateString();
+        $endDateStr = $localEnd->toDateString();
+
+        $driver = DB::connection()->getDriverName();
+        $returnDateExpr = $driver === 'mysql'
+            ? "DATE(CONVERT_TZ(COALESCE(completed_at, created_at), '+00:00', '+07:00'))"
+            : "DATE(COALESCE(completed_at, created_at))";
+
+        // 1. Stream Penjualan & Diskon (Tanggal Operasional Pesanan)
+        $ordersQuery = DB::table('orders')
+            ->selectRaw('
+                order_date as tx_date,
+                COUNT(id) as order_count,
+                COALESCE(SUM(subtotal_amount), 0) as gross_sales,
+                COALESCE(SUM(discount_amount), 0) as discounts,
+                0.00 as returns
+            ')
+            ->where('tenant_id', $resolvedTenantId)
+            ->whereBetween('order_date', [$startDateStr, $endDateStr])
+            ->whereIn('order_status', ['paid', 'completed']);
+
+        if ($companyId !== null && \Illuminate\Support\Facades\Schema::hasColumn('orders', 'company_id')) {
+            $ordersQuery->where('company_id', $companyId);
+        }
+        if ($storeId !== null) {
+            $ordersQuery->where('store_id', $storeId);
+        }
+        $ordersQuery->groupBy('order_date');
+
+        // 2. Stream Retur Penjualan (Tanggal Penyelesaian Retur - Non-Retroactive)
+        $returnsQuery = DB::table('order_returns')
+            ->selectRaw("
+                {$returnDateExpr} as tx_date,
+                0 as order_count,
+                0.00 as gross_sales,
+                0.00 as discounts,
+                COALESCE(SUM(subtotal_returned), 0) as returns
+            ")
+            ->where('tenant_id', $resolvedTenantId)
+            ->where('status', 'completed')
+            ->whereBetween(DB::raw('COALESCE(completed_at, created_at)'), [$startUtc, $endUtc]);
+
+        if ($storeId !== null) {
+            $returnsQuery->where('store_id', $storeId);
+        }
+        $returnsQuery->groupByRaw($returnDateExpr);
+
+        // Gabungkan via UNION ALL
+        $unionSql = "({$ordersQuery->toSql()}) UNION ALL ({$returnsQuery->toSql()})";
+        $bindings = array_merge($ordersQuery->getBindings(), $returnsQuery->getBindings());
+
+        $rows = DB::table(DB::raw("({$unionSql}) as stream"))
+            ->setBindings($bindings)
+            ->selectRaw('
+                tx_date,
+                SUM(order_count) as total_orders,
+                SUM(gross_sales) as total_gross,
+                SUM(discounts) as total_discounts,
+                SUM(returns) as total_returns
+            ')
+            ->groupBy('tx_date')
+            ->orderBy('tx_date', 'asc')
+            ->get();
+
+        $daily = [];
+        foreach ($rows as $row) {
+            $date = (string) $row->tx_date;
+            $gross = $this->toNumericString($row->total_gross, 2);
+            $discounts = $this->toNumericString($row->total_discounts, 2);
+            $returns = $this->toNumericString($row->total_returns, 2);
+            $net = $this->calculateNetSales($gross, $discounts, $returns);
+
+            $daily[$date] = [
+                'date' => $date,
+                'gross_sales' => $gross,
+                'discounts' => $discounts,
+                'returns' => $returns,
+                'net_sales' => $net,
+                'order_count' => (int) $row->total_orders,
+            ];
+        }
+
+        return $daily;
     }
 }

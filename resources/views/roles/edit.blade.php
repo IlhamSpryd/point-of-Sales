@@ -46,6 +46,33 @@
                     </div>
                 </div>
 
+                <!-- Dashboard Workspace Archetype -->
+                <div class="pt-4 border-t border-border dark:border-zinc-800">
+                    <div class="mb-4">
+                        <h5 class="text-base font-semibold text-foreground dark:text-zinc-100">Default Dashboard Archetype</h5>
+                        <p class="text-sm text-muted-foreground">Select the tailored operational cockpit rendered when users with this role access the main dashboard.</p>
+                    </div>
+
+                    <div class="max-w-md">
+                        <x-form-label for="dashboard_archetype">Workspace Archetype</x-form-label>
+                        <select id="dashboard_archetype" name="dashboard_archetype" class="w-full rounded-xl border border-border bg-background px-3.5 py-2.5 text-sm text-foreground focus:ring-2 focus:ring-primary/20 focus:outline-hidden">
+                            @php
+                                $currentArchetype = old('dashboard_archetype', $role->dashboard_archetype ?? 'executive');
+                            @endphp
+                            <option value="executive" {{ $currentArchetype === 'executive' ? 'selected' : '' }}>Executive BI &amp; Multi-Branch (Plan vs Actual, P&amp;L)</option>
+                            <option value="branch_ops" {{ $currentArchetype === 'branch_ops' ? 'selected' : '' }}>Branch Operations (Drawer Control, Approvals, Shift Monitor)</option>
+                            <option value="cashier_workspace" {{ $currentArchetype === 'cashier_workspace' ? 'selected' : '' }}>Cashier Workspace (POS Terminal, Shift Float, Personal Sales)</option>
+                            <option value="inventory_supply" {{ $currentArchetype === 'inventory_supply' ? 'selected' : '' }}>Inventory &amp; Supply Chain (Stock Ledger, PO/GRN, Alerts)</option>
+                            <option value="finance_ledger" {{ $currentArchetype === 'finance_ledger' ? 'selected' : '' }}>Finance &amp; General Ledger (COA, Journal Entries, Fiscal Locks)</option>
+                            <option value="sales_b2b" {{ $currentArchetype === 'sales_b2b' ? 'selected' : '' }}>B2B Sales &amp; CRM (Quotations, Orders, AR Credit)</option>
+                            <option value="kds_floor" {{ $currentArchetype === 'kds_floor' ? 'selected' : '' }}>Kitchen Display &amp; Floor Staff (KDS Preparation Queue, Tables)</option>
+                        </select>
+                        @error('dashboard_archetype')
+                            <p class="text-sm text-rose-500 mt-1.5 font-medium">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
                 <!-- Permissions Row -->
                 <div class="pt-4 border-t border-border dark:border-zinc-800">
                     <div class="mb-4">

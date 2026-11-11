@@ -38,9 +38,10 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification'])->gro
     Route::middleware('ensure.onboarding.completed')->group(function () {
         // Toko, Pengguna, Peran — Khusus Owner
         Route::middleware('role:Owner')->group(function () {
-            Route::resource('stores', StoreController::class);
-            Route::resource('users', UserController::class);
-            Route::resource('roles', RoleController::class);
+            Route::resource('stores', StoreController::class)->except(['show']);
+            Route::resource('users', UserController::class)->except(['show']);
+            Route::post('roles/{role}/duplicate', [RoleController::class, 'duplicate'])->name('roles.duplicate');
+            Route::resource('roles', RoleController::class)->except(['show']);
 
             // Undangan Karyawan
             Route::get('/users-invitations', [UserInvitationController::class, 'index'])->name('users.invitations.index');

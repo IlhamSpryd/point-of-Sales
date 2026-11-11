@@ -186,6 +186,22 @@
                     </div>
                 @endif
 
+                {{-- Interactive ECharts Sales Trend Visualizer --}}
+                @if (isset($salesTrend) && count($salesTrend) > 0)
+                    <div class="bg-card p-5 sm:p-6 rounded-xl border border-border shadow-xs">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h3 class="text-sm font-bold text-foreground">Sales Trend & Revenue Evolution</h3>
+                                <p class="text-xs text-muted-foreground mt-0.5">Penjualan harian teragregasi akrual PSAK/SAP</p>
+                            </div>
+                            <span class="text-xs font-semibold px-2.5 py-1 rounded-md bg-muted text-foreground tabular-nums">
+                                {{ count($salesTrend) }} Titik Waktu
+                            </span>
+                        </div>
+                        <x-erp.chart id="advanced-analytics-sales-trend" :options="$salesTrendChartOptions ?? []" height="h-72" />
+                    </div>
+                @endif
+
                 {{-- Top Products & Basket Analysis Tables --}}
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     {{-- Top 10 SKU --}}

@@ -6,6 +6,7 @@ namespace App\Modules\Manufacturing\Models;
 
 use App\Core\Traits\AssignsStore;
 use App\Core\Traits\AssignsTenant;
+use App\Models\Ingredient;
 use App\Models\Product;
 use App\Models\Scopes\TenantScope;
 use App\Models\Store;
@@ -17,13 +18,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Model Discrete Manufacturing Order (Perintah Kerja Manufaktur).
+ * Model Discrete Manufacturing Order (Perintah Kerja Manufaktur & Kitchen Prep).
  *
  * @property int $id
  * @property int $tenant_id
  * @property int $store_id
  * @property string $order_number
- * @property int $product_id
+ * @property string $destination_type
+ * @property int|null $product_id
+ * @property int|null $destination_ingredient_id
  * @property numeric-string $planned_quantity
  * @property numeric-string $produced_quantity
  * @property string $status
@@ -31,6 +34,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property \Illuminate\Support\Carbon|null $completed_at
  * @property string|null $notes
  * @property int|null $created_by
+ * @property-read Ingredient|null $destinationIngredient
  */
 #[ScopedBy(TenantScope::class)]
 class ManufacturingOrder extends Model
@@ -45,7 +49,9 @@ class ManufacturingOrder extends Model
         'tenant_id',
         'store_id',
         'order_number',
+        'destination_type',
         'product_id',
+        'destination_ingredient_id',
         'planned_quantity',
         'produced_quantity',
         'status',
@@ -63,6 +69,11 @@ class ManufacturingOrder extends Model
             'planned_start_date' => 'date',
             'completed_at' => 'datetime',
         ];
+    }
+
+    public function isPrepOrder(): bool
+    {
+        return $this->destination_type === 'ingredient';
     }
 
     /**
@@ -87,6 +98,16 @@ class ManufacturingOrder extends Model
     public function product(): BelongsTo
     {
         return $this->belongsTo(Product::class);
+    }
+
+    /**
+     * Bahan olahan / prep item yang dihasilkan dari perintah kerja manufaktur.
+     *
+     * @return BelongsTo<Ingredient, $this>
+     */
+    public function destinationIngredient(): BelongsTo
+    {
+        return $this->belongsTo(Ingredient::class, 'destination_ingredient_id');
     }
 
     /**

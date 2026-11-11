@@ -24,15 +24,15 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
         Route::get('products/export', [ProductController::class, 'export'])->name('products.export');
         Route::delete('products/{product}/media/{media}', [ProductController::class, 'destroyMedia'])->name('products.media.destroy');
         Route::post('products/{product}/media/{media}/set-primary', [ProductController::class, 'setPrimaryMedia'])->name('products.media.set-primary');
-        Route::resource('products', ProductController::class);
+        Route::resource('products', ProductController::class)->except(['show']);
 
         Route::get('categories/export', [CategoryController::class, 'export'])->name('categories.export');
-        Route::resource('categories', CategoryController::class);
+        Route::resource('categories', CategoryController::class)->except(['show']);
 
-        Route::resource('brands', BrandController::class)->except(['show']);
-        Route::resource('units-of-measure', UnitOfMeasureController::class)->except(['show']);
-        Route::resource('tax-classes', TaxClassController::class)->except(['show']);
-        Route::resource('price-lists', PriceListController::class);
+        Route::resource('brands', BrandController::class)->except(['create', 'edit', 'show']);
+        Route::resource('units-of-measure', UnitOfMeasureController::class)->except(['create', 'edit', 'show']);
+        Route::resource('tax-classes', TaxClassController::class)->except(['create', 'edit', 'show']);
+        Route::resource('price-lists', PriceListController::class)->except(['show']);
 
         Route::get('assortments', [StoreProductAssortmentController::class, 'index'])->name('assortments.index');
         Route::post('assortments', [StoreProductAssortmentController::class, 'update'])->name('assortments.update');

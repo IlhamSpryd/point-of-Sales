@@ -23,6 +23,7 @@ class StoreRoleRequest extends FormRequest
             'name' => ['required', 'string', 'max:255', Rule::unique('roles', 'name')->where('tenant_id', app(TenantContext::class)->requireTenantId())],
             'description' => ['nullable', 'string', 'max:1000'],
             'permissions' => ['nullable', 'array'],
+            'dashboard_archetype' => ['nullable', 'string', Rule::in(['executive', 'branch_ops', 'cashier_workspace', 'inventory_supply', 'finance_ledger', 'sales_b2b', 'kds_floor'])],
             'is_active' => 'boolean',
         ];
     }

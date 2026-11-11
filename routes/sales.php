@@ -75,6 +75,8 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
         Route::post('tables/{table}/rotate-qr', [TableController::class, 'rotateQr'])->name('tables.rotate-qr');
         Route::post('tables/{table}/release', [TableController::class, 'release'])->name('tables.release');
         Route::post('tables/{table}/regenerate-token', [TableController::class, 'regenerateToken'])->name('tables.regenerate-token');
+        Route::post('tables/{table}/move', [TableController::class, 'move'])->name('tables.move');
+        Route::post('tables/{table}/merge', [TableController::class, 'merge'])->name('tables.merge');
         Route::resource('tables', TableController::class);
     });
 

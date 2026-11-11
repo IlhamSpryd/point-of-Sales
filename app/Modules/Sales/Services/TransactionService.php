@@ -244,9 +244,10 @@ class TransactionService
                         $optionsSignature = ! empty($item['options']) ? json_encode($item['options']) : '';
                         $notesSignature = ! empty($item['notes']) ? $item['notes'] : '';
                         $variantSignature = (string) ($item['product_variant_id'] ?? '');
+                        $uomSignature = (string) ($item['uom_id'] ?? '');
                         $customPriceSignature = isset($item['custom_price']) ? (string) $item['custom_price'] : '';
 
-                        return $item['product_id'].'|'.$variantSignature.'|'.$customPriceSignature.'|'.$optionsSignature.'|'.$notesSignature;
+                        return $item['product_id'].'|'.$variantSignature.'|'.$uomSignature.'|'.$customPriceSignature.'|'.$optionsSignature.'|'.$notesSignature;
                     })
                     ->map(function ($group) {
                         $qty = $group->sum('quantity');
@@ -262,6 +263,7 @@ class TransactionService
                         return [
                             'product_id' => $firstItem['product_id'],
                             'product_variant_id' => $firstItem['product_variant_id'] ?? null,
+                            'uom_id' => $firstItem['uom_id'] ?? null,
                             'custom_price' => $firstItem['custom_price'] ?? null,
                             'quantity' => $qty,
                             'extra_price' => $firstItem['extra_price'] ?? 0,
@@ -341,6 +343,20 @@ class TransactionService
                     $hasBom = $product->ingredients->isNotEmpty();
                     $needsStockDeduction = ! $hasBom && $product->track_inventory && ! $product->isService() && ! $product->isNonInventory() && ! $product->isBundle();
 
+                    // TASK-P0-03: Validasi ketersediaan komponen Sales BOM (Bundel / Combo)
+                    if ($product->isBundle()) {
+                        $bundleExpander = app(\App\Modules\Products\Services\BundleComponentExpanderService::class);
+                        $avail = $bundleExpander->checkAvailability($product, (int) $activeStoreId, (int) $item['quantity']);
+                        if (! $avail['available']) {
+                            $missingStr = collect($avail['missing_components'])
+                                ->map(fn ($m) => "{$m['name']} (Req: {$m['required']}, Avail: {$m['available']})")
+                                ->join(', ');
+                            throw ValidationException::withMessages([
+                                'items' => "Insufficient stock for bundle '{$product->product_name}'. Missing: {$missingStr}",
+                            ]);
+                        }
+                    }
+
                     // LEGACY STOCK PATH: produk TANPA resep BOM yang melacak inventori
                     // tetap memakai model lama (potong products.stock langsung,
                     // divalidasi di sini juga seperti sebelumnya). Produk yang
@@ -397,7 +413,7 @@ class TransactionService
                         customerId: $data['customer_id'] ?? null,
                         loyaltyTierId: null,
                         channel: $data['origin_channel'] ?? 'pos_cashier',
-                        uomId: null,
+                        uomId: isset($item['uom_id']) ? (int) $item['uom_id'] : null,
                         customPrice: $customPrice
                     );
                     $unitPrice = $baseProductPrice + $serverExtraPrice;
@@ -430,6 +446,7 @@ class TransactionService
                         'order_subtotal' => $itemSubtotal,
                         'product_id' => $product->id,
                         'product_variant_id' => $variantId,
+                        'uom_id' => isset($item['uom_id']) ? (int) $item['uom_id'] : null,
                         'options' => $verifiedOptions,
                         'notes' => $item['notes'] ?? null,
                         'needs_stock_deduction' => $needsStockDeduction,
@@ -755,7 +772,7 @@ class TransactionService
                     $hasBomOrRecipe = $prodModel ? $prodModel->ingredients->isNotEmpty() : false;
                     $fulfillmentChannel = $orderType === OrderType::DineIn ? 'on_premise_dine_in' : 'takeaway_counter';
                     $kitchenPrep = ($hasBomOrRecipe || $orderType === OrderType::DineIn) ? 'queued' : 'not_applicable';
-                    $shippingDispatch = (! $hasBomOrRecipe && ($prodModel?->track_inventory ?? false)) ? 'picking_pending' : 'not_applicable';
+                    $shippingDispatch = (! $hasBomOrRecipe && ($prodModel && $prodModel->track_inventory)) ? 'picking_pending' : 'not_applicable';
 
                     $orderItem = OrderItem::create(array_merge(Arr::except($line, ['needs_stock_deduction', 'effective_subtotal']), [
                         'order_id' => $order->id,
@@ -765,28 +782,97 @@ class TransactionService
                         'item_discount_amount' => $itemDiscountAmount,
                         'allocated_order_discount_amount' => $allocatedOrderDiscount,
                         'net_line_total' => $netLineTotal,
-                        'fulfillment_channel' => $line['fulfillment_channel'] ?? $fulfillmentChannel,
-                        'kitchen_prep_status' => $line['kitchen_prep_status'] ?? $kitchenPrep,
-                        'shipping_dispatch_status' => $line['shipping_dispatch_status'] ?? $shippingDispatch,
+                        'fulfillment_channel' => $fulfillmentChannel,
+                        'kitchen_prep_status' => $kitchenPrep,
+                        'shipping_dispatch_status' => $shippingDispatch,
                     ]));
                     $createdItems[] = $orderItem;
 
+                    $product = $products->find($line['product_id']);
+
                     if (! empty($line['needs_stock_deduction'])) {
-                        $product = $products->find($line['product_id']);
+                        $deductionQty = (float) $line['qty'];
+                        if (! empty($line['uom_id']) && $product && $product->base_uom_id && (int) $line['uom_id'] !== (int) $product->base_uom_id) {
+                            try {
+                                $converted = app(\App\Modules\MasterData\Services\UnitConversionService::class)->convertBetweenUoms(
+                                    tenantId: (int) $order->tenant_id,
+                                    fromUomId: (int) $line['uom_id'],
+                                    toUomId: (int) $product->base_uom_id,
+                                    quantity: $line['qty'],
+                                    productId: (int) $product->id,
+                                    scale: 4
+                                );
+                                $deductionQty = (float) $converted;
+                            } catch (\Throwable) {
+                                $conv = $product->unitConversions?->firstWhere('from_uom_id', $line['uom_id']);
+                                if ($conv) {
+                                    $deductionQty = (float) bcmul((string) $line['qty'], (string) $conv->conversion_factor, 4);
+                                }
+                            }
+                        }
+
                         app(InventoryLedgerService::class)->recordMovement(
                             tenantId: (int) $order->tenant_id,
                             storeId: (int) $order->store_id,
                             itemType: 'product',
                             itemId: (int) $line['product_id'],
-                            quantityDelta: -$line['qty'],
+                            quantityDelta: -$deductionQty,
                             type: StockMovementType::SaleDeduction,
                             unitCost: $product?->standard_cost ? (float) $product->standard_cost : null,
                             reason: 'Checkout via POS',
                             idempotencyKey: "sale:{$order->id}:{$orderItem->id}",
                             orderId: (int) $order->id,
                             orderItemId: (int) $orderItem->id,
-                            userId: (int) $userId
+                            userId: (int) $userId,
+                            variantId: $line['product_variant_id'] ? (int) $line['product_variant_id'] : null
                         );
+                    } elseif ($product && $product->isBundle()) {
+                        // TASK-P0-03: Dekomposisi Pemotongan Stok Komponen Bundel / Combo Meal
+                        $bundleExpander = app(\App\Modules\Products\Services\BundleComponentExpanderService::class);
+                        $components = $bundleExpander->expand($product, (int) $line['qty']);
+                        $inventoryLedger = app(InventoryLedgerService::class);
+
+                        foreach ($components as $comp) {
+                            /** @var Product $compProd */
+                            $compProd = $comp['component_product'];
+                            $compQty = (float) $comp['quantity'];
+
+                            if ($compProd->ingredients()->exists()) {
+                                $compProd->loadMissing('ingredients');
+                                foreach ($compProd->ingredients as $ingredient) {
+                                    $needed = bcmul((string) $ingredient->pivot->quantity_required, (string) $compQty, 4);
+                                    $inventoryLedger->recordMovement(
+                                        tenantId: (int) $order->tenant_id,
+                                        storeId: (int) $order->store_id,
+                                        itemType: 'ingredient',
+                                        itemId: (int) $ingredient->id,
+                                        quantityDelta: -(float) $needed,
+                                        type: StockMovementType::SaleDeduction,
+                                        unitCost: $ingredient->cost_per_unit ? (float) $ingredient->cost_per_unit : null,
+                                        reason: "Sale of bundle {$product->product_name} component {$compProd->product_name}",
+                                        idempotencyKey: "sale:{$order->id}:{$orderItem->id}:bundle_ing:{$ingredient->id}",
+                                        orderId: (int) $order->id,
+                                        orderItemId: (int) $orderItem->id,
+                                        userId: (int) $userId
+                                    );
+                                }
+                            } elseif ($compProd->track_inventory && ! $compProd->isService() && ! $compProd->isNonInventory()) {
+                                $inventoryLedger->recordMovement(
+                                    tenantId: (int) $order->tenant_id,
+                                    storeId: (int) $order->store_id,
+                                    itemType: 'product',
+                                    itemId: (int) $compProd->id,
+                                    quantityDelta: -$compQty,
+                                    type: StockMovementType::SaleDeduction,
+                                    unitCost: $compProd->standard_cost ? (float) $compProd->standard_cost : null,
+                                    reason: "Sale of bundle {$product->product_name} component {$compProd->product_name}",
+                                    idempotencyKey: "sale:{$order->id}:{$orderItem->id}:bundle_comp:{$compProd->id}",
+                                    orderId: (int) $order->id,
+                                    orderItemId: (int) $orderItem->id,
+                                    userId: (int) $userId
+                                );
+                            }
+                        }
                     }
 
                     if (! empty($line['options'])) {
@@ -1289,7 +1375,8 @@ class TransactionService
         ?int $variantId = null,
         ?int $customerId = null,
         ?string $channel = 'pos_cashier',
-        ?float $customPrice = null
+        ?float $customPrice = null,
+        ?int $uomId = null
     ): array {
         // PATCH FOR M-10: pakai koleksi yang sudah (atau baru
         // sekali) di-load, bukan query fresh modifierGroups() setiap panggil
@@ -1340,7 +1427,7 @@ class TransactionService
             customerId: $customerId,
             loyaltyTierId: null,
             channel: $channel,
-            uomId: null,
+            uomId: $uomId,
             customPrice: $customPrice
         );
         $extraPrice = $selectedModifiers->sum('extra_price');
@@ -1350,6 +1437,7 @@ class TransactionService
         return [
             'product_id' => $product->id,
             'product_variant_id' => $variantId,
+            'uom_id' => $uomId,
             'product_name' => $product->product_name,
             'qty' => $qty,
             'order_price' => $unitPrice,
@@ -2221,6 +2309,57 @@ class TransactionService
                     'order_item_id' => $item->id,
                     'product_id' => $item->product_id,
                 ]);
+
+                continue;
+            }
+
+            if ($product->isBundle()) {
+                // TASK-P0-03: Restorasi Stok Komponen Bundel saat Void / Cancel / Return
+                $bundleExpander = app(\App\Modules\Products\Services\BundleComponentExpanderService::class);
+                $components = $bundleExpander->expand($product, (int) $item->qty);
+                $inventoryLedger = app(InventoryLedgerService::class);
+
+                foreach ($components as $comp) {
+                    /** @var Product $compProd */
+                    $compProd = $comp['component_product'];
+                    $compQty = (float) $comp['quantity'];
+
+                    if ($compProd->ingredients()->exists()) {
+                        $compProd->loadMissing('ingredients');
+                        foreach ($compProd->ingredients as $ingredient) {
+                            $needed = bcmul((string) $ingredient->pivot->quantity_required, (string) $compQty, 4);
+                            $inventoryLedger->recordMovement(
+                                tenantId: (int) $order->tenant_id,
+                                storeId: (int) $orderStoreId,
+                                itemType: 'ingredient',
+                                itemId: (int) $ingredient->id,
+                                quantityDelta: (float) $needed,
+                                type: StockMovementType::RestoreCompensation,
+                                unitCost: $ingredient->cost_per_unit ? (float) $ingredient->cost_per_unit : null,
+                                reason: "Automatic stock compensation for bundle component {$compProd->product_name}",
+                                idempotencyKey: "stock_restore:{$order->order_code}:{$item->id}:bundle_ing:{$ingredient->id}",
+                                orderId: (int) $order->id,
+                                orderItemId: (int) $item->id,
+                                userId: $userId
+                            );
+                        }
+                    } elseif ($compProd->track_inventory && ! $compProd->isService() && ! $compProd->isNonInventory()) {
+                        $inventoryLedger->recordMovement(
+                            tenantId: (int) $order->tenant_id,
+                            storeId: (int) $orderStoreId,
+                            itemType: 'product',
+                            itemId: (int) $compProd->id,
+                            quantityDelta: $compQty,
+                            type: StockMovementType::RestoreCompensation,
+                            unitCost: $compProd->standard_cost ? (float) $compProd->standard_cost : null,
+                            reason: "Automatic stock compensation for bundle component {$compProd->product_name}",
+                            idempotencyKey: "stock_restore:{$order->order_code}:{$item->id}:bundle_comp:{$compProd->id}",
+                            orderId: (int) $order->id,
+                            orderItemId: (int) $item->id,
+                            userId: $userId
+                        );
+                    }
+                }
 
                 continue;
             }

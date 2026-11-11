@@ -6,6 +6,7 @@ use App\Http\Controllers\FinanceDashboardController;
 use App\Livewire\Finance\AccountingPeriodManager;
 use App\Livewire\Finance\BankReconciliationWorkbench;
 use App\Livewire\Finance\ChartOfAccountManager;
+use App\Livewire\Finance\FixedAssetManager;
 use App\Livewire\Finance\JournalEntryManager;
 use Illuminate\Support\Facades\Route;
 
@@ -25,5 +26,6 @@ Route::middleware(['auth', 'tenant.context', 'enforce.email.verification', 'ensu
         Route::get('/finance/journal-entries', JournalEntryManager::class)->name('finance.journals.index');
         Route::get('/finance/accounting-periods', AccountingPeriodManager::class)->name('finance.periods.index');
         Route::get('/finance/bank-reconciliation', BankReconciliationWorkbench::class)->name('finance.reconciliation.index');
+        Route::get('/finance/fixed-assets', FixedAssetManager::class)->name('finance.fixed-assets.index');
     });
 });

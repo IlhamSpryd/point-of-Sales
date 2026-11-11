@@ -414,7 +414,21 @@ class StockOpnameManager extends Component
             'selectedOpname' => $selectedOpname,
             'activeOpname' => $activeOpname,
             'statusOptions' => StockOpnameStatusEnum::cases(),
+            'canViewExpectedStock' => $this->canViewExpectedStock(),
         ]);
+    }
+
+    public function canViewExpectedStock(): bool
+    {
+        $user = auth()->user();
+        if (! $user instanceof \App\Models\User) {
+            return false;
+        }
+
+        $roleName = $user->role ? $user->role->name : '';
+
+        return in_array($roleName, ['Owner', 'Manager'], true)
+            || $user->hasRoleInStore(['Owner', 'Manager']);
     }
 
     private function findScopedOpname(int $id): StockOpname

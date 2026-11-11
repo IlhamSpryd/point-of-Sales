@@ -117,6 +117,16 @@ class FixedAsset extends Model
     }
 
     /**
+     * Alias for schedules relation.
+     *
+     * @return HasMany<FixedAssetDepreciationSchedule, $this>
+     */
+    public function depreciationSchedules(): HasMany
+    {
+        return $this->schedules();
+    }
+
+    /**
      * @return HasMany<FixedAssetDisposal, $this>
      */
     public function disposals(): HasMany

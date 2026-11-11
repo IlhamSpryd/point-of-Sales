@@ -43,6 +43,8 @@ class Role extends Model
         'name',
         'description',
         'permissions',
+        'dashboard_archetype',
+        'is_system_default',
         'is_active',
     ];
 
@@ -51,8 +53,19 @@ class Role extends Model
     {
         return [
             'permissions' => 'array',
+            'is_system_default' => 'boolean',
             'is_active' => 'boolean',
         ];
+    }
+
+    public function isSystemDefault(): bool
+    {
+        return (bool) ($this->is_system_default ?? false);
+    }
+
+    public function getDashboardArchetype(): string
+    {
+        return (string) ($this->dashboard_archetype ?? 'executive');
     }
 
     // Auto-generate Business ID yang collision-safe (TX-008)

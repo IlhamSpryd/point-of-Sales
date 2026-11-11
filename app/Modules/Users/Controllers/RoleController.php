@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreRoleRequest;
 use App\Http\Requests\UpdateRoleRequest;
 use App\Models\Role;
-use App\Services\RoleService;
+use App\Modules\Users\Services\RoleService;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -83,6 +83,16 @@ class RoleController extends Controller
         $this->roleService->update($role, $request->validated());
 
         return redirect()->route('roles.index')->with('success', 'Role updated successfully.');
+    }
+
+    /**
+     * Duplikasi peran yang ada agar Owner mudah membuat custom role baru.
+     */
+    public function duplicate(Role $role): RedirectResponse
+    {
+        $newRole = $this->roleService->duplicate($role);
+
+        return redirect()->route('roles.edit', $newRole->id)->with('success', "Role '{$role->name}' duplicated successfully as '{$newRole->name}'. You can now customize permissions and archetype.");
     }
 
     /**

@@ -143,6 +143,14 @@ class FixedAssetService
     }
 
     /**
+     * Alias untuk kapitalisasi/aktivasi aset tetap.
+     */
+    public function activateAsset(FixedAsset $asset, User $actor, ?int $paymentAccountId = null): FixedAsset
+    {
+        return $this->capitalize($asset, $actor, $paymentAccountId);
+    }
+
+    /**
      * Mengenerate jadwal penyusutan bulanan menggunakan metode garis lurus (Straight Line).
      * Mencegah rounding error drift dengan menyesuaikan bulan terakhir.
      *

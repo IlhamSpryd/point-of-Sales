@@ -217,7 +217,11 @@ class PostingEngineService implements PostingEngineContract
             }
         }
 
-        $type = $isOpeningBalance ? JournalTypeEnum::OPENING_BALANCE : JournalTypeEnum::MANUAL_ADJUSTMENT;
+        $type = match ($dto->journalType) {
+            'OPENING_BALANCE' => JournalTypeEnum::OPENING_BALANCE,
+            'GENERAL' => JournalTypeEnum::GENERAL,
+            default => JournalTypeEnum::MANUAL_ADJUSTMENT,
+        };
 
         return $this->journalEntryService->createAndPostJournal(
             tenantId: $dto->tenantId,

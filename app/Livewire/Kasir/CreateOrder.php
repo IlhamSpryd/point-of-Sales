@@ -13,15 +13,19 @@ use App\Models\Approval;
 use App\Models\Customer;
 use App\Models\Discount;
 use App\Models\Modifier;
+use App\Models\ModifierGroup;
 use App\Models\Order;
 use App\Models\ParkedCart;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\Setting;
 use App\Models\Shift;
 use App\Models\Table;
+use App\Models\UnitOfMeasure;
 use App\Modules\Customers\Enums\StoreCreditStatusEnum;
 use App\Modules\Customers\Models\StoreCreditAccount;
 use App\Modules\Customers\Services\VoucherService;
+use App\Modules\FNB\Services\SplitBillService;
 use App\Modules\Pricing\DataTransferObjects\CheckoutCalculationBreakdownDto;
 use App\Modules\Pricing\DataTransferObjects\CheckoutCalculationInputDto;
 use App\Modules\Pricing\Services\DiscountApprovalService;
@@ -86,9 +90,27 @@ class CreateOrder extends Component
     #[Locked]
     public ?int $pendingOrderId = null;
 
-    // state modal pemilihan modifier
+    // state modal pemilihan modifier / konfigurator adaptif
     #[Locked]
     public ?int $selectingProductId = null;
+
+    // state modal pemilihan varian produk ritel (TASK-P0-01)
+    #[Locked]
+    public ?int $selectingVariantProductId = null;
+
+    public ?int $pendingVariantId = null;
+
+    public ?int $pendingUomId = null;
+
+    // state modal split bill meja (TASK-P1-01)
+    public bool $showSplitBillModal = false;
+    public string $splitBillMode = 'equal'; // 'equal' | 'amount' | 'item'
+    public int $splitBillParts = 2;
+    /** @var array<int, int|float|string> */
+    public array $splitBillAmounts = [];
+    /** @var array<int, int> */
+    public array $splitBillItemAssignments = [];
+    public ?int $splitBillOrderId = null;
 
     public array $pendingModifierIds = [];
 
@@ -445,6 +467,7 @@ class CreateOrder extends Component
             $items[] = [
                 'product_id' => (int) $raw['product_id'],
                 'product_variant_id' => $raw['product_variant_id'] ?? null,
+                'uom_id' => $raw['uom_id'] ?? null,
                 'quantity' => (float) ($raw['qty'] ?? 1),
                 'custom_price' => isset($raw['custom_price']) ? (float) $raw['custom_price'] : null,
                 'modifier_ids' => $raw['modifier_ids'] ?? [],
@@ -477,7 +500,13 @@ class CreateOrder extends Component
             return;
         }
 
-        $product = Product::findOrFail($productId);
+        $product = Product::with([
+            'modifierGroups.modifiers',
+            'variants' => fn ($q) => $q->where('is_active', true)->with('attributeValues'),
+            'unitConversions.fromUom',
+            'baseUom',
+        ])->findOrFail($productId);
+
         $storeId = app(TenantContext::class)->getStoreId();
         $resolver = app(CatalogPriceResolverService::class);
         if (! $resolver->isAvailableInStore($product, $storeId)) {
@@ -487,25 +516,26 @@ class CreateOrder extends Component
         }
 
         $this->selectingProductId = $product->id;
-        $this->pendingModifierIds = [];
+        $activeVariants = $product->variants->where('is_active', true);
+        $this->selectingVariantProductId = $activeVariants->isNotEmpty() ? $product->id : null;
 
-        // Pre-select default modifiers
-        $product = Product::with('modifierGroups.modifiers')->find($productId);
-        if ($product) {
-            foreach ($product->modifierGroups as $group) {
-                foreach ($group->modifiers as $mod) {
-                    if ($mod->is_default) {
-                        $this->pendingModifierIds[] = $mod->id;
-                        if ($group->selection_type === 'single') {
-                            break; // only select the first default for single selection
-                        }
+        $this->pendingVariantId = null;
+        $this->pendingUomId = $product->base_uom_id ?? null;
+        $this->pendingModifierIds = [];
+        $this->pendingQty = 1;
+        $this->pendingNotes = null;
+
+        // Pre-select default modifiers per group
+        foreach ($product->modifierGroups as $group) {
+            foreach ($group->modifiers as $mod) {
+                if ($mod->is_default && ($mod->is_active ?? true)) {
+                    $this->pendingModifierIds[] = $mod->id;
+                    if ($group->selection_type === 'single') {
+                        break; // only select the first default for single selection
                     }
                 }
             }
         }
-
-        $this->pendingQty = 1;
-        $this->pendingNotes = null;
     }
 
     public function scanBarcode(string $code): void
@@ -516,7 +546,35 @@ class CreateOrder extends Component
         }
 
         $tenantId = app(TenantContext::class)->requireTenantId();
-        $product = Product::where('tenant_id', $tenantId)
+
+        // 1. Cek ProductVariant terlebih dahulu (SKU atau Barcode) (TASK-P0-01)
+        $variant = ProductVariant::with(['product.modifierGroups.modifiers', 'attributeValues'])
+            ->where('tenant_id', $tenantId)
+            ->where('is_active', true)
+            ->where(function ($q) use ($code) {
+                $q->where('barcode', $code)
+                    ->orWhere('sku', $code);
+            })
+            ->first();
+
+        if ($variant && $variant->product) {
+            $product = $variant->product;
+            $storeId = app(TenantContext::class)->getStoreId();
+            $resolver = app(CatalogPriceResolverService::class);
+            if (! $resolver->isAvailableInStore($product, $storeId)) {
+                $this->dispatch('toast', message: "Product '{$product->product_name}' ({$variant->variant_name}) is not available at this branch.", type: 'warning');
+
+                return;
+            }
+
+            $this->addVariantToCart($variant);
+            $this->dispatch('toast', message: "Added: {$product->product_name} ({$variant->variant_name})", type: 'success');
+
+            return;
+        }
+
+        // 2. Fallback ke Product master
+        $product = Product::with(['modifierGroups', 'variants'])->where('tenant_id', $tenantId)
             ->where(function ($q) use ($code) {
                 $q->where('barcode', $code)
                     ->orWhere('product_code', $code);
@@ -525,20 +583,368 @@ class CreateOrder extends Component
             ->first();
 
         if ($product) {
-            if ($product->modifierGroups()->count() > 0) {
+            $product->loadMissing(['unitConversions', 'modifierGroups.modifiers', 'variants' => fn ($q) => $q->where('is_active', true)]);
+            $hasActiveVariants = $product->variants->where('is_active', true)->isNotEmpty();
+            $hasModifierGroups = $product->modifierGroups->isNotEmpty();
+            $hasUnitConversions = $product->unitConversions->isNotEmpty();
+
+            if ($hasActiveVariants || $hasModifierGroups || $hasUnitConversions) {
                 $this->openModifierPicker($product->id);
-            } else {
-                $this->addToCartDirectly($product->id);
-                $this->dispatch('toast', message: "Added: {$product->product_name}", type: 'success');
+
+                return;
             }
+
+            $this->addToCartDirectly($product->id);
+            $this->dispatch('toast', message: "Added: {$product->product_name}", type: 'success');
         } else {
+            // 3. Fallback ke GS1 Digital Scale Barcode Parser (TASK-P2-02)
+            $barcodeService = app(\App\Modules\Retail\Services\RetailBarcodeService::class);
+            $scaleData = $barcodeService->parseScaleBarcode($code);
+            if ($scaleData !== null) {
+                $itemCode = $scaleData['item_code']; // 5 digit PLU
+                $scaleProduct = Product::withoutGlobalScopes()
+                    ->where('tenant_id', $tenantId)
+                    ->where('is_active', true)
+                    ->where(function ($q) use ($itemCode) {
+                        $q->where('product_code', $itemCode)
+                            ->orWhere('product_code', 'PLU-'.$itemCode)
+                            ->orWhere('barcode', 'like', "%{$itemCode}%");
+                    })
+                    ->first();
+
+                if ($scaleProduct) {
+                    $storeId = app(TenantContext::class)->getStoreId();
+                    $resolver = app(CatalogPriceResolverService::class);
+                    if (! $resolver->isAvailableInStore($scaleProduct, $storeId)) {
+                        $this->dispatch('toast', message: "Produk timbangan '{$scaleProduct->product_name}' tidak tersedia di cabang ini.", type: 'warning');
+
+                        return;
+                    }
+
+                    $this->addScaleProductToCart($scaleProduct, $scaleData);
+                    $this->dispatch('toast', message: "Produk timbangan: {$scaleProduct->product_name} ({$scaleData['weight_kg']} kg)", type: 'success');
+
+                    return;
+                }
+            }
+
             $this->dispatch('toast', message: "Barcode not found: {$code}", type: 'warning');
+        }
+    }
+
+    public function openVariantPicker(int $productId): void
+    {
+        $this->openModifierPicker($productId);
+    }
+
+    public function closeVariantPicker(): void
+    {
+        $this->selectingVariantProductId = null;
+        if (! $this->selectingProductId) {
+            $this->pendingVariantId = null;
+        }
+    }
+
+    public function selectVariant(int $variantId): void
+    {
+        $tenantId = (int) app(TenantContext::class)->requireTenantId();
+        $variant = ProductVariant::with(['product.modifierGroups.modifiers', 'attributeValues'])
+            ->where('tenant_id', $tenantId)
+            ->where('is_active', true)
+            ->find($variantId);
+
+        if (! $variant || ! $variant->product) {
+            $this->dispatch('toast', message: 'Varian produk tidak ditemukan atau tidak aktif.', type: 'warning');
+
+            return;
+        }
+
+        $this->pendingVariantId = $variant->id;
+
+        $product = $variant->product;
+        $hasRequiredModifiers = $product->modifierGroups()->where('is_required', true)->exists();
+
+        // Jika tidak ada modifier wajib, selesaikan pemilihan langsung
+        if (! $hasRequiredModifiers) {
+            $this->closeModifierPicker();
+            $this->closeVariantPicker();
+            $this->addVariantToCart($variant);
+            $this->dispatch('toast', message: "Added: {$variant->product->product_name} ({$variant->variant_name})", type: 'success');
+
+            return;
+        }
+    }
+
+    public function setPendingVariant(?int $variantId): void
+    {
+        $this->pendingVariantId = $variantId;
+    }
+
+    public function setPendingUom(?int $uomId): void
+    {
+        $this->pendingUomId = $uomId;
+    }
+
+    public function setPendingQty(int $qty): void
+    {
+        $this->pendingQty = max(1, $qty);
+    }
+
+    public function decreasePendingQty(): void
+    {
+        $this->pendingQty = max(1, $this->pendingQty - 1);
+    }
+
+    public function increasePendingQty(): void
+    {
+        $this->pendingQty++;
+    }
+
+    public function addVariantToCart(ProductVariant $variant): void
+    {
+        if ($this->pendingOrderId !== null) {
+            $this->addError('cart', 'Pending self-orders are read-only and cannot be modified.');
+
+            return;
+        }
+
+        $product = $variant->product;
+        if (! $product) {
+            return;
+        }
+
+        if ($product->modifierGroups()->where('is_required', true)->exists()) {
+            $this->openModifierPicker($product->id);
+            $this->pendingVariantId = $variant->id;
+
+            return;
+        }
+
+        foreach ($this->cart as $index => $item) {
+            if (
+                $item['product_id'] === $product->id &&
+                ($item['product_variant_id'] ?? null) === $variant->id &&
+                empty($item['modifier_ids']) &&
+                empty($item['notes'])
+            ) {
+                $this->cart[$index]['qty']++;
+                $this->dispatch('pos-cart-state-changed', dirty: true);
+
+                return;
+            }
+        }
+
+        $this->cart[] = [
+            'product_id' => $product->id,
+            'product_variant_id' => $variant->id,
+            'qty' => 1,
+            'modifier_ids' => [],
+            'notes' => null,
+        ];
+        $this->dispatch('pos-cart-state-changed', dirty: true);
+    }
+
+    /**
+     * Menambahkan item timbangan digital supermarket ke keranjang belanja (TASK-P2-02).
+     *
+     * @param array{is_scale: bool, prefix: string, item_code: string, weight_grams: int, weight_kg: numeric-string, embedded_price: int, check_digit: int} $scaleData
+     */
+    public function addScaleProductToCart(Product $product, array $scaleData): void
+    {
+        if ($this->pendingOrderId !== null) {
+            $this->addError('cart', 'Pending self-orders are read-only and cannot be modified.');
+
+            return;
+        }
+
+        if ($scaleData['prefix'] === '02') {
+            // Weight-embedded: bobot kilogram dikalikan harga per KG produk
+            $basePrice = (float) $product->product_price;
+            $linePrice = (float) bcmul((string) $scaleData['weight_kg'], (string) $basePrice, 2);
+            $notes = "Timbangan: {$scaleData['weight_kg']} kg ({$scaleData['weight_grams']}g)";
+        } else {
+            // Price-embedded: nominal harga rupiah tercetak langsung di barcode
+            $linePrice = (float) $scaleData['embedded_price'];
+            $notes = 'Timbangan: Rp '.number_format($linePrice, 0, ',', '.');
+        }
+
+        $this->cart[] = [
+            'product_id' => $product->id,
+            'product_variant_id' => null,
+            'qty' => 1,
+            'modifier_ids' => [],
+            'notes' => $notes,
+            'custom_price' => $linePrice,
+        ];
+
+        $this->dispatch('pos-cart-state-changed', dirty: true);
+    }
+
+    public function openSplitBillModal(?int $orderId = null): void
+    {
+        $tenantId = (int) app(TenantContext::class)->requireTenantId();
+        $targetOrderId = $orderId ?? $this->pendingOrderId;
+
+        if (! $targetOrderId && $this->tableId) {
+            $tableOrder = Order::where('tenant_id', $tenantId)
+                ->where('table_id', $this->tableId)
+                ->whereNotIn('order_status', ['paid', 'completed', 'void', 'cancelled'])
+                ->latest()
+                ->first();
+            if ($tableOrder) {
+                $targetOrderId = $tableOrder->id;
+            }
+        }
+
+        if (! $targetOrderId) {
+            $this->dispatch('toast', message: 'Pilih meja dengan pesanan aktif atau muat pesanan tertunda terlebih dahulu untuk Split Bill.', type: 'warning');
+
+            return;
+        }
+
+        $order = Order::with('orderItems.product')->where('tenant_id', $tenantId)->find($targetOrderId);
+        if (! $order) {
+            $this->dispatch('toast', message: 'Pesanan tidak ditemukan.', type: 'warning');
+
+            return;
+        }
+
+        $this->splitBillOrderId = $order->id;
+        $this->splitBillMode = 'equal';
+        $this->splitBillParts = 2;
+        $totalAmt = (float) $order->order_amount;
+        $half1 = (int) floor($totalAmt / 2);
+        $half2 = (int) ($totalAmt - $half1);
+        $this->splitBillAmounts = [$half1, $half2];
+
+        $this->splitBillItemAssignments = [];
+        foreach ($order->orderItems as $item) {
+            $this->splitBillItemAssignments[$item->id] = 0;
+        }
+
+        $this->showSplitBillModal = true;
+    }
+
+    public function closeSplitBillModal(): void
+    {
+        $this->showSplitBillModal = false;
+        $this->splitBillOrderId = null;
+    }
+
+    public function setSplitBillParts(int $parts): void
+    {
+        $parts = max(2, min(10, $parts));
+        $this->splitBillParts = $parts;
+
+        $splitOrder = $this->splitBillOrder();
+        if ($splitOrder !== null) {
+            $totalAmt = (string) $splitOrder->order_amount;
+            $partsStr = (string) $parts;
+            $perPart = bcdiv($totalAmt, $partsStr, 0);
+            $totalDivided = bcmul($perPart, (string) ($parts - 1), 0);
+            $remainder = bcsub($totalAmt, $totalDivided, 0);
+
+            $amounts = [];
+            for ($i = 0; $i < $parts; $i++) {
+                $amounts[] = (int) (($i === 0) ? $remainder : $perPart);
+            }
+            $this->splitBillAmounts = $amounts;
+        }
+    }
+
+    public function addSplitBillAmountPart(): void
+    {
+        $this->splitBillAmounts[] = 0;
+    }
+
+    public function removeSplitBillAmountPart(int $index): void
+    {
+        if (count($this->splitBillAmounts) > 2) {
+            unset($this->splitBillAmounts[$index]);
+            $this->splitBillAmounts = array_values($this->splitBillAmounts);
+        }
+    }
+
+    #[Computed]
+    public function splitBillOrder(): ?Order
+    {
+        if (! $this->splitBillOrderId) {
+            return null;
+        }
+
+        $tenantId = (int) app(TenantContext::class)->requireTenantId();
+
+        return Order::with(['orderItems.product', 'table'])->where('tenant_id', $tenantId)->find($this->splitBillOrderId);
+    }
+
+    public function executeSplitBill(SplitBillService $splitService): void
+    {
+        if (! $this->splitBillOrderId) {
+            return;
+        }
+
+        $tenantId = (int) app(TenantContext::class)->requireTenantId();
+        $order = Order::with('orderItems')->where('tenant_id', $tenantId)->findOrFail($this->splitBillOrderId);
+        $userId = (int) auth()->id();
+
+        try {
+            if ($this->splitBillMode === 'item') {
+                $splits = [
+                    ['sub_order_label' => 'Sub-Order 1', 'items' => []],
+                    ['sub_order_label' => 'Sub-Order 2', 'items' => []],
+                ];
+
+                foreach ($order->orderItems as $item) {
+                    $assignedPart = (int) ($this->splitBillItemAssignments[$item->id] ?? 0);
+                    $targetPart = ($assignedPart === 1) ? 1 : 0;
+                    $splits[$targetPart]['items'][] = [
+                        'order_item_id' => $item->id,
+                        'quantity' => (int) $item->qty,
+                    ];
+                }
+
+                if (empty($splits[0]['items']) || empty($splits[1]['items'])) {
+                    $this->dispatch('toast', message: 'Setiap sub-order harus memiliki minimal 1 item pesanan.', type: 'warning');
+
+                    return;
+                }
+
+                $subOrders = $splitService->splitByItem($order, $splits, $userId);
+            } else {
+                $amounts = array_map(fn ($a) => (int) round((float) $a), $this->splitBillAmounts);
+                $sum = array_sum($amounts);
+                $totalOrder = (int) $order->order_amount;
+
+                if ($sum !== $totalOrder) {
+                    $this->dispatch('toast', message: 'Total nominal pembagian (Rp '.number_format($sum, 0, ',', '.').') harus sama dengan total pesanan (Rp '.number_format($totalOrder, 0, ',', '.').').', type: 'warning');
+
+                    return;
+                }
+
+                $subOrders = $splitService->splitByAmount($order, $amounts, $userId);
+            }
+
+            $count = count($subOrders);
+            $this->closeSplitBillModal();
+            $this->clearCart();
+            $this->pendingOrderId = null;
+            $this->pendingOrderCode = null;
+
+            $this->dispatch('toast', message: "Tagihan #{$order->order_code} berhasil dipecah menjadi {$count} sub-order!", type: 'success');
+        } catch (\Throwable $e) {
+            $this->dispatch('toast', message: 'Gagal split bill: '.$e->getMessage(), type: 'destructive');
         }
     }
 
     public function closeModifierPicker(): void
     {
         $this->selectingProductId = null;
+        $this->selectingVariantProductId = null;
+        $this->pendingVariantId = null;
+        $this->pendingUomId = null;
+        $this->pendingModifierIds = [];
+        $this->pendingQty = 1;
+        $this->pendingNotes = null;
     }
 
     public function toggleModifier(int $groupId, int $modifierId, string $selectionType): void
@@ -549,16 +955,27 @@ class CreateOrder extends Component
             return;
         }
 
+        $group = ModifierGroup::with('modifiers')->find($groupId);
+
         if ($selectionType === 'single') {
             // Hapus modifier lain yang berada dalam grup yang sama, lalu tambahkan yang baru
-            $groupModifierIds = Modifier::where('modifier_group_id', $groupId)->pluck('id')->toArray();
+            $groupModifierIds = $group ? $group->modifiers->pluck('id')->toArray() : Modifier::where('modifier_group_id', $groupId)->pluck('id')->toArray();
             $this->pendingModifierIds = array_diff($this->pendingModifierIds, $groupModifierIds);
             $this->pendingModifierIds[] = $modifierId;
         } else {
             // Toggle multiple
-            if (in_array($modifierId, $this->pendingModifierIds)) {
+            if (in_array($modifierId, $this->pendingModifierIds, true)) {
                 $this->pendingModifierIds = array_diff($this->pendingModifierIds, [$modifierId]);
             } else {
+                if ($group && $group->max_select !== null && $group->max_select > 0) {
+                    $groupModifierIds = $group->modifiers->pluck('id')->toArray();
+                    $selectedInGroup = count(array_intersect($this->pendingModifierIds, $groupModifierIds));
+                    if ($selectedInGroup >= $group->max_select) {
+                        $this->dispatch('toast', message: "Maksimal {$group->max_select} opsi untuk {$group->name}.", type: 'warning');
+
+                        return;
+                    }
+                }
                 $this->pendingModifierIds[] = $modifierId;
             }
         }
@@ -579,7 +996,12 @@ class CreateOrder extends Component
 
         $this->pendingQty = max(1, (int) $this->pendingQty);
 
-        $product = Product::with('modifierGroups')->findOrFail($this->selectingProductId);
+        $product = Product::with([
+            'modifierGroups.modifiers',
+            'variants' => fn ($q) => $q->where('is_active', true),
+            'unitConversions',
+        ])->findOrFail($this->selectingProductId);
+
         $storeId = app(TenantContext::class)->getStoreId();
         $resolver = app(CatalogPriceResolverService::class);
         if (! $resolver->isAvailableInStore($product, $storeId)) {
@@ -588,53 +1010,135 @@ class CreateOrder extends Component
             return;
         }
 
+        // 1. Validasi Pemilihan Varian (jika produk memiliki varian aktif)
+        $activeVariants = $product->variants->where('is_active', true);
+        $selectedVariant = null;
+        if ($activeVariants->isNotEmpty()) {
+            if (! $this->pendingVariantId) {
+                $this->addError('cart', "Pilih varian untuk produk {$product->product_name}.");
+
+                return;
+            }
+            $selectedVariant = $activeVariants->firstWhere('id', $this->pendingVariantId);
+            if (! $selectedVariant) {
+                $this->addError('cart', "Varian yang dipilih tidak valid untuk produk {$product->product_name}.");
+
+                return;
+            }
+        }
+
+        // 2. Validasi Modifiers
+        $selectedModifiers = collect();
         if (! empty($this->pendingModifierIds)) {
-            Modifier::whereIn('id', $this->pendingModifierIds)->get()->each(function ($mod) {
-                // Ensure all modifiers belong to the current tenant via the global scope automatically.
-            });
-            $validCount = Modifier::whereIn('id', $this->pendingModifierIds)->count();
-            if ($validCount !== count($this->pendingModifierIds)) {
+            $selectedModifiers = Modifier::whereIn('id', $this->pendingModifierIds)->get();
+            if ($selectedModifiers->count() !== count($this->pendingModifierIds)) {
                 $this->addError('cart', 'Invalid modifiers selected.');
 
                 return;
             }
         }
 
-        // Validasi pemenuhan grup varian yang wajib (is_required = true)
-        $requiredGroups = $product->modifierGroups->where('is_required', true);
-        if ($requiredGroups->isNotEmpty()) {
-            $selectedModifiers = Modifier::whereIn('id', $this->pendingModifierIds)->get();
-            $selectedGroupIds = $selectedModifiers->pluck('modifier_group_id')->unique();
-            foreach ($requiredGroups as $group) {
-                if (! $selectedGroupIds->contains($group->id)) {
-                    $this->addError('cart', "Required option for {$group->name} has not been selected.");
+        // 3. Validasi aturan modifier groups (is_required, min_select, max_select, single)
+        foreach ($product->modifierGroups as $group) {
+            $selectedInGroup = $selectedModifiers->where('modifier_group_id', $group->id)->count();
 
-                    return;
-                }
+            if ($group->is_required && $selectedInGroup === 0) {
+                $this->addError('cart', "Required option for {$group->name} has not been selected.");
+
+                return;
             }
-        }
 
-        // Try to find an identical item to group with
-        foreach ($this->cart as $index => $item) {
-            if (
-                $item['product_id'] === $this->selectingProductId &&
-                $item['modifier_ids'] === $this->pendingModifierIds &&
-                $item['notes'] === $this->pendingNotes
-            ) {
-                $this->cart[$index]['qty'] += $this->pendingQty;
-                $this->selectingProductId = null;
+            if (! empty($group->min_select) && $selectedInGroup < $group->min_select) {
+                $this->addError('cart', "Minimum {$group->min_select} option(s) required for {$group->name}.");
+
+                return;
+            }
+
+            if ($group->selection_type === 'single' && $selectedInGroup > 1) {
+                $this->addError('cart', "Only one option may be selected for {$group->name}.");
+
+                return;
+            }
+
+            if (! empty($group->max_select) && $selectedInGroup > $group->max_select) {
+                $this->addError('cart', "Maximum {$group->max_select} option(s) allowed for {$group->name}.");
 
                 return;
             }
         }
 
-        $this->cart[] = [
+        // 4. Hitung harga dan faktor UOM
+        $basePrice = (float) ($selectedVariant !== null && $selectedVariant->price_override !== null
+            ? $selectedVariant->price_override
+            : $product->product_price);
+        $uomFactor = 1.0;
+        if ($this->pendingUomId && $this->pendingUomId !== $product->base_uom_id && $product->base_uom_id) {
+            try {
+                $tenantId = (int) app(TenantContext::class)->requireTenantId();
+                $converted = app(\App\Modules\MasterData\Services\UnitConversionService::class)->convertBetweenUoms(
+                    tenantId: $tenantId,
+                    fromUomId: (int) $this->pendingUomId,
+                    toUomId: (int) $product->base_uom_id,
+                    quantity: 1,
+                    productId: (int) $product->id,
+                    scale: 6
+                );
+                $uomFactor = (float) $converted;
+            } catch (\Throwable) {
+                $conversion = $product->unitConversions->firstWhere('from_uom_id', $this->pendingUomId);
+                if ($conversion) {
+                    $uomFactor = (float) $conversion->conversion_factor;
+                }
+            }
+        } elseif ($this->pendingUomId && $this->pendingUomId !== $product->base_uom_id) {
+            $conversion = $product->unitConversions->firstWhere('from_uom_id', $this->pendingUomId);
+            if ($conversion) {
+                $uomFactor = (float) $conversion->conversion_factor;
+            }
+        }
+
+        $effectiveBasePrice = (float) bcmul((string) $basePrice, (string) $uomFactor, 2);
+
+        // 5. Cek apakah item identik sudah ada di keranjang untuk digabungkan
+        $normalizedPendingMods = $this->pendingModifierIds;
+        sort($normalizedPendingMods);
+        $normalizedPendingUom = ($this->pendingUomId === $product->base_uom_id) ? null : $this->pendingUomId;
+
+        foreach ($this->cart as $index => $item) {
+            $itemMods = $item['modifier_ids'] ?? [];
+            sort($itemMods);
+            $itemUom = (($item['uom_id'] ?? null) === $product->base_uom_id) ? null : ($item['uom_id'] ?? null);
+            if (
+                $item['product_id'] === $this->selectingProductId &&
+                ($item['product_variant_id'] ?? null) === $this->pendingVariantId &&
+                $itemUom === $normalizedPendingUom &&
+                $itemMods === $normalizedPendingMods &&
+                ($item['notes'] ?? null) === $this->pendingNotes
+            ) {
+                $this->cart[$index]['qty'] += $this->pendingQty;
+                $this->closeModifierPicker();
+                $this->dispatch('pos-cart-state-changed', dirty: true);
+
+                return;
+            }
+        }
+
+        $cartItem = [
             'product_id' => $this->selectingProductId,
+            'product_variant_id' => $this->pendingVariantId,
+            'uom_id' => $this->pendingUomId,
             'qty' => $this->pendingQty,
             'modifier_ids' => $this->pendingModifierIds,
             'notes' => $this->pendingNotes,
         ];
-        $this->selectingProductId = null;
+
+        if ($uomFactor !== 1.0) {
+            $cartItem['custom_price'] = $effectiveBasePrice;
+        }
+
+        $this->cart[] = $cartItem;
+        $this->closeModifierPicker();
+        $this->dispatch('pos-cart-state-changed', dirty: true);
     }
 
     public function addToCart(int $productId): void
@@ -650,7 +1154,7 @@ class CreateOrder extends Component
             return;
         }
 
-        $product = Product::with('modifierGroups')->findOrFail($productId);
+        $product = Product::with(['modifierGroups', 'variants', 'unitConversions'])->findOrFail($productId);
         $storeId = app(TenantContext::class)->getStoreId();
         $resolver = app(CatalogPriceResolverService::class);
         if (! $resolver->isAvailableInStore($product, $storeId)) {
@@ -658,21 +1162,36 @@ class CreateOrder extends Component
 
             return;
         }
-        $hasRequiredModifiers = $product->modifierGroups->where('is_required', true)->isNotEmpty();
-        if ($hasRequiredModifiers) {
+
+        // Jika memiliki varian aktif, buka configurator modal
+        $activeVariants = $product->variants->where('is_active', true);
+        if ($activeVariants->isNotEmpty()) {
+            $this->selectingVariantProductId = $productId;
             $this->openModifierPicker($productId);
 
             return;
         }
 
-        // Group with identical item if exists
+        // Jika memiliki modifier groups atau multi-UOM, buka configurator modal
+        $hasModifiers = $product->modifierGroups->isNotEmpty();
+        $hasUnitConversions = $product->unitConversions->isNotEmpty();
+        if ($hasModifiers || $hasUnitConversions) {
+            $this->openModifierPicker($productId);
+
+            return;
+        }
+
+        // Fast-Path (Tanpa Modal): Tambahkan langsung ke keranjang dalam 1 klik
         foreach ($this->cart as $index => $item) {
             if (
                 $item['product_id'] === $product->id &&
+                empty($item['product_variant_id']) &&
+                empty($item['uom_id']) &&
                 empty($item['modifier_ids']) &&
                 empty($item['notes'])
             ) {
                 $this->cart[$index]['qty']++;
+                $this->dispatch('pos-cart-state-changed', dirty: true);
 
                 return;
             }
@@ -680,10 +1199,13 @@ class CreateOrder extends Component
 
         $this->cart[] = [
             'product_id' => $product->id,
+            'product_variant_id' => null,
+            'uom_id' => null,
             'qty' => 1,
             'modifier_ids' => [],
             'notes' => null,
         ];
+        $this->dispatch('pos-cart-state-changed', dirty: true);
     }
 
     public function removeFromCart(int $index): void
@@ -747,24 +1269,42 @@ class CreateOrder extends Component
         // hanya untuk preview keranjang. Sekarang semua produk relevan diambil dalam
         // SATU query batch, lengkap dengan modifierGroups eager-loaded.
         $productIds = collect($this->cart)->pluck('product_id')->unique()->values();
+        $variantIds = collect($this->cart)->pluck('product_variant_id')->filter()->unique()->values();
+        $uomIds = collect($this->cart)->pluck('uom_id')->filter()->unique()->values();
         $products = Product::with('modifierGroups')->whereIn('id', $productIds)->get()->keyBy('id');
+        $variants = ProductVariant::whereIn('id', $variantIds)->get()->keyBy('id');
+        $uoms = UnitOfMeasure::whereIn('id', $uomIds)->get()->keyBy('id');
 
-        return collect($this->cart)->map(function ($raw, $i) use ($service, $products) {
+        return collect($this->cart)->map(function ($raw, $i) use ($service, $products, $variants, $uoms) {
             $product = $products->get($raw['product_id']);
             if (! $product) {
                 return null;
             }
 
             $qty = max(1, (int) ($raw['qty'] ?? 1));
+            $variantId = isset($raw['product_variant_id']) ? (int) $raw['product_variant_id'] : null;
+            $uomId = isset($raw['uom_id']) ? (int) $raw['uom_id'] : null;
             $line = $service->resolveOrderItemLine(
                 $product,
                 $raw['modifier_ids'] ?? [],
                 $qty,
                 $raw['notes'] ?? null,
-                $raw['product_variant_id'] ?? null,
+                $variantId,
                 $this->customerId,
-                'pos_cashier'
+                'pos_cashier',
+                isset($raw['custom_price']) ? (float) $raw['custom_price'] : null,
+                $uomId
             );
+
+            if ($variantId && isset($variants[$variantId])) {
+                $line['variant_name'] = $variants[$variantId]->variant_name;
+                $line['product_name'] = "{$product->product_name} - {$variants[$variantId]->variant_name}";
+            }
+
+            if ($uomId && isset($uoms[$uomId])) {
+                $line['uom_name'] = $uoms[$uomId]->name;
+                $line['product_name'] .= " ({$uoms[$uomId]->code})";
+            }
 
             return [...$line, 'index' => $i];
         })->filter()->values();
@@ -1477,12 +2017,16 @@ class CreateOrder extends Component
                         $raw['notes'] ?? null,
                         $raw['product_variant_id'] ?? null,
                         $this->customerId,
-                        'pos_cashier'
+                        'pos_cashier',
+                        isset($raw['custom_price']) ? (float) $raw['custom_price'] : null,
+                        isset($raw['uom_id']) ? (int) $raw['uom_id'] : null
                     );
 
                     $items[] = [
                         'product_id' => $line['product_id'],
                         'product_variant_id' => $raw['product_variant_id'] ?? null,
+                        'uom_id' => isset($raw['uom_id']) ? (int) $raw['uom_id'] : null,
+                        'custom_price' => isset($raw['custom_price']) ? (float) $raw['custom_price'] : null,
                         'quantity' => $line['qty'],
                         'extra_price' => $line['order_price'] - $product->product_price,
                         'options' => $line['options'],
@@ -1629,14 +2173,174 @@ class CreateOrder extends Component
         $this->dispatch('midtrans-payment-still-pending', orderCode: $order->order_code);
     }
 
+    #[Computed]
+    public function configuratorTotalPrice(): float
+    {
+        if (! $this->selectingProductId) {
+            return 0.0;
+        }
+
+        $product = Product::with([
+            'variants' => fn ($q) => $q->where('is_active', true),
+            'unitConversions',
+        ])->find($this->selectingProductId);
+
+        if (! $product) {
+            return 0.0;
+        }
+
+        $basePrice = (float) $product->product_price;
+        if ($this->pendingVariantId) {
+            $variant = $product->variants->firstWhere('id', $this->pendingVariantId);
+            if ($variant && $variant->price_override !== null) {
+                $basePrice = (float) $variant->price_override;
+            }
+        }
+
+        $uomFactor = 1.0;
+        if ($this->pendingUomId && $this->pendingUomId !== $product->base_uom_id && $product->base_uom_id) {
+            try {
+                $tenantId = (int) app(TenantContext::class)->requireTenantId();
+                $converted = app(\App\Modules\MasterData\Services\UnitConversionService::class)->convertBetweenUoms(
+                    tenantId: $tenantId,
+                    fromUomId: (int) $this->pendingUomId,
+                    toUomId: (int) $product->base_uom_id,
+                    quantity: 1,
+                    productId: (int) $product->id,
+                    scale: 6
+                );
+                $uomFactor = (float) $converted;
+            } catch (\Throwable) {
+                $conversion = $product->unitConversions->firstWhere('from_uom_id', $this->pendingUomId);
+                if ($conversion) {
+                    $uomFactor = (float) $conversion->conversion_factor;
+                }
+            }
+        } elseif ($this->pendingUomId && $this->pendingUomId !== $product->base_uom_id) {
+            $conversion = $product->unitConversions->firstWhere('from_uom_id', $this->pendingUomId);
+            if ($conversion) {
+                $uomFactor = (float) $conversion->conversion_factor;
+            }
+        }
+
+        $effectiveBase = (float) bcmul((string) $basePrice, (string) $uomFactor, 2);
+
+        $extraPrice = 0.0;
+        if (! empty($this->pendingModifierIds)) {
+            $extraPrice = (float) Modifier::whereIn('id', $this->pendingModifierIds)->sum('extra_price');
+        }
+
+        $unitPrice = (float) bcadd((string) $effectiveBase, (string) $extraPrice, 2);
+        $qty = max(1, $this->pendingQty);
+
+        return (float) bcmul((string) $unitPrice, (string) $qty, 2);
+    }
+
+    #[Computed]
+    public function formattedModalTotal(): string
+    {
+        return 'Rp '.number_format($this->configuratorTotalPrice(), 0, ',', '.');
+    }
+
+    #[Computed]
+    public function isConfiguratorValid(): bool
+    {
+        if (! $this->selectingProductId) {
+            return false;
+        }
+
+        $product = Product::with([
+            'modifierGroups',
+            'variants' => fn ($q) => $q->where('is_active', true),
+        ])->find($this->selectingProductId);
+
+        if (! $product) {
+            return false;
+        }
+
+        if ($product->variants->isNotEmpty() && ! $this->pendingVariantId) {
+            return false;
+        }
+
+        $requiredGroups = $product->modifierGroups->where('is_required', true);
+        if ($requiredGroups->isNotEmpty()) {
+            $selectedMods = Modifier::whereIn('id', $this->pendingModifierIds)->get();
+            $selectedGroupIds = $selectedMods->pluck('modifier_group_id')->unique();
+            foreach ($requiredGroups as $group) {
+                if (! $selectedGroupIds->contains($group->id)) {
+                    return false;
+                }
+                $minSelect = $group->min_select ?? 1;
+                if ($selectedMods->where('modifier_group_id', $group->id)->count() < $minSelect) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     public function render()
     {
         // Resolve selectingProduct for the modal if present
         $selectingProduct = null;
+        $variantStocks = [];
         if ($this->selectingProductId) {
-            $selectingProduct = Product::with('modifierGroups.modifiers')->find($this->selectingProductId);
+            $selectingProduct = Product::with([
+                'modifierGroups.modifiers',
+                'variants' => fn ($q) => $q->where('is_active', true)->with('attributeValues'),
+                'unitConversions.fromUom',
+                'unitConversions.toUom',
+                'baseUom',
+                'ingredients',
+                'category',
+            ])->find($this->selectingProductId);
+
+            if ($selectingProduct && $selectingProduct->variants->isNotEmpty()) {
+                $tenantId = app(TenantContext::class)->getTenantId();
+                $storeId = app(TenantContext::class)->getStoreId();
+
+                if ($selectingProduct->track_inventory) {
+                    $parentStock = DB::table('product_stock_balances')
+                        ->where('tenant_id', $tenantId)
+                        ->where('store_id', $storeId)
+                        ->where('product_id', $selectingProduct->id)
+                        ->value('quantity') ?? ($selectingProduct->stock ?? 0);
+
+                    $hasVariantMovements = \Illuminate\Support\Facades\Schema::hasColumn('stock_movements', 'variant_id');
+                    foreach ($selectingProduct->variants as $v) {
+                        if ($hasVariantMovements) {
+                            $movementCount = DB::table('stock_movements')
+                                ->where('tenant_id', $tenantId)
+                                ->where('store_id', $storeId)
+                                ->where('variant_id', $v->id)
+                                ->count();
+                            if ($movementCount > 0) {
+                                $vQty = DB::table('stock_movements')
+                                    ->where('tenant_id', $tenantId)
+                                    ->where('store_id', $storeId)
+                                    ->where('variant_id', $v->id)
+                                    ->sum('quantity');
+                                $variantStocks[$v->id] = (float) $vQty;
+                                continue;
+                            }
+                        }
+                        $variantStocks[$v->id] = (float) $parentStock;
+                    }
+                } else {
+                    foreach ($selectingProduct->variants as $v) {
+                        $variantStocks[$v->id] = 999999;
+                    }
+                }
+            }
         }
 
-        return view('livewire.kasir.create-order', compact('selectingProduct'));
+        $selectingVariantProduct = null;
+        if ($this->selectingVariantProductId) {
+            $selectingVariantProduct = $selectingProduct ?? Product::with(['variants' => fn ($q) => $q->where('is_active', true)->with('attributeValues')])
+                ->find($this->selectingVariantProductId);
+        }
+
+        return view('livewire.kasir.create-order', compact('selectingProduct', 'selectingVariantProduct', 'variantStocks'));
     }
 }

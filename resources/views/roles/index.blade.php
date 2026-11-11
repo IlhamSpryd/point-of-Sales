@@ -64,8 +64,16 @@
                         <td class="px-6 py-4 font-sans font-medium text-foreground text-sm">{{ $role->role_code }}</td>
                         <td class="px-6 py-4">
                             <div class="flex flex-col">
-                                <span class="text-sm font-semibold text-foreground dark:text-zinc-100">{{ $role->name }}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm font-semibold text-foreground dark:text-zinc-100">{{ $role->name }}</span>
+                                    @if ($role->is_system_default)
+                                        <span class="text-xs font-normal text-muted-foreground">(Default)</span>
+                                    @else
+                                        <span class="text-xs font-normal text-muted-foreground">(Custom)</span>
+                                    @endif
+                                </div>
                                 <span class="text-xs text-zinc-500">{{ $role->description ?: '—' }}</span>
+                                <span class="text-[11px] text-muted-foreground mt-0.5">Cockpit: <strong class="text-foreground capitalize">{{ str_replace('_', ' ', $role->dashboard_archetype ?? 'executive') }}</strong></span>
                             </div>
                         </td>
                         <td class="px-6 py-4">
@@ -91,13 +99,19 @@
                                 <x-ui.table-action-item icon="edit" href="{{ route('roles.edit', $role->id) }}" aria-label="Edit role" wire:navigate>
                                     Edit Role
                                 </x-ui.table-action-item>
-                                @if ($role->name !== 'Owner')
+                                <x-ui.table-action-item icon="content_copy" onclick="document.getElementById('duplicate-form-{{ $role->id }}').submit()" aria-label="Duplicate role">
+                                    Duplicate Role
+                                </x-ui.table-action-item>
+                                @if ($role->name !== 'Owner' && ! $role->is_system_default)
                                     <x-ui.table-action-item icon="delete" variant="destructive" onclick="confirmSubmit('delete-form-{{ $role->id }}', '{{ addslashes($role->name) }}')" aria-label="Delete role">
                                         Delete Role
                                     </x-ui.table-action-item>
                                 @endif
                             </x-ui.table-actions>
-                            @if ($role->name !== 'Owner')
+                            <form id="duplicate-form-{{ $role->id }}" action="{{ route('roles.duplicate', $role->id) }}" method="POST" class="hidden">
+                                @csrf
+                            </form>
+                            @if ($role->name !== 'Owner' && ! $role->is_system_default)
                                 <form id="delete-form-{{ $role->id }}" action="{{ route('roles.destroy', $role->id) }}" method="POST" class="hidden">
                                     @csrf
                                     @method('DELETE')
@@ -142,13 +156,21 @@
                                 <a href="{{ route('roles.edit', $role->id) }}" class="size-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" aria-label="Edit role" wire:navigate>
                                     <span class="material-symbols-rounded text-[20px]">edit</span>
                                 </a>
-                                <form id="delete-form-mobile-{{ $role->id }}" action="{{ route('roles.destroy', $role->id) }}" method="POST" class="inline-block">
+                                <form action="{{ route('roles.duplicate', $role->id) }}" method="POST" class="inline-block">
                                     @csrf
-                                    @method('DELETE')
-                                    <button type="button" onclick="confirmSubmit('delete-form-mobile-{{ $role->id }}', '{{ addslashes($role->name) }}')" class="size-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" aria-label="Delete role">
-                                        <span class="material-symbols-rounded text-[20px]">delete</span>
+                                    <button type="submit" class="size-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors" aria-label="Duplicate role" title="Duplicate role">
+                                        <span class="material-symbols-rounded text-[20px]">content_copy</span>
                                     </button>
                                 </form>
+                                @if ($role->name !== 'Owner' && ! $role->is_system_default)
+                                    <form id="delete-form-mobile-{{ $role->id }}" action="{{ route('roles.destroy', $role->id) }}" method="POST" class="inline-block">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="button" onclick="confirmSubmit('delete-form-mobile-{{ $role->id }}', '{{ addslashes($role->name) }}')" class="size-8 flex items-center justify-center rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors" aria-label="Delete role">
+                                            <span class="material-symbols-rounded text-[20px]">delete</span>
+                                        </button>
+                                    </form>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -185,6 +207,19 @@
                 <div>
                     <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Role Description (Optional)</label>
                     <input type="text" name="description" value="{{ old('description') }}" placeholder="Brief summary of responsibilities for this role..." class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-1">Default Dashboard Archetype</label>
+                    <select name="dashboard_archetype" class="w-full rounded-xl border border-zinc-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3.5 py-2.5 text-sm focus:ring-2 focus:ring-primary-500/20 focus:outline-none text-foreground">
+                        <option value="executive" {{ old('dashboard_archetype', 'executive') === 'executive' ? 'selected' : '' }}>Executive BI &amp; Multi-Branch</option>
+                        <option value="branch_ops" {{ old('dashboard_archetype') === 'branch_ops' ? 'selected' : '' }}>Branch Operations</option>
+                        <option value="cashier_workspace" {{ old('dashboard_archetype') === 'cashier_workspace' ? 'selected' : '' }}>Cashier Workspace</option>
+                        <option value="inventory_supply" {{ old('dashboard_archetype') === 'inventory_supply' ? 'selected' : '' }}>Inventory &amp; Supply Chain</option>
+                        <option value="finance_ledger" {{ old('dashboard_archetype') === 'finance_ledger' ? 'selected' : '' }}>Finance &amp; General Ledger</option>
+                        <option value="sales_b2b" {{ old('dashboard_archetype') === 'sales_b2b' ? 'selected' : '' }}>B2B Sales &amp; CRM</option>
+                        <option value="kds_floor" {{ old('dashboard_archetype') === 'kds_floor' ? 'selected' : '' }}>Kitchen Display &amp; Floor Staff</option>
+                    </select>
                 </div>
 
                 <div class="pt-3 border-t border-zinc-200 dark:border-zinc-800">

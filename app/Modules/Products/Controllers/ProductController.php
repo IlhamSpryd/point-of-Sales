@@ -86,9 +86,8 @@ class ProductController extends Controller
         $taxClasses = TaxClass::where('is_active', true)->orderBy('name')->get();
         $ingredients = Ingredient::where('is_active', true)->orderBy('name')->get();
         $modifierGroups = ModifierGroup::orderBy('name')->get();
-        $allProducts = Product::where('is_active', true)->orderBy('product_name')->get();
 
-        return view('products.create', compact('categories', 'brands', 'uoms', 'taxClasses', 'ingredients', 'modifierGroups', 'allProducts'));
+        return view('products.create', compact('categories', 'brands', 'uoms', 'taxClasses', 'ingredients', 'modifierGroups'));
     }
 
     /**
@@ -129,7 +128,6 @@ class ProductController extends Controller
         $taxClasses = TaxClass::where('is_active', true)->orderBy('name')->get();
         $ingredients = Ingredient::where('is_active', true)->orderBy('name')->get();
         $modifierGroups = ModifierGroup::orderBy('name')->get();
-        $allProducts = Product::where('id', '!=', $product->id)->where('is_active', true)->orderBy('product_name')->get();
 
         $product->load([
             'ingredients',
@@ -140,7 +138,7 @@ class ProductController extends Controller
             'bundleItems.componentProduct',
         ]);
 
-        return view('products.edit', compact('product', 'categories', 'brands', 'uoms', 'taxClasses', 'ingredients', 'modifierGroups', 'allProducts'));
+        return view('products.edit', compact('product', 'categories', 'brands', 'uoms', 'taxClasses', 'ingredients', 'modifierGroups'));
     }
 
     /**

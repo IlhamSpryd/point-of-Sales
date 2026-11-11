@@ -10,4 +10,8 @@ enum TaxTypeEnum: string
     case LOCAL_PB1 = 'LOCAL_PB1';
     case WITHHOLDING_PPH = 'WITHHOLDING_PPH';
     case EXEMPT = 'EXEMPT';
+    case SST_SALES = 'SST_SALES';
+    case SST_SERVICE = 'SST_SERVICE';
+    case GST_SG = 'GST_SG';
+    case VAT_PH = 'VAT_PH';
 }

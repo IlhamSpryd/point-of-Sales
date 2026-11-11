@@ -311,14 +311,21 @@ class MariaDbTriggerIntegrityAndStressTest extends TestCase
         $this->assertTrue($paymentDeleteFailed, 'trg_payments_before_delete must block DELETE');
 
         // 2. trg_order_items_before_update & trg_order_items_before_delete
+        // Sesuai DDL hardening, pesanan pending boleh memutasi kuantitas item (Open Tab / cart mutation)
+        DB::table('order_items')->where('id', $this->orderItem->id)->update(['qty' => 5]);
+        $this->assertEquals(5, DB::table('order_items')->where('id', $this->orderItem->id)->value('qty'));
+
+        // Namun setelah status pesanan menjadi PAID/final, order_items terkunci imutabel
+        DB::table('orders')->where('id', $this->order->id)->update(['order_status' => 'paid']);
+
         $itemUpdateFailed = false;
         try {
             DB::table('order_items')->where('id', $this->orderItem->id)->update(['qty' => 99]);
         } catch (QueryException $e) {
             $itemUpdateFailed = true;
-            $this->assertStringContainsString('order_items: hanya preparation_status dan processed_by yang boleh berubah', $e->getMessage());
+            $this->assertStringContainsString('hanya preparation_status dan processed_by yang boleh berubah', $e->getMessage());
         }
-        $this->assertTrue($itemUpdateFailed, 'trg_order_items_before_update must block arbitrary UPDATE');
+        $this->assertTrue($itemUpdateFailed, 'trg_order_items_before_update must block arbitrary UPDATE on non-pending orders');
 
         $itemDeleteFailed = false;
         try {

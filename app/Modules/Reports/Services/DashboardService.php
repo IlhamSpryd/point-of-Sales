@@ -15,6 +15,8 @@ use App\Services\Analytics\RestockPredictionService;
 use App\Services\Context\TenantContext;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class DashboardService
 {
@@ -47,7 +49,7 @@ class DashboardService
 
         $cacheKey = "pos:dashboard:{$tenantId}:{$cacheScope}:metrics_v3";
 
-        $metrics = Cache::remember($cacheKey, 90, function () use ($isAllStores, $user): array {
+        $metrics = Cache::remember($cacheKey, 90, function () use ($isAllStores, $user, $tenantId, $activeStoreId): array {
             $orderQuery = $isAllStores ? Order::allStores() : Order::query();
             $orderItemQuery = $isAllStores ? OrderItem::allStores() : OrderItem::query();
 
@@ -126,18 +128,55 @@ class DashboardService
             })->sum('qty'));
 
             $returnedProducts = 0;
+            if (\Illuminate\Support\Facades\Schema::hasTable('order_returns') && \Illuminate\Support\Facades\Schema::hasTable('order_return_items')) {
+                $returnedProducts = (int) DB::table('order_return_items as ori')
+                    ->join('order_returns as orr', function ($join) {
+                        $join->on('ori.order_return_id', '=', 'orr.id')
+                            ->on('ori.tenant_id', '=', 'orr.tenant_id');
+                    })
+                    ->where('orr.tenant_id', $tenantId)
+                    ->where('orr.status', 'completed')
+                    ->whereMonth(DB::raw('COALESCE(orr.completed_at, orr.created_at)'), $thisMonth)
+                    ->whereYear(DB::raw('COALESCE(orr.completed_at, orr.created_at)'), $thisYear)
+                    ->when($activeStoreId !== null, fn ($q) => $q->where('orr.store_id', $activeStoreId))
+                    ->sum('ori.quantity_returned');
+            }
 
             // 3.0 Real-time Period KPI (DEMURE Top 3 Cards)
             $todayStart = $now->copy()->startOfDay();
             $todayEnd = $now->copy()->endOfDay();
             $todayOrders = (int) ((clone $orderQuery)->whereIn('order_status', $paidStatuses)->whereBetween('created_at', [$todayStart, $todayEnd])->count());
 
+            $yesterdayStart = $now->copy()->subDay()->startOfDay();
+            $yesterdayEnd = $now->copy()->subDay()->endOfDay();
+            $yesterdayOrders = (int) ((clone $orderQuery)->whereIn('order_status', $paidStatuses)->whereBetween('created_at', [$yesterdayStart, $yesterdayEnd])->count());
+            $todayDeltaPercent = $yesterdayOrders > 0
+                ? round((($todayOrders - $yesterdayOrders) / $yesterdayOrders) * 100, 1)
+                : ($todayOrders > 0 ? 100.0 : 0.0);
+            $todayDeltaFormatted = ($todayDeltaPercent >= 0 ? '+' : '').$todayDeltaPercent.'%';
+            $todayDeltaVariant = $todayDeltaPercent >= 0 ? 'positive' : 'negative';
+
             $weekStart = $now->copy()->startOfWeek();
             $weekOrders = (int) ((clone $orderQuery)->whereIn('order_status', $paidStatuses)->whereBetween('created_at', [$weekStart, $todayEnd])->count());
+
+            $lastWeekStart = $now->copy()->subWeek()->startOfWeek();
+            $lastWeekEnd = $now->copy()->subWeek()->endOfWeek();
+            $lastWeekOrders = (int) ((clone $orderQuery)->whereIn('order_status', $paidStatuses)->whereBetween('created_at', [$lastWeekStart, $lastWeekEnd])->count());
+            $weekDeltaPercent = $lastWeekOrders > 0
+                ? round((($weekOrders - $lastWeekOrders) / $lastWeekOrders) * 100, 1)
+                : ($weekOrders > 0 ? 100.0 : 0.0);
+            $weekDeltaFormatted = ($weekDeltaPercent >= 0 ? '+' : '').$weekDeltaPercent.'%';
+            $weekDeltaVariant = $weekDeltaPercent >= 0 ? 'positive' : 'negative';
 
             $displayTodayOrders = $todayOrders;
             $displayWeekOrders = $weekOrders;
             $displayMonthOrders = (int) $kpi->this_month_orders;
+
+            $monthDeltaPercent = (int) $kpi->last_month_orders > 0
+                ? round((((int) $kpi->this_month_orders - (int) $kpi->last_month_orders) / (int) $kpi->last_month_orders) * 100, 1)
+                : ((int) $kpi->this_month_orders > 0 ? 100.0 : 0.0);
+            $monthDeltaFormatted = ($monthDeltaPercent >= 0 ? '+' : '').$monthDeltaPercent.'%';
+            $monthDeltaVariant = $monthDeltaPercent >= 0 ? 'positive' : 'negative';
 
             // 3.1 31-Day Histogram Data for DEMURE Sales Performance
             $monthStart = $now->copy()->startOfMonth();
@@ -294,24 +333,52 @@ class DashboardService
             $activeCarbon->locale('id');
             $activeDayDate = $activeCarbon->isoFormat('dddd, D MMMM Y');
 
-            // 3.2 Quarterly Statistics (DEMURE Bottom Card 1)
+            // 3.2 Real-time Quarterly Statistics (Eliminasi data fiktif & label Korea)
             $currentQuarter = $now->quarter;
             $quarterStart = $now->copy()->firstOfQuarter();
             $quarterEnd = $now->copy()->lastOfQuarter();
             $quarterEarnings = (float) ((clone $orderQuery)->whereIn('order_status', $paidStatuses)->whereBetween('created_at', [$quarterStart, $quarterEnd])->sum('order_amount'));
-            if ($quarterEarnings <= 0 && $totalEarnings > 0) {
-                $quarterEarnings = $totalEarnings * 0.35;
-            } elseif ($quarterEarnings <= 0) {
-                $quarterEarnings = 12860000;
-            }
-            $quarterDeltaPercent = -16.7;
 
-            $quarterBars = [
-                ['label' => '1분기 (Q1)', 'quarter' => 'Q1', 'percent' => 38, 'is_current' => $currentQuarter === 1],
-                ['label' => '2분기 (Q2)', 'quarter' => 'Q2', 'percent' => 62, 'is_current' => $currentQuarter === 2],
-                ['label' => '3분기 (Q3)', 'quarter' => 'Q3', 'percent' => 74, 'is_current' => $currentQuarter === 3],
-                ['label' => '4분기 (Q4)', 'quarter' => 'Q4', 'percent' => 88, 'is_current' => $currentQuarter === 4],
+            $prevQuarterStart = $now->copy()->subQuarter()->firstOfQuarter();
+            $prevQuarterEnd = $now->copy()->subQuarter()->lastOfQuarter();
+            $prevQuarterEarnings = (float) ((clone $orderQuery)->whereIn('order_status', $paidStatuses)->whereBetween('created_at', [$prevQuarterStart, $prevQuarterEnd])->sum('order_amount'));
+
+            $quarterDeltaPercent = $prevQuarterEarnings > 0
+                ? round((($quarterEarnings - $prevQuarterEarnings) / $prevQuarterEarnings) * 100, 1)
+                : ($quarterEarnings > 0 ? 100.0 : 0.0);
+
+            // Agregasi pendapatan riil untuk 4 kuartal dalam tahun berjalan
+            $yearStart = $now->copy()->startOfYear();
+            $quarterTotals = [];
+            for ($q = 1; $q <= 4; $q++) {
+                $qStart = $yearStart->copy()->addMonths(($q - 1) * 3)->startOfDay();
+                $qEnd = $qStart->copy()->addMonths(3)->subSecond()->endOfDay();
+                $quarterTotals[$q] = (float) ((clone $orderQuery)
+                    ->whereIn('order_status', $paidStatuses)
+                    ->whereBetween('created_at', [$qStart, $qEnd])
+                    ->sum('order_amount'));
+            }
+
+            $maxQuarter = max(1.0, ...array_values($quarterTotals));
+            $quarterLabels = [
+                1 => 'Q1 (Jan-Mar)',
+                2 => 'Q2 (Apr-Jun)',
+                3 => 'Q3 (Jul-Sep)',
+                4 => 'Q4 (Okt-Des)',
             ];
+
+            $quarterBars = [];
+            for ($q = 1; $q <= 4; $q++) {
+                $total = $quarterTotals[$q];
+                $percent = (int) round(($total / $maxQuarter) * 100);
+                $quarterBars[] = [
+                    'label' => $quarterLabels[$q],
+                    'quarter' => "Q{$q}",
+                    'percent' => $percent,
+                    'total' => $total,
+                    'is_current' => $currentQuarter === $q,
+                ];
+            }
 
             // 3.3 7 Hari Terakhir & Statistik Harian (Existing Curve)
             $revenueData = [];
@@ -483,8 +550,17 @@ class DashboardService
                 'firstName',
                 'summaryText',
                 'displayTodayOrders',
+                'todayDeltaPercent',
+                'todayDeltaFormatted',
+                'todayDeltaVariant',
                 'displayWeekOrders',
+                'weekDeltaPercent',
+                'weekDeltaFormatted',
+                'weekDeltaVariant',
                 'displayMonthOrders',
+                'monthDeltaPercent',
+                'monthDeltaFormatted',
+                'monthDeltaVariant',
                 'monthlyHistogram',
                 'weeklyHistogram',
                 'yearlyHistogram',
@@ -682,5 +758,33 @@ class DashboardService
         }
 
         return 'Rp '.number_format($num, 0, ',', '.');
+    }
+
+    /**
+     * Menginvalidasi partisi cache dasbor untuk tenant dan cabang yang ditentukan.
+     */
+    public function invalidateCache(int $tenantId, ?int $storeId = null): void
+    {
+        Cache::forget("pos:dashboard:{$tenantId}:all:metrics_v3");
+        Cache::forget("pos:dashboard:{$tenantId}:default:metrics_v3");
+        if ($storeId !== null) {
+            Cache::forget("pos:dashboard:{$tenantId}:{$storeId}:metrics_v3");
+        }
+
+        try {
+            if (config('cache.default') === 'redis') {
+                $redis = \Illuminate\Support\Facades\Redis::connection();
+                $keys = $redis->keys("pos:dashboard:{$tenantId}:*");
+                if (! empty($keys)) {
+                    $redis->del($keys);
+                }
+                $dashKeys = $redis->keys("pos:dash:{$tenantId}:*");
+                if (! empty($dashKeys)) {
+                    $redis->del($dashKeys);
+                }
+            }
+        } catch (\Throwable) {
+            // Abaikan kegagalan flush redis saat testing / offline mode
+        }
     }
 }

@@ -117,13 +117,22 @@
                             $isOutOfStock = ! $isFulfillable;
                             $isLowStock = $tracksStock && !is_null($product->stock) && $product->stock > 0 && $product->stock <= 10;
                         }
+                        $hasActiveVariants = !empty($product->variants) && $product->variants->filter(function ($v) {
+                            return !($v instanceof \__PHP_Incomplete_Class) && !empty($v->is_active);
+                        })->isNotEmpty();
+                        $hasModifierGroups = !empty($product->modifierGroups) && $product->modifierGroups->isNotEmpty();
+                        $hasUnitConversions = !empty($product->unitConversions) && $product->unitConversions->isNotEmpty();
+                        $needsConfigurator = $hasActiveVariants || $hasModifierGroups || $hasUnitConversions;
+                        $clickAction = $needsConfigurator
+                            ? "openModifierPicker({$product->id})"
+                            : "addToCartDirectly({$product->id})";
                     @endphp
                     <div wire:key="product-{{ $product->id }}"
                         x-show="matchesCategory({{ $product->cat_id }}, {{ (!empty($product->is_favorite) || !empty($product->is_featured)) ? 'true' : 'false' }})"
                         @if(!$isOutOfStock)
-                            x-on:click="window.erpMotion?.pulseHighlight($el); $wire.{{ $product->modifierGroups->count() > 0 ? "openModifierPicker({$product->id})" : "addToCartDirectly({$product->id})" }}"
-                            @keydown.enter="window.erpMotion?.pulseHighlight($el); $wire.{{ $product->modifierGroups->count() > 0 ? "openModifierPicker({$product->id})" : "addToCartDirectly({$product->id})" }}"
-                            @keydown.space.prevent="window.erpMotion?.pulseHighlight($el); $wire.{{ $product->modifierGroups->count() > 0 ? "openModifierPicker({$product->id})" : "addToCartDirectly({$product->id})" }}"
+                            x-on:click="window.erpMotion?.pulseHighlight($el); $wire.{{ $clickAction }}"
+                            @keydown.enter="window.erpMotion?.pulseHighlight($el); $wire.{{ $clickAction }}"
+                            @keydown.space.prevent="window.erpMotion?.pulseHighlight($el); $wire.{{ $clickAction }}"
                         @endif
                         role="button" tabindex="{{ $isOutOfStock ? '-1' : '0' }}"
                         @if($isOutOfStock) aria-disabled="true" @endif
@@ -200,7 +209,7 @@
                             <button class="flex items-center justify-center w-7 h-7 rounded-md {{ $isOutOfStock ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-muted hover:bg-primary hover:text-white text-foreground cursor-pointer' }} transition-colors"
                                 type="button" title="{{ $isOutOfStock ? ($hasBom ? 'Insufficient ingredients (Out of stock)' : 'Product out of stock') : 'Add' }}"
                                 @if(!$isOutOfStock)
-                                    x-on:click.stop="window.erpMotion?.pulseHighlight($el); $wire.{{ $product->modifierGroups->count() > 0 ? "openModifierPicker({$product->id})" : "addToCartDirectly({$product->id})" }}"
+                                    x-on:click.stop="window.erpMotion?.pulseHighlight($el); $wire.{{ $clickAction }}"
                                 @else
                                     disabled
                                 @endif>

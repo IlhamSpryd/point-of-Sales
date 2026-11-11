@@ -273,9 +273,11 @@ class JournalEntryService
      */
     public function postManualJournal(ManualJournalDto $dto, ?User $actor = null): JournalEntry
     {
-        $journalType = ($dto->journalType === 'OPENING_BALANCE')
-            ? JournalTypeEnum::OPENING_BALANCE
-            : JournalTypeEnum::MANUAL_ADJUSTMENT;
+        $journalType = match ($dto->journalType) {
+            'OPENING_BALANCE' => JournalTypeEnum::OPENING_BALANCE,
+            'GENERAL' => JournalTypeEnum::GENERAL,
+            default => JournalTypeEnum::MANUAL_ADJUSTMENT,
+        };
 
         return $this->createAndPostJournal(
             tenantId: $dto->tenantId,

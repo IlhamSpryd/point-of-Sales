@@ -206,7 +206,11 @@
                                         <div class="text-xs text-muted-foreground uppercase">{{ $item->item_type }}</div>
                                     </td>
                                     <td class="p-3 text-right font-medium tabular-nums text-foreground">
-                                        {{ number_format((float) $item->snapshot_on_hand, 2) }}
+                                        @if ($canViewExpectedStock)
+                                            {{ number_format((float) $item->snapshot_on_hand, 2) }}
+                                        @else
+                                            <span class="text-xs text-muted-foreground italic font-mono">*** (Blind Count)</span>
+                                        @endif
                                     </td>
                                     <td class="p-3 text-right">
                                         <input type="number" step="0.0001" min="0" wire:model="countedQuantities.{{ $item->id }}" placeholder="0.00" class="form-input w-full p-2 text-right tabular-nums rounded-lg border border-border text-sm font-semibold">
@@ -324,13 +328,21 @@
                                         <div class="text-xs text-muted-foreground uppercase">{{ $item->item_type }}</div>
                                     </td>
                                     <td class="p-3 text-right font-medium tabular-nums text-foreground">
-                                        {{ number_format((float) $item->snapshot_on_hand, 2) }}
+                                        @if ($canViewExpectedStock)
+                                            {{ number_format((float) $item->snapshot_on_hand, 2) }}
+                                        @else
+                                            <span class="text-xs text-muted-foreground italic font-mono">*** (Blind Count)</span>
+                                        @endif
                                     </td>
                                     <td class="p-3 text-right font-medium tabular-nums text-foreground">
                                         {{ $item->counted_quantity !== null ? number_format((float) $item->counted_quantity, 2) : '-' }}
                                     </td>
                                     <td class="p-3 text-right font-bold tabular-nums {{ (float) $item->variance_quantity < 0 ? 'text-rose-600' : ((float) $item->variance_quantity > 0 ? 'text-emerald-600' : 'text-muted-foreground') }}">
-                                        {{ $item->variance_quantity !== null ? number_format((float) $item->variance_quantity, 2) : '-' }}
+                                        @if ($canViewExpectedStock || in_array($selectedOpname->status, [\App\Enums\StockOpnameStatusEnum::Approved, \App\Enums\StockOpnameStatusEnum::Completed]))
+                                            {{ $item->variance_quantity !== null ? number_format((float) $item->variance_quantity, 2) : '-' }}
+                                        @else
+                                            <span class="text-xs text-muted-foreground italic font-mono">***</span>
+                                        @endif
                                     </td>
                                     <td class="p-3 text-center text-xs">
                                         <span class="text-xs text-muted-foreground font-medium">

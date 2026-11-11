@@ -63,7 +63,7 @@ class MenuCacheService
 
             $categories = Category::with([
                 'products' => function ($q) use ($storeId) {
-                    $q->availableForOrder()->with(['modifierGroups.modifiers', 'storeAssortments', 'ingredients']);
+                    $q->availableForOrder()->with(['modifierGroups.modifiers', 'storeAssortments', 'ingredients', 'variants' => fn ($vq) => $vq->where('is_active', true), 'unitConversions.fromUom']);
                     if ($storeId) {
                         $q->whereDoesntHave('storeAssortments', function ($a) use ($storeId) {
                             $a->where('store_id', $storeId)->where('is_available', false);

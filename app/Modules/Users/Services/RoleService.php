@@ -137,7 +137,7 @@ class RoleService
     }
 
     /**
-     * Menghapus jabatan/peran. Ditolak jika peran adalah Owner atau masih ada akun staf TENANT INI yang menempati jabatan ini.
+     * Menghapus jabatan/peran. Ditolak jika peran adalah Owner, peran sistem default, atau masih ada akun staf TENANT INI yang menempati jabatan ini.
      */
     public function delete(Role $role): bool
     {
@@ -146,12 +146,50 @@ class RoleService
                 throw new Exception('Cannot delete the system Owner role (Self-Lockout Protection).');
             }
 
+            if ($role->is_system_default) {
+                throw new Exception('Cannot delete system default role "'.$role->name.'".');
+            }
+
             $usersCount = $role->users()->where('users.tenant_id', app(TenantContext::class)->requireTenantId())->count();
             if ($usersCount > 0) {
                 throw new Exception('Cannot delete role "'.$role->name.'" because '.$usersCount.' user(s) are assigned to it.');
             }
 
             return (bool) $role->delete();
+        });
+    }
+
+    /**
+     * Menduplikasi peran yang ada (sistem default atau custom) menjadi peran custom baru
+     * untuk memudahkan Owner mengonfigurasi peran turunan tanpa mengubah peran default.
+     */
+    public function duplicate(Role $role, ?string $newName = null): Role
+    {
+        return DB::transaction(function () use ($role, $newName) {
+            $tenantId = app(TenantContext::class)->requireTenantId();
+
+            if ((int) $role->tenant_id !== (int) $tenantId) {
+                throw new Exception('Cross-tenant role duplication is strictly prohibited.');
+            }
+
+            $baseName = $newName ?: ($role->name . ' (Copy)');
+            $candidateName = $baseName;
+            $counter = 1;
+
+            while (Role::withoutTenantScope()->where('tenant_id', $tenantId)->where('name', $candidateName)->exists()) {
+                $counter++;
+                $candidateName = $baseName . ' ' . $counter;
+            }
+
+            return Role::create([
+                'tenant_id' => $tenantId,
+                'name' => $candidateName,
+                'description' => $role->description ? ('Copy of ' . $role->description) : ('Copy of ' . $role->name),
+                'permissions' => $role->permissions,
+                'dashboard_archetype' => $role->dashboard_archetype ?? 'executive',
+                'is_system_default' => false,
+                'is_active' => true,
+            ]);
         });
     }
 

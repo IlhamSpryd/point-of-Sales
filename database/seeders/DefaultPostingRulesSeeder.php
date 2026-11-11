@@ -25,6 +25,8 @@ class DefaultPostingRulesSeeder extends Seeder
 
     public function seedForTenant(int $tenantId): void
     {
+        app(\App\Services\Context\TenantContext::class)->setTenantId($tenantId);
+
         // 1. pos.order.paid
         $posRule = PostingRule::firstOrCreate(
             ['tenant_id' => $tenantId, 'event_code' => 'pos.order.paid'],

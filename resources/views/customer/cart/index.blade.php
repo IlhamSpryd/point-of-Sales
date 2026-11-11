@@ -135,12 +135,12 @@
                 busy: false,
                 menuUrl: cfg.menuUrl,
                 checkoutUrl: cfg.checkoutUrl,
-                taxPercent: Math.round(cfg.taxRate * 1000) / 10,
+                taxPercent: Number(((Number(cfg.taxRate) || 0) * 100).toFixed(2)),
 
                 get active() { return this.lines.filter(l => !l.removing); },
-                get subtotal() { return this.active.reduce((s, l) => s + l.unitPrice * l.qty, 0); },
-                get totalQty() { return this.active.reduce((s, l) => s + l.qty, 0); },
-                get tax() { return Math.round(this.subtotal * cfg.taxRate); },
+                get subtotal() { return this.active.reduce((s, l) => s + (Number(l.unitPrice) || 0) * (Number(l.qty) || 0), 0); },
+                get totalQty() { return this.active.reduce((s, l) => s + (Number(l.qty) || 0), 0); },
+                get tax() { return Math.round((Number(this.subtotal) || 0) * (Number(cfg.taxRate) || 0)); },
                 get total() {
                     const raw = this.subtotal + this.tax, v = cfg.roundingValue;
                     if (v <= 0 || cfg.roundingBehavior === 'NONE') return Math.round(raw);

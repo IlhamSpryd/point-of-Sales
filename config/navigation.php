@@ -116,6 +116,7 @@ return [
                 ['label' => 'Journal Entries', 'icon' => 'menu_book', 'route' => 'finance.journals.index'],
                 ['label' => 'Accounting Periods', 'icon' => 'calendar_month', 'route' => 'finance.periods.index'],
                 ['label' => 'Bank Reconciliation', 'icon' => 'fact_check', 'route' => 'finance.reconciliation.index'],
+                ['label' => 'Fixed Assets', 'icon' => 'domain', 'route' => 'finance.fixed-assets.index'],
             ],
         ],
         [
@@ -596,6 +597,14 @@ return [
                     'icon' => 'fact_check',
                     'roles' => ['Owner', 'Manager', 'Finance', 'Admin'],
                     'permission' => 'finance.reconciliation.manage',
+                ],
+                [
+                    'label' => 'Fixed Assets',
+                    'route' => 'finance.fixed-assets.index',
+                    'active' => 'finance.fixed-assets.*',
+                    'icon' => 'domain',
+                    'roles' => ['Owner', 'Manager', 'Finance', 'Admin'],
+                    'permission' => 'finance.assets.manage',
                 ],
             ],
         ],

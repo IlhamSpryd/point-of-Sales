@@ -177,13 +177,23 @@ class Board extends Component
     }
 
     /**
-     * Zero-Trust gate: HANYA item dari order LUNAS (paid) yang tampil di dapur.
+     * Tampilkan item dari order LUNAS (paid/completed) atau pesanan dine-in terbuka (open tab / pending) (TASK-P0-02).
      */
     private function baseQuery(): Builder
     {
         $query = OrderItem::query()
             ->with(['product.category', 'order.table'])
-            ->whereHas('order', fn ($q) => $q->where('order_status', OrderStatus::Paid->value));
+            ->whereHas('order', function (Builder $q) {
+                $q->whereIn('order_status', [OrderStatus::Paid->value, OrderStatus::Completed->value])
+                    ->orWhere(function (Builder $sub) {
+                        $sub->where('order_type', 'dine_in')
+                            ->whereIn('order_status', [OrderStatus::Pending->value, 'open', 'pending'])
+                            ->whereNull('snap_token')
+                            ->whereDoesntHave('paymentAttempts', function (Builder $pa) {
+                                $pa->where('status', \App\Enums\PaymentAttemptStatus::PendingProvider);
+                            });
+                    });
+            });
 
         if ($this->stationFilter !== 'all') {
             $station = $this->stationFilter;

@@ -19,9 +19,18 @@
             <p class="font-sans text-[10px] 3xl:text-xs font-bold uppercase tracking-widest text-gray-400">{{ $order->order_code }}</p>
             <p class="mt-0.5 truncate text-base font-black text-foreground leading-tight">{{ $place }}</p>
         </div>
-        <x-ui.badge :variant="$isTakeaway ? 'primary' : 'secondary'">
-            {{ $isTakeaway ? 'Takeaway' : 'Dine-in' }}
-        </x-ui.badge>
+        <div class="flex items-center gap-1.5 shrink-0">
+            @php
+                $orderStatusVal = $order->order_status?->value ?? (string) $order->order_status;
+                $isPaid = in_array($orderStatusVal, ['paid', 'completed'], true);
+            @endphp
+            <x-ui.badge :variant="$isPaid ? 'success' : 'warning'">
+                {{ $isPaid ? 'PAID' : 'OPEN TAB' }}
+            </x-ui.badge>
+            <x-ui.badge :variant="$isTakeaway ? 'primary' : 'secondary'">
+                {{ $isTakeaway ? 'Takeaway' : 'Dine-in' }}
+            </x-ui.badge>
+        </div>
     </div>
 
     <div class="mt-2.5 flex items-baseline gap-2">

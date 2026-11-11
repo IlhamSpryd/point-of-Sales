@@ -4,24 +4,14 @@ declare(strict_types=1);
 
 namespace App\Modules\Products\Models;
 
-use App\Models\Brand;
-use App\Models\Category;
 use App\Models\Concerns\AssignsTenant;
 use App\Models\Concerns\ScopedToTenant;
 use App\Models\Ingredient;
 use App\Models\ModifierGroup;
 use App\Models\Order;
 use App\Models\OrderItem;
-use App\Models\ProductBundleItem;
-use App\Models\ProductCostHistory;
 use App\Models\ProductIngredient;
-use App\Models\ProductMedia;
-use App\Models\ProductUnitConversion;
-use App\Models\ProductVariant;
 use App\Models\Store;
-use App\Models\StoreProductAssortment;
-use App\Models\TaxClass;
-use App\Models\UnitOfMeasure;
 use App\Services\Context\TenantContext;
 use App\Services\MenuCacheService;
 use App\Services\ProductService;

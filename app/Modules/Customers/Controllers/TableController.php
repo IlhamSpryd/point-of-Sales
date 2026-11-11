@@ -26,8 +26,9 @@ class TableController extends Controller
         $this->authorize('viewAny', Table::class);
 
         $tables = $this->tableService->getFilteredQuery($request)->paginate(10)->withQueryString();
+        $allStoreTables = Table::where('is_active', true)->orderBy('table_name')->get();
 
-        return view('tables.index', compact('tables'));
+        return view('tables.index', compact('tables', 'allStoreTables'));
     }
 
     public function create(): View
@@ -155,5 +156,68 @@ class TableController extends Controller
         $this->authorize('update', $table);
 
         return $this->rotateQr($table);
+    }
+
+    /**
+     * Pindah meja aktif (TASK-P1-01).
+     */
+    public function move(Request $request, Table $table): RedirectResponse
+    {
+        $this->authorize('update', $table);
+
+        $validated = $request->validate([
+            'target_table_id' => 'required|integer',
+        ]);
+
+        $tenantId = (int) app(\App\Services\Context\TenantContext::class)->requireTenantId();
+        $storeId = (int) (app(\App\Services\Context\TenantContext::class)->getStoreId() ?? $table->store_id);
+        $userId = (int) auth()->id();
+
+        try {
+            $result = app(\App\Modules\FNB\Services\TableManagementService::class)->moveTable(
+                tenantId: $tenantId,
+                storeId: $storeId,
+                sourceTableId: (int) $table->id,
+                targetTableId: (int) $validated['target_table_id'],
+                userId: $userId
+            );
+
+            return redirect()->route('tables.index')
+                ->with('success', "Meja {$table->table_name} berhasil dipindahkan ke meja {$result['target_table']->table_name}. ({$result['moved_orders_count']} pesanan dipindahkan)");
+        } catch (\Throwable $e) {
+            return redirect()->route('tables.index')->with('error', $e->getMessage());
+        }
+    }
+
+    /**
+     * Gabung meja (TASK-P1-01).
+     */
+    public function merge(Request $request, Table $table): RedirectResponse
+    {
+        $this->authorize('update', $table);
+
+        $validated = $request->validate([
+            'secondary_table_ids' => 'required|array|min:1',
+            'secondary_table_ids.*' => 'integer',
+        ]);
+
+        $tenantId = (int) app(\App\Services\Context\TenantContext::class)->requireTenantId();
+        $storeId = (int) (app(\App\Services\Context\TenantContext::class)->getStoreId() ?? $table->store_id);
+        $userId = (int) auth()->id();
+
+        try {
+            $result = app(\App\Modules\FNB\Services\TableManagementService::class)->mergeTables(
+                tenantId: $tenantId,
+                storeId: $storeId,
+                primaryTableId: (int) $table->id,
+                secondaryTableIds: array_map('intval', $validated['secondary_table_ids']),
+                userId: $userId
+            );
+
+            return redirect()->route('tables.index')
+                ->with('success', "Meja {$table->table_name} berhasil digabungkan dengan ".count($result['merged_table_ids'])." meja lainnya ({$result['orders_consolidated']} pesanan dikonsolidasikan).");
+        } catch (\Throwable $e) {
+            return redirect()->route('tables.index')->with('error', $e->getMessage());
+        }
     }
 }

@@ -1,5 +1,23 @@
 <x-app-layout>
-    <div class="space-y-6" data-gsap="page-enter">
+    <div class="space-y-6" data-gsap="page-enter"
+        x-data="{
+            moveModalOpen: false,
+            sourceTableId: null,
+            sourceTableName: '',
+            mergeModalOpen: false,
+            primaryTableId: null,
+            primaryTableName: '',
+            openMove(id, name) {
+                this.sourceTableId = id;
+                this.sourceTableName = name;
+                this.moveModalOpen = true;
+            },
+            openMerge(id, name) {
+                this.primaryTableId = id;
+                this.primaryTableName = name;
+                this.mergeModalOpen = true;
+            }
+        }">
         @php
             $activeStoreId = app(\App\Services\Context\TenantContext::class)->getStoreId();
             $activeStore = $activeStoreId ? \App\Models\Store::find($activeStoreId) : null;
@@ -121,6 +139,12 @@
                     <td class="px-6 py-4 text-right whitespace-nowrap">
                         <x-ui.table-actions>
                             @if($table->operational_status === 'occupied')
+                                <x-ui.table-action-item icon="drive_file_move" @click="openMove({{ $table->id }}, '{{ addslashes($table->table_name) }}')" aria-label="Move Table">
+                                    Pindah Meja (Move)
+                                </x-ui.table-action-item>
+                                <x-ui.table-action-item icon="merge_type" @click="openMerge({{ $table->id }}, '{{ addslashes($table->table_name) }}')" aria-label="Merge Tables">
+                                    Gabung Meja (Merge)
+                                </x-ui.table-action-item>
                                 <x-ui.table-action-item icon="meeting_room" onclick="if(confirm('Release table {{ addslashes($table->table_name) }}? Please ensure all active orders are settled.')) document.getElementById('release-form-{{ $table->id }}').submit()" aria-label="Release Table">
                                     Release Table
                                 </x-ui.table-action-item>
@@ -246,5 +270,103 @@
         @if($tables->hasPages())
             <div class="lg:hidden p-4 border-t border-border shrink-0">{{ $tables->links() }}</div>
         @endif
+
+        {{-- MODAL MOVE TABLE (TASK-P1-01) --}}
+        <div x-show="moveModalOpen" x-cloak
+            class="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+            <div class="bg-card border border-border rounded-2xl max-w-md w-full p-6 shadow-xl"
+                @click.outside="moveModalOpen = false">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center text-foreground">
+                        <span class="material-symbols-rounded text-[24px]">drive_file_move</span>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-foreground">Pindah Meja (Move Table)</h3>
+                        <p class="text-xs text-muted-foreground">Pindahkan seluruh pesanan aktif dari meja ini</p>
+                    </div>
+                </div>
+
+                <form :action="'{{ url('tables') }}/' + sourceTableId + '/move'" method="POST">
+                    @csrf
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-foreground uppercase tracking-wider mb-1">Meja Asal</label>
+                            <input type="text" :value="sourceTableName" readonly class="form-input w-full p-2.5 rounded-xl border border-border bg-muted text-xs font-bold text-foreground">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-foreground uppercase tracking-wider mb-1">Pilih Meja Tujuan (Kosong / Available)</label>
+                            <select name="target_table_id" required class="form-select w-full p-2.5 rounded-xl border border-border bg-background text-xs font-semibold text-foreground">
+                                <option value="">-- Pilih Meja Tujuan --</option>
+                                @foreach($allStoreTables ?? [] as $t)
+                                    <option value="{{ $t->id }}" x-show="sourceTableId != {{ $t->id }}" {{ $t->operational_status !== 'available' ? 'disabled' : '' }}>
+                                        {{ $t->table_name }} ({{ $t->area ?? 'Utama' }}) - {{ ucfirst($t->operational_status) }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2.5 mt-6 pt-4 border-t border-border">
+                        <x-ui.button type="button" variant="secondary" @click="moveModalOpen = false">
+                            Batal
+                        </x-ui.button>
+                        <x-ui.button type="submit" variant="primary">
+                            Pindahkan Pesanan
+                        </x-ui.button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {{-- MODAL MERGE TABLES (TASK-P1-01) --}}
+        <div x-show="mergeModalOpen" x-cloak
+            class="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+            <div class="bg-card border border-border rounded-2xl max-w-md w-full p-6 shadow-xl"
+                @click.outside="mergeModalOpen = false">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-10 h-10 rounded-xl bg-muted border border-border flex items-center justify-center text-foreground">
+                        <span class="material-symbols-rounded text-[24px]">merge_type</span>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-foreground">Gabung Meja (Merge Tables)</h3>
+                        <p class="text-xs text-muted-foreground">Gabungkan meja-meja lain ke dalam meja utama ini</p>
+                    </div>
+                </div>
+
+                <form :action="'{{ url('tables') }}/' + primaryTableId + '/merge'" method="POST">
+                    @csrf
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-foreground uppercase tracking-wider mb-1">Meja Utama (Primary Table)</label>
+                            <input type="text" :value="primaryTableName" readonly class="form-input w-full p-2.5 rounded-xl border border-border bg-muted text-xs font-bold text-foreground">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-foreground uppercase tracking-wider mb-2">Pilih Meja Sekunder yang Digabungkan</label>
+                            <div class="space-y-2 max-h-48 overflow-y-auto p-2 bg-muted/40 rounded-xl border border-border">
+                                @foreach($allStoreTables ?? [] as $t)
+                                    <label class="flex items-center gap-2.5 p-2 rounded-lg hover:bg-muted text-xs font-medium text-foreground cursor-pointer"
+                                        x-show="primaryTableId != {{ $t->id }}">
+                                        <input type="checkbox" name="secondary_table_ids[]" value="{{ $t->id }}"
+                                            class="rounded border-border text-primary focus:ring-ring">
+                                        <span>{{ $t->table_name }} ({{ $t->area ?? 'Utama' }}) - <span class="capitalize text-muted-foreground">{{ $t->operational_status }}</span></span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-end gap-2.5 mt-6 pt-4 border-t border-border">
+                        <x-ui.button type="button" variant="secondary" @click="mergeModalOpen = false">
+                            Batal
+                        </x-ui.button>
+                        <x-ui.button type="submit" variant="primary">
+                            Gabungkan Meja
+                        </x-ui.button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 </x-app-layout>

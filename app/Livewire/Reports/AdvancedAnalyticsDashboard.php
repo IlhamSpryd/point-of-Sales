@@ -176,7 +176,55 @@ class AdvancedAnalyticsDashboard extends Component
 
         match ($this->activeTab) {
             'sales' => (function () use (&$data, $salesService, $start, $end) {
-                $data['salesTrend'] = $salesService->getSalesTrend($start, $end, 'daily', $this->selectedStoreId);
+                $trend = $salesService->getSalesTrend($start, $end, 'daily', $this->selectedStoreId);
+                $data['salesTrend'] = $trend;
+
+                // Siapkan opsi ECharts interaktif untuk memvisualisasikan salesTrend
+                $dates = [];
+                $netSales = [];
+                foreach ($trend as $point) {
+                    $dateStr = (string) ($point['sample_date'] ?? $point['period_key'] ?? '');
+                    $dates[] = $dateStr !== '' ? Carbon::parse($dateStr)->format('d M') : '';
+                    $netSales[] = (float) ($point['net_sales'] ?? $point['gross_sales'] ?? 0);
+                }
+
+                $data['salesTrendChartOptions'] = [
+                    'tooltip' => ['trigger' => 'axis'],
+                    'xAxis' => [
+                        'type' => 'category',
+                        'boundaryGap' => false,
+                        'data' => $dates,
+                        'axisLine' => ['lineStyle' => ['color' => '#E4E4E7']],
+                    ],
+                    'yAxis' => [
+                        'type' => 'value',
+                        'splitLine' => ['lineStyle' => ['color' => '#E4E4E7', 'type' => 'dashed']],
+                    ],
+                    'series' => [
+                        [
+                            'name' => 'Net Sales',
+                            'type' => 'line',
+                            'smooth' => true,
+                            'data' => $netSales,
+                            'symbolSize' => 6,
+                            'itemStyle' => ['color' => '#18181B'],
+                            'areaStyle' => [
+                                'color' => [
+                                    'type' => 'linear',
+                                    'x' => 0,
+                                    'y' => 0,
+                                    'x2' => 0,
+                                    'y2' => 1,
+                                    'colorStops' => [
+                                        ['offset' => 0, 'color' => 'rgba(24, 24, 27, 0.16)'],
+                                        ['offset' => 1, 'color' => 'rgba(24, 24, 27, 0.00)'],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ];
+
                 $data['topProducts'] = $salesService->getTopProducts($start, $end, $this->selectedStoreId, 10);
                 $data['categories'] = $salesService->getCategoryPerformance($start, $end, $this->selectedStoreId);
                 $data['momComparison'] = $salesService->getMomComparison($end, $this->selectedStoreId);

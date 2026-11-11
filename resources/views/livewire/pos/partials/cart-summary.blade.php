@@ -231,10 +231,10 @@
 
         <div class="flex items-center justify-between px-1 text-muted-foreground text-xs pt-0.5">
             <button type="button"
-                @click="$dispatch('open-checkout-modal', { total: {{ (int) $this->totalAmount }}, method: 'cash' }); $dispatch('open-modal', 'checkout-payment')"
-                class="flex items-center gap-1 hover:text-foreground transition-colors">
+                wire:click="openSplitBillModal"
+                class="flex items-center gap-1 hover:text-foreground text-primary font-semibold transition-colors cursor-pointer">
                 <span class="material-symbols-rounded text-[14px]">call_split</span>
-                <span>Split Payment Supported</span>
+                <span>Split Bill (Pisah Tagihan)</span>
             </button>
             <a href="{{ route('shifts.index') }}" class="flex items-center gap-1 hover:text-foreground transition-colors">
                 <span class="material-symbols-rounded text-[14px]">print</span>

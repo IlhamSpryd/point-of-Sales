@@ -15,11 +15,13 @@ class PopulateEnterpriseDatasetCommand extends Command
 {
     protected $signature = 'pos:dataset:populate-enterprise
                             {--confirm-database= : Target database name as safety guard}
+                            {--force : Force re-populating and refreshing enterprise tables}
                             {--dry-run : Simulate without persisting data}';
 
     protected $description = 'Populate all 90 empty tables across Finance, HRM, B2B Sales, Promotions and Partitioned Ledgers up to 06 Nov 2026';
 
     private bool $dryRun = false;
+    private bool $force = false;
 
     public function handle(): int
     {
@@ -32,9 +34,10 @@ class PopulateEnterpriseDatasetCommand extends Command
         }
 
         $this->dryRun = (bool) $this->option('dry-run');
+        $this->force = (bool) $this->option('force');
 
         $this->info("=== APEIRON SYSTEMS: ENTERPRISE DATASET INJECTION (100% TABLE POPULATION) ===");
-        $this->info("Target Database: {$dbName} | Mode: " . ($this->dryRun ? 'DRY-RUN' : 'LIVE EXECUTION'));
+        $this->info("Target Database: {$dbName} | Mode: " . ($this->dryRun ? 'DRY-RUN' : 'LIVE EXECUTION') . ($this->force ? ' | FORCE REFRESH' : ''));
 
         $tenants = Tenant::whereIn('slug', ['fnb-demo', 'retail-demo'])
             ->orWhereIn('id', DB::table('users')->whereIn('email', ['ilhamsepriyadi8@gmail.com', 'ilhamsepriyadi0@gmail.com'])->pluck('tenant_id'))
@@ -47,6 +50,10 @@ class PopulateEnterpriseDatasetCommand extends Command
 
         foreach ($tenants as $tenant) {
             $this->info("\n--- MEMPROSES TENANT #{$tenant->id}: {$tenant->name} ---");
+            if ($this->force && ! $this->dryRun) {
+                $this->line("Membersihkan tabel enterprise lama untuk Tenant #{$tenant->id}...");
+                $this->cleanEnterpriseTables($tenant);
+            }
             $this->populateTenant($tenant);
         }
 
@@ -59,17 +66,275 @@ class PopulateEnterpriseDatasetCommand extends Command
         return self::SUCCESS;
     }
 
+    private function cleanEnterpriseTables(Tenant $tenant): void
+    {
+        // 1. Drop immutability triggers on journals, lines, payroll, and AP
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_journal_entries_before_update;");
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_journal_entries_before_delete;");
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_journal_lines_before_update;");
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_journal_lines_before_delete;");
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_payroll_records_immutable_update;");
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_payroll_records_immutable_delete;");
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_ap_ledger_entries_before_update;");
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_ap_ledger_entries_before_delete;");
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_tax_ledger_entries_before_update;");
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_tax_ledger_entries_before_delete;");
+
+        // 2. Re-open accounting periods so journals can be inserted/deleted
+        DB::table('accounting_periods')->where('tenant_id', $tenant->id)->update(['status' => 'OPEN']);
+
+        // 3. Delete previous enterprise data for this tenant
+        DB::statement('SET FOREIGN_KEY_CHECKS = 0;');
+
+        DB::table('financial_event_outboxes')->where('tenant_id', $tenant->id)->delete();
+        DB::table('accounting_receivable_outboxes')->where('tenant_id', $tenant->id)->delete();
+        DB::table('payment_inbox')->where('tenant_id', $tenant->id)->delete();
+        DB::table('whatsapp_message_outbox')->where('tenant_id', $tenant->id)->delete();
+
+        DB::table('fixed_asset_depreciation_schedules')->where('tenant_id', $tenant->id)->delete();
+        DB::table('fixed_asset_disposals')->where('tenant_id', $tenant->id)->delete();
+        DB::table('fixed_assets')->where('tenant_id', $tenant->id)->delete();
+        DB::table('fixed_asset_categories')->where('tenant_id', $tenant->id)->delete();
+
+        DB::table('expense_approvals')->where('tenant_id', $tenant->id)->delete();
+        DB::table('expense_attachments')->where('tenant_id', $tenant->id)->delete();
+        DB::table('expense_lines')->where('tenant_id', $tenant->id)->delete();
+        DB::table('expenses')->where('tenant_id', $tenant->id)->delete();
+        DB::table('expense_categories')->where('tenant_id', $tenant->id)->delete();
+
+        DB::table('bank_reconciliation_matches')->where('tenant_id', $tenant->id)->delete();
+        DB::table('bank_reconciliation_sessions')->where('tenant_id', $tenant->id)->delete();
+        DB::table('bank_statement_lines')->where('tenant_id', $tenant->id)->delete();
+        DB::table('bank_statements')->where('tenant_id', $tenant->id)->delete();
+        DB::table('cash_bank_transactions')->where('tenant_id', $tenant->id)->delete();
+        DB::table('cash_bank_accounts')->where('tenant_id', $tenant->id)->delete();
+
+        DB::table('commission_records')->where('tenant_id', $tenant->id)->delete();
+        DB::table('commission_rules')->where('tenant_id', $tenant->id)->delete();
+
+        DB::table('vouchers')->where('tenant_id', $tenant->id)->delete();
+        DB::table('promotion_store_mappings')->where('tenant_id', $tenant->id)->delete();
+        DB::table('promotion_rules')->where('tenant_id', $tenant->id)->delete();
+        DB::table('promotion_rewards')->where('tenant_id', $tenant->id)->delete();
+        DB::table('promotion_reservations')->where('tenant_id', $tenant->id)->delete();
+        DB::table('promotion_campaigns')->where('tenant_id', $tenant->id)->delete();
+
+        DB::table('customer_merge_logs')->where('tenant_id', $tenant->id)->delete();
+        DB::table('kitchen_waste_logs')->where('tenant_id', $tenant->id)->delete();
+        DB::table('manufacturing_orders')->where('tenant_id', $tenant->id)->delete();
+        DB::table('shelf_labels')->where('tenant_id', $tenant->id)->delete();
+
+        DB::table('tax_ledger_entries')->where('tenant_id', $tenant->id)->delete();
+        DB::table('journal_lines')->where('tenant_id', $tenant->id)->delete();
+        DB::table('journal_entries')->where('tenant_id', $tenant->id)->delete();
+        DB::table('account_period_balances')->where('tenant_id', $tenant->id)->delete();
+        DB::table('inventory_valuation_snapshots')->where('tenant_id', $tenant->id)->delete();
+
+        DB::table('ap_ledger_entries')->where('tenant_id', $tenant->id)->delete();
+        DB::table('ap_payment_allocations')->where('tenant_id', $tenant->id)->delete();
+        DB::table('ap_payments')->where('tenant_id', $tenant->id)->delete();
+
+        DB::table('ar_ledger_entries')->where('tenant_id', $tenant->id)->delete();
+        DB::table('ar_payment_allocations')->where('tenant_id', $tenant->id)->delete();
+        DB::table('ar_receipts')->where('tenant_id', $tenant->id)->delete();
+        DB::table('sales_credit_note_applications')->where('tenant_id', $tenant->id)->delete();
+        DB::table('sales_credit_notes')->where('tenant_id', $tenant->id)->delete();
+        DB::table('customer_invoice_lines')->where('tenant_id', $tenant->id)->delete();
+        DB::table('customer_invoices')->where('tenant_id', $tenant->id)->delete();
+        DB::table('sales_order_lines')->where('tenant_id', $tenant->id)->delete();
+        DB::table('sales_orders')->where('tenant_id', $tenant->id)->delete();
+        DB::table('quotation_lines')->where('tenant_id', $tenant->id)->delete();
+        DB::table('quotations')->where('tenant_id', $tenant->id)->delete();
+        DB::table('customer_credit_logs')->where('tenant_id', $tenant->id)->delete();
+        DB::table('customer_credit_accounts')->where('tenant_id', $tenant->id)->delete();
+        DB::table('customer_contacts')->where('tenant_id', $tenant->id)->delete();
+        DB::table('customer_addresses')->where('tenant_id', $tenant->id)->delete();
+        DB::table('customer_groups')->where('tenant_id', $tenant->id)->delete();
+
+        DB::table('store_credit_ledgers')->where('tenant_id', $tenant->id)->delete();
+        DB::table('store_credit_accounts')->where('tenant_id', $tenant->id)->delete();
+        DB::table('gift_card_ledgers')->where('tenant_id', $tenant->id)->delete();
+        DB::table('gift_cards')->where('tenant_id', $tenant->id)->delete();
+
+        DB::table('payroll_adjustments')->where('tenant_id', $tenant->id)->delete();
+        DB::table('payroll_items')->where('tenant_id', $tenant->id)->delete();
+        DB::table('payroll_records')->where('tenant_id', $tenant->id)->delete();
+        DB::table('payroll_batches')->where('tenant_id', $tenant->id)->delete();
+        DB::table('payroll_periods')->where('tenant_id', $tenant->id)->delete();
+        DB::table('overtime_records')->where('tenant_id', $tenant->id)->delete();
+        DB::table('leave_transactions')->where('tenant_id', $tenant->id)->delete();
+        DB::table('leave_requests')->where('tenant_id', $tenant->id)->delete();
+        DB::table('attendance_breaks')->where('tenant_id', $tenant->id)->delete();
+        DB::table('attendance_records')->where('tenant_id', $tenant->id)->delete();
+        DB::table('work_schedules')->where('tenant_id', $tenant->id)->delete();
+        DB::table('leave_balances')->where('tenant_id', $tenant->id)->delete();
+        DB::table('employee_employment_histories')->where('tenant_id', $tenant->id)->delete();
+        DB::table('employee_bpjs_profiles')->where('tenant_id', $tenant->id)->delete();
+        DB::table('employee_compensations')->where('tenant_id', $tenant->id)->delete();
+        DB::table('employee_branch_assignments')->where('tenant_id', $tenant->id)->delete();
+        DB::table('employee_bank_accounts')->where('tenant_id', $tenant->id)->delete();
+        DB::table('leave_policies')->where('tenant_id', $tenant->id)->delete();
+        DB::table('salary_components')->where('tenant_id', $tenant->id)->delete();
+        DB::table('shift_templates')->where('tenant_id', $tenant->id)->delete();
+
+        DB::table('period_closing_logs')->where('tenant_id', $tenant->id)->delete();
+        DB::table('period_closing_checklists')->where('tenant_id', $tenant->id)->delete();
+
+        DB::statement('SET FOREIGN_KEY_CHECKS = 1;');
+
+        $this->restoreTriggers();
+    }
+
+    private function restoreTriggers(): void
+    {
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_journal_entries_before_update;");
+        DB::unprepared("
+            CREATE TRIGGER trg_journal_entries_before_update BEFORE UPDATE ON journal_entries
+            FOR EACH ROW
+            BEGIN
+                IF OLD.status IN ('POSTED', 'REVERSED') THEN
+                    IF OLD.status = 'POSTED' AND NEW.status = 'REVERSED' THEN
+                        IF OLD.total_debit <> NEW.total_debit
+                           OR OLD.total_credit <> NEW.total_credit
+                           OR OLD.posting_date <> NEW.posting_date
+                           OR OLD.accounting_period_id <> NEW.accounting_period_id
+                           OR OLD.tenant_id <> NEW.tenant_id
+                           OR OLD.journal_number <> NEW.journal_number THEN
+                            SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'FIN-M7-08: Modifikasi nilai finansial jurnal POSTED dilarang saat reversal.';
+                        END IF;
+                    ELSE
+                        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'FIN-M7-08: Modifikasi jurnal POSTED/REVERSED dilarang. Gunakan jurnal pembalik (reversal).';
+                    END IF;
+                END IF;
+            END
+        ");
+
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_journal_entries_before_delete;");
+        DB::unprepared("
+            CREATE TRIGGER trg_journal_entries_before_delete BEFORE DELETE ON journal_entries
+            FOR EACH ROW
+            BEGIN
+                IF OLD.status IN ('POSTED', 'REVERSED') THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'FIN-M7-08: Penghapusan jurnal POSTED/REVERSED dilarang keras.';
+                END IF;
+            END
+        ");
+
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_journal_lines_before_update;");
+        DB::unprepared("
+            CREATE TRIGGER trg_journal_lines_before_update BEFORE UPDATE ON journal_lines
+            FOR EACH ROW
+            BEGIN
+                DECLARE parent_status VARCHAR(30);
+                SELECT status INTO parent_status FROM journal_entries WHERE id = OLD.journal_entry_id;
+                IF parent_status IN ('POSTED', 'REVERSED') THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'FIN-M7-08: Baris jurnal yang sudah POSTED tidak dapat diubah.';
+                END IF;
+            END
+        ");
+
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_journal_lines_before_delete;");
+        DB::unprepared("
+            CREATE TRIGGER trg_journal_lines_before_delete BEFORE DELETE ON journal_lines
+            FOR EACH ROW
+            BEGIN
+                DECLARE parent_status VARCHAR(30);
+                SELECT status INTO parent_status FROM journal_entries WHERE id = OLD.journal_entry_id;
+                IF parent_status IN ('POSTED', 'REVERSED') THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'FIN-M7-08: Baris jurnal yang sudah POSTED tidak dapat dihapus.';
+                END IF;
+            END
+        ");
+
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_payroll_records_immutable_update;");
+        DB::unprepared("
+            CREATE TRIGGER trg_payroll_records_immutable_update BEFORE UPDATE ON payroll_records
+            FOR EACH ROW
+            BEGIN
+                DECLARE v_batch_status VARCHAR(20);
+                SELECT status INTO v_batch_status FROM payroll_batches WHERE id = OLD.payroll_batch_id;
+                IF v_batch_status IN ('FINALIZED', 'PAYMENT_PENDING', 'PAID') THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'PAYROLL-001: Cannot update payroll record once batch is FINALIZED or PAID.';
+                END IF;
+            END
+        ");
+
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_payroll_records_immutable_delete;");
+        DB::unprepared("
+            CREATE TRIGGER trg_payroll_records_immutable_delete BEFORE DELETE ON payroll_records
+            FOR EACH ROW
+            BEGIN
+                DECLARE v_batch_status VARCHAR(20);
+                SELECT status INTO v_batch_status FROM payroll_batches WHERE id = OLD.payroll_batch_id;
+                IF v_batch_status IN ('FINALIZED', 'PAYMENT_PENDING', 'PAID') THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'PAYROLL-001: Cannot delete payroll record once batch is FINALIZED or PAID.';
+                END IF;
+            END
+        ");
+
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_ap_ledger_entries_before_update;");
+        DB::unprepared("
+            CREATE TRIGGER trg_ap_ledger_entries_before_update BEFORE UPDATE ON ap_ledger_entries
+            FOR EACH ROW
+            BEGIN
+                IF OLD.journal_entry_id IS NOT NULL AND OLD.journal_entry_id <> NEW.journal_entry_id THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'FIN-M7-08: Modifikasi journal_entry_id pada ap_ledger_entries yang sudah terpasang dilarang.';
+                END IF;
+                IF OLD.debit_amount <> NEW.debit_amount
+                   OR OLD.credit_amount <> NEW.credit_amount
+                   OR OLD.running_balance <> NEW.running_balance
+                   OR OLD.entry_type <> NEW.entry_type
+                   OR OLD.effective_date <> NEW.effective_date
+                   OR OLD.supplier_id <> NEW.supplier_id
+                   OR OLD.tenant_id <> NEW.tenant_id THEN
+                    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'FIN-M7-08: Buku pembantu AP (ap_ledger_entries) bersifat imutabel (append-only).';
+                END IF;
+            END
+        ");
+
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_ap_ledger_entries_before_delete;");
+        DB::unprepared("
+            CREATE TRIGGER trg_ap_ledger_entries_before_delete BEFORE DELETE ON ap_ledger_entries
+            FOR EACH ROW
+            BEGIN
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'FIN-M7-08: Penghapusan baris pada ap_ledger_entries dilarang keras.';
+            END
+        ");
+
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_tax_ledger_entries_before_update;");
+        DB::unprepared("
+            CREATE TRIGGER trg_tax_ledger_entries_before_update BEFORE UPDATE ON tax_ledger_entries
+            FOR EACH ROW
+            BEGIN
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'FIN-M7-09: Buku pembantu pajak (tax_ledger_entries) bersifat imutabel dan tidak dapat diubah.';
+            END
+        ");
+
+        DB::unprepared("DROP TRIGGER IF EXISTS trg_tax_ledger_entries_before_delete;");
+        DB::unprepared("
+            CREATE TRIGGER trg_tax_ledger_entries_before_delete BEFORE DELETE ON tax_ledger_entries
+            FOR EACH ROW
+            BEGIN
+                SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'FIN-M7-09: Buku pembantu pajak (tax_ledger_entries) bersifat imutabel dan tidak dapat dihapus.';
+            END
+        ");
+    }
+
     private function populateTenant(Tenant $tenant): void
     {
         $stores = DB::table('stores')->where('tenant_id', $tenant->id)->get();
         $users = DB::table('users')->where('tenant_id', $tenant->id)->get();
         $employees = DB::table('employees')->where('tenant_id', $tenant->id)->get();
+        if ($employees->isEmpty()) {
+            $this->callSilently('hr:backfill-employees-from-users', ['--tenant' => $tenant->id]);
+            $employees = DB::table('employees')->where('tenant_id', $tenant->id)->get();
+        }
         $userId = $users->first()?->id ?? ($tenant->id === 2 ? 4 : 47);
 
         $this->line("1. Chart of Accounts, Currencies & Tax Engine...");
         $coaMap = $this->seedChartOfAccountsAndTax($tenant);
 
-        $this->line("2. Accounting Periods, Checklists & Closing Logs...");
+        $this->line("2. Accounting Periods (Initialized OPEN)...");
         $periods = $this->seedAccountingPeriods($tenant, $userId);
 
         $this->line("3. Cash & Bank Accounts, Statements, Transactions & Reconciliations...");
@@ -93,11 +358,17 @@ class PopulateEnterpriseDatasetCommand extends Command
         $this->line("9. Customer Loyalty Instruments (Store Credit & Gift Cards)...");
         $this->seedCustomerCreditAndInstruments($tenant, $stores, $userId);
 
-        $this->line("10. HRM & Payroll (Compensations, Schedules, Attendance, Leaves, Overtime, Payroll, Commissions)...");
+        $this->line("10. 9 New Enterprise Tables (Departments, Job Titles, Targets, Lots, Recipes, Tax Submissions, Webhooks)...");
+        $this->seedNineEnterpriseTables($tenant, $stores, $users, $employees, $userId);
+
+        $this->line("11. HRM & Payroll (Compensations, Schedules, Attendance, Leaves, Overtime, Payroll, Commissions)...");
         $this->seedHrmAndPayroll($tenant, $stores, $employees, $userId);
 
-        $this->line("11. Promotions, Operations & Outboxes (Campaigns, Shelf Labels, Waste, Approvals, WhatsApp)...");
+        $this->line("12. Promotions, Operations & Outboxes (Campaigns, Shelf Labels, Waste, Approvals, WhatsApp)...");
         $this->seedPromotionsAndOperations($tenant, $stores, $userId);
+
+        $this->line("13. Closing Past Accounting Periods (2026-08 s/d 2026-10 CLOSED, 2026-11 OPEN)...");
+        $this->closePastAccountingPeriods($tenant, $periods, $userId);
     }
 
     private function seedChartOfAccountsAndTax(Tenant $tenant): array
@@ -220,8 +491,10 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'updated_at' => now(),
             ]);
 
+            $isFnb = ($tenant->id === 1 || str_contains($tenant->slug, 'fnb') || str_contains($tenant->name, 'Coffee'));
+            $salesAccCode = $isFnb ? '4102' : '4101';
             $cashAccId = $existingCoa['1101'] ?? array_values($existingCoa)[0];
-            $salesAccId = $existingCoa['4100'] ?? array_values($existingCoa)[0];
+            $salesAccId = $existingCoa[$salesAccCode] ?? array_values($existingCoa)[0];
 
             DB::table('posting_rule_lines')->insert([
                 [
@@ -255,8 +528,8 @@ class PopulateEnterpriseDatasetCommand extends Command
     private function seedAccountingPeriods(Tenant $tenant, int $userId): array
     {
         $periods = [];
-        $start = Carbon::parse('2025-01-01');
-        $end = Carbon::parse('2025-12-31');
+        $start = Carbon::parse('2026-08-01');
+        $end = Carbon::parse('2026-11-30');
 
         $curr = $start->copy();
         while ($curr->lte($end)) {
@@ -265,7 +538,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             $periodNumber = (int) $curr->format('m');
             $startDate = $curr->copy()->startOfMonth()->toDateString();
             $endDate = $curr->copy()->endOfMonth()->toDateString();
-            $isClosed = $curr->format('Y-m') <= '2025-12';
+            $isClosed = $curr->format('Y-m') < '2026-11';
 
             $existing = DB::table('accounting_periods')->where('tenant_id', $tenant->id)->where('period_code', $periodCode)->first();
             if ($existing) {
@@ -297,8 +570,25 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'is_closed' => $isClosed,
             ];
 
-            if ($isClosed) {
-                $chkCount = DB::table('period_closing_checklists')->where('tenant_id', $tenant->id)->where('accounting_period_id', $periodId)->count();
+            $curr->addMonth();
+        }
+
+        return $periods;
+    }
+
+    private function closePastAccountingPeriods(Tenant $tenant, array $periods, int $userId): void
+    {
+        foreach ($periods as $pCode => $p) {
+            if ($p->is_closed) {
+                $mEnd = Carbon::parse($p->end_date);
+                DB::table('accounting_periods')->where('id', $p->id)->update([
+                    'status' => 'CLOSED',
+                    'closed_at' => $mEnd->copy()->addHours(20)->toDateTimeString(),
+                    'closed_by_user_id' => $userId,
+                    'updated_at' => now(),
+                ]);
+
+                $chkCount = DB::table('period_closing_checklists')->where('tenant_id', $tenant->id)->where('accounting_period_id', $p->id)->count();
                 if ($chkCount === 0) {
                     $checklistItems = [
                         'RECONCILE_BANK' => 'Semua rekening koran BCA & Mandiri telah direkonsiliasi 100%',
@@ -310,14 +600,14 @@ class PopulateEnterpriseDatasetCommand extends Command
                     foreach ($checklistItems as $chkCode => $chkDesc) {
                         DB::table('period_closing_checklists')->insert([
                             'tenant_id' => $tenant->id,
-                            'accounting_period_id' => $periodId,
+                            'accounting_period_id' => $p->id,
                             'gate_code' => $chkCode,
                             'gate_name' => $chkDesc,
                             'status' => 'PASSED',
                             'discrepancy_amount' => 0.00,
                             'diagnostics_json' => json_encode(['verified' => true]),
                             'checked_by_user_id' => $userId,
-                            'checked_at' => $curr->copy()->endOfMonth()->addHours(18)->toDateTimeString(),
+                            'checked_at' => $mEnd->copy()->addHours(18)->toDateTimeString(),
                             'created_at' => now(),
                             'updated_at' => now(),
                         ]);
@@ -325,21 +615,17 @@ class PopulateEnterpriseDatasetCommand extends Command
 
                     DB::table('period_closing_logs')->insert([
                         'tenant_id' => $tenant->id,
-                        'accounting_period_id' => $periodId,
+                        'accounting_period_id' => $p->id,
                         'action' => 'CLOSE_PERIOD',
                         'user_id' => $userId,
-                        'reason' => "Tutup buku periode {$periodCode} berhasil dilakukan.",
+                        'reason' => "Tutup buku periode {$pCode} berhasil dilakukan.",
                         'previous_status' => 'OPEN',
                         'new_status' => 'CLOSED',
-                        'created_at' => $curr->copy()->endOfMonth()->addHours(20)->toDateTimeString(),
+                        'created_at' => $mEnd->copy()->addHours(20)->toDateTimeString(),
                     ]);
                 }
             }
-
-            $curr->addMonth();
         }
-
-        return $periods;
     }
 
     private function seedCashAndBank(Tenant $tenant, $stores, array $coaMap, int $userId): array
@@ -419,7 +705,7 @@ class PopulateEnterpriseDatasetCommand extends Command
         // 2. Cash Bank Transactions & Bank Statements for BCA
         $txCount = DB::table('cash_bank_transactions')->where('tenant_id', $tenant->id)->count();
         if ($txCount === 0) {
-            $dates = ['2025-11-15', '2025-12-15', '2026-01-15', '2026-02-15', '2026-03-15', '2026-04-15', '2026-05-15', '2026-06-15', '2026-07-15', '2026-08-15', '2026-09-15', '2026-10-15', '2026-11-05'];
+            $dates = ['2026-08-18', '2026-08-28', '2026-09-08', '2026-09-18', '2026-09-28', '2026-10-08', '2026-10-18', '2026-10-28', '2026-11-05'];
             $runningBal = 250000000.00;
 
             foreach ($dates as $idx => $dt) {
@@ -447,54 +733,76 @@ class PopulateEnterpriseDatasetCommand extends Command
                 // Bank statement per month
                 if ($idx < 12) {
                     $mDate = Carbon::parse($dt);
-                    $stmtId = DB::table('bank_statements')->insertGetId([
-                        'tenant_id' => $tenant->id,
-                        'cash_bank_account_id' => $bcaId,
-                        'statement_number' => 'STMT-BCA-' . $tenant->id . '-' . $mDate->format('Ym'),
-                        'statement_date' => $mDate->endOfMonth()->toDateString(),
-                        'opening_balance' => $runningBal - $amountIn,
-                        'closing_balance' => $runningBal,
-                        'imported_file_path' => 'statements/bca_' . $mDate->format('Ym') . '.csv',
-                        'imported_by_user_id' => $userId,
-                        'status' => 'RECONCILED',
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
+                    $stmtNum = 'STMT-BCA-' . $tenant->id . '-' . $mDate->format('Ym');
+                    $existingStmt = DB::table('bank_statements')->where('tenant_id', $tenant->id)->where('statement_number', $stmtNum)->first();
+                    if ($existingStmt) {
+                        $stmtId = $existingStmt->id;
+                        DB::table('bank_statements')->where('id', $stmtId)->update([
+                            'closing_balance' => $runningBal,
+                            'updated_at' => now(),
+                        ]);
+                    } else {
+                        $stmtId = DB::table('bank_statements')->insertGetId([
+                            'tenant_id' => $tenant->id,
+                            'cash_bank_account_id' => $bcaId,
+                            'statement_number' => $stmtNum,
+                            'statement_date' => $mDate->endOfMonth()->toDateString(),
+                            'opening_balance' => $runningBal - $amountIn,
+                            'closing_balance' => $runningBal,
+                            'imported_file_path' => 'statements/bca_' . $mDate->format('Ym') . '.csv',
+                            'imported_by_user_id' => $userId,
+                            'status' => 'RECONCILED',
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
 
+                    $maxLine = (int) DB::table('bank_statement_lines')->where('bank_statement_id', $stmtId)->max('line_number');
                     $stmtLineId = DB::table('bank_statement_lines')->insertGetId([
                         'tenant_id' => $tenant->id,
                         'bank_statement_id' => $stmtId,
                         'cash_bank_account_id' => $bcaId,
-                        'line_number' => 1,
+                        'line_number' => $maxLine + 1,
                         'value_date' => $dt,
-                        'external_reference' => 'BCA-REF-' . $mDate->format('Ymd'),
+                        'external_reference' => 'BCA-REF-' . $mDate->format('Ymd') . '-' . ($maxLine + 1),
                         'debit_amount' => 0.00,
                         'credit_amount' => $amountIn,
                         'running_balance' => $runningBal,
                         'description' => 'CR SETTLEMENT QRIS APEIRON',
-                        'line_fingerprint_hash' => hash('sha256', $tenant->id . '-' . $stmtId . '-' . $dt . '-' . $amountIn),
+                        'line_fingerprint_hash' => hash('sha256', $tenant->id . '-' . $stmtId . '-' . $dt . '-' . $amountIn . '-' . ($maxLine + 1)),
                         'match_status' => 'MATCHED',
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
 
                     // Reconciliation session & match
-                    $sessionId = DB::table('bank_reconciliation_sessions')->insertGetId([
-                        'tenant_id' => $tenant->id,
-                        'cash_bank_account_id' => $bcaId,
-                        'session_number' => 'RECON-' . $tenant->id . '-' . $mDate->format('Y-m'),
-                        'statement_end_date' => $mDate->endOfMonth()->toDateString(),
-                        'statement_ending_balance' => $runningBal,
-                        'book_ending_balance' => $runningBal,
-                        'unreconciled_difference' => 0.00,
-                        'status' => 'COMPLETED',
-                        'started_by_user_id' => $userId,
-                        'completed_by_user_id' => $userId,
-                        'completed_at' => $mDate->endOfMonth()->addHours(15)->toDateTimeString(),
-                        'notes' => 'Rekonsiliasi otomatis 100% kliring settlement POS',
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
+                    $sessionNum = 'RECON-' . $tenant->id . '-' . $mDate->format('Y-m');
+                    $existingSession = DB::table('bank_reconciliation_sessions')->where('tenant_id', $tenant->id)->where('session_number', $sessionNum)->first();
+                    if ($existingSession) {
+                        $sessionId = $existingSession->id;
+                        DB::table('bank_reconciliation_sessions')->where('id', $sessionId)->update([
+                            'statement_ending_balance' => $runningBal,
+                            'book_ending_balance' => $runningBal,
+                            'updated_at' => now(),
+                        ]);
+                    } else {
+                        $sessionId = DB::table('bank_reconciliation_sessions')->insertGetId([
+                            'tenant_id' => $tenant->id,
+                            'cash_bank_account_id' => $bcaId,
+                            'session_number' => $sessionNum,
+                            'statement_end_date' => $mDate->endOfMonth()->toDateString(),
+                            'statement_ending_balance' => $runningBal,
+                            'book_ending_balance' => $runningBal,
+                            'unreconciled_difference' => 0.00,
+                            'status' => 'COMPLETED',
+                            'started_by_user_id' => $userId,
+                            'completed_by_user_id' => $userId,
+                            'completed_at' => $mDate->endOfMonth()->addHours(15)->toDateTimeString(),
+                            'notes' => 'Rekonsiliasi otomatis 100% kliring settlement POS',
+                            'created_at' => now(),
+                            'updated_at' => now(),
+                        ]);
+                    }
 
                     DB::table('bank_reconciliation_matches')->insert([
                         'tenant_id' => $tenant->id,
@@ -585,14 +893,14 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'category_id' => $a['cat'],
                 'asset_code' => 'AST-' . $tenant->id . '-' . Str::upper(Str::random(5)),
                 'asset_name' => $a['name'],
-                'acquisition_date' => '2025-10-01',
+                'acquisition_date' => '2026-08-01',
                 'acquisition_cost' => $a['cost'],
                 'salvage_value' => 5000000.00,
                 'useful_life_months' => 60,
                 'depreciation_method' => 'STRAIGHT_LINE',
                 'status' => 'ACTIVE',
-                'accumulated_depreciation' => $monthlyDepr * 12,
-                'net_book_value' => $a['cost'] - ($monthlyDepr * 12),
+                'accumulated_depreciation' => $monthlyDepr * 3,
+                'net_book_value' => $a['cost'] - ($monthlyDepr * 3),
                 'location_note' => 'Outlet Utama Flagship',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -693,7 +1001,7 @@ class PopulateEnterpriseDatasetCommand extends Command
             return;
         }
 
-        $dates = ['2025-11-05', '2025-12-05', '2026-01-05', '2026-03-05', '2026-06-05', '2026-09-05', '2026-11-02'];
+        $dates = ['2026-08-20', '2026-09-05', '2026-09-20', '2026-10-05', '2026-10-20', '2026-11-02'];
         foreach ($dates as $idx => $dt) {
             $amount = 8500000.00 + ($idx * 400000);
             $store = $stores[$idx % count($stores)];
@@ -760,13 +1068,20 @@ class PopulateEnterpriseDatasetCommand extends Command
             return;
         }
 
-        $bankAccId = $coaMap['1110'] ?? array_values($coaMap)[0];
-        $salesAccId = $coaMap['4100'] ?? array_values($coaMap)[0];
-        $cogsAccId = $coaMap['5100'] ?? array_values($coaMap)[0];
-        $invAccId = $coaMap['1140'] ?? array_values($coaMap)[0];
-        $taxOutAccId = $coaMap['2140'] ?? array_values($coaMap)[0];
+        $isFnb = ($tenant->id === 1 || str_contains($tenant->slug, 'fnb') || str_contains($tenant->name, 'Coffee'));
+        $salesAccCode = $isFnb ? '4102' : '4101';
+        $cogsAccCode = $isFnb ? '5102' : '5101';
+        $invAccCode = $isFnb ? '1141' : '1140';
+        $taxOutAccCode = $isFnb ? '2111' : '2110';
 
-        $taxCodeRow = DB::table('tax_codes')->where('tenant_id', $tenant->id)->where('code', 'PB1')->first()
+        $bankAccId = $coaMap['1110'] ?? array_values($coaMap)[0];
+        $salesAccId = $coaMap[$salesAccCode] ?? array_values($coaMap)[0];
+        $cogsAccId = $coaMap[$cogsAccCode] ?? array_values($coaMap)[0];
+        $invAccId = $coaMap[$invAccCode] ?? array_values($coaMap)[0];
+        $taxOutAccId = $coaMap[$taxOutAccCode] ?? array_values($coaMap)[0];
+        $serviceAccId = $coaMap['4103'] ?? null;
+
+        $taxCodeRow = DB::table('tax_codes')->where('tenant_id', $tenant->id)->where('code', $isFnb ? 'PB1' : 'PPN')->first()
             ?? DB::table('tax_codes')->where('tenant_id', $tenant->id)->first();
         $taxRateRow = DB::table('tax_rates')->where('tenant_id', $tenant->id)->first();
 
@@ -775,23 +1090,31 @@ class PopulateEnterpriseDatasetCommand extends Command
 
         foreach ($periods as $pCode => $p) {
             $monthDate = Carbon::parse($p->start_date);
-            $txDate = $monthDate->copy()->addDays(14)->toDateString();
+            $txDate = $p->is_closed ? $p->end_date : '2026-11-10';
 
             // POS Sales Revenue Journal dari order aktual yang terekonsiliasi
             $actualOrders = DB::table('orders')
                 ->where('tenant_id', $tenant->id)
                 ->where('order_status', 'paid')
                 ->whereBetween('order_date', [$p->start_date, $p->end_date])
-                ->selectRaw('COALESCE(SUM(subtotal_amount - discount_amount), 0) as actual_sales, COALESCE(SUM(tax_amount), 0) as actual_tax, COALESCE(SUM(order_amount), 0) as actual_total')
+                ->selectRaw('COALESCE(SUM(subtotal_amount - discount_amount), 0) as actual_sales, COALESCE(SUM(tax_amount), 0) as actual_tax, COALESCE(SUM(service_charge_amount), 0) as actual_service, COALESCE(SUM(order_amount), 0) as actual_total')
                 ->first();
 
-            $salesAmount = (float) ($actualOrders->actual_sales ?? 0);
+            $actualReturns = (float) DB::table('order_returns')
+                ->where('tenant_id', $tenant->id)
+                ->where('status', 'completed')
+                ->whereBetween('completed_at', [$p->start_date . ' 00:00:00', $p->end_date . ' 23:59:59'])
+                ->sum('subtotal_returned');
+
+            $salesAmount = ((float) ($actualOrders->actual_sales ?? 0)) - $actualReturns;
             $taxAmount = (float) ($actualOrders->actual_tax ?? 0);
-            $totalDebit = (float) ($actualOrders->actual_total ?? ($salesAmount + $taxAmount));
+            $serviceAmount = (float) ($actualOrders->actual_service ?? 0);
+            $totalDebit = $salesAmount + $taxAmount + $serviceAmount;
 
             if ($totalDebit <= 0) {
                 $salesAmount = 180000000.00 + (mt_rand(5, 25) * 1000000);
                 $taxAmount = round($salesAmount * 0.10, 2);
+                $serviceAmount = 0.00;
                 $totalDebit = $salesAmount + $taxAmount;
             }
 
@@ -817,11 +1140,12 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'updated_at' => $txDate . ' 23:59:00',
             ]);
 
-            // Lines: Debit Bank, Credit Sales, Credit Pajak PB1
-            $jl1 = DB::table('journal_lines')->insertGetId([
+            // Lines: Debit Bank, Credit Sales, Credit Pajak PB1, Credit Service
+            $lineSeq = 1;
+            DB::table('journal_lines')->insert([
                 'tenant_id' => $tenant->id,
                 'journal_entry_id' => $je1Id,
-                'line_number' => 1,
+                'line_number' => $lineSeq++,
                 'account_id' => $bankAccId,
                 'store_id' => $mainStore?->id,
                 'debit_amount' => $totalDebit,
@@ -831,15 +1155,15 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'updated_at' => now(),
             ]);
 
-            $jl2 = DB::table('journal_lines')->insertGetId([
+            DB::table('journal_lines')->insert([
                 'tenant_id' => $tenant->id,
                 'journal_entry_id' => $je1Id,
-                'line_number' => 2,
+                'line_number' => $lineSeq++,
                 'account_id' => $salesAccId,
                 'store_id' => $mainStore?->id,
                 'debit_amount' => 0.00,
                 'credit_amount' => $salesAmount,
-                'description' => 'Pendapatan Penjualan F&B',
+                'description' => $isFnb ? 'Pendapatan Penjualan Menu F&B' : 'Pendapatan Penjualan Retail',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -847,15 +1171,30 @@ class PopulateEnterpriseDatasetCommand extends Command
             $jl3 = DB::table('journal_lines')->insertGetId([
                 'tenant_id' => $tenant->id,
                 'journal_entry_id' => $je1Id,
-                'line_number' => 3,
+                'line_number' => $lineSeq++,
                 'account_id' => $taxOutAccId,
                 'store_id' => $mainStore?->id,
                 'debit_amount' => 0.00,
                 'credit_amount' => $taxAmount,
-                'description' => 'Pajak PB1 Restoran 10%',
+                'description' => 'Pajak PPN / PB1 Restoran',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
+
+            if ($serviceAmount > 0 && $serviceAccId) {
+                DB::table('journal_lines')->insert([
+                    'tenant_id' => $tenant->id,
+                    'journal_entry_id' => $je1Id,
+                    'line_number' => $lineSeq++,
+                    'account_id' => $serviceAccId,
+                    'store_id' => $mainStore?->id,
+                    'debit_amount' => 0.00,
+                    'credit_amount' => $serviceAmount,
+                    'description' => 'Utang Service Charge Restoran',
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
 
             // Tax ledger entry (Compliant with chk_tle_direction: OUTPUT_TAX)
             if ($taxCodeRow && $taxRateRow) {
@@ -878,7 +1217,19 @@ class PopulateEnterpriseDatasetCommand extends Command
             }
 
             // HPP Journal (Debit HPP, Credit Inventory)
-            $cogsAmount = round($salesAmount * 0.38, 2);
+            $actualCogs = DB::table('orders as o')
+                ->join('order_items as oi', 'oi.order_id', '=', 'o.id')
+                ->where('o.tenant_id', $tenant->id)
+                ->where('o.order_status', 'paid')
+                ->whereBetween('o.order_date', [$p->start_date, $p->end_date])
+                ->selectRaw('COALESCE(SUM(oi.hpp_snapshot * oi.qty), 0) as total_cogs')
+                ->first();
+
+            $cogsAmount = (float) ($actualCogs->total_cogs ?? 0);
+            if ($cogsAmount <= 0) {
+                $cogsAmount = round($salesAmount * 0.38, 2);
+            }
+
             $je2Id = DB::table('journal_entries')->insertGetId([
                 'tenant_id' => $tenant->id,
                 'store_id' => $mainStore?->id,
@@ -893,7 +1244,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'idempotency_key' => 'je-cogs-' . $tenant->id . '-' . $pCode,
                 'total_debit' => $cogsAmount,
                 'total_credit' => $cogsAmount,
-                'notes' => "Pengakuan Beban Pokok Penjualan (HPP) Bahan Baku {$pCode}",
+                'notes' => "Pengakuan Beban Pokok Penjualan (HPP) {$pCode}",
                 'created_by_user_id' => $userId,
                 'posted_by_user_id' => $userId,
                 'posted_at' => $txDate . ' 23:59:00',
@@ -910,7 +1261,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'store_id' => $mainStore?->id,
                     'debit_amount' => $cogsAmount,
                     'credit_amount' => 0.00,
-                    'description' => 'Beban Pokok Penjualan (HPP)',
+                    'description' => $isFnb ? 'Beban Pokok Penjualan (HPP) F&B' : 'Beban Pokok Penjualan (HPP) Retail',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ],
@@ -922,7 +1273,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'store_id' => $mainStore?->id,
                     'debit_amount' => 0.00,
                     'credit_amount' => $cogsAmount,
-                    'description' => 'Pengurangan Persediaan Bahan Baku',
+                    'description' => $isFnb ? 'Pengurangan Persediaan Bahan Baku F&B' : 'Pengurangan Persediaan Produk Retail',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ],
@@ -1026,19 +1377,6 @@ class PopulateEnterpriseDatasetCommand extends Command
             'created_at' => now(),
             'updated_at' => now(),
         ]);
-
-        // Close past periods (2025-11 through 2026-10), keeping 2026-11 OPEN
-        foreach ($periods as $pCode => $p) {
-            if ($p->is_closed) {
-                $mEnd = Carbon::parse($p->end_date);
-                DB::table('accounting_periods')->where('id', $p->id)->update([
-                    'status' => 'CLOSED',
-                    'closed_at' => $mEnd->copy()->addHours(20)->toDateTimeString(),
-                    'closed_by_user_id' => $userId,
-                    'updated_at' => now(),
-                ]);
-            }
-        }
     }
 
     private function seedApSubledger(Tenant $tenant, $stores, array $cashBankMap, int $userId): void
@@ -1050,6 +1388,31 @@ class PopulateEnterpriseDatasetCommand extends Command
         $supplier = DB::table('suppliers')->where('tenant_id', $tenant->id)->first();
         $supplierInvoice = DB::table('supplier_invoices')->where('tenant_id', $tenant->id)->first();
         $store = $stores->first();
+
+        if (! $supplierInvoice && $supplier && $store) {
+            $invId = DB::table('supplier_invoices')->insertGetId([
+                'tenant_id' => $tenant->id,
+                'store_id' => $store->id,
+                'supplier_id' => $supplier->id,
+                'internal_invoice_number' => 'SI-GR-' . ($store->code ?? 'STORE') . '-261025-0001',
+                'supplier_invoice_number' => 'INV-SUP-' . $tenant->id . '-20261025',
+                'normalized_supplier_invoice_number' => 'INV-SUP-' . $tenant->id . '-20261025',
+                'invoice_date' => '2026-10-25',
+                'due_date' => '2026-11-24',
+                'currency_code' => 'IDR',
+                'exchange_rate' => 1.000000,
+                'subtotal_amount' => 76576576.00,
+                'tax_amount' => 8423424.00,
+                'total_amount' => 85000000.00,
+                'paid_amount' => 85000000.00,
+                'outstanding_amount' => 0.00,
+                'status' => 'approved_payable',
+                'settlement_status' => 'paid',
+                'created_at' => '2026-10-25 10:00:00',
+                'updated_at' => '2026-11-02 11:00:00',
+            ]);
+            $supplierInvoice = DB::table('supplier_invoices')->where('id', $invId)->first();
+        }
 
         if ($supplier && $supplierInvoice) {
             $amount = (float) $supplierInvoice->total_amount;
@@ -1223,7 +1586,7 @@ class PopulateEnterpriseDatasetCommand extends Command
                 'credit_status' => 'ACTIVE',
                 'risk_rating' => 'LOW',
                 'reserved_exposure' => 0.00,
-                'invoiced_exposure' => 12500000.00,
+                'invoiced_exposure' => 3875000.00,
                 'unapplied_credit_balance' => 0.00,
                 'last_reconciled_at' => now(),
                 'updated_by_user_id' => $userId,
@@ -1447,6 +1810,11 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'created_at' => now(),
                 ],
             ]);
+
+            DB::table('customer_credit_accounts')
+                ->where('tenant_id', $tenant->id)
+                ->where('customer_id', $targetCust->id)
+                ->update(['invoiced_exposure' => 3875000.00]);
         }
     }
 
@@ -1524,6 +1892,379 @@ class PopulateEnterpriseDatasetCommand extends Command
                     'created_at' => '2026-10-20 15:30:00',
                 ],
             ]);
+        }
+    }
+
+    private function seedNineEnterpriseTables(Tenant $tenant, $stores, $users, $employees, int $userId): void
+    {
+        $tenantId = (int) $tenant->id;
+        $isRetail = ($tenant->primary_industry === 'retail');
+        $now = now();
+        $mainStore = $stores->first();
+        $storeId = $mainStore?->id;
+
+        // 1. Departments & Job Titles
+        $deptDefs = [
+            ['code' => 'DEPT-OPS', 'name' => 'Store Operations', 'desc' => 'Operasional Toko & Layanan Pelanggan'],
+            ['code' => 'DEPT-KIT', 'name' => $isRetail ? 'Merchandising & Display' : 'Kitchen & Bar', 'desc' => $isRetail ? 'Visual Merchandising & Tata Letak Produk' : 'Produksi Makanan & Minuman Bar'],
+            ['code' => 'DEPT-LOG', 'name' => 'Logistics & Warehousing', 'desc' => 'Pengelolaan Gudang, Logistik & Pengiriman'],
+            ['code' => 'DEPT-FIN', 'name' => 'Finance & Accounting', 'desc' => 'Keuangan, Pajak, dan Pembukuan Akuntansi'],
+            ['code' => 'DEPT-EXEC', 'name' => 'Executive & Admin', 'desc' => 'Manajemen Eksekutif & General Affairs'],
+        ];
+
+        $deptMap = [];
+        foreach ($deptDefs as $d) {
+            DB::table('departments')->updateOrInsert(
+                ['tenant_id' => $tenantId, 'department_code' => $d['code']],
+                [
+                    'name' => $d['name'],
+                    'description' => $d['desc'],
+                    'is_active' => 1,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]
+            );
+            $deptMap[$d['code']] = DB::table('departments')->where('tenant_id', $tenantId)->where('department_code', $d['code'])->value('id');
+        }
+
+        $titleDefs = [
+            ['code' => 'DIR', 'name' => 'Direktur Operasional', 'dept' => 'DEPT-EXEC', 'grade' => 4, 'desc' => 'Pimpinan Tertinggi Eksekutif Operasional'],
+            ['code' => 'MGR-OPS', 'name' => 'Store Manager', 'dept' => 'DEPT-OPS', 'grade' => 3, 'desc' => 'Kepala Toko / Outlet Manager'],
+            ['code' => 'SPV-OPS', 'name' => 'Supervisor Shift', 'dept' => 'DEPT-OPS', 'grade' => 2, 'desc' => 'Pengawas Operasional Shift'],
+            ['code' => 'KSR-OPS', 'name' => 'Kasir Utama', 'dept' => 'DEPT-OPS', 'grade' => 1, 'desc' => 'Operator Kasir & Point of Sale'],
+            ['code' => 'STF-OPS', 'name' => $isRetail ? 'Pramuniaga Toko' : 'Staff Pelayanan / Waiter', 'dept' => 'DEPT-OPS', 'grade' => 1, 'desc' => 'Staf Pelayanan Toko'],
+            ['code' => 'CHEF-BAR', 'name' => $isRetail ? 'Lead Visual Merchandiser' : 'Head Chef & Barista Lead', 'dept' => 'DEPT-KIT', 'grade' => 3, 'desc' => 'Penanggung Jawab Menu / Display'],
+            ['code' => 'COOK-BAR', 'name' => $isRetail ? 'Staff Display & Inventory' : 'Line Cook & Barista', 'dept' => 'DEPT-KIT', 'grade' => 1, 'desc' => 'Operator Dapur / Display'],
+            ['code' => 'FIN-ACC', 'name' => 'Finance & Tax Specialist', 'dept' => 'DEPT-FIN', 'grade' => 2, 'desc' => 'Staf Keuangan & Pelaporan Pajak'],
+            ['code' => 'LOG-WHS', 'name' => 'Warehouse & Inventory Specialist', 'dept' => 'DEPT-LOG', 'grade' => 2, 'desc' => 'Pengelola Stok & Penerimaan Barang'],
+        ];
+
+        $titleMap = [];
+        foreach ($titleDefs as $t) {
+            $deptId = $deptMap[$t['dept']] ?? $deptMap['DEPT-OPS'];
+            DB::table('job_titles')->updateOrInsert(
+                ['tenant_id' => $tenantId, 'title_code' => $t['code']],
+                [
+                    'department_id' => $deptId,
+                    'name' => $t['name'],
+                    'grade_level' => $t['grade'],
+                    'description' => $t['desc'],
+                    'is_active' => 1,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]
+            );
+            $titleMap[$t['code']] = DB::table('job_titles')->where('tenant_id', $tenantId)->where('title_code', $t['code'])->value('id');
+        }
+
+        // Link employees to departments and job titles if not already linked
+        $empList = DB::table('employees')->where('tenant_id', $tenantId)->get();
+        foreach ($empList as $idx => $emp) {
+            $assignedTitleCode = match ($idx % 5) {
+                0 => 'MGR-OPS',
+                1 => 'SPV-OPS',
+                2 => 'KSR-OPS',
+                3 => 'CHEF-BAR',
+                default => 'STF-OPS',
+            };
+            $assignedTitleId = $titleMap[$assignedTitleCode] ?? array_values($titleMap)[0];
+            $assignedDeptId = DB::table('job_titles')->where('id', $assignedTitleId)->value('department_id') ?? $deptMap['DEPT-OPS'];
+
+            DB::table('employees')->where('id', $emp->id)->update([
+                'department_id' => $assignedDeptId,
+                'job_title_id' => $assignedTitleId,
+                'updated_at' => $now,
+            ]);
+        }
+
+        // 2. Employee Tax Profiles
+        $ptkpStatuses = ['TK_0', 'TK_1', 'K_0', 'K_1', 'K_2'];
+        foreach ($empList as $idx => $emp) {
+            $ptkp = $ptkpStatuses[$idx % count($ptkpStatuses)];
+            $npwp = sprintf('81.%03d.%03d.%1d-%03d.000', ($emp->id * 37) % 999, ($emp->id * 71) % 999, ($emp->id % 9), ($emp->id * 13) % 999);
+
+            DB::table('employee_tax_profiles')->updateOrInsert(
+                ['tenant_id' => $tenantId, 'employee_id' => $emp->id],
+                [
+                    'tax_identification_number' => $npwp,
+                    'ptkp_status' => $ptkp,
+                    'calculation_method' => 'GROSS',
+                    'is_eligible_for_dtp' => 0,
+                    'effective_from' => '2026-01-01',
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]
+            );
+        }
+
+        // 3. Store Targets (2026-09, 2026-10, 2026-11)
+        $targetPeriods = ['2026-09', '2026-10', '2026-11'];
+        $baseTargets = [
+            '2026-09' => 380000000.00,
+            '2026-10' => 420000000.00,
+            '2026-11' => 450000000.00,
+        ];
+        foreach ($stores as $store) {
+            foreach ($targetPeriods as $p) {
+                $targetAmount = $baseTargets[$p] + (($store->id % 4) * 25000000.00);
+                DB::table('store_targets')->updateOrInsert(
+                    ['tenant_id' => $tenantId, 'store_id' => $store->id, 'target_period' => $p],
+                    [
+                        'company_id' => $tenantId,
+                        'target_net_sales' => $targetAmount,
+                        'target_gross_margin_pct' => $isRetail ? 45.00 : 65.00,
+                        'max_shrinkage_pct' => 1.50,
+                        'max_labor_cost_pct' => 20.00,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]
+                );
+            }
+        }
+
+        // 4. Product Lots (FEFO Tracking with near-expired lot for testing)
+        $sampleProducts = DB::table('products')->where('tenant_id', $tenantId)->orderBy('id')->limit(5)->get();
+        if ($sampleProducts->isNotEmpty()) {
+            $lots = [
+                [
+                    'lot_number' => '#LOT-' . $tenantId . '-CAN-202611',
+                    'expiry_date' => '2026-11-25',
+                    'received_date' => '2026-08-15',
+                    'initial_qty' => 100,
+                    'current_qty' => 65,
+                    'cost' => 45000.00,
+                    'status' => 'active',
+                    'notes' => 'Near Expiry H-14 FEFO Alert Test Lot',
+                ],
+                [
+                    'lot_number' => '#LOT-' . $tenantId . '-BAT-202612',
+                    'expiry_date' => '2026-12-31',
+                    'received_date' => '2026-09-01',
+                    'initial_qty' => 250,
+                    'current_qty' => 210,
+                    'cost' => 38000.00,
+                    'status' => 'active',
+                    'notes' => 'Regular Batch 2026-Q4',
+                ],
+                [
+                    'lot_number' => '#LOT-' . $tenantId . '-BAT-202703',
+                    'expiry_date' => '2027-03-31',
+                    'received_date' => '2026-10-01',
+                    'initial_qty' => 500,
+                    'current_qty' => 480,
+                    'cost' => 35000.00,
+                    'status' => 'active',
+                    'notes' => 'Fresh Stock Q1-2027',
+                ],
+                [
+                    'lot_number' => '#LOT-' . $tenantId . '-BAT-202706',
+                    'expiry_date' => '2027-06-30',
+                    'received_date' => '2026-10-20',
+                    'initial_qty' => 400,
+                    'current_qty' => 400,
+                    'cost' => 35000.00,
+                    'status' => 'active',
+                    'notes' => 'Warehouse Buffer Stock',
+                ],
+                [
+                    'lot_number' => '#LOT-' . $tenantId . '-EXP-202610',
+                    'expiry_date' => '2026-10-15',
+                    'received_date' => '2026-07-01',
+                    'initial_qty' => 50,
+                    'current_qty' => 0,
+                    'cost' => 40000.00,
+                    'status' => 'depleted',
+                    'notes' => 'Batch Habis Terjual',
+                ],
+            ];
+
+            foreach ($lots as $idx => $lot) {
+                $prod = $sampleProducts[$idx % $sampleProducts->count()];
+                $existingLot = DB::table('product_lots')->where('tenant_id', $tenantId)->where('lot_number', $lot['lot_number'])->first();
+                if (! $existingLot) {
+                    DB::table('product_lots')->insert([
+                        'tenant_id' => $tenantId,
+                        'company_id' => $tenantId,
+                        'store_id' => $storeId,
+                        'product_id' => $prod->id,
+                        'lot_number' => $lot['lot_number'],
+                        'expiry_date' => $lot['expiry_date'],
+                        'received_date' => $lot['received_date'],
+                        'initial_quantity' => $lot['initial_qty'],
+                        'current_quantity' => $lot['current_qty'],
+                        'unit_cost' => $lot['cost'],
+                        'status' => $lot['status'],
+                        'notes' => $lot['notes'],
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ]);
+                }
+            }
+        }
+
+        // 5. Ingredient Recipes (Kitchen Prep Items BOM)
+        $ingDefs = [
+            ['code' => 'ING-COFFEE-BEAN-' . $tenantId, 'name' => 'Biji Kopi Arabica Gayo', 'unit' => 'gram', 'cost' => 250.00],
+            ['code' => 'ING-PREP-ESPRESSO-' . $tenantId, 'name' => 'Espresso Base Prep Batch', 'unit' => 'shot', 'cost' => 4500.00],
+            ['code' => 'ING-SUGAR-AREN-' . $tenantId, 'name' => 'Gula Aren Organik Cair', 'unit' => 'ml', 'cost' => 50.00],
+            ['code' => 'ING-PREP-SYRUP-' . $tenantId, 'name' => 'Sugar Syrup Prep Batch', 'unit' => 'bottle', 'cost' => 15000.00],
+            ['code' => 'ING-WAGYU-RAW-' . $tenantId, 'name' => 'Daging Wagyu Raw Cut', 'unit' => 'gram', 'cost' => 600.00],
+            ['code' => 'ING-PREP-WAGYU-' . $tenantId, 'name' => 'Marinated Wagyu Prep Batch', 'unit' => 'portion', 'cost' => 75000.00],
+        ];
+
+        $ingMap = [];
+        foreach ($ingDefs as $ingDef) {
+            $existing = DB::table('ingredients')->where('tenant_id', $tenantId)->where('ingredient_code', $ingDef['code'])->first();
+            if ($existing) {
+                $ingMap[$ingDef['code']] = $existing->id;
+            } else {
+                $ingMap[$ingDef['code']] = DB::table('ingredients')->insertGetId([
+                    'tenant_id' => $tenantId,
+                    'ingredient_code' => $ingDef['code'],
+                    'name' => $ingDef['name'],
+                    'unit' => $ingDef['unit'],
+                    'current_stock' => 50000,
+                    'cost_per_unit' => $ingDef['cost'],
+                    'reorder_level' => 1000,
+                    'is_active' => 1,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
+        }
+
+        $recipes = [
+            [
+                'parent' => 'ING-PREP-ESPRESSO-' . $tenantId,
+                'comp' => 'ING-COFFEE-BEAN-' . $tenantId,
+                'qty' => 18.0000,
+                'unit' => 'gram',
+                'notes' => '18g biji kopi per shot espresso base',
+            ],
+            [
+                'parent' => 'ING-PREP-SYRUP-' . $tenantId,
+                'comp' => 'ING-SUGAR-AREN-' . $tenantId,
+                'qty' => 500.0000,
+                'unit' => 'ml',
+                'notes' => '500ml gula aren organik per botol sirup',
+            ],
+            [
+                'parent' => 'ING-PREP-WAGYU-' . $tenantId,
+                'comp' => 'ING-WAGYU-RAW-' . $tenantId,
+                'qty' => 200.0000,
+                'unit' => 'gram',
+                'notes' => '200g potongan wagyu per porsi marinate',
+            ],
+        ];
+
+        foreach ($recipes as $r) {
+            $parentId = $ingMap[$r['parent']];
+            $compId = $ingMap[$r['comp']];
+            $exists = DB::table('ingredient_recipes')
+                ->where('tenant_id', $tenantId)
+                ->where('parent_ingredient_id', $parentId)
+                ->where('component_ingredient_id', $compId)
+                ->exists();
+
+            if (! $exists) {
+                DB::table('ingredient_recipes')->insert([
+                    'tenant_id' => $tenantId,
+                    'company_id' => $tenantId,
+                    'store_id' => $storeId,
+                    'parent_ingredient_id' => $parentId,
+                    'component_ingredient_id' => $compId,
+                    'quantity_required' => $r['qty'],
+                    'unit' => $r['unit'],
+                    'notes' => $r['notes'],
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ]);
+            }
+        }
+
+        // 6. Tax Submissions (6 SPT Masa per tenant: PPN & PPh 21 for 2026-08, 2026-09, 2026-10)
+        $taxPeriods = [
+            ['period' => '2026-08', 'type' => 'PPN', 'tax_type' => 'SPT Masa PPN 1111', 'sub_date' => '2026-09-28 14:00:00'],
+            ['period' => '2026-08', 'type' => 'PPH21', 'tax_type' => 'SPT Masa PPh Pasal 21/26', 'sub_date' => '2026-09-18 10:30:00'],
+            ['period' => '2026-09', 'type' => 'PPN', 'tax_type' => 'SPT Masa PPN 1111', 'sub_date' => '2026-10-28 15:45:00'],
+            ['period' => '2026-09', 'type' => 'PPH21', 'tax_type' => 'SPT Masa PPh Pasal 21/26', 'sub_date' => '2026-10-19 11:15:00'],
+            ['period' => '2026-10', 'type' => 'PPN', 'tax_type' => 'SPT Masa PPN 1111', 'sub_date' => '2026-11-05 16:20:00'],
+            ['period' => '2026-10', 'type' => 'PPH21', 'tax_type' => 'SPT Masa PPh Pasal 21/26', 'sub_date' => '2026-11-06 09:40:00'],
+        ];
+
+        foreach ($taxPeriods as $tp) {
+            $idempotencyKey = "tax-sub-{$tenantId}-{$tp['type']}-" . str_replace('-', '', $tp['period']);
+            $subRef = "DJP-CORETAX-{$tenantId}-{$tp['type']}-" . str_replace('-', '', $tp['period']);
+
+            DB::table('tax_submissions')->updateOrInsert(
+                ['tenant_id' => $tenantId, 'idempotency_key' => $idempotencyKey],
+                [
+                    'company_id' => $tenantId,
+                    'provider_name' => 'coretax_pjap',
+                    'submission_reference' => $subRef,
+                    'invoice_id' => null,
+                    'invoice_number' => "SPT-MASA-{$tp['type']}-{$tp['period']}",
+                    'tax_invoice_serial_number' => sprintf('010.%03d-26.%08d', $tenantId, mt_rand(10000000, 99999999)),
+                    'status' => 'SUCCESS',
+                    'raw_payload_hash' => hash('sha256', $idempotencyKey),
+                    'request_payload_masked' => json_encode(['period' => $tp['period'], 'tax_type' => $tp['tax_type'], 'tenant_id' => $tenantId]),
+                    'response_payload_masked' => json_encode(['status' => 'ACCEPTED', 'bpe_number' => 'BPE-' . strtoupper(Str::random(12)), 'submitted_at' => $tp['sub_date']]),
+                    'retry_count' => 0,
+                    'submitted_at' => $tp['sub_date'],
+                    'created_at' => $tp['sub_date'],
+                    'updated_at' => $tp['sub_date'],
+                ]
+            );
+        }
+
+        // 7. Webhook Subscriptions & Webhook Delivery Logs
+        $webhook = DB::table('webhook_subscriptions')->where('tenant_id', $tenantId)->first();
+        if (! $webhook) {
+            $webhookId = DB::table('webhook_subscriptions')->insertGetId([
+                'tenant_id' => $tenantId,
+                'company_id' => $tenantId,
+                'store_id' => $storeId,
+                'name' => 'Apeiron ERP Integration Bridge Outbound Webhook',
+                'target_url' => 'https://erp-bridge.apeiron.internal/api/v1/pos-events',
+                'secret_key' => Str::random(64),
+                'subscribed_events' => json_encode(['order.completed', 'shift.closed', 'inventory.reconciled', 'journal.posted']),
+                'is_active' => 1,
+                'failure_count' => 0,
+                'last_delivery_at' => '2026-11-10 22:30:00',
+                'created_at' => '2026-08-14 08:00:00',
+                'updated_at' => '2026-11-10 22:30:00',
+            ]);
+        } else {
+            $webhookId = $webhook->id;
+        }
+
+        $logCount = DB::table('webhook_delivery_logs')->where('tenant_id', $tenantId)->where('subscription_id', $webhookId)->count();
+        if ($logCount < 12) {
+            $events = ['order.completed', 'shift.closed', 'inventory.reconciled', 'journal.posted'];
+            $sampleDates = [
+                '2026-08-15 12:30:00', '2026-08-25 18:45:00', '2026-09-02 21:10:00',
+                '2026-09-12 14:20:00', '2026-09-22 19:35:00', '2026-10-01 22:00:00',
+                '2026-10-10 11:15:00', '2026-10-20 16:50:00', '2026-10-30 20:40:00',
+                '2026-11-04 13:25:00', '2026-11-08 17:10:00', '2026-11-10 22:30:00',
+            ];
+
+            foreach ($sampleDates as $idx => $delivDate) {
+                $evt = $events[$idx % count($events)];
+                DB::table('webhook_delivery_logs')->insert([
+                    'tenant_id' => $tenantId,
+                    'subscription_id' => $webhookId,
+                    'delivery_id' => 'DLV-' . $tenantId . '-' . str_replace(['-', ' ', ':'], '', $delivDate) . '-' . sprintf('%03d', $idx + 1),
+                    'event' => $evt,
+                    'payload' => json_encode(['event' => $evt, 'tenant_id' => $tenantId, 'timestamp' => $delivDate]),
+                    'response_status' => 200,
+                    'response_body' => json_encode(['status' => 'success', 'acknowledged' => true]),
+                    'attempt' => 1,
+                    'status' => 'delivered',
+                    'delivered_at' => $delivDate,
+                    'created_at' => $delivDate,
+                    'updated_at' => $delivDate,
+                ]);
+            }
         }
     }
 
@@ -1624,7 +2365,7 @@ class PopulateEnterpriseDatasetCommand extends Command
         ]);
 
         // Process individual employees
-        $empList = $employees->take(15);
+        $empList = $employees;
         $firstEmp = $employees->first();
         $firstAttRecordId = null;
 
@@ -1817,108 +2558,163 @@ class PopulateEnterpriseDatasetCommand extends Command
             }
         }
 
-        // 4. Payroll Periods & Records
-        $pPeriodId = DB::table('payroll_periods')->insertGetId([
-            'tenant_id' => $tenant->id,
-            'period_name' => 'Payroll Periode Oktober ' . $tenant->id . '-2026',
-            'start_date' => '2026-10-01',
-            'end_date' => '2026-10-31',
-            'cutoff_date' => '2026-10-25',
-            'payment_date' => '2026-10-31',
-            'is_closed' => 1,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        // 4. Payroll Periods & Records across 3 closed months (2026-08, 2026-09, 2026-10)
+        $payrollMonths = [
+            [
+                'code' => '2026-08',
+                'name' => 'Payroll Periode Agustus ' . $tenant->id . '-2026',
+                'start' => '2026-08-01',
+                'end' => '2026-08-31',
+                'cutoff' => '2026-08-25',
+                'pay_date' => '2026-08-31',
+            ],
+            [
+                'code' => '2026-09',
+                'name' => 'Payroll Periode September ' . $tenant->id . '-2026',
+                'start' => '2026-09-01',
+                'end' => '2026-09-30',
+                'cutoff' => '2026-09-25',
+                'pay_date' => '2026-09-30',
+            ],
+            [
+                'code' => '2026-10',
+                'name' => 'Payroll Periode Oktober ' . $tenant->id . '-2026',
+                'start' => '2026-10-01',
+                'end' => '2026-10-31',
+                'cutoff' => '2026-10-25',
+                'pay_date' => '2026-10-31',
+            ],
+        ];
 
-        $batchId = DB::table('payroll_batches')->insertGetId([
-            'tenant_id' => $tenant->id,
-            'batch_number' => 'PAYBATCH-' . $tenant->id . '-202610',
-            'payroll_period_id' => $pPeriodId,
-            'period_start_date' => '2026-10-01',
-            'period_end_date' => '2026-10-31',
-            'cutoff_date' => '2026-10-25',
-            'payment_scheduled_date' => '2026-10-31',
-            'status' => 'FINALIZED',
-            'total_employees' => count($empList),
-            'total_gross_amount' => count($empList) * 6000000.00,
-            'total_tax_amount' => count($empList) * 150000.00,
-            'total_bpjs_employer' => count($empList) * 350000.00,
-            'total_bpjs_employee' => count($empList) * 180000.00,
-            'total_net_amount' => count($empList) * 5670000.00,
-            'created_by_user_id' => $userId,
-            'finalized_at' => '2026-10-31 17:00:00',
-            'paid_at' => '2026-10-31 18:00:00',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $lastBatchId = null;
+        $empCount = count($empList);
 
-        foreach ($empList as $emp) {
-            $prId = DB::table('payroll_records')->insertGetId([
+        foreach ($payrollMonths as $pm) {
+            $pPeriodId = DB::table('payroll_periods')->insertGetId([
                 'tenant_id' => $tenant->id,
-                'payroll_batch_id' => $batchId,
-                'employee_id' => $emp->id,
-                'employee_number_snapshot' => $emp->employee_number,
-                'full_name_snapshot' => $emp->full_name,
-                'department_name_snapshot' => 'Operasional Toko & Bar',
-                'job_title_snapshot' => 'Barista Specialist',
-                'primary_store_id' => $mainStore->id,
-                'primary_store_name_snapshot' => $mainStore->name,
-                'ptkp_status_snapshot' => 'TK/0',
-                'tax_calculation_method_snapshot' => 'TER_2024',
-                'bank_name_snapshot' => 'Bank Central Asia (BCA)',
-                'bank_account_number_snapshot' => '542019' . str_pad((string) $emp->id, 4, '0', STR_PAD_LEFT),
-                'basic_salary_amount' => 5200000.00,
-                'fixed_allowances_amount' => 800000.00,
-                'variable_allowances_amount' => 0.00,
-                'overtime_amount' => 180000.00,
-                'commissions_amount' => 250000.00,
-                'gross_earnings_amount' => 6430000.00,
-                'taxable_gross_amount' => 6430000.00,
-                'tax_pph21_amount' => 160750.00,
-                'tax_pph21_dtp_amount' => 0.00,
-                'bpjs_ks_employer_amount' => 208000.00,
-                'bpjs_ks_employee_amount' => 52000.00,
-                'bpjs_tk_employer_amount' => 324480.00,
-                'bpjs_tk_employee_amount' => 156000.00,
-                'other_deductions_amount' => 0.00,
-                'net_pay_amount' => 6061250.00,
-                'payslip_token' => Str::random(32),
-                'created_at' => now(),
-                'updated_at' => now(),
+                'period_name' => $pm['name'],
+                'start_date' => $pm['start'],
+                'end_date' => $pm['end'],
+                'cutoff_date' => $pm['cutoff'],
+                'payment_date' => $pm['pay_date'],
+                'is_closed' => 1,
+                'created_at' => $pm['pay_date'] . ' 10:00:00',
+                'updated_at' => $pm['pay_date'] . ' 10:00:00',
             ]);
 
-            DB::table('payroll_items')->insert([
-                [
-                    'tenant_id' => $tenant->id,
-                    'payroll_record_id' => $prId,
-                    'component_code' => 'BASIC',
-                    'component_name' => 'Gaji Pokok',
-                    'type' => 'EARNING',
-                    'amount' => 5200000.00,
-                    'is_taxable' => 1,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
-                [
-                    'tenant_id' => $tenant->id,
-                    'payroll_record_id' => $prId,
-                    'component_code' => 'PPH21_TER',
-                    'component_name' => 'PPh 21 TER 2024 (2.5%)',
-                    'type' => 'DEDUCTION',
-                    'amount' => 160750.00,
-                    'is_taxable' => 0,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ],
+            $batchId = DB::table('payroll_batches')->insertGetId([
+                'tenant_id' => $tenant->id,
+                'batch_number' => 'PAYBATCH-' . $tenant->id . '-' . str_replace('-', '', $pm['code']),
+                'payroll_period_id' => $pPeriodId,
+                'period_start_date' => $pm['start'],
+                'period_end_date' => $pm['end'],
+                'cutoff_date' => $pm['cutoff'],
+                'payment_scheduled_date' => $pm['pay_date'],
+                'status' => 'FINALIZED',
+                'total_employees' => $empCount,
+                'total_gross_amount' => $empCount * 10000000.00,
+                'total_tax_amount' => $empCount * 250000.00,
+                'total_bpjs_employer' => $empCount * 1024000.00,
+                'total_bpjs_employee' => $empCount * 300000.00,
+                'total_net_amount' => $empCount * 9450000.00,
+                'created_by_user_id' => $userId,
+                'finalized_at' => $pm['pay_date'] . ' 17:00:00',
+                'paid_at' => $pm['pay_date'] . ' 18:00:00',
+                'created_at' => $pm['pay_date'] . ' 10:00:00',
+                'updated_at' => $pm['pay_date'] . ' 18:00:00',
             ]);
+            $lastBatchId = $batchId;
+
+            foreach ($empList as $emp) {
+                $prId = DB::table('payroll_records')->insertGetId([
+                    'tenant_id' => $tenant->id,
+                    'payroll_batch_id' => $batchId,
+                    'employee_id' => $emp->id,
+                    'employee_number_snapshot' => $emp->employee_number,
+                    'full_name_snapshot' => $emp->full_name,
+                    'department_name_snapshot' => 'Operasional Toko & Bar',
+                    'job_title_snapshot' => 'Store Specialist',
+                    'primary_store_id' => $mainStore->id,
+                    'primary_store_name_snapshot' => $mainStore->name,
+                    'ptkp_status_snapshot' => 'TK/0',
+                    'tax_calculation_method_snapshot' => 'TER_2024',
+                    'bank_name_snapshot' => 'Bank Central Asia (BCA)',
+                    'bank_account_number_snapshot' => '542019' . str_pad((string) $emp->id, 4, '0', STR_PAD_LEFT),
+                    'basic_salary_amount' => 7500000.00,
+                    'fixed_allowances_amount' => 1500000.00,
+                    'variable_allowances_amount' => 0.00,
+                    'overtime_amount' => 500000.00,
+                    'commissions_amount' => 500000.00,
+                    'gross_earnings_amount' => 10000000.00,
+                    'taxable_gross_amount' => 10000000.00,
+                    'tax_pph21_amount' => 250000.00,
+                    'tax_pph21_dtp_amount' => 0.00,
+                    'bpjs_ks_employer_amount' => 400000.00,
+                    'bpjs_ks_employee_amount' => 75000.00,
+                    'bpjs_tk_employer_amount' => 624000.00,
+                    'bpjs_tk_employee_amount' => 225000.00,
+                    'other_deductions_amount' => 0.00,
+                    'net_pay_amount' => 9450000.00,
+                    'payslip_token' => Str::random(32),
+                    'created_at' => $pm['pay_date'] . ' 10:00:00',
+                    'updated_at' => $pm['pay_date'] . ' 18:00:00',
+                ]);
+
+                DB::table('payroll_items')->insert([
+                    [
+                        'tenant_id' => $tenant->id,
+                        'payroll_record_id' => $prId,
+                        'component_code' => 'BASIC',
+                        'component_name' => 'Gaji Pokok',
+                        'type' => 'EARNING',
+                        'amount' => 7500000.00,
+                        'is_taxable' => 1,
+                        'created_at' => $pm['pay_date'] . ' 10:00:00',
+                        'updated_at' => $pm['pay_date'] . ' 10:00:00',
+                    ],
+                    [
+                        'tenant_id' => $tenant->id,
+                        'payroll_record_id' => $prId,
+                        'component_code' => 'TUNJ_JABATAN',
+                        'component_name' => 'Tunjangan Operasional',
+                        'type' => 'EARNING',
+                        'amount' => 1500000.00,
+                        'is_taxable' => 1,
+                        'created_at' => $pm['pay_date'] . ' 10:00:00',
+                        'updated_at' => $pm['pay_date'] . ' 10:00:00',
+                    ],
+                    [
+                        'tenant_id' => $tenant->id,
+                        'payroll_record_id' => $prId,
+                        'component_code' => 'OVERTIME',
+                        'component_name' => 'Lembur PP 35/2021',
+                        'type' => 'EARNING',
+                        'amount' => 500000.00,
+                        'is_taxable' => 1,
+                        'created_at' => $pm['pay_date'] . ' 10:00:00',
+                        'updated_at' => $pm['pay_date'] . ' 10:00:00',
+                    ],
+                    [
+                        'tenant_id' => $tenant->id,
+                        'payroll_record_id' => $prId,
+                        'component_code' => 'PPH21_TER',
+                        'component_name' => 'PPh 21 TER 2024 (2.5%)',
+                        'type' => 'DEDUCTION',
+                        'amount' => 250000.00,
+                        'is_taxable' => 0,
+                        'created_at' => $pm['pay_date'] . ' 10:00:00',
+                        'updated_at' => $pm['pay_date'] . ' 10:00:00',
+                    ],
+                ]);
+            }
         }
 
         // 5. Payroll Adjustment
-        if ($firstEmp) {
+        if ($firstEmp && $lastBatchId) {
             DB::table('payroll_adjustments')->insert([
                 'tenant_id' => $tenant->id,
                 'employee_id' => $firstEmp->id,
-                'payroll_batch_id' => $batchId,
+                'payroll_batch_id' => $lastBatchId,
                 'adjustment_type' => 'BONUS',
                 'amount' => 500000.00,
                 'reason' => 'Bonus pencapaian target kepuasan pelanggan outlet (CSAT > 98%)',

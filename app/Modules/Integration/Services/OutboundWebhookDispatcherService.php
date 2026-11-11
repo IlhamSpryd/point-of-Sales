@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Modules\Integration\Services;
 
+use App\Modules\Integration\Models\WebhookDeliveryLog;
+use App\Modules\Integration\Models\WebhookSubscription;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
@@ -128,6 +130,76 @@ class OutboundWebhookDispatcherService
                 'response' => $e->getMessage(),
             ];
         }
+    }
+
+    /**
+     * Memancarkan event webhook keluar ke seluruh pelanggan aktif (WebhookSubscription) tenant (TASK-F3-01).
+     *
+     * @param  array<string, mixed>  $data
+     * @return list<array{subscription_id: int, delivery_id: string, success: bool, status: int}>
+     */
+    public function dispatchToSubscribers(
+        int $tenantId,
+        string $event,
+        array $data,
+        ?int $storeId = null
+    ): array {
+        /** @var \Illuminate\Database\Eloquent\Collection<int, WebhookSubscription> $subscriptions */
+        $subscriptions = WebhookSubscription::where('tenant_id', $tenantId)
+            ->where('is_active', true)
+            ->get();
+
+        $results = [];
+
+        foreach ($subscriptions as $sub) {
+            if (! $sub->isSubscribedTo($event)) {
+                continue;
+            }
+
+            $prepared = $this->prepareWebhook($event, $data, $tenantId, $storeId, $sub->secret_key);
+            $deliveryId = $prepared['delivery_id'];
+
+            $result = $this->dispatch(
+                url: $sub->target_url,
+                event: $event,
+                data: $data,
+                tenantId: $tenantId,
+                storeId: $storeId,
+                secret: $sub->secret_key
+            );
+
+            // Catat log pengiriman imutabel
+            WebhookDeliveryLog::create([
+                'tenant_id' => $tenantId,
+                'subscription_id' => $sub->id,
+                'delivery_id' => $deliveryId,
+                'event' => $event,
+                'payload' => $prepared['payload'],
+                'response_status' => $result['status'] > 0 ? $result['status'] : null,
+                'response_body' => substr((string) $result['response'], 0, 1000),
+                'attempt' => 1,
+                'status' => $result['success'] ? 'delivered' : 'failed',
+                'delivered_at' => $result['success'] ? now() : null,
+            ]);
+
+            // Update statistik langganan
+            $sub->last_delivery_at = now();
+            if ($result['success']) {
+                $sub->failure_count = 0;
+            } else {
+                $sub->failure_count++;
+            }
+            $sub->save();
+
+            $results[] = [
+                'subscription_id' => $sub->id,
+                'delivery_id' => $deliveryId,
+                'success' => $result['success'],
+                'status' => $result['status'],
+            ];
+        }
+
+        return $results;
     }
 
     /**

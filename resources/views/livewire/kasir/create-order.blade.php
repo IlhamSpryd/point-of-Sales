@@ -86,6 +86,8 @@
 
     {{-- MODALS MODULAR --}}
     @include('livewire.pos.partials.modifier-modal')
+    @include('livewire.pos.partials.variant-modal')
+    @include('livewire.pos.partials.split-bill-modal')
     @include('livewire.pos.partials.checkout-modal')
     @include('livewire.pos.partials.park-modal')
     @include('livewire.pos.partials.parked-list-modal')
