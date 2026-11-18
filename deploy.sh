@@ -11,6 +11,7 @@ echo " Date: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
 echo "=========================================================="
 
 # 1. Detect Docker Compose implementation
+export COMPOSE_PROJECT_NAME="apeiron-pos"
 if docker compose version >/dev/null 2>&1; then
     COMPOSE="docker compose"
 elif command -v docker-compose >/dev/null 2>&1; then
